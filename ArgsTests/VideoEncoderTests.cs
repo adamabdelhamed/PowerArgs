@@ -16,11 +16,15 @@ namespace ArgsTests
         {
             [ArgRequired]
             [ArgPosition(0)]
+            [ArgDescription("Either encode or clip")]
             public string Action { get; set; }
 
+            [ArgDescription("Encode a new video file")]
             public EncodeArgs EncodeArgs { get; set; }
+            [ArgDescription("Save a portion of a video to a new video file")]
             public ClipArgs ClipArgs { get; set; }
 
+            [ArgDescription("Simulate the encoding operation")]
             public bool WhatIf { get; set; }
 
             public static void Encode(EncodeArgs args)
@@ -43,12 +47,15 @@ namespace ArgsTests
             [ArgRequired]
             [ArgExistingFile]
             [ArgPosition(1)]
+            [ArgDescription("The source video file")]
             public string Source { get; set; }
 
             [ArgPosition(2)]
+            [ArgDescription("Output file.  If not specfied, defaults to current directory")]
             public string Output { get; set; }
 
             [DefaultValue(Encoder.Avi)]
+            [ArgDescription("The type of encoder to use")]
             public Encoder Encoder { get; set; }
 
             [ArgIgnore]
@@ -57,9 +64,12 @@ namespace ArgsTests
 
         public class ClipArgs : EncodeArgs
         {
-            [ArgRange(0, 1000)]
+            [ArgRange(0, double.MaxValue)]
+            [ArgDescription("The starting point of the video, in seconds")]
             public double From { get; set; }
-            [ArgRange(0, 1000)]
+            
+            [ArgRange(0, double.MaxValue)]
+            [ArgDescription("The ending point of the video, in seconds")]
             public double To { get; set; }
         }
 
@@ -137,8 +147,9 @@ namespace ArgsTests
         [TestMethod]
         public void TestVideoEncoderToolUsage()
         {
-            var usage = ArgUsage.GetUsage<VideoEncoderArgs>(ArgStyle.PowerShell, "vidmaster");
+            var usage = ArgUsage.GetUsage<VideoEncoderArgs>(ArgStyle.PowerShell, "superencoder");
             Console.WriteLine(usage);
         }
     }
 }
+
