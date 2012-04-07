@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>The first version of PowerArgs!</releaseNotes>
+    <copyright>Copyright 2012</copyright>
+    <tags>Command Line Parser</tags>
+  </metadata>
+</package>
