@@ -5,7 +5,7 @@ namespace HelloWorld
 {
     public class MyArgs
     {
-        [ArgRequired]
+        [ArgRequired(PromptIfMissing=true)]
         public string StringArg { get; set; }
     }
 
@@ -13,9 +13,6 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
-            //TODO - Comment out/delete this line later
-            args = new string[] { "-s", "AnArgumentStringHere" };
-
             try
             {
                 var parsed = Args.Parse<MyArgs>(args);

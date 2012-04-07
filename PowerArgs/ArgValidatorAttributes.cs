@@ -63,8 +63,21 @@ namespace PowerArgs
 
     public class ArgRequired : ArgValidator
     {
+        public bool PromptIfMissing { get; set; }
+
         public override void Validate(string name, ref string arg)
         {
+            if (arg == null && PromptIfMissing)
+            {
+                var value = "";
+                while (string.IsNullOrWhiteSpace(value))
+                {
+                    Console.Write("Enter value for " + name + ": ");
+                    value = Console.ReadLine();
+                }
+
+                arg = value;
+            }
             if (arg == null)
             {
                 throw new Exception("The argument '" + name + "' is required");
