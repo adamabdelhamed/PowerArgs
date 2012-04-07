@@ -171,6 +171,21 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestRevivalFailure()
+        {
+            var args = new string[] { "-int", "notAnInt" };
+
+            try
+            {
+                var parsed = Args.Parse<BasicArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+            }
+        }
+
+        [TestMethod]
         public void TestBasicUsage()
         {
             var basicUsage = ArgUsage.GetUsage<BasicArgs>(ArgStyle.PowerShell, "basic");

@@ -147,7 +147,18 @@ namespace PowerArgs
                 }
                 else if (ArgRevivers.Revivers.ContainsKey(prop.PropertyType) && argValue != null)
                 {
-                    prop.SetValue(toPopulate, ArgRevivers.Revivers[prop.PropertyType](argName, argValue), null);
+                    try
+                    {
+                        prop.SetValue(toPopulate, ArgRevivers.Revivers[prop.PropertyType](argName, argValue), null);
+                    }
+                    catch (ArgException)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new ArgException(ex.Message, ex);
+                    }
                 }
                 else if(argValue != null)  
                 {
