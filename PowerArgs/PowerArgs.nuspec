@@ -9,8 +9,8 @@
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>The first version of PowerArgs!</releaseNotes>
+    <releaseNotes>Added support for auto prompting of missing required fields!</releaseNotes>
     <copyright>Copyright 2012</copyright>
-    <tags>Command Line Parser</tags>
+    <tags>Command Line Argument Parser</tags>
   </metadata>
 </package>
