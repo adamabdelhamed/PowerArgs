@@ -9,7 +9,7 @@
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Added support for auto prompting of missing required fields!</releaseNotes>
+    <releaseNotes>Fixed a bug where revivers were not throwing ArgExceptions when failing</releaseNotes>
     <copyright>Copyright 2012</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>
