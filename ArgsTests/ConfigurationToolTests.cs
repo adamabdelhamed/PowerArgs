@@ -30,10 +30,12 @@ namespace ArgsTests
         public class ConfigArgs
         {
             [ArgPosition(1)]
+            [ArgShortcut("n")]
             [ArgDescription("The name of the configuration element to update")]
             public string ConfigName { get; set; }
 
             [ArgPosition(2)]
+            [ArgShortcut("v")]
             public string ConfigValue { get; set; }
         }
 

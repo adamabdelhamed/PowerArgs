@@ -1,4 +1,6 @@
 ﻿using System.Reflection;
+using System;
+using System.Linq;
 
 namespace PowerArgs
 {
@@ -16,12 +18,35 @@ namespace PowerArgs
 
         public static MethodInfo ResolveMethod(PropertyInfo actionProperty)
         {
+            return ArgAction.ResolveMethod(typeof(T), actionProperty);
+        }
+    }
+
+    public class ArgAction
+    {
+        public static PropertyInfo GetActionProperty<T>()
+        {
+            return GetActionProperty(typeof(T));
+        }
+
+        public static PropertyInfo GetActionProperty(Type t)
+        {
+            var actionProperty = (from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                                  where p.Name == "Action" &&
+                                        p.Attr<ArgPosition>() != null && p.Attr<ArgPosition>().Position == 0 &&
+                                        p.HasAttr<ArgRequired>()
+                                  select p).SingleOrDefault();
+            return actionProperty;
+        }
+
+        public static MethodInfo ResolveMethod(Type t, PropertyInfo actionProperty)
+        {
             string methodName = actionProperty.Name;
             int end = methodName.LastIndexOf("Args");
             if (end < 1) throw new InvalidArgDefinitionException("Could not resolve action method from property name: " + actionProperty.Name);
             methodName = methodName.Substring(0, end);
 
-            var actionType = typeof(T).HasAttr<ArgActionType>() ? typeof(T).Attr<ArgActionType>().ActionType : typeof(T);
+            var actionType = t.HasAttr<ArgActionType>() ? t.Attr<ArgActionType>().ActionType : t;
             var method = actionType.GetMethod(methodName);
             if (method == null) throw new InvalidArgDefinitionException("Could not find action method '" + methodName + "'");
 

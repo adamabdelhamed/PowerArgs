@@ -171,6 +171,36 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestSwitchWithFalseValueSpecified()
+        {
+            var args = new string[] { "-bool", "false", "-string", "string" };
+
+            var parsed = Args.Parse<BasicArgs>(args);
+            Assert.AreEqual(false, parsed.Bool);
+            Assert.AreEqual("string", parsed.String);
+        }
+
+        [TestMethod]
+        public void TestSwitchWithZeroValueSpecified()
+        {
+            var args = new string[] { "-bool", "0", "-string", "string" };
+
+            var parsed = Args.Parse<BasicArgs>(args);
+            Assert.AreEqual(false, parsed.Bool);
+            Assert.AreEqual("string", parsed.String);
+        }
+
+        [TestMethod]
+        public void TestSwitchWithTrueValueSpecified()
+        {
+            var args = new string[] { "-bool", "true", "-string", "string" };
+
+            var parsed = Args.Parse<BasicArgs>(args);
+            Assert.AreEqual(true, parsed.Bool);
+            Assert.AreEqual("string", parsed.String);
+        }
+
+        [TestMethod]
         public void TestRevivalFailure()
         {
             var args = new string[] { "-int", "notAnInt" };
@@ -182,6 +212,22 @@ namespace ArgsTests
             }
             catch (ArgException ex)
             {
+            }
+        }
+
+        [TestMethod]
+        public void TestExtraArgs()
+        {
+            var args = new string[] { "-bool", "-string", "string", "-extraArg", "extraValue" };
+
+            try
+            {
+                var parsed = Args.Parse<BasicArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extraarg"));
             }
         }
 

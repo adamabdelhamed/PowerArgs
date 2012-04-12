@@ -51,13 +51,34 @@ namespace PowerArgs
         {
             revivers.Add(typeof(bool), (prop, val) =>
             {
-                return val != null; // null means the switch value was not specified.  If it was specified then it's automatically true
+                return val != null && val.ToLower().ToString() != "false" && val != "0"; // null means the switch value was not specified.  If it was specified then it's automatically true
+            });
+
+            revivers.Add(typeof(Guid), (prop, val) =>
+            {
+                Guid ret;
+                if (Guid.TryParse(val, out ret) == false) throw new FormatException("value must be a Guid: " + val);
+                return ret;
+            });
+
+            revivers.Add(typeof(byte), (prop, val) =>
+            {
+                byte ret;
+                if (byte.TryParse(val, out ret) == false) throw new FormatException("value must be a byte: " + val);
+                return ret;
             });
 
             revivers.Add(typeof(int), (prop, val) =>
             {
                 int ret;
                 if (int.TryParse(val, out ret) == false) throw new FormatException("value must be an integer: " + val);
+                return ret;
+            });
+
+            revivers.Add(typeof(long), (prop, val) =>
+            {
+                long ret;
+                if (long.TryParse(val, out ret) == false) throw new FormatException("value must be an integer: " + val);
                 return ret;
             });
 
@@ -79,8 +100,6 @@ namespace PowerArgs
                 if (DateTime.TryParse(val, out ret) == false) throw new ArgumentException("value must be a valid date time: " + val);
                 return ret;
             });
-
-            // TODO - Add revivers for Guid, DateTimeOffset, byte, and other simple types
         }
     }
 }

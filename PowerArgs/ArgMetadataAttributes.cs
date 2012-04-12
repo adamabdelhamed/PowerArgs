@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace PowerArgs
 {
@@ -58,6 +59,27 @@ namespace PowerArgs
         {
             this.Example = example;
             this.Description = description;
+        }
+    }
+
+    public class ArgShortcut : Attribute
+    {
+        public string Shortcut { get; set; }
+
+        public ArgShortcut(string shortcut)
+        {
+            this.Shortcut = shortcut;
+        }
+ 
+        public static string GetShortcut(PropertyInfo info)
+        {
+            var actionProperty = ArgAction.GetActionProperty(info.DeclaringType);
+            if (actionProperty != null && actionProperty.Name == info.Name) return null;
+
+            var attr = info.Attr<ArgShortcut>();
+
+            if (attr == null) return info.Name.ToLower()[0]+"";
+            else return attr.Shortcut;
         }
     }
 }

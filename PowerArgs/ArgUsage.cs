@@ -14,7 +14,7 @@ namespace PowerArgs
             string ret = "Usage: ";
             ret += exeName ?? Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
 
-            var actionProperty = Args.GetActionProperty<T>();
+            var actionProperty = ArgAction.GetActionProperty<T>();
 
             if (actionProperty != null)
             {
@@ -94,7 +94,7 @@ namespace PowerArgs
 
                 rows.Add(new List<string>()
                 {
-                    indicator+prop.Name.ToLower() + " ("+ indicator + prop.Name.ToLower()[0] +")",
+                    indicator+prop.Name.ToLower() + " ("+ indicator + ArgShortcut.GetShortcut(prop) +")",
                     typeString+requiredString,
                     positionString,
                     descriptionString

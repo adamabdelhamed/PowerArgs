@@ -49,6 +49,7 @@
     <Compile Include="BasicTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ShortcutTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />
   </ItemGroup>
