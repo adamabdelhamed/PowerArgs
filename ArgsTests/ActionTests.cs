@@ -59,6 +59,38 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestUnspecifiedAction()
+        {
+            var args = new string[] {  };
+            try
+            {
+                var parsed = Args.InvokeAction<ActionTestArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("required") &&
+                    ex.Message.ToLower().Contains("action"));
+            }
+        }
+
+        [TestMethod]
+        public void TestUnknownAction()
+        {
+            var args = new string[] { "thisisnotarealaction" };
+            try
+            {
+                var parsed = Args.InvokeAction<ActionTestArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("unknown") &&
+                    ex.Message.ToLower().Contains("thisisnotarealaction"));
+            }
+        }
+
+        [TestMethod]
         public void TestMissingActionBinding()
         {
             var args = new string[] { "someaction", "aval", "bval" };
