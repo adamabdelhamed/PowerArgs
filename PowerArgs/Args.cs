@@ -27,7 +27,7 @@ namespace PowerArgs
 
         private static ArgAction<T> ParseInternal<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
         {
-            var actionArgProperty = ResolveActionProperty<T>(args);
+            var actionArgProperty = ResolveActionProperty<T>(ref args);
             ValidateArgScaffold<T>();
 
             T ret = Activator.CreateInstance<T>();
@@ -55,7 +55,7 @@ namespace PowerArgs
             };
         }
 
-        private static PropertyInfo ResolveActionProperty<T>(string[] args)
+        private static PropertyInfo ResolveActionProperty<T>(ref string[] args)
         {
             PropertyInfo actionArgProperty = null;
 
@@ -65,9 +65,13 @@ namespace PowerArgs
             {
                 var specifiedAction = args.Length > 0 ? args[0] : null;
 
-                if(actionProperty.Attr<ArgRequired>().PromptIfMissing)
+                if(actionProperty.Attr<ArgRequired>().PromptIfMissing && args.Length == 0)
                 {
                     actionProperty.Attr<ArgRequired>().Validate(actionProperty.Name, ref specifiedAction);
+                    if (specifiedAction != null)
+                    {
+                        args = new string[] { specifiedAction };
+                    }
                 }
 
                 if (specifiedAction != null)
@@ -101,6 +105,11 @@ namespace PowerArgs
                 if (argValue == null && argShortcut != null) // then see if the shortcut was specified
                 {
                     argValue = parser.Args.ContainsKey(argShortcut) ? parser.Args[argShortcut] : null;
+                }
+
+                if (argValue == null && prop.Attr<StickyArg>() != null)
+                {
+                    argValue = prop.Attr<StickyArg>().GetStickyArg(argName);
                 }
 
                 try
@@ -161,6 +170,9 @@ namespace PowerArgs
                 {
                     throw new ArgException("Unexpected argument '" + argName + "' with value '" + argValue + "'");
                 }
+
+
+                if (argValue != null && prop.HasAttr<StickyArg>()) prop.Attr<StickyArg>().SetStickyArg(argName, argValue);
 
                 parser.Args.Remove(argName);
                 if(argShortcut != null) parser.Args.Remove(argShortcut);
