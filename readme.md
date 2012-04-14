@@ -1,3 +1,4 @@
+###Binary
 Just want to Add a Reference instead of dealing with the source? PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
 ###Basic Example
