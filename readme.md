@@ -57,6 +57,13 @@ This example shows various metadata and validator attributes.  It also uses the 
     {
         // To use the action framework, the action arg must be called "Action"
         // and must be a required parameter at position 0.
+        //
+        // If you're using the Action Framework then don't use Args.Parse<VideoEncoderArgs>(args).
+        // Instead use Args.InvokeAction<VideoEncoderArgs>(args).  That will not only parse the
+        // arguments, but it will also map the user's specified action to an action property,
+        // populate that property, and finally invoke the action method.
+        // There is an example of this below.
+        
     
         [ArgRequired]
         [ArgPosition(0)]
@@ -122,6 +129,26 @@ This example shows various metadata and validator attributes.  It also uses the 
         [ArgRange(0, double.MaxValue)]
         [ArgDescription("The ending point of the video, in seconds")]
         public double To { get; set; }
+    }
+    
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            try
+            {
+                Args.InvokeAction<VideoEncoderArgs>(args);
+            }
+            catch (ArgException ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ArgUsage.GetUsage<VideoEncoderArgs>());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
     }
     
 ###Custom Revivers
