@@ -8,6 +8,8 @@ namespace PowerArgs
 {
     public abstract class ArgValidator : Attribute
     {
+        public int Priority { get; set; }
+
         public abstract void Validate(string name, ref string arg);
     }
 
@@ -18,7 +20,7 @@ namespace PowerArgs
         {
             if (File.Exists(arg) == false)
             {
-                throw new FileNotFoundException("File not found - " + arg);
+                throw new ArgException("File not found - " + arg, new FileNotFoundException());
             }
             arg = Path.GetFullPath(arg);
         }
@@ -31,7 +33,7 @@ namespace PowerArgs
         {
             if (Directory.Exists(arg) == false)
             {
-                throw new DirectoryNotFoundException("Directory not found: '" + arg + "'");
+                throw new ArgException("Directory not found: '" + arg + "'", new DirectoryNotFoundException());
             }
             arg = Path.GetFullPath(arg);
         }
@@ -56,13 +58,18 @@ namespace PowerArgs
 
             if (d < min || d > max)
             {
-                throw new ArgException(name + " must be at least " + min + ", but not greater than " + max);
+                throw new ArgException(name + " must be at least " + min + ", but not greater than " + max, new ArgumentOutOfRangeException());
             }
         }
     }
 
     public class ArgRequired : ArgValidator
     {
+        public ArgRequired()
+        {
+            Priority = 100;
+        }
+
         public bool PromptIfMissing { get; set; }
 
         public override void Validate(string name, ref string arg)
@@ -80,7 +87,7 @@ namespace PowerArgs
             }
             if (arg == null)
             {
-                throw new Exception("The argument '" + name + "' is required");
+                throw new ArgException("The argument '" + name + "' is required", new ArgumentNullException(name));
             }
         }
     }

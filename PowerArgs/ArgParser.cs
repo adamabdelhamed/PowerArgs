@@ -15,13 +15,13 @@ namespace PowerArgs
     {
         protected Type argType;
         protected Dictionary<Type, Func<string, string, object>> revivers;
-        protected ArgStyle style;
+        protected ArgOptions options;
 
         public Dictionary<string, string> Args { get; private set; }
 
-        public ArgParser(ArgStyle style,  Type argType, Dictionary<Type, Func<string, string, object>> revivers = null)
+        public ArgParser(ArgOptions options,  Type argType, Dictionary<Type, Func<string, string, object>> revivers = null)
         {
-            this.style = style;
+            this.options = options;
             this.argType = argType;
             if (revivers == null) revivers = new Dictionary<Type, Func<string, string, object>>();
             this.revivers = revivers;
@@ -33,53 +33,60 @@ namespace PowerArgs
         public void Parse(string[] args, PropertyInfo actionArgProp)
         {
             ParseInternal(args, actionArgProp);
+
+            if (options.IgnoreCaseForPropertyNames)
+            {
+                var temp = Args;
+                Args = new Dictionary<string, string>();
+                foreach (var key in temp.Keys) Args.Add(key.ToLower(), temp[key]);
+            }
         }
     }
 
     public class SmartArgParser : ArgParser
     {
-        public SmartArgParser(ArgStyle style, Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) 
-            : base(style, argType, revivers) { }
+        public SmartArgParser(ArgOptions options, Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) 
+            : base(options, argType, revivers) { }
 
         protected override void ParseInternal(string[] args, PropertyInfo actionArgProp)
         {
             if (args.Length == 0) return;
 
-            var positionParser = new PositionArgParser(style, argType, revivers);
+            var positionParser = new PositionArgParser(options, argType, revivers);
             positionParser.Parse(args, actionArgProp);
 
-            ArgParser inner = style == ArgStyle.PowerShell ? (ArgParser)new PowerShellStyleParser(argType, revivers) : (ArgParser)new SlashColonParser(argType, revivers);
+            ArgParser inner = options.Style == ArgStyle.PowerShell ? (ArgParser)new PowerShellStyleParser(argType, revivers) : (ArgParser)new SlashColonParser(argType, revivers);
             inner.Parse(args, actionArgProp);
 
             foreach (var key in positionParser.Args.Keys)
             {
-                Args.Add(key.ToLower(), positionParser.Args[key]);
+                Args.Add(key, positionParser.Args[key]);
             }
 
             foreach (var key in inner.Args.Keys)
             {
-                Args.Add(key.ToLower(), inner.Args[key]);
+                Args.Add(key, inner.Args[key]);
             }
         }
 
 
         private class PositionArgParser : ArgParser
         {
-            public PositionArgParser(ArgStyle style, Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) 
-                : base(style, argType, revivers) { }
+            public PositionArgParser(ArgOptions options, Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) 
+                : base(options, argType, revivers) { }
 
             protected override void ParseInternal(string[] args, PropertyInfo actionArgProp)
             {
                 List<PropertyInfo> positionalArgs = FindAllPositionalPropertyies(argType, actionArgProp);
                 for (int i = 0; i < args.Length; i++)
                 {
-                    if (style == ArgStyle.PowerShell && args[i].StartsWith("-")) break;
-                    if (style == ArgStyle.SlashColon && args[i].StartsWith("/")) break;
+                    if (options.Style == ArgStyle.PowerShell && args[i].StartsWith("-")) break;
+                    if (options.Style == ArgStyle.SlashColon && args[i].StartsWith("/")) break;
 
                     var matchingProp = (from prop in positionalArgs where prop.Attr<ArgPosition>() != null && prop.Attr<ArgPosition>().Position == i select prop.Name).FirstOrDefault();
                     if (matchingProp == null) continue;
 
-                    Args.Add(matchingProp.ToLower(), args[i]);
+                    Args.Add(matchingProp, args[i]);
                 }
             }
 
@@ -105,17 +112,21 @@ namespace PowerArgs
 
         private class SlashColonParser : ArgParser
         {
-            public SlashColonParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) : base(ArgStyle.SlashColon, argType, revivers) { }
+            public SlashColonParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) : base(ArgOptions.DefaultOptions, argType, revivers) { }
 
             protected override void ParseInternal(string[] args, PropertyInfo actionArgProp)
             {
                 var matches = (from a in args
-                               where a.ToLower().StartsWith("/")
+                               where a.StartsWith("/")
                                select new
                                {
                                    Key = a.Contains(":") ? a.Substring(1, a.IndexOf(":") - 1).Trim() : a.Substring(1, a.Length - 1),
                                    Value = a.Contains(":") ? a.Substring(a.IndexOf(":") + 1).Trim() : ""
                                });
+
+                var empties = from a in args where a == "/" select a;
+
+                if (empties.Count() > 0) throw new ArgException("Argument name missing");
 
                 foreach (var match in matches)
                 {
@@ -126,32 +137,37 @@ namespace PowerArgs
 
         private class PowerShellStyleParser : ArgParser
         {
-            public PowerShellStyleParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) : base(ArgStyle.PowerShell, argType, revivers) { }
+            public PowerShellStyleParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) : base(ArgOptions.DefaultOptions, argType, revivers) { }
 
             protected override void ParseInternal(string[] args, PropertyInfo actionArgProp)
             {
                 string currentArg = null;
                 foreach (var a in args)
                 {
+                    //TODO - if the user enters an extra argument that does not start with a '-'
+                    //       and also does not match a positional arg then an exception will not be
+                    //       thrown even though there's an extra, unused arg
+                    
                     if (currentArg == null && a.StartsWith("-") != true) continue;
 
                     if (currentArg == null)
                     {
                         currentArg = a.Substring(1);
+                        if (currentArg.Length == 0) throw new ArgException("argument name missing");
                     }
-                    else if (a.StartsWith("-"))
+                    else if (a.StartsWith("-") && a.Length > 1 && char.IsDigit(a[1]) == false)
                     {
-                        Args.Add(currentArg.ToLower(), "");
+                        Args.Add(currentArg, "");
                         currentArg = a.Substring(1);
                     }
                     else
                     {
-                        Args.Add(currentArg.ToLower(), a);
+                        Args.Add(currentArg, a);
                         currentArg = null;
                     }
                 }
 
-                if (currentArg != null) Args.Add(currentArg.ToLower(), "");
+                if (currentArg != null) Args.Add(currentArg, "");
             }
         }
     }

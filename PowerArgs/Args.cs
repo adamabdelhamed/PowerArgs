@@ -6,16 +6,22 @@ using System.Linq;
 
 namespace PowerArgs
 {
-    public static class Args
+    public class Args
     {
+        private ArgOptions Options { get; set; }
+        private Args() { }
+
         public static ArgAction<T> ParseAction<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
         {
-            return ParseInternal<T>(args, style);
+            Args instance = new Args() { Options = ArgOptions.DefaultOptions };
+            var options = ArgOptions.DefaultOptions;
+            options.Style = style;
+            return instance.ParseInternal<T>(args, options);
         }
 
         public static T Parse<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
         {
-            return ParseInternal<T>(args, style).Args;
+            return ParseAction<T>(args, style).Args;
         }
 
         public static ArgAction<T> InvokeAction<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
@@ -25,181 +31,103 @@ namespace PowerArgs
             return action;
         }
 
-        private static ArgAction<T> ParseInternal<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
+        private ArgAction<T> ParseInternal<T>(string[] args, ArgOptions options)
         {
-            var actionArgProperty = ResolveActionProperty<T>(ref args);
             ValidateArgScaffold<T>();
 
-            T ret = Activator.CreateInstance<T>();
-            ArgParser parser = new SmartArgParser(style, typeof(T));
-            parser.Parse(args, actionArgProperty);
-            PopulateProperties(ret, parser, ArgAction.GetActionProperty<T>() != null);
+            var context = new ArgHook.HookContext();
+            context.Args = Activator.CreateInstance<T>();
+            context.Parser = new SmartArgParser(options, typeof(T));
+            var specifiedActionProperty = FindSpecifiedAction<T>(ref args);
 
-            if (actionArgProperty != null)
+            context.Parser.Parse(args, specifiedActionProperty);
+
+            typeof(T).RunBeforePopulateProperties(context);
+
+            PopulateProperties(context.Args, context.Parser, specifiedActionProperty != null);
+
+            if (specifiedActionProperty != null)
             {
-                var propValue = Activator.CreateInstance(actionArgProperty.PropertyType);
-                PopulateProperties(propValue, parser, false);
-                actionArgProperty.SetValue(ret, propValue, null);
+                var actionPropertyValue = Activator.CreateInstance(specifiedActionProperty.PropertyType);
+                PopulateProperties(actionPropertyValue, context.Parser, false);
+                specifiedActionProperty.SetValue(context.Args, actionPropertyValue, null);
             }
 
-            if (parser.Args.Keys.Count > 0)
-            {
-                throw new ArgException("Unexpected argument '" + parser.Args.Keys.First() + "'");
-            }
+            typeof(T).RunAfterPopulateProperties(context);
 
             return new ArgAction<T>()
             {
-                Args = ret,
-                ActionArgs = actionArgProperty != null ? actionArgProperty.GetValue(ret, null) : null,
-                ActionArgsProperty = actionArgProperty
+                Args = (T)context.Args,
+                ActionArgs = specifiedActionProperty != null ? specifiedActionProperty.GetValue(context.Args, null) : null,
+                ActionArgsProperty = specifiedActionProperty
             };
         }
 
-        private static PropertyInfo ResolveActionProperty<T>(ref string[] args)
+        private PropertyInfo FindSpecifiedAction<T>(ref string[] args)
         {
-            PropertyInfo actionArgProperty = null;
-
             var actionProperty = ArgAction.GetActionProperty<T>();
+            if (actionProperty == null) return null;
 
-            if (actionProperty != null)
+            var specifiedAction = args.Length > 0 ? args[0] : null;
+
+            if (actionProperty.Attr<ArgRequired>().PromptIfMissing && args.Length == 0)
             {
-                var specifiedAction = args.Length > 0 ? args[0] : null;
-
-                if(actionProperty.Attr<ArgRequired>().PromptIfMissing && args.Length == 0)
-                {
-                    actionProperty.Attr<ArgRequired>().Validate(actionProperty.Name, ref specifiedAction);
-                    if (specifiedAction != null)
-                    {
-                        args = new string[] { specifiedAction };
-                    }
-                }
-
-                if (specifiedAction != null)
-                {
-                    actionArgProperty = (from p in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                         where p.Name.ToLower() == specifiedAction.ToLower() + "args"
-                                         select p).SingleOrDefault();
-
-                    if (actionArgProperty == null)
-                    {
-                        throw new ArgException("Unknown Action: " + specifiedAction);
-                    }
-                }
-              
+                actionProperty.Attr<ArgRequired>().Validate(actionProperty.GetArgumentName(Options), ref specifiedAction);
+                args = new string[] { specifiedAction };
             }
+
+            if (specifiedAction == null) return null;
+
+            var actionArgProperty = (from p in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                                     where p.MatchesSpecifiedAction(specifiedAction, Options)
+                                     select p).SingleOrDefault();
+
+            if (actionArgProperty == null) throw new ArgException("Unknown Action: " + specifiedAction);
 
             return actionArgProperty;
         }
 
-        private static void PopulateProperties(object toPopulate , ArgParser parser, bool ignoreActionProperties)
+        private void PopulateProperties(object toPopulate , ArgParser parser, bool ignoreActionProperties)
         {
             foreach (PropertyInfo prop in toPopulate.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
-                if (prop.Name.EndsWith("Args") && ignoreActionProperties) continue;
+                if (prop.IsActionProperty() && ignoreActionProperties) continue;
 
-                string argName = prop.Name.ToLower();
-                string argValue = parser.Args.ContainsKey(argName) ? parser.Args[argName] : null;
-                var argShortcut = ArgShortcut.GetShortcut(prop);
+                var context = new ArgHook.HookContext()
+                {
+                    ArgumentValue = parser.Args.ContainsKey(prop.GetArgumentName(Options)) ? parser.Args[prop.GetArgumentName(Options)] : null,
+                    Parser = parser,
+                    Property = prop,
+                    RevivedProperty = null,
+                    Options = Options,
+                    Args = toPopulate
+                };
 
-                if (argValue == null && argShortcut != null) // then see if the shortcut was specified
-                {
-                    argValue = parser.Args.ContainsKey(argShortcut) ? parser.Args[argShortcut] : null;
-                }
-
-                if (argValue == null && prop.Attr<StickyArg>() != null)
-                {
-                    argValue = prop.Attr<StickyArg>().GetStickyArg(argName);
-                }
-
-                try
-                {
-                    if (prop.HasAttr<ArgRequired>()) prop.Attr<ArgRequired>().Validate(argName, ref argValue);
-
-                    if (argValue != null)
-                    {
-                        foreach (var v in prop.Attrs<ArgValidator>()) v.Validate(argName, ref argValue);
-                    }
-                }
-                catch (ArgException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    throw new ArgException(ex.Message, ex);
-                }
-
-                var defaultValueAttr = prop.Attr<DefaultValueAttribute>();
-                if (argValue == null && defaultValueAttr != null)
-                {
-                    prop.SetValue(toPopulate, defaultValueAttr.Value, null);
-                }
-                else if (prop.PropertyType.IsEnum && defaultValueAttr != null)
-                {
-                    prop.SetValue(toPopulate, defaultValueAttr.Value, null);
-                }
-
-                if (prop.PropertyType.IsEnum && argValue != null)
-                {
-                    try
-                    {
-                        prop.SetValue(toPopulate, Enum.Parse(prop.PropertyType, argValue), null);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new ArgException("'" + argValue + "' is not a valid value for " + prop.Name + ". Available values are [" + string.Join(", ", Enum.GetNames(prop.PropertyType)) + "]", ex);
-                    }
-                }
-                else if (ArgRevivers.Revivers.ContainsKey(prop.PropertyType) && argValue != null)
-                {
-                    try
-                    {
-                        prop.SetValue(toPopulate, ArgRevivers.Revivers[prop.PropertyType](argName, argValue), null);
-                    }
-                    catch (ArgException)
-                    {
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new ArgException(ex.Message, ex);
-                    }
-                }
-                else if(argValue != null)  
-                {
-                    throw new ArgException("Unexpected argument '" + argName + "' with value '" + argValue + "'");
-                }
-
-
-                if (argValue != null && prop.HasAttr<StickyArg>()) prop.Attr<StickyArg>().SetStickyArg(argName, argValue);
-
-                parser.Args.Remove(argName);
-                if(argShortcut != null) parser.Args.Remove(argShortcut);
+                prop.RunBeforePopulateProperty(context);
+                prop.Validate(context);
+                prop.Revive(toPopulate, context);
+                prop.RunAfterPopulateProperty(context);
             }
         }
 
-        private static void ValidateArgScaffold<T>()
+        private void ValidateArgScaffold<T>()
         {
             ValidateArgScaffold(typeof(T));
         }
 
-        private static void ValidateArgScaffold(Type t, List<string> shortcuts = null)
+        private void ValidateArgScaffold(Type t, List<string> shortcuts = null)
         {
             var actionProp = ArgAction.GetActionProperty(t);
             shortcuts = shortcuts ?? new List<string>();
             foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
-                if (prop.Name.EndsWith("Args") && actionProp != null) continue;
+                if (prop.IsActionProperty() && actionProp != null) continue;
 
-                if (prop.PropertyType.IsEnum == false &&  ArgRevivers.Revivers.ContainsKey(prop.PropertyType) == false)
+                if (ArgRevivers.CanRevive(prop.PropertyType) == false)
                 {
-                    ArgRevivers.SearchAssemblyForRevivers(prop.PropertyType.Assembly);
-                    if (ArgRevivers.Revivers.ContainsKey(prop.PropertyType) == false)
-                    {
-                        throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.Name);
-                    }
+                    throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.GetArgumentName(Options));
                 }
 
                 var shortcut = ArgShortcut.GetShortcut(prop);
@@ -217,7 +145,7 @@ namespace PowerArgs
             {
                 foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
                 {
-                    if (prop.Name.EndsWith("Args"))
+                    if (prop.IsActionProperty())
                     {
                         ArgAction.ResolveMethod(t,prop);
                         ValidateArgScaffold(prop.PropertyType, shortcuts.ToArray().ToList());

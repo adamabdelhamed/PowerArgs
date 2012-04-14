@@ -61,6 +61,12 @@ namespace ArgsTests
             public double Double { get; set; }
             public bool Bool { get; set; }
 
+            public Guid Guid { get; set; }
+            public DateTime Time { get; set; }
+            public long Long { get; set; }
+            [ArgShortcut(null)]
+            public byte Byte { get; set; }
+
             [ArgIgnore]
             public object SomeObjectToIgnore { get; set; }
         }
@@ -90,7 +96,10 @@ namespace ArgsTests
         [TestMethod]
         public void TestPowerShellStyle()
         {
-            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b" };
+            Guid g = Guid.NewGuid();
+            DateTime d = DateTime.Today;
+
+            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue+""  };
 
             BasicArgs parsed = Args.Parse<BasicArgs>(args);
 
@@ -98,6 +107,10 @@ namespace ArgsTests
             Assert.AreEqual(34, parsed.Int);
             Assert.AreEqual(33.33, parsed.Double);
             Assert.AreEqual(true, parsed.Bool);
+            Assert.AreEqual(255, parsed.Byte);
+            Assert.AreEqual(g, parsed.Guid);
+            Assert.AreEqual(d, parsed.Time);
+            Assert.AreEqual(long.MaxValue, parsed.Long);
         }
 
 

@@ -32,7 +32,7 @@ namespace PowerArgs
         public static PropertyInfo GetActionProperty(Type t)
         {
             var actionProperty = (from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                  where p.Name == "Action" &&
+                                  where p.Name == ArgSettings.ActionPropertyConventionName &&
                                         p.Attr<ArgPosition>() != null && p.Attr<ArgPosition>().Position == 0 &&
                                         p.HasAttr<ArgRequired>()
                                   select p).SingleOrDefault();
@@ -42,7 +42,7 @@ namespace PowerArgs
         public static MethodInfo ResolveMethod(Type t, PropertyInfo actionProperty)
         {
             string methodName = actionProperty.Name;
-            int end = methodName.LastIndexOf("Args");
+            int end = methodName.LastIndexOf(ArgSettings.ActionArgConventionSuffix);
             if (end < 1) throw new InvalidArgDefinitionException("Could not resolve action method from property name: " + actionProperty.Name);
             methodName = methodName.Substring(0, end);
 

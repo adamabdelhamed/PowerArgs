@@ -7,8 +7,8 @@ namespace PowerArgs
 {
     public static class ArgRevivers
     {
-        static Dictionary<Type, Func<string, string, object>> revivers;
-        internal static Dictionary<Type, Func<string, string, object>> Revivers
+        private static Dictionary<Type, Func<string, string, object>> revivers;
+        private static Dictionary<Type, Func<string, string, object>> Revivers
         {
             get
             {
@@ -21,7 +21,21 @@ namespace PowerArgs
             }
         }
 
-        internal static void SearchAssemblyForRevivers(Assembly a)
+        public static bool CanRevive(Type t)
+        {
+            if (Revivers.ContainsKey(t) || t.IsEnum) return true;
+            SearchAssemblyForRevivers(t.Assembly);
+            return Revivers.ContainsKey(t);
+        }
+
+        public static object Revive(Type t, string name, string value)
+        {
+            if (t.IsEnum)   return Enum.Parse(t, value);
+            else            return Revivers[t].Invoke(name, value);
+        }
+
+
+        private static void SearchAssemblyForRevivers(Assembly a)
         {
             foreach (var type in a.GetTypes())
             {
