@@ -63,6 +63,15 @@ This example shows various metadata and validator attributes.  It also uses the 
         [ArgDescription("Either encode or clip")]
         public string Action { get; set; }
 
+        // See the two properties below.  They are action properties.  If 
+        // your class has the "Action" property configured correctly then all
+        // remaining properties that end with "Args" will be considered actions
+        // that the user can enter as their first command line value.
+        // 
+        // In this case the end user could enter "superencoder encode" or
+        // "superencode clip".  Based on the action parameter the rest of the
+        // arguments will be used to populate the matching action property.
+
         [ArgDescription("Encode a new video file")]
         public EncodeArgs EncodeArgs { get; set; }
 
@@ -113,4 +122,48 @@ This example shows various metadata and validator attributes.  It also uses the 
         [ArgRange(0, double.MaxValue)]
         [ArgDescription("The ending point of the video, in seconds")]
         public double To { get; set; }
+    }
+    
+###Custom Revivers
+Revivers are used to convert command line strings into their proper .NET types.  By default, many of the simple types such as int, DateTime, Guid, string, char,  and bool are supported.
+
+If you need to support a different type or want to support custom syntax to populate a complex object then you can create a custom reviver.
+
+This example converts strings in the format "<x>,<y>" into a Point object that has properties "X" and "Y".
+
+    public class CustomReviverExample
+    {
+        // By default, PowerArgs does not know what a 'Point' is.  So it will 
+        // automatically search your assembly for arg revivers that meet the 
+        // following criteria: 
+        //
+        //    - Have an [ArgReviver] attribute
+        //    - Are a public, static method
+        //    - Accepts exactly two string parameters
+        //    - The return value matches the type that is needed
+
+        public Point Point { get; set; }
+
+        // This ArgReviver matches the criteria for a "Point" reviver
+        // so it will be called when PowerArgs finds any Point argument.
+        //
+        // ArgRevivers should throw ArgException with a friendly message
+        // if the string could not be revived due to user error.
+      
+        [ArgReviver]
+        public static Point Revive(string key, string val)
+        {
+            var match = Regex.Match(val, @"(\d*),(\d*)");
+            if (match.Success == false)
+            {
+                throw new ArgException("Not a valid point: " + val);
+            }
+            else
+            {
+                Point ret = new Point();
+                ret.X = int.Parse(match.Groups[1].Value);
+                ret.Y = int.Parse(match.Groups[2].Value);
+                return ret;
+            }
+        }
     }
