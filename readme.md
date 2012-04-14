@@ -129,7 +129,7 @@ Revivers are used to convert command line strings into their proper .NET types. 
 
 If you need to support a different type or want to support custom syntax to populate a complex object then you can create a custom reviver.
 
-This example converts strings in the format "<x>,<y>" into a Point object that has properties "X" and "Y".
+This example converts strings in the format "x,y" into a Point object that has properties "X" and "Y".
 
     public class CustomReviverExample
     {
