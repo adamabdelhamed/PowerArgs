@@ -48,7 +48,6 @@ namespace ArgsTests
             Helpers.Run(() =>
             {
                 var args = "TheAction -S SomeOtherArgValue -A 100".Split(' ');
-
                 var parsed = Args.Parse<CaseSensitiveArgs>(CaseSensitiveOptions, args);
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
@@ -62,12 +61,11 @@ namespace ArgsTests
             Helpers.Run(() =>
             {
                 var args = "TheAction -s SomeOtherArgValue -A 100".Split(' ');
-
                 var parsed = Args.Parse<CaseSensitiveArgs>(CaseSensitiveOptions, args);
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
-            }, new ExpectedException(typeof(ArgException)) { Contains = "required" });
+            }, Helpers.ExpectedArgException("required"));
         }
 
         [TestMethod]
@@ -76,12 +74,11 @@ namespace ArgsTests
             Helpers.Run(() =>
             {
                 var args = "Theaction -S SomeOtherArgValue -A 100".Split(' ');
-
                 var parsed = Args.Parse<CaseSensitiveArgs>(CaseSensitiveOptions, args);
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
-            }, new ExpectedException(typeof(ArgException)) { Contains = "unknown action" });
+            }, Helpers.ExpectedArgException("unknown action"));
         }
 
         [TestMethod]
@@ -90,12 +87,11 @@ namespace ArgsTests
             Helpers.Run(() =>
             {
                 var args = "TheAction -S SomeOtherArgValue -aninteger 100".Split(' ');
-
                 var parsed = Args.Parse<CaseSensitiveArgs>(CaseSensitiveOptions, args);
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
-            }, new ExpectedException(typeof(ArgException)) { Contains = "required" });
+            }, Helpers.ExpectedArgException("required"));
         }
 
         [TestMethod]
