@@ -9,13 +9,11 @@ namespace PowerArgs
     public abstract class ArgValidator : Attribute
     {
         public int Priority { get; set; }
-
         public abstract void Validate(string name, ref string arg);
     }
 
     public class ArgExistingFile : ArgValidator
     {
-
         public override void Validate(string name, ref string arg)
         {
             if (File.Exists(arg) == false)

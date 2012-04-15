@@ -49,7 +49,7 @@ namespace PowerArgs
 
                 foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public))
                 {
-                    if (prop.IsActionProperty() == false) continue;
+                    if (prop.IsActionArgProperty() == false) continue;
 
                     var actionDescription = prop.HasAttr<ArgDescription>() ? " - " + prop.Attr<ArgDescription>().Description : "";
 
@@ -93,7 +93,7 @@ namespace PowerArgs
             foreach (PropertyInfo prop in options.OrderBy(o => o.HasAttr<ArgPosition>() ? o.Attr<ArgPosition>().Position : 1000))
             {
                 if (prop.HasAttr<ArgIgnoreAttribute>()) continue;
-                if (prop.IsActionProperty() && ignoreActionProperties) continue;
+                if (prop.IsActionArgProperty() && ignoreActionProperties) continue;
                 if (prop.Name == ArgSettings.ActionPropertyConventionName && ignoreActionProperties) continue;
 
                 string positionString = prop.HasAttr<ArgPosition>() ? prop.Attr<ArgPosition>().Position + "" : "";
@@ -107,7 +107,7 @@ namespace PowerArgs
 
                 rows.Add(new List<string>()
                 {
-                    indicator+prop.GetArgumentName(argOptions) + " ("+ indicator + ArgShortcut.GetShortcut(prop) +")",
+                    indicator+prop.GetArgumentName(argOptions) + " ("+ indicator + ArgShortcut.GetShortcut(prop, argOptions) +")",
                     typeString+requiredString,
                     positionString,
                     descriptionString

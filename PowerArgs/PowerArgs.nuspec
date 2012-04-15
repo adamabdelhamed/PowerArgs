@@ -9,7 +9,7 @@
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Fixed some bugs - Also added custom shortcuts and action prompting</releaseNotes>
+    <releaseNotes>Refactored the processing pipeline for better extensibility.  Fixed a few bugs.  Added several new tests.</releaseNotes>
     <copyright>Copyright 2012</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>

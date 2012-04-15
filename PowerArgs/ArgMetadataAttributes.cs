@@ -98,7 +98,7 @@ namespace PowerArgs
             BeforePopulatePropertyPriority = 20;
         }
 
-        public static string GetShortcut(PropertyInfo info, ArgOptions options = null)
+        public static string GetShortcut(PropertyInfo info, ArgOptions options)
         {
             options = options ?? ArgOptions.DefaultOptions;
             var actionProperty = ArgAction.GetActionProperty(info.DeclaringType);
@@ -112,7 +112,7 @@ namespace PowerArgs
 
         public override void BeforePopulateProperty(HookContext Context)
         {
-            var argShortcut = GetShortcut(Context.Property);
+            var argShortcut = GetShortcut(Context.Property, Context.Options);
             if (Context.ArgumentValue == null && argShortcut != null)
             {
                 Context.ArgumentValue = Context.Parser.Args.ContainsKey(argShortcut) ? Context.Parser.Args[argShortcut] : null;
@@ -121,7 +121,7 @@ namespace PowerArgs
 
         public override void AfterPopulateProperty(HookContext Context)
         {
-            var argShortcut = GetShortcut(Context.Property);
+            var argShortcut = GetShortcut(Context.Property, Context.Options);
             if (argShortcut != null) Context.Parser.Args.Remove(argShortcut);
         }
     }

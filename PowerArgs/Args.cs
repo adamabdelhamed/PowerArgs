@@ -11,12 +11,29 @@ namespace PowerArgs
         private ArgOptions Options { get; set; }
         private Args() { }
 
+        public static ArgAction<T> ParseAction<T>(ArgOptions options, params string[] args)
+        {
+            Args instance = new Args() { Options = options};
+            return instance.ParseInternal<T>(args, options);
+        }
+
+        public static ArgAction<T> InvokeAction<T>(ArgOptions options, params string[] args)
+        {
+            var action = Args.ParseAction<T>(options, args);
+            action.Invoke();
+            return action;
+        }
+
+        public static T Parse<T>(ArgOptions options, params string[] args)
+        {
+            return ParseAction<T>(options, args).Args;
+        }
+
         public static ArgAction<T> ParseAction<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
         {
-            Args instance = new Args() { Options = ArgOptions.DefaultOptions };
             var options = ArgOptions.DefaultOptions;
             options.Style = style;
-            return instance.ParseInternal<T>(args, options);
+            return ParseAction<T>(options, args);
         }
 
         public static T Parse<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
@@ -26,14 +43,14 @@ namespace PowerArgs
 
         public static ArgAction<T> InvokeAction<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
         {
-            var action = Args.ParseAction<T>(args, style);
-            action.Invoke();
-            return action;
+            var options = ArgOptions.DefaultOptions;
+            options.Style = style;
+            return InvokeAction<T>(options, args);
         }
 
         private ArgAction<T> ParseInternal<T>(string[] args, ArgOptions options)
         {
-            ValidateArgScaffold<T>();
+            ValidateArgScaffold<T>(options);
 
             var context = new ArgHook.HookContext();
             context.Args = Activator.CreateInstance<T>();
@@ -92,7 +109,7 @@ namespace PowerArgs
             foreach (PropertyInfo prop in toPopulate.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
-                if (prop.IsActionProperty() && ignoreActionProperties) continue;
+                if (prop.IsActionArgProperty() && ignoreActionProperties) continue;
 
                 var context = new ArgHook.HookContext()
                 {
@@ -111,26 +128,26 @@ namespace PowerArgs
             }
         }
 
-        private void ValidateArgScaffold<T>()
+        private void ValidateArgScaffold<T>(ArgOptions options)
         {
-            ValidateArgScaffold(typeof(T));
+            ValidateArgScaffold(typeof(T), options);
         }
 
-        private void ValidateArgScaffold(Type t, List<string> shortcuts = null)
+        private void ValidateArgScaffold(Type t, ArgOptions options, List<string> shortcuts = null)
         {
             var actionProp = ArgAction.GetActionProperty(t);
             shortcuts = shortcuts ?? new List<string>();
             foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
-                if (prop.IsActionProperty() && actionProp != null) continue;
+                if (prop.IsActionArgProperty() && actionProp != null) continue;
 
                 if (ArgRevivers.CanRevive(prop.PropertyType) == false)
                 {
                     throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.GetArgumentName(Options));
                 }
 
-                var shortcut = ArgShortcut.GetShortcut(prop);
+                var shortcut = ArgShortcut.GetShortcut(prop, options);
                 if (shortcut != null && shortcuts.Contains(shortcut))
                 {
                     throw new InvalidArgDefinitionException("Duplicate arg options with shortcut " + shortcut);
@@ -145,10 +162,10 @@ namespace PowerArgs
             {
                 foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
                 {
-                    if (prop.IsActionProperty())
+                    if (prop.IsActionArgProperty())
                     {
                         ArgAction.ResolveMethod(t,prop);
-                        ValidateArgScaffold(prop.PropertyType, shortcuts.ToArray().ToList());
+                        ValidateArgScaffold(prop.PropertyType, options, shortcuts.ToArray().ToList());
                     }
                 }
             }
