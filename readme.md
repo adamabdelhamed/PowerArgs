@@ -232,4 +232,68 @@ Sample Output:
        -output (-o)    String    2       Output file.  If not specfied, defaults to current directory   
        -from (-f)      Double            The starting point of the video, in seconds                    
        -to (-t)        Double            The ending point of the video, in seconds                      
-       -encoder (-e)   Encoder           The type of encoder to use                                     
+       -encoder (-e)   Encoder           The type of encoder to use  
+
+This was the code that resulted in the generated usage string.
+
+    [ArgExample("superencoder encode fromFile toFile -encoder Wmv", "Encode the file at 'fromFile' to an AVI at 'toFile'")]
+    public class VideoEncoderArgs
+    {
+        [ArgRequired]
+        [ArgPosition(0)]
+        [ArgDescription("Either encode or clip")]
+        public string Action { get; set; }
+
+        [ArgDescription("Encode a new video file")]
+        public EncodeArgs EncodeArgs { get; set; }
+        [ArgDescription("Save a portion of a video to a new video file")]
+        public ClipArgs ClipArgs { get; set; }
+
+        [ArgDescription("Simulate the encoding operation")]
+        public bool WhatIf { get; set; }
+
+        public static void Encode(EncodeArgs args)
+        {
+            // TODO - Implement Encode Action
+        }
+
+        public static void Clip(ClipArgs args) 
+        {
+            // TODO - Implement Clip action
+        }
+    }
+
+    public enum Encoder
+    {
+        Mpeg,
+        Avi,
+        Wmv
+    }
+
+    public class EncodeArgs
+    {
+        [ArgRequired]
+        [ArgExistingFile]
+        [ArgPosition(1)]
+        [ArgDescription("The source video file")]
+        public string Source { get; set; }
+
+        [ArgPosition(2)]
+        [ArgDescription("Output file.  If not specfied, defaults to current directory")]
+        public string Output { get; set; }
+
+        [DefaultValue(Encoder.Avi)]
+        [ArgDescription("The type of encoder to use")]
+        public Encoder Encoder { get; set; }
+    }
+
+    public class ClipArgs : EncodeArgs
+    {
+        [ArgRange(0, double.MaxValue)]
+        [ArgDescription("The starting point of the video, in seconds")]
+        public double From { get; set; }
+            
+        [ArgRange(0, double.MaxValue)]
+        [ArgDescription("The ending point of the video, in seconds")]
+        public double To { get; set; }
+    }                                   
