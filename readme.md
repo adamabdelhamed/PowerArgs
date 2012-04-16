@@ -197,3 +197,39 @@ This example converts strings in the format "x,y" into a Point object that has p
             }
         }
     }
+
+###Auto-Generated Usage
+You can get an auto generated usage string by passing your argument type to the GetUsage<T> function like this:
+
+    string usage = ArgUsage.GetUsage<VideoEncoderArgs>();
+
+Sample Output:
+
+    Usage: superencoder <action> options
+
+    EXAMPLE: superencoder encode fromFile toFile -encoder Wmv
+    Encode the file at 'fromFile' to an AVI at 'toFile'
+
+    Global options:
+
+       OPTION         TYPE     ORDER   DESCRIPTION                       
+       -whatif (-w)   Switch           Simulate the encoding operation   
+
+    Actions:
+
+    Encode - Encode a new video file
+
+       OPTION          TYPE      ORDER   DESCRIPTION                                                    
+       -source (-s)    String*   1       The source video file                                          
+       -output (-o)    String    2       Output file.  If not specfied, defaults to current directory   
+       -encoder (-e)   Encoder           The type of encoder to use                                     
+
+
+    Clip - Save a portion of a video to a new video file
+
+       OPTION          TYPE      ORDER   DESCRIPTION                                                    
+       -source (-s)    String*   1       The source video file                                          
+       -output (-o)    String    2       Output file.  If not specfied, defaults to current directory   
+       -from (-f)      Double            The starting point of the video, in seconds                    
+       -to (-t)        Double            The ending point of the video, in seconds                      
+       -encoder (-e)   Encoder           The type of encoder to use                                     
