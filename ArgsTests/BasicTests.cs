@@ -152,6 +152,25 @@ namespace ArgsTests
             Assert.AreEqual(30, parsed.ArrayOfBytes[2]);
         }
 
+        [TestMethod]
+        public void TestSingleElementInArray()
+        {
+            var args = new string[] { "-bytes", "10" };
+
+            BasicArgs parsed = Args.Parse<BasicArgs>(args);
+            Assert.AreEqual(1, parsed.ArrayOfBytes.Length);
+            Assert.AreEqual(10, parsed.ArrayOfBytes[0]);
+        }
+
+        [TestMethod]
+        public void TestSingleElementInList()
+        {
+            var args = new string[] { "-li", "10" };
+
+            BasicArgs parsed = Args.Parse<BasicArgs>(args);
+            Assert.AreEqual(1, parsed.List.Count);
+            Assert.AreEqual(10, parsed.List[0]);
+        }
 
         [TestMethod]
         public void TestPositionArgsPS()

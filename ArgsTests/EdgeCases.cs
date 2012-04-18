@@ -33,6 +33,10 @@ namespace ArgsTests
             [ArgShortcut("by")]
             public byte Byte { get; set; }
 
+            public string[] ArrayOfStrings { get; set; }
+            [ArgShortcut("li")]
+            public List<int> ListOfInts { get; set; }
+
             [ArgIgnore]
             public object SomeObjectToIgnore { get; set; }
         }
@@ -192,6 +196,42 @@ namespace ArgsTests
             {
                 Assert.IsTrue(ex.Message.ToLower().Contains("missing"));
             }
+        }
+
+        [TestMethod]
+        public void TestBadListInput()
+        {
+            Helpers.Run(() =>
+            {
+                var args = "-li ,".Split(' ');
+                var parsed = Args.Parse<BasicArgs>(args);
+            }, Helpers.ExpectedArgException());
+        }
+
+        [TestMethod]
+        public void TestEmptyArrayInput()
+        {
+            Helpers.Run(() =>
+            {
+                var args = "-a ".Split(' ');
+                var parsed = Args.Parse<BasicArgs>(args);
+                Assert.IsNotNull(parsed.ArrayOfStrings);
+                Assert.AreEqual(0, parsed.ArrayOfStrings.Length);
+            });
+        }
+
+        [TestMethod]
+        public void TestStrangeArrayInput()
+        {
+            Helpers.Run(() =>
+            {
+                var args = "-a ,".Split(' ');
+                var parsed = Args.Parse<BasicArgs>(args);
+                Assert.IsNotNull(parsed.ArrayOfStrings);
+                Assert.AreEqual(2, parsed.ArrayOfStrings.Length);
+                Assert.AreEqual("", parsed.ArrayOfStrings[0]);
+                Assert.AreEqual("", parsed.ArrayOfStrings[1]);
+            });
         }
     }
 }

@@ -41,21 +41,33 @@ namespace PowerArgs
                 var list = (IList) Activator.CreateInstance(t);
                 // TODO - Maybe support custom delimiters via an attribute on the property
                 // TODO - Maybe do a full parse of the value to check for quoted strings
-                foreach (var element in value.Split(','))
+
+                if (string.IsNullOrWhiteSpace(value) == false)
                 {
-                    list.Add(Revive(t.GetGenericArguments()[0],name+"_element", element));
+                    foreach (var element in value.Split(','))
+                    {
+                        list.Add(Revive(t.GetGenericArguments()[0], name + "_element", element));
+                    }
                 }
                 return list;
             }
             else if (t.IsArray)
             {
                 var elements = value.Split(',');
-                Array array = Array.CreateInstance(t.GetElementType(), elements.Length);
-                for (int i = 0; i < array.Length; i++)
+
+                if (string.IsNullOrWhiteSpace(value) == false)
                 {
-                    array.SetValue(Revive(t.GetElementType(), name + "[" + i + "]", elements[i]), i);
+                    Array array = Array.CreateInstance(t.GetElementType(), elements.Length);
+                    for (int i = 0; i < array.Length; i++)
+                    {
+                        array.SetValue(Revive(t.GetElementType(), name + "[" + i + "]", elements[i]), i);
+                    }
+                    return array;
                 }
-                return array;
+                else
+                {
+                    return Array.CreateInstance(t.GetElementType(), 0);
+                }
             }
             else return Revivers[t].Invoke(name, value);
         }
