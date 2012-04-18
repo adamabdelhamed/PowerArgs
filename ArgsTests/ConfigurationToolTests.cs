@@ -52,7 +52,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestConfigToolUsage()
         {
-            var usage = ArgUsage.GetUsage<ConfigurationToolArgs>(ArgStyle.PowerShell, "mytool");
+            var usage = ArgUsage.GetUsage<ConfigurationToolArgs>("mytool");
             Console.WriteLine(usage);
         }
     }

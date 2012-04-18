@@ -9,20 +9,7 @@ namespace PowerArgs
 {
     public static class ArgUsage
     {
-
         public static string GetUsage<T>(string exeName = null)
-        {
-            return GetUsage<T>(ArgOptions.DefaultOptions, exeName);
-        }
-
-        public static string GetUsage<T>(ArgStyle style, string exeName = null)
-        {
-            ArgOptions options = ArgOptions.DefaultOptions;
-            options.Style = style;
-            return GetUsage<T>(options, exeName);
-        }
-
-        public static string GetUsage<T>(ArgOptions options, string exeName = null)
         {
             string ret = "Usage: ";
             ret += exeName ?? Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
@@ -38,7 +25,7 @@ namespace PowerArgs
                     ret += "EXAMPLE: " + example.Example + "\n" + example.Description + "\n\n";
                 }
 
-                var global = GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), true, options);
+                var global = GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), true);
 
                 if (string.IsNullOrEmpty(global) == false)
                 {
@@ -53,14 +40,14 @@ namespace PowerArgs
 
                     var actionDescription = prop.HasAttr<ArgDescription>() ? " - " + prop.Attr<ArgDescription>().Description : "";
 
-                    ret += "\n\n" + prop.GetArgumentName(options).Substring(0, prop.GetArgumentName(options).Length - ArgSettings.ActionArgConventionSuffix.Length) + actionDescription + "\n\n";
+                    ret += "\n\n" + prop.GetArgumentName().Substring(0, prop.GetArgumentName().Length - Constants.ActionArgConventionSuffix.Length) + actionDescription + "\n\n";
 
                     foreach (var example in prop.Attrs<ArgExample>())
                     {
                         ret += "   EXAMPLE: "+example.Example+"\n   " + example.Description+"\n\n";
                     }
 
-                    ret += GetOptionsUsage(prop.PropertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
+                    ret += GetOptionsUsage(prop.PropertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public), false);
                 }
             }
             else
@@ -72,13 +59,13 @@ namespace PowerArgs
                     ret += "EXAMPLE: " + example.Example + "\n" + example.Description + "\n\n";
                 }
 
-                ret += GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
+                ret += GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), false);
             }
             
             return ret;
         }
 
-        private static string GetOptionsUsage(IEnumerable<PropertyInfo> options, bool ignoreActionProperties, ArgOptions argOptions)
+        private static string GetOptionsUsage(IEnumerable<PropertyInfo> options, bool ignoreActionProperties)
         {
             List<string> columnHeaders = new List<string>()
             {
@@ -94,7 +81,7 @@ namespace PowerArgs
             {
                 if (prop.HasAttr<ArgIgnoreAttribute>()) continue;
                 if (prop.IsActionArgProperty() && ignoreActionProperties) continue;
-                if (prop.Name == ArgSettings.ActionPropertyConventionName && ignoreActionProperties) continue;
+                if (prop.Name == Constants.ActionPropertyConventionName && ignoreActionProperties) continue;
 
                 string positionString = prop.HasAttr<ArgPosition>() ? prop.Attr<ArgPosition>().Position + "" : "";
                 string requiredString = prop.HasAttr<ArgRequired>() ? "*" : "";
@@ -103,11 +90,11 @@ namespace PowerArgs
 
                 if (typeString == "Boolean") typeString = "Switch";
 
-                var indicator = argOptions.Style == ArgStyle.PowerShell ? "-" : "/";
+                var indicator = prop.DeclaringType.GetArgStyle() == ArgStyle.PowerShell ? "-" : "/";
 
                 rows.Add(new List<string>()
                 {
-                    indicator+prop.GetArgumentName(argOptions) + " ("+ indicator + ArgShortcut.GetShortcut(prop, argOptions) +")",
+                    indicator+prop.GetArgumentName() + " ("+ indicator + ArgShortcut.GetShortcut(prop) +")",
                     typeString+requiredString,
                     positionString,
                     descriptionString

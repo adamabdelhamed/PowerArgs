@@ -42,7 +42,7 @@
   <ItemGroup>
     <Compile Include="ArgAction.cs" />
     <Compile Include="ArgMetadataAttributes.cs" />
-    <Compile Include="ArgOptions.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="ArgRevivers.cs" />
     <Compile Include="Args.cs" />
     <Compile Include="ArgParser.cs" />

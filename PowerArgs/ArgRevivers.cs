@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using System.Collections;
 
 namespace PowerArgs
 {
@@ -21,19 +22,43 @@ namespace PowerArgs
             }
         }
 
-        public static bool CanRevive(Type t)
+        internal static bool CanRevive(Type t)
         {
-            if (Revivers.ContainsKey(t) || t.IsEnum) return true;
+            if (Revivers.ContainsKey(t) || 
+                t.IsEnum || 
+                (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0]) ) ||
+                (t.IsArray && CanRevive(t.GetElementType()) ))
+                return true;
             SearchAssemblyForRevivers(t.Assembly);
             return Revivers.ContainsKey(t);
         }
 
-        public static object Revive(Type t, string name, string value)
+        internal static object Revive(Type t, string name, string value)
         {
             if (t.IsEnum)   return Enum.Parse(t, value);
-            else            return Revivers[t].Invoke(name, value);
+            else if (t.IsArray == false && t.GetInterfaces().Contains(typeof(IList)))
+            {
+                var list = (IList) Activator.CreateInstance(t);
+                // TODO - Maybe support custom delimiters via an attribute on the property
+                // TODO - Maybe do a full parse of the value to check for quoted strings
+                foreach (var element in value.Split(','))
+                {
+                    list.Add(Revive(t.GetGenericArguments()[0],name+"_element", element));
+                }
+                return list;
+            }
+            else if (t.IsArray)
+            {
+                var elements = value.Split(',');
+                Array array = Array.CreateInstance(t.GetElementType(), elements.Length);
+                for (int i = 0; i < array.Length; i++)
+                {
+                    array.SetValue(Revive(t.GetElementType(), name + "[" + i + "]", elements[i]), i);
+                }
+                return array;
+            }
+            else return Revivers[t].Invoke(name, value);
         }
-
 
         private static void SearchAssemblyForRevivers(Assembly a)
         {

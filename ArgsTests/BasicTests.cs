@@ -67,9 +67,40 @@ namespace ArgsTests
             [ArgShortcut(null)]
             public byte Byte { get; set; }
 
+            [ArgShortcut("li")]
+            public List<int> List { get; set; }
+
+            [ArgShortcut("bytes")]
+            public byte[] ArrayOfBytes { get; set; }
+
             [ArgIgnore]
             public object SomeObjectToIgnore { get; set; }
         }
+
+        [ArgStyle(ArgStyle.SlashColon)]
+        public class BasicArgsSC
+        {
+            public string String { get; set; }
+            public int Int { get; set; }
+            public double Double { get; set; }
+            public bool Bool { get; set; }
+
+            public Guid Guid { get; set; }
+            public DateTime Time { get; set; }
+            public long Long { get; set; }
+            [ArgShortcut(null)]
+            public byte Byte { get; set; }
+
+            [ArgShortcut("li")]
+            public List<int> List { get; set; }
+
+            [ArgShortcut("bytes")]
+            public byte[] ArrayOfBytes { get; set; }
+
+            [ArgIgnore]
+            public object SomeObjectToIgnore { get; set; }
+        }
+
 
         public class PositionedArgs
         {
@@ -85,7 +116,7 @@ namespace ArgsTests
         {
             var args = new string[] { "/string:stringValue", "/i:34", "/d:33.33", "/b" };
 
-            BasicArgs parsed = Args.Parse<BasicArgs>(args, ArgStyle.SlashColon);
+            var parsed = Args.Parse<BasicArgsSC>(args);
 
             Assert.AreEqual("stringValue", parsed.String);
             Assert.AreEqual(34, parsed.Int);
@@ -99,7 +130,7 @@ namespace ArgsTests
             Guid g = Guid.NewGuid();
             DateTime d = DateTime.Today;
 
-            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue+""  };
+            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue+"", "-li", "100,200,300", "-bytes", "10,20,30"  };
 
             BasicArgs parsed = Args.Parse<BasicArgs>(args);
 
@@ -111,6 +142,14 @@ namespace ArgsTests
             Assert.AreEqual(g, parsed.Guid);
             Assert.AreEqual(d, parsed.Time);
             Assert.AreEqual(long.MaxValue, parsed.Long);
+            Assert.AreEqual(3, parsed.List.Count);
+            Assert.AreEqual(100, parsed.List[0]);
+            Assert.AreEqual(200, parsed.List[1]);
+            Assert.AreEqual(300, parsed.List[2]);
+            Assert.AreEqual(3, parsed.ArrayOfBytes.Length);
+            Assert.AreEqual(10, parsed.ArrayOfBytes[0]);
+            Assert.AreEqual(20, parsed.ArrayOfBytes[1]);
+            Assert.AreEqual(30, parsed.ArrayOfBytes[2]);
         }
 
 
@@ -119,7 +158,7 @@ namespace ArgsTests
         {
             var args = new string[] { "value1", "value2" };
 
-            PositionedArgs parsed = Args.Parse<PositionedArgs>(args, ArgStyle.PowerShell);
+            PositionedArgs parsed = Args.Parse<PositionedArgs>(args);
 
             Assert.AreEqual("value1", parsed.First);
             Assert.AreEqual("value2", parsed.Second);
@@ -131,7 +170,7 @@ namespace ArgsTests
         {
             var args = new string[] { "value1", "value2" };
 
-            PositionedArgs parsed = Args.Parse<PositionedArgs>(args, ArgStyle.SlashColon);
+            PositionedArgs parsed = Args.Parse<PositionedArgs>(args);
 
             Assert.AreEqual("value1", parsed.First);
             Assert.AreEqual("value2", parsed.Second);
@@ -142,7 +181,7 @@ namespace ArgsTests
         {
             var args = new string[] { "value1", "-Second", "value2" };
 
-            PositionedArgs parsed = Args.Parse<PositionedArgs>(args, ArgStyle.PowerShell);
+            PositionedArgs parsed = Args.Parse<PositionedArgs>(args);
 
             Assert.AreEqual("value1", parsed.First);
             Assert.AreEqual("value2", parsed.Second);
@@ -247,15 +286,15 @@ namespace ArgsTests
         [TestMethod]
         public void TestBasicUsage()
         {
-            var basicUsage = ArgUsage.GetUsage<BasicArgs>(ArgStyle.PowerShell, "basic");
-            ArgUsage.GetUsage<PointArgs>(ArgStyle.PowerShell, "basic");
+            var basicUsage = ArgUsage.GetUsage<BasicArgs>("basic");
+            ArgUsage.GetUsage<PointArgs>("basic");
             Console.WriteLine(basicUsage);
         }
 
         [TestMethod]
         public void TestBasicUsageWithPositioning()
         {
-            var basicUsage = ArgUsage.GetUsage<PositionedArgs>(ArgStyle.PowerShell, "basic");
+            var basicUsage = ArgUsage.GetUsage<PositionedArgs>( "basic");
             Console.WriteLine(basicUsage);
         }
     }

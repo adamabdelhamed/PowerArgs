@@ -10,6 +10,7 @@ namespace ArgsTests
     [TestClass]
     public class CaseSensitiveTests
     {
+        [ArgIgnoreCase(false)]
         public class CaseSensitiveArgs
         {
             [ArgRequired]
@@ -23,24 +24,27 @@ namespace ArgsTests
             public static void TheAction(SomeActionArgs args) { }
         }
 
+        [ArgStyle(ArgStyle.SlashColon)]
+        [ArgIgnoreCase(false)]
+        public class CaseSensitiveArgsSC
+        {
+            [ArgRequired]
+            [ArgPosition(0)]
+            public string Action { get; set; }
+
+            [ArgRequired]
+            public string SomeOtherArg { get; set; }
+
+            public SomeActionArgs TheActionArgs { get; set; }
+            public static void TheAction(SomeActionArgs args) { }
+        }
+
+        [ArgIgnoreCase(false)]
         public class SomeActionArgs
         {
             [ArgRequired]
             public int AnInteger { get; set; }
         }
-
-        private static ArgOptions CaseSensitiveOptions
-        {
-            get
-            {
-                return new ArgOptions()
-                { 
-                    IgnoreCaseForPropertyNames = false,
-                    Style = ArgStyle.PowerShell
-                };
-            }
-        }
-
 
         [TestMethod]
         public void TestCaseSensitivityPowerShellStyle()
@@ -48,7 +52,7 @@ namespace ArgsTests
             Helpers.Run(() =>
             {
                 var args = "TheAction -S SomeOtherArgValue -A 100".Split(' ');
-                var parsed = Args.Parse<CaseSensitiveArgs>(CaseSensitiveOptions, args);
+                var parsed = Args.Parse<CaseSensitiveArgs>(args);
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
@@ -61,7 +65,7 @@ namespace ArgsTests
             Helpers.Run(() =>
             {
                 var args = "TheAction -s SomeOtherArgValue -A 100".Split(' ');
-                var parsed = Args.Parse<CaseSensitiveArgs>(CaseSensitiveOptions, args);
+                var parsed = Args.Parse<CaseSensitiveArgs>(args);
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
@@ -74,7 +78,7 @@ namespace ArgsTests
             Helpers.Run(() =>
             {
                 var args = "Theaction -S SomeOtherArgValue -A 100".Split(' ');
-                var parsed = Args.Parse<CaseSensitiveArgs>(CaseSensitiveOptions, args);
+                var parsed = Args.Parse<CaseSensitiveArgs>(args);
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
@@ -87,7 +91,7 @@ namespace ArgsTests
             Helpers.Run(() =>
             {
                 var args = "TheAction -S SomeOtherArgValue -aninteger 100".Split(' ');
-                var parsed = Args.Parse<CaseSensitiveArgs>(CaseSensitiveOptions, args);
+                var parsed = Args.Parse<CaseSensitiveArgs>(args);
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
@@ -101,9 +105,7 @@ namespace ArgsTests
             {
                 var args = "TheAction /S:SomeOtherArgValue /A:100".Split(' ');
 
-                var options = CaseSensitiveOptions;
-                options.Style = ArgStyle.SlashColon;
-                var parsed = Args.Parse<CaseSensitiveArgs>(options, args);
+                var parsed = Args.Parse<CaseSensitiveArgsSC>(args);
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);

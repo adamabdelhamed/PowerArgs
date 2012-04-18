@@ -147,7 +147,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestVideoEncoderToolUsage()
         {
-            var usage = ArgUsage.GetUsage<VideoEncoderArgs>(ArgStyle.PowerShell, "superencoder");
+            var usage = ArgUsage.GetUsage<VideoEncoderArgs>("superencoder");
             Console.WriteLine(usage);
         }
     }

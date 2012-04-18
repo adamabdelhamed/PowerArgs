@@ -50,7 +50,7 @@ namespace ArgsTests
         public void TestBasicShortcuts()
         {
             var args = new string[] { "-s", "FirstString", "-o", "SecondString" };
-            var parsed = Args.Parse<ShortcutArgs>(args, ArgStyle.PowerShell);
+            var parsed = Args.Parse<ShortcutArgs>(args);
 
             Assert.AreEqual("FirstString", parsed.SomeString);
             Assert.AreEqual("SecondString", parsed.OtherString);
@@ -60,7 +60,7 @@ namespace ArgsTests
         public void TestShortcutsWithAttributes()
         {
             var args = new string[] { "-s", "FirstString", "-so", "SecondString" };
-            var parsed = Args.Parse<ArgShortcutAttributeArgs>(args, ArgStyle.PowerShell);
+            var parsed = Args.Parse<ArgShortcutAttributeArgs>(args);
 
             Assert.AreEqual("FirstString", parsed.SomeString);
             Assert.AreEqual("SecondString", parsed.SomeOtherString);
@@ -71,7 +71,7 @@ namespace ArgsTests
         public void TestNoShortcutsWithAttributes()
         {
             var args = new string[] { "-s", "FirstString", "-SomeOtherString", "SecondString" };
-            var parsed = Args.Parse<ArgShortcutAttributeArgsNoShortcut>(args, ArgStyle.PowerShell);
+            var parsed = Args.Parse<ArgShortcutAttributeArgsNoShortcut>(args);
 
             Assert.AreEqual("FirstString", parsed.SomeString);
             Assert.AreEqual("SecondString", parsed.SomeOtherString);
@@ -83,7 +83,7 @@ namespace ArgsTests
             try
             {
                 var args = new string[] { };
-                var parsed = Args.Parse<DuplicateShortcutArgs>(args, ArgStyle.PowerShell);
+                var parsed = Args.Parse<DuplicateShortcutArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
             catch (InvalidArgDefinitionException ex)
@@ -98,7 +98,7 @@ namespace ArgsTests
             try
             {
                 var args = new string[] { };
-                var parsed = Args.Parse<DuplicateShortcutArgs2>(args, ArgStyle.PowerShell);
+                var parsed = Args.Parse<DuplicateShortcutArgs2>(args);
                 Assert.Fail("An exception should have been thrown");
             }
             catch (InvalidArgDefinitionException ex)

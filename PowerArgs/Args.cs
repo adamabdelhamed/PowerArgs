@@ -8,69 +8,51 @@ namespace PowerArgs
 {
     public class Args
     {
-        private ArgOptions Options { get; set; }
         private Args() { }
 
-        public static ArgAction<T> ParseAction<T>(ArgOptions options, params string[] args)
+        public static ArgAction<T> ParseAction<T>(params string[] args)
         {
-            Args instance = new Args() { Options = options};
-            return instance.ParseInternal<T>(args, options);
+            Args instance = new Args();
+            return instance.ParseInternal<T>(args);
         }
 
-        public static ArgAction<T> InvokeAction<T>(ArgOptions options, params string[] args)
+        public static ArgAction<T> InvokeAction<T>(params string[] args)
         {
-            var action = Args.ParseAction<T>(options, args);
+            var action = Args.ParseAction<T>(args);
             action.Invoke();
             return action;
         }
 
-        public static T Parse<T>(ArgOptions options, params string[] args)
+        public static T Parse<T>(params string[] args)
         {
-            return ParseAction<T>(options, args).Args;
+            return ParseAction<T>(args).Args;
         }
 
-        public static ArgAction<T> ParseAction<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
+        private ArgAction<T> ParseInternal<T>(string[] args)
         {
-            var options = ArgOptions.DefaultOptions;
-            options.Style = style;
-            return ParseAction<T>(options, args);
-        }
-
-        public static T Parse<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
-        {
-            return ParseAction<T>(args, style).Args;
-        }
-
-        public static ArgAction<T> InvokeAction<T>(string[] args, ArgStyle style = ArgStyle.PowerShell)
-        {
-            var options = ArgOptions.DefaultOptions;
-            options.Style = style;
-            return InvokeAction<T>(options, args);
-        }
-
-        private ArgAction<T> ParseInternal<T>(string[] args, ArgOptions options)
-        {
-            ValidateArgScaffold<T>(options);
+            ValidateArgScaffold<T>();
 
             var context = new ArgHook.HookContext();
             context.Args = Activator.CreateInstance<T>();
-            context.Parser = new SmartArgParser(options, typeof(T));
+            context.Parser = new SmartArgParser(typeof(T));
             var specifiedActionProperty = FindSpecifiedAction<T>(ref args);
 
             context.Parser.Parse(args, specifiedActionProperty);
 
             typeof(T).RunBeforePopulateProperties(context);
 
-            PopulateProperties(context.Args, context.Parser, specifiedActionProperty != null);
+            PopulateProperties(context.Args, context.Parser);
 
             if (specifiedActionProperty != null)
             {
                 var actionPropertyValue = Activator.CreateInstance(specifiedActionProperty.PropertyType);
-                PopulateProperties(actionPropertyValue, context.Parser, false);
+                PopulateProperties(actionPropertyValue, context.Parser);
                 specifiedActionProperty.SetValue(context.Args, actionPropertyValue, null);
             }
 
             typeof(T).RunAfterPopulateProperties(context);
+
+            if (context.Parser.ContainsLeftOverArgs()) throw new ArgException("Unexpected Argument: "+context.Parser.SpecifiedArguments().First());
 
             return new ArgAction<T>()
             {
@@ -89,14 +71,14 @@ namespace PowerArgs
 
             if (actionProperty.Attr<ArgRequired>().PromptIfMissing && args.Length == 0)
             {
-                actionProperty.Attr<ArgRequired>().Validate(actionProperty.GetArgumentName(Options), ref specifiedAction);
+                actionProperty.Attr<ArgRequired>().Validate(actionProperty.GetArgumentName(), ref specifiedAction);
                 args = new string[] { specifiedAction };
             }
 
             if (specifiedAction == null) return null;
 
             var actionArgProperty = (from p in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                     where p.MatchesSpecifiedAction(specifiedAction, Options)
+                                     where p.MatchesSpecifiedAction(specifiedAction)
                                      select p).SingleOrDefault();
 
             if (actionArgProperty == null) throw new ArgException("Unknown Action: " + specifiedAction);
@@ -104,21 +86,20 @@ namespace PowerArgs
             return actionArgProperty;
         }
 
-        private void PopulateProperties(object toPopulate , ArgParser parser, bool ignoreActionProperties)
+        private void PopulateProperties(object toPopulate , ArgParser parser)
         {
             foreach (PropertyInfo prop in toPopulate.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
-                if (prop.IsActionArgProperty() && ignoreActionProperties) continue;
+                if (prop.IsActionArgProperty() && ArgAction.GetActionProperty(toPopulate.GetType()) != null) continue;
 
                 var context = new ArgHook.HookContext()
                 {
-                    ArgumentValue = parser.Args.ContainsKey(prop.GetArgumentName(Options)) ? parser.Args[prop.GetArgumentName(Options)] : null,
+                    ArgumentValue = parser.GetAndRemoveArgValueText(prop),
                     Parser = parser,
                     Property = prop,
                     RevivedProperty = null,
-                    Options = Options,
-                    Args = toPopulate
+                    Args = toPopulate,
                 };
 
                 prop.RunBeforePopulateProperty(context);
@@ -128,13 +109,26 @@ namespace PowerArgs
             }
         }
 
-        private void ValidateArgScaffold<T>(ArgOptions options)
+        private void ValidateArgScaffold<T>()
         {
-            ValidateArgScaffold(typeof(T), options);
+            ValidateArgScaffold(typeof(T));
         }
 
-        private void ValidateArgScaffold(Type t, ArgOptions options, List<string> shortcuts = null)
+        private void ValidateArgScaffold(Type t, List<string> shortcuts = null, Type parentType = null)
         {
+            if (parentType != null)
+            {
+                if(parentType.HasAttr<ArgIgnoreCase>() ^ t.HasAttr<ArgIgnoreCase>())
+                {
+                    throw new InvalidArgDefinitionException("If you specify the " + typeof(ArgIgnoreCase).Name + " attribute on your base type then you must also specify it on each action type.");
+                }
+                else if (parentType.HasAttr<ArgIgnoreCase>() && parentType.Attr<ArgIgnoreCase>().IgnoreCase != t.Attr<ArgIgnoreCase>().IgnoreCase)
+                {
+                    throw new InvalidArgDefinitionException("If you specify the " + typeof(ArgIgnoreCase).Name + " attribute on your base and acton types then they must be configured to use the same value for IgnoreCase.");
+                }
+            }
+
+
             var actionProp = ArgAction.GetActionProperty(t);
             shortcuts = shortcuts ?? new List<string>();
             foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
@@ -144,10 +138,10 @@ namespace PowerArgs
 
                 if (ArgRevivers.CanRevive(prop.PropertyType) == false)
                 {
-                    throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.GetArgumentName(Options));
+                    throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.GetArgumentName());
                 }
 
-                var shortcut = ArgShortcut.GetShortcut(prop, options);
+                var shortcut = ArgShortcut.GetShortcut(prop);
                 if (shortcut != null && shortcuts.Contains(shortcut))
                 {
                     throw new InvalidArgDefinitionException("Duplicate arg options with shortcut " + shortcut);
@@ -165,7 +159,7 @@ namespace PowerArgs
                     if (prop.IsActionArgProperty())
                     {
                         ArgAction.ResolveMethod(t,prop);
-                        ValidateArgScaffold(prop.PropertyType, options, shortcuts.ToArray().ToList());
+                        ValidateArgScaffold(prop.PropertyType, shortcuts.ToArray().ToList(), t);
                     }
                 }
             }

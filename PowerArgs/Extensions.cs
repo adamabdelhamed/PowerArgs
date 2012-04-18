@@ -8,36 +8,70 @@ namespace PowerArgs
 {
     public static class Extensions
     {
-        internal static string GetArgumentName(this PropertyInfo prop, ArgOptions options)
+        internal static ArgStyle GetArgStyle(this Type argType)
         {
-            if (options.IgnoreCaseForPropertyNames) return prop.Name.ToLower();
+            return argType.HasAttr<ArgStyleAttribute>() ? argType.Attr<ArgStyleAttribute>().Style : default(ArgStyle);
+        }
+
+        internal static string GetArgumentName(this PropertyInfo prop)
+        {
+            bool ignoreCase = true;
+
+            if (prop.HasAttr<ArgIgnoreCase>() && !prop.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
+            else if (prop.DeclaringType.HasAttr<ArgIgnoreCase>() && !prop.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
+
+            if (ignoreCase) return prop.Name.ToLower();
             else return prop.Name;
         }
 
-        internal static bool MatchesSpecifiedAction(this PropertyInfo prop, string action, ArgOptions options)
+        internal static bool MatchesSpecifiedArg(this PropertyInfo prop, string specifiedArg)
         {
-            var propName = prop.GetArgumentName(options);
-            var test = options.IgnoreCaseForPropertyNames ? action.ToLower() + ArgSettings.ActionArgConventionSuffix.ToLower() : action + ArgSettings.ActionArgConventionSuffix;
+            bool ignoreCase = true;
+
+            if (prop.HasAttr<ArgIgnoreCase>() && !prop.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
+            else if (prop.DeclaringType.HasAttr<ArgIgnoreCase>() && !prop.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
+
+            var shortcut = ArgShortcut.GetShortcut(prop);
+
+            if (ignoreCase && shortcut != null)
+            {
+                return prop.Name.ToLower() == specifiedArg.ToLower() || shortcut.ToLower() == specifiedArg.ToLower();
+            }
+            else if(ignoreCase)
+            {
+                return prop.Name.ToLower() == specifiedArg.ToLower();
+            }
+            else
+            {
+                return prop.Name == specifiedArg || shortcut == specifiedArg;
+            }
+        }
+
+        internal static bool MatchesSpecifiedAction(this PropertyInfo prop, string action)
+        {
+            var propName = prop.GetArgumentName();
+            var test = (prop.HasAttr<ArgIgnoreCase>() && !prop.Attr<ArgIgnoreCase>().IgnoreCase) ||
+                (prop.DeclaringType.HasAttr<ArgIgnoreCase>() && !prop.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase) ? action + Constants.ActionArgConventionSuffix : action.ToLower() + Constants.ActionArgConventionSuffix.ToLower();
             return test == propName;
         }
 
         internal static bool IsActionArgProperty(this PropertyInfo prop)
         {
-            return prop.Name.EndsWith(ArgSettings.ActionArgConventionSuffix);
+            return prop.Name.EndsWith(Constants.ActionArgConventionSuffix);
         }
 
         internal static void Validate(this PropertyInfo prop, ArgHook.HookContext context)
         {
             if (prop.HasAttr<ArgRequired>())
             {
-                prop.Attr<ArgRequired>().Validate(prop.GetArgumentName(context.Options), ref context.ArgumentValue);
+                prop.Attr<ArgRequired>().Validate(prop.GetArgumentName(), ref context.ArgumentValue);
             }
 
             if (context.ArgumentValue != null)
             {
                 foreach (var v in prop.Attrs<ArgValidator>().OrderByDescending(val => val.Priority))
                 {
-                    v.Validate(prop.GetArgumentName(context.Options), ref context.ArgumentValue);
+                    v.Validate(prop.GetArgumentName(), ref context.ArgumentValue);
                 }
             }
         }
@@ -48,7 +82,7 @@ namespace PowerArgs
             {
                 try
                 {
-                    context.RevivedProperty = ArgRevivers.Revive(prop.PropertyType, prop.GetArgumentName(context.Options), context.ArgumentValue);
+                    context.RevivedProperty = ArgRevivers.Revive(prop.PropertyType, prop.GetArgumentName(), context.ArgumentValue);
                     prop.SetValue(toRevive, context.RevivedProperty, null);
                 }
                 catch (ArgException)
@@ -57,13 +91,13 @@ namespace PowerArgs
                 }
                 catch (Exception ex)
                 {
-                    if (prop.PropertyType.IsEnum) throw new ArgException("'" + context.ArgumentValue + "' is not a valid value for " + prop.GetArgumentName(context.Options) + ". Available values are [" + string.Join(", ", Enum.GetNames(prop.PropertyType)) + "]", ex);
+                    if (prop.PropertyType.IsEnum) throw new ArgException("'" + context.ArgumentValue + "' is not a valid value for " + prop.GetArgumentName() + ". Available values are [" + string.Join(", ", Enum.GetNames(prop.PropertyType)) + "]", ex);
                     else throw new ArgException(ex.Message, ex);
                 }
             }
             else if (context.ArgumentValue != null)
             {
-                throw new ArgException("Unexpected argument '" + prop.GetArgumentName(context.Options) + "' with value '" + context.ArgumentValue + "'");
+                throw new ArgException("Unexpected argument '" + prop.GetArgumentName() + "' with value '" + context.ArgumentValue + "'");
             }
         }
 
@@ -85,7 +119,7 @@ namespace PowerArgs
 
         internal static void RunBeforePopulateProperty(this PropertyInfo prop, ArgHook.HookContext context)
         {
-            foreach (var hook in prop.GetHooks(context, h => h.BeforePopulatePropertyPriority))
+            foreach (var hook in prop.GetHooks(h => h.BeforePopulatePropertyPriority))
             {
                 hook.BeforePopulateProperty(context);
             }
@@ -93,28 +127,16 @@ namespace PowerArgs
 
         internal static void RunAfterPopulateProperty(this PropertyInfo prop, ArgHook.HookContext context)
         {
-            foreach (var hook in prop.GetHooks(context, h => h.AfterPopulatePropertyPriority))
+            foreach (var hook in prop.GetHooks(h => h.AfterPopulatePropertyPriority))
             {
                 hook.AfterPopulateProperty(context);
                 context.Property.SetValue(context.Args, context.RevivedProperty, null);
             }
         }
 
-        internal static List<ArgHook> GetHooks(this PropertyInfo prop, ArgHook.HookContext context, Func<ArgHook,int> priority)
+        internal static List<ArgHook> GetHooks(this MemberInfo prop, Func<ArgHook,int> priority)
         {
             var hooks = prop.Attrs<ArgHook>();
-            
-            if (prop.GetHook<ArgShortcut>() == null)  hooks.Add(new ArgShortcut(ArgShortcut.GetShortcut(prop, context.Options)));
-            if (prop.GetHook<ParserCleanupHook>() == null) hooks.Add(new ParserCleanupHook());
-            
-            hooks = hooks.OrderByDescending(priority).ToList();
-            return hooks;
-        }
-
-        public static List<ArgHook> GetHooks(this Type t, Func<ArgHook, int> priority)
-        {
-            var hooks = t.Attrs<ArgHook>();
-            if (t.GetHook<ParserCleanupHook>() == null) hooks.Add(new ParserCleanupHook());
             hooks = hooks.OrderByDescending(priority).ToList();
             return hooks;
         }

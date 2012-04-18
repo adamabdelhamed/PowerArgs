@@ -23,6 +23,49 @@ namespace PowerArgs
         }
     }
 
+    [AttributeUsage(AttributeTargets.Class)]
+    public class ArgStyleAttribute : Attribute
+    {
+        public ArgStyle Style { get; set; }
+        public ArgStyleAttribute(ArgStyle style = ArgStyle.PowerShell)
+        {
+            this.Style = style;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
+    public class ArgIgnoreCase : Attribute
+    {
+        public bool IgnoreCase { get; set; }
+
+        public ArgIgnoreCase(bool ignore = true)
+        {
+            IgnoreCase = ignore;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class ArgShortcut : Attribute
+    {
+        public string Shortcut { get; set; }
+
+        public ArgShortcut(string shortcut)
+        {
+            this.Shortcut = shortcut;
+        }
+
+        public static string GetShortcut(PropertyInfo info)
+        {
+            var actionProperty = ArgAction.GetActionProperty(info.DeclaringType);
+            if (actionProperty != null && actionProperty.Name == info.Name) return null;
+
+            var attr = info.Attr<ArgShortcut>();
+
+            if (attr == null) return info.GetArgumentName()[0] + "";
+            else return attr.Shortcut;
+        }
+    }
+
     #region Usage
 
     [AttributeUsage(AttributeTargets.Property)]
@@ -74,7 +117,6 @@ namespace PowerArgs
             public object Args { get; set; }
             public object RevivedProperty;
             public ArgParser Parser { get; set; }
-            public ArgOptions Options { get; set; }
         }
 
         // Higher goes first
@@ -87,43 +129,6 @@ namespace PowerArgs
         public virtual void AfterPopulateProperty(HookContext context) { }
         public virtual void BeforePopulateProperties(HookContext context) { }
         public virtual void AfterPopulateProperties(HookContext context) { }
-    }
-    public class ArgShortcut : ArgHook
-    {
-        public string Shortcut { get; set; }
-
-        public ArgShortcut(string shortcut)
-        {
-            this.Shortcut = shortcut;
-            BeforePopulatePropertyPriority = 20;
-        }
-
-        public static string GetShortcut(PropertyInfo info, ArgOptions options)
-        {
-            options = options ?? ArgOptions.DefaultOptions;
-            var actionProperty = ArgAction.GetActionProperty(info.DeclaringType);
-            if (actionProperty != null && actionProperty.Name == info.Name) return null;
-
-            var attr = info.Attr<ArgShortcut>();
-
-            if (attr == null) return info.GetArgumentName(options)[0] + "";
-            else return attr.Shortcut;
-        }
-
-        public override void BeforePopulateProperty(HookContext Context)
-        {
-            var argShortcut = GetShortcut(Context.Property, Context.Options);
-            if (Context.ArgumentValue == null && argShortcut != null)
-            {
-                Context.ArgumentValue = Context.Parser.Args.ContainsKey(argShortcut) ? Context.Parser.Args[argShortcut] : null;
-            }
-        }
-
-        public override void AfterPopulateProperty(HookContext Context)
-        {
-            var argShortcut = GetShortcut(Context.Property, Context.Options);
-            if (argShortcut != null) Context.Parser.Args.Remove(argShortcut);
-        }
     }
 
     [AttributeUsage(AttributeTargets.Property)]
@@ -144,12 +149,12 @@ namespace PowerArgs
 
         public override void BeforePopulateProperty(HookContext Context)
         {
-            if (Context.ArgumentValue == null) Context.ArgumentValue = GetStickyArg(Context.Property.GetArgumentName(Context.Options));
+            if (Context.ArgumentValue == null) Context.ArgumentValue = GetStickyArg(Context.Property.GetArgumentName());
         }
 
         public override void AfterPopulateProperty(HookContext Context)
         {
-            if (Context.ArgumentValue != null) SetStickyArg(Context.Property.GetArgumentName(Context.Options), Context.ArgumentValue);
+            if (Context.ArgumentValue != null) SetStickyArg(Context.Property.GetArgumentName(), Context.ArgumentValue);
         }
 
         public string GetStickyArg(string name)
@@ -211,29 +216,6 @@ namespace PowerArgs
             if (Context.ArgumentValue == null) Context.ArgumentValue = Value.ToString();
         }
     }
-
-    // Internal - Do not use as an attribute
-    internal class ParserCleanupHook : ArgHook
-    {
-        public ParserCleanupHook()
-        {
-            AfterPopulatePropertyPriority = -10;
-            AfterPopulatePropertiesPriority = -10;
-        }
-
-        public override void AfterPopulateProperty(ArgHook.HookContext context)
-        {
-            context.Parser.Args.Remove(context.Property.GetArgumentName(context.Options));
-        }
-
-        public override void AfterPopulateProperties(ArgHook.HookContext context)
-        {
-            if (context.Parser.Args.Keys.Count > 0)
-            {
-                throw new ArgException("Unexpected argument '" + context.Parser.Args.Keys.First() + "'");
-            }
-        }
-    } 
 
     #endregion
 }

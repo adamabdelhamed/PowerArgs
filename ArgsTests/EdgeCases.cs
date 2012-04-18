@@ -37,6 +37,24 @@ namespace ArgsTests
             public object SomeObjectToIgnore { get; set; }
         }
 
+        [ArgStyle(ArgStyle.SlashColon)]
+        public class BasicArgsSC
+        {
+            public string String { get; set; }
+            public int Int { get; set; }
+            public double Double { get; set; }
+            public bool Bool { get; set; }
+
+            public Guid Guid { get; set; }
+            public DateTime Time { get; set; }
+            public long Long { get; set; }
+            [ArgShortcut("by")]
+            public byte Byte { get; set; }
+
+            [ArgIgnore]
+            public object SomeObjectToIgnore { get; set; }
+        }
+
         [TestMethod]
         public void TestNoReviver()
         {
@@ -167,7 +185,7 @@ namespace ArgsTests
             try
             {
                 var args = new string[] { "/" };
-                var parsed = Args.Parse<BasicArgs>(args, ArgStyle.SlashColon);
+                var parsed = Args.Parse<BasicArgsSC>(args);
                 Assert.Fail("An exception should have been thrown");
             }
             catch (ArgException ex)
