@@ -22,7 +22,7 @@ namespace PowerArgs
         }
     }
 
-    public class ArgAction
+    internal class ArgAction
     {
         public static PropertyInfo GetActionProperty<T>()
         {

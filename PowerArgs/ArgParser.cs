@@ -76,7 +76,7 @@ namespace PowerArgs
         }
     }
 
-    public class SmartArgParser : ArgParser
+    internal class SmartArgParser : ArgParser
     {
         public SmartArgParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) 
             : base(argType, revivers) { }

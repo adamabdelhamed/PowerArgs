@@ -6,7 +6,7 @@ using System.Collections;
 
 namespace PowerArgs
 {
-    public static class ArgRevivers
+    internal static class ArgRevivers
     {
         private static Dictionary<Type, Func<string, string, object>> revivers;
         private static Dictionary<Type, Func<string, string, object>> Revivers

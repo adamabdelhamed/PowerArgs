@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace PowerArgs
 {
-    public static class Extensions
+    internal static class Extensions
     {
         internal static ArgStyle GetArgStyle(this Type argType)
         {
