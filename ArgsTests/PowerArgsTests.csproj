@@ -55,6 +55,7 @@
     <Compile Include="EdgeCases.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryTests.cs" />
     <Compile Include="ShortcutTests.cs" />
     <Compile Include="StickyArgTests.cs" />
     <Compile Include="SurfaceArea\Json\Json.cs" />

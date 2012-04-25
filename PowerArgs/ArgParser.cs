@@ -36,6 +36,31 @@ namespace PowerArgs
             return Args.Keys;
         }
 
+        public string GetAndRemoveArgValueText(string k)
+        {
+            string matchedKey = null;
+            foreach (var key in Args.Keys)
+            {
+                if (k.ToLower() == key.ToLower())
+                {
+                    matchedKey = key;
+                    break;
+                }
+            }
+
+            if (matchedKey != null)
+            {
+                var val = Args[matchedKey];
+                Args.Remove(matchedKey);
+                return val;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
         public string GetAndRemoveArgValueText(PropertyInfo prop)
         {
             string matchedKey = null;

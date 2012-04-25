@@ -28,29 +28,30 @@ namespace PowerArgs
             return ParseAction<T>(args).Args;
         }
 
-        private ArgAction<T> ParseInternal<T>(string[] args)
+        private ArgAction<T> ParseInternal<T>(string[] input)
         {
             ValidateArgScaffold<T>();
 
             var context = new ArgHook.HookContext();
             context.Args = Activator.CreateInstance<T>();
+            context.CmdLineArgs = input;
             context.Parser = new SmartArgParser(typeof(T));
-            var specifiedActionProperty = FindSpecifiedAction<T>(ref args);
+            var specifiedActionProperty = FindSpecifiedAction<T>(ref context.CmdLineArgs);
 
-            context.Parser.Parse(args, specifiedActionProperty);
+            typeof(T).RunBeforeParse(context);
+            context.Parser.Parse(context.CmdLineArgs, specifiedActionProperty);
 
-            typeof(T).RunBeforePopulateProperties(context);
-
-            PopulateProperties(context.Args, context.Parser);
+            PopulateProperties(context);
 
             if (specifiedActionProperty != null)
             {
                 var actionPropertyValue = Activator.CreateInstance(specifiedActionProperty.PropertyType);
-                PopulateProperties(actionPropertyValue, context.Parser);
+                var toRestore = context.Args;
+                context.Args = actionPropertyValue;
+                PopulateProperties(context);
+                context.Args = toRestore;
                 specifiedActionProperty.SetValue(context.Args, actionPropertyValue, null);
             }
-
-            typeof(T).RunAfterPopulateProperties(context);
 
             if (context.Parser.ContainsLeftOverArgs()) throw new ArgException("Unexpected Argument: "+context.Parser.SpecifiedArguments().First());
 
@@ -86,27 +87,24 @@ namespace PowerArgs
             return actionArgProperty;
         }
 
-        private void PopulateProperties(object toPopulate , ArgParser parser)
+        private void PopulateProperties(ArgHook.HookContext context)
         {
-            foreach (PropertyInfo prop in toPopulate.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            context.Args.GetType().RunBeforePopulateProperties(context);
+            foreach (PropertyInfo prop in context.Args.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
-                if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
-                if (prop.IsActionArgProperty() && ArgAction.GetActionProperty(toPopulate.GetType()) != null) continue;
-
-                var context = new ArgHook.HookContext()
-                {
-                    ArgumentValue = parser.GetAndRemoveArgValueText(prop),
-                    Parser = parser,
-                    Property = prop,
-                    RevivedProperty = null,
-                    Args = toPopulate,
-                };
+                context.ArgumentValue = context.Parser.GetAndRemoveArgValueText(prop);
+                context.Property = prop;
 
                 prop.RunBeforePopulateProperty(context);
+
+                if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
+                if (prop.IsActionArgProperty() && ArgAction.GetActionProperty(context.Args.GetType()) != null) continue;
+
                 prop.Validate(context);
-                prop.Revive(toPopulate, context);
+                prop.Revive(context.Args, context);
                 prop.RunAfterPopulateProperty(context);
             }
+            context.Args.GetType().RunAfterPopulateProperties(context);
         }
 
         private void ValidateArgScaffold<T>()

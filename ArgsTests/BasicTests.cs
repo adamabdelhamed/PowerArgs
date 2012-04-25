@@ -302,6 +302,23 @@ namespace ArgsTests
             }
         }
 
+        // TODO - Fix known issue with extra args and then this test will pass
+        // [TestMethod]
+        public void TestExtraArgs2()
+        {
+            var args = new string[] { "-bool", "-string", "string", "extraValue" };
+
+            try
+            {
+                var parsed = Args.Parse<BasicArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extravalue"));
+            }
+        }
+
         [TestMethod]
         public void TestBasicUsage()
         {

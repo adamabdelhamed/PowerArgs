@@ -101,12 +101,31 @@ namespace PowerArgs
             }
         }
 
+        internal static void RunBeforeParse(this Type t, ArgHook.HookContext context)
+        {
+            foreach (var hook in t.GetHooks(h => h.BeforeParsePriority))
+            {
+                hook.BeforeParse(context);
+            }
+        }
+
         internal static void RunBeforePopulateProperties(this Type t, ArgHook.HookContext context)
         {
             foreach (var hook in t.GetHooks(h => h.BeforePopulatePropertiesPriority))
             {
                 hook.BeforePopulateProperties(context);
             }
+
+            var toRestore = context.Property;
+            foreach (PropertyInfo prop in t.GetProperties())
+            {
+                context.Property = prop;
+                foreach (var hook in prop.GetHooks(h => h.BeforePopulatePropertiesPriority))
+                {
+                    hook.BeforePopulateProperties(context);
+                }
+            }
+            context.Property = toRestore;
         }
 
         internal static void RunAfterPopulateProperties(this Type t, ArgHook.HookContext context)
@@ -115,6 +134,17 @@ namespace PowerArgs
             {
                 hook.AfterPopulateProperties(context);
             }
+
+            var toRestore= context.Property;
+            foreach (PropertyInfo prop in t.GetProperties())
+            {
+                context.Property = prop;
+                foreach (var hook in prop.GetHooks(h => h.AfterPopulatePropertiesPriority))
+                {
+                    hook.AfterPopulateProperties(context);
+                }
+            }
+            context.Property = toRestore;
         }
 
         internal static void RunBeforePopulateProperty(this PropertyInfo prop, ArgHook.HookContext context)
@@ -134,9 +164,9 @@ namespace PowerArgs
             }
         }
 
-        internal static List<ArgHook> GetHooks(this MemberInfo prop, Func<ArgHook,int> priority)
+        internal static List<ArgHook> GetHooks(this MemberInfo member, Func<ArgHook,int> priority)
         {
-            var hooks = prop.Attrs<ArgHook>();
+            var hooks = member.Attrs<ArgHook>();
             hooks = hooks.OrderByDescending(priority).ToList();
             return hooks;
         }

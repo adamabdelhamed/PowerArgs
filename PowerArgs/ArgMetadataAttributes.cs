@@ -113,6 +113,7 @@ namespace PowerArgs
         public class HookContext
         {
             public PropertyInfo Property { get; set; }
+            public string[] CmdLineArgs;
             public string ArgumentValue;
             public object Args { get; set; }
             public object RevivedProperty;
@@ -124,7 +125,9 @@ namespace PowerArgs
         public int AfterPopulatePropertyPriority { get; set; }
         public int BeforePopulatePropertiesPriority { get; set; }
         public int AfterPopulatePropertiesPriority { get; set; }
+        public int BeforeParsePriority { get; set; }
 
+        public virtual void BeforeParse(HookContext context) { }
         public virtual void BeforePopulateProperty(HookContext context) { }
         public virtual void AfterPopulateProperty(HookContext context) { }
         public virtual void BeforePopulateProperties(HookContext context) { }
