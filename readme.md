@@ -36,13 +36,14 @@ Just want to add a reference instead of dealing with the source? PowerArgs is av
 ###Metadata Attributes 
 These can be specified on argument properties.
  
-    [ArgPosition(0)] // This argument can be specified by position (no need for -propName)
-    [ArgShortcut("n")] // Let's the user specify -n
+    [ArgPosition(0)]                                    // This argument can be specified by position (no need for -propName)
+    [ArgShortcut("n")]                                  // Let's the user specify -n
     [ArgDescription("Description of the argument")]
     [ArgExample("example text", "Example description")]
-    [DefaultValue("SomeDefault")] // Specify the default value
-    [ArgIgnore] // Don't populate this property as an arg
-    [StickyArg] // Use the last used value if not specified
+    [DefaultValue("SomeDefault")]                       // Specify the default value
+    [ArgIgnore]                                         // Don't populate this property as an arg
+    [StickyArg]                                         // Use the last used value if not specified
+    [Query(typeof(MyDataSource))]                       // Easily query a data source
     
 ###Validator Attributes
 These can be specified on argument properties.  You can create custom validators by implementing classes that derive from ArgValidator.
@@ -51,6 +52,40 @@ These can be specified on argument properties.  You can create custom validators
     [ArgExistingFile]
     [ArgExistingDirectory]
     [ArgRange]
+    
+###Latest Features
+
+Easily query a data source such as an Entity Framework Model (Code First or traditional) using Linq.
+
+    // An example Entity Framework Code First Data Model
+    public class DataSource : DbContext
+    {
+        public DbSet<Customer> Customers{get;set;}
+    }
+
+    public class TestArgs
+    {
+        public string OrderBy { get; set; }
+        [ArgShortcut("o-")]
+        public string OrderByDescending { get; set; }
+        public string Where { get; set; }
+        public int Skip { get; set; }
+        public int Take { get; set; }
+
+        [Query(typeof(DataSource))]
+        [ArgIgnore]
+        public List<Customer> Customers { get; set; }
+    }   
+ 
+ That's it!  PowerArgs will make the query for you using the query arguments.  It's all done by naming convention.  
+ 
+ Now just consume the data in your program.
+    
+    // Sample command that queries the Customers table for newest 10 customers  
+    // <yourapp> -skip 0 -take 10 -where "item.DateCreated > DateTime.Now - TimeSpan.FromDays(1)" -orderby item.LastName
+    
+    var parsed = Args.Parse<TestArgs>(args);
+    var customers = parsed.Customers;
     
 ###Advanced Example
 This example shows various metadata and validator attributes.  It also uses the Action Framework that lets you separate your program into distinct actions that take different parameters.  In this case there are 2 actions called Encode and Clip.  It also shows how enums are supported.

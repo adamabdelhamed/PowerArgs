@@ -12,7 +12,6 @@ namespace $Namespace$
             IEnumerable<$ReturnType$> query = from item in source select item;
 
             $WhereComment$              query = from item in query where $Where$ select item;
-
             $OrderByDescendingComment$  query = query.OrderByDescending($OrderByDescending$);
             $OrderByComment$            query = query.OrderBy($OrderBy$);
             $SkipComment$               query = query.Skip($Skip$);

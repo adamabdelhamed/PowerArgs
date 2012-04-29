@@ -9,7 +9,7 @@
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Refactored the processing pipeline for better extensibility.  Fixed a few bugs.  Added several new tests.</releaseNotes>
+    <releaseNotes>Added a neat new optional feature that lets your end users easily query a data source such as an Entiy Framework Code First model</releaseNotes>
     <copyright>Copyright 2012</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>
