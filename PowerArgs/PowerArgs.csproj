@@ -57,6 +57,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="TabCompletion.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PowerArgs.nuspec" />

@@ -8,6 +8,22 @@ namespace PowerArgs
 {
     internal static class Extensions
     {
+        internal static List<PropertyInfo> GetArguments(this Type t)
+        {
+            return (from  prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    where prop.Attr<ArgIgnoreAttribute>() == null &&
+                          prop.IsActionArgProperty() == false
+                    select prop).ToList();
+        }
+
+        internal static List<PropertyInfo> GetActionArgProperties(this Type t)
+        {
+            if (ArgAction.GetActionProperty(t) == null) return new List<PropertyInfo>();
+
+            return (from prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    where prop.IsActionArgProperty() select prop).ToList();
+        }
+
         internal static ArgStyle GetArgStyle(this Type argType)
         {
             return argType.HasAttr<ArgStyleAttribute>() ? argType.Attr<ArgStyleAttribute>().Style : default(ArgStyle);

@@ -36,11 +36,10 @@ namespace PowerArgs
             context.Args = Activator.CreateInstance<T>();
             context.CmdLineArgs = input;
             context.Parser = new SmartArgParser(typeof(T));
-            var specifiedActionProperty = FindSpecifiedAction<T>(ref context.CmdLineArgs);
 
             typeof(T).RunBeforeParse(context);
+            var specifiedActionProperty = FindSpecifiedAction<T>(ref context.CmdLineArgs);
             context.Parser.Parse(context.CmdLineArgs, specifiedActionProperty);
-
             PopulateProperties(context);
 
             if (specifiedActionProperty != null)

@@ -3,10 +3,13 @@ using PowerArgs;
 
 namespace HelloWorld
 {
+    [TabCompletion]
     public class MyArgs
     {
         [ArgRequired(PromptIfMissing=true)]
         public string StringArg { get; set; }
+
+        public int IntArg { get; set; }
     }
 
     class Program
