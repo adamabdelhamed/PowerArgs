@@ -68,7 +68,7 @@ Get tab completion for your command line arguments.  Just add the TabCompletion 
 
 Sample usage:
 
-    someapp -some  <-- after typing "-some" you can prett tab and have it fill in the rest of "-someparam"
+    someapp -some  <-- after typing "-some" you can press tab and have it fill in the rest of "-someparam"
 
 You can even add your own tab completion logic in one of two ways.  First there's the really easy way.  Derive from SimpleTabCompletionSource and provide a list of words you want to be completable.
 
