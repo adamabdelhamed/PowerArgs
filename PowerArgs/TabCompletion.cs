@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace PowerArgs
 {
@@ -32,11 +35,34 @@ namespace PowerArgs
             if (indicator == "" && context.CmdLineArgs.Length != 0)return;
             else if (indicator != "" && (context.CmdLineArgs.Length != 1 || context.CmdLineArgs[0] != indicator)) return;
 
-            Console.WriteLine();
-            Console.Write(indicator + "> ");
+            try
+            {
+                // This is a little hacky, but I could not find a better way to make the tab completion start on the same lime
+                // as the command line input
+
+                var color = Console.ForegroundColor;
+                var lastLine = ConsoleHelper.StdConsoleProvider.ReadALineOfConsoleOutput(Console.CursorTop - 1);
+                Console.CursorTop--;
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(lastLine);
+                Console.ForegroundColor = color;
+                Console.CursorTop--;
+                Console.CursorLeft = lastLine.Length + 1;
+            }
+            catch (Exception ex)
+            {
+                Console.Write(indicator + "> ");
+            }
 
             List<string> completions = FindTabCompletions(context.Args.GetType());
-            context.CmdLineArgs = ConsoleHelper.ReadLine(new SimpleTabCompletionSource(completions));
+
+            List<ITabCompletionSource> completionSources = new List<ITabCompletionSource>();
+
+            if(this.completionSource != null) completionSources.Add((ITabCompletionSource)Activator.CreateInstance(this.completionSource));
+            completionSources.Add(new SimpleTabCompletionSource(completions));
+            completionSources.Add(new FileSystemTabCompletionSource());
+
+            context.CmdLineArgs = ConsoleHelper.ReadLine(new MultiTabCompletionSource(completionSources));
         }
 
         private List<string> FindTabCompletions(Type t)
@@ -62,11 +88,36 @@ namespace PowerArgs
             ret = ret.Distinct().ToList();
             return ret;
         }
+
     }
 
     public interface ITabCompletionSource
     {
-        bool TryComplete(string soFar, out string completion);
+        bool TryComplete(bool shift, string soFar, out string completion);
+    }
+
+    public class MultiTabCompletionSource : ITabCompletionSource
+    {
+        ITabCompletionSource[] sources;
+        public MultiTabCompletionSource(params ITabCompletionSource[] sources)
+        {
+            this.sources = sources;
+        }
+
+        public MultiTabCompletionSource(IEnumerable<ITabCompletionSource> sources)
+        {
+            this.sources = sources.ToArray();
+        }
+
+        public bool TryComplete(bool shift, string soFar, out string completion)
+        {
+            foreach (var source in sources)
+            {
+                if (source.TryComplete(shift, soFar, out completion)) return true;
+            }
+            completion = null;
+            return false;
+        }
     }
 
     public class SimpleTabCompletionSource : ITabCompletionSource
@@ -76,7 +127,7 @@ namespace PowerArgs
         {
             this.candidates = candidates;
         }
-        public bool TryComplete(string soFar, out string completion)
+        public bool TryComplete(bool shift, string soFar, out string completion)
         {
             var query = from c in candidates where c.StartsWith(soFar) select c;
             if (query.Count() != 1)
@@ -88,6 +139,89 @@ namespace PowerArgs
             {
                 completion = query.First();
                 return true;
+            }
+        }
+    }
+
+
+
+    public class FileSystemTabCompletionSource : ITabCompletionSource
+    {
+        string lastSoFar = null, lastCompletion = null;
+        int tabIndex = -1;
+        public bool TryComplete(bool shift, string soFar, out string completion)
+        {
+            completion = null;
+            try
+            {
+                soFar = soFar.Replace("\"", "");
+                if (soFar == "")
+                {
+                    soFar = lastSoFar ?? ".\\";
+                }
+
+                if (soFar == lastCompletion)
+                {
+                    soFar = lastSoFar;
+                }
+                else
+                {
+                    tabIndex = -1;
+                }
+
+                var dir = Path.GetDirectoryName(soFar);
+
+                if (Path.IsPathRooted(soFar) == false)
+                {
+                    dir = Environment.CurrentDirectory;
+                    soFar = ".\\" + soFar;
+                }
+
+                if (Directory.Exists(dir) == false)
+                {
+                    return false;
+                }
+                var rest = Path.GetFileName(soFar);
+
+                var matches = from f in Directory.GetFiles(dir)
+                              where f.ToLower().StartsWith(Path.GetFullPath(soFar).ToLower())
+                              select f;
+
+                var matchesArray = (matches.Union(from d in Directory.GetDirectories(dir)
+                                                  where d.ToLower().StartsWith(Path.GetFullPath(soFar).ToLower())
+                                                  select d)).ToArray();
+
+                if (matchesArray.Length > 0)
+                {
+                    tabIndex = shift ? tabIndex - 1 : tabIndex + 1;
+                    if (tabIndex < 0) tabIndex = matchesArray.Length - 1;
+                    if (tabIndex >= matchesArray.Length) tabIndex = 0;
+
+                    completion = matchesArray[tabIndex];
+
+                    if (completion.Contains(" "))
+                    {
+                        completion = '"' + completion + '"';
+                    }
+                    lastSoFar = soFar;
+                    lastCompletion = completion.Replace("\"", "");
+                    return true;
+                }
+                else
+                {
+                    lastSoFar = null;
+                    lastCompletion = null;
+                    tabIndex = -1;
+                    return false;
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                return false;  // We don't want a bug in this logic to break the app
             }
         }
     }
@@ -105,6 +239,7 @@ namespace PowerArgs
 
         public class StdConsoleProvider : IConsoleProvider
         {
+            const int STD_OUTPUT_HANDLE = -11;
             public int CursorLeft
             {
                 get
@@ -136,6 +271,45 @@ namespace PowerArgs
             {
                 Console.WriteLine();
             }
+
+            [DllImport("Kernel32", SetLastError = true)]
+            static extern IntPtr GetStdHandle(int nStdHandle);
+
+            [DllImport("Kernel32", SetLastError = true)]
+            static extern bool ReadConsoleOutputCharacter(IntPtr hConsoleOutput,
+                [Out] StringBuilder lpCharacter, uint nLength, COORD dwReadCoord,
+                out uint lpNumberOfCharsRead);
+
+            [StructLayout(LayoutKind.Sequential)]
+            struct COORD
+            {
+                public short X;
+                public short Y;
+            }
+
+            public static string ReadALineOfConsoleOutput(int y)
+            {
+                if (y < 0) throw new Exception();
+                IntPtr stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+                uint nLength = (uint)Console.WindowWidth;
+                StringBuilder lpCharacter = new StringBuilder((int)nLength);
+
+                // read from the first character of the first line (0, 0).
+                COORD dwReadCoord;
+                dwReadCoord.X = 0;
+                dwReadCoord.Y = (short)y;
+
+                uint lpNumberOfCharsRead = 0;
+
+                if (!ReadConsoleOutputCharacter(stdout, lpCharacter, nLength, dwReadCoord, out lpNumberOfCharsRead))
+                    throw new Win32Exception();
+
+                var str = lpCharacter.ToString();
+                str = str.Substring(0, str.Length - 1).Trim();
+
+                return str;
+            }
         }
 
         private static string[] GetArgs(List<char> chars)
@@ -147,7 +321,7 @@ namespace PowerArgs
             for (int i = 0; i < chars.Count; i++)
             {
                 char c = chars[i];
-                if (char.IsWhiteSpace(c))
+                if (char.IsWhiteSpace(c) && !inQuotes)
                 {
                     ret.Add(token);
                     token = "";
@@ -184,13 +358,47 @@ namespace PowerArgs
 
         public static IConsoleProvider ConsoleImpl = new StdConsoleProvider();
 
-        private static void RefreshConsole(int leftStart, List<char> chars, int offset = 0)
+        private static void RefreshConsole(int leftStart, List<char> chars, int offset = 0, int lookAhead = 1)
         {
             int left = ConsoleImpl.CursorLeft;
             ConsoleImpl.CursorLeft = leftStart;
             for (int i = 0; i < chars.Count; i++) ConsoleImpl.Write(chars[i]);
-            ConsoleImpl.Write(" ");
+            for(int i = 0; i < lookAhead; i++) ConsoleImpl.Write(" ");
             ConsoleImpl.CursorLeft = left + offset;
+        }
+
+        private enum QuoteStatus
+        {
+            OpenedQuote,
+            ClosedQuote,
+            NoQuotes
+        }
+
+        private static QuoteStatus GetQuoteStatus(List<char> chars, int startPosition)
+        {
+            bool open = false;
+
+            for (int i = 0; i <= startPosition; i++)
+            {
+                var c = chars[i];
+                if (i > 0 && c == '"' && chars[i - 1] == '\\')
+                {
+                    // escaped
+                }
+                else if (c == '"')
+                {
+                    open = !open;
+                }
+            }
+
+            if (open) return QuoteStatus.OpenedQuote;
+
+            var charsAsString = new string(chars.ToArray());
+
+            if (chars.LastIndexOf('"') > chars.LastIndexOf(' ')) return QuoteStatus.ClosedQuote;
+
+            return QuoteStatus.NoQuotes;
+
         }
 
         public static string[] ReadLine(params ITabCompletionSource[] tabCompletionHooks)
@@ -212,6 +420,13 @@ namespace PowerArgs
                 {
                     ConsoleImpl.CursorLeft = leftStart + chars.Count;
                     continue;
+                }
+                else if (info.Key == ConsoleKey.UpArrow)
+                {
+
+                }
+                else if (info.Key == ConsoleKey.DownArrow)
+                {
                 }
                 else if (info.Key == ConsoleKey.LeftArrow)
                 {
@@ -252,22 +467,39 @@ namespace PowerArgs
                 else if (info.Key == ConsoleKey.Tab)
                 {
                     var token = "";
+                    var quoteStatus = GetQuoteStatus(chars, i - 1);
+                    bool readyToEnd = quoteStatus != QuoteStatus.ClosedQuote;
+                    var endTarget = quoteStatus == QuoteStatus.NoQuotes ? ' ' : '"';
 
                     int j;
                     for (j = i - 1; j >= 0; j--)
                     {
-                        if (chars[j] == ' ')
+                        if (chars[j] == endTarget && readyToEnd)
                         {
-                            j++;
+                            if (endTarget == ' ')
+                            {
+                                j++;
+                            }
+                            else
+                            {
+                                token += chars[j];
+                            }
+
                             break;
                         }
-                        else token += chars[j];
+                        else if (chars[j] == endTarget)
+                        {
+                            token += chars[j];
+                            readyToEnd = true;
+                        }
+                        else
+                        {
+                            token += chars[j];
+                        }
                     }
 
 
                     if (j == -1) j = 0;
-
-                    if (token.Length == 0) continue;
 
                     token = new string(token.Reverse().ToArray());
 
@@ -275,17 +507,22 @@ namespace PowerArgs
 
                     foreach (var completionSource in tabCompletionHooks)
                     {
-                        if (completionSource.TryComplete(token, out completion)) break;
+                        if (completionSource.TryComplete(info.Modifiers.HasFlag(ConsoleModifiers.Shift),  token, out completion)) break;
                     }
 
                     if (completion == null) continue;
 
-                    int soFar = i - j;
-                    for (int k = soFar; k < completion.Length; k++)
+                    var insertThreshold = j + token.Length;
+
+                    for (int k = 0; k < completion.Length; k++)
                     {
                         if (k + j == chars.Count)
                         {
                             chars.Add(completion[k]);
+                        }
+                        else if (k + j < insertThreshold)
+                        {
+                            chars[k + j] = completion[k];
                         }
                         else
                         {
@@ -293,7 +530,14 @@ namespace PowerArgs
                         }
                     }
 
-                    RefreshConsole(leftStart, chars, completion.Length - soFar);
+                    // Handle the case where the completion is smaller than the token
+                    int extraChars = token.Length - completion.Length;
+                    for (int k = 0; k < extraChars; k++)
+                    {
+                        chars.RemoveAt(j + completion.Length);
+                    }
+
+                    RefreshConsole(leftStart, chars, completion.Length - token.Length, extraChars);
                 }
                 else
                 {

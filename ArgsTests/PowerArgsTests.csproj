@@ -68,6 +68,7 @@
       <DependentUpon>Resource1.resx</DependentUpon>
     </Compile>
     <Compile Include="SurfaceArea\SurfaceAreaTests.cs" />
+    <Compile Include="TempFiles.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />
   </ItemGroup>

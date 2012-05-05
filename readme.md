@@ -44,6 +44,7 @@ These can be specified on argument properties.
     [ArgIgnore]                                         // Don't populate this property as an arg
     [StickyArg]                                         // Use the last used value if not specified
     [Query(typeof(MyDataSource))]                       // Easily query a data source
+    [TabCompletion]                                     // Enable tab completion for parameter names (Can be customized)
     
 ###Validator Attributes
 These can be specified on argument properties.  You can create custom validators by implementing classes that derive from ArgValidator.
@@ -54,6 +55,80 @@ These can be specified on argument properties.  You can create custom validators
     [ArgRange]
     
 ###Latest Features
+
+Get tab completion for your command line arguments.  Just add the TabCompletion attribute and when your users run the program from the command line they will get an enhanced prompt where they can have tab completion for command line argument names.
+
+    [TabCompletion]
+    public class TestArgs
+    {
+        [ArgRequired]
+        public string SomeParam { get; set; }
+        public int AnotherParam { get; set; }
+    }
+
+Sample usage:
+
+    someapp -some  <-- after typing "-some" you can prett tab and have it fill in the rest of "-someparam"
+
+You can even add your own tab completion logic in one of two ways.  First there's the really easy way.  Derive from SimpleTabCompletionSource and provide a list of words you want to be completable.
+
+    public class MyCompletionSource : SimpleTabCompletionSource
+    {
+        public MyCompletionSource() : base(MyCompletionSource.GetWords()) {}
+        private static IEnumerable<string> GetWords()
+        {
+            return new string[] { "SomeLongWordThatYouWantToEnableCompletionFor", "SomeOtherWordToEnableCompletionFor" };
+        }
+    } 
+ 
+ Then just tell the [TabCompletion] attribute where to find your class.
+ 
+    [TabCompletion(typeof(MyCompletionSource))]
+    public class TestArgs
+    {
+        public string SomeParam { get; set; }
+        public int AnotherParam { get; set; }
+    }
+ 
+ There's also the easy, but not really easy way if you want custom tab completion logic.  Let's say you wanted to load your auto completions from a text file.  You would implement ITabCompletionSource.
+ 
+    public class TextFileTabCompletionSource : ITabCompletionSource
+    {
+        string[] words;
+        public TextFileTabCompletionSource(string file)
+        {
+            words = File.ReadAllLines(file);
+        }
+
+        public bool TryComplete(bool shift, string soFar, out string completion)
+        {
+            var match = from w in words where w.StartsWith(soFar) select w;
+
+            if (match.Count() == 1)
+            {
+                completion = match.Single();
+                return true;
+            }
+            else
+            {
+                completion = null;
+                return false;
+            }
+        }
+    }
+    
+If you expect your users to sometimes use the command line and sometimes run from a script then you can specify an indicator string.  If you do this then only users who specify the indicator as the only argument will get the prompt.
+
+    [TabCompletion($)]
+    public class TestArgs
+    {
+        [ArgRequired]
+        public string SomeParam { get; set; }
+        public int AnotherParam { get; set; }
+    }
+
+
+###Data Source Queries
 
 Easily query a data source such as an Entity Framework Model (Code First or traditional) using Linq.
 

@@ -9,7 +9,7 @@
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Added a neat new optional feature that lets your end users easily query a data source such as an Entiy Framework Code First model</releaseNotes>
+    <releaseNotes>Added an out of the box, extensible tab completion feature that lets users quickly type in argument names </releaseNotes>
     <copyright>Copyright 2012</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>
