@@ -86,6 +86,7 @@ You can even add your own tab completion logic in one of two ways.  First there'
     [TabCompletion(typeof(MyCompletionSource))]
     public class TestArgs
     {
+        [ArgRequired]
         public string SomeParam { get; set; }
         public int AnotherParam { get; set; }
     }
@@ -119,7 +120,7 @@ You can even add your own tab completion logic in one of two ways.  First there'
     
 If you expect your users to sometimes use the command line and sometimes run from a script then you can specify an indicator string.  If you do this then only users who specify the indicator as the only argument will get the prompt.
 
-    [TabCompletion($)]
+    [TabCompletion("$")]
     public class TestArgs
     {
         [ArgRequired]
