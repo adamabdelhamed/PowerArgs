@@ -77,7 +77,7 @@ Then when you parse the args you can access the value in one of two ways.  First
 Then there's the less secure way, but at least your users' input won't be visible on the command line.
 
     TestArgs parsed = Args.Parse<TestArgs>();
-    string secure = parsed.Password.ConvertToNonsecureString(); // This line causes the user to be prompted
+    string notSecure = parsed.Password.ConvertToNonsecureString(); // This line causes the user to be prompted
 
 ###Tab Completion
 
