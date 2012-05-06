@@ -14,10 +14,24 @@ namespace PowerArgs
     {
         string indicator;
         Type completionSource;
+
+        public int HistoryToSave { get; set; }
+        public string HistoryFileName { get; set; }
+        public string ExeName { get; set; }
+        private string HistoryFileNameInternal
+        {
+            get
+            {
+                var exeName = ExeName ?? Path.GetFileName(Assembly.GetEntryAssembly().Location);
+                return HistoryFileName ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PowerArgs", exeName + ".TabCompletionHistory.txt");
+            }
+        }
+
         public TabCompletion(string indicator = "")
         {
             this.indicator = indicator;
             BeforeParsePriority = 100;
+            HistoryToSave = 0;
         }
 
         public TabCompletion(Type completionSource, string indicator = "") : this(indicator)
@@ -62,7 +76,47 @@ namespace PowerArgs
             completionSources.Add(new SimpleTabCompletionSource(completions));
             completionSources.Add(new FileSystemTabCompletionSource());
 
-            context.CmdLineArgs = ConsoleHelper.ReadLine(new MultiTabCompletionSource(completionSources));
+            string str = null;
+            context.CmdLineArgs = ConsoleHelper.ReadLine(ref str, LoadHistory(), new MultiTabCompletionSource(completionSources));
+            AddToHistory(str);
+        }
+
+        public void ClearHistory()
+        {
+            if (File.Exists(HistoryFileNameInternal))
+            {
+                File.WriteAllText(HistoryFileNameInternal, "");
+            }
+        }
+
+        private void AddToHistory(string item)
+        {
+            if (HistoryToSave == 0) return;
+            List<string> history = File.ReadAllLines(HistoryFileNameInternal).ToList();
+            history.Insert(0, item);
+            history = history.Distinct().ToList();
+            while (history.Count > HistoryToSave) history.RemoveAt(history.Count - 1);
+            File.WriteAllLines(HistoryFileNameInternal, history.ToArray());
+        }
+
+        private List<string> LoadHistory()
+        {
+            if (HistoryToSave == 0) return new List<string>();
+
+            if (Directory.Exists(Path.GetDirectoryName(HistoryFileNameInternal)) == false)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(HistoryFileNameInternal));
+                return new List<string>();
+            }
+            else if (File.Exists(HistoryFileNameInternal) == false)
+            {
+                File.WriteAllLines(HistoryFileNameInternal, new string[0]);
+                return new List<string>();
+            }
+            else
+            {
+                return File.ReadAllLines(HistoryFileNameInternal).ToList();
+            }
         }
 
         private List<string> FindTabCompletions(Type t)
@@ -401,10 +455,13 @@ namespace PowerArgs
 
         }
 
-        public static string[] ReadLine(params ITabCompletionSource[] tabCompletionHooks)
+        public static string[] ReadLine(ref string rawInput, List<string> history, params ITabCompletionSource[] tabCompletionHooks)
         {
             var leftStart = ConsoleImpl.CursorLeft;
             var chars = new List<char>();
+
+            int historyIndex = -1;
+            history = history ?? new List<string>();
 
             while (true)
             {
@@ -423,10 +480,23 @@ namespace PowerArgs
                 }
                 else if (info.Key == ConsoleKey.UpArrow)
                 {
-
+                    if (history.Count == 0) continue;
+                    ConsoleImpl.CursorLeft = leftStart;
+                    historyIndex++;
+                    if (historyIndex >= history.Count) historyIndex = 0;
+                    chars = history[historyIndex].ToList();
+                    RefreshConsole(leftStart, chars, chars.Count);
+                    continue;
                 }
                 else if (info.Key == ConsoleKey.DownArrow)
                 {
+                    if (history.Count == 0) continue;
+                    ConsoleImpl.CursorLeft = leftStart;
+                    historyIndex--;
+                    if (historyIndex < 0) historyIndex = history.Count - 1;
+                    chars = history[historyIndex].ToList();
+                    RefreshConsole(leftStart, chars, chars.Count);
+                    continue;
                 }
                 else if (info.Key == ConsoleKey.LeftArrow)
                 {
@@ -498,7 +568,6 @@ namespace PowerArgs
                         }
                     }
 
-
                     if (j == -1) j = 0;
 
                     token = new string(token.Reverse().ToArray());
@@ -554,6 +623,8 @@ namespace PowerArgs
                     continue;
                 }
             }
+
+            rawInput = new string(chars.ToArray());
 
             return GetArgs(chars);
         }

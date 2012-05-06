@@ -1,7 +1,11 @@
 ###Binary
 Just want to add a reference instead of dealing with the source? PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
-###Basic Example
+###Overview
+
+PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility.
+
+Here's a simple example.
     
     // A class that describes the command line arguments for this program
     public class MyArgs
@@ -53,8 +57,29 @@ These can be specified on argument properties.  You can create custom validators
     [ArgExistingFile]
     [ArgExistingDirectory]
     [ArgRange]
-    
+
 ###Latest Features
+
+Support for secure strings such as passwords where you don't want your users' input to be visible on the command line.
+
+Just add a property of type SecureStringArgument.
+
+    public class TestArgs
+    {
+        public SecureStringArgument Password { get; set; }
+    }
+    
+Then when you parse the args you can access the value in one of two ways.  First there's the secure way.
+
+    TestArgs parsed = Args.Parse<TestArgs>();
+    SecureString secure = parsed.Password.SecureString; // This line causes the user to be prompted
+
+Then there's the less secure way, but at least your users' input won't be visible on the command line.
+
+    TestArgs parsed = Args.Parse<TestArgs>();
+    SecureString secure = parsed.Password.ConvertToNonsecureString(); // This line causes the user to be prompted
+
+###Tab Completion
 
 Get tab completion for your command line arguments.  Just add the TabCompletion attribute and when your users run the program from the command line they will get an enhanced prompt where they can have tab completion for command line argument names.
 

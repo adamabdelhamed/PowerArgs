@@ -7,9 +7,10 @@
     <authors>$author$</authors>
     <owners>$author$</owners>
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
+    <iconUrl>http://adamabdelhamed.com/downloader/powerargs.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Added an out of the box, extensible tab completion feature that lets users quickly type in argument names </releaseNotes>
+    <releaseNotes>Enhanced tab completion by adding a history feature.  Also added support for secure string arguments that prompt for values and don't show what the user is typing.</releaseNotes>
     <copyright>Copyright 2012</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>

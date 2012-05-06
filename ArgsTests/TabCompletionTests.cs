@@ -11,8 +11,9 @@ namespace ArgsTests
     [TestClass]
     public class TabCompletionTests
     {
+        const int MaxHistory = 10;
 
-        [TabCompletion(typeof(MyCompletionSource), "$")]
+        [TabCompletion(typeof(MyCompletionSource), "$", ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
         public class TestArgs
         {
             public string SomeParam { get; set; }
@@ -123,7 +124,49 @@ namespace ArgsTests
             }
         }
 
-        private string Keys(string s, int num)
+        [TestMethod]
+        public void TestHistoryBasic()
+        {
+            ClearHistory();
+            TestConsoleProvider.SimulateConsoleInput("-s historytest");
+            var parsed = Args.Parse<TestArgs>("$");
+            TestConsoleProvider.SimulateConsoleInput("{up}");
+            parsed = Args.Parse<TestArgs>("$");
+            Assert.AreEqual("historytest", parsed.SomeParam);
+            ClearHistory();
+        }
+
+        [TestMethod]
+        public void TestHistoryUpDown()
+        {
+            ClearHistory();
+            TestConsoleProvider.SimulateConsoleInput("-s historytest1");
+            var parsed = Args.Parse<TestArgs>("$");
+            TestConsoleProvider.SimulateConsoleInput("-s historytest2");
+            parsed = Args.Parse<TestArgs>("$");
+            TestConsoleProvider.SimulateConsoleInput("{up}{up}{down}");
+            parsed = Args.Parse<TestArgs>("$");
+            Assert.AreEqual("historytest2", parsed.SomeParam);
+            ClearHistory();
+        }
+
+        [TestMethod]
+        public void TestHistoryCleanup()
+        {
+            ClearHistory();
+            for (int i = 0; i < MaxHistory + 1; i++)
+            {
+                TestConsoleProvider.SimulateConsoleInput("-s historytest"+i);
+                var parsed = Args.Parse<TestArgs>("$");
+            }
+
+            TestConsoleProvider.SimulateConsoleInput(Repeat("{up}", MaxHistory+1));
+            var parsedAgain = Args.Parse<TestArgs>("$");
+            Assert.AreEqual("historytest10", parsedAgain.SomeParam);
+            ClearHistory();
+        }
+
+        private string Repeat(string s, int num)
         {
             string ret = "";
             for (int i = 0; i < num; i++)
@@ -131,6 +174,11 @@ namespace ArgsTests
                 ret += s;
             }
             return ret;
+        }
+
+        private void ClearHistory()
+        {
+            (typeof(TestArgs).GetCustomAttributes(typeof(TabCompletion), true)[0] as TabCompletion).ClearHistory();
         }
     }
 
@@ -172,6 +220,8 @@ namespace ArgsTests
             else if (c == '{' && ReadAheadLookFor("end}")) key = ConsoleKey.End;
             else if (c == '{' && ReadAheadLookFor("left}")) key = ConsoleKey.LeftArrow;
             else if (c == '{' && ReadAheadLookFor("right}")) key = ConsoleKey.RightArrow;
+            else if (c == '{' && ReadAheadLookFor("up}")) key = ConsoleKey.UpArrow;
+            else if (c == '{' && ReadAheadLookFor("down}")) key = ConsoleKey.DownArrow;
             else if (c == '{' && ReadAheadLookFor("shift}"))
             {
                 shift = true;

@@ -52,6 +52,7 @@
     <Compile Include="BasicTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
+    <Compile Include="SecureStringTests.cs" />
     <Compile Include="TabCompletionTests.cs" />
     <Compile Include="EdgeCases.cs" />
     <Compile Include="Helpers.cs" />

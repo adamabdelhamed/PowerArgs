@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using System.Security;
 
 namespace PowerArgs
 {
@@ -78,6 +79,11 @@ namespace PowerArgs
 
         internal static void Validate(this PropertyInfo prop, ArgHook.HookContext context)
         {
+            if (prop.PropertyType == typeof(SecureStringArgument) && prop.Attrs<ArgValidator>().Count > 0)
+            {
+                throw new InvalidArgDefinitionException("Properties of type SecureStringArgument cannot be validated.  If your goal is to make the argument required then the[ArgRequired] attribute is not needed.  The SecureStringArgument is designed to prompt the user for a value only if your code asks for it after parsing.  If your code never reads the SecureString property then the user is never prompted and it will be treated as an optional parameter.  Although discouraged, if you really, really need to run custom logic against the value before the rest of your program runs then you can implement a custom ArgHook, override RunAfterPopulateProperty, and add your custom attribute to the SecureStringArgument property.");
+            }
+
             if (prop.HasAttr<ArgRequired>())
             {
                 prop.Attr<ArgRequired>().Validate(prop.GetArgumentName(), ref context.ArgumentValue);
@@ -110,6 +116,11 @@ namespace PowerArgs
                     if (prop.PropertyType.IsEnum) throw new ArgException("'" + context.ArgumentValue + "' is not a valid value for " + prop.GetArgumentName() + ". Available values are [" + string.Join(", ", Enum.GetNames(prop.PropertyType)) + "]", ex);
                     else throw new ArgException(ex.Message, ex);
                 }
+            }
+            else if (ArgRevivers.CanRevive(prop.PropertyType) && prop.PropertyType == typeof(SecureStringArgument))
+            {
+                context.RevivedProperty = ArgRevivers.Revive(prop.PropertyType, prop.GetArgumentName(), context.ArgumentValue);
+                prop.SetValue(toRevive, context.RevivedProperty, null);
             }
             else if (context.ArgumentValue != null)
             {

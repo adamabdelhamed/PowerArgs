@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 using System.Collections;
+using System.Security;
 
 namespace PowerArgs
 {
@@ -150,6 +151,12 @@ namespace PowerArgs
                 DateTime ret;
                 if (DateTime.TryParse(val, out ret) == false) throw new ArgumentException("value must be a valid date time: " + val);
                 return ret;
+            });
+
+            revivers.Add(typeof(SecureStringArgument), (prop, val) =>
+            {
+                if (val != null) throw new ArgException("The value for " + prop + " cannot be specified on the command line");
+                return new SecureStringArgument(prop);
             });
         }
     }
