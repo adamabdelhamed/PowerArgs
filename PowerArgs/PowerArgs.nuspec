@@ -9,8 +9,9 @@
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
     <iconUrl>http://adamabdelhamed.com/downloader/powerargs.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>$description$</description>
-    <releaseNotes>Enhanced tab completion by adding a history feature.  Also added support for secure string arguments that prompt for values and don't show what the user is typing.</releaseNotes>
+    <description>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage documentation, tab completion, Entity Framework querying, secure string arguments, and plenty of hooks for extensibility.</description>
+    <summary>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.</summary>
+    <releaseNotes>Enhanced tab completion by adding support for cycling through partially completed strings.</releaseNotes>
     <copyright>Copyright 2012</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>

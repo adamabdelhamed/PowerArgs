@@ -73,7 +73,7 @@ namespace PowerArgs
             List<ITabCompletionSource> completionSources = new List<ITabCompletionSource>();
 
             if(this.completionSource != null) completionSources.Add((ITabCompletionSource)Activator.CreateInstance(this.completionSource));
-            completionSources.Add(new SimpleTabCompletionSource(completions));
+            completionSources.Add(new SimpleTabCompletionSource(completions) { MinCharsBeforeCyclingBegins = 0 });
             completionSources.Add(new FileSystemTabCompletionSource());
 
             string str = null;
@@ -177,23 +177,45 @@ namespace PowerArgs
     public class SimpleTabCompletionSource : ITabCompletionSource
     {
         IEnumerable<string> candidates;
+
+        string lastSoFar;
+        string lastCompletion;
+        int lastIndex;
+
+        public int MinCharsBeforeCyclingBegins { get; set; }
+
         public SimpleTabCompletionSource(IEnumerable<string> candidates)
         {
-            this.candidates = candidates;
+            this.candidates = candidates.OrderBy(s => s);
+            this.MinCharsBeforeCyclingBegins = 3;
         }
         public bool TryComplete(bool shift, string soFar, out string completion)
         {
-            var query = from c in candidates where c.StartsWith(soFar) select c;
-            if (query.Count() != 1)
+            if (soFar == lastCompletion && lastCompletion != null)
+            {
+                soFar = lastSoFar;
+            }
+
+            var query = (from c in candidates where c.StartsWith(soFar) select c).ToList();
+
+            if (soFar == lastSoFar) lastIndex = shift ? lastIndex-1 : lastIndex+1;
+            if (lastIndex >= query.Count) lastIndex = 0;
+            if (lastIndex < 0) lastIndex = query.Count - 1;
+            lastSoFar = soFar;
+
+            if (query.Count == 0 || (query.Count > 1 && soFar.Length < MinCharsBeforeCyclingBegins))
             {
                 completion = null;
                 return false;
             }
             else
             {
-                completion = query.First();
+                completion = query[lastIndex];
+                lastCompletion = completion;
                 return true;
             }
+
+            return true;
         }
     }
 

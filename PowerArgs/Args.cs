@@ -96,11 +96,16 @@ namespace PowerArgs
 
                 prop.RunBeforePopulateProperty(context);
 
-                if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
-                if (prop.IsActionArgProperty() && ArgAction.GetActionProperty(context.Args.GetType()) != null) continue;
+                bool shouldValidateAndRevive = true;
+                if (prop.Attr<ArgIgnoreAttribute>() != null) shouldValidateAndRevive = false;
+                if (prop.IsActionArgProperty() && ArgAction.GetActionProperty(context.Args.GetType()) != null) shouldValidateAndRevive = false;
 
-                prop.Validate(context);
-                prop.Revive(context.Args, context);
+                if (shouldValidateAndRevive)
+                {
+                    prop.Validate(context);
+                    prop.Revive(context.Args, context);
+                }
+
                 prop.RunAfterPopulateProperty(context);
             }
             context.Args.GetType().RunAfterPopulateProperties(context);

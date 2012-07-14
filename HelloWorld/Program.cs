@@ -10,6 +10,9 @@ namespace HelloWorld
         public string StringArg { get; set; }
 
         public int IntArg { get; set; }
+
+        [ArgShortcut("sw")]
+        public bool SwitchArg { get; set; }
     }
 
     class Program
@@ -19,7 +22,7 @@ namespace HelloWorld
             try
             {
                 var parsed = Args.Parse<MyArgs>(args);
-                Console.WriteLine("You entered StringArg '{0}'", parsed.StringArg);
+                Console.WriteLine("You entered StringArg '{0}' and IntArg '{1}', switch was '{2}'", parsed.StringArg, parsed.IntArg, parsed.SwitchArg);
             }
             catch (ArgException ex)
             {

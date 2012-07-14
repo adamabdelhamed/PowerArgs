@@ -18,6 +18,7 @@ namespace ArgsTests
         {
             public string SomeParam { get; set; }
             public int AnotherParam { get; set; }
+            public bool BoolParam { get; set; }
         }
 
         public class MyCompletionSource : SimpleTabCompletionSource
@@ -99,7 +100,26 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestMultiTabs()
+        public void TestMultiTabCycling()
+        {
+            // First tab goes to 'anotherParam', second tab advances since the first tab was completed by empty string
+            TestConsoleProvider.SimulateConsoleInput("\t 50 \t\t stringval");
+            var parsed = Args.Parse<TestArgs>("$");
+            Assert.AreEqual("stringval", parsed.SomeParam);
+            Assert.AreEqual(50, parsed.AnotherParam);
+        }
+
+        [TestMethod]
+        public void TestMultiTabCyclingBackwards()
+        {
+            TestConsoleProvider.SimulateConsoleInput("\t\t{shift}\t 50 \t\t stringval \t\t");
+            var parsed = Args.Parse<TestArgs>("$");
+            Assert.AreEqual("stringval", parsed.SomeParam);
+            Assert.AreEqual(50, parsed.AnotherParam);
+        }
+
+        [TestMethod]
+        public void TestMultiTabsFileSystem()
         {
             using (var temps = new TempFiles())
             {
@@ -112,7 +132,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestShiftTab()
+        public void TestShiftTabFileSystem()
         {
             using (var temps = new TempFiles())
             {

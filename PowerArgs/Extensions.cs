@@ -187,7 +187,6 @@ namespace PowerArgs
             foreach (var hook in prop.GetHooks(h => h.AfterPopulatePropertyPriority))
             {
                 hook.AfterPopulateProperty(context);
-                context.Property.SetValue(context.Args, context.RevivedProperty, null);
             }
         }
 
