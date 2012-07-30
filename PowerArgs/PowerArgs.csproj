@@ -31,10 +31,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>PowerArgsKey.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -70,7 +71,6 @@
     <None Include="PowerArgs.nuspec" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PowerArgsKey.pfx" />
     <None Include="Resources\QueryTemplate.txt" />
   </ItemGroup>
   <ItemGroup>

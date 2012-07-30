@@ -13,6 +13,7 @@ Thumbs.db
 *.sln.docstates
 *.tlb
 *.pfx
+*.snk
 *.tlh
 *.bak
 *.cache
