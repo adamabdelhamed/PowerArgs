@@ -189,6 +189,24 @@ namespace PowerArgs
             this.candidates = candidates.OrderBy(s => s);
             this.MinCharsBeforeCyclingBegins = 3;
         }
+
+        public SimpleTabCompletionSource(Func<IEnumerable<string>> asyncCandidateFetcher)
+        {
+            candidates = new string[0];
+            this.MinCharsBeforeCyclingBegins = 3;
+            asyncCandidateFetcher.BeginInvoke((result) =>
+            {
+                try
+                {
+                    candidates = asyncCandidateFetcher.EndInvoke(result);
+                }
+                catch (Exception)
+                {
+                    // swallow these
+                }
+            }, null);
+        }
+
         public bool TryComplete(bool shift, string soFar, out string completion)
         {
             if (soFar == lastCompletion && lastCompletion != null)
@@ -214,12 +232,8 @@ namespace PowerArgs
                 lastCompletion = completion;
                 return true;
             }
-
-            return true;
         }
     }
-
-
 
     public class FileSystemTabCompletionSource : ITabCompletionSource
     {
