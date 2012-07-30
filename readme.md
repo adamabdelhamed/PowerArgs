@@ -81,7 +81,7 @@ Then there's the less secure way, but at least your users' input won't be visibl
 
 ###Tab Completion
 
-Get tab completion for your command line arguments.  Just add the TabCompletion attribute and when your users run the program from the command line they will get an enhanced prompt where they can have tab completion for command line argument names.
+Get tab completion for your command line arguments.  Just add the TabCompletion attribute and when your users run the program from the command line with no arguments they will get an enhanced prompt (should turn blue) where they can have tab completion for command line argument names.
 
     [TabCompletion]
     public class TestArgs
