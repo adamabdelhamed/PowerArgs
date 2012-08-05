@@ -25,6 +25,9 @@ namespace PowerArgs
 
         internal static bool CanRevive(Type t)
         {
+
+            if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string))) return true;
+
             if (Revivers.ContainsKey(t) || 
                 t.IsEnum || 
                 (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0]) ) ||
@@ -70,7 +73,18 @@ namespace PowerArgs
                     return Array.CreateInstance(t.GetElementType(), 0);
                 }
             }
-            else return Revivers[t].Invoke(name, value);
+            else if (Revivers.ContainsKey(t))
+            {
+                return Revivers[t].Invoke(name, value);
+            }
+            else if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string)))
+            {
+                return System.ComponentModel.TypeDescriptor.GetConverter(t).ConvertFromString(value);
+            }
+            else
+            {
+                throw new ArgumentException("Cannot revive type "+t.FullName);
+            }
         }
 
         private static void SearchAssemblyForRevivers(Assembly a)
