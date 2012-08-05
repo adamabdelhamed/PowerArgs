@@ -72,5 +72,15 @@ namespace ArgsTests
             Assert.AreEqual(3, parsed.ThePoint.X);
             Assert.AreEqual(4, parsed.ThePoint.Y);
         }
+
+        [TestMethod]
+        public void TestTypeConverterNegative()
+        {
+            Helpers.Run(() =>
+            {
+                var parsed = Args.Parse<ConvertArgs>(new string[] { "-t", "3,NOTANUMBER" });
+            }, 
+            Helpers.ExpectedArgException());
+        }
     }
 }
