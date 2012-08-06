@@ -37,10 +37,21 @@ namespace PowerArgs
             return Revivers.ContainsKey(t);
         }
 
+        internal static object ReviveEnum(Type t, string value, bool ignoreCase)
+        {
+            try
+            {
+                return Enum.Parse(t, value, ignoreCase);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgException(value+" is not a valid value for type "+t.Name+", options are "+string.Join(", ",Enum.GetValues(t)));
+            }
+        }
+
         internal static object Revive(Type t, string name, string value)
         {
-            if (t.IsEnum)   return Enum.Parse(t, value);
-            else if (t.IsArray == false && t.GetInterfaces().Contains(typeof(IList)))
+            if (t.IsArray == false && t.GetInterfaces().Contains(typeof(IList)))
             {
                 var list = (IList) Activator.CreateInstance(t);
                 // TODO - Maybe support custom delimiters via an attribute on the property

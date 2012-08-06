@@ -104,7 +104,14 @@ namespace PowerArgs
             {
                 try
                 {
-                    context.RevivedProperty = ArgRevivers.Revive(prop.PropertyType, prop.GetArgumentName(), context.ArgumentValue);
+                    if (prop.PropertyType.IsEnum)
+                    {
+                        context.RevivedProperty = ArgRevivers.ReviveEnum(prop.PropertyType, context.ArgumentValue, prop.HasAttr<ArgIgnoreCase>() && prop.Attr<ArgIgnoreCase>().IgnoreCase);
+                    }
+                    else
+                    {
+                        context.RevivedProperty = ArgRevivers.Revive(prop.PropertyType, prop.GetArgumentName(), context.ArgumentValue);
+                    }
                     prop.SetValue(toRevive, context.RevivedProperty, null);
                 }
                 catch (ArgException)
