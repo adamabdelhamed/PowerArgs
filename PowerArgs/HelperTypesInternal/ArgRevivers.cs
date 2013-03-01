@@ -142,7 +142,7 @@ namespace PowerArgs
             }
         }
 
-        private static void SearchAssemblyForRevivers(Assembly a)
+        internal static void SearchAssemblyForRevivers(Assembly a)
         {
             foreach (var type in a.GetTypes())
             {

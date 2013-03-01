@@ -26,6 +26,17 @@ namespace PowerArgs
         private Args() { }
 
         /// <summary>
+        /// PowerArgs will manually search the assembly you provide for any custom type revivers.  If you don't specify an
+        /// assembly then the assembly that calls this function will automatically be searched.
+        /// </summary>
+        /// <param name="a">The assembly to search or null if you want PowerArgs to search the assembly that's calling into this function.</param>
+        public static void SearchAssemblyForRevivers(Assembly a = null)
+        {
+            a = a ?? Assembly.GetCallingAssembly();
+            ArgRevivers.SearchAssemblyForRevivers(a);
+        }
+
+        /// <summary>
         /// Converts a single string that represents a command line to be executed into a string[], 
         /// accounting for quoted arguments that may or may not contain spaces.
         /// </summary>

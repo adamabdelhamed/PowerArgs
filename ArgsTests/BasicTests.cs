@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using System.Text.RegularExpressions;
+using System.Net.Mail;
 
 namespace ArgsTests
 {
@@ -46,6 +47,17 @@ namespace ArgsTests
             [DefaultValue(BasicEnum.Option2)]
             [ArgIgnoreCase]
             public BasicEnum Option { get; set; }
+        }
+
+        public class ArgsThatNeedManualReviverRegistration
+        {
+            public MailAddress Address { get; set; }
+
+            [ArgReviver]
+            public static MailAddress Revive(string key, string value)
+            {
+                return new MailAddress(value);
+            }
         }
 
         public class Point
@@ -196,6 +208,29 @@ namespace ArgsTests
         }
 
         // TODO - More tests around lists and arrays
+
+
+        [TestMethod]
+        public void TestManualReviverRegistration()
+        {
+            // A little bit of reflection magic to ensure that no other test has registered this reviver
+            var reviverType = (from a in typeof(Args).Assembly.GetTypes() where a.Name == "ArgRevivers" select a).Single();
+            var prop = reviverType.GetProperty("Revivers", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            var reviverDictionary = prop.GetValue(null,null) as Dictionary<Type, Func<string, string, object>>;
+            reviverDictionary.Remove(typeof(MailAddress));
+
+            try
+            {
+                var parsed = Args.Parse<ArgsThatNeedManualReviverRegistration>("-a", "someone@somewhere.com");
+                Assert.Fail("The first parse atttempt should have failed.");
+            }
+            catch (InvalidArgDefinitionException)
+            {
+                Args.SearchAssemblyForRevivers();
+                var parsed = Args.Parse<ArgsThatNeedManualReviverRegistration>("-a", "someone@somewhere.com");
+                Assert.AreEqual("someone@somewhere.com", parsed.Address.Address);
+            }
+        }
 
         [TestMethod]
         public void TestPowerShellStyle()
