@@ -7,13 +7,13 @@ namespace HelloWorld.Samples
     public class GitExampleArgs
     {
         [ArgActionMethod, ArgDescription("Push your local changes to a remote repo")]
-        public void Push(string remote, string branch)
+        public void Push([ArgRequired]string remote, [DefaultValue("master")]string branch)
         {
             Console.WriteLine("Pushing to " + remote + ", branch=" + branch);
         }
 
         [ArgActionMethod, ArgDescription("Pull remote changes from a remote repo")]
-        public void Pull(string remote, string branch)
+        public void Pull([ArgRequired]string remote, [DefaultValue("master")] string branch)
         {
             Console.WriteLine("Pulling from " + remote + ", branch=" + branch);
         }

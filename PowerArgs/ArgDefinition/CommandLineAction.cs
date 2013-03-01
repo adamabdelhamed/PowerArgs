@@ -122,6 +122,21 @@ namespace PowerArgs
             return ret;
         }
 
+        public override bool Equals(object obj)
+        {
+            var other = obj as CommandLineAction;
+            if (other == null) return false;
+
+            if (this.Source == other.Source)
+            {
+                return true;
+            }
+
+            // TODO - improve robustness of this equals
+
+            return false;
+        }
+
         internal CommandLineAction()
         {
             overrides = new AttrOverride();

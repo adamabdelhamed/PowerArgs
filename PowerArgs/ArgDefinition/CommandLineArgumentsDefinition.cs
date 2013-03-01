@@ -70,6 +70,14 @@ namespace PowerArgs
                 var ret = Actions.Where(a => a.IsSpecifiedAction).SingleOrDefault();
                 return ret;
             }
+            internal set
+            {
+                foreach (var action in Actions)
+                {
+                    action.IsSpecifiedAction = false;
+                }
+                value.IsSpecifiedAction = true;
+            }
         }
 
         /// <summary>

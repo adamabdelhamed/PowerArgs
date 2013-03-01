@@ -33,6 +33,12 @@ namespace PowerArgs
         public bool AppendDefaultValueToDescription { get; set; }
 
         /// <summary>
+        /// Set this to ensure the usage generator only shows usage info for the specified action.  You will typically
+        /// populate this by looking at the ArgException that you're probably catching.
+        /// </summary>
+        public CommandLineAction SpecifiedActionOverride { get; set; }
+
+        /// <summary>
         /// Creates a new instance of ArgUsageOptions
         /// </summary>
         public ArgUsageOptions()
@@ -321,25 +327,49 @@ namespace PowerArgs
  
             if (definition.Actions.Count > 0)
             {
-                ret.AppendUsingCurrentFormat(" <action> options\n\n");
+                ret.AppendUsingCurrentFormat(" <action> options\n");
 
                 foreach (var example in definition.Examples)
                 {
-                    ret += new ConsoleString("EXAMPLE: " + example.Example + "\n" + example.Description + "\n\n", ConsoleColor.DarkGreen);
+                    ret += new ConsoleString("\nEXAMPLE: " + example.Example + "\n" + example.Description + "\n\n", ConsoleColor.DarkGreen);
                 }
 
-                var global = GetOptionsUsage(definition.Arguments, true, options);
-
-                if (string.IsNullOrEmpty(global.ToString()) == false)
+                if (definition.Arguments.Count > 0)
                 {
-                    ret += new ConsoleString("Global options:\n\n", ConsoleColor.Cyan) + global + "\n";
+                    var global = GetOptionsUsage(definition.Arguments, true, options);
+
+                    if (string.IsNullOrEmpty(global.ToString()) == false)
+                    {
+                        ret += new ConsoleString("\nGlobal options:\n\n", ConsoleColor.Cyan) + global + "\n";
+                    }
                 }
 
-                ret += "Actions:";
+                var specifiedAction = definition.SpecifiedAction;
+
+                if (options.SpecifiedActionOverride != null)
+                {
+                    specifiedAction = options.SpecifiedActionOverride;
+                    if (definition.Actions.Contains(specifiedAction) == false)
+                    {
+                        throw new InvalidArgDefinitionException("There is no action that matches '" + options.SpecifiedActionOverride+"'");
+                    }
+
+                }
+
+                if (specifiedAction == null)
+                {
+                    ret += "Actions:";
+                }
 
                 foreach (var action in definition.Actions)
                 {
-                    ret += "\n\n" + action.DefaultAlias + " - "+action.Description + "\n\n";
+                    if (specifiedAction != null && action.Equals(specifiedAction) == false)
+                    {
+                        // The user specified an action so only show the usage for that action
+                        continue;
+                    }
+
+                    ret += "\n" + action.DefaultAlias + " - "+action.Description + "\n\n";
 
                     foreach (var example in action.Examples)
                     {

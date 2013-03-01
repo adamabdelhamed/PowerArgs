@@ -11,6 +11,11 @@ namespace PowerArgs
     public class ArgException : Exception
     {
         /// <summary>
+        /// The parser context that may be incomplete since it depends on where the exception was thrown
+        /// </summary>
+        public ArgHook.HookContext Context { get; internal set; }
+
+        /// <summary>
         /// Creates a new ArgException given a user friendly message
         /// </summary>
         /// <param name="msg">A user friendly message.</param>

@@ -51,6 +51,21 @@ namespace PowerArgs
             public CommandLineArgument CurrentArgument { get; set; }
 
             /// <summary>
+            /// Gets the action that was specified on the command line or null if no action was specified or if the definition exposes no actions.
+            /// </summary>
+            public CommandLineAction SpecifiedAction
+            {
+                get
+                {
+                    return Definition.SpecifiedAction;
+                }
+                internal set
+                {
+                    Definition.SpecifiedAction = value;
+                }
+            }
+
+            /// <summary>
             /// The command line arguments that were passed to the Args class.  This is always available and you
             /// can modify it in the BeforeParse hook at your own risk.
             /// </summary>

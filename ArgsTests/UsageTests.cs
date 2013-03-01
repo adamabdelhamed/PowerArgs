@@ -19,6 +19,18 @@ namespace ArgsTests
         public int IntArgs { get; set; }
     }
 
+    public class ArgsForActionSpecificUsage
+    {
+        [ArgActionMethod]
+        public void Foo([ArgDescription("The only param")]string param) 
+        {
+            throw new ArgException("We want to show you the Foo specific help");
+        }
+
+        [ArgActionMethod]
+        public void Bar() { }
+    }
+
     [TestClass]
     public class UsageTests
     {
@@ -59,6 +71,24 @@ namespace ArgsTests
             finally
             {
                 File.WriteAllText(outputDataFile, s.Replace("\n","\r\n"), Encoding.UTF8);
+            }
+        }
+
+        [TestMethod]
+        public void TestActionSpecificUsage()
+        {
+            try
+            {
+                Args.InvokeAction<ArgsForActionSpecificUsage>("Foo");
+            }
+            catch (ArgException ex)
+            {
+                var usage = ArgUsage.GetStyledUsage<ArgsForActionSpecificUsage>("test", new ArgUsageOptions()
+                {
+                    SpecifiedActionOverride = ex.Context.SpecifiedAction
+                });
+                Assert.IsTrue(usage.Contains("Foo"));
+                Assert.IsFalse(usage.Contains("Bar"));
             }
         }
 

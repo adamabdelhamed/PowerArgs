@@ -331,6 +331,7 @@ namespace PowerArgs
             }
             catch (ArgException ex)
             {
+                ex.Context = ArgHook.HookContext.Current;
                 if (executeRecursionCounter > 1)
                 {
                     throw;
@@ -366,7 +367,6 @@ namespace PowerArgs
                 ShowPosition = definition.ExceptionBehavior.ShowPositionColumn,
                 ShowType = definition.ExceptionBehavior.ShowTypeColumn,
                 ShowPossibleValues = definition.ExceptionBehavior.ShowPossibleValues,
-
             }).Write();
 
             return CreateEmptyResult<T>(context, ex);
@@ -414,103 +414,99 @@ namespace PowerArgs
 
         private ArgAction ParseInternal(CommandLineArgumentsDefinition definition, string[] input)
         {
-                // TODO P0 - Validation should be consistently done against the definition, not against the raw type
-                if (definition.ArgumentScaffoldType != null) ValidateArgScaffold(definition.ArgumentScaffoldType);
-                definition.Validate();
+            // TODO - Validation should be consistently done against the definition, not against the raw type
+            if (definition.ArgumentScaffoldType != null) ValidateArgScaffold(definition.ArgumentScaffoldType);
+            definition.Validate();
 
             var context = ArgHook.HookContext.Current;
-                context.Definition = definition;
-                if (definition.ArgumentScaffoldType != null) context.Args = Activator.CreateInstance(definition.ArgumentScaffoldType);
-                context.CmdLineArgs = input;
+            context.Definition = definition;
+            if (definition.ArgumentScaffoldType != null) context.Args = Activator.CreateInstance(definition.ArgumentScaffoldType);
+            context.CmdLineArgs = input;
 
-                context.RunBeforeParse();
-                context.ParserData = ArgParser.Parse(context);
+            context.RunBeforeParse();
+            context.ParserData = ArgParser.Parse(context);
 
-                context.RunBeforePopulateProperties();
-                CommandLineArgument.PopulateArguments(context.Definition.Arguments, context);
-                context.Definition.SetPropertyValues(context.Args);
+            context.RunBeforePopulateProperties();
+            CommandLineArgument.PopulateArguments(context.Definition.Arguments, context);
+            context.Definition.SetPropertyValues(context.Args);
 
-                object actionArgs = null;
-                object[] actionParameters = null;
-                var specifiedAction = context.Definition.Actions.Where(a => a.IsMatch(context.CmdLineArgs.FirstOrDefault())).SingleOrDefault();
-                if (specifiedAction == null && context.Definition.Actions.Count > 0)
+            object actionArgs = null;
+            object[] actionParameters = null;
+            var specifiedAction = context.Definition.Actions.Where(a => a.IsMatch(context.CmdLineArgs.FirstOrDefault())).SingleOrDefault();
+            if (specifiedAction == null && context.Definition.Actions.Count > 0)
+            {
+                if (context.CmdLineArgs.FirstOrDefault() == null)
                 {
-                    if (context.CmdLineArgs.FirstOrDefault() == null)
-                    {
-                        throw new MissingArgException("No action was specified");
-                    }
-                    else
-                    {
-                        throw new UnknownActionArgException(string.Format("Unknown action: '{0}'", context.CmdLineArgs.FirstOrDefault()));
-                    }
+                    throw new MissingArgException("No action was specified");
                 }
-                else if (specifiedAction != null)
+                else
                 {
-                    foreach (var action in context.Definition.Actions)
-                    {
-                        action.IsSpecifiedAction = false;
-                    }
-                    specifiedAction.IsSpecifiedAction = true;
+                    throw new UnknownActionArgException(string.Format("Unknown action: '{0}'", context.CmdLineArgs.FirstOrDefault()));
+                }
+            }
+            else if (specifiedAction != null)
+            {
+                context.SpecifiedAction = specifiedAction;
                     
-                    PropertyInfo actionProp = null;
-                    if (context.Definition.ArgumentScaffoldType != null)
-                    {
-                        actionProp = ArgAction.GetActionProperty(context.Definition.ArgumentScaffoldType);
-                    }
-
-                    if (actionProp != null)
-                    {
-                        actionProp.SetValue(context.Args, specifiedAction.Aliases.First(), null);
-                    }
-
-                    context.ParserData.ImplicitParameters.Remove(0);
-                    CommandLineArgument.PopulateArguments(specifiedAction.Arguments, context);
-                    actionArgs = specifiedAction.PopulateArguments(context.Args, ref actionParameters);
+                PropertyInfo actionProp = null;
+                if (context.Definition.ArgumentScaffoldType != null)
+                {
+                    actionProp = ArgAction.GetActionProperty(context.Definition.ArgumentScaffoldType);
                 }
 
-                context.RunAfterPopulateProperties();
-
-                if (context.ParserData.ImplicitParameters.Count > 0)
+                if (actionProp != null)
                 {
-                    throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+                    actionProp.SetValue(context.Args, specifiedAction.Aliases.First(), null);
                 }
 
-                if (context.ParserData.ExplicitParameters.Count > 0)
+                context.ParserData.ImplicitParameters.Remove(0);
+                CommandLineArgument.PopulateArguments(specifiedAction.Arguments, context);
+                actionArgs = specifiedAction.PopulateArguments(context.Args, ref actionParameters);
+            }
+
+            context.RunAfterPopulateProperties();
+
+            if (context.ParserData.ImplicitParameters.Count > 0)
+            {
+                throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+            }
+
+            if (context.ParserData.ExplicitParameters.Count > 0)
+            {
+                throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+            }
+
+            if (definition.ArgumentScaffoldType != null)
+            {
+                if (AmbientArgs.ContainsKey(definition.ArgumentScaffoldType))
                 {
-                    throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+                    AmbientArgs[definition.ArgumentScaffoldType] = context.Args;
                 }
-
-                if (definition.ArgumentScaffoldType != null)
+                else
                 {
-                    if (AmbientArgs.ContainsKey(definition.ArgumentScaffoldType))
-                    {
-                        AmbientArgs[definition.ArgumentScaffoldType] = context.Args;
-                    }
-                    else
-                    {
-                        AmbientArgs.Add(definition.ArgumentScaffoldType, context.Args);
-                    }
+                    AmbientArgs.Add(definition.ArgumentScaffoldType, context.Args);
                 }
+            }
 
-                PropertyInfo actionArgsPropertyInfo = null;
+            PropertyInfo actionArgsPropertyInfo = null;
 
-                if(specifiedAction != null)
-                {
-                    if(specifiedAction.Source is PropertyInfo) actionArgsPropertyInfo = specifiedAction.Source as PropertyInfo;
-                    else if(specifiedAction.Source is MethodInfo) actionArgsPropertyInfo = new ArgActionMethodVirtualProperty(specifiedAction.Source as MethodInfo);
-                }
+            if(specifiedAction != null)
+            {
+                if(specifiedAction.Source is PropertyInfo) actionArgsPropertyInfo = specifiedAction.Source as PropertyInfo;
+                else if(specifiedAction.Source is MethodInfo) actionArgsPropertyInfo = new ArgActionMethodVirtualProperty(specifiedAction.Source as MethodInfo);
+            }
 
-                return new ArgAction()
-                {
-                    Value = context.Args,
-                    ActionArgs = actionArgs,
-                    ActionParameters = actionParameters,
-                    ActionArgsProperty = actionArgsPropertyInfo,
-                    ActionArgsMethod = specifiedAction != null ? specifiedAction.ActionMethod : null,
-                    Definition = context.Definition,
+            return new ArgAction()
+            {
+                Value = context.Args,
+                ActionArgs = actionArgs,
+                ActionParameters = actionParameters,
+                ActionArgsProperty = actionArgsPropertyInfo,
+                ActionArgsMethod = specifiedAction != null ? specifiedAction.ActionMethod : null,
+                Definition = context.Definition,
                 Context = context,
-                    };
-                }
+            };
+        }
 
         private void ValidateArgScaffold(Type t, List<string> shortcuts = null, Type parentType = null)
         {

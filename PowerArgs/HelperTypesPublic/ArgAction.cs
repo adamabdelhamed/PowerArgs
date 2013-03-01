@@ -96,13 +96,28 @@ namespace PowerArgs
                 parameters = ActionParameters;
             }
 
-            if (resolved.IsStatic)
+            try
             {
-                resolved.Invoke(null, parameters);
+                if (resolved.IsStatic)
+                {
+                    resolved.Invoke(null, parameters);
+                }
+                else
+                {
+                    resolved.Invoke(Value, parameters);
+                }
             }
-            else
+            catch (TargetInvocationException ex)
             {
-                resolved.Invoke(Value, parameters);
+                if (ex.InnerException is ArgException)
+                {
+                    (ex.InnerException as ArgException).Context = Context;
+                    throw ex.InnerException;
+                }
+                else
+                {
+                    throw;
+                }
             }
         }
 
