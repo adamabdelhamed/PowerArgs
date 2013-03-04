@@ -90,7 +90,7 @@ namespace PowerArgs
 
                 if (typeString == "Boolean") typeString = "Switch";
 
-                var indicator = prop.DeclaringType.GetArgStyle() == ArgStyle.PowerShell ? "-" : "/";
+                var indicator = "-";
 
                 rows.Add(new List<string>()
                 {

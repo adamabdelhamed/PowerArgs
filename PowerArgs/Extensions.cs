@@ -25,11 +25,6 @@ namespace PowerArgs
                     where prop.IsActionArgProperty() select prop).ToList();
         }
 
-        internal static ArgStyle GetArgStyle(this Type argType)
-        {
-            return argType.HasAttr<ArgStyleAttribute>() ? argType.Attr<ArgStyleAttribute>().Style : default(ArgStyle);
-        }
-
         internal static string GetArgumentName(this PropertyInfo prop)
         {
             bool ignoreCase = true;

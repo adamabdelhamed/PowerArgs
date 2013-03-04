@@ -77,7 +77,6 @@ namespace ArgsTests
             public object SomeObjectToIgnore { get; set; }
         }
 
-        [ArgStyle(ArgStyle.SlashColon)]
         public class BasicArgsSC
         {
             public string String { get; set; }

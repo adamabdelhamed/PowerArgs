@@ -35,11 +35,10 @@ namespace PowerArgs
             var context = new ArgHook.HookContext();
             context.Args = Activator.CreateInstance<T>();
             context.CmdLineArgs = input;
-            context.Parser = new SmartArgParser(typeof(T));
 
             typeof(T).RunBeforeParse(context);
             var specifiedActionProperty = FindSpecifiedAction<T>(ref context.CmdLineArgs);
-            context.Parser.Parse(context.CmdLineArgs, specifiedActionProperty);
+            context.ParserData = NewArgParser.Parse(context.CmdLineArgs);
             PopulateProperties(context);
 
             if (specifiedActionProperty != null)
@@ -52,7 +51,15 @@ namespace PowerArgs
                 specifiedActionProperty.SetValue(context.Args, actionPropertyValue, null);
             }
 
-            if (context.Parser.ContainsLeftOverArgs()) throw new ArgException("Unexpected Argument: "+context.Parser.SpecifiedArguments().First());
+            if (context.ParserData.ImplicitParameters.Count > 0)
+            {
+                throw new ArgException("Unexpected Argument: " + context.ParserData.ImplicitParameters.First().Value);
+            }
+
+            if (context.ParserData.ExplicitParameters.Count > 0)
+            {
+                throw new ArgException("Unexpected Argument: " + context.ParserData.ExplicitParameters.First().Key);
+            }
 
             return new ArgAction<T>()
             {
@@ -91,7 +98,33 @@ namespace PowerArgs
             context.Args.GetType().RunBeforePopulateProperties(context);
             foreach (PropertyInfo prop in context.Args.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
-                context.ArgumentValue = context.Parser.GetAndRemoveArgValueText(prop);
+                var match = from k in context.ParserData.ExplicitParameters.Keys
+                            where prop.MatchesSpecifiedArg(k)
+                            select k;
+
+                if (match.Count() > 1) throw new ArgException("Argument specified more than once: "+prop.GetArgumentName());
+
+                if (match.Count() == 1)
+                {
+                    var key = match.First();
+                    context.ArgumentValue = context.ParserData.ExplicitParameters[key];
+                    context.ParserData.ExplicitParameters.Remove(key);
+                }
+                else
+                {
+                    if (prop.HasAttr<ArgPosition>() && context.ParserData.ImplicitParameters.ContainsKey(prop.Attr<ArgPosition>().Position))
+                    {
+                        var position = prop.Attr<ArgPosition>().Position;
+                        context.ArgumentValue = context.ParserData.ImplicitParameters[position];
+                        context.ParserData.ImplicitParameters.Remove(position);
+                    }
+                    else
+                    {
+                        context.ArgumentValue = null;
+                    }
+                }
+ 
+
                 context.Property = prop;
 
                 prop.RunBeforePopulateProperty(context);

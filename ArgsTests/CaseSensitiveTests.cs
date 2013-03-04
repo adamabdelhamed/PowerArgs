@@ -24,7 +24,6 @@ namespace ArgsTests
             public static void TheAction(SomeActionArgs args) { }
         }
 
-        [ArgStyle(ArgStyle.SlashColon)]
         [ArgIgnoreCase(false)]
         public class CaseSensitiveArgsSC
         {

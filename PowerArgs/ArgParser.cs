@@ -5,228 +5,87 @@ using System.Reflection;
 
 namespace PowerArgs
 {
+    [Obsolete("The ArgStyle attribute is obsolete.  Both styles are now supported automatically")]
     public enum ArgStyle
     {
         PowerShell,  // named args are specified in the format "exeName -param1Name param1Value" 
         SlashColon   // named args are specified in the format "exeName -/param1Name:param1Value"
     }
 
-    public abstract class ArgParser
+    public class ParseResult
     {
-        protected Type argType;
-        protected Dictionary<Type, Func<string, string, object>> revivers;
+        public Dictionary<string, string> ExplicitParameters { get; private set; }
+        public Dictionary<int, string> ImplicitParameters { get; private set; }
 
-        protected Dictionary<string, string> Args { get; set; }
+        public string ActionParameter { get; set; }
 
-        public string this[string specifiedArg]
+        public ParseResult()
         {
-            get
-            {
-                return Args[specifiedArg];
-            }
-        }
-
-        public bool ContainsLeftOverArgs()
-        {
-            return Args.Keys.Count > 0;
-        }
-
-        public IEnumerable<string> SpecifiedArguments()
-        {
-            return Args.Keys;
-        }
-
-        public string GetAndRemoveArgValueText(string k)
-        {
-            string matchedKey = null;
-            foreach (var key in Args.Keys)
-            {
-                if (k.ToLower() == key.ToLower())
-                {
-                    matchedKey = key;
-                    break;
-                }
-            }
-
-            if (matchedKey != null)
-            {
-                var val = Args[matchedKey];
-                Args.Remove(matchedKey);
-                return val;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-
-        public string GetAndRemoveArgValueText(PropertyInfo prop)
-        {
-            string matchedKey = null;
-            foreach (var key in Args.Keys)
-            {
-                if (prop.MatchesSpecifiedArg(key))
-                {
-                    matchedKey = key;
-                    break;
-                }
-            }
-
-            if (matchedKey != null)
-            {
-                var val = Args[matchedKey];
-                Args.Remove(matchedKey);
-                return val;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        public ArgParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null)
-        {
-            this.argType = argType;
-            if (revivers == null) revivers = new Dictionary<Type, Func<string, string, object>>();
-            this.revivers = revivers;
-            Args = new Dictionary<string, string>();
-        }
-
-        protected abstract void ParseInternal(string[] args, PropertyInfo actionArgProp);
-
-        public void Parse(string[] args, PropertyInfo actionArgProp)
-        {
-            ParseInternal(args, actionArgProp);
+            ExplicitParameters = new Dictionary<string, string>();
+            ImplicitParameters = new Dictionary<int, string>();
         }
     }
 
-    internal class SmartArgParser : ArgParser
+    public class NewArgParser
     {
-        public SmartArgParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) 
-            : base(argType, revivers) { }
-
-        protected override void ParseInternal(string[] args, PropertyInfo actionArgProp)
+        public static ParseResult Parse(string[] args)
         {
-            if (args.Length == 0) return;
+            ParseResult result = new ParseResult();
 
-            var positionParser = new PositionArgParser(argType, revivers);
-            positionParser.Parse(args, actionArgProp);
-
-            ArgParser inner = argType.GetArgStyle() == ArgStyle.SlashColon ? (ArgParser)new SlashColonParser(argType, revivers) : (ArgParser)new PowerShellStyleParser(argType, revivers);
-            inner.Parse(args, actionArgProp);
-
-            foreach (var key in positionParser.SpecifiedArguments())
+            int argumentPosition = 0;
+            for (int i = 0; i < args.Length; i++)
             {
-                Args.Add(key, positionParser[key]);
-            }
+                var token = args[i];
 
-            foreach (var key in inner.SpecifiedArguments())
-            {
-                Args.Add(key, inner[key]);
-            }
-        }
-
-
-        private class PositionArgParser : ArgParser
-        {
-            public PositionArgParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) 
-                : base(argType, revivers) { }
-
-            protected override void ParseInternal(string[] args, PropertyInfo actionArgProp)
-            {
-                List<PropertyInfo> positionalArgs = FindAllPositionalPropertyies(argType, actionArgProp);
-                for (int i = 0; i < args.Length; i++)
+                if (token.StartsWith("/"))
                 {
-                    if (argType.GetArgStyle() == ArgStyle.PowerShell && args[i].StartsWith("-")) break;
-                    if (argType.GetArgStyle() == ArgStyle.SlashColon && args[i].StartsWith("/")) break;
-
-                    var matchingProp = (from prop in positionalArgs where prop.Attr<ArgPosition>() != null && prop.Attr<ArgPosition>().Position == i select prop.Name).FirstOrDefault();
-                    if (matchingProp == null) continue;
-
-                    Args.Add(matchingProp, args[i]);
+                    var param = ParseSlashExplicitOption(token);
+                    if (result.ExplicitParameters.ContainsKey(param.Key)) throw new ArgException("Argument " + param.Key + " cannot be specified twice");
+                    result.ExplicitParameters.Add(param.Key, param.Value);
+                    argumentPosition = -1;
                 }
-            }
-
-            private List<PropertyInfo> FindAllPositionalPropertyies(Type t, PropertyInfo actionArgProp)
-            {
-                List<PropertyInfo> ret = new List<PropertyInfo>();
-                foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                else if (token.StartsWith("-"))
                 {
-                    if (prop.Attr<ArgPosition>() != null)
+                    string key = token.Substring(1);
+
+                    if (key.Length == 0) throw new ArgException("Missing argument value after '-'");
+
+                    string value;
+
+                    if (i == args.Length - 1 ||
+                        (args[i + 1].StartsWith("-") && args[i + 1].Length > 1 && !char.IsDigit(args[i + 1][1])) ||
+                        args[i + 1].StartsWith("/"))
                     {
-                        ret.Add(prop);
-                    }
-                }
-
-                if (actionArgProp != null)
-                {
-                    ret.AddRange(FindAllPositionalPropertyies(actionArgProp.PropertyType, null));
-                }
-
-                return ret;
-            }
-        }
-
-        private class SlashColonParser : ArgParser
-        {
-            public SlashColonParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) : base(argType, revivers) { }
-
-            protected override void ParseInternal(string[] args, PropertyInfo actionArgProp)
-            {
-                var matches = (from a in args
-                               where a.StartsWith("/")
-                               select new
-                               {
-                                   Key = a.Contains(":") ? a.Substring(1, a.IndexOf(":") - 1).Trim() : a.Substring(1, a.Length - 1),
-                                   Value = a.Contains(":") ? a.Substring(a.IndexOf(":") + 1).Trim() : ""
-                               });
-
-                var empties = from a in args where a == "/" select a;
-
-                if (empties.Count() > 0) throw new ArgException("Argument name missing");
-
-                foreach (var match in matches)
-                {
-                    Args.Add(match.Key, match.Value);
-                }
-            }
-        }
-
-        private class PowerShellStyleParser : ArgParser
-        {
-            public PowerShellStyleParser(Type argType, Dictionary<Type, Func<string, string, object>> revivers = null) : base(argType, revivers) { }
-
-            protected override void ParseInternal(string[] args, PropertyInfo actionArgProp)
-            {
-                string currentArg = null;
-                foreach (var a in args)
-                {
-                    //TODO - if the user enters an extra argument that does not start with a '-'
-                    //       and also does not match a positional arg then an exception will not be
-                    //       thrown even though there's an extra, unused arg
-                    
-                    if (currentArg == null && a.StartsWith("-") != true) continue;
-
-                    if (currentArg == null)
-                    {
-                        currentArg = a.Substring(1);
-                        if (currentArg.Length == 0) throw new ArgException("argument name missing");
-                    }
-                    else if (a.StartsWith("-") && a.Length > 1 && char.IsDigit(a[1]) == false)
-                    {
-                        Args.Add(currentArg, "");
-                        currentArg = a.Substring(1);
+                        value = "";
                     }
                     else
                     {
-                        Args.Add(currentArg, a);
-                        currentArg = null;
+                        i++;
+                        value = args[i];
                     }
-                }
 
-                if (currentArg != null) Args.Add(currentArg, "");
+                    result.ExplicitParameters.Add(key, value);
+                    argumentPosition = -1;
+                }
+                else
+                {
+                    if (argumentPosition < 0) throw new ArgException("Unexpected argument: " + token);
+                    result.ImplicitParameters.Add(argumentPosition, token);
+                    argumentPosition++;
+                }
             }
+
+            return result;
+        }
+
+        private static KeyValuePair<string, string> ParseSlashExplicitOption(string a)
+        {
+            var key = a.Contains(":") ? a.Substring(1, a.IndexOf(":") - 1).Trim() : a.Substring(1, a.Length - 1);
+            var value = a.Contains(":") ? a.Substring(a.IndexOf(":") + 1).Trim() : "";
+
+            if (key.Length == 0) throw new ArgException("Missing argument value after '/'");
+
+            return new KeyValuePair<string, string>(key, value);
         }
     }
 }

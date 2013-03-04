@@ -24,6 +24,7 @@ namespace PowerArgs
     }
 
     [AttributeUsage(AttributeTargets.Class)]
+    [Obsolete("The ArgStyle attribute is obsolete.  Both styles are now supported automatically")]
     public class ArgStyleAttribute : Attribute
     {
         public ArgStyle Style { get; set; }
@@ -117,7 +118,7 @@ namespace PowerArgs
             public string ArgumentValue;
             public object Args { get; set; }
             public object RevivedProperty;
-            public ArgParser Parser { get; set; }
+            public ParseResult ParserData { get; set; }
         }
 
         // Higher goes first

@@ -123,7 +123,8 @@ namespace PowerArgs
         {
             List<string> ret = new List<string>();
 
-            var argIndicator =t.GetArgStyle() == ArgStyle.PowerShell ? "-" : "/";
+            var argIndicator = "-";
+
             ret.AddRange(from a in t.GetArguments() select argIndicator + a.GetArgumentName());
 
             foreach (var actionArg in t.GetActionArgProperties())
