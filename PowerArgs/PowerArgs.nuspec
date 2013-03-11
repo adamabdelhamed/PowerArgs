@@ -8,11 +8,12 @@
     <owners>$author$</owners>
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
     <iconUrl>http://adamabdelhamed.com/downloader/powerargs.png</iconUrl>
+    <licenseUrl>https://github.com/adamabdelhamed/PowerArgs/blob/master/LICENSE.txt</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage documentation, tab completion, Entity Framework querying, secure string arguments, and plenty of hooks for extensibility.</description>
     <summary>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.</summary>
-    <releaseNotes>Deprecated ArgStyle.  The '-' style and '/' style can now be automatically detected.  The end user can use either format they prefer.</releaseNotes>
-    <copyright>Copyright 2012</copyright>
+    <releaseNotes>Added MIT license.</releaseNotes>
+    <copyright>Copyright 2012 Adam Abdelhamed</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>
 </package>
