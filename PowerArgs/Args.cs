@@ -39,7 +39,7 @@ namespace PowerArgs
 
             typeof(T).RunBeforeParse(context);
             var specifiedActionProperty = FindSpecifiedAction<T>(ref context.CmdLineArgs);
-            context.ParserData = NewArgParser.Parse(context.CmdLineArgs);
+            context.ParserData = ArgParser.Parse(context.CmdLineArgs);
             PopulateProperties(context);
 
             if (specifiedActionProperty != null)

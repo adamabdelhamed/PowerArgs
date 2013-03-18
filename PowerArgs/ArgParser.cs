@@ -26,9 +26,9 @@ namespace PowerArgs
         }
     }
 
-    public class NewArgParser
+    internal class ArgParser
     {
-        public static ParseResult Parse(string[] args)
+        internal static ParseResult Parse(string[] args)
         {
             ParseResult result = new ParseResult();
 

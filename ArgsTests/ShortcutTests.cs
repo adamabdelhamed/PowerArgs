@@ -20,8 +20,9 @@ namespace ArgsTests
 
         public class ShortcutArgsIgnoreLeadingDash
         {
-            [ArgShortcut("-so")] // The leading dash here should be ignored
+            [ArgShortcut("-so")] // The leading dash should be ignored
             public string SomeString { get; set; }
+            [ArgShortcut("/o")] // The leading slash should be ignored
             public string OtherString { get; set; }
         }
 
@@ -38,6 +39,17 @@ namespace ArgsTests
             public string SomeString { get; set; }
             [ArgShortcut("a")]
             public string OtherString { get; set; }
+        }
+
+        public class DuplicateShortcutEdgeCaseArgs
+        {
+            // This is the case where several properties have very similar names
+
+            [ArgShortcut("ab")]
+            public string Abcdefg0 { get; set; }
+            public string Abcdefg1 { get; set; }
+            public string Abcdefg2 { get; set; }
+            public string Abcdefg3 { get; set; }
         }
 
         public class ArgShortcutAttributeArgs
@@ -104,6 +116,17 @@ namespace ArgsTests
             var parsed = Args.Parse<DuplicateShortcutArgs>(args);
             Assert.AreEqual("s", ArgShortcut.GetShortcut(typeof(DuplicateShortcutArgs).GetProperty("SomeString")));
             Assert.AreEqual("so", ArgShortcut.GetShortcut(typeof(DuplicateShortcutArgs).GetProperty("SomeOtherString")));
+        }
+
+        [TestMethod]
+        public void TestDuplicateArgsEdge()
+        {
+            var args = new string[] { };
+            var parsed = Args.Parse<DuplicateShortcutEdgeCaseArgs>(args);
+            Assert.AreEqual("ab", ArgShortcut.GetShortcut(typeof(DuplicateShortcutEdgeCaseArgs).GetProperty("Abcdefg0")));
+            Assert.AreEqual("a", ArgShortcut.GetShortcut(typeof(DuplicateShortcutEdgeCaseArgs).GetProperty("Abcdefg1")));
+            Assert.AreEqual("abc", ArgShortcut.GetShortcut(typeof(DuplicateShortcutEdgeCaseArgs).GetProperty("Abcdefg2")));
+            Assert.AreEqual("abcd", ArgShortcut.GetShortcut(typeof(DuplicateShortcutEdgeCaseArgs).GetProperty("Abcdefg3")));
         }
 
         [TestMethod]
