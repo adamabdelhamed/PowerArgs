@@ -18,6 +18,14 @@ namespace ArgsTests
             public string OtherString { get; set; }
         }
 
+        public class ShortcutArgsIgnoreLeadingDash
+        {
+            [ArgShortcut("-so")] // The leading dash here should be ignored
+            public string SomeString { get; set; }
+            public string OtherString { get; set; }
+        }
+
+
         public class DuplicateShortcutArgs
         {
             public string SomeString { get; set; }
@@ -77,19 +85,25 @@ namespace ArgsTests
             Assert.AreEqual("SecondString", parsed.SomeOtherString);
         }
 
+
+        [TestMethod]
+        public void TestIgnoreLeadingDashes()
+        {
+            var args = new string[] { "-so", "FirstString", "-o", "SecondString" };
+            var parsed = Args.Parse<ShortcutArgsIgnoreLeadingDash>(args);
+
+            Assert.AreEqual("FirstString", parsed.SomeString);
+            Assert.AreEqual("SecondString", parsed.OtherString);
+        }
+
+
         [TestMethod]
         public void TestDuplicateArgs()
         {
-            try
-            {
-                var args = new string[] { };
-                var parsed = Args.Parse<DuplicateShortcutArgs>(args);
-                Assert.Fail("An exception should have been thrown");
-            }
-            catch (InvalidArgDefinitionException ex)
-            {
-                Assert.IsTrue(ex.Message.ToLower().Contains("duplicate"));
-            }
+            var args = new string[] { };
+            var parsed = Args.Parse<DuplicateShortcutArgs>(args);
+            Assert.AreEqual("s", ArgShortcut.GetShortcut(typeof(DuplicateShortcutArgs).GetProperty("SomeString")));
+            Assert.AreEqual("so", ArgShortcut.GetShortcut(typeof(DuplicateShortcutArgs).GetProperty("SomeOtherString")));
         }
 
         [TestMethod]

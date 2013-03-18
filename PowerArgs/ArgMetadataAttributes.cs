@@ -48,6 +48,10 @@ namespace PowerArgs
     [AttributeUsage(AttributeTargets.Property)]
     public class ArgShortcut : Attribute
     {
+
+        public static Dictionary<PropertyInfo, string> KnownShortcuts = new Dictionary<PropertyInfo, string>();
+        public static List<Type> RegisteredTypes = new List<Type>();
+
         public string Shortcut { get; set; }
 
         public ArgShortcut(string shortcut)
@@ -57,13 +61,76 @@ namespace PowerArgs
 
         public static string GetShortcut(PropertyInfo info)
         {
+            if (RegisteredTypes.Contains(info.DeclaringType) == false) throw new InvalidArgDefinitionException("The given property is not registered with PowerArgs.  This will happen if you try to call GetShortcut outside the scope of the public Args methods.");
+            if (KnownShortcuts.ContainsKey(info)) return KnownShortcuts[info];
+            else return null;
+        }
+
+        internal static void RegisterShortcuts(Type t, List<string> shortcuts = null)
+        {
+            RegisteredTypes.Add(t);
+            bool isNested = shortcuts != null;
+
+            shortcuts = isNested ? shortcuts : new List<string>();
+            var actionProp = ArgAction.GetActionProperty(t);
+
+            foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+            {
+                if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
+                if (prop.IsActionArgProperty() && actionProp != null) continue;
+
+                var shortcut = ArgShortcut.GetShortcutInternal(prop, shortcuts);
+                if (shortcut != null)
+                {
+                    shortcuts.Add(shortcut);
+                    if (KnownShortcuts.ContainsKey(prop) == false)
+                    {
+                        KnownShortcuts.Add(prop, shortcut);
+                    }
+                    else
+                    {
+                        KnownShortcuts[prop] = shortcut;
+                    }
+                }
+
+            }
+
+            if (actionProp != null)
+            {
+                foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                {
+                    if (prop.IsActionArgProperty())
+                    {
+                        RegisterShortcuts(prop.PropertyType, shortcuts);
+                    }
+                }
+            }
+        }
+
+        private static string GetShortcutInternal(PropertyInfo info, List<string> knownShortcuts)
+        {
             var actionProperty = ArgAction.GetActionProperty(info.DeclaringType);
             if (actionProperty != null && actionProperty.Name == info.Name) return null;
 
             var attr = info.Attr<ArgShortcut>();
 
-            if (attr == null) return info.GetArgumentName()[0] + "";
-            else return attr.Shortcut;
+            if (attr == null)
+            {
+                string shortcutVal = "";
+                foreach (char c in info.GetArgumentName())
+                {
+                    shortcutVal += c;
+                    if (knownShortcuts.Contains(shortcutVal) == false) return shortcutVal;
+                }
+                return shortcutVal;
+            }
+            else
+            {
+                if (attr.Shortcut == null) return null;
+                if (attr.Shortcut.StartsWith("-")) attr.Shortcut = attr.Shortcut.Substring(1);
+                else if (attr.Shortcut.StartsWith("/")) attr.Shortcut = attr.Shortcut.Substring(1);
+                return attr.Shortcut;
+            }
         }
     }
 

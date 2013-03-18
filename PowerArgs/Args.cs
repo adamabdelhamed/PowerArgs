@@ -30,6 +30,7 @@ namespace PowerArgs
 
         private ArgAction<T> ParseInternal<T>(string[] input)
         {
+            ArgShortcut.RegisterShortcuts(typeof(T));
             ValidateArgScaffold<T>();
 
             var context = new ArgHook.HookContext();
