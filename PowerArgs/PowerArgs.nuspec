@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage documentation, tab completion, Entity Framework querying, secure string arguments, and plenty of hooks for extensibility.</description>
     <summary>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.</summary>
-    <releaseNotes>Added MIT license.</releaseNotes>
+    <releaseNotes>Added better defaults for argument shortcuts so you won't get a warning if you have 2 properties that start with the same characters.</releaseNotes>
     <copyright>Copyright 2012 Adam Abdelhamed</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>
