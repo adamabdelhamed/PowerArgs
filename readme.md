@@ -14,6 +14,10 @@ Here's a simple example.
         // be prompted.
         [ArgRequired(PromptIfMissing=true)]
         public string StringArg { get; set; }
+
+        // This argument is not required, but if specified must be >= 0 and <= 60
+        [ArgRange(0,60)]
+        public int IntArg {get;set; }
     }
 
     class Program
@@ -23,7 +27,7 @@ Here's a simple example.
             try
             {
                 var parsed = Args.Parse<MyArgs>(args);
-                Console.WriteLine("You entered '{0}'", parsed.StringArg);
+                Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
             }
             catch (ArgException ex)
             {
