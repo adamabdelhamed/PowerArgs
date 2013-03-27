@@ -332,5 +332,18 @@ namespace ArgsTests
             var basicUsage = ArgUsage.GetUsage<PositionedArgs>( "basic");
             Console.WriteLine(basicUsage);
         }
+
+        [TestMethod]
+        public void TestBasicUsageWithNoExeNameThrowsArgException()
+        {
+            try 
+            {
+                var basicUsage = ArgUsage.GetUsage<BasicArgs>();
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("could not determine the name of your executable automatically"));
+            }
+        }
     }
 }

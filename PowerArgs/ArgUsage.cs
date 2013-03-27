@@ -11,8 +11,17 @@ namespace PowerArgs
     {
         public static string GetUsage<T>(string exeName = null)
         {
-            string ret = "Usage: ";
-            ret += exeName ?? Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
+            if (exeName == null)
+            {
+                var assembly = Assembly.GetEntryAssembly();
+                if (assembly == null)
+                {
+                    throw new ArgException("PowerArgs could not determine the name of your executable automatically.  This may happen if you run GetUsage<T>() from within unit tests.  Use GetUsageT>(string exeName) in unit tests to avoid this exception.");
+                }
+                exeName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
+            }
+
+            string ret = "Usage: " + exeName;
 
             var actionProperty = ArgAction.GetActionProperty<T>();
 
