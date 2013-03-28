@@ -7,8 +7,6 @@ namespace HelloWorld
     [ArgExample("HelloWorld -s SomeString -i 50 -sw", "Shows how to use the shortcut version of the switch parameter")]
     public class MyArgs
     {
-        [ArgRequired(PromptIfMissing=true)]
-        [ArgPosition(0)]
         [ArgDescription("Description for a required string parameter")]
         public string StringArg { get; set; }
 
@@ -17,6 +15,9 @@ namespace HelloWorld
 
         [ArgDescription("Description for an optional switch parameter")]
         public bool SwitchArg { get; set; }
+
+        [ArgDescription("Shows the help documentation")]
+        public bool Help { get; set; }
     }
 
     class Program
@@ -26,7 +27,14 @@ namespace HelloWorld
             try
             {
                 var parsed = Args.Parse<MyArgs>(args);
-                Console.WriteLine("You entered StringArg '{0}' and IntArg '{1}', switch was '{2}'", parsed.StringArg, parsed.IntArg, parsed.SwitchArg);
+                if (parsed.Help)
+                {
+                    ArgUsage.GetStyledUsage<MyArgs>().Write();
+                }
+                else
+                {
+                    Console.WriteLine("You entered StringArg '{0}' and IntArg '{1}', switch was '{2}'", parsed.StringArg, parsed.IntArg, parsed.SwitchArg);
+                }
             }
             catch (ArgException ex)
             {
