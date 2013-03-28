@@ -1,5 +1,5 @@
 ###Binary
-Just want to add a reference instead of dealing with the source? PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
+PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
 ###Overview
 
@@ -57,12 +57,70 @@ These can be specified on argument properties.
 ###Validator Attributes
 These can be specified on argument properties.  You can create custom validators by implementing classes that derive from ArgValidator.
 
-    [ArgRequired]
+    [ArgRequired(PromptIfMissing=bool)] 
     [ArgExistingFile]
     [ArgExistingDirectory]
-    [ArgRange]
+    [ArgRange(from, to)]
+    [ArgRegex("MyRegex")]               // Apply a regular expression validation rule
+    [UsPhoneNumber]                     // A good example of how to create a custom data type
 
 ###Latest Features
+
+Enhancements to auto-generated usage documentation.  
+    
+    // This example shows how to use the ArgUsage.GetStyledUsage<MyArgs>().Write() method
+    // to get friendlier, color coded usage documentation.
+
+The old GetUsage<T> method is still there and works as it always has.
+
+    using System;
+    using PowerArgs;
+
+    namespace HelloWorld
+    {
+        [TabCompletion]
+        [ArgExample("HelloWorld -s SomeString -i 50 -sw", "Shows how to use the shortcut version of the switch parameter")]
+        public class MyArgs
+        {
+            [ArgDescription("Description for a required string parameter")]
+            public string StringArg { get; set; }
+    
+            [ArgDescription("Description for an optional integer parameter")]
+            public int IntArg { get; set; }
+    
+            [ArgDescription("Description for an optional switch parameter")]
+            public bool SwitchArg { get; set; }
+    
+            [ArgDescription("Shows the help documentation")]
+            public bool Help { get; set; }
+        }
+    
+        class Program
+        {
+            static void Main(string[] args)
+            {
+                try
+                {
+                    var parsed = Args.Parse<MyArgs>(args);
+                    if (parsed.Help)
+                    {
+                        ArgUsage.GetStyledUsage<MyArgs>().Write();
+                    }
+                    else
+                    {
+                        Console.WriteLine("You entered StringArg '{0}' and IntArg '{1}', switch was '{2}'", parsed.StringArg, parsed.IntArg, parsed.SwitchArg);
+                    }
+                }
+                catch (ArgException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    ArgUsage.GetStyledUsage<MyArgs>().Write();
+                }
+            }
+        }
+    }
+
+### Secure String Arguments
 
 Support for secure strings such as passwords where you don't want your users' input to be visible on the command line.
 
