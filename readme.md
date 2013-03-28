@@ -66,7 +66,7 @@ These can be specified on argument properties.  You can create custom validators
 
 ###Latest Features
 
-Enhancements to auto-generated usage documentation.  
+Enhancements to auto-generated usage documentation.  [Here is some sample output](https://github.com/adamabdelhamed/PowerArgs/blob/master/StyledUsageExampleOutput.PNG).
     
     // This example shows how to use the ArgUsage.GetStyledUsage<MyArgs>().Write() method
     // to get friendlier, color coded usage documentation.
