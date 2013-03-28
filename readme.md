@@ -66,12 +66,12 @@ These can be specified on argument properties.  You can create custom validators
 
 ###Latest Features
 
-Enhancements to auto-generated usage documentation.  [Here is some sample output](https://github.com/adamabdelhamed/PowerArgs/blob/master/StyledUsageExampleOutput.PNG).
+Enhancements to auto-generated usage documentation.  Here is some sample output.
     
-    // This example shows how to use the ArgUsage.GetStyledUsage<MyArgs>().Write() method
-    // to get friendlier, color coded usage documentation.
+![Sample styled output](https://github.com/adamabdelhamed/PowerArgs/blob/master/StyledUsageExampleOutput.PNG?raw=true "Sample Output")
 
-The old GetUsage<T> method is still there and works as it always has.
+
+Here's the code that generates that output.
 
     using System;
     using PowerArgs;
