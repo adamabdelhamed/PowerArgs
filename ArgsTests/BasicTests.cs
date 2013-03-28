@@ -301,8 +301,7 @@ namespace ArgsTests
             }
         }
 
-        // TODO - Fix known issue with extra args and then this test will pass
-        // [TestMethod]
+        [TestMethod]
         public void TestExtraArgs2()
         {
             var args = new string[] { "-bool", "-string", "string", "extraValue" };
@@ -323,6 +322,7 @@ namespace ArgsTests
         {
             var basicUsage = ArgUsage.GetUsage<BasicArgs>("basic");
             ArgUsage.GetUsage<PointArgs>("basic");
+            ArgUsage.GetStyledUsage<PointArgs>("basic").Write();
             Console.WriteLine(basicUsage);
         }
 
@@ -330,6 +330,7 @@ namespace ArgsTests
         public void TestBasicUsageWithPositioning()
         {
             var basicUsage = ArgUsage.GetUsage<PositionedArgs>( "basic");
+            ArgUsage.GetStyledUsage<PositionedArgs>("basic").Write();
             Console.WriteLine(basicUsage);
         }
 

@@ -4,14 +4,18 @@ using PowerArgs;
 namespace HelloWorld
 {
     [TabCompletion]
+    [ArgExample("HelloWorld -s SomeString -i 50 -sw", "Shows how to use the shortcut version of the switch parameter")]
     public class MyArgs
     {
         [ArgRequired(PromptIfMissing=true)]
+        [ArgPosition(0)]
+        [ArgDescription("Description for a required string parameter")]
         public string StringArg { get; set; }
 
+        [ArgDescription("Description for an optional integer parameter")]
         public int IntArg { get; set; }
 
-        [ArgShortcut("sw")]
+        [ArgDescription("Description for an optional switch parameter")]
         public bool SwitchArg { get; set; }
     }
 
@@ -27,11 +31,7 @@ namespace HelloWorld
             catch (ArgException ex)
             {
                 Console.WriteLine(ex.Message);
-                Console.WriteLine(ArgUsage.GetUsage<MyArgs>());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
+                ArgUsage.GetStyledUsage<MyArgs>().Write();
             }
         }
     }

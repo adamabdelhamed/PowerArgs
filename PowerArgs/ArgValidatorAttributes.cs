@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace PowerArgs
 {
@@ -87,6 +88,27 @@ namespace PowerArgs
             {
                 throw new ArgException("The argument '" + name + "' is required", new ArgumentNullException(name));
             }
+        }
+    }
+
+    public class ArgRegex : ArgValidator
+    {
+        protected string regex;
+        protected string errorMessage;
+
+        protected Match exactMatch;
+        public ArgRegex(string regex, string errorMessage = "Invalid argument")
+        {
+            this.regex = regex;
+            this.errorMessage = errorMessage;
+        }
+
+        public override void Validate(string name, ref string arg)
+        {
+            string input = arg;
+            MatchCollection matches = Regex.Matches(arg, regex);
+            exactMatch = (from m in matches.ToList() where m.Value == input select m).SingleOrDefault();
+            if (exactMatch == null) throw new ArgException(errorMessage+": " + arg);
         }
     }
 }

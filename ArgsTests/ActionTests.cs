@@ -26,6 +26,25 @@ namespace ArgsTests
             }
         }
 
+        [ArgActionType(typeof(FakeProgram))]
+        public class ActionTestArgsDeferredType
+        {
+            [ArgRequired]
+            [ArgPosition(0)]
+            public string Action { get; set; }
+
+            public SomeActionArgs SomeActionArgs { get; set; }
+        }
+
+        public class FakeProgram
+        {
+            public static int InvokeCount { get; set; }
+            public static void SomeAction(SomeActionArgs args)
+            {
+                InvokeCount++;
+            }
+        }
+
         public class InvalidActionArgs
         {
             [ArgRequired]
@@ -56,6 +75,17 @@ namespace ArgsTests
             Assert.AreEqual("aval", parsed.Args.SomeActionArgs.A);
             Assert.AreEqual("bval", parsed.Args.SomeActionArgs.B);
             Assert.AreEqual(beforeCount + 1, ActionTestArgs.InvokeCount);
+        }
+
+        [TestMethod]
+        public void TestDeferredActionBinding()
+        {
+            var args = new string[] { "someaction", "aval", "bval" };
+            var beforeCount = FakeProgram.InvokeCount;
+            var parsed = Args.InvokeAction<ActionTestArgsDeferredType>(args);
+            Assert.AreEqual("aval", parsed.Args.SomeActionArgs.A);
+            Assert.AreEqual("bval", parsed.Args.SomeActionArgs.B);
+            Assert.AreEqual(beforeCount + 1, FakeProgram.InvokeCount);
         }
 
         [TestMethod]

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Security;
+using System.Text.RegularExpressions;
 
 namespace PowerArgs
 {
@@ -115,8 +116,15 @@ namespace PowerArgs
                 }
                 catch (Exception ex)
                 {
-                    if (prop.PropertyType.IsEnum) throw new ArgException("'" + context.ArgumentValue + "' is not a valid value for " + prop.GetArgumentName() + ". Available values are [" + string.Join(", ", Enum.GetNames(prop.PropertyType)) + "]", ex);
-                    else throw new ArgException(ex.Message, ex);
+                    if (ex.InnerException != null && ex.InnerException is ArgException)
+                    {
+                        throw ex.InnerException;
+                    }
+                    else
+                    {
+                        if (prop.PropertyType.IsEnum) throw new ArgException("'" + context.ArgumentValue + "' is not a valid value for " + prop.GetArgumentName() + ". Available values are [" + string.Join(", ", Enum.GetNames(prop.PropertyType)) + "]", ex);
+                        else throw new ArgException(ex.Message, ex);
+                    }
                 }
             }
             else if (ArgRevivers.CanRevive(prop.PropertyType) && prop.PropertyType == typeof(SecureStringArgument))
@@ -235,6 +243,13 @@ namespace PowerArgs
             {
                 return new List<T>();
             }
+        }
+
+        internal static List<Match> ToList(this MatchCollection matches)
+        {
+            List<Match> ret = new List<Match>();
+            foreach (Match match in matches) ret.Add(match);
+            return ret;
         }
     }
 }
