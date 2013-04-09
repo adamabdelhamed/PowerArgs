@@ -54,12 +54,12 @@ namespace PowerArgs
 
             if (context.ParserData.ImplicitParameters.Count > 0)
             {
-                throw new ArgException("Unexpected Argument: " + context.ParserData.ImplicitParameters.First().Value);
+                throw new ArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
             }
 
             if (context.ParserData.ExplicitParameters.Count > 0)
             {
-                throw new ArgException("Unexpected Argument: " + context.ParserData.ExplicitParameters.First().Key);
+                throw new ArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
             }
 
             return new ArgAction<T>()
@@ -167,6 +167,9 @@ namespace PowerArgs
 
             var actionProp = ArgAction.GetActionProperty(t);
             shortcuts = shortcuts ?? new List<string>();
+            bool ignoreCase = true;
+            if (t.HasAttr<ArgIgnoreCase>() && t.Attr<ArgIgnoreCase>().IgnoreCase == false) ignoreCase = false;
+
             foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
                 if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
@@ -178,9 +181,12 @@ namespace PowerArgs
                 }
 
                 var shortcut = ArgShortcut.GetShortcut(prop);
+
+                if (ignoreCase && shortcut != null) shortcut = shortcut.ToLower();
+                
                 if (shortcut != null && shortcuts.Contains(shortcut))
                 {
-                    throw new InvalidArgDefinitionException("Duplicate arg options with shortcut " + shortcut);
+                    throw new InvalidArgDefinitionException("Duplicate arg options with shortcut '" + ArgShortcut.GetShortcut(prop) + "'.  Keep in mind that shortcuts are not case sensitive unless you use the [ArgIgnoreCase(false)] attribute.  For example, Without this attribute the shortcuts '-a' and '-A' would cause this exception.");
                 }
                 else if(shortcut != null)
                 {

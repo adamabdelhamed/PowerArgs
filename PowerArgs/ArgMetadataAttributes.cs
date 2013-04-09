@@ -145,6 +145,7 @@ namespace PowerArgs
         public int Position { get; private set; }
         public ArgPosition(int pos)
         {
+            if (pos < 0) throw new InvalidArgDefinitionException("Positioned args must be >= 0");
             this.Position = pos;
         }
     }

@@ -41,6 +41,23 @@ namespace ArgsTests
             public string OtherString { get; set; }
         }
 
+        public class DuplicateShortcutArgs3
+        {
+            [ArgShortcut("a")]
+            public string SomeString { get; set; }
+            [ArgShortcut("A")]
+            public string OtherString { get; set; }
+        }
+
+        [ArgIgnoreCase(false)]
+        public class DuplicateShortcutArgsCaseSensitive
+        {
+            [ArgShortcut("a")]
+            public string AdditionalInfo { get; set; }
+            [ArgShortcut("A")]
+            public string Address { get; set; }
+        }
+
         public class DuplicateShortcutEdgeCaseArgs
         {
             // This is the case where several properties have very similar names
@@ -142,6 +159,32 @@ namespace ArgsTests
             {
                 Assert.IsTrue(ex.Message.ToLower().Contains("duplicate"));
             }
+        }
+
+        [TestMethod]
+        public void TestDuplicateArgsUsingShortcutDifferentCases()
+        {
+            try
+            {
+                var args = new string[] { };
+                var parsed = Args.Parse<DuplicateShortcutArgs3>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("duplicate"));
+            }
+        }
+
+        [TestMethod]
+        public void TestDuplicateArgsUsingShortcutDifferentCasesAllowed()
+        {
+
+            var args = new string[] { "-a", "Additional Info Value", "-A", "Address Value" };
+            var parsed = Args.Parse<DuplicateShortcutArgsCaseSensitive>(args);
+
+            Assert.AreEqual("Additional Info Value", parsed.AdditionalInfo);
+            Assert.AreEqual("Address Value", parsed.Address);
         }
     }
 }

@@ -61,15 +61,6 @@
     <Compile Include="QueryTests.cs" />
     <Compile Include="ShortcutTests.cs" />
     <Compile Include="StickyArgTests.cs" />
-    <Compile Include="SurfaceArea\Json\Json.cs" />
-    <Compile Include="SurfaceArea\Json\JSONObject.cs" />
-    <Compile Include="SurfaceArea\ReflectionMementos.cs" />
-    <Compile Include="SurfaceArea\Resource1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resource1.resx</DependentUpon>
-    </Compile>
-    <Compile Include="SurfaceArea\SurfaceAreaTests.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="ConsoleStringTests.cs" />
     <Compile Include="ValidatorTests.cs" />
@@ -83,12 +74,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\APISurface.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="SurfaceArea\Resource1.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

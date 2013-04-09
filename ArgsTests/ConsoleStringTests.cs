@@ -70,6 +70,110 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestReplaceCharByChar()
+        {
+            var testString = "Some Test String";
+
+            for (int i = 0; i < testString.Length; i++)
+            {
+                ConsoleString orig = new ConsoleString(testString);
+                ConsoleString replaced = orig.Replace(testString[i]+"", testString[i]+"", ConsoleColor.Red);
+
+                Assert.AreEqual(ConsoleColor.Gray, orig[i].ForegroundColor);
+                Assert.AreEqual(ConsoleColor.Red, replaced[i].ForegroundColor);
+            }
+        }
+
+        [TestMethod]
+        public void TestReplaceOtherCases()
+        {
+            ConsoleString orig = new ConsoleString("RedWBlue");
+            ConsoleString white = orig.Replace("W", "White", ConsoleColor.White);
+
+            Assert.AreEqual("RedWBlue", orig.ToString());
+            Assert.AreEqual("RedWhiteBlue", white.ToString());
+            Assert.AreEqual("White", string.Join("",white.Where(c => c.ForegroundColor == ConsoleColor.White).Select(c=> c.Value)));
+        }
+
+        [TestMethod]
+        public void TestIndexOf()
+        {
+            ConsoleString s = new ConsoleString("0123456789");
+
+            for (int i = 0; i < 10; i++)
+            {
+                Assert.AreEqual(i, s.IndexOf(i + ""));
+            }
+
+            Assert.AreEqual(0, s.IndexOf("0123456789"));
+            Assert.AreEqual(-1, s.IndexOf("01234567890"));
+            Assert.AreEqual(0, s.IndexOf(""));
+            Assert.AreEqual(-1, s.IndexOf("A"));
+            Assert.AreEqual(-1, s.IndexOf(null));
+            Assert.AreEqual(0, s.IndexOf("01"));
+            Assert.AreEqual(1, s.IndexOf("12"));
+            Assert.AreEqual(8, s.IndexOf("89"));
+
+            for (int i = 0; i < 1000000; i++)
+            {
+                s += "-";
+            }
+
+            s += "!";
+
+           Assert.AreEqual(1000010,s.IndexOf("!"));
+        }
+
+        [TestMethod]
+        public void TestContains()
+        {
+            ConsoleString s = new ConsoleString("0123456789");
+            Assert.IsTrue(s.Contains("2345"));
+            Assert.IsTrue(s.Contains("0"));
+            Assert.IsTrue(s.Contains("01"));
+            Assert.IsTrue(s.Contains("9"));
+            Assert.IsTrue(s.Contains("89"));
+
+            Assert.IsFalse(s.Contains("A"));
+            Assert.IsFalse(s.Contains("0123A"));
+        }
+
+        [TestMethod]
+        public void TestSubstring()
+        {
+            ConsoleString orig = new ConsoleString("0123456789");
+            ConsoleString sub = orig.Substring(5);
+            ConsoleString sub2 = orig.Substring(5,1);
+            Assert.AreEqual("56789", sub.ToString());
+            Assert.AreEqual("5", sub2.ToString());
+        }
+
+        [TestMethod]
+        public void TestReplaceMultiple()
+        {
+            ConsoleString orig = new ConsoleString("WRedWBlueW");
+            ConsoleString white = orig.Replace("W", "White", ConsoleColor.White);
+
+            Assert.AreEqual("WRedWBlueW", orig.ToString());
+            Assert.AreEqual("WhiteRedWhiteBlueWhite", white.ToString());
+            Assert.AreEqual("WhiteWhiteWhite", string.Join("", white.Where(c => c.ForegroundColor == ConsoleColor.White).Select(c => c.Value)));
+        }
+
+        [TestMethod]
+        public void TestReplaceRegex()
+        {
+            ConsoleString orig = new ConsoleString("Credit Card: 1234-5678-9876-5432 - VISA");
+            ConsoleString cleaned = orig.ReplaceRegex(@"\d\d\d\d-\d\d\d\d-\d\d\d\d-\d\d\d\d", "xxxx-xxxx-xxxx-xxxx", ConsoleColor.White);
+            Assert.AreEqual("Credit Card: xxxx-xxxx-xxxx-xxxx - VISA", cleaned.ToString());
+
+            ConsoleString hasPhoneNumber = new ConsoleString("Number: 222-333-4444");
+            hasPhoneNumber = hasPhoneNumber.ReplaceRegex(@"\d{3}-\d{3}-\d{4}", null, ConsoleColor.Green);
+
+            Assert.AreEqual("Number: 222-333-4444", hasPhoneNumber.ToString());
+            Assert.AreEqual(new ConsoleString("222-333-4444", ConsoleColor.Green), hasPhoneNumber.Substring(8));
+        }
+
+        [TestMethod]
         public void TestConsoleStringEdgeCases()
         {
             ConsoleString str = ConsoleString.Empty;

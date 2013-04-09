@@ -9,8 +9,29 @@ namespace PowerArgs
 {
     public static class ArgUsage
     {
-        public static string GetUsage<T>(string exeName = null)
+        private static Dictionary<string, string> KnownTypeMappings = new Dictionary<string, string>()
         {
+            {"Int32", "integer"},
+            {"Int64", "integer"},
+            {"Boolean", "switch"},
+            {"Guid", "guid"},
+        };
+
+        private static string GetFriendlyTypeName(Type t)
+        {
+            var name = t.Name;
+            if (KnownTypeMappings.ContainsKey(name))
+            {
+                return KnownTypeMappings[name];
+            }
+            else
+            {
+                return name.ToLower();
+            }
+        }
+
+        public static string GetUsage<T>(string exeName = null)
+        { 
             return GetStyledUsage<T>(exeName).ToString();
         }
 
@@ -45,7 +66,7 @@ namespace PowerArgs
 
                 if (string.IsNullOrEmpty(global.ToString()) == false)
                 {
-                    ret += new ConsoleString("Global options:\n\n" + global + "\n", ConsoleColor.Cyan);
+                    ret += new ConsoleString("Global options:\n\n", ConsoleColor.Cyan) + global + "\n";
                 }
 
                 ret += "Actions:";
@@ -99,7 +120,7 @@ namespace PowerArgs
 
             if (hasPositionalArgs)
             {
-                columnHeaders.Insert(2, new ConsoleString("POSITION", ConsoleColor.Yellow));
+                columnHeaders.Insert(2, new ConsoleString("POSITION", ConsoleColor.Yellow));  
             }
 
             List<List<ConsoleString>> rows = new List<List<ConsoleString>>();
@@ -113,7 +134,7 @@ namespace PowerArgs
                 var positionString = new ConsoleString(prop.HasAttr<ArgPosition>() ? prop.Attr<ArgPosition>().Position + "" : "NA");
                 var requiredString = new ConsoleString(prop.HasAttr<ArgRequired>() ? "*" : "", ConsoleColor.Red);
                 var descriptionString = new ConsoleString(prop.Attr<ArgDescription>() != null ? prop.Attr<ArgDescription>().Description : "");
-                var typeString = new ConsoleString(prop.PropertyType.Name == "Boolean" ? "Switch" : prop.PropertyType.Name );
+                var typeString = new ConsoleString(GetFriendlyTypeName(prop.PropertyType));
 
                 var indicator = "-";
 

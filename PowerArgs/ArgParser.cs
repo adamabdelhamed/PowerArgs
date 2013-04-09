@@ -40,7 +40,7 @@ namespace PowerArgs
                 if (token.StartsWith("/"))
                 {
                     var param = ParseSlashExplicitOption(token);
-                    if (result.ExplicitParameters.ContainsKey(param.Key)) throw new ArgException("Argument " + param.Key + " cannot be specified twice");
+                    if (result.ExplicitParameters.ContainsKey(param.Key)) throw new ArgException("Argument specified more than once: " + param.Key);
                     result.ExplicitParameters.Add(param.Key, param.Value);
                     argumentPosition = -1;
                 }
@@ -62,6 +62,11 @@ namespace PowerArgs
                     {
                         i++;
                         value = args[i];
+                    }
+
+                    if (result.ExplicitParameters.ContainsKey(key))
+                    {
+                        throw new ArgException("Argument specified more than once: " + key);
                     }
 
                     result.ExplicitParameters.Add(key, value);

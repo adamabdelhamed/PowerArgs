@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace PowerArgs
 {
@@ -11,12 +12,16 @@ namespace PowerArgs
         public ConsoleColor ForegroundColor { get; set; }
         public ConsoleColor BackgroundColor { get; set; }
 
-        public ConsoleCharacter(char value, ConsoleColor foregroundColor = ConsoleString.DefaultForegroundColor, ConsoleColor backgroundColor = ConsoleString.DefaultBackgroundColor)
+        public ConsoleCharacter(char value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
             : this()
         {
             this.Value = value;
-            this.ForegroundColor = foregroundColor;
-            this.BackgroundColor = backgroundColor;
+
+            if (foregroundColor.HasValue == false) foregroundColor = ConsoleString.DefaultForegroundColor;
+            if (backgroundColor.HasValue == false) backgroundColor = ConsoleString.DefaultBackgroundColor;
+
+            this.ForegroundColor = foregroundColor.Value;
+            this.BackgroundColor = backgroundColor.Value;
         }
 
         public void Write()
@@ -68,10 +73,24 @@ namespace PowerArgs
         }
     }
 
-    public class ConsoleString : List<ConsoleCharacter>
+    public class ConsoleString : List<ConsoleCharacter>, IComparable<string>
     {
-        internal const ConsoleColor DefaultForegroundColor = ConsoleColor.Gray;
-        internal const ConsoleColor DefaultBackgroundColor = ConsoleColor.Black;
+        internal static ConsoleColor DefaultForegroundColor;
+        internal static ConsoleColor DefaultBackgroundColor;
+        
+        static ConsoleString ()
+        {
+            try
+            {
+                DefaultForegroundColor = Console.ForegroundColor;
+                DefaultBackgroundColor = Console.BackgroundColor;
+            }
+            catch (Exception)
+            {
+                DefaultForegroundColor = ConsoleColor.Gray;
+                DefaultBackgroundColor = ConsoleColor.Black;
+            }
+        }
 
         public static ConsoleString Empty
         {
@@ -89,13 +108,15 @@ namespace PowerArgs
             }
         }
 
-        public ConsoleString(string value = "", ConsoleColor foregroundColor = DefaultForegroundColor, ConsoleColor backgroundColor = DefaultBackgroundColor)
+        public ConsoleString() : this("", DefaultForegroundColor, DefaultBackgroundColor) { }
+
+        public ConsoleString(string value = "", ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
             : base()
         {
             Append(value, foregroundColor, backgroundColor);
         }
 
-        public void Append(string value, ConsoleColor foregroundColor = DefaultForegroundColor, ConsoleColor backgroundColor = DefaultBackgroundColor)
+        public void Append(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
         {
             foreach (var c in value)
             {
@@ -122,6 +143,84 @@ namespace PowerArgs
                 var prototype = this.Last();
                 Append(value, prototype.ForegroundColor, prototype.BackgroundColor);
             }
+        }
+
+        public ConsoleString Replace(string toFind, string toReplace, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        {
+            ConsoleString ret = new ConsoleString();
+            ret.Append(this);
+
+            int startIndex = 0;
+
+            while (true)
+            {
+                string toString = ret.ToString();
+                int currentIndex = toString.IndexOf(toFind, startIndex);
+                if (currentIndex < 0) break;
+                for (int i = 0; i < toFind.Length; i++) ret.RemoveAt(currentIndex);
+                ret.InsertRange(currentIndex, toReplace.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
+                startIndex = currentIndex + toReplace.Length;
+            }
+
+            return ret;
+        }
+
+        public ConsoleString ReplaceRegex(string regex, string toReplace, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        {
+            ConsoleString ret = new ConsoleString();
+            ret.Append(this);
+            MatchCollection matches = Regex.Matches(this.ToString(), regex);
+            foreach (Match match in matches)
+            {
+                ret = ret.Replace(match.Value, toReplace ?? match.Value, foregroundColor, backgroundColor);
+            }
+
+            return ret;
+        }
+
+        public int IndexOf(string toFind)
+        {
+            if(toFind == null)return -1;
+            if(toFind == "")return 0;
+
+            int j = 0;
+            int k = 0;
+            for (int i = 0; i < Length; i++)
+            {
+                j = 0;
+                k = 0;
+
+                while (toFind[j] == this[i + k].Value)
+                {
+                    j++;
+                    k++;
+                    if (j == toFind.Length) return i;
+                    if (i + k == this.Length) return -1;
+                }
+            }
+
+            return -1;
+        }
+
+        public bool Contains(string substr)
+        {
+            return IndexOf(substr) >= 0;
+        }
+
+        public ConsoleString Substring(int start)
+        {
+            return Substring(start, this.Length - start);
+        }
+
+        public ConsoleString Substring(int start, int length)
+        {
+            ConsoleString ret = new ConsoleString();
+            for(int i = start; i < start + length;i++)
+            {
+                ret.Add(this[i]);
+            }
+
+            return ret;
         }
 
         public void Write()
@@ -154,6 +253,13 @@ namespace PowerArgs
             return true;
         }
 
+
+        public int CompareTo(string other)
+        {
+            return ToString().CompareTo(other);
+        }
+
+
         public override int GetHashCode()
         {
             return ToString().GetHashCode();
@@ -161,14 +267,14 @@ namespace PowerArgs
 
         public static ConsoleString operator +(ConsoleString a, ConsoleString b)
         {
-            if (object.ReferenceEquals(a, null)) return b;
+            if(a == null) return b;
             a.Append(b);
             return a;
         }
 
         public static ConsoleString operator +(ConsoleString a, string b)
         {
-            if (object.ReferenceEquals(a, null)) return b != null ? new ConsoleString(b) : null;
+            if (a == null) return b != null ? new ConsoleString(b) : null;
             a.Append(b);
             return a;
         }

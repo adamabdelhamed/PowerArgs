@@ -100,7 +100,6 @@ namespace ArgsTests
             public object SomeObjectToIgnore { get; set; }
         }
 
-
         public class PositionedArgs
         {
             [ArgPosition(0)]
@@ -301,6 +300,7 @@ namespace ArgsTests
             }
         }
 
+
         [TestMethod]
         public void TestExtraArgs2()
         {
@@ -314,6 +314,70 @@ namespace ArgsTests
             catch (ArgException ex)
             {
                 Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extravalue"));
+            }
+        }
+
+        [TestMethod]
+        public void TestExtraArgsPositionOnly()
+        {
+            var args = new string[] { "A", "B", "extraarg", };
+
+            try
+            {
+                var parsed = Args.Parse<PositionedArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extraarg"));
+            }
+        }
+
+        [TestMethod]
+        public void TestArgSpecifiedTwice()
+        {
+            var args = new string[] { "-string", "string", "-string", "specifiedTwice" };
+
+            try
+            {
+                var parsed = Args.Parse<BasicArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("argument specified more than once") && ex.Message.ToLower().Contains("string"));
+            }
+        }
+
+        [TestMethod]
+        public void TestArgSpecifiedTwiceMixedCase()
+        {
+            var args = new string[] { "-string", "string", "-String", "specifiedTwice" };
+
+            try
+            {
+                var parsed = Args.Parse<BasicArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("argument specified more than once") && ex.Message.ToLower().Contains("string"));
+            }
+        }
+
+        [TestMethod]
+        public void TestArgSpecifiedTwiceSlashColon()
+        {
+            var args = new string[] { "/string:string", "/string:specifiedTwice" };
+
+            try
+            {
+                var parsed = Args.Parse<BasicArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("argument specified more than once") && ex.Message.ToLower().Contains("string"));
             }
         }
 

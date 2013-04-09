@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage documentation, tab completion, Entity Framework querying, secure string arguments, and plenty of hooks for extensibility.</description>
     <summary>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.</summary>
-    <releaseNotes>Enhanced the auto generated usage feature to include printing a colored output and only showing positional data if the program contains positional args.  Added a regex validator.  Added a USPhoneNumber type as a good example of how to implement custom complex types with custom revivers.</releaseNotes>
+    <releaseNotes>Fixed some error handling bugs so that users will get exceptions for a few edge cases.  Fixed styled usage so it will choose default foreground and background colors based on environment (e.g. Powershell has a blue background).</releaseNotes>
     <copyright>Copyright 2012 Adam Abdelhamed</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>
