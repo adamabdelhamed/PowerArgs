@@ -58,6 +58,14 @@ namespace ArgsTests
             public string Address { get; set; }
         }
 
+        public class ShortcutArgsConflictingArguments
+        {
+            [ArgShortcut(ArgShortcutPolicy.NoShortcut,Shortcut="so")]
+            public string SomeString { get; set; }
+            public string OtherString { get; set; }
+        }
+
+
         public class DuplicateShortcutEdgeCaseArgs
         {
             // This is the case where several properties have very similar names
@@ -80,6 +88,13 @@ namespace ArgsTests
         {
             public string SomeString { get; set; }
             [ArgShortcut(null)]
+            public string SomeOtherString { get; set; }
+        }
+
+        public class ArgShortcutAttributeArgsNoShortcut2
+        {
+            public string SomeString { get; set; }
+            [ArgShortcut(ArgShortcutPolicy.NoShortcut)]
             public string SomeOtherString { get; set; }
         }
 
@@ -185,6 +200,21 @@ namespace ArgsTests
 
             Assert.AreEqual("Additional Info Value", parsed.AdditionalInfo);
             Assert.AreEqual("Address Value", parsed.Address);
+        }
+
+        [TestMethod]
+        public void TestShortcutConflictingSignals()
+        {
+            try
+            {
+                var args = new string[] { "-so", "asdasd" };
+                var parsed = Args.Parse<ShortcutArgsConflictingArguments>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.IsTrue(ex.Message == "You cannot specify a shortcut value and an ArgShortcutPolicy of NoShortcut");
+            }
         }
     }
 }

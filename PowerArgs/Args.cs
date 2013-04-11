@@ -6,16 +6,36 @@ using System.Linq;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// The main entry point for PowerArgs that includes the public parsing functions such as Parse, ParseAction, and InvokeAction.
+    /// </summary>
     public class Args
     {
         private Args() { }
 
+        /// <summary>
+        /// Creates a new instance of T and populates it's properties based on the given arguments.
+        /// If T correctly implements the heuristics for Actions (or sub commands) then the complex property
+        /// that represents the options of a sub command are also populated.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction<T> ParseAction<T>(params string[] args)
         {
             Args instance = new Args();
             return instance.ParseInternal<T>(args);
         }
 
+
+        /// <summary>
+        /// Creates a new instance of T and populates it's properties based on the given arguments. T must correctly
+        /// implement the heuristics for Actions (or sub commands) because this method will not only detect the action
+        /// specified on the command line, but will also find and execute the method that implements the action.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type that must properly implement at least one action.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static ArgAction<T> InvokeAction<T>(params string[] args)
         {
             var action = Args.ParseAction<T>(args);
@@ -23,6 +43,12 @@ namespace PowerArgs
             return action;
         }
 
+        /// <summary>
+        /// Creates a new instance of T and populates it's properties based on the given arguments.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>A new instance of T with all of the properties correctly populated</returns>
         public static T Parse<T>(params string[] args)
         {
             return ParseAction<T>(args).Args;
@@ -79,7 +105,7 @@ namespace PowerArgs
 
             if (actionProperty.Attr<ArgRequired>().PromptIfMissing && args.Length == 0)
             {
-                actionProperty.Attr<ArgRequired>().Validate(actionProperty.GetArgumentName(), ref specifiedAction);
+                actionProperty.Attr<ArgRequired>().ValidateAlways(actionProperty, ref specifiedAction);
                 args = new string[] { specifiedAction };
             }
 
@@ -163,6 +189,8 @@ namespace PowerArgs
                     throw new InvalidArgDefinitionException("If you specify the " + typeof(ArgIgnoreCase).Name + " attribute on your base and acton types then they must be configured to use the same value for IgnoreCase.");
                 }
             }
+
+            if (t.Attrs<ArgIgnoreCase>().Count > 1) throw new InvalidArgDefinitionException("An attribute that is or derives from " + typeof(ArgIgnoreCase).Name+" was specified on your type more than once");
 
 
             var actionProp = ArgAction.GetActionProperty(t);

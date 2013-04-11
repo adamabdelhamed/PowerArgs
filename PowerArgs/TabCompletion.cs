@@ -6,18 +6,36 @@ using System.Reflection;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// A hook that takes over the command line and provides tab completion for known strings when the user presses
+    /// the tab key.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class TabCompletion : ArgHook
     {
         string indicator;
         Type completionSource;
 
+        /// <summary>
+        /// If this is > 0 then PowerArgs will save this many previous executions of the command line to your application data folder.
+        /// Users can then access the history by pressing arrow up or down from the enhanced command prompt.
+        /// </summary>
         public int HistoryToSave { get; set; }
+
+        /// <summary>
+        /// The location of the history file name (AppData/PowerArgs/EXE_NAME.TabCompletionHistory.txt
+        /// </summary>
         public string HistoryFileName { get; set; }
+
+        /// <summary>
+        /// The name of your program (leave null and PowerArgs will try to detect it automatically)
+        /// </summary>
         public string ExeName { get; set; }
+
         private string HistoryFileNameInternal
         {
             get
@@ -27,6 +45,10 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Creates a new tab completion hook.
+        /// </summary>
+        /// <param name="indicator">When this indicator is the only argument the user specifies that triggers the hook to enhance the command prompt.  By default, the indicator is the empty string.</param>
         public TabCompletion(string indicator = "")
         {
             this.indicator = indicator;
@@ -34,6 +56,11 @@ namespace PowerArgs
             HistoryToSave = 0;
         }
 
+        /// <summary>
+        /// Creates a new tab completion hook given a custom tab completion implementation.
+        /// </summary>
+        /// <param name="completionSource">A type that implements ITabCompletionSource such as SimpleTabCompletionSource</param>
+        /// <param name="indicator">When this indicator is the only argument the user specifies that triggers the hook to enhance the command prompt.  By default, the indicator is the empty string.</param>
         public TabCompletion(Type completionSource, string indicator = "") : this(indicator)
         {
             if (completionSource.GetInterfaces().Contains(typeof(ITabCompletionSource)) == false)
@@ -44,6 +71,11 @@ namespace PowerArgs
             this.completionSource = completionSource;
         }
 
+        /// <summary>
+        /// Before PowerArgs parses the args, this hook inspects the command line for the indicator and if found 
+        /// takes over the command line and provides tab completion.
+        /// </summary>
+        /// <param name="context">The context used to inspect the command line arguments.</param>
         public override void BeforeParse(ArgHook.HookContext context)
         {
             if (indicator == "" && context.CmdLineArgs.Length != 0)return;
@@ -63,7 +95,7 @@ namespace PowerArgs
                 Console.CursorTop--;
                 Console.CursorLeft = lastLine.Length + 1;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 Console.Write(indicator + "> ");
             }
@@ -81,6 +113,9 @@ namespace PowerArgs
             AddToHistory(str);
         }
 
+        /// <summary>
+        /// Clears all history saved on disk
+        /// </summary>
         public void ClearHistory()
         {
             if (File.Exists(HistoryFileNameInternal))
@@ -146,24 +181,55 @@ namespace PowerArgs
 
     }
 
+    /// <summary>
+    /// An interface used to implement custom tab completion logic.
+    /// </summary>
     public interface ITabCompletionSource
     {
+        /// <summary>
+        /// PowerArgs will call this method if it has enhanced the command prompt and the user presses tab.  You should use the
+        /// text the user has types so far to determine if there is a completion you'd like to make.  If you find a completion
+        /// then you should assign it to the completion variable and return true.
+        /// </summary>
+        /// <param name="shift">Indicates if shift was being pressed</param>
+        /// <param name="soFar">The text token that the user has typed before pressing tab.</param>
+        /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
+        /// <returns>True if you completed the string, false otherwise.</returns>
         bool TryComplete(bool shift, string soFar, out string completion);
     }
 
+    /// <summary>
+    /// An aggregate tab completion source that cycles through it's inner sources looking for matches.
+    /// </summary>
     public class MultiTabCompletionSource : ITabCompletionSource
     {
         ITabCompletionSource[] sources;
+
+        /// <summary>
+        /// Create a new MultiTabCompletionSource given an array of sources.
+        /// </summary>
+        /// <param name="sources">The sources to wrap</param>
         public MultiTabCompletionSource(params ITabCompletionSource[] sources)
         {
             this.sources = sources;
         }
 
+        /// <summary>
+        /// Create a new MultiTabCompletionSource given an IEnumerable of sources.
+        /// </summary>
+        /// <param name="sources">The sources to wrap</param>
         public MultiTabCompletionSource(IEnumerable<ITabCompletionSource> sources)
         {
             this.sources = sources.ToArray();
         }
 
+        /// <summary>
+        /// Iterates over the wrapped sources looking for a match
+        /// </summary>
+        /// <param name="shift">Indicates if shift was being pressed</param>
+        /// <param name="soFar">The text token that the user has typed before pressing tab.</param>
+        /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
+        /// <returns></returns>
         public bool TryComplete(bool shift, string soFar, out string completion)
         {
             foreach (var source in sources)
@@ -175,6 +241,9 @@ namespace PowerArgs
         }
     }
 
+    /// <summary>
+    /// A simple tab completion source implementation that looks for matches over a set of pre-determined strings.
+    /// </summary>
     public class SimpleTabCompletionSource : ITabCompletionSource
     {
         IEnumerable<string> candidates;
@@ -183,31 +252,29 @@ namespace PowerArgs
         string lastCompletion;
         int lastIndex;
 
+        /// <summary>
+        /// Require that the user type this number of characters before the source starts cycling through ambiguous matches.  The default is 3.
+        /// </summary>
         public int MinCharsBeforeCyclingBegins { get; set; }
 
+        /// <summary>
+        /// Creates a new completion source given an enumeration of string candidates
+        /// </summary>
+        /// <param name="candidates"></param>
         public SimpleTabCompletionSource(IEnumerable<string> candidates)
         {
             this.candidates = candidates.OrderBy(s => s);
             this.MinCharsBeforeCyclingBegins = 3;
         }
 
-        public SimpleTabCompletionSource(Func<IEnumerable<string>> asyncCandidateFetcher)
-        {
-            candidates = new string[0];
-            this.MinCharsBeforeCyclingBegins = 3;
-            asyncCandidateFetcher.BeginInvoke((result) =>
-            {
-                try
-                {
-                    candidates = asyncCandidateFetcher.EndInvoke(result);
-                }
-                catch (Exception)
-                {
-                    // swallow these
-                }
-            }, null);
-        }
-
+        /// <summary>
+        /// Iterates through the candidates to try to find a match.  If there are multiple possible matches it 
+        /// supports cycling through tem as the user continually presses tab.
+        /// </summary>
+        /// <param name="shift">Indicates if shift was being pressed</param>
+        /// <param name="soFar">The text token that the user has typed before pressing tab.</param>
+        /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
+        /// <returns></returns>
         public bool TryComplete(bool shift, string soFar, out string completion)
         {
             if (soFar == lastCompletion && lastCompletion != null)
@@ -236,7 +303,7 @@ namespace PowerArgs
         }
     }
 
-    public class FileSystemTabCompletionSource : ITabCompletionSource
+    internal class FileSystemTabCompletionSource : ITabCompletionSource
     {
         string lastSoFar = null, lastCompletion = null;
         int tabIndex = -1;
@@ -312,25 +379,63 @@ namespace PowerArgs
             }
             catch (Exception ex)
             {
+                Trace.TraceError(ex.ToString());
                 return false;  // We don't want a bug in this logic to break the app
             }
         }
     }
 
+    /// <summary>
+    /// Used for internal implementation, but marked public for testing, please do not use.
+    /// </summary>
     public static class ConsoleHelper
     {
+        /// <summary>
+        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// </summary>
         public interface IConsoleProvider
         {
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
             int CursorLeft { get; set; }
+
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
             ConsoleKeyInfo ReadKey();
+
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
             void Write(object output);
+
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
             void WriteLine(object output);
+
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
             void WriteLine();
         }
 
+        /// <summary>
+        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// </summary>
+        public static IConsoleProvider ConsoleImpl = new StdConsoleProvider();
+
+        /// <summary>
+        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// </summary>
         public class StdConsoleProvider : IConsoleProvider
         {
             const int STD_OUTPUT_HANDLE = -11;
+
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
             public int CursorLeft
             {
                 get
@@ -343,21 +448,36 @@ namespace PowerArgs
                 }
             }
 
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
+            /// <returns>Used for internal implementation, but marked public for testing, please do not use.</returns>
             public ConsoleKeyInfo ReadKey()
             {
                 return Console.ReadKey(true);
             }
 
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
+            /// <param name="output">Used for internal implementation, but marked public for testing, please do not use.</param>
             public void Write(object output)
             {
                 Console.Write(output);
             }
 
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
+            /// <param name="output">Used for internal implementation, but marked public for testing, please do not use.</param>
             public void WriteLine(object output)
             {
                 Console.WriteLine(output);
             }
 
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
             public void WriteLine()
             {
                 Console.WriteLine();
@@ -378,6 +498,11 @@ namespace PowerArgs
                 public short Y;
             }
 
+            /// <summary>
+            /// Used for internal implementation, but marked public for testing, please do not use.
+            /// </summary>
+            /// <param name="y">Used for internal implementation, but marked public for testing, please do not use.</param>
+            /// <returns>Used for internal implementation, but marked public for testing, please do not use.</returns>
             public static string ReadALineOfConsoleOutput(int y)
             {
                 if (y < 0) throw new Exception();
@@ -446,9 +571,6 @@ namespace PowerArgs
             return (from t in ret where string.IsNullOrWhiteSpace(t) == false select t.Trim()).ToArray();
         }
 
-
-        public static IConsoleProvider ConsoleImpl = new StdConsoleProvider();
-
         private static void RefreshConsole(int leftStart, List<char> chars, int offset = 0, int lookAhead = 1)
         {
             int left = ConsoleImpl.CursorLeft;
@@ -492,7 +614,7 @@ namespace PowerArgs
 
         }
 
-        public static string[] ReadLine(ref string rawInput, List<string> history, params ITabCompletionSource[] tabCompletionHooks)
+        internal static string[] ReadLine(ref string rawInput, List<string> history, params ITabCompletionSource[] tabCompletionHooks)
         {
             var leftStart = ConsoleImpl.CursorLeft;
             var chars = new List<char>();

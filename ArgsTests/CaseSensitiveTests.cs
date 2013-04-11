@@ -24,6 +24,27 @@ namespace ArgsTests
             public static void TheAction(SomeActionArgs args) { }
         }
 
+        [ArgEnforceCase]
+        public class CaseSensitiveArgs2
+        {
+            public string SomeOtherArg { get; set; }
+        }
+
+        [ArgIgnoreCase(false)]
+        [ArgEnforceCase]
+        public class CaseSensitiveArgsInvalidDupeAttributes
+        {
+            public string SomeOtherArg { get; set; }
+        }
+
+        [ArgEnforceCase]  // Intentionally swapped from the order in the previous class
+        [ArgIgnoreCase(false)]
+        public class CaseSensitiveArgsInvalidDupeAttributesSwapped
+        {
+            public string SomeOtherArg { get; set; }
+        }
+
+
         [ArgIgnoreCase(false)]
         public class CaseSensitiveArgsSC
         {
@@ -109,6 +130,33 @@ namespace ArgsTests
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
             });
+        }
+
+        [TestMethod]
+        public void TestCaseSensitivityIsCaseSensitiveAttribute()
+        {
+            try
+            {
+                var args = "/someOtherArg:SomeOtherArgValue".Split(' ');
+                var parsed = Args.Parse<CaseSensitiveArgs2>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException expected) { }
+        }
+
+        [TestMethod]
+        public void TestInvalidMultipleAttributes()
+        {
+            try
+            {
+                var args = "/SomeOtherArg:SomeOtherArgValue".Split(' ');
+                var parsed = Args.Parse<CaseSensitiveArgsInvalidDupeAttributes>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException expected) 
+            {
+                Assert.IsTrue(expected.Message.ToLower().Contains("more than once"));
+            }
         }
     }
 }

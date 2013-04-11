@@ -4,18 +4,44 @@ using System.Linq;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// This is the more complex version of the public result that is produced by the parser.
+    /// </summary>
+    /// <typeparam name="T">Represents the custom argument scaffold type that was passed to the parser.</typeparam>
     public class ArgAction<T>
     {
+        /// <summary>
+        /// The instance of your custom scaffold type that the parser generated and parsed.
+        /// </summary>
         public T Args { get; set; }
+
+        /// <summary>
+        /// If you used the action framework then this will represent the instance of the action specific arguments
+        /// that were parsed.
+        /// </summary>
         public object ActionArgs { get; set; }
+
+        /// <summary>
+        /// If you used the action framework then this will map to the property that the user specified as the first
+        /// parameter on the command line.
+        /// </summary>
         public PropertyInfo ActionArgsProperty { get; set; }
 
+        /// <summary>
+        /// This will find the implementation method for your action and invoke it, passing the action specific
+        /// arguments as a parameter.
+        /// </summary>
         public void Invoke()
         {
             if (Args == null || ActionArgs == null) throw new ArgException("No action was specified");
             ResolveMethod(ActionArgsProperty).Invoke(null, new object[] { ActionArgs });
         }
 
+        /// <summary>
+        /// Given an action property, finds the method that implements the action.
+        /// </summary>
+        /// <param name="actionProperty">The property to resolve</param>
+        /// <returns></returns>
         public static MethodInfo ResolveMethod(PropertyInfo actionProperty)
         {
             return ArgAction.ResolveMethod(typeof(T), actionProperty);

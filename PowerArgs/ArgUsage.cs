@@ -7,6 +7,10 @@ using System.Reflection;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// A helper class that generates usage documentation for your command line arguments given a custom argument
+    /// scaffolding type.
+    /// </summary>
     public static class ArgUsage
     {
         private static Dictionary<string, string> KnownTypeMappings = new Dictionary<string, string>()
@@ -30,11 +34,23 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Generates usage documentation for the given argument scaffold type.
+        /// </summary>
+        /// <typeparam name="T">Your custom argument scaffold type</typeparam>
+        /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
+        /// <returns></returns>
         public static string GetUsage<T>(string exeName = null)
         { 
             return GetStyledUsage<T>(exeName).ToString();
         }
 
+        /// <summary>
+        /// Generates color styled usage documentation for the given argument scaffold type.  
+        /// </summary>
+        /// <typeparam name="T">Your custom argument scaffold type</typeparam>
+        /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
+        /// <returns></returns>
         public static ConsoleString GetStyledUsage<T>(string exeName = null)
         {
             if (exeName == null)

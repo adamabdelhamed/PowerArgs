@@ -8,6 +8,7 @@ namespace HelloWorld
     public class MyArgs
     {
         [ArgDescription("Description for a required string parameter")]
+        [StickyArg]
         public string StringArg { get; set; }
 
         [ArgDescription("Description for an optional integer parameter")]

@@ -10,7 +10,7 @@ using System.IO;
 
 namespace PowerArgs
 {
-    public class QueryArgs
+    internal class QueryArgs
     {
         public List<string> ReferencedAssemblies { get; set; }
 
@@ -64,7 +64,6 @@ namespace PowerArgs
         public IEnumerable RunQuery(IEnumerable src)
         {
             CSharpCodeProvider codeProvider = new CSharpCodeProvider();
-            ICodeCompiler icc = codeProvider.CreateCompiler();
             CompilerParameters parameters = new CompilerParameters();
 
             parameters.ReferencedAssemblies.Add("System.dll");
@@ -92,7 +91,7 @@ namespace PowerArgs
             parameters.GenerateInMemory = true;
 
             var code = GenerateQueryCode();
-            CompilerResults results = icc.CompileAssemblyFromSource(parameters, code);
+            CompilerResults results = codeProvider.CompileAssemblyFromSource(parameters, code);
 
             if (results.Errors.Count > 0)
             {
@@ -108,17 +107,36 @@ namespace PowerArgs
 
     }
 
+    /// <summary>
+    /// A hook you can use to easily query a data source.  See an example here: https://github.com/adamabdelhamed/PowerArgs#data-source-queries
+    /// </summary>
     public class Query : ArgHook
     {
+        /// <summary>
+        /// Your data source implementation.  The query will create a new instance of this type and use a property
+        /// that matches the property name of the PowerArgs property this attribute is on in order to get the data.
+        /// </summary>
         public Type DataSourceType { get; set; }
 
         string[] referencedAssemblies;
+
+        /// <summary>
+        /// Creates a new query hook given a data source type and optional reference assemblies.
+        /// </summary>
+        /// <param name="dataSourceType">Your data source implementation. he query will create a new instance of this type and use a property that matches the property name of the PowerArgs property this attribute is on in order to get the data.</param>
+        /// <param name="referencedAssemblies">The names (if in the GAC) or full paths to assemblies you would like to include.  We will automatically add dlls in your bin folder.</param>
         public Query(Type dataSourceType, params string[] referencedAssemblies)
         {
             this.DataSourceType = dataSourceType;
             this.referencedAssemblies = referencedAssemblies;
         }
 
+        /// <summary>
+        /// After PowerArgs does most of its work this hook looks for string properties on the parsed object called Skip, Take, 
+        /// Where, OrderBy, and OrderByDescending.  These properties are used to construct a linq query that is dynamically compiled
+        /// and executed against the provided data source.
+        /// </summary>
+        /// <param name="context">The context used to detect the query parameters.</param>
         public override void AfterPopulateProperties(HookContext context)
         {
             var dataSource = Activator.CreateInstance(DataSourceType);

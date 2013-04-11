@@ -6,9 +6,23 @@ using System.Text.RegularExpressions;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// An abstract class that lets you create custom argument types that match a regular expression.  The 
+    /// class also makes it easy to extract named groups from the regular expression for use by your application.
+    /// </summary>
     public abstract class GroupedRegexArg
     {
+        /// <summary>
+        /// The match that exactly matches the given regular expression
+        /// </summary>
         protected Match exactMatch;
+
+        /// <summary>
+        /// Creates a new grouped regular expression argument instance.
+        /// </summary>
+        /// <param name="regex">The regular expression to enforce</param>
+        /// <param name="input">The user input that was provided</param>
+        /// <param name="errorMessage">An error message to show in the case of a non match</param>
         protected GroupedRegexArg(string regex, string input, string errorMessage)
         {
             MatchCollection matches = Regex.Matches(input, regex);
@@ -16,11 +30,22 @@ namespace PowerArgs
             if (exactMatch == null) throw new ArgException(errorMessage + ": " + input);
         }
 
+        /// <summary>
+        /// A helper function you can use to group a particular regular expression.
+        /// </summary>
+        /// <param name="regex">Your regular expression that you would like to put in a group.</param>
+        /// <param name="groupName">The name of the group that you can use to extract the group value later.</param>
+        /// <returns></returns>
         protected static string Group(string regex, string groupName = null)
         {
             return groupName == null ? "(" + regex + ")" : "(?<" + groupName + ">" + regex + ")";
         }
 
+        /// <summary>
+        /// Gets the value of the regex group from the exact match.
+        /// </summary>
+        /// <param name="groupName">The name of the group to lookup</param>
+        /// <returns></returns>
         protected string this[string groupName]
         {
             get
@@ -29,6 +54,11 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Gets the value of the regex group from the exact match.
+        /// </summary>
+        /// <param name="groupNumber">The index of the group to lookup</param>
+        /// <returns></returns>
         protected string this[int groupNumber]
         {
             get
@@ -38,10 +68,26 @@ namespace PowerArgs
         }
     }
 
+    /// <summary>
+    /// An example of a custom type that uses regular expressions to extract values from the command line
+    /// and implements an ArgReviver to transform the text input into a complex type.
+    /// This class represents a US phone number.
+    /// </summary>
     public class USPhoneNumber : GroupedRegexArg
     {
+        /// <summary>
+        /// The three digit area code of the phone number.
+        /// </summary>
         public string AreaCode { get; private set; }
+
+        /// <summary>
+        /// The three digit first segment of the phone number
+        /// </summary>
         public string FirstDigits { get; private set; }
+
+        /// <summary>
+        /// The four digit second segment of the phone number.
+        /// </summary>
         public string SecondDigits { get; private set; }
 
         /// <summary>
@@ -55,6 +101,10 @@ namespace PowerArgs
             this.SecondDigits = base["secondDigits"];
         }
 
+        /// <summary>
+        /// Gets the default string representation of the phone number in the format '1-(aaa)-bbb-cccc'.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return this.ToString("1-({aaa})-{bbb}-{cccc}");
@@ -73,6 +123,12 @@ namespace PowerArgs
                         .Replace("{cccc}", this.SecondDigits);
         }
 
+        /// <summary>
+        /// Custom PowerArgs reviver that converts a string parameter into a custom phone number
+        /// </summary>
+        /// <param name="key">The name of the argument (not used)</param>
+        /// <param name="val">The value specified on the command line</param>
+        /// <returns>A USPhoneNumber object based on the user input</returns>
         [ArgReviver]
         public static USPhoneNumber Revive(string key, string val)
         {

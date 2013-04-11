@@ -80,14 +80,13 @@ namespace PowerArgs
                 throw new InvalidArgDefinitionException("Properties of type SecureStringArgument cannot be validated.  If your goal is to make the argument required then the[ArgRequired] attribute is not needed.  The SecureStringArgument is designed to prompt the user for a value only if your code asks for it after parsing.  If your code never reads the SecureString property then the user is never prompted and it will be treated as an optional parameter.  Although discouraged, if you really, really need to run custom logic against the value before the rest of your program runs then you can implement a custom ArgHook, override RunAfterPopulateProperty, and add your custom attribute to the SecureStringArgument property.");
             }
 
-            if (prop.HasAttr<ArgRequired>())
+            foreach (var v in prop.Attrs<ArgValidator>().OrderByDescending(val => val.Priority))
             {
-                prop.Attr<ArgRequired>().Validate(prop.GetArgumentName(), ref context.ArgumentValue);
-            }
-
-            if (context.ArgumentValue != null)
-            {
-                foreach (var v in prop.Attrs<ArgValidator>().OrderByDescending(val => val.Priority))
+                if (v.ImplementsValidateAlways)
+                {
+                    v.ValidateAlways(prop, ref context.ArgumentValue);
+                }
+                else if (context.ArgumentValue != null)
                 {
                     v.Validate(prop.GetArgumentName(), ref context.ArgumentValue);
                 }
@@ -102,7 +101,14 @@ namespace PowerArgs
                 {
                     if (prop.PropertyType.IsEnum)
                     {
-                        context.RevivedProperty = ArgRevivers.ReviveEnum(prop.PropertyType, context.ArgumentValue, prop.HasAttr<ArgIgnoreCase>() && prop.Attr<ArgIgnoreCase>().IgnoreCase);
+                        bool ignoreCase = true;
+
+                        if (prop.HasAttr<ArgIgnoreCase>() && prop.Attr<ArgIgnoreCase>().IgnoreCase == false)
+                        {
+                            ignoreCase = true;
+                        }
+
+                        context.RevivedProperty = ArgRevivers.ReviveEnum(prop.PropertyType, context.ArgumentValue, ignoreCase );
                     }
                     else
                     {

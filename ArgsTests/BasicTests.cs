@@ -25,6 +25,13 @@ namespace ArgsTests
             public BasicEnum Option { get; set; }
         }
 
+        public class EnumArgsExplicitIgnoreCase
+        {
+            [DefaultValue(BasicEnum.Option2)]
+            [ArgIgnoreCase]
+            public BasicEnum Option { get; set; }
+        }
+
         public class Point
         {
             public int X { get; set; }
@@ -227,6 +234,17 @@ namespace ArgsTests
 
             parsed = Args.Parse<EnumArgs>(new string[] { }); // Test the default value
             Assert.AreEqual(BasicEnum.Option2, parsed.Option);
+        }
+
+        [TestMethod]
+        public void TestEnumCaseSensitivity()
+        {
+            var args = new string[] { "-o", "option3" };
+
+            var parsed = Args.Parse<EnumArgs>(args);
+            Assert.AreEqual(BasicEnum.Option3, parsed.Option);
+            Args.Parse<EnumArgsExplicitIgnoreCase>(args);
+            Assert.AreEqual(BasicEnum.Option3, parsed.Option);
         }
 
         [TestMethod]
