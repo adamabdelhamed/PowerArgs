@@ -162,7 +162,11 @@ namespace PowerArgs
         /// <returns>The shortcut for the property</returns>
         public static string GetShortcut(PropertyInfo info)
         {
-            if (RegisteredTypes.Contains(info.DeclaringType) == false) throw new InvalidArgDefinitionException("The given property is not registered with PowerArgs.  This will happen if you try to call GetShortcut outside the scope of the public Args methods.");
+            if (RegisteredTypes.Contains(info.DeclaringType) == false)
+            {
+                // Ensures that the shortcuts get registered
+                try { Args.Parse(info.DeclaringType); } catch (Exception) { }
+            }
             if (KnownShortcuts.ContainsKey(info)) return KnownShortcuts[info];
             else return null;
         }

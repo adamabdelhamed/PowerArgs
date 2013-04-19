@@ -129,6 +129,8 @@ namespace ArgsTests
             Assert.AreEqual(true, parsed.Bool);
         }
 
+        // TODO - More tests around lists and arrays
+
         [TestMethod]
         public void TestPowerShellStyle()
         {

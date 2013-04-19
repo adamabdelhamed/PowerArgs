@@ -12,6 +12,7 @@ namespace HelloWorld
         public string StringArg { get; set; }
 
         [ArgDescription("Description for an optional integer parameter")]
+        [ArgLongForm("integer-long-form")]
         public int IntArg { get; set; }
 
         [ArgDescription("Description for an optional switch parameter")]

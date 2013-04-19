@@ -11,7 +11,7 @@ namespace PowerArgs
     /// </summary>
     public class Args
     {
-        private Args() { }
+        private Args() { } 
 
         /// <summary>
         /// Creates a new instance of T and populates it's properties based on the given arguments.
@@ -25,6 +25,20 @@ namespace PowerArgs
         {
             Args instance = new Args();
             return instance.ParseInternal<T>(args);
+        }
+
+        /// <summary>
+        /// Creates a new instance of the given type and populates it's properties based on the given arguments.
+        /// If the type correctly implements the heuristics for Actions (or sub commands) then the complex property
+        /// that represents the options of a sub command are also populated.
+        /// </summary>
+        /// <param name="t">The argument scaffold type.</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static ArgAction ParseAction(Type t, params string[] args)
+        {
+            Args instance = new Args();
+            return instance.ParseInternal(t, args);
         }
 
 
@@ -54,17 +68,39 @@ namespace PowerArgs
             return ParseAction<T>(args).Args;
         }
 
+        /// <summary>
+        /// Creates a new instance of the given type and populates it's properties based on the given arguments.
+        /// </summary>
+        /// <param name="t">The argument scaffold type</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>A new instance of the given type with all of the properties correctly populated</returns>
+        public static object Parse(Type t, params string[] args)
+        {
+            return ParseAction(t, args).Value;
+        }
+
         private ArgAction<T> ParseInternal<T>(string[] input)
         {
-            ArgShortcut.RegisterShortcuts(typeof(T));
-            ValidateArgScaffold<T>();
+            var weak = ParseInternal(typeof(T), input);
+            return new ArgAction<T>()
+            {
+                Args = (T)weak.Value,
+                ActionArgs = weak.ActionArgs,
+                ActionArgsProperty = weak.ActionArgsProperty
+            };
+        }
+
+        private ArgAction ParseInternal(Type t, string[] input)
+        {
+            ArgShortcut.RegisterShortcuts(t);
+            ValidateArgScaffold(t);
 
             var context = new ArgHook.HookContext();
-            context.Args = Activator.CreateInstance<T>();
+            context.Args = Activator.CreateInstance(t);
             context.CmdLineArgs = input;
 
-            typeof(T).RunBeforeParse(context);
-            var specifiedActionProperty = FindSpecifiedAction<T>(ref context.CmdLineArgs);
+            t.RunBeforeParse(context);
+            var specifiedActionProperty = FindSpecifiedAction(t, ref context.CmdLineArgs);
             context.ParserData = ArgParser.Parse(context.CmdLineArgs);
             PopulateProperties(context);
 
@@ -88,17 +124,17 @@ namespace PowerArgs
                 throw new ArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
             }
 
-            return new ArgAction<T>()
+            return new ArgAction()
             {
-                Args = (T)context.Args,
+                Value = context.Args,
                 ActionArgs = specifiedActionProperty != null ? specifiedActionProperty.GetValue(context.Args, null) : null,
                 ActionArgsProperty = specifiedActionProperty
             };
         }
 
-        private PropertyInfo FindSpecifiedAction<T>(ref string[] args)
+        private PropertyInfo FindSpecifiedAction(Type t, ref string[] args)
         {
-            var actionProperty = ArgAction.GetActionProperty<T>();
+            var actionProperty = ArgAction.GetActionProperty(t);
             if (actionProperty == null) return null;
 
             var specifiedAction = args.Length > 0 ? args[0] : null;
@@ -111,7 +147,7 @@ namespace PowerArgs
 
             if (specifiedAction == null) return null;
 
-            var actionArgProperty = (from p in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            var actionArgProperty = (from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                      where p.MatchesSpecifiedAction(specifiedAction)
                                      select p).SingleOrDefault();
 

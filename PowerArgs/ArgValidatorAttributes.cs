@@ -108,17 +108,21 @@ namespace PowerArgs
     {
         double min, max;
 
-        //TODO - Provide an option to make the max exclusive
+        /// <summary>
+        /// Set to true if your max is exclusive.  This value is false by default.
+        /// </summary>
+        public bool MaxIsExclusive { get; set; }
 
         /// <summary>
         ///  Creates a new ArgRange validator.
         /// </summary>
         /// <param name="min">The minimum value (inclusive)</param>
-        /// <param name="max">The maximum value (exclusive)</param>
+        /// <param name="max">The maximum value (inclusive by default, set MaxIsExclusive to true to override)</param>
         public ArgRange(double min, double max)
         {
             this.min = min;
             this.max = max;
+            this.MaxIsExclusive = false; // This could arguably have been true by default, but I shipped it this way so it will have to stay in case people are using it.
         }
 
         /// <summary>
@@ -134,9 +138,19 @@ namespace PowerArgs
                 throw new ArgException("Expected a number for arg: " + name);
             }
 
-            if (d < min || d > max)
+            if (MaxIsExclusive == false)
             {
-                throw new ArgException(name + " must be at least " + min + ", but not greater than " + max, new ArgumentOutOfRangeException());
+                if (d < min || d > max)
+                {
+                    throw new ArgException(name + " must be at least " + min + ", but not greater than " + max, new ArgumentOutOfRangeException());
+                }
+            }
+            else
+            {
+                if (d < min || d >= max)
+                {
+                    throw new ArgException(name + " must be at least " + min + ", and less than " + max, new ArgumentOutOfRangeException());
+                }
             }
         }
     }
@@ -239,7 +253,7 @@ namespace PowerArgs
             string input = arg;
             MatchCollection matches = Regex.Matches(arg, regex);
             exactMatch = (from m in matches.ToList() where m.Value == input select m).SingleOrDefault();
-            if (exactMatch == null) throw new ArgException(errorMessage+": " + arg);
+            if (exactMatch == null) throw new ArgException(errorMessage + ": " + arg);
         }
     }
 }

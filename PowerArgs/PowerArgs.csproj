@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgAction.cs" />
+    <Compile Include="ArgLongForm.cs" />
     <Compile Include="ArgMetadataAttributes.cs" />
     <Compile Include="ConsoleString.cs" />
     <Compile Include="ConsoleTable.cs" />

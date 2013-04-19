@@ -150,6 +150,16 @@ namespace PowerArgs
             {
                 hook.BeforeParse(context);
             }
+
+            foreach (var arg in t.GetArguments())
+            {
+                foreach (var hook in arg.GetHooks(h => h.BeforeParsePriority))
+                {
+                    context.Property = arg;
+                    hook.BeforeParse(context);
+                    context.Property = null;
+                }
+            }
         }
 
         internal static void RunBeforePopulateProperties(this Type t, ArgHook.HookContext context)
@@ -210,6 +220,21 @@ namespace PowerArgs
         {
             var hooks = member.Attrs<ArgHook>();
             hooks = hooks.OrderByDescending(priority).ToList();
+            return hooks;
+        }
+
+
+        internal static List<UsageHook> GetUsageHooks(this PropertyInfo member)
+        {
+            var hooks = member.Attrs<UsageHook>();
+            if (ArgUsage.ExplicitPropertyHooks.ContainsKey(member))
+            {
+                hooks.AddRange(ArgUsage.ExplicitPropertyHooks[member]);
+            }
+
+            hooks.AddRange(ArgUsage.GlobalUsageHooks);
+
+            hooks.AddRange(member.DeclaringType.Attrs<UsageHook>());
             return hooks;
         }
 

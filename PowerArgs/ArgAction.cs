@@ -8,24 +8,16 @@ namespace PowerArgs
     /// This is the more complex version of the public result that is produced by the parser.
     /// </summary>
     /// <typeparam name="T">Represents the custom argument scaffold type that was passed to the parser.</typeparam>
-    public class ArgAction<T>
+    public class ArgAction<T> : ArgAction
     {
         /// <summary>
         /// The instance of your custom scaffold type that the parser generated and parsed.
         /// </summary>
-        public T Args { get; set; }
-
-        /// <summary>
-        /// If you used the action framework then this will represent the instance of the action specific arguments
-        /// that were parsed.
-        /// </summary>
-        public object ActionArgs { get; set; }
-
-        /// <summary>
-        /// If you used the action framework then this will map to the property that the user specified as the first
-        /// parameter on the command line.
-        /// </summary>
-        public PropertyInfo ActionArgsProperty { get; set; }
+        public T Args
+        {
+            get { return (T)Value; }
+            set { Value = value; }
+        }
 
         /// <summary>
         /// This will find the implementation method for your action and invoke it, passing the action specific
@@ -48,14 +40,34 @@ namespace PowerArgs
         }
     }
 
-    internal class ArgAction
+    /// <summary>
+    /// This is the weakly typed, more complex version of the public result that is produced by the parser.
+    /// </summary>
+    public class ArgAction
     {
-        public static PropertyInfo GetActionProperty<T>()
+        /// <summary>
+        /// The instance of your custom scaffold type that the parser generated and parsed.
+        /// </summary>
+        public object Value { get; set; }
+
+        /// <summary>
+        /// If you used the action framework then this will represent the instance of the action specific arguments
+        /// that were parsed.
+        /// </summary>
+        public object ActionArgs { get; set; }
+
+        /// <summary>
+        /// If you used the action framework then this will map to the property that the user specified as the first
+        /// parameter on the command line.
+        /// </summary>
+        public PropertyInfo ActionArgsProperty { get; set; }
+
+        internal static PropertyInfo GetActionProperty<T>()
         {
             return GetActionProperty(typeof(T));
         }
 
-        public static PropertyInfo GetActionProperty(Type t)
+        internal static PropertyInfo GetActionProperty(Type t)
         {
             var actionProperty = (from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                                   where p.Name == Constants.ActionPropertyConventionName &&
@@ -65,7 +77,7 @@ namespace PowerArgs
             return actionProperty;
         }
 
-        public static MethodInfo ResolveMethod(Type t, PropertyInfo actionProperty)
+        internal static MethodInfo ResolveMethod(Type t, PropertyInfo actionProperty)
         {
             string methodName = actionProperty.Name;
             int end = methodName.LastIndexOf(Constants.ActionArgConventionSuffix);

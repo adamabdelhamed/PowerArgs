@@ -8,10 +8,34 @@ using System.Reflection;
 namespace PowerArgs
 {
     /// <summary>
-    /// A helper class that generates usage documentation for your command line arguments given a custom argument
-    /// scaffolding type.
+    /// An attribute used to hook into the usage generation process and influence
+    /// the content that is written.
     /// </summary>
-    public static class ArgUsage
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple=true)]
+    public class UsageHook : Attribute
+    {
+        /// <summary>
+        /// An event you can subscribe to in the case where you created
+        /// your hook in running code rather than as a declarative attribute.
+        /// </summary>
+        public event Action<ArgumentUsageInfo> HookExecuting;
+
+        /// <summary>
+        /// This hook gets called when the property it is attached to is having
+        /// its usage generated.  You can override this method and manipulate the
+        /// properties of the given usage info object.
+        /// </summary>
+        /// <param name="info">An object that you can use to manipulate the usage output.</param>
+        public virtual void BeforeGenerateUsage(ArgumentUsageInfo info)
+        {
+            if(HookExecuting != null) HookExecuting(info);
+        }
+    }
+
+    /// <summary>
+    /// A class that represents usage info to be written to the console.
+    /// </summary>
+    public class ArgumentUsageInfo
     {
         private static Dictionary<string, string> KnownTypeMappings = new Dictionary<string, string>()
         {
@@ -21,16 +45,139 @@ namespace PowerArgs
             {"Guid", "guid"},
         };
 
-        private static string GetFriendlyTypeName(Type t)
+        /// <summary>
+        /// The name that will be written as part of the usage.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Aliases for this argument that will be honored by the parser.  This
+        /// includes shortcuts and long form aliases, but can be extended further.
+        /// </summary>
+        public List<string> Aliases { get; private set; }
+
+        /// <summary>
+        /// Indicates that the argument is required.
+        /// </summary>
+        public bool IsRequired { get; set; }
+
+        /// <summary>
+        /// The friendly type name that will be displayed to the user.
+        /// </summary>
+        public string Type { get; set; }
+
+        /// <summary>
+        /// The expected position of the argument, or null if not a positioning is not supported for the given argument.
+        /// </summary>
+        public int? Position { get; set; }
+
+        /// <summary>
+        /// The description that will be written as part of the usage.
+        /// </summary>
+        public string Description { get; set; }
+
+        /// <summary>
+        /// If set to true, the argument usage will not be written.
+        /// </summary>
+        public bool Ignore { get; set; }
+
+        /// <summary>
+        /// True if this is the "Action" property
+        /// </summary>
+        public bool IsAction { get; set; }
+
+        /// <summary>
+        /// True if this represents a nested action argument property
+        /// </summary>
+        public bool IsActionArgs { get; set; }
+
+        /// <summary>
+        /// The reflected property that this info object represents
+        /// </summary>
+        public PropertyInfo Property { get; set; }
+
+        private ArgumentUsageInfo()
         {
-            var name = t.Name;
-            if (KnownTypeMappings.ContainsKey(name))
+            Aliases = new List<string>();
+        }
+
+        /// <summary>
+        /// Generate a new info instance given a reflected property. 
+        /// </summary>
+        /// <param name="toAutoGen">The property to use to seed the usage info</param>
+        public ArgumentUsageInfo(PropertyInfo toAutoGen)
+            : this()
+        {
+            Property = toAutoGen;
+            Ignore = toAutoGen.HasAttr<ArgIgnoreAttribute>();
+            IsAction = toAutoGen.IsActionArgProperty();
+            IsActionArgs = toAutoGen.Name == Constants.ActionPropertyConventionName;
+
+            Name = toAutoGen.GetArgumentName();
+            IsRequired = toAutoGen.HasAttr<ArgRequired>();
+            if (ArgShortcut.GetShortcut(toAutoGen) != null)
             {
-                return KnownTypeMappings[name];
+                Aliases.Add("-" + ArgShortcut.GetShortcut(toAutoGen));
+            }
+
+            Type = toAutoGen.PropertyType.Name;
+            if (KnownTypeMappings.ContainsKey(Type))
+            {
+                Type = KnownTypeMappings[Type];
             }
             else
             {
-                return name.ToLower();
+                Type = Type.ToLower();
+            }
+
+            Position = toAutoGen.HasAttr<ArgPosition>() ? new int?(toAutoGen.Attr<ArgPosition>().Position) : null;
+
+            Description = "";
+
+            if (toAutoGen.HasAttr<ArgDescription>())
+            {
+                Description = toAutoGen.Attr<ArgDescription>().Description;
+            }
+        }
+    }
+
+    /// <summary>
+    /// A helper class that generates usage documentation for your command line arguments given a custom argument
+    /// scaffolding type.
+    /// </summary>
+    public static class ArgUsage
+    {
+        internal static Dictionary<PropertyInfo, List<UsageHook>> ExplicitPropertyHooks = new Dictionary<PropertyInfo,List<UsageHook>>();
+        internal static List<UsageHook> GlobalUsageHooks = new List<UsageHook>();
+
+        /// <summary>
+        /// Registers a usage hook for the given property.
+        /// </summary>
+        /// <param name="prop">The property to hook into or null to hook into all properties.</param>
+        /// <param name="hook">The hook implementation.</param>
+        public static void RegisterHook(PropertyInfo prop, UsageHook hook)
+        {
+            if (prop == null)
+            {
+                if (GlobalUsageHooks.Contains(hook) == false)
+                {
+                    GlobalUsageHooks.Add(hook);
+                }
+            }
+            else
+            {
+                List<UsageHook> hookCollection;
+
+                if (ExplicitPropertyHooks.TryGetValue(prop, out hookCollection) == false)
+                {
+                    hookCollection = new List<UsageHook>();
+                    ExplicitPropertyHooks.Add(prop, hookCollection);
+                }
+
+                if (hookCollection.Contains(hook) == false)
+                {
+                    hookCollection.Add(hook);
+                }
             }
         }
 
@@ -122,10 +269,11 @@ namespace PowerArgs
             return ret;
         }
 
-        private static ConsoleString GetOptionsUsage(IEnumerable<PropertyInfo> options, bool ignoreActionProperties)
+        private static ConsoleString GetOptionsUsage(IEnumerable<PropertyInfo> opts, bool ignoreActionProperties)
         {
+            var usageInfos = opts.Select(o => new ArgumentUsageInfo(o));
 
-            var hasPositionalArgs = options.Where(o => o.HasAttr<ArgPosition>()).Count() > 0;
+            var hasPositionalArgs = usageInfos.Where(i => i.Position >= 0).Count() > 0;
 
             List<ConsoleString> columnHeaders = new List<ConsoleString>()
             {
@@ -141,30 +289,46 @@ namespace PowerArgs
 
             List<List<ConsoleString>> rows = new List<List<ConsoleString>>();
 
-            foreach (PropertyInfo prop in options.OrderBy(o => o.HasAttr<ArgPosition>() ? o.Attr<ArgPosition>().Position : 1000))
+            foreach (ArgumentUsageInfo usageInfo in usageInfos.OrderBy(i => i.Position >= 0 ? i.Position : 1000))
             {
-                if (prop.HasAttr<ArgIgnoreAttribute>()) continue;
-                if (prop.IsActionArgProperty() && ignoreActionProperties) continue;
-                if (prop.Name == Constants.ActionPropertyConventionName && ignoreActionProperties) continue;
+                foreach (var hook in usageInfo.Property.GetUsageHooks())
+                {
+                    hook.BeforeGenerateUsage(usageInfo);
+                }
 
-                var positionString = new ConsoleString(prop.HasAttr<ArgPosition>() ? prop.Attr<ArgPosition>().Position + "" : "NA");
-                var requiredString = new ConsoleString(prop.HasAttr<ArgRequired>() ? "*" : "", ConsoleColor.Red);
-                var descriptionString = new ConsoleString(prop.Attr<ArgDescription>() != null ? prop.Attr<ArgDescription>().Description : "");
-                var typeString = new ConsoleString(GetFriendlyTypeName(prop.PropertyType));
+                if (usageInfo.Ignore) continue;
+                if (usageInfo.IsAction && ignoreActionProperties) continue;
+                if (usageInfo.IsActionArgs && ignoreActionProperties) continue;
+
+                var positionString = new ConsoleString(usageInfo.Position >= 0 ? usageInfo.Position + "" : "NA");
+                var requiredString = new ConsoleString(usageInfo.IsRequired ? "*" : "", ConsoleColor.Red);
+                var descriptionString = new ConsoleString(usageInfo.Description);
+                var typeString = new ConsoleString(usageInfo.Type);
 
                 var indicator = "-";
 
                 rows.Add(new List<ConsoleString>()
                 {
-                    new ConsoleString(indicator)+(prop.GetArgumentName() + " ("+ indicator + ArgShortcut.GetShortcut(prop) +")"),
+                    new ConsoleString(indicator)+(usageInfo.Name + (usageInfo.Aliases.Count > 0 ? " ("+ usageInfo.Aliases[0] +")" : "")),
                     typeString+requiredString,
                     descriptionString,
                 });
 
-                if (hasPositionalArgs)
+                if (hasPositionalArgs) rows.Last().Insert(2, positionString);
+
+                for (int i = 1; i < usageInfo.Aliases.Count; i++)
                 {
-                    rows.Last().Insert(2, positionString);
+                    rows.Add(new List<ConsoleString>()
+                    {
+                        new ConsoleString("    "+usageInfo.Aliases[i]),
+                        ConsoleString.Empty,
+                        ConsoleString.Empty,
+                    });
+
+                    if (hasPositionalArgs) rows.Last().Insert(2, positionString);
                 }
+
+       
             }
 
             return FormatAsTable(columnHeaders, rows, "   ");

@@ -23,10 +23,13 @@ namespace ArgsTests
             [ArgExistingDirectory]
             public string To { get; set; }
 
-            [ArgRange(0,100)]
+            [ArgRange(0, 100)]
             public int Start { get; set; }
             [ArgRange(0, 100)]
             public int End { get; set; }
+
+            [ArgRange(0, 100, MaxIsExclusive = true)]
+            public int SomeNumber { get; set; }
         }
 
         public class PhoneNumberArgs
@@ -127,6 +130,46 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestRangeValidatorMexInclusive()
+        {
+            try
+            {
+                var args = new string[] { Path.GetTempFileName(), "C:\\Windows", "-start", 101 + "" };
+                Args.Parse<CopyArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("but not greater than"));
+            }
+
+            var correctValue = 100;
+            var correctArgs = new string[] { Path.GetTempFileName(), "C:\\Windows", "-start", correctValue + "" };
+            var parsedShouldwork = Args.Parse<CopyArgs>(correctArgs);
+            Assert.AreEqual(correctValue, parsedShouldwork.Start);
+        }
+
+        [TestMethod]
+        public void TestRangeValidatorMaxExclusive()
+        {
+            try
+            {
+                var args = new string[] { Path.GetTempFileName(), "C:\\Windows", "-somenumber", 100 + "" };
+                Args.Parse<CopyArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (ArgException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("less than"));
+            }
+
+            var correctValue = 99;
+            var correctArgs = new string[] { Path.GetTempFileName(), "C:\\Windows", "-somenumber", correctValue + "" };
+            var parsedShouldwork = Args.Parse<CopyArgs>(correctArgs);
+            Assert.AreEqual(correctValue, parsedShouldwork.SomeNumber);
+        }
+
+        [TestMethod]
         public void TestValidSSN()
         {
             TestSSN("111-22-3333");
@@ -173,7 +216,7 @@ namespace ArgsTests
                 if (!expectValid) Assert.Fail(phoneNumberInput + " should not have been valid");
 
                 Assert.AreEqual("1-(223)-456-7890".Length, args.PhoneNumber.ToString().Length);
-                
+
                 Assert.AreEqual('1', args.PhoneNumber.ToString()[0]);
 
                 Assert.AreEqual('-', args.PhoneNumber.ToString()[1]);
