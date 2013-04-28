@@ -8,6 +8,31 @@ using System.Reflection;
 namespace PowerArgs
 {
     /// <summary>
+    /// A class that lets you customize how your usage displays
+    /// </summary>
+    public class ArgUsageOptions
+    {
+        /// <summary>
+        /// Set to true if you want to show the type column (true by default)
+        /// </summary>
+        public bool ShowType { get; set; }
+
+        /// <summary>
+        /// Set to true if you want to show the position column (true by default)
+        /// </summary>
+        public bool ShowPosition { get; set; }
+
+        /// <summary>
+        /// Creates a new instance of ArgUsageOptions
+        /// </summary>
+        public ArgUsageOptions()
+        {
+            ShowType = true;
+            ShowPosition = true;
+        }
+    }
+
+    /// <summary>
     /// An attribute used to hook into the usage generation process and influence
     /// the content that is written.
     /// </summary>
@@ -186,10 +211,11 @@ namespace PowerArgs
         /// </summary>
         /// <typeparam name="T">Your custom argument scaffold type</typeparam>
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
+        /// <param name="options">Specify custom usage options</param>
         /// <returns></returns>
-        public static string GetUsage<T>(string exeName = null)
+        public static string GetUsage<T>(string exeName = null, ArgUsageOptions options = null)
         { 
-            return GetStyledUsage<T>(exeName).ToString();
+            return GetStyledUsage<T>(exeName, options).ToString();
         }
 
         /// <summary>
@@ -197,9 +223,11 @@ namespace PowerArgs
         /// </summary>
         /// <typeparam name="T">Your custom argument scaffold type</typeparam>
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
+        /// <param name="options">Specify custom usage options</param>
         /// <returns></returns>
-        public static ConsoleString GetStyledUsage<T>(string exeName = null)
+        public static ConsoleString GetStyledUsage<T>(string exeName = null, ArgUsageOptions options = null)
         {
+            options = options ?? new ArgUsageOptions();
             if (exeName == null)
             {
                 var assembly = Assembly.GetEntryAssembly();
@@ -225,7 +253,7 @@ namespace PowerArgs
                     ret += new ConsoleString("EXAMPLE: " + example.Example + "\n" + example.Description + "\n\n", ConsoleColor.DarkGreen);
                 }
 
-                var global = GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), true);
+                var global = GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), true, options);
 
                 if (string.IsNullOrEmpty(global.ToString()) == false)
                 {
@@ -248,14 +276,14 @@ namespace PowerArgs
                             new ConsoleString("   " + example.Description + "\n\n", ConsoleColor.DarkGreen);
                     }
 
-                    ret += GetOptionsUsage(prop.PropertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public), false);
+                    ret += GetOptionsUsage(prop.PropertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
                 }
             }
             else
             {
                 ret.AppendUsingCurrentFormat(" options\n\n");
 
-                ret += GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), false);
+                ret += GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
 
                 ret += "\n";
 
@@ -269,7 +297,7 @@ namespace PowerArgs
             return ret;
         }
 
-        private static ConsoleString GetOptionsUsage(IEnumerable<PropertyInfo> opts, bool ignoreActionProperties)
+        private static ConsoleString GetOptionsUsage(IEnumerable<PropertyInfo> opts, bool ignoreActionProperties, ArgUsageOptions options)
         {
             var usageInfos = opts.Select(o => new ArgumentUsageInfo(o));
 
@@ -278,13 +306,18 @@ namespace PowerArgs
             List<ConsoleString> columnHeaders = new List<ConsoleString>()
             {
                 new ConsoleString("OPTION", ConsoleColor.Yellow),
-                new ConsoleString("TYPE", ConsoleColor.Yellow),
                 new ConsoleString("DESCRIPTION", ConsoleColor.Yellow),
             };
 
-            if (hasPositionalArgs)
+            int insertPosition = 1;
+            if (options.ShowType)
             {
-                columnHeaders.Insert(2, new ConsoleString("POSITION", ConsoleColor.Yellow));  
+                columnHeaders.Insert(insertPosition++, new ConsoleString("TYPE", ConsoleColor.Yellow));
+            }
+
+            if (hasPositionalArgs && options.ShowPosition)
+            {
+                columnHeaders.Insert(insertPosition, new ConsoleString("POSITION", ConsoleColor.Yellow));  
             }
 
             List<List<ConsoleString>> rows = new List<List<ConsoleString>>();
@@ -310,11 +343,19 @@ namespace PowerArgs
                 rows.Add(new List<ConsoleString>()
                 {
                     new ConsoleString(indicator)+(usageInfo.Name + (usageInfo.Aliases.Count > 0 ? " ("+ usageInfo.Aliases[0] +")" : "")),
-                    typeString+requiredString,
                     descriptionString,
                 });
 
-                if (hasPositionalArgs) rows.Last().Insert(2, positionString);
+                insertPosition = 1;
+                if (options.ShowType)
+                {
+                    rows.Last().Insert(insertPosition++, typeString + requiredString);
+                }
+
+                if (hasPositionalArgs && options.ShowPosition)
+                {
+                    rows.Last().Insert(insertPosition, positionString);
+                }
 
                 for (int i = 1; i < usageInfo.Aliases.Count; i++)
                 {
