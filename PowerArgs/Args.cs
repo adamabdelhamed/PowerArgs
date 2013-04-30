@@ -25,7 +25,7 @@ namespace PowerArgs
         {
             string[] unmatchedArgs;
             Args instance = new Args();
-            return instance.ParseInternal<T>(out unmatchedArgs, args);
+            return instance.ParseInternal<T>(args, out unmatchedArgs);
         }
 
         /// <summary>
@@ -70,10 +70,17 @@ namespace PowerArgs
             return ParseAction<T>(args).Args;
         }
 
+        /// <summary>
+        /// Creates a new instance of T and populates it's properties based on the given arguments.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <param name="unmatchedArgs">A list of arguments that could not be matched against any of T's properties.</param>
+        /// <returns>A new instance of T with all of the properties correctly populated</returns>
         public static T Parse<T>(string[] args, out string[] unmatchedArgs)
         {
             Args instance = new Args();
-            return instance.ParseInternal<T>(out unmatchedArgs, args, shouldThrow: false).Args;
+            return instance.ParseInternal<T>(args, out unmatchedArgs, shouldThrow: false).Args;
         }
 
         /// <summary>
@@ -87,7 +94,7 @@ namespace PowerArgs
             return ParseAction(t, args).Value;
         }
 
-        private ArgAction<T> ParseInternal<T>(out string[] unmatchedArgs, string[] input, bool shouldThrow = true)
+        private ArgAction<T> ParseInternal<T>(string[] input, out string[] unmatchedArgs, bool shouldThrow = true)
         {
             var weak = ParseInternal(typeof(T), out unmatchedArgs, input, shouldThrow);
             return new ArgAction<T>()
