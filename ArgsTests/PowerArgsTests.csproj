@@ -64,6 +64,7 @@
     <Compile Include="TempFiles.cs" />
     <Compile Include="ConsoleStringTests.cs" />
     <Compile Include="LongFormTests.cs" />
+    <Compile Include="UnmatchedArgumentTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />
   </ItemGroup>

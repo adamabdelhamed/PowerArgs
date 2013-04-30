@@ -11,7 +11,7 @@ namespace PowerArgs
     /// </summary>
     public class Args
     {
-        private Args() { } 
+        private Args() { }
 
         /// <summary>
         /// Creates a new instance of T and populates it's properties based on the given arguments.
@@ -23,8 +23,9 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction<T> ParseAction<T>(params string[] args)
         {
+            string[] unmatchedArgs;
             Args instance = new Args();
-            return instance.ParseInternal<T>(args);
+            return instance.ParseInternal<T>(args, out unmatchedArgs);
         }
 
         /// <summary>
@@ -37,8 +38,9 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction ParseAction(Type t, params string[] args)
         {
+            string[] unmatchedArgs;
             Args instance = new Args();
-            return instance.ParseInternal(t, args);
+            return instance.ParseInternal(t, out unmatchedArgs, args);
         }
 
 
@@ -69,6 +71,19 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Creates a new instance of T and populates it's properties based on the given arguments.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <param name="unmatchedArgs">A list of arguments that could not be matched against any of T's properties.</param>
+        /// <returns>A new instance of T with all of the properties correctly populated</returns>
+        public static T Parse<T>(string[] args, out string[] unmatchedArgs)
+        {
+            Args instance = new Args();
+            return instance.ParseInternal<T>(args, out unmatchedArgs, shouldThrow: false).Args;
+        }
+
+        /// <summary>
         /// Creates a new instance of the given type and populates it's properties based on the given arguments.
         /// </summary>
         /// <param name="t">The argument scaffold type</param>
@@ -79,9 +94,9 @@ namespace PowerArgs
             return ParseAction(t, args).Value;
         }
 
-        private ArgAction<T> ParseInternal<T>(string[] input)
+        private ArgAction<T> ParseInternal<T>(string[] input, out string[] unmatchedArgs, bool shouldThrow = true)
         {
-            var weak = ParseInternal(typeof(T), input);
+            var weak = ParseInternal(typeof(T), out unmatchedArgs, input, shouldThrow);
             return new ArgAction<T>()
             {
                 Args = (T)weak.Value,
@@ -90,7 +105,7 @@ namespace PowerArgs
             };
         }
 
-        private ArgAction ParseInternal(Type t, string[] input)
+        private ArgAction ParseInternal(Type t, out string[] unmatchedArgs, string[] input, bool shouldThrow = true)
         {
             ArgShortcut.RegisterShortcuts(t);
             ValidateArgScaffold(t);
@@ -114,15 +129,34 @@ namespace PowerArgs
                 specifiedActionProperty.SetValue(context.Args, actionPropertyValue, null);
             }
 
+            var unmatchedArguments = new List<string>();
+
             if (context.ParserData.ImplicitParameters.Count > 0)
             {
-                throw new ArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+                if (shouldThrow)
+                    throw new ArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+
+                foreach (var implicitParameter in context.ParserData.ImplicitParameters)
+                {
+                    unmatchedArguments.Insert(implicitParameter.Key, implicitParameter.Value);
+                }
             }
 
             if (context.ParserData.ExplicitParameters.Count > 0)
             {
-                throw new ArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+                if (shouldThrow)
+                    throw new ArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+
+                foreach (var explicitParameter in context.ParserData.ExplicitParameters)
+                {
+                    unmatchedArguments.Add(string.Format("-{0}", explicitParameter.Key));
+
+                    if (!string.IsNullOrEmpty(explicitParameter.Value))
+                        unmatchedArguments.Add(explicitParameter.Value);
+                }
             }
+
+            unmatchedArgs = unmatchedArguments.ToArray();
 
             return new ArgAction()
             {
