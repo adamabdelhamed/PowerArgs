@@ -425,8 +425,9 @@ namespace ArgsTests
             {
                 var basicUsage = ArgUsage.GetUsage<BasicArgs>();
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
+                Assert.IsInstanceOfType(ex, typeof(InvalidOperationException));
                 Assert.IsTrue(ex.Message.ToLower().Contains("could not determine the name of your executable automatically"));
             }
         }
