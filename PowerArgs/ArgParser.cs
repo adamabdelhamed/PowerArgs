@@ -98,7 +98,7 @@ namespace PowerArgs
                 }
                 else
                 {
-                    if (argumentPosition < 0) throw new ArgException("Unexpected argument: " + token);
+                    if (argumentPosition < 0) throw new UnexpectedArgException("Unexpected argument: " + token);
                     result.ImplicitParameters.Add(argumentPosition, token);
                     argumentPosition++;
                 }

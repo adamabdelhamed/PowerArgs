@@ -116,12 +116,12 @@ namespace PowerArgs
 
             if (context.ParserData.ImplicitParameters.Count > 0)
             {
-                throw new ArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+                throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
             }
 
             if (context.ParserData.ExplicitParameters.Count > 0)
             {
-                throw new ArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+                throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
             }
 
             return new ArgAction()

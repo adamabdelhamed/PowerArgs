@@ -305,7 +305,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestExtraArgs()
+        public void ArgsThrowsOnUnexpectedNamedArgument()
         {
             var args = new string[] { "-bool", "-string", "string", "-extraArg", "extraValue" };
 
@@ -314,15 +314,16 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
-            {
-                Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extraarg"));
+            catch (Exception ex)
+            {                
+                Assert.IsInstanceOfType(ex, typeof(UnexpectedArgException));
+                Assert.AreEqual("Unexpected named argument: extraArg", ex.Message);
             }
         }
 
 
         [TestMethod]
-        public void TestExtraArgs2()
+        public void ArgParserThrowsOnUnexpectedArgument()
         {
             var args = new string[] { "-bool", "-string", "string", "extraValue" };
 
@@ -331,14 +332,15 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extravalue"));
+                Assert.IsInstanceOfType(ex, typeof(UnexpectedArgException));
+                Assert.AreEqual("Unexpected argument: extraValue", ex.Message);
             }
         }
 
         [TestMethod]
-        public void TestExtraArgsPositionOnly()
+        public void ArgsThrowsOnUnexpectedPositionalArgument()
         {
             var args = new string[] { "A", "B", "extraarg", };
 
@@ -347,9 +349,10 @@ namespace ArgsTests
                 var parsed = Args.Parse<PositionedArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extraarg"));
+                Assert.IsInstanceOfType(ex, typeof(UnexpectedArgException));
+                Assert.AreEqual("Unexpected unnamed argument: extraarg", ex.Message);
             }
         }
 
@@ -419,7 +422,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestBasicUsageWithNoExeNameThrowsArgException()
+        public void TestBasicUsageWithNoExeNameThrows()
         {
             try 
             {
@@ -430,6 +433,13 @@ namespace ArgsTests
                 Assert.IsInstanceOfType(ex, typeof(InvalidOperationException));
                 Assert.IsTrue(ex.Message.ToLower().Contains("could not determine the name of your executable automatically"));
             }
+        }
+
+        [TestMethod]
+        public void UnexpectedArgumentExceptionInheritsFromArgException()
+        {
+            var uae = new UnexpectedArgException("test");
+            Assert.IsInstanceOfType(uae, typeof(ArgException));
         }
     }
 }
