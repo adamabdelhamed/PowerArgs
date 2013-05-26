@@ -151,7 +151,7 @@ namespace PowerArgs
                                      where p.MatchesSpecifiedAction(specifiedAction)
                                      select p).SingleOrDefault();
 
-            if (actionArgProperty == null) throw new ArgException("Unknown Action: " + specifiedAction);
+            if (actionArgProperty == null) throw new UnknownActionArgException("Unknown Action: " + specifiedAction);
 
             return actionArgProperty;
         }
