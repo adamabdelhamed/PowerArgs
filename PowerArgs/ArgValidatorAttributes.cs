@@ -206,7 +206,7 @@ namespace PowerArgs
             }
             if (arg == null)
             {
-                throw new ArgException("The argument '" + prop.GetArgumentName() + "' is required", new ArgumentNullException(prop.GetArgumentName()));
+                throw new MissingArgException("The argument '" + prop.GetArgumentName() + "' is required", new ArgumentNullException(prop.GetArgumentName()));
             }
         }
     }

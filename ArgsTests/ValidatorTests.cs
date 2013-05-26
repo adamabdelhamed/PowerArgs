@@ -80,17 +80,19 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestRequiredValidatorNegative()
+        public void ArgRequiredValidatorThrowsOnMissingArg()
         {
             var args = new string[] { };
+
             try
             {
                 var parsed = Args.ParseAction<CopyArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException e)
+            catch (Exception ex)
             {
-                Assert.IsTrue(e.ToString().ToLower().Contains("required"), "Arg should have been required");
+                Assert.IsInstanceOfType(ex, typeof(MissingArgException));
+                Assert.AreEqual("The argument 'from' is required", ex.Message);
             }
         }
 

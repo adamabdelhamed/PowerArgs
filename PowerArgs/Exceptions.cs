@@ -77,4 +77,22 @@ namespace PowerArgs
         public DuplicateArgException(string msg, Exception inner) : base(msg, inner) { }
 
     }
+
+    public class MissingArgException : ArgException
+    {
+        /// <summary>
+        /// Creates a new ArgException given a user friendly message
+        /// </summary>
+        /// <param name="msg">A user friendly message.</param>
+        public MissingArgException(string msg) : base(msg) { }
+
+        /// <summary>
+        /// Creates a new ArgException given a user friendly message
+        /// </summary>
+        /// <param name="msg">A user friendly message.</param>
+        /// <param name="inner">The inner exception that caused the problem</param>
+        public MissingArgException(string msg, Exception inner) : base(msg, inner) { }
+
+    }
+
 }
