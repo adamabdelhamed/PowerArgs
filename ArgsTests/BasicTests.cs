@@ -357,7 +357,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestArgSpecifiedTwice()
+        public void ArgParserThrowsOnDuplicateNamedArguments()
         {
             var args = new string[] { "-string", "string", "-string", "specifiedTwice" };
 
@@ -366,14 +366,15 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("argument specified more than once") && ex.Message.ToLower().Contains("string"));
+                Assert.IsInstanceOfType(ex, typeof(DuplicateArgException));
+                Assert.AreEqual("Argument specified more than once: string", ex.Message);
             }
         }
 
         [TestMethod]
-        public void TestArgSpecifiedTwiceMixedCase()
+        public void ArgsThrowsOnDuplicateMixedCaseNamedArguments()
         {
             var args = new string[] { "-string", "string", "-String", "specifiedTwice" };
 
@@ -382,14 +383,15 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("argument specified more than once") && ex.Message.ToLower().Contains("string"));
+                Assert.IsInstanceOfType(ex, typeof(DuplicateArgException));
+                Assert.AreEqual("Argument specified more than once: string", ex.Message);
             }
         }
 
         [TestMethod]
-        public void TestArgSpecifiedTwiceSlashColon()
+        public void ArgParserThrowsOnDuplicateArgumentUsingSlashColonFormat()
         {
             var args = new string[] { "/string:string", "/string:specifiedTwice" };
 
@@ -398,9 +400,10 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("argument specified more than once") && ex.Message.ToLower().Contains("string"));
+                Assert.IsInstanceOfType(ex, typeof(DuplicateArgException));
+                Assert.AreEqual("Argument specified more than once: string", ex.Message);
             }
         }
 

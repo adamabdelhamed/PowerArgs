@@ -165,7 +165,7 @@ namespace PowerArgs
                             where prop.MatchesSpecifiedArg(k)
                             select k;
 
-                if (match.Count() > 1) throw new ArgException("Argument specified more than once: "+prop.GetArgumentName());
+                if (match.Count() > 1) throw new DuplicateArgException("Argument specified more than once: "+prop.GetArgumentName());
 
                 if (match.Count() == 1)
                 {
