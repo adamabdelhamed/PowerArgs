@@ -129,4 +129,21 @@ namespace PowerArgs
 
     }
 
+    public class ValidationArgException : ArgException
+    {
+        /// <summary>
+        /// Creates a new ArgException given a user friendly message
+        /// </summary>
+        /// <param name="msg">A user friendly message.</param>
+        public ValidationArgException(string msg) : base(msg) { }
+
+        /// <summary>
+        /// Creates a new ArgException given a user friendly message
+        /// </summary>
+        /// <param name="msg">A user friendly message.</param>
+        /// <param name="inner">The inner exception that caused the problem</param>
+        public ValidationArgException(string msg, Exception inner) : base(msg, inner) { }
+
+    }
+
 }

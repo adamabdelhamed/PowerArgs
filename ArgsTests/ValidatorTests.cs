@@ -53,11 +53,13 @@ namespace ArgsTests
                 var parsed = Args.ParseAction<CopyArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException e)
+            catch (Exception ex)
             {
-                var inner = e.InnerException as FileNotFoundException;
-                Assert.IsNotNull(inner);
-                Assert.IsTrue(e.ToString().Contains(invalidFileName), "Exception message did not contain the invalid file name");
+                Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
+                Assert.AreEqual("File not found - notarealfile", ex.Message);
+
+                Assert.IsNotNull(ex.InnerException, "Missing inner exception");
+                Assert.IsInstanceOfType(ex.InnerException, typeof(FileNotFoundException));
             }
         }
 
@@ -71,14 +73,16 @@ namespace ArgsTests
                 var parsed = Args.ParseAction<CopyArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException e)
+            catch (Exception ex)
             {
-                var inner = e.InnerException as DirectoryNotFoundException;
-                Assert.IsNotNull(inner);
-                Assert.IsTrue(e.ToString().Contains(invalidFolderName), "Exception message did not contain the invalid directory name");
+                Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
+                Assert.AreEqual("Directory not found: 'notARealFolder'", ex.Message);
+
+                Assert.IsNotNull(ex.InnerException, "Missing inner exception");
+                Assert.IsInstanceOfType(ex.InnerException, typeof(DirectoryNotFoundException));
             }
         }
-
+        
         [TestMethod]
         public void ArgRequiredValidatorThrowsOnMissingArg()
         {
@@ -96,21 +100,51 @@ namespace ArgsTests
             }
         }
 
-
         [TestMethod]
-        public void TestRangeValidatorNegative()
+        public void ArgRangeThrowsOnNonNumericValue()
         {
-            double start = 0, end = 10000;
-            var args = new string[] { Path.GetTempFileName(), "C:\\Windows", "-start", start + "", "-end", end + "" };
-
             try
             {
-                var parsed = Args.ParseAction<CopyArgs>(args);
+                var args = new string[] { Path.GetTempFileName(), "C:\\Windows", "-start", "ABC" };
+                Args.Parse<CopyArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
+                Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
+                Assert.AreEqual("Expected a number for arg: start", ex.Message);
+            }
+        }
 
+        [TestMethod]
+        public void ArgRangeThrowsOnValueGreaterThanMaxInclusive()
+        {
+            try
+            {
+                var args = new string[] { Path.GetTempFileName(), "C:\\Windows", "-start", 101 + "" };
+                Args.Parse<CopyArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
+                Assert.AreEqual("start must be at least 0, but not greater than 100", ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void ArgRangeThrowsOnValueEqualToMaxExclusive()
+        {
+            try
+            {
+                var args = new string[] { Path.GetTempFileName(), "C:\\Windows", "-somenumber", 100 + "" };
+                Args.Parse<CopyArgs>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
+                Assert.AreEqual("somenumber must be at least 0, and less than 100", ex.Message);
             }
         }
 
@@ -132,19 +166,8 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestRangeValidatorMexInclusive()
+        public void TestRangeValidatorMaxInclusive()
         {
-            try
-            {
-                var args = new string[] { Path.GetTempFileName(), "C:\\Windows", "-start", 101 + "" };
-                Args.Parse<CopyArgs>(args);
-                Assert.Fail("An exception should have been thrown");
-            }
-            catch (ArgException ex)
-            {
-                Assert.IsTrue(ex.Message.Contains("but not greater than"));
-            }
-
             var correctValue = 100;
             var correctArgs = new string[] { Path.GetTempFileName(), "C:\\Windows", "-start", correctValue + "" };
             var parsedShouldwork = Args.Parse<CopyArgs>(correctArgs);
@@ -154,17 +177,6 @@ namespace ArgsTests
         [TestMethod]
         public void TestRangeValidatorMaxExclusive()
         {
-            try
-            {
-                var args = new string[] { Path.GetTempFileName(), "C:\\Windows", "-somenumber", 100 + "" };
-                Args.Parse<CopyArgs>(args);
-                Assert.Fail("An exception should have been thrown");
-            }
-            catch (ArgException ex)
-            {
-                Assert.IsTrue(ex.Message.Contains("less than"));
-            }
-
             var correctValue = 99;
             var correctArgs = new string[] { Path.GetTempFileName(), "C:\\Windows", "-somenumber", correctValue + "" };
             var parsedShouldwork = Args.Parse<CopyArgs>(correctArgs);
@@ -255,10 +267,12 @@ namespace ArgsTests
                 RegexArgs args = Args.Parse<RegexArgs>("-s", input);
                 if (!expectValid) Assert.Fail(input + " should not have been valid");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
                 if (expectValid) Assert.Fail(input + " should have been valid");
-                else Assert.IsTrue(ex.Message.Equals("Invalid social security number: " + input));
+                
+                Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
+                Assert.AreEqual("Invalid social security number: " + input, ex.Message);
             }
         }
     }

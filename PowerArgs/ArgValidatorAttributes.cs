@@ -70,7 +70,7 @@ namespace PowerArgs
         {
             if (File.Exists(arg) == false)
             {
-                throw new ArgException("File not found - " + arg, new FileNotFoundException());
+                throw new ValidationArgException("File not found - " + arg, new FileNotFoundException());
             }
             arg = Path.GetFullPath(arg);
         }
@@ -94,7 +94,7 @@ namespace PowerArgs
         {
             if (Directory.Exists(arg) == false)
             {
-                throw new ArgException("Directory not found: '" + arg + "'", new DirectoryNotFoundException());
+                throw new ValidationArgException("Directory not found: '" + arg + "'", new DirectoryNotFoundException());
             }
             arg = Path.GetFullPath(arg);
         }
@@ -135,21 +135,21 @@ namespace PowerArgs
             double d;
             if (double.TryParse(arg, out d) == false)
             {
-                throw new ArgException("Expected a number for arg: " + name);
+                throw new ValidationArgException("Expected a number for arg: " + name);
             }
 
             if (MaxIsExclusive == false)
             {
                 if (d < min || d > max)
                 {
-                    throw new ArgException(name + " must be at least " + min + ", but not greater than " + max, new ArgumentOutOfRangeException());
+                    throw new ValidationArgException(name + " must be at least " + min + ", but not greater than " + max, new ArgumentOutOfRangeException());
                 }
             }
             else
             {
                 if (d < min || d >= max)
                 {
-                    throw new ArgException(name + " must be at least " + min + ", and less than " + max, new ArgumentOutOfRangeException());
+                    throw new ValidationArgException(name + " must be at least " + min + ", and less than " + max, new ArgumentOutOfRangeException());
                 }
             }
         }
@@ -253,7 +253,7 @@ namespace PowerArgs
             string input = arg;
             MatchCollection matches = Regex.Matches(arg, regex);
             exactMatch = (from m in matches.ToList() where m.Value == input select m).SingleOrDefault();
-            if (exactMatch == null) throw new ArgException(errorMessage + ": " + arg);
+            if (exactMatch == null) throw new ValidationArgException(errorMessage + ": " + arg);
         }
     }
 }
