@@ -25,7 +25,7 @@ namespace PowerArgs
         /// </summary>
         public void Invoke()
         {
-            if (Args == null || ActionArgs == null) throw new ArgException("No action was specified");
+            if (Args == null || ActionArgs == null) throw new MissingArgException("No action was specified");
             ResolveMethod(ActionArgsProperty).Invoke(null, new object[] { ActionArgs });
         }
 
