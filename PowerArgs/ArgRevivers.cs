@@ -176,7 +176,7 @@ namespace PowerArgs
             revivers.Add(typeof(DateTime), (prop, val) =>
             {
                 DateTime ret;
-                if (DateTime.TryParse(val, out ret) == false) throw new ArgumentException("value must be a valid date time: " + val);
+                if (DateTime.TryParse(val, out ret) == false) throw new FormatException("value must be a valid date time: " + val);
                 return ret;
             });
 
