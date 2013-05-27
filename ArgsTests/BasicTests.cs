@@ -239,6 +239,23 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void ArgReviversReviveEnumThrowsOnInvalidValue()
+        {
+            var args = new string[] { "-option", "NonExistentOption" };
+
+            try
+            {
+                Args.Parse<EnumArgs>(args);
+                Assert.Fail("Should have thrown an exception");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
+                Assert.AreEqual("NonExistentOption is not a valid value for type BasicEnum, options are Option1, Option2, Option3", ex.Message);
+            }
+        }
+
+        [TestMethod]
         public void TestEnumCaseSensitivity()
         {
             var args = new string[] { "-o", "option3" };

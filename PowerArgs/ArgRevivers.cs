@@ -47,7 +47,7 @@ namespace PowerArgs
             catch (Exception ex)
             {
                 Trace.TraceError(ex.ToString());
-                throw new ArgException(value+" is not a valid value for type "+t.Name+", options are "+string.Join(", ",Enum.GetNames(t)));
+                throw new ValidationArgException(value+" is not a valid value for type "+t.Name+", options are "+string.Join(", ",Enum.GetNames(t)));
             }
         }
 
