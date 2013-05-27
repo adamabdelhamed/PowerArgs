@@ -97,7 +97,7 @@ namespace PowerArgs
             {
                 var errorString = "";
                 foreach (var error in results.Errors) errorString += error + "\n";
-                throw new ArgException("Could not compile your query", new Exception(errorString + "\n\n\n\n" + code));
+                throw new QueryInvalidArgException("Could not compile your query", new Exception(errorString + "\n\n\n\n" + code));
             }
 
             var method = results.CompiledAssembly.GetType(Namespace + "." + Class).GetMethod(Method);

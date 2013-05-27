@@ -34,6 +34,20 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void QueryArgsThrowsOnUncompilableQuery()
+        {
+            try
+            {
+                Args.Parse<TestArgs>("-Where", "foobar == 'JJ'");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(QueryInvalidArgException));
+                Assert.AreEqual("Could not compile your query", ex.Message);
+            }
+        }
+
+        [TestMethod]
         public void TestQuerySkipTake()
         {
             var parsed = Args.Parse<TestArgs>("-Skip", "5", "-Take", "5");
