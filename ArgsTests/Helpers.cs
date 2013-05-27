@@ -10,6 +10,27 @@ namespace ArgsTests
 {
     public static class Helpers
     {
+        public static Action<Exception> ExpectedException<T>(string expectedText = null, bool caseSensitive =false)
+        {
+            return (ex) =>
+            {
+                Assert.IsInstanceOfType(ex, typeof(T));
+
+                if (expectedText == null) return;
+
+                if (caseSensitive &&
+                    ex.Message.Contains(expectedText) == false)
+                {
+                    Assert.Fail("Error message did not contain the expected case sensitive text. Actual<[0]>. Expected<[1]>", ex.Message, expectedText);
+                }
+                else if (!caseSensitive &&
+                    ex.Message.IndexOf(expectedText, StringComparison.CurrentCultureIgnoreCase) < 0)
+                {
+                    Assert.Fail("Error message did not contain the expected case insensitive text. Actual<[0]>. Expected<[1]>", ex.Message, expectedText);
+                }
+            };
+        }
+
         public static Action<Exception> ExpectedArgException(string expectedText = null, bool caseSensitive = false)
         {
             return (ex) =>

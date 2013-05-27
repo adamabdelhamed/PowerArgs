@@ -47,7 +47,7 @@ namespace PowerArgs
             catch (Exception ex)
             {
                 Trace.TraceError(ex.ToString());
-                throw new ArgException(value+" is not a valid value for type "+t.Name+", options are "+string.Join(", ",Enum.GetNames(t)));
+                throw new ValidationArgException(value+" is not a valid value for type "+t.Name+", options are "+string.Join(", ",Enum.GetNames(t)));
             }
         }
 
@@ -176,7 +176,7 @@ namespace PowerArgs
             revivers.Add(typeof(DateTime), (prop, val) =>
             {
                 DateTime ret;
-                if (DateTime.TryParse(val, out ret) == false) throw new ArgumentException("value must be a valid date time: " + val);
+                if (DateTime.TryParse(val, out ret) == false) throw new FormatException("value must be a valid date time: " + val);
                 return ret;
             });
 

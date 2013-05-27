@@ -116,12 +116,12 @@ namespace PowerArgs
 
             if (context.ParserData.ImplicitParameters.Count > 0)
             {
-                throw new ArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+                throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
             }
 
             if (context.ParserData.ExplicitParameters.Count > 0)
             {
-                throw new ArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+                throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
             }
 
             return new ArgAction()
@@ -151,7 +151,7 @@ namespace PowerArgs
                                      where p.MatchesSpecifiedAction(specifiedAction)
                                      select p).SingleOrDefault();
 
-            if (actionArgProperty == null) throw new ArgException("Unknown Action: " + specifiedAction);
+            if (actionArgProperty == null) throw new UnknownActionArgException("Unknown Action: " + specifiedAction);
 
             return actionArgProperty;
         }
@@ -165,7 +165,7 @@ namespace PowerArgs
                             where prop.MatchesSpecifiedArg(k)
                             select k;
 
-                if (match.Count() > 1) throw new ArgException("Argument specified more than once: "+prop.GetArgumentName());
+                if (match.Count() > 1) throw new DuplicateArgException("Argument specified more than once: "+prop.GetArgumentName());
 
                 if (match.Count() == 1)
                 {

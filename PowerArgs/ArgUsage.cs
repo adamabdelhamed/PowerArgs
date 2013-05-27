@@ -233,7 +233,7 @@ namespace PowerArgs
                 var assembly = Assembly.GetEntryAssembly();
                 if (assembly == null)
                 {
-                    throw new ArgException("PowerArgs could not determine the name of your executable automatically.  This may happen if you run GetUsage<T>() from within unit tests.  Use GetUsageT>(string exeName) in unit tests to avoid this exception.");
+                    throw new InvalidOperationException("PowerArgs could not determine the name of your executable automatically.  This may happen if you run GetUsage<T>() from within unit tests.  Use GetUsageT>(string exeName) in unit tests to avoid this exception.");
                 }
                 exeName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
             }

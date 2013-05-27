@@ -135,5 +135,26 @@ namespace ArgsTests
 
             }
         }
+
+        [TestMethod]
+        [Description("NOTE: This tests a highly unlikely case as normal usage will have the Args class throw an exception first.")]
+        public void ArgActionInvokeThrowsOnNullAction()
+        {
+            var args = new string[] { };
+            var argAction = new ArgAction<ActionTestArgs>();
+            
+            // Not setting .ActionArgs or .Args to leave them as null.
+
+            try
+            {
+                argAction.Invoke();
+                Assert.Fail("Should have thrown an exception.");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(MissingArgException));
+                Assert.AreEqual("No action was specified", ex.Message);
+            }
+        }
     }
 }
