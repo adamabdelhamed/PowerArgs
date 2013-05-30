@@ -145,6 +145,9 @@ namespace ArgsTests
             }
             catch (ArgException ex)
             {
+                Assert.IsNotNull(ex.InnerException, "Missing inner exception from revier");
+                Assert.IsInstanceOfType(ex.InnerException, typeof(FormatException));
+
                 Assert.IsTrue(ex.Message.Contains(variation));
             }
         }

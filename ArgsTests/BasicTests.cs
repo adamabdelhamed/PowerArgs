@@ -239,6 +239,23 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void ArgReviversReviveEnumThrowsOnInvalidValue()
+        {
+            var args = new string[] { "-option", "NonExistentOption" };
+
+            try
+            {
+                Args.Parse<EnumArgs>(args);
+                Assert.Fail("Should have thrown an exception");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
+                Assert.AreEqual("NonExistentOption is not a valid value for type BasicEnum, options are Option1, Option2, Option3", ex.Message);
+            }
+        }
+
+        [TestMethod]
         public void TestEnumCaseSensitivity()
         {
             var args = new string[] { "-o", "option3" };
@@ -305,7 +322,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestExtraArgs()
+        public void ArgsThrowsOnUnexpectedNamedArgument()
         {
             var args = new string[] { "-bool", "-string", "string", "-extraArg", "extraValue" };
 
@@ -314,15 +331,16 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
-            {
-                Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extraarg"));
+            catch (Exception ex)
+            {                
+                Assert.IsInstanceOfType(ex, typeof(UnexpectedArgException));
+                Assert.AreEqual("Unexpected named argument: extraArg", ex.Message);
             }
         }
 
 
         [TestMethod]
-        public void TestExtraArgs2()
+        public void ArgParserThrowsOnUnexpectedArgument()
         {
             var args = new string[] { "-bool", "-string", "string", "extraValue" };
 
@@ -331,14 +349,15 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extravalue"));
+                Assert.IsInstanceOfType(ex, typeof(UnexpectedArgException));
+                Assert.AreEqual("Unexpected argument: extraValue", ex.Message);
             }
         }
 
         [TestMethod]
-        public void TestExtraArgsPositionOnly()
+        public void ArgsThrowsOnUnexpectedPositionalArgument()
         {
             var args = new string[] { "A", "B", "extraarg", };
 
@@ -347,14 +366,15 @@ namespace ArgsTests
                 var parsed = Args.Parse<PositionedArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("unexpected") && ex.Message.ToLower().Contains("extraarg"));
+                Assert.IsInstanceOfType(ex, typeof(UnexpectedArgException));
+                Assert.AreEqual("Unexpected unnamed argument: extraarg", ex.Message);
             }
         }
 
         [TestMethod]
-        public void TestArgSpecifiedTwice()
+        public void ArgParserThrowsOnDuplicateNamedArguments()
         {
             var args = new string[] { "-string", "string", "-string", "specifiedTwice" };
 
@@ -363,14 +383,15 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("argument specified more than once") && ex.Message.ToLower().Contains("string"));
+                Assert.IsInstanceOfType(ex, typeof(DuplicateArgException));
+                Assert.AreEqual("Argument specified more than once: string", ex.Message);
             }
         }
 
         [TestMethod]
-        public void TestArgSpecifiedTwiceMixedCase()
+        public void ArgsThrowsOnDuplicateMixedCaseNamedArguments()
         {
             var args = new string[] { "-string", "string", "-String", "specifiedTwice" };
 
@@ -379,14 +400,15 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("argument specified more than once") && ex.Message.ToLower().Contains("string"));
+                Assert.IsInstanceOfType(ex, typeof(DuplicateArgException));
+                Assert.AreEqual("Argument specified more than once: string", ex.Message);
             }
         }
 
         [TestMethod]
-        public void TestArgSpecifiedTwiceSlashColon()
+        public void ArgParserThrowsOnDuplicateArgumentUsingSlashColonFormat()
         {
             var args = new string[] { "/string:string", "/string:specifiedTwice" };
 
@@ -395,9 +417,10 @@ namespace ArgsTests
                 var parsed = Args.Parse<BasicArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("argument specified more than once") && ex.Message.ToLower().Contains("string"));
+                Assert.IsInstanceOfType(ex, typeof(DuplicateArgException));
+                Assert.AreEqual("Argument specified more than once: string", ex.Message);
             }
         }
 
@@ -419,16 +442,24 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestBasicUsageWithNoExeNameThrowsArgException()
+        public void TestBasicUsageWithNoExeNameThrows()
         {
             try 
             {
                 var basicUsage = ArgUsage.GetUsage<BasicArgs>();
             }
-            catch (ArgException ex)
+            catch (Exception ex)
             {
+                Assert.IsInstanceOfType(ex, typeof(InvalidOperationException));
                 Assert.IsTrue(ex.Message.ToLower().Contains("could not determine the name of your executable automatically"));
             }
+        }
+
+        [TestMethod]
+        public void UnexpectedArgumentExceptionInheritsFromArgException()
+        {
+            var uae = new UnexpectedArgException("test");
+            Assert.IsInstanceOfType(uae, typeof(ArgException));
         }
     }
 }
