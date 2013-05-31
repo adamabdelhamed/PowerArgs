@@ -26,6 +26,18 @@ namespace PowerArgs
                     where prop.IsActionArgProperty() select prop).ToList();
         }
 
+        internal static List<MethodInfo> GetActionMethods(this Type t)
+        {
+            if (t.HasAttr<ArgActionType>())
+            {
+                t = t.Attr<ArgActionType>().ActionType;
+            }
+
+            return (from m in t.GetMethods()
+                    where m.HasAttr<ArgActionMethod>()
+                    select m).ToList();
+        }
+
         internal static string GetArgumentName(this PropertyInfo prop)
         {
             bool ignoreCase = true;
@@ -66,6 +78,30 @@ namespace PowerArgs
             var test = (prop.HasAttr<ArgIgnoreCase>() && !prop.Attr<ArgIgnoreCase>().IgnoreCase) ||
                 (prop.DeclaringType.HasAttr<ArgIgnoreCase>() && !prop.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase) ? action + Constants.ActionArgConventionSuffix : action.ToLower() + Constants.ActionArgConventionSuffix.ToLower();
             return test == propName;
+        }
+
+        internal static bool MatchesSpecifiedAction(this MethodInfo method, string action)
+        {
+            var methodName = method.Name;
+
+            bool ignoreCase = true;
+
+            if (method.HasAttr<ArgIgnoreCase>() && !method.Attr<ArgIgnoreCase>().IgnoreCase)
+            {
+                ignoreCase = false;
+            }
+            else if (method.DeclaringType.HasAttr<ArgIgnoreCase>() && !method.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase)
+            {
+                ignoreCase = false;
+            }
+
+            if (ignoreCase)
+            {
+                action = action.ToLower();
+                methodName = methodName.ToLower();
+            }
+
+            return action == methodName;
         }
 
         internal static bool IsActionArgProperty(this PropertyInfo prop)

@@ -22,6 +22,11 @@ namespace PowerArgs
     }
 
     /// <summary>
+    /// Use this attribute to annotate methods that represent your program's actions.  
+    /// </summary>
+    public class ArgActionMethod : Attribute { }
+
+    /// <summary>
     /// Use this attribute if your action implementation methods are defined in a type other than the 
     /// type being passed to Args.ParseAction() or Args.InvokeAction().
     /// </summary>
@@ -66,10 +71,10 @@ namespace PowerArgs
     }
 
     /// <summary>
-    /// Use this argument on your class or property to enforce case sensitivity.  By default,
+    /// Use this argument on your class, property, or action method to enforce case sensitivity.  By default,
     /// case is ignored.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method)]
     public class ArgIgnoreCase : Attribute
     {
         /// <summary>

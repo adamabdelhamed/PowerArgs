@@ -26,7 +26,17 @@ namespace PowerArgs
         public void Invoke()
         {
             if (Args == null || ActionArgs == null) throw new MissingArgException("No action was specified");
-            ResolveMethod(ActionArgsProperty).Invoke(null, new object[] { ActionArgs });
+            var resolved = ResolveMethod(ActionArgsProperty);
+
+            if (resolved.IsStatic)
+            {
+                resolved.Invoke(null, new object[] { ActionArgs });
+            }
+            else
+            {
+                resolved.Invoke(Args, new object[] { ActionArgs });
+            }
+
         }
 
         /// <summary>
@@ -79,6 +89,13 @@ namespace PowerArgs
 
         internal static MethodInfo ResolveMethod(Type t, PropertyInfo actionProperty)
         {
+            if (actionProperty is ArgActionMethodVirtualProperty)
+            {
+                var ret = (actionProperty as ArgActionMethodVirtualProperty).Method;
+                if (ret.GetParameters().Length != 1) throw new InvalidArgDefinitionException("The action method '" + ret.Name + "' needs to accept a parameter of type " + actionProperty.PropertyType + ".");
+                return ret;
+            }
+
             string methodName = actionProperty.Name;
             int end = methodName.LastIndexOf(Constants.ActionArgConventionSuffix);
             if (end < 1) throw new InvalidArgDefinitionException("Could not resolve action method from property name: " + actionProperty.Name);
@@ -88,7 +105,7 @@ namespace PowerArgs
             var method = actionType.GetMethod(methodName);
             if (method == null) throw new InvalidArgDefinitionException("Could not find action method '" + methodName + "'");
 
-            if (method.IsStatic == false) throw new InvalidArgDefinitionException("PowerArg action methods must be static");
+            if (method.IsStatic == false && actionType != t) throw new InvalidArgDefinitionException("PowerArg action methods must be static if defined via the ArgActionType attribute");
             if (method.GetParameters().Length != 1) throw new InvalidArgDefinitionException("PowerArg action methods must take one parameter that matches the property type for the attribute");
             if (method.GetParameters()[0].ParameterType != actionProperty.PropertyType) throw new InvalidArgDefinitionException(string.Format("Argument of type {0} does not match expected type {1}", actionProperty.PropertyType, method.GetParameters()[0].ParameterType));
 

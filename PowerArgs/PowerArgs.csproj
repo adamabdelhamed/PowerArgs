@@ -61,6 +61,7 @@
     <Compile Include="Args.cs" />
     <Compile Include="ArgParser.cs" />
     <Compile Include="ArgUsage.cs" />
+    <Compile Include="EasterEggs\MatrixMode.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="HelperTypes.cs" />

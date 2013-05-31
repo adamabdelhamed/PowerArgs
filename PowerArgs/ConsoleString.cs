@@ -357,9 +357,34 @@ namespace PowerArgs
         /// </summary>
         public void Write()
         {
-            foreach (var character in this)
+            string buffer = "";
+
+            ConsoleColor existingForeground = Console.ForegroundColor, existingBackground = Console.BackgroundColor;
+            try
             {
-                character.Write();
+                ConsoleColor currentForeground = existingForeground, currentBackground = existingBackground;
+                foreach (var character in this)
+                {
+                    if (character.ForegroundColor != currentForeground ||
+                        character.BackgroundColor != currentBackground)
+                    {
+                        Console.Write(buffer);
+                        Console.ForegroundColor = character.ForegroundColor;
+                        Console.BackgroundColor = character.BackgroundColor;
+                        currentForeground = character.ForegroundColor;
+                        currentBackground = character.BackgroundColor;
+                        buffer = "";
+                    }
+
+                    buffer += character.Value;
+                }
+
+                if (buffer.Length > 0) Console.Write(buffer);
+            }
+            finally
+            {
+                Console.ForegroundColor = existingForeground;
+                Console.BackgroundColor = existingBackground;
             }
         }
 

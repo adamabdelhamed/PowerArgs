@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -156,6 +157,174 @@ namespace PowerArgs
 
                 return ret;
             }
+        }
+    }
+
+    internal class VirtualPropertyInfo : PropertyInfo
+    {
+
+        public override PropertyAttributes Attributes
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override bool CanRead
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override bool CanWrite
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override MethodInfo[] GetAccessors(bool nonPublic)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override MethodInfo GetGetMethod(bool nonPublic)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ParameterInfo[] GetIndexParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override MethodInfo GetSetMethod(bool nonPublic)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Type PropertyType
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Type DeclaringType
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object[] GetCustomAttributes(bool inherit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool IsDefined(Type attributeType, bool inherit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string Name
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public override Type ReflectedType
+        {
+            get { throw new NotImplementedException(); }
+        }
+    }
+
+    internal class VirtualNamedProperty : VirtualPropertyInfo
+    {
+        string name;
+        Type t;
+        public VirtualNamedProperty(string name, Type t)
+        {
+            this.name = name;
+            this.t = t;
+        }
+         
+        public override Type PropertyType
+        {
+            get { return t; }
+        }
+         
+
+        public override string Name
+        {
+            get { return Name; }
+        }
+    }
+
+    internal class ArgActionMethodVirtualProperty : VirtualPropertyInfo
+    {
+        MethodInfo method;
+        public object Value { get; set; }
+
+        public MethodInfo Method { get { return method; } }
+
+        public ArgActionMethodVirtualProperty(MethodInfo method)
+        {
+            this.method = method;
+        }
+
+        public override bool CanRead
+        {
+            get { return true; }
+        }
+
+        public override bool CanWrite
+        {
+            get { return true; }
+        }
+
+        public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
+        {
+            return Value;
+        }
+
+        public override Type PropertyType
+        {
+            get
+            {
+                if (method.GetParameters().Length != 1) throw new InvalidArgDefinitionException("ArgActionMethods must declare 1 parameter with the type of arguments expected by the action.");
+                return method.GetParameters()[0].ParameterType;
+            }
+        }
+
+        public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
+        {
+            this.Value = value;
+        }
+
+        public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+        {
+            return new object[0];
+        }
+
+        public override object[] GetCustomAttributes(bool inherit)
+        {
+            return new object[0];
+        }
+
+        public override bool IsDefined(Type attributeType, bool inherit)
+        {
+            return false;
+        }
+
+        public override string Name
+        {
+            get { return "Virtual_" + method.Name; }
         }
     }
 }

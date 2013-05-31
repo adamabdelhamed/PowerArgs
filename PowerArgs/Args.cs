@@ -11,7 +11,31 @@ namespace PowerArgs
     /// </summary>
     public class Args
     {
-        private Args() { } 
+        [ThreadStatic]
+        private static Lazy<Dictionary<Type, object>> AmbientArgs = new Lazy<Dictionary<Type, object>>(() => { return new Dictionary<Type, object>(); });
+
+        private Args() { }
+
+        /// <summary>
+        /// Gets the last instance of this type of argument that was parsed on the current thread
+        /// or null if PowerArgs did not parse an object of this type.
+        /// </summary>
+        /// <typeparam name="T">The scaffold type for your arguments</typeparam>
+        /// <returns>the last instance of this type of argument that was parsed on the current thread.</returns>
+        public static T GetAmbientArgs<T>() where T : class
+        {
+            var key = typeof(T);
+
+            object ret;
+            if (AmbientArgs.Value.TryGetValue(key, out ret))
+            {
+                return (T)ret;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         /// <summary>
         /// Creates a new instance of T and populates it's properties based on the given arguments.
@@ -104,14 +128,22 @@ namespace PowerArgs
             context.ParserData = ArgParser.Parse(context.CmdLineArgs);
             PopulateProperties(context);
 
+            object actionPropertyValue = null;
             if (specifiedActionProperty != null)
             {
-                var actionPropertyValue = Activator.CreateInstance(specifiedActionProperty.PropertyType);
+                actionPropertyValue = Activator.CreateInstance(specifiedActionProperty.PropertyType);
                 var toRestore = context.Args;
                 context.Args = actionPropertyValue;
                 PopulateProperties(context);
                 context.Args = toRestore;
                 specifiedActionProperty.SetValue(context.Args, actionPropertyValue, null);
+
+
+                if (specifiedActionProperty is ArgActionMethodVirtualProperty)
+                {
+                    context.ParserData.ImplicitParameters.Remove(0);
+                }
+
             }
 
             if (context.ParserData.ImplicitParameters.Count > 0)
@@ -124,10 +156,19 @@ namespace PowerArgs
                 throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
             }
 
+            if (AmbientArgs.Value.ContainsKey(t))
+            {
+                AmbientArgs.Value[t] = context.Args;
+            }
+            else
+            {
+                AmbientArgs.Value.Add(t, context.Args);
+            }
+
             return new ArgAction()
             {
                 Value = context.Args,
-                ActionArgs = specifiedActionProperty != null ? specifiedActionProperty.GetValue(context.Args, null) : null,
+                ActionArgs = actionPropertyValue,
                 ActionArgsProperty = specifiedActionProperty
             };
         }
@@ -135,14 +176,19 @@ namespace PowerArgs
         private PropertyInfo FindSpecifiedAction(Type t, ref string[] args)
         {
             var actionProperty = ArgAction.GetActionProperty(t);
-            if (actionProperty == null) return null;
+
+            if (actionProperty == null && t.GetActionMethods().Count == 0) return null;
 
             var specifiedAction = args.Length > 0 ? args[0] : null;
 
-            if (actionProperty.Attr<ArgRequired>().PromptIfMissing && args.Length == 0)
+            if (actionProperty != null && actionProperty.Attr<ArgRequired>().PromptIfMissing && args.Length == 0)
             {
                 actionProperty.Attr<ArgRequired>().ValidateAlways(actionProperty, ref specifiedAction);
                 args = new string[] { specifiedAction };
+            }
+            else if (actionProperty == null && specifiedAction == null && t.GetActionMethods().Count > 0)
+            {
+                new ArgRequired().ValidateAlways(new VirtualNamedProperty("Action", typeof(string)), ref specifiedAction);
             }
 
             if (specifiedAction == null) return null;
@@ -151,7 +197,17 @@ namespace PowerArgs
                                      where p.MatchesSpecifiedAction(specifiedAction)
                                      select p).SingleOrDefault();
 
-            if (actionArgProperty == null) throw new UnknownActionArgException("Unknown Action: " + specifiedAction);
+            if (actionArgProperty == null)
+            {
+                var matchingActionMethod = t.GetActionMethods().Where(m => m.MatchesSpecifiedAction(specifiedAction)).SingleOrDefault();
+
+                if (matchingActionMethod == null)
+                {
+                    throw new UnknownActionArgException("Unknown Action: " + specifiedAction);
+                }
+
+                return new ArgActionMethodVirtualProperty(matchingActionMethod);
+            }
 
             return actionArgProperty;
         }

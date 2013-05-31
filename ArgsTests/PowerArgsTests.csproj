@@ -65,6 +65,7 @@
     <Compile Include="ConsoleStringTests.cs" />
     <Compile Include="LongFormTests.cs" />
     <Compile Include="ListTests.cs" />
+    <Compile Include="ActionFrameworkV2Tests.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />
