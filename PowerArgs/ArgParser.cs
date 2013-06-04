@@ -76,16 +76,26 @@ namespace PowerArgs
 
                     string value;
 
-                    if (i == args.Length - 1 ||
-                        (args[i + 1].StartsWith("-") && args[i + 1].Length > 1 && !char.IsDigit(args[i + 1][1])) ||
-                        args[i + 1].StartsWith("/"))
+                    // Handles long form syntax --argName=argValue.
+                    if (key.StartsWith("-") && key.Contains("="))
                     {
-                        value = "";
+                        var index = key.IndexOf("=");
+                        value = key.Substring(index + 1);
+                        key = key.Substring(0, index);
                     }
                     else
                     {
-                        i++;
-                        value = args[i];
+                        if (i == args.Length - 1 ||
+                            (args[i + 1].StartsWith("-") && args[i + 1].Length > 1 && !char.IsDigit(args[i + 1][1])) ||
+                            args[i + 1].StartsWith("/"))
+                        {
+                            value = "";
+                        }
+                        else
+                        {
+                            i++;
+                            value = args[i];
+                        }
                     }
 
                     if (result.ExplicitParameters.ContainsKey(key))

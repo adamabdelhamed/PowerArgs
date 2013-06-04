@@ -18,6 +18,24 @@ namespace ArgsTests
             public string OtherString { get; set; }
         }
 
+        public class MultipleShortcutArgs
+        {
+            [ArgShortcut("-h")]
+            [ArgShortcut("-?")]
+            [ArgShortcut("-??")]
+            [ArgShortcut("--?")]
+            [ArgShortcut("--get-help")]
+            public bool Help { get; set; }
+        }
+
+        public class MultipleShortcutDuplicateArgs
+        {
+            [ArgShortcut("-h")]
+            [ArgShortcut("-h")]
+            public bool Help { get; set; }
+        }
+
+
         public class ShortcutArgsIgnoreLeadingDash
         {
             [ArgShortcut("-so")] // The leading dash should be ignored
@@ -146,8 +164,8 @@ namespace ArgsTests
         {
             var args = new string[] { };
             var parsed = Args.Parse<DuplicateShortcutArgs>(args);
-            Assert.AreEqual("s", ArgShortcut.GetShortcut(typeof(DuplicateShortcutArgs).GetProperty("SomeString")));
-            Assert.AreEqual("so", ArgShortcut.GetShortcut(typeof(DuplicateShortcutArgs).GetProperty("SomeOtherString")));
+            Assert.AreEqual("-s", (typeof(DuplicateShortcutArgs).GetShortcut("SomeString")));
+            Assert.AreEqual("-so", (typeof(DuplicateShortcutArgs).GetShortcut("SomeOtherString")));
         }
 
         [TestMethod]
@@ -155,10 +173,10 @@ namespace ArgsTests
         {
             var args = new string[] { };
             var parsed = Args.Parse<DuplicateShortcutEdgeCaseArgs>(args);
-            Assert.AreEqual("ab", ArgShortcut.GetShortcut(typeof(DuplicateShortcutEdgeCaseArgs).GetProperty("Abcdefg0")));
-            Assert.AreEqual("a", ArgShortcut.GetShortcut(typeof(DuplicateShortcutEdgeCaseArgs).GetProperty("Abcdefg1")));
-            Assert.AreEqual("abc", ArgShortcut.GetShortcut(typeof(DuplicateShortcutEdgeCaseArgs).GetProperty("Abcdefg2")));
-            Assert.AreEqual("abcd", ArgShortcut.GetShortcut(typeof(DuplicateShortcutEdgeCaseArgs).GetProperty("Abcdefg3")));
+            Assert.AreEqual("-ab", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg0")));
+            Assert.AreEqual("-a", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg1")));
+            Assert.AreEqual("-abc", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg2")));
+            Assert.AreEqual("-abcd", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg3")));
         }
 
         [TestMethod]
@@ -214,6 +232,44 @@ namespace ArgsTests
             catch (InvalidArgDefinitionException ex)
             {
                 Assert.IsTrue(ex.Message == "You cannot specify a shortcut value and an ArgShortcutPolicy of NoShortcut");
+            }
+        }
+
+        [TestMethod]
+        public void TestMultipleShortcuts()
+        {
+            var parsed = Args.Parse<MultipleShortcutArgs>(new string[0]);
+            Assert.AreEqual(false, parsed.Help);
+
+            parsed = Args.Parse<MultipleShortcutArgs>("-h");
+            Assert.AreEqual(true, parsed.Help);
+
+            parsed = Args.Parse<MultipleShortcutArgs>("-?");
+            Assert.AreEqual(true, parsed.Help);
+
+            parsed = Args.Parse<MultipleShortcutArgs>("-??");
+            Assert.AreEqual(true, parsed.Help);
+
+            parsed = Args.Parse<MultipleShortcutArgs>("--?");
+            Assert.AreEqual(true, parsed.Help);
+
+            parsed = Args.Parse<MultipleShortcutArgs>("--get-help");
+            Assert.AreEqual(true, parsed.Help);
+
+            Assert.AreEqual(5, (typeof(MultipleShortcutArgs).GetShortcuts("Help")).Count);
+        }
+
+        [TestMethod]
+        public void TestMultipleShortcutsWithDuplicates()
+        {
+            try
+            {
+                var parsed = Args.Parse<MultipleShortcutDuplicateArgs>(new string[0]);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("duplicate"));
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
+using System.Collections.Generic;
 
 namespace ArgsTests
 {
@@ -62,8 +63,11 @@ namespace ArgsTests
 
             var args2 = Args.Parse<LongFormArgs>("--your-age=100");
             Assert.AreEqual(100, args2.Age);
-        }
 
+            var shortcuts = (typeof(LongFormArgs)).GetShortcuts("Age");
+            Assert.AreEqual(1, shortcuts.Count);
+            Assert.AreEqual("--your-age", shortcuts[0]);
+        }
 
         [TestMethod]
         public void TestLongFormMultiple()
@@ -96,12 +100,12 @@ namespace ArgsTests
         {
             try
             {
-                Args.Parse<LongFormBad>("-age", "100");
+                Args.Parse<LongFormBad>("-a", "100");
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (InvalidArgDefinitionException ex)
+            catch (UnexpectedArgException ex)
             {
-                Assert.IsTrue(ex.Message.Contains("cannot be null"));
+                
             }
         }
     }

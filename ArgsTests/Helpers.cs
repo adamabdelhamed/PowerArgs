@@ -8,6 +8,29 @@ using PowerArgs;
 
 namespace ArgsTests
 {
+    public static class ReflectionHelper
+    {
+        private static T Invoke<T>(this object o, string methodName, params object[] parameters)
+        {
+            return (T)o.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public).Invoke(o, parameters);
+        }
+
+        private static T InvokeStatic<T>(this Type t, string methodName, params object[] parameters)
+        {
+            return (T)t.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).Invoke(null, parameters);
+        }
+
+        public static List<string> GetShortcuts(this Type t, string propertyName)
+        {
+            return typeof(ArgShortcut).InvokeStatic<List<string>>("GetShortcutsInternal", t.GetProperty(propertyName)).Select(s => "-"+s).ToList();
+        }
+
+        public static string GetShortcut(this Type t, string propertyName)
+        {
+            return GetShortcuts(t, propertyName).FirstOrDefault();
+        }
+    }
+
     public static class Helpers
     {
         public static Action<Exception> ExpectedException<T>(string expectedText = null, bool caseSensitive =false)

@@ -120,10 +120,10 @@ namespace PowerArgs
     /// <summary>
     /// Use this attribute to override the shortcut that PowerArgs automatically assigns to each property.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
     public class ArgShortcut : Attribute
     {
-        private static Dictionary<PropertyInfo, string> KnownShortcuts = new Dictionary<PropertyInfo, string>();
+        private static Dictionary<PropertyInfo, List<string>> KnownShortcuts = new Dictionary<PropertyInfo, List<string>>();
         private static List<Type> RegisteredTypes = new List<Type>();
 
         private ArgShortcutPolicy? policy;
@@ -159,29 +159,24 @@ namespace PowerArgs
             }
         }
 
-        /// <summary>
-        /// Get the shortcut value given a property info object.  This can only be called after one of the Args methods
-        /// has parsed the parent type at least once.  Otherwise you will get an InvalidArgDefinitionException.k
-        /// </summary>
-        /// <param name="info">The property whose shortcut you want to get.</param>
-        /// <returns>The shortcut for the property</returns>
-        public static string GetShortcut(PropertyInfo info)
+        internal static List<string> GetShortcutsInternal(PropertyInfo info)
         {
             if (RegisteredTypes.Contains(info.DeclaringType) == false)
             {
                 // Ensures that the shortcuts get registered
-                try { Args.Parse(info.DeclaringType); } catch (Exception) { }
+                try { Args.Parse(info.DeclaringType); }
+                catch (Exception) { }
             }
             if (KnownShortcuts.ContainsKey(info)) return KnownShortcuts[info];
-            else return null;
+            else return new List<string>();
         }
 
-        internal static void RegisterShortcuts(Type t, List<string> shortcuts = null)
+        internal static void RegisterShortcuts(Type t, List<string> shortcutsSeenSoFar = null)
         {
             RegisteredTypes.Add(t);
-            bool isNested = shortcuts != null;
+            bool isNested = shortcutsSeenSoFar != null;
 
-            shortcuts = isNested ? shortcuts : new List<string>();
+            shortcutsSeenSoFar = isNested ? shortcutsSeenSoFar : new List<string>();
             var actionProp = ArgAction.GetActionProperty(t);
 
             foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
@@ -189,20 +184,19 @@ namespace PowerArgs
                 if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
                 if (prop.IsActionArgProperty() && actionProp != null) continue;
 
-                var shortcut = ArgShortcut.GetShortcutInternal(prop, shortcuts);
-                if (shortcut != null)
+                var shortcutsForProperty = ArgShortcut.FindShortcutsInternal(prop, shortcutsSeenSoFar);
+                if (shortcutsForProperty.Count > 0)
                 {
-                    shortcuts.Add(shortcut);
+                    shortcutsSeenSoFar.AddRange(shortcutsForProperty);
                     if (KnownShortcuts.ContainsKey(prop) == false)
                     {
-                        KnownShortcuts.Add(prop, shortcut);
+                        KnownShortcuts.Add(prop, shortcutsForProperty);
                     }
                     else
                     {
-                        KnownShortcuts[prop] = shortcut;
+                        KnownShortcuts[prop] = shortcutsForProperty;
                     }
                 }
-
             }
 
             if (actionProp != null)
@@ -211,40 +205,58 @@ namespace PowerArgs
                 {
                     if (prop.IsActionArgProperty())
                     {
-                        RegisterShortcuts(prop.PropertyType, shortcuts);
+                        RegisterShortcuts(prop.PropertyType, shortcutsSeenSoFar);
                     }
                 }
             }
         }
 
-        private static string GetShortcutInternal(PropertyInfo info, List<string> knownShortcuts)
+        private static List<string> FindShortcutsInternal(PropertyInfo info, List<string> knownShortcuts)
         {
             var actionProperty = ArgAction.GetActionProperty(info.DeclaringType);
-            if (actionProperty != null && actionProperty.Name == info.Name) return null;
+            if (actionProperty != null && actionProperty.Name == info.Name) return new List<string>();
 
-            var attr = info.Attr<ArgShortcut>();
+            var attrs = info.Attrs<ArgShortcut>();
 
-            if (attr == null)
+            if (attrs.Count == 0)
             {
                 string shortcutVal = "";
                 foreach (char c in info.GetArgumentName())
                 {
                     shortcutVal += c;
-                    if (knownShortcuts.Contains(shortcutVal) == false) return shortcutVal;
+                    if (knownShortcuts.Contains(shortcutVal) == false) return new List<string>{ shortcutVal };
                 }
-                return shortcutVal;
+                return new List<string> { shortcutVal };
             }
             else
             {
-                if (attr.policy.HasValue && attr.policy.Value == ArgShortcutPolicy.NoShortcut && attr.Shortcut != null)
+                List<string> ret = new List<string>();
+                bool noShortcut = false;
+                foreach (var attr in attrs)
                 {
-                    throw new InvalidArgDefinitionException("You cannot specify a shortcut value and an ArgShortcutPolicy of NoShortcut");
+                    if (attr.policy.HasValue && attr.policy.Value == ArgShortcutPolicy.NoShortcut)
+                    {
+                        noShortcut = true;
+                    }
+
+                    if (noShortcut && attr.Shortcut != null)
+                    {
+                        throw new InvalidArgDefinitionException("You cannot specify a shortcut value and an ArgShortcutPolicy of NoShortcut");
+                    }
+
+                    if (attr.Shortcut != null)
+                    {
+                        if (attr.Shortcut.StartsWith("-")) attr.Shortcut = attr.Shortcut.Substring(1);
+                        else if (attr.Shortcut.StartsWith("/")) attr.Shortcut = attr.Shortcut.Substring(1);
+                    }
+
+                    if (attr.Shortcut != null)
+                    {
+                        ret.Add(attr.Shortcut);
+                    }
                 }
 
-                if (attr.Shortcut == null) return null;
-                if (attr.Shortcut.StartsWith("-")) attr.Shortcut = attr.Shortcut.Substring(1);
-                else if (attr.Shortcut.StartsWith("/")) attr.Shortcut = attr.Shortcut.Substring(1);
-                return attr.Shortcut;
+                return ret;
             }
         }
     }
@@ -451,38 +463,135 @@ namespace PowerArgs
     }
 
     /// <summary>
+    /// An interface used to implement custom saving and loading of persistent (sticky) args.
+    /// </summary>
+    public interface IStickyArgPersistenceProvider
+    {
+        /// <summary>
+        /// This method is called when it is time to save the sticky args.
+        /// </summary>
+        /// <param name="stickyArgs">The names and values of the arguments to save.</param>
+        /// <param name="pathInfo">The string that was passed to the StickyArg attribue (usually a file path).</param>
+        void Save(Dictionary<string, string> stickyArgs, string pathInfo);
+        /// <summary>
+        /// This method is called when it is time to load the sticky args.
+        /// </summary>
+        /// <param name="pathInfo">The string that was passed to the StickyArg attribue (usually a file path).</param>
+        /// <returns>The loaded sticky args.</returns>
+        Dictionary<string, string> Load(string pathInfo);
+    }
+
+    /// <summary>
+    /// An attribute you can put on a type in order to override how StickyArg properties are saved and loaded.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
+    public class StickyArgPersistence : Attribute
+    {
+        /// <summary>
+        /// Gets the provider that will be used to save and load sticky args.
+        /// </summary>
+        public IStickyArgPersistenceProvider PersistenceProvider { get; private set; }
+
+        /// <summary>
+        /// Creates a new StickyArgPersistence attribute given the type of the persistence provider.
+        /// </summary>
+        /// <param name="persistenceProviderType">The type that implements IStickyArgPersistenceProvider and defines a default constructor.</param>
+        public StickyArgPersistence(Type persistenceProviderType)
+        {
+            if (persistenceProviderType.GetInterfaces().Contains(typeof(IStickyArgPersistenceProvider)) == false)
+            {
+                throw new InvalidArgDefinitionException("The given type does not implement '" + typeof(IStickyArgPersistenceProvider).Name + "'");
+            }
+
+            PersistenceProvider = (IStickyArgPersistenceProvider)Activator.CreateInstance(persistenceProviderType);
+        }
+    }
+
+    internal class DefaultStickyArgPersistenceProvider : IStickyArgPersistenceProvider
+    {
+        public void Save(Dictionary<string, string> stickyArgs, string pathInfo)
+        {
+            pathInfo = pathInfo ?? DefaultFilePath;
+
+            if (Directory.Exists(Path.GetDirectoryName(pathInfo)) == false)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(pathInfo));
+            }
+
+            var lines = (from k in stickyArgs.Keys select k + "=" + stickyArgs[k]).ToArray();
+            File.WriteAllLines(pathInfo, lines);
+        }
+
+        public Dictionary<string, string> Load(string pathInfo)
+        {
+            pathInfo = pathInfo ?? DefaultFilePath;
+
+            if (Directory.Exists(Path.GetDirectoryName(pathInfo)) == false)
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(pathInfo));
+            }
+
+            Dictionary<string, string> ret = new Dictionary<string, string>();
+            if (File.Exists(pathInfo) == false) return ret;
+
+            foreach (var line in File.ReadAllLines(pathInfo))
+            {
+                int separator = line.IndexOf("=");
+                if (separator < 0 || line.Trim().StartsWith("#")) continue;
+
+                string key = line.Substring(0, separator).Trim();
+                string val = separator == line.Length - 1 ? "" : line.Substring(separator + 1).Trim();
+
+                ret.Add(key, val);
+            }
+
+            return ret;
+        }
+
+        private string DefaultFilePath
+        {
+            get
+            {
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                   "PowerArgs",
+                   Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location)) + ".txt";
+            }
+        }
+    }
+
+    /// <summary>
     /// A useful arg hook that will store the last used value for an argument and repeat it the next time.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class StickyArg : ArgHook
     {
-        // TODO - Let people intercept the save and load events so that they can encrypt somehow if they want to.
+        private static Lazy<IStickyArgPersistenceProvider> defaultPersistenceProvider = new Lazy<IStickyArgPersistenceProvider>(() => { return new DefaultStickyArgPersistenceProvider(); });
 
         private string file;
-        private Dictionary<string, string> stickyArgs { get; set; }
+        private Dictionary<string, string> stickyArgs;
+        private IStickyArgPersistenceProvider userSpecifiedPersistenceProvider;
 
         /// <summary>
         /// Marks a property as a sticky arg.  Use the default location to store sticky arguments (AppData/Roaming/PowerArgs/EXE_NAME.txt)
         /// </summary>
-        public StickyArg() : this(null) { }
+        public StickyArg()
+        {
+            Init(null);
+        }
 
         /// <summary>
         /// Marks a property as a sticky arg.  Use the provided location to store sticky arguments (AppData/Roaming/PowerArgs/EXE_NAME.txt)
         /// </summary>
         public StickyArg(string file)
         {
-            stickyArgs = new Dictionary<string, string>();
-            this.file = file ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "PowerArgs",
-                Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location))+".txt";
+            Init(file);
+        }
 
-            if (Directory.Exists(Path.GetDirectoryName(this.file)) == false)
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(this.file));
-            }
-
-            Load();
+        private void Init(string file)
+        {
             BeforePopulatePropertyPriority = 10;
+            stickyArgs = new Dictionary<string, string>();
+            this.file = file;
         }
 
         /// <summary>
@@ -492,7 +601,15 @@ namespace PowerArgs
         /// <param name="Context">Used to see if the property was specified.</param>
         public override void BeforePopulateProperty(HookContext Context)
         {
-            if (Context.ArgumentValue == null) Context.ArgumentValue = GetStickyArg(Context.Property.GetArgumentName());
+            if (Context.ArgumentValue == null)
+            {
+                if (userSpecifiedPersistenceProvider == null && Context.Property.DeclaringType.HasAttr<StickyArgPersistence>())
+                {
+                    userSpecifiedPersistenceProvider = Context.Property.DeclaringType.Attr<StickyArgPersistence>().PersistenceProvider;
+                }
+
+                Context.ArgumentValue = GetStickyArg(Context.Property.GetArgumentName());
+            }
         }
 
         /// <summary>
@@ -501,11 +618,20 @@ namespace PowerArgs
         /// <param name="Context">Used to see if the property was specified.</param>
         public override void AfterPopulateProperty(HookContext Context)
         {
-            if (Context.ArgumentValue != null) SetStickyArg(Context.Property.GetArgumentName(), Context.ArgumentValue);
+            if (Context.ArgumentValue != null)
+            {
+                if (userSpecifiedPersistenceProvider == null && Context.Property.DeclaringType.HasAttr<StickyArgPersistence>())
+                {
+                    userSpecifiedPersistenceProvider = Context.Property.DeclaringType.Attr<StickyArgPersistence>().PersistenceProvider;
+                }
+
+                SetStickyArg(Context.Property.GetArgumentName(), Context.ArgumentValue);
+            }
         }
 
         private string GetStickyArg(string name)
         {
+            Load();
             string ret = null;
             if (stickyArgs.TryGetValue(name, out ret) == false) return null;
             return ret;
@@ -513,6 +639,7 @@ namespace PowerArgs
 
         private void SetStickyArg(string name, string value)
         {
+            Load();
             if (stickyArgs.ContainsKey(name))
             {
                 stickyArgs[name] = value;
@@ -526,26 +653,14 @@ namespace PowerArgs
 
         private void Load()
         {
-            stickyArgs.Clear();
-
-            if (File.Exists(file) == false) return;
-
-            foreach (var line in File.ReadAllLines(file))
-            {
-                int separator = line.IndexOf("=");
-                if (separator < 0 || line.Trim().StartsWith("#")) continue;
-
-                string key = line.Substring(0, separator).Trim();
-                string val = separator == line.Length - 1 ? "" : line.Substring(separator + 1).Trim();
-
-                stickyArgs.Add(key, val);
-            }
+            var provider = userSpecifiedPersistenceProvider ?? defaultPersistenceProvider.Value;
+            stickyArgs = provider.Load(file);
         }
 
         private void Save()
         {
-            var lines = (from k in stickyArgs.Keys select k + "=" + stickyArgs[k]).ToArray();
-            File.WriteAllLines(file, lines);
+            var provider = userSpecifiedPersistenceProvider ?? defaultPersistenceProvider.Value;
+            provider.Save(stickyArgs, file);
         }
     }
 

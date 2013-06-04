@@ -8,7 +8,7 @@ namespace HelloWorld
     public class MyArgs
     {
         [ArgDescription("Description for a required string parameter")]
-        [StickyArg]
+        [StickyArg] // The most recent value of this argument will be stored in AppData/Roaming/PowerArgs/HelloWorld.txt
         public string StringArg { get; set; }
 
         [ArgDescription("Description for an optional integer parameter")]
@@ -19,13 +19,26 @@ namespace HelloWorld
         public bool SwitchArg { get; set; }
 
         [ArgDescription("Shows the help documentation")]
+        [ArgShortcut("-h")]
+        [ArgShortcut("-?")]
+        [ArgShortcut("--?")]
         public bool Help { get; set; }
+
+        [ArgShortcut(ArgShortcutPolicy.NoShortcut)]
+        public DateTime DateArg { get; set; }
     }
 
     class Program
     {
         static void Main(string[] args)
         {
+            var cancellation = PowerArgs.EasterEggs.MatrixMode.Start();
+            System.Threading.Thread.Sleep(2000);
+            Console.WriteLine(new System.Net.WebClient().DownloadString("http://www.bing.com"));
+            cancellation.Invoke();
+            return;
+
+
             try
             {
                 var parsed = Args.Parse<MyArgs>(args);

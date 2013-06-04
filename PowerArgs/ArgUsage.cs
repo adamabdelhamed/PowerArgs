@@ -140,9 +140,9 @@ namespace PowerArgs
 
             Name = toAutoGen.GetArgumentName();
             IsRequired = toAutoGen.HasAttr<ArgRequired>();
-            if (ArgShortcut.GetShortcut(toAutoGen) != null)
+            foreach (var shortcut in ArgShortcut.GetShortcutsInternal(toAutoGen))
             {
-                Aliases.Add("-" + ArgShortcut.GetShortcut(toAutoGen));
+                Aliases.Add("-"+shortcut);
             }
 
             Type = toAutoGen.PropertyType.Name;
@@ -338,11 +338,29 @@ namespace PowerArgs
                 var descriptionString = new ConsoleString(usageInfo.Description);
                 var typeString = new ConsoleString(usageInfo.Type);
 
-                var indicator = "-";
+                var aliases = usageInfo.Aliases.OrderBy(a => a.Length).ToList();
+                var maxInlineAliasLength = 8;
+                string inlineAliasInfo = "";
+
+                int aliasIndex;
+                for (aliasIndex = 0; aliasIndex < aliases.Count; aliasIndex++)
+                {
+                    var proposedInlineAliases = inlineAliasInfo == string.Empty ? aliases[aliasIndex] : inlineAliasInfo + ", " + aliases[aliasIndex];
+                    if (proposedInlineAliases.Length <= maxInlineAliasLength)
+                    {
+                        inlineAliasInfo = proposedInlineAliases;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (inlineAliasInfo != string.Empty) inlineAliasInfo = "(" + inlineAliasInfo + ")";
 
                 rows.Add(new List<ConsoleString>()
                 {
-                    new ConsoleString(indicator)+(usageInfo.Name + (usageInfo.Aliases.Count > 0 ? " ("+ usageInfo.Aliases[0] +")" : "")),
+                    new ConsoleString("-")+(usageInfo.Name + inlineAliasInfo),
                     descriptionString,
                 });
 
@@ -357,16 +375,16 @@ namespace PowerArgs
                     rows.Last().Insert(insertPosition, positionString);
                 }
 
-                for (int i = 1; i < usageInfo.Aliases.Count; i++)
+                for (int i = aliasIndex; i < aliases.Count; i++)
                 {
                     rows.Add(new List<ConsoleString>()
                     {
-                        new ConsoleString("    "+usageInfo.Aliases[i]),
+                        new ConsoleString("    "+aliases[i]),
                         ConsoleString.Empty,
                         ConsoleString.Empty,
                     });
 
-                    if (hasPositionalArgs) rows.Last().Insert(2, positionString);
+                    if (hasPositionalArgs && options.ShowPosition) rows.Last().Insert(2, positionString);
                 }
 
        

@@ -51,16 +51,18 @@ namespace PowerArgs
 
         internal static bool MatchesSpecifiedArg(this PropertyInfo prop, string specifiedArg)
         {
+            if (prop.HasAttr<ArgIgnoreAttribute>()) return false;
+
             bool ignoreCase = true;
 
             if (prop.HasAttr<ArgIgnoreCase>() && !prop.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
             else if (prop.DeclaringType.HasAttr<ArgIgnoreCase>() && !prop.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
 
-            var shortcut = ArgShortcut.GetShortcut(prop);
+            var shortcuts = ArgShortcut.GetShortcutsInternal(prop);
 
-            if (ignoreCase && shortcut != null)
+            if (ignoreCase && shortcuts.Count > 0)
             {
-                return prop.Name.ToLower() == specifiedArg.ToLower() || shortcut.ToLower() == specifiedArg.ToLower();
+                return shortcuts.Where(shortcut => prop.Name.ToLower() == specifiedArg.ToLower() || shortcut.ToLower() == specifiedArg.ToLower()).Count() > 0;
             }
             else if(ignoreCase)
             {
@@ -68,7 +70,7 @@ namespace PowerArgs
             }
             else
             {
-                return prop.Name == specifiedArg || shortcut == specifiedArg;
+                return prop.Name == specifiedArg || shortcuts.Where(shortcut => shortcut == specifiedArg).Count() > 0;
             }
         }
 
@@ -283,7 +285,7 @@ namespace PowerArgs
 
         internal static bool HasAttr<T>(this MemberInfo info)
         {
-            return info.GetCustomAttributes(typeof(T), true).Length > 0;
+            return info.Attrs<T>().Count > 0;
         }
 
 
@@ -291,7 +293,7 @@ namespace PowerArgs
         {
             if (info.HasAttr<T>())
             {
-                return (T)info.GetCustomAttributes(typeof(T), true)[0];
+                return info.Attrs<T>()[0];
             }
             else
             {
@@ -302,14 +304,7 @@ namespace PowerArgs
 
         internal static List<T> Attrs<T>(this MemberInfo info)
         {
-            if (info.HasAttr<T>())
-            {
-                return (from attr in info.GetCustomAttributes(typeof(T), true) select (T)attr).ToList();
-            }
-            else
-            {
-                return new List<T>();
-            }
+            return (from attr in info.GetCustomAttributes(true) where attr.GetType() == typeof(T) || attr.GetType().IsSubclassOf(typeof(T)) select (T)attr).ToList();
         }
 
         internal static List<Match> ToList(this MatchCollection matches)
