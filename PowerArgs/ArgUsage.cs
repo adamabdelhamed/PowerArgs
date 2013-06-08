@@ -175,6 +175,8 @@ namespace PowerArgs
         internal static Dictionary<PropertyInfo, List<UsageHook>> ExplicitPropertyHooks = new Dictionary<PropertyInfo,List<UsageHook>>();
         internal static List<UsageHook> GlobalUsageHooks = new List<UsageHook>();
 
+        // TODO - Need unit tests for usage hooks
+
         /// <summary>
         /// Registers a usage hook for the given property.
         /// </summary>
@@ -227,6 +229,18 @@ namespace PowerArgs
         /// <returns></returns>
         public static ConsoleString GetStyledUsage<T>(string exeName = null, ArgUsageOptions options = null)
         {
+            return GetStyledUsage(typeof(T), exeName, options);
+        }
+
+        /// <summary>
+        /// Generates color styled usage documentation for the given argument scaffold type. 
+        /// </summary>
+        /// <param name="t">Your custom argument scaffold type</param>
+        /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
+        /// <param name="options">Specify custom usage options</param>
+        /// <returns></returns>
+        public static ConsoleString GetStyledUsage(Type t, string exeName = null, ArgUsageOptions options = null)
+        {
             options = options ?? new ArgUsageOptions();
             if (exeName == null)
             {
@@ -242,18 +256,17 @@ namespace PowerArgs
 
             ret += new ConsoleString("Usage: " + exeName, ConsoleColor.Cyan);
 
-            var actionProperty = ArgAction.GetActionProperty<T>();
-
-            if (actionProperty != null)
+ 
+            if (t.GetActionArgProperties().Count > 0)
             {
                 ret.AppendUsingCurrentFormat(" <action> options\n\n");
 
-                foreach (var example in typeof(T).Attrs<ArgExample>())
+                foreach (var example in t.Attrs<ArgExample>())
                 {
                     ret += new ConsoleString("EXAMPLE: " + example.Example + "\n" + example.Description + "\n\n", ConsoleColor.DarkGreen);
                 }
 
-                var global = GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), true, options);
+                var global = GetOptionsUsage(t.GetProperties(BindingFlags.Instance | BindingFlags.Public), true, options);
 
                 if (string.IsNullOrEmpty(global.ToString()) == false)
                 {
@@ -262,7 +275,7 @@ namespace PowerArgs
 
                 ret += "Actions:";
 
-                foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                foreach (PropertyInfo prop in t.GetActionArgProperties())
                 {
                     if (prop.IsActionArgProperty() == false) continue;
 
@@ -283,11 +296,11 @@ namespace PowerArgs
             {
                 ret.AppendUsingCurrentFormat(" options\n\n");
 
-                ret += GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
+                ret += GetOptionsUsage(t.GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
 
                 ret += "\n";
 
-                foreach (var example in typeof(T).Attrs<ArgExample>())
+                foreach (var example in t.Attrs<ArgExample>())
                 {
                     ret += new ConsoleString() + "   EXAMPLE: " + new ConsoleString(example.Example + "\n" , ConsoleColor.Green) + 
                         new ConsoleString("   "+example.Description + "\n\n", ConsoleColor.DarkGreen);

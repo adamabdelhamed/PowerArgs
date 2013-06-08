@@ -10,6 +10,19 @@ namespace PowerArgs
 {
     internal static class Extensions
     {
+        internal static MethodInfo InvokeMainMethod(this object o)
+        {
+            var method = o.GetType().GetMethod("Main");
+            if (method == null) throw new InvalidArgDefinitionException("There is no Main() method in type "+o.GetType().Name);
+            if (method.IsStatic) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name+"' must not be static");
+            if (method.GetParameters().Length > 0) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must not take any parameters");
+            if (method.ReturnType != null && method.ReturnType != typeof(void)) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must return void");
+
+            method.Invoke(o, new object[0]);
+
+            return method;
+        }
+
         internal static List<PropertyInfo> GetArguments(this Type t)
         {
             return (from  prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -20,10 +33,57 @@ namespace PowerArgs
 
         internal static List<PropertyInfo> GetActionArgProperties(this Type t)
         {
-            if (ArgAction.GetActionProperty(t) == null) return new List<PropertyInfo>();
+            List<PropertyInfo> ret = new List<PropertyInfo>();
 
-            return (from prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                    where prop.IsActionArgProperty() select prop).ToList();
+            string[] dummy = new string[0];
+            if (t.FindSpecifiedAction(ref dummy, false) == null && t.GetActionMethods().Count == 0)
+            {
+                return ret;
+            }
+
+            ret.AddRange(from p in t.GetProperties() where p.IsActionArgProperty() select p);
+            ret.AddRange(from m in t.GetActionMethods() select new ArgActionMethodVirtualProperty(m));
+            return ret;
+        }
+
+
+        internal static PropertyInfo FindSpecifiedAction(this Type t, ref string[] args, bool enablePrompts = true)
+        {
+            var actionProperty = ArgAction.GetActionProperty(t);
+
+            if (actionProperty == null && t.GetActionMethods().Count == 0) return null;
+
+            var specifiedAction = args.Length > 0 ? args[0] : null;
+
+            if (enablePrompts && actionProperty != null && actionProperty.Attr<ArgRequired>().PromptIfMissing && args.Length == 0)
+            {
+                actionProperty.Attr<ArgRequired>().ValidateAlways(actionProperty, ref specifiedAction);
+                args = new string[] { specifiedAction };
+            }
+            else if (enablePrompts && actionProperty == null && specifiedAction == null && t.GetActionMethods().Count > 0)
+            {
+                new ArgRequired().ValidateAlways(new VirtualNamedProperty("Action", typeof(string), t), ref specifiedAction);
+            }
+
+            if (specifiedAction == null) return null;
+
+            var actionArgProperty = (from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                                     where p.MatchesSpecifiedAction(specifiedAction)
+                                     select p).SingleOrDefault();
+
+            if (actionArgProperty == null)
+            {
+                var matchingActionMethod = t.GetActionMethods().Where(m => m.MatchesSpecifiedAction(specifiedAction)).SingleOrDefault();
+
+                if (matchingActionMethod == null)
+                {
+                    throw new UnknownActionArgException("Unknown Action: " + specifiedAction);
+                }
+
+                return new ArgActionMethodVirtualProperty(matchingActionMethod);
+            }
+
+            return actionArgProperty;
         }
 
         internal static List<MethodInfo> GetActionMethods(this Type t)

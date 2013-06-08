@@ -212,7 +212,6 @@ namespace PowerArgs
         {
             throw new NotImplementedException();
         }
-
         public override Type DeclaringType
         {
             get { throw new NotImplementedException(); }
@@ -220,12 +219,12 @@ namespace PowerArgs
 
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
-            throw new NotImplementedException();
+            return new object[0];
         }
 
         public override object[] GetCustomAttributes(bool inherit)
         {
-            throw new NotImplementedException();
+            return new object[0];
         }
 
         public override bool IsDefined(Type attributeType, bool inherit)
@@ -248,12 +247,22 @@ namespace PowerArgs
     {
         string name;
         Type t;
-        public VirtualNamedProperty(string name, Type t)
+        Type declaringType;
+        public VirtualNamedProperty(string name, Type t, Type declaringType)
         {
             this.name = name;
             this.t = t;
+            this.declaringType = declaringType;
         }
-         
+
+        public override Type DeclaringType
+        {
+            get
+            {
+                return declaringType;
+            }
+        }
+
         public override Type PropertyType
         {
             get { return t; }
@@ -262,7 +271,7 @@ namespace PowerArgs
 
         public override string Name
         {
-            get { return Name; }
+            get { return name; }
         }
     }
 
@@ -302,6 +311,14 @@ namespace PowerArgs
             }
         }
 
+        public override Type DeclaringType
+        {
+            get
+            {
+                return method.DeclaringType;
+            }
+        }
+
         public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, System.Globalization.CultureInfo culture)
         {
             this.Value = value;
@@ -309,12 +326,12 @@ namespace PowerArgs
 
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
-            return new object[0];
+            return method.GetCustomAttributes(attributeType, inherit);
         }
 
         public override object[] GetCustomAttributes(bool inherit)
         {
-            return new object[0];
+            return method.GetCustomAttributes(inherit);
         }
 
         public override bool IsDefined(Type attributeType, bool inherit)
@@ -324,7 +341,7 @@ namespace PowerArgs
 
         public override string Name
         {
-            get { return "Virtual_" + method.Name; }
+            get { return method.Name + Constants.ActionArgConventionSuffix; }
         }
     }
 }

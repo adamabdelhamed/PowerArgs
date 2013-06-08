@@ -21,15 +21,24 @@ namespace PowerArgs
         /// or null if PowerArgs did not parse an object of this type.
         /// </summary>
         /// <typeparam name="T">The scaffold type for your arguments</typeparam>
-        /// <returns>the last instance of this type of argument that was parsed on the current thread.</returns>
+        /// <returns>the last instance of this type of argument that was parsed on the current thread</returns>
         public static T GetAmbientArgs<T>() where T : class
         {
-            var key = typeof(T);
+            return (T)GetAmbientArgs(typeof(T));
+        }
 
+        /// <summary>
+        /// Gets the last instance of this type of argument that was parsed on the current thread
+        /// or null if PowerArgs did not parse an object of this type.
+        /// </summary>
+        /// <param name="t">The scaffold type for your arguments</param>
+        /// <returns>the last instance of this type of argument that was parsed on the current thread</returns>
+        public static object GetAmbientArgs(Type t)
+        {
             object ret;
-            if (AmbientArgs.Value.TryGetValue(key, out ret))
+            if (AmbientArgs.Value.TryGetValue(t, out ret))
             {
-                return (T)ret;
+                return ret;
             }
             else
             {
@@ -65,6 +74,39 @@ namespace PowerArgs
             return instance.ParseInternal(t, args);
         }
 
+        /// <summary>
+        /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
+        /// </summary>
+        /// <param name="t">The argument scaffold type.</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static ArgAction InvokeMain(Type t, params string[] args)
+        {
+            var ret = ParseAction(t, args);
+            if (ret.HandledException == null)
+            {
+                ret.Value.InvokeMainMethod();
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static ArgAction<T> InvokeMain<T>(params string[] args)
+        {
+            var ret = ParseAction<T>(args);
+            if (ret.HandledException == null)
+            {
+                ret.Value.InvokeMainMethod();
+            }
+
+            return ret;
+        }
 
         /// <summary>
         /// Creates a new instance of T and populates it's properties based on the given arguments. T must correctly
@@ -77,7 +119,7 @@ namespace PowerArgs
         public static ArgAction<T> InvokeAction<T>(params string[] args)
         {
             var action = Args.ParseAction<T>(args);
-            action.Invoke();
+            if(action.HandledException == null) action.Invoke();
             return action;
         }
 
@@ -110,106 +152,93 @@ namespace PowerArgs
             {
                 Args = (T)weak.Value,
                 ActionArgs = weak.ActionArgs,
-                ActionArgsProperty = weak.ActionArgsProperty
+                ActionArgsProperty = weak.ActionArgsProperty,
+                HandledException = weak.HandledException,
             };
         }
 
         private ArgAction ParseInternal(Type t, string[] input)
         {
-            ArgShortcut.RegisterShortcuts(t);
-            ValidateArgScaffold(t);
-
-            var context = new ArgHook.HookContext();
-            context.Args = Activator.CreateInstance(t);
-            context.CmdLineArgs = input;
-
-            t.RunBeforeParse(context);
-            var specifiedActionProperty = FindSpecifiedAction(t, ref context.CmdLineArgs);
-            context.ParserData = ArgParser.Parse(context.CmdLineArgs);
-            PopulateProperties(context);
-
-            object actionPropertyValue = null;
-            if (specifiedActionProperty != null)
+            try
             {
-                actionPropertyValue = Activator.CreateInstance(specifiedActionProperty.PropertyType);
-                var toRestore = context.Args;
-                context.Args = actionPropertyValue;
+                ArgShortcut.RegisterShortcuts(t);
+                ValidateArgScaffold(t);
+
+                var context = new ArgHook.HookContext();
+                context.Args = Activator.CreateInstance(t);
+                context.CmdLineArgs = input;
+
+                t.RunBeforeParse(context);
+                context.ParserData = ArgParser.Parse(context.CmdLineArgs);
                 PopulateProperties(context);
-                context.Args = toRestore;
-                specifiedActionProperty.SetValue(context.Args, actionPropertyValue, null);
 
-
-                if (specifiedActionProperty is ArgActionMethodVirtualProperty)
+                var specifiedActionProperty = t.FindSpecifiedAction(ref context.CmdLineArgs);
+                object actionPropertyValue = null;
+                if (specifiedActionProperty != null)
                 {
-                    context.ParserData.ImplicitParameters.Remove(0);
+                    actionPropertyValue = Activator.CreateInstance(specifiedActionProperty.PropertyType);
+                    var toRestore = context.Args;
+                    context.Args = actionPropertyValue;
+                    PopulateProperties(context);
+                    context.Args = toRestore;
+                    specifiedActionProperty.SetValue(context.Args, actionPropertyValue, null);
+
+                    if (specifiedActionProperty is ArgActionMethodVirtualProperty)
+                    {
+                        context.ParserData.ImplicitParameters.Remove(0);
+                    }
                 }
 
-            }
-
-            if (context.ParserData.ImplicitParameters.Count > 0)
-            {
-                throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
-            }
-
-            if (context.ParserData.ExplicitParameters.Count > 0)
-            {
-                throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
-            }
-
-            if (AmbientArgs.Value.ContainsKey(t))
-            {
-                AmbientArgs.Value[t] = context.Args;
-            }
-            else
-            {
-                AmbientArgs.Value.Add(t, context.Args);
-            }
-
-            return new ArgAction()
-            {
-                Value = context.Args,
-                ActionArgs = actionPropertyValue,
-                ActionArgsProperty = specifiedActionProperty
-            };
-        }
-
-        private PropertyInfo FindSpecifiedAction(Type t, ref string[] args)
-        {
-            var actionProperty = ArgAction.GetActionProperty(t);
-
-            if (actionProperty == null && t.GetActionMethods().Count == 0) return null;
-
-            var specifiedAction = args.Length > 0 ? args[0] : null;
-
-            if (actionProperty != null && actionProperty.Attr<ArgRequired>().PromptIfMissing && args.Length == 0)
-            {
-                actionProperty.Attr<ArgRequired>().ValidateAlways(actionProperty, ref specifiedAction);
-                args = new string[] { specifiedAction };
-            }
-            else if (actionProperty == null && specifiedAction == null && t.GetActionMethods().Count > 0)
-            {
-                new ArgRequired().ValidateAlways(new VirtualNamedProperty("Action", typeof(string)), ref specifiedAction);
-            }
-
-            if (specifiedAction == null) return null;
-
-            var actionArgProperty = (from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                                     where p.MatchesSpecifiedAction(specifiedAction)
-                                     select p).SingleOrDefault();
-
-            if (actionArgProperty == null)
-            {
-                var matchingActionMethod = t.GetActionMethods().Where(m => m.MatchesSpecifiedAction(specifiedAction)).SingleOrDefault();
-
-                if (matchingActionMethod == null)
+                if (context.ParserData.ImplicitParameters.Count > 0)
                 {
-                    throw new UnknownActionArgException("Unknown Action: " + specifiedAction);
+                    throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
                 }
 
-                return new ArgActionMethodVirtualProperty(matchingActionMethod);
-            }
+                if (context.ParserData.ExplicitParameters.Count > 0)
+                {
+                    throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+                }
 
-            return actionArgProperty;
+                if (AmbientArgs.Value.ContainsKey(t))
+                {
+                    AmbientArgs.Value[t] = context.Args;
+                }
+                else
+                {
+                    AmbientArgs.Value.Add(t, context.Args);
+                }
+
+                return new ArgAction()
+                {
+                    Value = context.Args,
+                    ActionArgs = actionPropertyValue,
+                    ActionArgsProperty = specifiedActionProperty
+                };
+            }
+            catch (ArgException ex)
+            {
+                if (t.HasAttr<ArgExceptionBehavior>() && t.Attr<ArgExceptionBehavior>().Policy == ArgExceptionPolicy.StandardExceptionHandling)
+                {
+                    Console.WriteLine(ex.Message);
+                    ArgUsage.GetStyledUsage(t, t.Attr<ArgExceptionBehavior>().ExeName, new ArgUsageOptions 
+                    { 
+                        ShowPosition = t.Attr<ArgExceptionBehavior>().ShowPositionColumn,
+                        ShowType = t.Attr<ArgExceptionBehavior>().ShowTypeColumn,
+                    }).Write();
+
+                    return new ArgAction()
+                    {
+                        Value = null,
+                        ActionArgs = null,
+                        ActionArgsProperty = null,
+                        HandledException = ex,
+                    };
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
 
         private void PopulateProperties(ArgHook.HookContext context)

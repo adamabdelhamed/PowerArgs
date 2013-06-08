@@ -6,6 +6,62 @@ using System.Linq;
 namespace PowerArgs
 {
     /// <summary>
+    /// Enum used to specify how user errors (ArgExceptions) should be handled by the parser.
+    /// </summary>
+    public enum ArgExceptionPolicy
+    {
+        /// <summary>
+        /// The default, PowerArgs will throw these exceptions for your program to handle.
+        /// </summary>
+        DontHandleExceptions,
+        /// <summary>
+        /// PowerArgs will print the user friendly error message as well as the auto-generated usage documentation
+        /// for the program.
+        /// </summary>
+        StandardExceptionHandling,
+    }
+
+    /// <summary>
+    /// Use this attrbiute to opt into standard error handling of user input errors.  
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
+    public class ArgExceptionBehavior : Attribute
+    {
+        /// <summary>
+        /// The policy to use, defaults to DontHandleExceptions.
+        /// </summary>
+        public ArgExceptionPolicy Policy { get; private set; }
+
+        /// <summary>
+        /// Optionally show the TYPE column in the auto generated usage.  Defaults to true.
+        /// </summary>
+        public bool ShowTypeColumn { get; set; }
+
+        /// <summary>
+        /// Optionally show the POSITION column in the auto generated usage.  Defaults to true.
+        /// </summary>
+        public bool ShowPositionColumn { get; set; }
+
+        /// <summary>
+        /// Optionally override the ExeName.  You need to do this in unit tests.  In a real console app the
+        /// value will be detected automatically if you leave this as null.
+        /// </summary>
+        public string ExeName { get; set; }
+
+        /// <summary>
+        /// Creates a new ArgExceptionBehavior attributes with the given policy.
+        /// </summary>
+        /// <param name="policy">The policy to use, defaults to DontHandleExceptions.</param>
+        public ArgExceptionBehavior(ArgExceptionPolicy policy = ArgExceptionPolicy.DontHandleExceptions)
+        {
+            this.Policy = policy;
+            this.ShowTypeColumn = true;
+            this.ShowPositionColumn = true;
+            this.ExeName = null;
+        }
+    }
+
+    /// <summary>
     /// The attribute used when you want to create an arg reviver. You should put this on public static methods 
     /// that take 2 string parameters (the first represents the name of the property, the second represents the string value
     /// and the return type is the type that you are reviving (or converting) the string into.
@@ -298,7 +354,7 @@ namespace PowerArgs
     /// Use this attribute to describe your argument property.  This will show up in the auto generated
     /// usage documentation.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
     public class ArgDescription : Attribute
     {
         /// <summary>

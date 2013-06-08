@@ -72,6 +72,11 @@ namespace PowerArgs
         /// </summary>
         public PropertyInfo ActionArgsProperty { get; set; }
 
+        /// <summary>
+        /// If an exception was handled by the parser then this property will be populated and others will not be.
+        /// </summary>
+        public ArgException HandledException { get; internal set; }
+
         internal static PropertyInfo GetActionProperty<T>()
         {
             return GetActionProperty(typeof(T));
