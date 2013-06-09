@@ -68,6 +68,14 @@ These can be specified on argument properties.  You can create custom validators
 
 ###Latest Features
 
+Access your parsed command line arguments from anywhere in your application.
+
+    MyArgs parsed = Args.GetAmbientArgs<MyArgs>();
+    
+This will get the most recent insance of type MyArgs that was parsed on the current thread.  That way, you have access to things like global options without having to pass the result all throughout your code.
+
+###Styled Usage
+
 Enhancements to auto-generated usage documentation.  Here is some sample output.
     
 ![Sample styled output](https://github.com/adamabdelhamed/PowerArgs/blob/master/StyledUsageExampleOutput.PNG?raw=true "Sample Output")
