@@ -3,26 +3,22 @@ using System;
 
 namespace HelloWorld.Samples
 {
-    [TabCompletion] // This is useful for the sample, but you don't need it in your program (unless you want it).
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = false)]
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = false), TabCompletion /*[TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
     public class GitExampleArgs
     {
-        [ArgActionMethod]
-        [ArgDescription("Push your local changes to a remote repo")]
+        [ArgActionMethod, ArgDescription("Push your local changes to a remote repo")]
         public void Push(PushPullArgs args)
         {
             Console.WriteLine("Pushing to " + args.Remote);
         }
 
-        [ArgActionMethod]
-        [ArgDescription("Pull remote changes from a remote repo")]
+        [ArgActionMethod, ArgDescription("Pull remote changes from a remote repo")]
         public void Pull(PushPullArgs args)
         {
             Console.WriteLine("Pulling from " + args.Remote);
         }
 
-        [ArgActionMethod]
-        [ArgDescription("Gets the status of the repo")]
+        [ArgActionMethod, ArgDescription("Gets the status of the repo")]
         public void Status(StatusArgs args)
         {
             Console.WriteLine("Here is the status");
@@ -31,8 +27,7 @@ namespace HelloWorld.Samples
 
     public class PushPullArgs
     {
-        [ArgPosition(1)]
-        [ArgRequired]
+        [ArgPosition(1), ArgRequired]
         public string Remote { get; set; }
 
         [ArgPosition(2)]

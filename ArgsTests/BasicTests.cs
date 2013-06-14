@@ -74,6 +74,8 @@ namespace ArgsTests
             [ArgShortcut(null)]
             public byte Byte { get; set; }
 
+            public Uri Uri { get; set; }
+
             [ArgShortcut("li")]
             public List<int> List { get; set; }
 
@@ -137,7 +139,7 @@ namespace ArgsTests
             Guid g = Guid.NewGuid();
             DateTime d = DateTime.Today;
 
-            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue+"", "-li", "100,200,300", "-bytes", "10,20,30"  };
+            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue+"", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com"  };
 
             BasicArgs parsed = Args.Parse<BasicArgs>(args);
 
@@ -157,6 +159,7 @@ namespace ArgsTests
             Assert.AreEqual(10, parsed.ArrayOfBytes[0]);
             Assert.AreEqual(20, parsed.ArrayOfBytes[1]);
             Assert.AreEqual(30, parsed.ArrayOfBytes[2]);
+            Assert.AreEqual(new Uri("http://www.bing.com"), parsed.Uri);
         }
 
         [TestMethod]

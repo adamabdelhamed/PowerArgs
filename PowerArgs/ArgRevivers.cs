@@ -26,15 +26,15 @@ namespace PowerArgs
 
         internal static bool CanRevive(Type t)
         {
-
-            if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string))) return true;
-
             if (Revivers.ContainsKey(t) || 
                 t.IsEnum || 
                 (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0]) ) ||
                 (t.IsArray && CanRevive(t.GetElementType()) ))
                 return true;
             SearchAssemblyForRevivers(t.Assembly);
+
+            if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string))) return true;
+
             return Revivers.ContainsKey(t);
         }
 
@@ -184,6 +184,18 @@ namespace PowerArgs
             {
                 if (val != null) throw new ArgException("The value for " + prop + " cannot be specified on the command line");
                 return new SecureStringArgument(prop);
+            });
+
+            revivers.Add(typeof(Uri), (prop, val) =>
+            {
+                try
+                {
+                    return new Uri(val);
+                }
+                catch (UriFormatException)
+                {
+                    throw new UriFormatException("value must be a valid URI: " + val);
+                }
             });
         }
     }

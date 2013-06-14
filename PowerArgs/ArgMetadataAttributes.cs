@@ -543,10 +543,27 @@ namespace PowerArgs
     [AttributeUsage(AttributeTargets.Class)]
     public class StickyArgPersistence : Attribute
     {
+        private Type persistenceProviderType;
+        private IStickyArgPersistenceProvider _persistenceProvider;
+
         /// <summary>
         /// Gets the provider that will be used to save and load sticky args.
         /// </summary>
-        public IStickyArgPersistenceProvider PersistenceProvider { get; private set; }
+        public IStickyArgPersistenceProvider PersistenceProvider
+        {
+            get
+            {
+                if (_persistenceProvider != null) return _persistenceProvider;
+
+                if (persistenceProviderType.GetInterfaces().Contains(typeof(IStickyArgPersistenceProvider)) == false)
+                {
+                    throw new InvalidArgDefinitionException("The given type does not implement '" + typeof(IStickyArgPersistenceProvider).Name + "'");
+                }
+
+                _persistenceProvider = (IStickyArgPersistenceProvider)Activator.CreateInstance(persistenceProviderType);
+                return _persistenceProvider;
+            }
+        }
 
         /// <summary>
         /// Creates a new StickyArgPersistence attribute given the type of the persistence provider.
@@ -554,12 +571,7 @@ namespace PowerArgs
         /// <param name="persistenceProviderType">The type that implements IStickyArgPersistenceProvider and defines a default constructor.</param>
         public StickyArgPersistence(Type persistenceProviderType)
         {
-            if (persistenceProviderType.GetInterfaces().Contains(typeof(IStickyArgPersistenceProvider)) == false)
-            {
-                throw new InvalidArgDefinitionException("The given type does not implement '" + typeof(IStickyArgPersistenceProvider).Name + "'");
-            }
-
-            PersistenceProvider = (IStickyArgPersistenceProvider)Activator.CreateInstance(persistenceProviderType);
+            this.persistenceProviderType = persistenceProviderType;
         }
     }
 

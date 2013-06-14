@@ -11,8 +11,18 @@ namespace PowerArgs
     /// </summary>
     public class Args
     {
+
         [ThreadStatic]
-        private static Lazy<Dictionary<Type, object>> AmbientArgs = new Lazy<Dictionary<Type, object>>(() => { return new Dictionary<Type, object>(); });
+        private static Dictionary<Type, object> _ambientArgs;
+
+        private static Dictionary<Type, object> AmbientArgs
+        {
+            get
+            {
+                if (_ambientArgs == null) _ambientArgs = new Dictionary<Type, object>();
+                return _ambientArgs;
+            }
+        }
 
         private Args() { }
 
@@ -36,7 +46,7 @@ namespace PowerArgs
         public static object GetAmbientArgs(Type t)
         {
             object ret;
-            if (AmbientArgs.Value.TryGetValue(t, out ret))
+            if (AmbientArgs.TryGetValue(t, out ret))
             {
                 return ret;
             }
@@ -199,13 +209,13 @@ namespace PowerArgs
                     throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
                 }
 
-                if (AmbientArgs.Value.ContainsKey(t))
+                if (AmbientArgs.ContainsKey(t))
                 {
-                    AmbientArgs.Value[t] = context.Args;
+                    AmbientArgs[t] = context.Args;
                 }
                 else
                 {
-                    AmbientArgs.Value.Add(t, context.Args);
+                    AmbientArgs.Add(t, context.Args);
                 }
 
                 return new ArgAction()

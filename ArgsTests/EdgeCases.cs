@@ -33,6 +33,8 @@ namespace ArgsTests
             [ArgShortcut("by")]
             public byte Byte { get; set; }
 
+            public Uri Uri { get; set; }
+
             public string[] ArrayOfStrings { get; set; }
             [ArgShortcut("li")]
             public List<int> ListOfInts { get; set; }
@@ -96,6 +98,12 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestBadUri()
+        {
+            TestBadValues("-u", "http//www.bing.com"); // Missing a colon after http
+        }
+
+        [TestMethod]
         public void TestBadLong()
         {
             TestBadValues("-l", 1.1 + "");
@@ -126,7 +134,8 @@ namespace ArgsTests
                 "-by", "255", 
                 "-g", Guid.NewGuid().ToString(), 
                 "-t", DateTime.Today.ToString(), 
-                "-l", long.MaxValue + "" 
+                "-l", long.MaxValue + "",
+                "-u", "http://www.bing.com"
             };
 
             for (int i = 0; i < args.Length; i++)

@@ -23,12 +23,18 @@ namespace PowerArgs
         public bool ShowPosition { get; set; }
 
         /// <summary>
+        /// Set to true if you want to show default values after the description (true by default)
+        /// </summary>
+        public bool AppendDefaultValueToDescription { get; set; }
+
+        /// <summary>
         /// Creates a new instance of ArgUsageOptions
         /// </summary>
         public ArgUsageOptions()
         {
             ShowType = true;
             ShowPosition = true;
+            AppendDefaultValueToDescription = true;
         }
     }
 
@@ -121,6 +127,11 @@ namespace PowerArgs
         /// </summary>
         public PropertyInfo Property { get; set; }
 
+        /// <summary>
+        /// The default value for the argument
+        /// </summary>
+        public object DefaultValue { get; set; }
+
         private ArgumentUsageInfo()
         {
             Aliases = new List<string>();
@@ -137,6 +148,7 @@ namespace PowerArgs
             Ignore = toAutoGen.HasAttr<ArgIgnoreAttribute>();
             IsAction = toAutoGen.IsActionArgProperty();
             IsActionArgs = toAutoGen.Name == Constants.ActionPropertyConventionName;
+            DefaultValue = toAutoGen.HasAttr<DefaultValueAttribute>() ? toAutoGen.Attr<DefaultValueAttribute>().Value : null;
 
             Name = toAutoGen.GetArgumentName();
             IsRequired = toAutoGen.HasAttr<ArgRequired>();
@@ -349,6 +361,8 @@ namespace PowerArgs
                 var positionString = new ConsoleString(usageInfo.Position >= 0 ? usageInfo.Position + "" : "NA");
                 var requiredString = new ConsoleString(usageInfo.IsRequired ? "*" : "", ConsoleColor.Red);
                 var descriptionString = new ConsoleString(usageInfo.Description);
+                if (options.AppendDefaultValueToDescription && usageInfo.DefaultValue != null) descriptionString += new ConsoleString(" [default=" + usageInfo.DefaultValue.ToString() + "]", ConsoleColor.DarkGreen);
+
                 var typeString = new ConsoleString(usageInfo.Type);
 
                 var aliases = usageInfo.Aliases.OrderBy(a => a.Length).ToList();

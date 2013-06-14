@@ -6,9 +6,8 @@ namespace HelloWorld.Samples
     [TabCompletion] // This is useful for the sample, but you don't need it in your program (unless you want it).
     public class HelloWorldParseArgs
     {
-        public string StringArg { get; set; }
-        public int    IntArg    { get; set; }
-        public bool   SwitchArg { get; set; }
+        [ArgRequired, ArgDescription("The Uri to ping"), DefaultValue("http://www.bing.com")]
+        public Uri UriArg { get; set; }
     }
 
     public class HelloWorldParse
@@ -18,7 +17,7 @@ namespace HelloWorld.Samples
             try
             {
                 var parsed = Args.Parse<HelloWorldParseArgs>(args);
-                Console.WriteLine("You entered StringArg '{0}' and IntArg '{1}', switch was '{2}'", parsed.StringArg, parsed.IntArg, parsed.SwitchArg);
+                Console.WriteLine("You entered UriArg '{0}'", parsed.UriArg);
             }
             catch (ArgException ex)
             {
