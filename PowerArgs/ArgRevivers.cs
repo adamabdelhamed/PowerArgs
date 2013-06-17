@@ -40,14 +40,36 @@ namespace PowerArgs
 
         internal static object ReviveEnum(Type t, string value, bool ignoreCase)
         {
-            try
+            if (value.Contains(","))
             {
-                return Enum.Parse(t, value, ignoreCase);
+                int ret = 0;
+                var values = value.Split(',').Select(v => v.Trim());
+                foreach (var enumValue in values)
+                {
+                    try
+                    {
+                        ret = ret | (int)(Enum.Parse(t, enumValue, ignoreCase));
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.TraceError(ex.ToString());
+                        throw new ValidationArgException(enumValue + " is not a valid value for type " + t.Name + ", options are " + string.Join(", ", Enum.GetNames(t)));
+                    }
+                }
+
+                return Enum.ToObject(t, ret);
             }
-            catch (Exception ex)
+            else
             {
-                Trace.TraceError(ex.ToString());
-                throw new ValidationArgException(value+" is not a valid value for type "+t.Name+", options are "+string.Join(", ",Enum.GetNames(t)));
+                try
+                {
+                    return Enum.Parse(t, value, ignoreCase);
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError(ex.ToString());
+                    throw new ValidationArgException(value + " is not a valid value for type " + t.Name + ", options are " + string.Join(", ", Enum.GetNames(t)));
+                }
             }
         }
 

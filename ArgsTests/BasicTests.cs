@@ -19,10 +19,25 @@ namespace ArgsTests
             Option3
         }
 
+        public enum EnumWithFlags
+        {
+            Zero = 0,
+            One = 1,
+            Two = 2,
+            Four = 4,
+            Eight = 8,
+            Sixteen = 16,
+        }
+
         public class EnumArgs
         {
             [DefaultValue(BasicEnum.Option2)]
             public BasicEnum Option { get; set; }
+        }
+
+        public class EnumArgsWithFlags
+        {
+            public EnumWithFlags Option { get; set; }
         }
 
         public class EnumArgsExplicitIgnoreCase
@@ -241,6 +256,16 @@ namespace ArgsTests
             Assert.AreEqual(BasicEnum.Option2, parsed.Option);
         }
 
+
+        [TestMethod]
+        public void TestEnumWithFlags()
+        {
+            var args = new string[] { "-o", "Zero,One,Two" };
+
+            var parsed = Args.Parse<EnumArgsWithFlags>(args);
+            Assert.AreEqual(EnumWithFlags.Zero | EnumWithFlags.One | EnumWithFlags.Two, parsed.Option);
+        }
+
         [TestMethod]
         public void ArgReviversReviveEnumThrowsOnInvalidValue()
         {
@@ -255,6 +280,23 @@ namespace ArgsTests
             {
                 Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
                 Assert.AreEqual("NonExistentOption is not a valid value for type BasicEnum, options are Option1, Option2, Option3", ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void ArgReviversReviveEnumThrowsOnInvalidValueInFlagList()
+        {
+            var args = new string[] { "-o", "One,NonExistentOption, Two" };
+
+            try
+            {
+                Args.Parse<EnumArgsWithFlags>(args);
+                Assert.Fail("Should have thrown an exception");
+            }
+            catch (Exception ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
+                Assert.AreEqual("NonExistentOption is not a valid value for type EnumWithFlags, options are Zero, One, Two, Four, Eight, Sixteen", ex.Message);
             }
         }
 
