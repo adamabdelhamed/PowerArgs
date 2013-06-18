@@ -267,6 +267,34 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestEnumWithFlagValues()
+        {
+            var args = new string[] { "-o", "0,1,2" };
+
+            var parsed = Args.Parse<EnumArgsWithFlags>(args);
+            Assert.AreEqual(EnumWithFlags.Zero | EnumWithFlags.One | EnumWithFlags.Two, parsed.Option);
+        }
+
+        [TestMethod]
+        public void TestEnumWithValues()
+        {
+            var args = new string[] { "-o", "2" };
+
+            var parsed = Args.Parse<EnumArgsWithFlags>(args);
+            Assert.AreEqual(EnumWithFlags.Two, parsed.Option);
+        }
+
+        [TestMethod]
+        public void TestEnumWithValuesPreAggregated()
+        {
+            var args = new string[] { "-o", "3" };
+
+            var parsed = Args.Parse<EnumArgsWithFlags>(args);
+            Assert.AreEqual(EnumWithFlags.One | EnumWithFlags.Two, parsed.Option);
+        }
+
+
+        [TestMethod]
         public void ArgReviversReviveEnumThrowsOnInvalidValue()
         {
             var args = new string[] { "-option", "NonExistentOption" };

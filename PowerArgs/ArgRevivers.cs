@@ -40,6 +40,11 @@ namespace PowerArgs
 
         internal static object ReviveEnum(Type t, string value, bool ignoreCase)
         {
+            if(string.IsNullOrWhiteSpace(value))
+            {
+                throw new ValidationArgException("Enum values cannot be empty");
+            }
+
             if (value.Contains(","))
             {
                 int ret = 0;
@@ -48,7 +53,7 @@ namespace PowerArgs
                 {
                     try
                     {
-                        ret = ret | (int)(Enum.Parse(t, enumValue, ignoreCase));
+                        ret = ret | ParseEnumValue(t, enumValue, ignoreCase);
                     }
                     catch (Exception ex)
                     {
@@ -63,7 +68,7 @@ namespace PowerArgs
             {
                 try
                 {
-                    return Enum.Parse(t, value, ignoreCase);
+                    return Enum.ToObject(t, ParseEnumValue(t, value, ignoreCase));
                 }
                 catch (Exception ex)
                 {
@@ -71,6 +76,18 @@ namespace PowerArgs
                     throw new ValidationArgException(value + " is not a valid value for type " + t.Name + ", options are " + string.Join(", ", Enum.GetNames(t)));
                 }
             }
+        }
+
+        private static int ParseEnumValue(Type t, string valueString, bool ignoreCase)
+        {
+            int rawInt;
+
+            if (int.TryParse(valueString, out rawInt))
+            {
+                return (int)Enum.ToObject(t, rawInt);
+            }
+
+            return (int)Enum.Parse(t, valueString, ignoreCase);
         }
 
         internal static object Revive(Type t, string name, string value)

@@ -234,6 +234,8 @@ namespace PowerArgs
                     { 
                         ShowPosition = t.Attr<ArgExceptionBehavior>().ShowPositionColumn,
                         ShowType = t.Attr<ArgExceptionBehavior>().ShowTypeColumn,
+                        ShowPossibleValues = t.Attr<ArgExceptionBehavior>().ShowPossibleValues,
+
                     }).Write();
 
                     return new ArgAction()

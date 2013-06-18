@@ -43,6 +43,11 @@ namespace PowerArgs
         public bool ShowPositionColumn { get; set; }
 
         /// <summary>
+        /// Set to true to list possible values (usually for enums).  Defaults to true.
+        /// </summary>
+        public bool ShowPossibleValues { get; set; }
+
+        /// <summary>
         /// Optionally override the ExeName.  You need to do this in unit tests.  In a real console app the
         /// value will be detected automatically if you leave this as null.
         /// </summary>
@@ -57,6 +62,7 @@ namespace PowerArgs
             this.Policy = policy;
             this.ShowTypeColumn = true;
             this.ShowPositionColumn = true;
+            this.ShowPossibleValues = true;
             this.ExeName = null;
         }
     }
@@ -354,7 +360,7 @@ namespace PowerArgs
     /// Use this attribute to describe your argument property.  This will show up in the auto generated
     /// usage documentation.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Field)]
     public class ArgDescription : Attribute
     {
         /// <summary>

@@ -23,6 +23,11 @@ namespace PowerArgs
         public bool ShowPosition { get; set; }
 
         /// <summary>
+        /// Set to true to list possible values (usually for enums, true by default)
+        /// </summary>
+        public bool ShowPossibleValues { get; set; }
+
+        /// <summary>
         /// Set to true if you want to show default values after the description (true by default)
         /// </summary>
         public bool AppendDefaultValueToDescription { get; set; }
@@ -34,6 +39,7 @@ namespace PowerArgs
         {
             ShowType = true;
             ShowPosition = true;
+            ShowPossibleValues = true;
             AppendDefaultValueToDescription = true;
         }
     }
@@ -88,6 +94,11 @@ namespace PowerArgs
         public List<string> Aliases { get; private set; }
 
         /// <summary>
+        /// Possible values for this option.  This is auto populated for enums and includes the description if specified.
+        /// </summary>
+        public List<string> PossibleValues { get; private set; }
+
+        /// <summary>
         /// Indicates that the argument is required.
         /// </summary>
         public bool IsRequired { get; set; }
@@ -135,6 +146,7 @@ namespace PowerArgs
         private ArgumentUsageInfo()
         {
             Aliases = new List<string>();
+            PossibleValues = new List<string>();
         }
 
         /// <summary>
@@ -174,6 +186,16 @@ namespace PowerArgs
             if (toAutoGen.HasAttr<ArgDescription>())
             {
                 Description = toAutoGen.Attr<ArgDescription>().Description;
+            }
+
+            if (toAutoGen.PropertyType.IsEnum)
+            {
+                foreach (var val in toAutoGen.PropertyType.GetFields().Where(v => v.IsSpecialName == false))
+                {
+                    var description = val.HasAttr<ArgDescription>() ? " - " + val.Attr<ArgDescription>().Description : "";
+                    var valText = val.Name;
+                    PossibleValues.Add(valText + description);
+                }
             }
         }
     }
@@ -334,15 +356,19 @@ namespace PowerArgs
                 new ConsoleString("DESCRIPTION", ConsoleColor.Yellow),
             };
 
+            bool hasTypeCol = false, hasPosCol = false;
+
             int insertPosition = 1;
             if (options.ShowType)
             {
                 columnHeaders.Insert(insertPosition++, new ConsoleString("TYPE", ConsoleColor.Yellow));
+                hasTypeCol = true;
             }
 
             if (hasPositionalArgs && options.ShowPosition)
             {
-                columnHeaders.Insert(insertPosition, new ConsoleString("POSITION", ConsoleColor.Yellow));  
+                columnHeaders.Insert(insertPosition, new ConsoleString("POSITION", ConsoleColor.Yellow));
+                hasPosCol = true;
             }
 
             List<List<ConsoleString>> rows = new List<List<ConsoleString>>();
@@ -406,15 +432,28 @@ namespace PowerArgs
                 {
                     rows.Add(new List<ConsoleString>()
                     {
-                        new ConsoleString("    "+aliases[i]),
-                        ConsoleString.Empty,
+                        new ConsoleString("  "+aliases[i]),
                         ConsoleString.Empty,
                     });
 
-                    if (hasPositionalArgs && options.ShowPosition) rows.Last().Insert(2, positionString);
+                    if (hasTypeCol) rows.Last().Add(ConsoleString.Empty);
+                    if (hasPosCol) rows.Last().Add(ConsoleString.Empty);
                 }
 
-       
+                if (options.ShowPossibleValues)
+                {
+                    foreach (var possibleValue in usageInfo.PossibleValues)
+                    {
+                        rows.Add(new List<ConsoleString>()
+                    {
+                        ConsoleString.Empty,
+                        new ConsoleString("  "+possibleValue),
+                    });
+
+                        if (hasTypeCol) rows.Last().Insert(rows.Last().Count - 1, ConsoleString.Empty);
+                        if (hasPosCol) rows.Last().Insert(rows.Last().Count - 1, ConsoleString.Empty);
+                    }
+                }
             }
 
             return FormatAsTable(columnHeaders, rows, "   ");
