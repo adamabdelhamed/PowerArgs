@@ -63,7 +63,7 @@ namespace ArgsTests
                 if (ex is ArgException == false) Assert.Fail("An ArgException should have been thrown");
 
                 if (caseS && text != null && !ex.Message.Contains(expectedText)) Assert.Fail("The error message did not contain the text: "+text+" - "+ex.Message);
-                if (!caseS && text != null && !ex.Message.ToLower().Contains(expectedText)) Assert.Fail("The error message did not contain the text: "+text+" - "+ex.Message);
+                if (!caseS && text != null && !ex.Message.ToLower().Contains(expectedText.ToLower())) Assert.Fail("The error message did not contain the text: "+text+" - "+ex.Message);
             };
         }
 

@@ -249,6 +249,7 @@ namespace PowerArgs
                 var shortcutsForProperty = ArgShortcut.FindShortcutsInternal(prop, shortcutsSeenSoFar);
                 if (shortcutsForProperty.Count > 0)
                 {
+
                     shortcutsSeenSoFar.AddRange(shortcutsForProperty);
                     if (KnownShortcuts.ContainsKey(prop) == false)
                     {
@@ -280,15 +281,18 @@ namespace PowerArgs
 
             var attrs = info.Attrs<ArgShortcut>();
 
+            bool ignoreCase = true;
+            if (info.DeclaringType.HasAttr<ArgIgnoreCase>() && info.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase == false) ignoreCase = false;
+
             if (attrs.Count == 0)
             {
                 string shortcutVal = "";
-                foreach (char c in info.GetArgumentName())
+                foreach (char c in info.GetArgumentName().Substring(0, info.GetArgumentName().Length-1))
                 {
                     shortcutVal += c;
-                    if (knownShortcuts.Contains(shortcutVal) == false) return new List<string>{ shortcutVal };
+                    if (knownShortcuts.Contains(shortcutVal) == false) return new List<string>{ ignoreCase ? shortcutVal.ToLower() : shortcutVal };
                 }
-                return new List<string> { shortcutVal };
+                return new List<string>();
             }
             else
             {
@@ -314,7 +318,7 @@ namespace PowerArgs
 
                     if (attr.Shortcut != null)
                     {
-                        ret.Add(attr.Shortcut);
+                        ret.Add(ignoreCase ? attr.Shortcut.ToLower() : attr.Shortcut);
                     }
                 }
 

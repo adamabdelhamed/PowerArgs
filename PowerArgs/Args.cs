@@ -350,7 +350,12 @@ namespace PowerArgs
                     throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.GetArgumentName());
                 }
 
-                var shortcutsForProperty = ArgShortcut.GetShortcutsInternal(prop);
+                var shortcutsForProperty = ArgShortcut.GetShortcutsInternal(prop).ToArray().ToList();
+                if(shortcutsForProperty.Contains(prop.GetArgumentName()) == false)
+                {
+                    shortcutsForProperty.Add(prop.GetArgumentName());
+                }
+
                 foreach (var shortcutVal in shortcutsForProperty)
                 {
                     string shortcut = shortcutVal;

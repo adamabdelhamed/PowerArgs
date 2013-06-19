@@ -40,11 +40,6 @@ namespace PowerArgs
 
         internal static object ReviveEnum(Type t, string value, bool ignoreCase)
         {
-            if(string.IsNullOrWhiteSpace(value))
-            {
-                throw new ValidationArgException("Enum values cannot be empty");
-            }
-
             if (value.Contains(","))
             {
                 int ret = 0;
@@ -73,6 +68,7 @@ namespace PowerArgs
                 catch (Exception ex)
                 {
                     Trace.TraceError(ex.ToString());
+                    if (value == string.Empty) value = "<empty>";
                     throw new ValidationArgException(value + " is not a valid value for type " + t.Name + ", options are " + string.Join(", ", Enum.GetNames(t)));
                 }
             }

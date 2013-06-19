@@ -10,6 +10,35 @@ namespace ArgsTests
     [TestClass]
     public class EdgeCases
     {
+        public enum EdgeEnum
+        {
+            Foo,
+            Bar
+        }
+
+        public class BadPositionalArgs
+        {
+            [ArgPosition(-1)]
+            public string Foo { get; set; }
+        }
+
+        public class StrangeShortcuts
+        {
+            [ArgShortcut("Foo")]
+            public string Bar { get; set; }
+
+            public string Foo { get; set; }
+        }
+
+        public class StrangeShortcuts2
+        {
+            [ArgShortcut("Fo")]
+            [ArgShortcut("F")]
+            public string Bar { get; set; }
+
+            public string Foo { get; set; }
+        }
+
         public class CustomType
         {
             public int IntVal { get; set; }
@@ -41,6 +70,8 @@ namespace ArgsTests
 
             [ArgIgnore]
             public object SomeObjectToIgnore { get; set; }
+
+            public EdgeEnum EdgeEnum { get; set; }
         }
 
         public class BasicArgsSC
@@ -58,6 +89,41 @@ namespace ArgsTests
 
             [ArgIgnore]
             public object SomeObjectToIgnore { get; set; }
+        }
+
+        [TestMethod]
+        public void TestNegativePosition()
+        {
+            try
+            {
+                Args.Parse<BadPositionalArgs>("-f", "blah");
+                Assert.Fail("An exception should have been thrown.");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains(">= 0"));
+            }
+        }
+
+        [TestMethod]
+        public void TestShortcutGenerationEdgeCase()
+        {
+            try
+            {
+                var parsed = Args.Parse<StrangeShortcuts>("-foo", "value");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("duplicate"));
+            }
+        }
+
+        [TestMethod]
+        public void TestShortcutGenerationEdgeCase2()
+        {
+            var parsed = Args.Parse<StrangeShortcuts2>("-foo", "value");
+            Assert.AreEqual(null, typeof(StrangeShortcuts2).GetShortcut("Foo"));
         }
 
         [TestMethod]
@@ -243,6 +309,15 @@ namespace ArgsTests
                 Assert.AreEqual("", parsed.ArrayOfStrings[0]);
                 Assert.AreEqual("", parsed.ArrayOfStrings[1]);
             });
+        }
+
+        [TestMethod]
+        public void TestEmptyEnum()
+        {
+            Helpers.Run(() =>
+            {
+                var parsed = Args.Parse<BasicArgs>("-edgeenum");
+            }, Helpers.ExpectedArgException(expectedText: "<empty> is not a valid value for type EdgeEnum, options are Foo, Bar"));
         }
     }
 }
