@@ -30,6 +30,24 @@ namespace ArgsTests
             public string Foo { get; set; }
         }
 
+        public class ConflictingShortcutPolicyArgsNoShortcutWithShortcut
+        {
+            [ArgShortcut(ArgShortcutPolicy.NoShortcut),ArgShortcut("-f")]
+            public string Foo { get; set; }
+        }
+
+        public class ConflictingShortcutPolicyArgsNoShortcutShortcustOnly
+        {
+            [ArgShortcut(ArgShortcutPolicy.NoShortcut), ArgShortcut(ArgShortcutPolicy.ShortcutsOnly)]
+            public string Foo { get; set; }
+        }
+
+        public class ConflictingShortcutPolicyArgsShortcutsOnlyNoShortcuts
+        {
+            [ArgShortcut(ArgShortcutPolicy.ShortcutsOnly)]
+            public string Foo { get; set; }
+        }
+
         public class StrangeShortcuts2
         {
             [ArgShortcut("Fo")]
@@ -318,6 +336,31 @@ namespace ArgsTests
             {
                 var parsed = Args.Parse<BasicArgs>("-edgeenum");
             }, Helpers.ExpectedArgException(expectedText: "<empty> is not a valid value for type EdgeEnum, options are Foo, Bar"));
+        }
+
+        [TestMethod]
+        public void TestConflictingShortcutPolicies()
+        {
+            try
+            {
+                Args.Parse<ConflictingShortcutPolicyArgsNoShortcutWithShortcut>();
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex) { }
+
+            try
+            {
+                Args.Parse<ConflictingShortcutPolicyArgsNoShortcutShortcustOnly>();
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex) { }
+
+            try
+            {
+                Args.Parse<ConflictingShortcutPolicyArgsShortcutsOnlyNoShortcuts>();
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex) { }
         }
     }
 }

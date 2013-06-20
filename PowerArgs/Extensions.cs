@@ -10,6 +10,111 @@ namespace PowerArgs
 {
     internal static class Extensions
     {
+        internal static bool IgnoreCase(this PropertyInfo prop)
+        {
+            bool ignoreCase = true;
+
+            if (prop.HasAttr<ArgIgnoreCase>() && prop.Attr<ArgIgnoreCase>().IgnoreCase == false)
+            {
+                ignoreCase = false;
+            }
+            else if (prop.DeclaringType.HasAttr<ArgIgnoreCase>() && prop.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase == false)
+            {
+                ignoreCase = false;
+            }
+
+            return ignoreCase;
+        }
+
+        internal static List<PropertyInfo> FindAllEnumArguments(this Type t)
+        {
+            return t.FindAllArguments().Where(p => p.PropertyType.IsEnum).ToList();
+        }
+
+        internal static List<PropertyInfo> FindAllArguments(this Type t)
+        {
+            List<PropertyInfo> ret = t.GetArguments();
+ 
+            foreach (var action in t.GetActionArgProperties())
+            {
+                ret.AddRange(action.PropertyType.GetArguments());
+            }
+
+            return ret;
+        }
+
+        internal static List<string> GetEnumShortcuts(this FieldInfo enumField)
+        {
+            if (enumField.DeclaringType.IsEnum == false) throw new ArgumentException("The given field '"+enumField.Name+"' is not an enum field.");
+
+            var shortcutAttrs = enumField.Attrs<ArgShortcut>();
+            var noShortcutPolicy = shortcutAttrs.Where(s => s.Shortcut == null).SingleOrDefault();
+            var shortcutVals = shortcutAttrs.Where(s => s.Shortcut != null).Select(s => s.Shortcut).ToList();
+
+            if (noShortcutPolicy != null && shortcutVals.Count > 0) throw new InvalidArgDefinitionException("You can't have an ArgShortcut attribute with a null shortcut and then define a second ArgShortcut attribute with a non-null value.");
+
+            return shortcutVals;
+        }
+
+        internal static List<string> GetEnumShortcuts(this Type enumType)
+        {
+            List<string> ret = new List<string>();
+            foreach (var field in enumType.GetFields().Where(f => f.IsSpecialName == false))
+            {
+                ret.AddRange(field.GetEnumShortcuts());
+            }
+            return ret;
+        }
+
+        internal static bool TryMatchEnumShortcut(this Type enumType, string value, bool ignoreCase, out object enumResult)
+        {
+            if (ignoreCase) value = value.ToLower();
+            foreach (var field in enumType.GetFields().Where(f => f.IsSpecialName == false))
+            {
+                var shortcuts = GetEnumShortcuts(field);
+                if (ignoreCase) shortcuts = shortcuts.Select(s => s.ToLower()).ToList();
+                var match = (from s in shortcuts where s == value select s).SingleOrDefault();
+                if (match != null)
+                {
+                    enumResult = Enum.Parse(enumType, field.Name);
+                    return true;
+                }
+            }
+
+            enumResult = null;
+            return false;
+        }
+
+        internal static void ValidateNoDuplicateEnumShortcuts(this Type enumType, bool ignoreCase)
+        {
+            if (enumType.IsEnum == false) throw new ArgumentException("Type "+enumType.Name+" is not an enum");
+
+            List<string> shortcutsSeenSoFar = new List<string>();
+            foreach (var field in enumType.GetFields().Where(f => f.IsSpecialName == false))
+            {
+                var shortcutsForThisField = GetEnumShortcuts(field);
+                if (ignoreCase) shortcutsForThisField = shortcutsForThisField.Select(s => s.ToLower()).ToList();
+
+                foreach (var shortcut in shortcutsForThisField)
+                {
+                    if (shortcutsSeenSoFar.Contains(shortcut)) throw new InvalidArgDefinitionException("Duplicate shortcuts defined for enum type '"+enumType.Name+"'");
+                    shortcutsSeenSoFar.Add(shortcut);
+                }
+            }
+        }
+
+        internal static void ValidateNoConflictingShortcutPolicies(this PropertyInfo property)
+        {
+            var attrs = property.Attrs<ArgShortcut>();
+            var noShortcutsAllowed = attrs.Where(a => a.Policy == ArgShortcutPolicy.NoShortcut).Count() != 0;
+            var shortcutsOnly = attrs.Where(a => a.Policy == ArgShortcutPolicy.ShortcutsOnly).Count() != 0;
+            var actualShortcutValues = attrs.Where(a => a.Policy.HasValue == false && a.Shortcut != null).Count() != 0;
+
+            if (noShortcutsAllowed && shortcutsOnly) throw new InvalidArgDefinitionException("You cannot specify a policy of NoShortcut and another policy of ShortcutsOnly.");
+            if (noShortcutsAllowed && actualShortcutValues) throw new InvalidArgDefinitionException("You cannot specify a policy of NoShortcut and then also specify shortcut values via another attribute.");
+            if (shortcutsOnly && actualShortcutValues == false) throw new InvalidArgDefinitionException("You specified a policy of ShortcutsOnly, but did not specify any shortcuts by adding another ArgShortcut attrivute.");
+        }
+
         internal static MethodInfo InvokeMainMethod(this object o)
         {
             var method = o.GetType().GetMethod("Main");
@@ -100,10 +205,7 @@ namespace PowerArgs
 
         internal static string GetArgumentName(this PropertyInfo prop)
         {
-            bool ignoreCase = true;
-
-            if (prop.HasAttr<ArgIgnoreCase>() && !prop.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
-            else if (prop.DeclaringType.HasAttr<ArgIgnoreCase>() && !prop.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
+            bool ignoreCase = prop.IgnoreCase();
 
             if (ignoreCase) return prop.Name.ToLower();
             else return prop.Name;
@@ -113,24 +215,23 @@ namespace PowerArgs
         {
             if (prop.HasAttr<ArgIgnoreAttribute>()) return false;
 
-            bool ignoreCase = true;
+            bool ignoreCase = prop.IgnoreCase();
 
-            if (prop.HasAttr<ArgIgnoreCase>() && !prop.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
-            else if (prop.DeclaringType.HasAttr<ArgIgnoreCase>() && !prop.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase) ignoreCase = false;
+            bool ignorePropertyName = prop.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Count() > 0;
 
             var shortcuts = ArgShortcut.GetShortcutsInternal(prop);
 
             if (ignoreCase && shortcuts.Count > 0)
             {
-                return shortcuts.Where(shortcut => prop.Name.ToLower() == specifiedArg.ToLower() || shortcut.ToLower() == specifiedArg.ToLower()).Count() > 0;
+                return shortcuts.Where(shortcut => (!ignorePropertyName && prop.Name.ToLower() == specifiedArg.ToLower()) || shortcut.ToLower() == specifiedArg.ToLower()).Count() > 0;
             }
             else if(ignoreCase)
             {
-                return prop.Name.ToLower() == specifiedArg.ToLower();
+                return (!ignorePropertyName && prop.Name.ToLower() == specifiedArg.ToLower());
             }
             else
             {
-                return prop.Name == specifiedArg || shortcuts.Where(shortcut => shortcut == specifiedArg).Count() > 0;
+                return (!ignorePropertyName && prop.Name == specifiedArg) || shortcuts.Where(shortcut => shortcut == specifiedArg).Count() > 0;
             }
         }
 
@@ -199,12 +300,7 @@ namespace PowerArgs
                 {
                     if (prop.PropertyType.IsEnum)
                     {
-                        bool ignoreCase = true;
-
-                        if (prop.HasAttr<ArgIgnoreCase>() && prop.Attr<ArgIgnoreCase>().IgnoreCase == false)
-                        {
-                            ignoreCase = true;
-                        }
+                        bool ignoreCase = prop.IgnoreCase();
 
                         context.RevivedProperty = ArgRevivers.ReviveEnum(prop.PropertyType, context.ArgumentValue, ignoreCase );
                     }

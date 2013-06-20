@@ -161,12 +161,19 @@ namespace PowerArgs
             IsAction = toAutoGen.IsActionArgProperty();
             IsActionArgs = toAutoGen.Name == Constants.ActionPropertyConventionName;
             DefaultValue = toAutoGen.HasAttr<DefaultValueAttribute>() ? toAutoGen.Attr<DefaultValueAttribute>().Value : null;
-
-            Name = toAutoGen.GetArgumentName();
+            
+            Name = "-"+toAutoGen.GetArgumentName();
             IsRequired = toAutoGen.HasAttr<ArgRequired>();
             foreach (var shortcut in ArgShortcut.GetShortcutsInternal(toAutoGen))
             {
                 Aliases.Add("-"+shortcut);
+            }
+
+            bool removeName = toAutoGen.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Count() > 0;
+            if (removeName)
+            {
+                Name = Aliases.First();
+                Aliases.RemoveAt(0);
             }
 
             Type = toAutoGen.PropertyType.Name;
@@ -413,7 +420,7 @@ namespace PowerArgs
 
                 rows.Add(new List<ConsoleString>()
                 {
-                    new ConsoleString("-")+(usageInfo.Name + inlineAliasInfo),
+                    new ConsoleString("")+(usageInfo.Name + inlineAliasInfo),
                     descriptionString,
                 });
 

@@ -176,19 +176,24 @@ namespace PowerArgs
         /// Pass this value to the ArgShortcut attribute's constructor to indicate that the given property
         /// does not support a shortcut.
         /// </summary>
-        NoShortcut 
+        NoShortcut,
+        /// <summary>
+        /// This indicates that the .NET property named should not be used as an indicator.  Instead,
+        /// only the values in the other ArgShortcut attributes should be used.
+        /// </summary>
+        ShortcutsOnly,
     }
 
     /// <summary>
     /// Use this attribute to override the shortcut that PowerArgs automatically assigns to each property.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Property|AttributeTargets.Field, AllowMultiple = true)]
     public class ArgShortcut : Attribute
     {
         private static Dictionary<PropertyInfo, List<string>> KnownShortcuts = new Dictionary<PropertyInfo, List<string>>();
         private static List<Type> RegisteredTypes = new List<Type>();
 
-        private ArgShortcutPolicy? policy;
+
 
         /// <summary>
         /// The shortcut for the given property
@@ -204,20 +209,29 @@ namespace PowerArgs
             this.Shortcut = shortcut;
         }
 
+        private ArgShortcutPolicy? _policy;
+        public ArgShortcutPolicy? Policy
+        {
+            get
+            {
+                return _policy;
+            }
+            private set
+            {
+                _policy = value;
+            }
+        }
+
         /// <summary>
         /// Creates a new ArgShortcut using the given policy
         /// </summary>
         /// <param name="policy"></param>
         public ArgShortcut(ArgShortcutPolicy policy)
         {
-            if (policy == ArgShortcutPolicy.NoShortcut)
+            this.Policy = policy;
+            if (this.Policy == ArgShortcutPolicy.NoShortcut)
             {
                 this.Shortcut = null;
-                this.policy = policy;
-            }
-            else
-            {
-                throw new InvalidOperationException("ShortcutAssignment '" + policy + "' is not supported in this context.");
             }
         }
 
@@ -225,10 +239,9 @@ namespace PowerArgs
         {
             if (RegisteredTypes.Contains(info.DeclaringType) == false)
             {
-                // Ensures that the shortcuts get registered
-                try { Args.Parse(info.DeclaringType); }
-                catch (Exception) { }
+                RegisterShortcuts(info.DeclaringType);
             }
+
             if (KnownShortcuts.ContainsKey(info)) return KnownShortcuts[info];
             else return new List<string>();
         }
@@ -297,10 +310,10 @@ namespace PowerArgs
             else
             {
                 List<string> ret = new List<string>();
-                bool noShortcut = false;
-                foreach (var attr in attrs)
+                foreach (var attr in attrs.OrderBy(a => a.Shortcut == null ? 0 : a.Shortcut.Length))
                 {
-                    if (attr.policy.HasValue && attr.policy.Value == ArgShortcutPolicy.NoShortcut)
+                    bool noShortcut = false;
+                    if (attr._policy.HasValue && attr._policy.Value == ArgShortcutPolicy.NoShortcut)
                     {
                         noShortcut = true;
                     }

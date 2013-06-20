@@ -13,12 +13,26 @@ namespace ArgsTests
     {
         const int MaxHistory = 10;
 
+        public enum EnumWithShortcuts
+        {
+            [ArgShortcut("NumberOne")]
+            One,
+            Two,
+            Three,
+        }
+
         [TabCompletion(typeof(MyCompletionSource), "$", ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
         public class TestArgs
         {
             public string SomeParam { get; set; }
             public int AnotherParam { get; set; }
             public bool BoolParam { get; set; }
+        }
+
+        [TabCompletion("$")]
+        public class TestArgsWithEnum
+        {
+            public EnumWithShortcuts Enum { get; set; }
         }
 
         public class MyCompletionSource : SimpleTabCompletionSource
@@ -184,6 +198,22 @@ namespace ArgsTests
             var parsedAgain = Args.Parse<TestArgs>("$");
             Assert.AreEqual("historytest10", parsedAgain.SomeParam);
             ClearHistory();
+        }
+
+        [TestMethod]
+        public void TestEnumCompletion()
+        {
+            TestConsoleProvider.SimulateConsoleInput("-e\t thr\t");
+            var parsed = Args.Parse<TestArgsWithEnum>("$");
+            Assert.AreEqual(EnumWithShortcuts.Three, parsed.Enum);
+        }
+
+        [TestMethod]
+        public void TestEnumShortcutsCompletion()
+        {
+            TestConsoleProvider.SimulateConsoleInput("-e\t numb\t");
+            var parsed = Args.Parse<TestArgsWithEnum>("$");
+            Assert.AreEqual(EnumWithShortcuts.One, parsed.Enum);
         }
 
         private string Repeat(string s, int num)

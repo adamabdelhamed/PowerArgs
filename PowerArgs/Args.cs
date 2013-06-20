@@ -171,9 +171,7 @@ namespace PowerArgs
         {
             try
             {
-                ArgShortcut.RegisterShortcuts(t);
                 ValidateArgScaffold(t);
-
                 var context = new ArgHook.HookContext();
                 context.Args = Activator.CreateInstance(t);
                 context.CmdLineArgs = input;
@@ -315,7 +313,7 @@ namespace PowerArgs
              * Today, this validates the following:
              * 
              *     - IgnoreCase can't be different on parent and child scaffolds.
-             *     - No collisions on shortcut values
+             *     - No collisions on shortcut values for properties and enum values
              *     - No reviver for type
              * 
              */
@@ -350,6 +348,12 @@ namespace PowerArgs
                     throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.GetArgumentName());
                 }
 
+                if (prop.PropertyType.IsEnum)
+                {
+                    prop.PropertyType.ValidateNoDuplicateEnumShortcuts(ignoreCase);
+                }
+
+                prop.ValidateNoConflictingShortcutPolicies();
                 var shortcutsForProperty = ArgShortcut.GetShortcutsInternal(prop).ToArray().ToList();
                 if(shortcutsForProperty.Contains(prop.GetArgumentName()) == false)
                 {

@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage documentation, tab completion, Entity Framework querying, secure string arguments, and plenty of hooks for extensibility.</description>
     <summary>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.</summary>
-    <releaseNotes>Added new exceptions that derive from ArgException so developers can better handle user error.  Added a new pattern for implementing the Action Framework that requires less code and is more elegant.  Added the ability to access the parsed args from anywhere in your program via Args.GetAmbientArgs().  Added support for multiple ArgShortcut attributes (and marked ArgLongForm as obsolete in the process).</releaseNotes>
+    <releaseNotes>Added support for ShortcutsOnly policy;Added integer support for enums;Added masking support for enums;Added support for enum shortcuts;Added support for property aware tab completion for enums.</releaseNotes>
     <copyright>Copyright 2012 Adam Abdelhamed</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>

@@ -12,6 +12,42 @@ namespace ArgsTests
     [TestClass]
     public class ShortcutTests
     {
+        public enum ForecastType
+        {
+            Today,
+            [ArgShortcut("2Day")]
+            TwoDay,
+            [ArgShortcut("5Day")]
+            FiveDay,
+            Week,
+        }
+
+        public enum EnumWithDupeShortcuts
+        {
+            Today,
+            [ArgShortcut("ABC")]
+            TwoDay,
+            [ArgShortcut("ABC")]
+            FiveDay,
+            Week,
+        }
+
+        public class EnumShortcutArgs
+        {
+            public ForecastType Type { get; set; }
+        }
+
+        public class ShortcutOnlyArgs
+        {
+            [ArgShortcut(ArgShortcutPolicy.ShortcutsOnly),ArgShortcut("-f")]
+            public string Foo { get; set; }
+        }
+
+        public class EnumWithDupeShortcutsArgs
+        {
+            public EnumWithDupeShortcuts Bad { get; set; }
+        }
+
         public class ShortcutArgs
         {
             public string SomeString { get; set; }
@@ -78,7 +114,7 @@ namespace ArgsTests
 
         public class ShortcutArgsConflictingArguments
         {
-            [ArgShortcut(ArgShortcutPolicy.NoShortcut,Shortcut="so")]
+            [ArgShortcut(ArgShortcutPolicy.NoShortcut, Shortcut="so")]
             public string SomeString { get; set; }
             public string OtherString { get; set; }
         }
@@ -229,9 +265,9 @@ namespace ArgsTests
                 var parsed = Args.Parse<ShortcutArgsConflictingArguments>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (InvalidArgDefinitionException ex)
+            catch (InvalidArgDefinitionException)
             {
-                Assert.IsTrue(ex.Message == "You cannot specify a shortcut value and an ArgShortcutPolicy of NoShortcut");
+ 
             }
         }
 
@@ -271,6 +307,45 @@ namespace ArgsTests
             {
                 Assert.IsTrue(ex.Message.ToLower().Contains("duplicate"));
             }
+        }
+
+        [TestMethod]
+        public void TestEnumShortcuts()
+        {
+            var parsed = Args.Parse<EnumShortcutArgs>("-t", "2day");
+            Assert.AreEqual(ForecastType.TwoDay, parsed.Type);
+        }
+
+        [TestMethod]
+        public void TestEnumWithDupeShortcuts()
+        {
+            try
+            {
+                var parsed = Args.Parse<EnumWithDupeShortcutsArgs>();
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("duplicate"));
+                Assert.IsTrue(ex.Message.Contains(typeof(EnumWithDupeShortcuts).Name));
+            }
+        }
+
+        [TestMethod]
+        public void TestShortcutsOnly()
+        {
+            try
+            {
+                Args.Parse<ShortcutOnlyArgs>("-Foo", "Value");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (UnexpectedArgException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("Foo"));
+            }
+
+            var parsed = Args.Parse<ShortcutOnlyArgs>("-f", "Value");
+            Assert.AreEqual("Value", parsed.Foo);
         }
     }
 }

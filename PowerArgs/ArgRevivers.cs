@@ -83,6 +83,12 @@ namespace PowerArgs
                 return (int)Enum.ToObject(t, rawInt);
             }
 
+            object enumShortcutMatch;
+            if (t.TryMatchEnumShortcut(valueString, ignoreCase, out enumShortcutMatch))
+            {
+                return (int)enumShortcutMatch;
+            }
+
             return (int)Enum.Parse(t, valueString, ignoreCase);
         }
 

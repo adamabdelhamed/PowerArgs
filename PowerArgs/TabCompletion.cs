@@ -105,9 +105,10 @@ namespace PowerArgs
             List<ITabCompletionSource> completionSources = new List<ITabCompletionSource>();
 
             if(this.completionSource != null) completionSources.Add((ITabCompletionSource)Activator.CreateInstance(this.completionSource));
+            completionSources.Add(new EnumTabCompletionSource(context.Args.GetType()));
             completionSources.Add(new SimpleTabCompletionSource(completions) { MinCharsBeforeCyclingBegins = 0 });
             completionSources.Add(new FileSystemTabCompletionSource());
-
+            
             string str = null;
             context.CmdLineArgs = ConsoleHelper.ReadLine(ref str, LoadHistory(), new MultiTabCompletionSource(completionSources));
             AddToHistory(str);
@@ -173,8 +174,6 @@ namespace PowerArgs
                 ret.AddRange(FindTabCompletions(actionArg.PropertyType));
             }
 
- 
-
             ret = ret.Distinct().ToList();
             return ret;
         }
@@ -198,10 +197,15 @@ namespace PowerArgs
         bool TryComplete(bool shift, string soFar, out string completion);
     }
 
+    public interface ITabCompletionSourceWithContext : ITabCompletionSource
+    {
+        bool TryComplete(bool shift, string context, string soFar, out string completion);
+    }
+
     /// <summary>
     /// An aggregate tab completion source that cycles through it's inner sources looking for matches.
     /// </summary>
-    public class MultiTabCompletionSource : ITabCompletionSource
+    public class MultiTabCompletionSource : ITabCompletionSourceWithContext
     {
         ITabCompletionSource[] sources;
 
@@ -224,65 +228,60 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Not implemented since this type implements ITabCompletionSourceWithContext
+        /// </summary>
+        /// <param name="shift"></param>
+        /// <param name="soFar"></param>
+        /// <param name="completion"></param>
+        /// <returns></returns>
+        public bool TryComplete(bool shift, string soFar, out string completion)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Iterates over the wrapped sources looking for a match
         /// </summary>
         /// <param name="shift">Indicates if shift was being pressed</param>
         /// <param name="soFar">The text token that the user has typed before pressing tab.</param>
+        /// <param name="context"></param>
         /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
         /// <returns></returns>
-        public bool TryComplete(bool shift, string soFar, out string completion)
+        public bool TryComplete(bool shift, string context, string soFar, out string completion)
         {
             foreach (var source in sources)
             {
-                if (source.TryComplete(shift, soFar, out completion)) return true;
+                if (source is ITabCompletionSourceWithContext)
+                {
+                    if (((ITabCompletionSourceWithContext)source).TryComplete(shift, context, soFar, out completion)) return true;
+                }
+                else
+                {
+                    if (source.TryComplete(shift, soFar, out completion)) return true;
+                }
             }
             completion = null;
             return false;
         }
     }
 
-    /// <summary>
-    /// A simple tab completion source implementation that looks for matches over a set of pre-determined strings.
-    /// </summary>
-    public class SimpleTabCompletionSource : ITabCompletionSource
+
+    internal class CycledCompletionManager
     {
-        IEnumerable<string> candidates;
+        public int MinCharsBeforeCyclingBegins{get;set;} 
 
-        string lastSoFar;
-        string lastCompletion;
         int lastIndex;
+        string lastCompletion;
+        string lastSoFar;
 
-        /// <summary>
-        /// Require that the user type this number of characters before the source starts cycling through ambiguous matches.  The default is 3.
-        /// </summary>
-        public int MinCharsBeforeCyclingBegins { get; set; }
-
-        /// <summary>
-        /// Creates a new completion source given an enumeration of string candidates
-        /// </summary>
-        /// <param name="candidates"></param>
-        public SimpleTabCompletionSource(IEnumerable<string> candidates)
-        {
-            this.candidates = candidates.OrderBy(s => s);
-            this.MinCharsBeforeCyclingBegins = 3;
-        }
-
-        /// <summary>
-        /// Iterates through the candidates to try to find a match.  If there are multiple possible matches it 
-        /// supports cycling through tem as the user continually presses tab.
-        /// </summary>
-        /// <param name="shift">Indicates if shift was being pressed</param>
-        /// <param name="soFar">The text token that the user has typed before pressing tab.</param>
-        /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
-        /// <returns></returns>
-        public bool TryComplete(bool shift, string soFar, out string completion)
+        public bool Cycle(bool shift, ref string soFar, Func<List<string>> evaluation, out string completion)
         {
             if (soFar == lastCompletion && lastCompletion != null)
             {
                 soFar = lastSoFar;
             }
 
-            var query = (from c in candidates where c.StartsWith(soFar) select c).ToList();
+            var query = evaluation();
 
             if (soFar == lastSoFar) lastIndex = shift ? lastIndex-1 : lastIndex+1;
             if (lastIndex >= query.Count) lastIndex = 0;
@@ -300,6 +299,125 @@ namespace PowerArgs
                 lastCompletion = completion;
                 return true;
             }
+        }
+    }
+
+    internal abstract class PropertyAwareTabCompletionSource : ITabCompletionSourceWithContext
+    {
+        Type parseType;
+        public PropertyAwareTabCompletionSource(Type parseType)
+        {
+            this.parseType = parseType;
+        }
+
+        public bool TryComplete(bool shift, string context, string soFar, out string completion)
+        {
+            if (context.StartsWith("-")) context = context.Substring(1);
+            else if (context.StartsWith("/")) context = context.Substring(1);
+
+            var match = parseType.FindAllArguments().Where(prop => prop.MatchesSpecifiedArg(context)).SingleOrDefault();
+            if (match == null)
+            {
+                completion = null;
+                return false;
+            }
+
+            return TryComplete(shift, match, soFar, out completion);
+        }
+
+        public abstract bool TryComplete(bool shift, PropertyInfo context, string soFar, out string completion);
+
+        public bool TryComplete(bool shift, string soFar, out string completion)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal class EnumTabCompletionSource : PropertyAwareTabCompletionSource
+    {
+        CycledCompletionManager manager;
+        public EnumTabCompletionSource(Type parseType) : base(parseType)
+        {
+            manager = new CycledCompletionManager();
+        }
+
+        public override bool TryComplete(bool shift, PropertyInfo context, string soFar, out string completion)
+        {
+            if (context.PropertyType.IsEnum == false)
+            {
+                completion = null;
+                return false;
+            }
+
+            bool ignoreCase = context.IgnoreCase();
+            if (ignoreCase) soFar = soFar.ToLower();
+
+            return manager.Cycle(shift, ref soFar, () =>
+            {
+                var options = Enum.GetNames(context.PropertyType).Union(context.PropertyType.GetEnumShortcuts());
+                if (ignoreCase) options = options.Select(o => o.ToLower()).ToArray();
+
+                options = options.Where(o => o.StartsWith(soFar)).ToArray();
+
+                return options.ToList();
+            }, out completion);
+        }
+    }
+
+
+    /// <summary>
+    /// A simple tab completion source implementation that looks for matches over a set of pre-determined strings.
+    /// </summary>
+    public class SimpleTabCompletionSource : ITabCompletionSourceWithContext
+    {
+        IEnumerable<string> globalCandidates;
+
+        CycledCompletionManager manager;
+
+        /// <summary>
+        /// Require that the user type this number of characters before the source starts cycling through ambiguous matches.  The default is 3.
+        /// </summary>
+        public int MinCharsBeforeCyclingBegins { get; set; }
+
+        /// <summary>
+        /// Creates a new completion source given an enumeration of string candidates
+        /// </summary>
+        /// <param name="candidates"></param>
+        public SimpleTabCompletionSource(IEnumerable<string> candidates)
+        {
+            this.globalCandidates = candidates.OrderBy(s => s);
+            this.manager = new CycledCompletionManager();
+            this.MinCharsBeforeCyclingBegins = 3;
+        }
+
+        /// <summary>
+        /// Not implemented since this type implements ITabCompletionSourceWithContext
+        /// </summary>
+        /// <param name="shift"></param>
+        /// <param name="context"></param>
+        /// <param name="completion"></param>
+        /// <returns></returns>
+        public bool TryComplete(bool shift, string context, out string completion)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Iterates through the candidates to try to find a match.  If there are multiple possible matches it 
+        /// supports cycling through tem as the user continually presses tab.
+        /// </summary>
+        /// <param name="shift">Indicates if shift was being pressed</param>
+        /// <param name="soFar">The text token that the user has typed before pressing tab.</param>
+        /// <param name="context"></param>
+        /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
+        /// <returns></returns>
+        public bool TryComplete(bool shift, string context, string soFar, out string completion)
+        {
+            manager.MinCharsBeforeCyclingBegins = this.MinCharsBeforeCyclingBegins;
+            return manager.Cycle(shift, ref soFar, () => 
+            { 
+                return (from c in globalCandidates where c.StartsWith(soFar) select c).ToList(); 
+            },out completion);
         }
     }
 
@@ -614,6 +732,48 @@ namespace PowerArgs
 
         }
 
+        private static List<string> Tokenize(string chars)
+        {
+            bool open = false;
+
+            List<string> ret = new List<string>();
+            string currentToken = "";
+
+            for (int i = 0; i < chars.Length; i++)
+            {
+                var c = chars[i];
+                if (i > 0 && c == '"' && chars[i - 1] == '\\')
+                {
+                    
+                }
+                else if (c == '"')
+                {
+                    open = !open;
+                    if (!open)
+                    {
+                        ret.Add(currentToken);
+                        currentToken = "";
+                        continue;
+                    }
+                }
+
+                if (c != ' ' || open)
+                {
+                    currentToken += c;
+                }
+                else if (c == ' ')
+                {
+                    ret.Add(currentToken);
+                    currentToken = "";
+                }
+            }
+
+            if (open) return null;
+
+            return ret.Where(token => string.IsNullOrWhiteSpace(token) == false).ToList();
+
+        }
+
         internal static string[] ReadLine(ref string rawInput, List<string> history, params ITabCompletionSource[] tabCompletionHooks)
         {
             var leftStart = ConsoleImpl.CursorLeft;
@@ -729,13 +889,28 @@ namespace PowerArgs
 
                     if (j == -1) j = 0;
 
+                    var context = "";
+                    for (int k = j-1; k >= 0; k--)
+                    {
+                        context += chars[k];
+                    }
+                    context = new string(context.Reverse().ToArray());
+                    context = ParseContext(context);
+
                     token = new string(token.Reverse().ToArray());
 
                     string completion = null;
 
                     foreach (var completionSource in tabCompletionHooks)
                     {
-                        if (completionSource.TryComplete(info.Modifiers.HasFlag(ConsoleModifiers.Shift),  token, out completion)) break;
+                        if (completionSource is ITabCompletionSourceWithContext)
+                        {
+                            if (((ITabCompletionSourceWithContext)completionSource).TryComplete(info.Modifiers.HasFlag(ConsoleModifiers.Shift), context, token, out completion)) break;
+                        }
+                        else
+                        {
+                            if (completionSource.TryComplete(info.Modifiers.HasFlag(ConsoleModifiers.Shift), token, out completion)) break;
+                        }
                     }
 
                     if (completion == null) continue;
@@ -786,6 +961,20 @@ namespace PowerArgs
             rawInput = new string(chars.ToArray());
 
             return GetArgs(chars);
+        }
+
+        /// <summary>
+        /// The input is the full command line previous to the token to be completed.  This function 
+        /// pulls out the last token before the completion's 'so far' input.
+        /// </summary>
+        /// <param name="commandLine"></param>
+        /// <returns></returns>
+        private static string ParseContext(string commandLine)
+        {
+            var tokens = ConsoleHelper.Tokenize(commandLine);
+            if (tokens == null) return "";
+            else if (tokens.Count == 0) return "";
+            else return tokens.Last();
         }
     }
 }
