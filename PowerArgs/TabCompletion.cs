@@ -197,7 +197,7 @@ namespace PowerArgs
         bool TryComplete(bool shift, string soFar, out string completion);
     }
 
-    public interface ITabCompletionSourceWithContext : ITabCompletionSource
+    internal interface ITabCompletionSourceWithContext : ITabCompletionSource
     {
         bool TryComplete(bool shift, string context, string soFar, out string completion);
     }

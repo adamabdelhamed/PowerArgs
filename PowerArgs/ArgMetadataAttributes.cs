@@ -173,6 +173,10 @@ namespace PowerArgs
     public enum ArgShortcutPolicy 
     {
         /// <summary>
+        /// No special behavior.
+        /// </summary>
+        Default,
+        /// <summary>
         /// Pass this value to the ArgShortcut attribute's constructor to indicate that the given property
         /// does not support a shortcut.
         /// </summary>
@@ -193,12 +197,10 @@ namespace PowerArgs
         private static Dictionary<PropertyInfo, List<string>> KnownShortcuts = new Dictionary<PropertyInfo, List<string>>();
         private static List<Type> RegisteredTypes = new List<Type>();
 
-
-
         /// <summary>
         /// The shortcut for the given property
         /// </summary>
-        public string Shortcut { get; set; }
+        public string Shortcut { get; private set; }
 
         /// <summary>
         /// Creates a new ArgShortcut attribute with a specified value.
@@ -207,20 +209,13 @@ namespace PowerArgs
         public ArgShortcut(string shortcut)
         {
             this.Shortcut = shortcut;
+            this.Policy = ArgShortcutPolicy.Default;
         }
 
-        private ArgShortcutPolicy? _policy;
-        public ArgShortcutPolicy? Policy
-        {
-            get
-            {
-                return _policy;
-            }
-            private set
-            {
-                _policy = value;
-            }
-        }
+        /// <summary>
+        /// Get the ShortcutPolicy for this attribute.
+        /// </summary>
+        public ArgShortcutPolicy Policy { get; private set; }
 
         /// <summary>
         /// Creates a new ArgShortcut using the given policy
@@ -229,10 +224,6 @@ namespace PowerArgs
         public ArgShortcut(ArgShortcutPolicy policy)
         {
             this.Policy = policy;
-            if (this.Policy == ArgShortcutPolicy.NoShortcut)
-            {
-                this.Shortcut = null;
-            }
         }
 
         internal static List<string> GetShortcutsInternal(PropertyInfo info)
@@ -313,7 +304,7 @@ namespace PowerArgs
                 foreach (var attr in attrs.OrderBy(a => a.Shortcut == null ? 0 : a.Shortcut.Length))
                 {
                     bool noShortcut = false;
-                    if (attr._policy.HasValue && attr._policy.Value == ArgShortcutPolicy.NoShortcut)
+                    if (attr.Policy == ArgShortcutPolicy.NoShortcut)
                     {
                         noShortcut = true;
                     }

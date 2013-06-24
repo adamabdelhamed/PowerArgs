@@ -114,7 +114,7 @@ namespace ArgsTests
 
         public class ShortcutArgsConflictingArguments
         {
-            [ArgShortcut(ArgShortcutPolicy.NoShortcut, Shortcut="so")]
+            [ArgShortcut(ArgShortcutPolicy.NoShortcut), ArgShortcut("so")]
             public string SomeString { get; set; }
             public string OtherString { get; set; }
         }

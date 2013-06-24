@@ -260,24 +260,6 @@ namespace ArgsTests
             }
         }
 
-        //[TestMethod]
-        public void TestBadArgFormatsPowerShellStyle2()
-        {
-            // Known issue - This test will fail
-            return;
-
-            try
-            {
-                var args = new string[] { "/" };
-                var parsed = Args.Parse<BasicArgs>(args);
-                Assert.Fail("An exception should have been thrown");
-            }
-            catch (ArgException ex)
-            {
-                Assert.IsTrue(ex.Message.ToLower().Contains("missing"));
-            }
-        }
-
         [TestMethod]
         public void TestBadArgFormatsSlashcolonStyle()
         {
