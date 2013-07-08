@@ -29,6 +29,22 @@ namespace ArgsTests
             public bool BoolParam { get; set; }
         }
 
+        [TabCompletion(typeof(MyCompletionSource), "$", REPL = true, ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
+        public class TestArgsWithREPL
+        {
+            public string SomeParam { get; set; }
+            public int AnotherParam { get; set; }
+            public bool BoolParam { get; set; }
+
+            public static List<string> SomeParamValues { get; private set; }
+
+            public void Main()
+            {
+                SomeParamValues = SomeParamValues ?? new List<string>();
+                SomeParamValues.Add(SomeParam);
+            }
+        }
+
         [TabCompletion("$")]
         public class TestArgsWithEnum
         {
@@ -216,6 +232,60 @@ namespace ArgsTests
             Assert.AreEqual(EnumWithShortcuts.One, parsed.Enum);
         }
 
+        [TestMethod]
+        public void TestREPL()
+        {
+            var provider = TestConsoleProvider.SimulateConsoleInput("-som\t Adam{enter}cls{enter}-some\t Abdelhamed{enter}quit");
+
+            int clearCount = 0;
+            provider.ClearHappened += () => { clearCount++; };
+
+            Args.InvokeMain<TestArgsWithREPL>("$");
+            Assert.AreEqual(2, TestArgsWithREPL.SomeParamValues.Count);
+            Assert.AreEqual("Adam", TestArgsWithREPL.SomeParamValues[0]);
+            Assert.AreEqual("Abdelhamed", TestArgsWithREPL.SomeParamValues[1]);
+            Assert.AreEqual(1, clearCount);
+        }
+
+        [TestMethod]
+        public void TestModeledActionREPL()
+        {
+            int invokeCount = 0;
+
+            CommandLineArgumentsDefinition definition = new CommandLineArgumentsDefinition();
+            definition.Hooks.Add(new TabCompletion() { REPL = true, Indicator = "$" });
+
+            var action = new CommandLineAction((d) =>
+            {
+                Assert.AreEqual("go", d.SpecifiedAction.DefaultAlias);
+                if (invokeCount == 0)
+                {
+                    Assert.AreEqual("Hawaii", d.SpecifiedAction.Arguments[0].RevivedValue);
+                }
+                else if (invokeCount == 1)
+                {
+                    Assert.AreEqual("Mexico", d.SpecifiedAction.Arguments[0].RevivedValue);
+                }
+                invokeCount++;
+            });
+
+            action.Aliases.Add("go");
+            action.Description = "A simple action";
+ 
+
+            definition.Actions.Add(action);
+
+            var destination = new CommandLineArgument(typeof(string), "destination");
+            destination.Validators.Add(new ArgRequired());
+            destination.Description = "The place to go to";
+
+            action.Arguments.Add(destination);
+
+            var provider = TestConsoleProvider.SimulateConsoleInput("g\t -dest\t Hawaii{enter}go -dest\t Mexico{enter}quit");
+            Args.InvokeAction(definition, "$");
+            Assert.AreEqual(2, invokeCount);
+        }
+
         private string Repeat(string s, int num)
         {
             string ret = "";
@@ -232,8 +302,10 @@ namespace ArgsTests
         }
     }
 
-    public class TestConsoleProvider : PowerArgs.ConsoleHelper.IConsoleProvider
+    public class TestConsoleProvider : PowerArgs.IConsoleProvider
     {
+        public event Action ClearHappened;
+
         public static TestConsoleProvider SimulateConsoleInput(string input)
         {
             var simulator = new TestConsoleProvider(input);
@@ -254,6 +326,11 @@ namespace ArgsTests
             input = input + text;
         }
 
+        public void Clear()
+        {
+            if (ClearHappened != null) ClearHappened();
+        }
+
         public int CursorLeft { get; set; }
 
         bool shift = false;
@@ -272,6 +349,7 @@ namespace ArgsTests
             else if (c == '{' && ReadAheadLookFor("right}")) key = ConsoleKey.RightArrow;
             else if (c == '{' && ReadAheadLookFor("up}")) key = ConsoleKey.UpArrow;
             else if (c == '{' && ReadAheadLookFor("down}")) key = ConsoleKey.DownArrow;
+            else if (c == '{' && ReadAheadLookFor("enter}")) key = ConsoleKey.Enter;
             else if (c == '{' && ReadAheadLookFor("shift}"))
             {
                 shift = true;

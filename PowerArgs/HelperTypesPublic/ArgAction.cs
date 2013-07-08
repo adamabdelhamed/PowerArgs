@@ -4,6 +4,8 @@ using System.Linq;
 
 namespace PowerArgs
 {
+    
+
     /// <summary>
     /// This is the more complex version of the public result that is produced by the parser.
     /// </summary>
@@ -18,36 +20,6 @@ namespace PowerArgs
             get { return (T)Value; }
             set { Value = value; }
         }
-
-        /// <summary>
-        /// This will find the implementation method for your action and invoke it, passing the action specific
-        /// arguments as a parameter.
-        /// </summary>
-        public void Invoke()
-        {
-            if (Args == null || ActionArgs == null) throw new MissingArgException("No action was specified");
-            var resolved = ResolveMethod(ActionArgsProperty);
-
-            if (resolved.IsStatic)
-            {
-                resolved.Invoke(null, new object[] { ActionArgs });
-            }
-            else
-            {
-                resolved.Invoke(Args, new object[] { ActionArgs });
-            }
-
-        }
-
-        /// <summary>
-        /// Given an action property, finds the method that implements the action.
-        /// </summary>
-        /// <param name="actionProperty">The property to resolve</param>
-        /// <returns></returns>
-        public static MethodInfo ResolveMethod(PropertyInfo actionProperty)
-        {
-            return ArgAction.ResolveMethod(typeof(T), actionProperty);
-        }
     }
 
     /// <summary>
@@ -55,6 +27,13 @@ namespace PowerArgs
     /// </summary>
     public class ArgAction
     {
+        // TODO - Consider deprecating some of these fields since most of the data you want lives in the definition
+
+        /// <summary>
+        /// The definition or model that was used to parse the arguments
+        /// </summary>
+        public CommandLineArgumentsDefinition Definition { get; internal set; }
+
         /// <summary>
         /// The instance of your custom scaffold type that the parser generated and parsed.
         /// </summary>
@@ -73,13 +52,51 @@ namespace PowerArgs
         public PropertyInfo ActionArgsProperty { get; set; }
 
         /// <summary>
+        /// This is set if you defined your action via a method with simple parameters
+        /// </summary>
+        public object[] ActionParameters { get; set; }
+
+
+        /// <summary>
         /// If an exception was handled by the parser then this property will be populated and others will not be.
         /// </summary>
         public ArgException HandledException { get; internal set; }
 
-        internal static PropertyInfo GetActionProperty<T>()
+
+        internal MethodInfo ActionArgsMethod { get; set; }
+
+        /// <summary>
+        /// This will find the implementation method for your action and invoke it, passing the action specific
+        /// arguments as a parameter.
+        /// </summary>
+        public void Invoke()
         {
-            return GetActionProperty(typeof(T));
+            if (ActionArgsMethod == null && ActionArgsProperty == null) throw new MissingArgException("No action was specified");
+            var resolved = ActionArgsMethod ?? ResolveMethod(ActionArgsProperty.DeclaringType, ActionArgsProperty);
+
+            object[] parameters;
+
+            if (resolved.GetParameters().Length == 1 && resolved.GetParameters()[0].ParameterType == typeof(CommandLineArgumentsDefinition))
+            {
+                parameters = new object[] { Definition };
+            }
+            else if (ActionParameters == null)
+            {
+                parameters = resolved.GetParameters().Length == 0 ? new object[0] : new object[] { ActionArgs };
+            }
+            else
+            {
+                parameters = ActionParameters;
+            }
+
+            if (resolved.IsStatic)
+            {
+                resolved.Invoke(null, parameters);
+            }
+            else
+            {
+                resolved.Invoke(Value, parameters);
+            }
         }
 
         internal static PropertyInfo GetActionProperty(Type t)
@@ -94,13 +111,6 @@ namespace PowerArgs
 
         internal static MethodInfo ResolveMethod(Type t, PropertyInfo actionProperty)
         {
-            if (actionProperty is ArgActionMethodVirtualProperty)
-            {
-                var ret = (actionProperty as ArgActionMethodVirtualProperty).Method;
-                if (ret.GetParameters().Length != 1) throw new InvalidArgDefinitionException("The action method '" + ret.Name + "' needs to accept a parameter of type " + actionProperty.PropertyType + ".");
-                return ret;
-            }
-
             string methodName = actionProperty.Name;
             int end = methodName.LastIndexOf(Constants.ActionArgConventionSuffix);
             if (end < 1) throw new InvalidArgDefinitionException("Could not resolve action method from property name: " + actionProperty.Name);
@@ -111,8 +121,12 @@ namespace PowerArgs
             if (method == null) throw new InvalidArgDefinitionException("Could not find action method '" + methodName + "'");
 
             if (method.IsStatic == false && actionType != t) throw new InvalidArgDefinitionException("PowerArg action methods must be static if defined via the ArgActionType attribute");
-            if (method.GetParameters().Length != 1) throw new InvalidArgDefinitionException("PowerArg action methods must take one parameter that matches the property type for the attribute");
-            if (method.GetParameters()[0].ParameterType != actionProperty.PropertyType) throw new InvalidArgDefinitionException(string.Format("Argument of type {0} does not match expected type {1}", actionProperty.PropertyType, method.GetParameters()[0].ParameterType));
+
+            if (actionProperty.PropertyType != typeof(void))
+            {
+                if (method.GetParameters().Length != 1) throw new InvalidArgDefinitionException("PowerArg action methods must take one parameter that matches the property type for the attribute");
+                if (method.GetParameters()[0].ParameterType != actionProperty.PropertyType) throw new InvalidArgDefinitionException(string.Format("Argument of type '{0}' does not match expected type '{1}'", method.GetParameters()[0].ParameterType.Name, actionProperty.PropertyType.Name));
+            }
 
             return method;
         }

@@ -7,40 +7,16 @@ namespace HelloWorld.Samples
     public class GitExampleArgs
     {
         [ArgActionMethod, ArgDescription("Push your local changes to a remote repo")]
-        public void Push(PushPullArgs args)
+        public void Push(string remote, string branch)
         {
-            Console.WriteLine("Pushing to " + args.Remote);
+            Console.WriteLine("Pushing to " + remote + ", branch=" + branch);
         }
 
         [ArgActionMethod, ArgDescription("Pull remote changes from a remote repo")]
-        public void Pull(PushPullArgs args)
+        public void Pull(string remote, string branch)
         {
-            Console.WriteLine("Pulling from " + args.Remote);
+            Console.WriteLine("Pulling from " + remote + ", branch=" + branch);
         }
-
-        [ArgActionMethod, ArgDescription("Gets the status of the repo")]
-        public void Status(StatusArgs args)
-        {
-            Console.WriteLine("Here is the status");
-        }
-    }
-
-    public class PushPullArgs
-    {
-        [ArgPosition(1), ArgRequired]
-        public string Remote { get; set; }
-
-        [ArgPosition(2)]
-        public string Branch { get; set; }
-    }
-
-    public class StatusArgs
-    {
-        [ArgShortcut("--long")]
-        public bool Long { get; set; }
-
-        [ArgShortcut("--short")]
-        public bool Short { get; set; }
     }
 
     public class Git

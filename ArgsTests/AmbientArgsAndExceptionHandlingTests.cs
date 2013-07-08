@@ -85,7 +85,7 @@ namespace ArgsTests
             var invoked = Args.InvokeAction<SourceControlArgs>("push", "github", "master");
 
             Assert.IsNull(invoked.HandledException);
-            Assert.AreEqual("PushArgs", invoked.ActionArgsProperty.Name);
+            Assert.AreEqual("Push", invoked.ActionArgsProperty.Name);
 
             Assert.AreEqual("github", ((PushPullArgs)invoked.ActionArgs).Remote);
             Assert.AreEqual("master", ((PushPullArgs)invoked.ActionArgs).Branch);

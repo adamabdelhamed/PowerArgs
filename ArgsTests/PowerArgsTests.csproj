@@ -70,6 +70,7 @@
     <Compile Include="ActionFrameworkV2Tests.cs" />
     <Compile Include="AmbientArgsAndExceptionHandlingTests.cs" />
     <Compile Include="InvokeMainMethodTests.cs" />
+    <Compile Include="ModelTests.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />

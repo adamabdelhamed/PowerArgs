@@ -10,6 +10,31 @@ namespace ArgsTests
     [TestClass]
     public class CaseSensitiveTests
     {
+        
+        public class ConflictingArgsParent
+        {
+            [ArgActionMethod]
+            public void SomeAction(ConflictingArgsChild args) {}
+        }
+
+        [ArgEnforceCase]
+        public class ConflictingArgsChild
+        {
+        }
+
+        [ArgEnforceCase]
+        public class ConflictingArgsParent2
+        {
+            [ArgActionMethod]
+            public void SomeAction(ConflictingArgsChild2 args) { }
+        }
+
+        [ArgIgnoreCase]
+        public class ConflictingArgsChild2
+        {
+        }
+
+
         [ArgIgnoreCase(false)]
         public class CaseSensitiveArgs
         {
@@ -67,6 +92,26 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestConflictingCaseSensitivity()
+        {
+            Helpers.Run(() =>
+            {
+                Args.Parse<ConflictingArgsParent>();
+            }
+            , Helpers.ExpectedException<InvalidArgDefinitionException>());
+        }
+
+        [TestMethod]
+        public void TestConflictingCaseSensitivity2()
+        {
+            Helpers.Run(() =>
+            {
+                Args.Parse<ConflictingArgsParent2>();
+            }
+            , Helpers.ExpectedException<InvalidArgDefinitionException>());
+        }
+
+        [TestMethod]
         public void TestCaseSensitivityPowerShellStyle()
         {
             Helpers.Run(() =>
@@ -102,7 +147,7 @@ namespace ArgsTests
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
-            }, Helpers.ExpectedException<UnknownActionArgException>("Unknown action: TheAction"));
+            }, Helpers.ExpectedException<UnknownActionArgException>("Unknown action: 'Theaction'"));
         }
 
         [TestMethod]

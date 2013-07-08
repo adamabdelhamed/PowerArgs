@@ -37,7 +37,7 @@ namespace ArgsTests
             public Dictionary<string, string> Load(string pathInfo)
             {
                 LoadCount++;
-                return new Dictionary<string, string> { { "sticky", "999"}, };
+                return new Dictionary<string, string> { { "Sticky", "999"}, };
             }
         }
 
