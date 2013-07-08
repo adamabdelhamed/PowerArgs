@@ -32,9 +32,6 @@ namespace PowerArgs
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true)]
     public class ArgShortcut : Attribute
     {
-        private static Dictionary<PropertyInfo, List<string>> KnownShortcuts = new Dictionary<PropertyInfo, List<string>>();
-        private static List<Type> RegisteredTypes = new List<Type>();
-
         /// <summary>
         /// The shortcut for the given property
         /// </summary>
@@ -62,110 +59,6 @@ namespace PowerArgs
         public ArgShortcut(ArgShortcutPolicy policy)
         {
             this.Policy = policy;
-        }
-
-        internal static List<string> GetShortcutsInternal(PropertyInfo info)
-        {
-            if (RegisteredTypes.Contains(info.DeclaringType) == false)
-            {
-                RegisterShortcuts(info.DeclaringType);
-            }
-
-            if (KnownShortcuts.ContainsKey(info)) return KnownShortcuts[info];
-            else return new List<string>();
-        }
-
-        internal static void RegisterShortcuts(Type t, List<string> shortcutsSeenSoFar = null)
-        {
-            RegisteredTypes.Add(t);
-            bool isNested = shortcutsSeenSoFar != null;
-
-            shortcutsSeenSoFar = isNested ? shortcutsSeenSoFar : new List<string>();
-            var actionProp = ArgAction.GetActionProperty(t);
-
-            foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-            {
-                if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
-                if (CommandLineAction.IsActionImplementation(prop) && actionProp != null) continue;
-
-                var shortcutsForProperty = ArgShortcut.FindShortcutsInternal(prop, shortcutsSeenSoFar);
-                if (shortcutsForProperty.Count > 0)
-                {
-
-                    shortcutsSeenSoFar.AddRange(shortcutsForProperty);
-                    if (KnownShortcuts.ContainsKey(prop) == false)
-                    {
-                        KnownShortcuts.Add(prop, shortcutsForProperty);
-                    }
-                    else
-                    {
-                        KnownShortcuts[prop] = shortcutsForProperty;
-                    }
-                }
-            }
-
-            if (actionProp != null)
-            {
-                foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
-                {
-                    if (CommandLineAction.IsActionImplementation(prop))
-                    {
-                        RegisterShortcuts(prop.PropertyType, shortcutsSeenSoFar);
-                    }
-                }
-            }
-        }
-
-        private static List<string> FindShortcutsInternal(PropertyInfo info, List<string> knownShortcuts)
-        {
-            var actionProperty = ArgAction.GetActionProperty(info.DeclaringType);
-            if (actionProperty != null && actionProperty.Name == info.Name) return new List<string>();
-
-            var attrs = info.Attrs<ArgShortcut>();
-
-            bool ignoreCase = true;
-            if (info.DeclaringType.HasAttr<ArgIgnoreCase>() && info.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase == false) ignoreCase = false;
-
-            if (attrs.Count == 0)
-            {
-                string shortcutVal = "";
-                foreach (char c in info.GetArgumentName().Substring(0, info.GetArgumentName().Length - 1))
-                {
-                    shortcutVal += c;
-                    if (knownShortcuts.Contains(shortcutVal) == false) return new List<string> { ignoreCase ? shortcutVal.ToLower() : shortcutVal };
-                }
-                return new List<string>();
-            }
-            else
-            {
-                List<string> ret = new List<string>();
-                foreach (var attr in attrs.OrderBy(a => a.Shortcut == null ? 0 : a.Shortcut.Length))
-                {
-                    bool noShortcut = false;
-                    if (attr.Policy == ArgShortcutPolicy.NoShortcut)
-                    {
-                        noShortcut = true;
-                    }
-
-                    if (noShortcut && attr.Shortcut != null)
-                    {
-                        throw new InvalidArgDefinitionException("You cannot specify a shortcut value and an ArgShortcutPolicy of NoShortcut");
-                    }
-
-                    if (attr.Shortcut != null)
-                    {
-                        if (attr.Shortcut.StartsWith("-")) attr.Shortcut = attr.Shortcut.Substring(1);
-                        else if (attr.Shortcut.StartsWith("/")) attr.Shortcut = attr.Shortcut.Substring(1);
-                    }
-
-                    if (attr.Shortcut != null)
-                    {
-                        ret.Add(ignoreCase ? attr.Shortcut.ToLower() : attr.Shortcut);
-                    }
-                }
-
-                return ret;
-            }
         }
     }
 

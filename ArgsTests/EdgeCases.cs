@@ -140,8 +140,10 @@ namespace ArgsTests
         [TestMethod]
         public void TestShortcutGenerationEdgeCase2()
         {
-            var parsed = Args.Parse<StrangeShortcuts2>("-foo", "value");
-            Assert.AreEqual(null, typeof(StrangeShortcuts2).GetShortcut("Foo"));
+            var def = new CommandLineArgumentsDefinition(typeof(StrangeShortcuts2));
+
+            Assert.AreEqual(1, def.Arguments[1].Aliases.Count);
+            Assert.AreEqual("Foo", def.Arguments[1].DefaultAlias);
         }
 
         [TestMethod]

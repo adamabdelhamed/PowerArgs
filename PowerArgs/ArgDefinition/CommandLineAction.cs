@@ -93,13 +93,12 @@ namespace PowerArgs
             IgnoreCase = true;
         }
 
-        internal static CommandLineAction Create(PropertyInfo actionProperty)
+        internal static CommandLineAction Create(PropertyInfo actionProperty, List<string> knownAliases)
         {
             var ret = PropertyInitializer.CreateInstance<CommandLineAction>();
             ret.ActionMethod = ArgAction.ResolveMethod(actionProperty.DeclaringType, actionProperty);
             ret.Examples.AddRange(actionProperty.Attrs<ArgExample>());
             ret.Source = actionProperty;
-            ret.Aliases.AddRange(CommandLineArgumentsDefinition.FindAliases(actionProperty));
             ret.Description = actionProperty.HasAttr<ArgDescription>() ? actionProperty.Attr<ArgDescription>().Description : "";
             ret.Arguments.AddRange(new CommandLineArgumentsDefinition(actionProperty.PropertyType).Arguments);
             ret.IgnoreCase = true;
@@ -114,10 +113,12 @@ namespace PowerArgs
                 ret.IgnoreCase = false;
             }
 
+            ret.Aliases.AddRange(CommandLineArgument.FindAliases(actionProperty, knownAliases, ret.IgnoreCase));
+
             return ret;
         }
 
-        internal static CommandLineAction Create(MethodInfo actionMethod)
+        internal static CommandLineAction Create(MethodInfo actionMethod, List<string> knownAliases)
         {
             var ret = PropertyInitializer.CreateInstance<CommandLineAction>();
             ret.ActionMethod = actionMethod;
@@ -141,7 +142,7 @@ namespace PowerArgs
 
             if (actionMethod.GetParameters().Length == 1 && ArgRevivers.CanRevive(actionMethod.GetParameters()[0].ParameterType) == false)
             {
-                ret.Arguments.AddRange(actionMethod.GetParameters()[0].ParameterType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => CommandLineArgument.IsArgument(p)).Select(p => CommandLineArgument.Create(p)));
+                ret.Arguments.AddRange(actionMethod.GetParameters()[0].ParameterType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => CommandLineArgument.IsArgument(p)).Select(p => CommandLineArgument.Create(p, knownAliases)));
             }
             else if (actionMethod.GetParameters().Length > 0 && actionMethod.GetParameters().Where(p => ArgRevivers.CanRevive(p.ParameterType) == false).Count() == 0)
             {

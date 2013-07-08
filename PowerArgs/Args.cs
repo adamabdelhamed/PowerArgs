@@ -404,26 +404,6 @@ namespace PowerArgs
                 }
 
                 prop.ValidateNoConflictingShortcutPolicies();
-                var shortcutsForProperty = ArgShortcut.GetShortcutsInternal(prop).ToArray().ToList();
-                if(shortcutsForProperty.Contains(prop.GetArgumentName()) == false)
-                {
-                    shortcutsForProperty.Add(prop.GetArgumentName());
-                }
-
-                foreach (var shortcutVal in shortcutsForProperty)
-                {
-                    string shortcut = shortcutVal;
-                    if (ignoreCase && shortcut != null) shortcut = shortcut.ToLower();
-
-                    if (shortcuts.Contains(shortcut))
-                    {
-                        throw new InvalidArgDefinitionException("Duplicate arg options with shortcut '" + shortcut + "'.  Keep in mind that shortcuts are not case sensitive unless you use the [ArgIgnoreCase(false)] attribute.  For example, Without this attribute the shortcuts '-a' and '-A' would cause this exception.");
-                    }
-                    else
-                    {
-                        shortcuts.Add(shortcut);
-                    }
-                }
             }
 
             if (actionProp != null)

@@ -22,7 +22,12 @@ namespace ArgsTests
 
         public static List<string> GetShortcuts(this Type t, string propertyName)
         {
-            return typeof(ArgShortcut).InvokeStatic<List<string>>("GetShortcutsInternal", t.GetProperty(propertyName)).Select(s => "-"+s).ToList();
+            var d = new CommandLineArgumentsDefinition(t);
+            var p = d.Arguments.Where(a => a.DefaultAlias == propertyName).Single();
+
+            var aliases = p.Aliases.ToList();
+            aliases.RemoveAt(0);
+            return aliases;
         }
 
         public static string GetShortcut(this Type t, string propertyName)

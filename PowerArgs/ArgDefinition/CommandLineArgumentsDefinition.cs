@@ -123,36 +123,16 @@ namespace PowerArgs
             }
         }
 
-        internal static List<string> FindAliases(PropertyInfo property)
+        private List<CommandLineAction> FindCommandLineActions(Type t)
         {
-            List<string> ret = new List<string>();
+            var knownAliases = new List<string>();
+            foreach (var argument in Arguments) knownAliases.AddRange(argument.Aliases);
 
-            var name = property.Name;
-
-            if (CommandLineAction.IsActionImplementation(property) && name.EndsWith(Constants.ActionArgConventionSuffix))
-            {
-                name = name.Substring(0, name.Length - Constants.ActionArgConventionSuffix.Length);
-            }
-
-            ret.Add(name);
-            ret.AddRange(ArgShortcut.GetShortcutsInternal(property));
-
-            bool removeName = property.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Count() > 0;
-
-            if (removeName) ret.RemoveAt(0);
-            return ret;
-        }
-
-
-
-
-        private static List<CommandLineAction> FindCommandLineActions(Type t)
-        {
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Public;
 
             var actions = (from p in t.GetProperties(flags)
                            where  CommandLineAction.IsActionImplementation(p)
-                           select CommandLineAction.Create(p)).ToList();
+                           select CommandLineAction.Create(p, knownAliases)).ToList();
 
             if (t.HasAttr<ArgActionType>())
             {
@@ -160,7 +140,7 @@ namespace PowerArgs
                 flags = BindingFlags.Static | BindingFlags.Public;
             }
 
-            foreach (var action in t.GetMethods(flags).Where(m => CommandLineAction.IsActionImplementation(m)).Select(m => CommandLineAction.Create(m)))
+            foreach (var action in t.GetMethods(flags).Where(m => CommandLineAction.IsActionImplementation(m)).Select(m => CommandLineAction.Create(m, knownAliases.ToList())))
             {
                 var matchingPropertyBasedAction = actions.Where(a => a.Aliases.First() == action.Aliases.First()).SingleOrDefault();
                 if (matchingPropertyBasedAction != null) continue;
@@ -174,9 +154,11 @@ namespace PowerArgs
         {
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Public;
 
+            var knownAliases = new List<string>();
+
             var ret = from p in t.GetProperties(flags) 
                       where  CommandLineArgument.IsArgument(p) 
-                      select CommandLineArgument.Create(p);
+                      select CommandLineArgument.Create(p, knownAliases);
             return ret.ToList();
         }
 
@@ -188,7 +170,7 @@ namespace PowerArgs
             {
                 foreach (var alias in argument.Aliases)
                 {
-                    if (knownAliases.Contains(alias)) throw new InvalidArgDefinitionException("Duplicate alias '" + alias + "' on argument '" + argument.Aliases.First() + "'");
+                    if (knownAliases.Contains(alias, new CaseAwareStringComparer(argument.IgnoreCase))) throw new InvalidArgDefinitionException("Duplicate alias '" + alias + "' on argument '" + argument.Aliases.First() + "'");
                     knownAliases.Add(alias);
                 }
             }

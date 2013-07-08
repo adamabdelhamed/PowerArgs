@@ -52,6 +52,7 @@
     <Compile Include="Extensions\ParemeterInfo.cs" />
     <Compile Include="Extensions\PropertyInfo.cs" />
     <Compile Include="Extensions\Type.cs" />
+    <Compile Include="HelperTypesInternal\CaseAwareStringComparer.cs" />
     <Compile Include="HelperTypesInternal\REPL.cs" />
     <Compile Include="HelperTypesPublic\ArgAction.cs" />
     <Compile Include="HelperTypesInternal\ConsoleHelper.cs" />

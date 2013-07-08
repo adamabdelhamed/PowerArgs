@@ -127,7 +127,7 @@ namespace PowerArgs
             return ret;
         }
 
-        internal static CommandLineArgument Create(PropertyInfo property)
+        internal static CommandLineArgument Create(PropertyInfo property, List<string> knownAliases)
         {
             var ret = PropertyInitializer.CreateInstance<CommandLineArgument>();
             ret.Description = property.HasAttr<ArgDescription>() ? property.Attr<ArgDescription>().Description : string.Empty;
@@ -147,9 +147,9 @@ namespace PowerArgs
             {
                 ret.IgnoreCase = false;
             }
-            
 
-            ret.Aliases.AddRange(CommandLineArgumentsDefinition.FindAliases(property));
+
+            ret.Aliases.AddRange(FindAliases(property, knownAliases, ret.IgnoreCase));
             ret.Validators.AddRange(property.Attrs<ArgValidator>().OrderByDescending(val => val.Priority));
             ret.Hooks.AddRange(property.Attrs<ArgHook>());
 
@@ -316,6 +316,73 @@ namespace PowerArgs
             }
         }
 
+        internal static List<string> FindAliases(PropertyInfo info, List<string> knownShortcuts, bool ignoreCase)
+        {
+            List<string> ret = new List<string>();
+
+            bool excludeName = info.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Count() > 0;
+
+            if (excludeName == false)
+            {
+                knownShortcuts.Add(info.Name);
+
+                if (CommandLineAction.IsActionImplementation(info) && info.Name.EndsWith(Constants.ActionArgConventionSuffix))
+                {
+                    ret.Add(info.Name.Substring(0, info.Name.Length - Constants.ActionArgConventionSuffix.Length));
+                }
+                else
+                {
+                    ret.Add(info.Name);
+                }
+            }
+
+            var attrs = info.Attrs<ArgShortcut>();
+
+            if (attrs.Count == 0)
+            {
+                var shortcut = GenerateShortcutAlias(info.Name, knownShortcuts, ignoreCase);
+                if (shortcut != null)
+                {
+                    knownShortcuts.Add(shortcut);
+                    ret.Add(shortcut);
+                }
+
+                return ret;
+            }
+            else
+            {
+                foreach (var attr in attrs.OrderBy(a => a.Shortcut == null ? 0 : a.Shortcut.Length))
+                {
+                    bool noShortcut = false;
+                    if (attr.Policy == ArgShortcutPolicy.NoShortcut)
+                    {
+                        noShortcut = true;
+                    }
+
+                    var value = attr.Shortcut;
+
+                    if (noShortcut && value != null)
+                    {
+                        throw new InvalidArgDefinitionException("You cannot specify a shortcut value and an ArgShortcutPolicy of NoShortcut");
+                    }
+
+                    if (value != null)
+                    {
+                        if (value.StartsWith("-")) value = value.Substring(1);
+                        else if (value.StartsWith("/")) value = value.Substring(1);
+                    }
+
+                    if (value != null)
+                    {
+                        ret.Add(value);
+                        knownShortcuts.Add(value);
+                    }
+                }
+
+                return ret;
+            }
+        }
+
         private void FindMatchingArgumentInRawParseData(ArgHook.HookContext context)
         {
             var match = from k in context.ParserData.ExplicitParameters.Keys where IsMatch(k) select k;
@@ -340,6 +407,20 @@ namespace PowerArgs
             {
                 context.ArgumentValue = null;
             }
+        }
+
+        private static string GenerateShortcutAlias(string baseAlias, List<string> excluded, bool ignoreCase)
+        {
+            string shortcutVal = "";
+            foreach (char c in baseAlias.Substring(0, baseAlias.Length - 1))
+            {
+                shortcutVal += c;
+                if (excluded.Contains(shortcutVal, new CaseAwareStringComparer(ignoreCase)) == false)
+                {
+                    return shortcutVal;
+                }
+            }
+            return null;
         }
     }
 }

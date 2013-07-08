@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using System.Text.RegularExpressions;
-
 namespace ArgsTests
 {
 
@@ -200,8 +199,8 @@ namespace ArgsTests
         {
             var args = new string[] { };
             var parsed = Args.Parse<DuplicateShortcutArgs>(args);
-            Assert.AreEqual("-s", (typeof(DuplicateShortcutArgs).GetShortcut("SomeString")));
-            Assert.AreEqual("-so", (typeof(DuplicateShortcutArgs).GetShortcut("SomeOtherString")));
+            Assert.AreEqual("S", (typeof(DuplicateShortcutArgs).GetShortcut("SomeString")));
+            Assert.AreEqual("So", (typeof(DuplicateShortcutArgs).GetShortcut("SomeOtherString")));
         }
 
         [TestMethod]
@@ -209,10 +208,10 @@ namespace ArgsTests
         {
             var args = new string[] { };
             var parsed = Args.Parse<DuplicateShortcutEdgeCaseArgs>(args);
-            Assert.AreEqual("-ab", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg0")));
-            Assert.AreEqual("-a", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg1")));
-            Assert.AreEqual("-abc", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg2")));
-            Assert.AreEqual("-abcd", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg3")));
+            Assert.AreEqual("ab", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg0")));
+            Assert.AreEqual("A", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg1")));
+            Assert.AreEqual("Abc", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg2")));
+            Assert.AreEqual("Abcd", (typeof(DuplicateShortcutEdgeCaseArgs).GetShortcut("Abcdefg3")));
         }
 
         [TestMethod]
@@ -292,7 +291,8 @@ namespace ArgsTests
             parsed = Args.Parse<MultipleShortcutArgs>("--get-help");
             Assert.AreEqual(true, parsed.Help);
 
-            Assert.AreEqual(5, (typeof(MultipleShortcutArgs).GetShortcuts("Help")).Count);
+
+            Assert.AreEqual(5, typeof(MultipleShortcutArgs).GetShortcuts("Help").Count);
         }
 
         [TestMethod]
