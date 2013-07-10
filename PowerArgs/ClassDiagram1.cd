@@ -1,0 +1,663 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="PowerArgs.CommandLineAction" Collapsed="true">
+    <Position X="54.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAggAgAAAEgAEAAAAACAFAAEAAIAAARAAEAAQ=</HashCode>
+      <FileName>ArgDefinition\CommandLineAction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.CommandLineArgument" Collapsed="true">
+    <Position X="56" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgACAACIAgCiAAEkgAEYAAAgAABQAEAAQAACAAAFAAQ=</HashCode>
+      <FileName>ArgDefinition\CommandLineArgument.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.CommandLineArgumentsDefinition" Collapsed="true">
+    <Position X="45.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAJACEIACAAAAkAAAAAAAAAAAAAIAgIAAAQAAEAAA=</HashCode>
+      <FileName>ArgDefinition\CommandLineArgumentsDefinition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.Args" Collapsed="true">
+    <Position X="56" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAACAAAAgAAAAAGAAAAAAAAAAgAACCgAAAAA=</HashCode>
+      <FileName>Args.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgUsageOptions" Collapsed="true">
+    <Position X="49" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAIIAAAAAAAAEAAAACAAAAAAAAAA=</HashCode>
+      <FileName>ArgUsage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.UsageHook" Collapsed="true">
+    <Position X="0.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ArgUsage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgumentUsageInfo" Collapsed="true">
+    <Position X="45.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQAAAAAICAAgAAAgAAMAEAQgAABAAAAAIQAAAQAAAAA=</HashCode>
+      <FileName>ArgUsage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgUsage" Collapsed="true">
+    <Position X="47.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAACAAAAAAgAACAAAAAAAAAAABAQAAAAAAAAAQ=</HashCode>
+      <FileName>ArgUsage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.Constants" Collapsed="true">
+    <Position X="50.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Constants.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgException" Collapsed="true">
+    <Position X="6.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.InvalidArgDefinitionException" Collapsed="true">
+    <Position X="50.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.UnexpectedArgException" Collapsed="true">
+    <Position X="1" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.DuplicateArgException" Collapsed="true">
+    <Position X="3.25" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.MissingArgException" Collapsed="true">
+    <Position X="5.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.UnknownActionArgException" Collapsed="true">
+    <Position X="7.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.QueryInvalidArgException" Collapsed="true">
+    <Position X="10" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ValidationArgException" Collapsed="true">
+    <Position X="12.25" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Exceptions.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.FieldInfoEx" Collapsed="true">
+    <Position X="45.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Extensions\FieldInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.IEnumerableOfAttributes" Collapsed="true">
+    <Position X="49" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAAAAAAAAQAgAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Extensions\IEnumerableOfAttributes.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.MatchCollectionEx" Collapsed="true">
+    <Position X="52.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAA=</HashCode>
+      <FileName>Extensions\MatchCollection.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.MemberInfoEx" Collapsed="true">
+    <Position X="45.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAACAAAAAAAQAgAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Extensions\MemberInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ObjectEx" Collapsed="true">
+    <Position X="49" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Extensions\Object.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ParemeterInfoEx" Collapsed="true">
+    <Position X="50.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAACAAAAAAAQAgAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Extensions\ParemeterInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.PropertyInfoEx" Collapsed="true">
+    <Position X="54.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAgAAQAAAAAACAAAAAAAQ=</HashCode>
+      <FileName>Extensions\PropertyInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.TypeEx" Collapsed="true">
+    <Position X="47.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAgAAAAAIAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Extensions\Type.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ActionMethodInfo" Collapsed="true">
+    <Position X="45.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABBAAAQAAIACgAAAAAAAQQAAACAAAAIAAAgAgAgAA=</HashCode>
+      <FileName>HelperTypesInternal\ActionMethodInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.DefinitionParameter" Collapsed="true">
+    <Position X="56" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\ActionMethodInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgActionMethodVirtualProperty" Collapsed="true">
+    <Position X="3.5" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAACAAAAAAAAQAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\ArgActionMethodVirtualProperty.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgParser" Collapsed="true">
+    <Position X="50.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\ArgParser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgRevivers" Collapsed="true">
+    <Position X="54.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAABCAAAAAAAAAAAAQACAABAAAAAAAAAABACAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\ArgRevivers.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.AttrOverride" Collapsed="true">
+    <Position X="50.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAAABABAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\AttrOverride.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.CaseAwareStringComparer" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="52.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEgAAAAAAAAAAAAIAAAABAAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\CaseAwareStringComparer.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PowerArgs.ConsoleHelper" Collapsed="true">
+    <Position X="47.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AABBAAAAAAAAAACAAAAIAAMAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>HelperTypesInternal\ConsoleHelper.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.EnumTabCompletionSource" Collapsed="true">
+    <Position X="9.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAEAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\EnumTabCompletionSource.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.FileSystemTabCompletionSource" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="47.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAiAAAAAACAAAgAA=</HashCode>
+      <FileName>HelperTypesInternal\FileSystemTabCompletionSource.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PowerArgs.PropertyInitializer" Collapsed="true">
+    <Position X="56" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\PropertyInitializer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.REPL" Collapsed="true">
+    <Position X="47.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\REPL.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.StdConsoleProvider" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="45.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QgAAAAAAAABAAAAIAABAAAAAAAAAAACAAIAAAAFAAAA=</HashCode>
+      <FileName>HelperTypesInternal\StdConsoleProvider.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PowerArgs.VirtualPropertyInfo" Collapsed="true">
+    <Position X="3.5" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAIAAAAgAAEAAAAAQQAAACACAAIAAKBAgIAAA=</HashCode>
+      <FileName>HelperTypesInternal\VirtualPropertyInfo.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.AliasCollection" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="47.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AGIACEAAAIAAABGQCAAABAQAAAAAAAAACAAAABBUIAQ=</HashCode>
+      <FileName>HelperTypesPublic\AliasCollection.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PowerArgs.ArgAction&lt;T&gt;" Collapsed="true">
+    <Position X="0.5" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>HelperTypesPublic\ArgAction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgAction" Collapsed="true">
+    <Position X="0.5" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAQAAAAgICAACAAAAAAAAAABAAAgAQAAgAAAAAAA=</HashCode>
+      <FileName>HelperTypesPublic\ArgAction.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgumentAwareTabCompletionSource" Collapsed="true">
+    <Position X="9.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAIAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesPublic\ArgumentAwareTabCompletionSource.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PowerArgs.ConsoleString" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="49" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAEAAAAEAAAAQEwAIEAIBAAAAEAYAAAAAAAAkQAiA=</HashCode>
+      <FileName>HelperTypesPublic\ConsoleString.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PowerArgs.CycledTabCompletionManager" Collapsed="true">
+    <Position X="52.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAACCAAAAAAAAAAAAAAAAAgAAAAAACAAAAAA=</HashCode>
+      <FileName>HelperTypesPublic\CycledTabCompletionManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.GroupedRegexArg" Collapsed="true">
+    <Position X="3.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAAAAAAACAAAACAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesPublic\GroupedRegexArg.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.MultiTabCompletionSource" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="47.25" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAABAAAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesPublic\MultiTabCompletionSource.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PowerArgs.ParseResult" Collapsed="true">
+    <Position X="52.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAACAAAAAA=</HashCode>
+      <FileName>HelperTypesPublic\ParseResult.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.SecureStringArgument" Collapsed="true">
+    <Position X="54.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAAAAAAAAAAAACAAEAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>HelperTypesPublic\SecureStringArgument.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.SimpleTabCompletionSource" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="56" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAAEAAAAAKAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesPublic\SimpleTabCompletionSource.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PowerArgs.USPhoneNumber" Collapsed="true">
+    <Position X="3.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAQAAAEAAAAAAAAACAABAAAgAA=</HashCode>
+      <FileName>HelperTypesPublic\USPhoneNumber.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgHook" Collapsed="true">
+    <Position X="28.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgEAAAAAECAAAAABAAAAAICAAAAAAAAAAAAABEAACA=</HashCode>
+      <FileName>Hooks\ArgHook.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.DefaultValueAttribute" Collapsed="true">
+    <Position X="27.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgABAAAAA=</HashCode>
+      <FileName>Hooks\DefaultValueAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.QueryArgs" Collapsed="true">
+    <Position X="45.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAgIACAAAAAAAAAIhAAAAAAECIAgABAFAAAEGEAA=</HashCode>
+      <FileName>Hooks\Query.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.Query" Collapsed="true">
+    <Position X="29.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAA=</HashCode>
+      <FileName>Hooks\Query.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.StickyArg" Collapsed="true">
+    <Position X="31.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgIAQAAAAAAAABYAAAAAAAAAIAAABBAACABAAAAA=</HashCode>
+      <FileName>Hooks\StickyArg.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.StickyArgPersistence" Collapsed="true">
+    <Position X="13.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEI=</HashCode>
+      <FileName>Hooks\StickyArg.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.DefaultStickyArgPersistenceProvider" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="54.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgIAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Hooks\StickyArg.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PowerArgs.REPLExitException" Collapsed="true">
+    <Position X="50.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Hooks\TabCompletion.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.REPLContinueException" Collapsed="true">
+    <Position X="49" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Hooks\TabCompletion.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.TabCompletion" Collapsed="true">
+    <Position X="25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAACIACAgAAAAAAAAAgAABAAAIAAABAAgARCAAg=</HashCode>
+      <FileName>Hooks\TabCompletion.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgActionMethod" Collapsed="true">
+    <Position X="49" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgActionMethod.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgActionType" Collapsed="true">
+    <Position X="36.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgActionType.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgDescription" Collapsed="true">
+    <Position X="38.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgDescription.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgExample" Collapsed="true">
+    <Position X="40.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgExample.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgExceptionBehavior" Collapsed="true">
+    <Position X="16" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAAIIAAAAAAAAAAAAAAAAAAAACAAA=</HashCode>
+      <FileName>Metadata\ArgExceptionBehavior.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgIgnoreAttribute" Collapsed="true">
+    <Position X="18.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgIgnoreAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgIgnoreCase" Collapsed="true">
+    <Position X="22.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Metadata\ArgIgnoreCase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgEnforceCase" Collapsed="true">
+    <Position X="22.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgIgnoreCase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgMetadata" Collapsed="true">
+    <Position X="22.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgMetadata.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgPosition" Collapsed="true">
+    <Position X="34" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgPosition.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgReviverAttribute" Collapsed="true">
+    <Position X="52.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgReviverAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgShortcut" Collapsed="true">
+    <Position X="43" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAABAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgShortcut.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgLongForm" Collapsed="true">
+    <Position X="43" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>Metadata\ArgShortcut.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgStyleAttribute" Collapsed="true">
+    <Position X="20.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgStyleAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.OmitFromUsageDocs" Collapsed="true">
+    <Position X="0.5" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\OmitFromUsageDocs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.Resources" Collapsed="true">
+    <Position X="52.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAABEAAAASAAAAAAAAAAAAAAAIA=</HashCode>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgExistingDirectory" Collapsed="true">
+    <Position X="2.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Validators\ArgExistingDirectory.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgExistingFile" Collapsed="true">
+    <Position X="4.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Validators\ArgExistingFile.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgRange" Collapsed="true">
+    <Position X="7" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAACQAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAA=</HashCode>
+      <FileName>Validators\ArgRange.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgRegex" Collapsed="true">
+    <Position X="9.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAACAAAAAAAQAACAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Validators\ArgRegex.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgRequired" Collapsed="true">
+    <Position X="11.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAEAACA=</HashCode>
+      <FileName>Validators\ArgRequired.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.ArgValidator" Collapsed="true">
+    <Position X="7" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAEAAAAAAAQAAAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Validators\ArgValidator.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.EasterEggs.MatrixWriter" Collapsed="true">
+    <Position X="56" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAIQAAAAAAIAAAAAAAAgAAAAIAAAAAAAAEAAAA=</HashCode>
+      <FileName>HelperTypesInternal\MatrixMode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PowerArgs.EasterEggs.MatrixMode" Collapsed="true">
+    <Position X="54.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\MatrixMode.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="PowerArgs.ConsoleCharacter" Collapsed="true">
+    <Position X="45.5" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAEgAAAAAAACAAAAIAAAAAgAAEAAiA=</HashCode>
+      <FileName>HelperTypesPublic\ConsoleString.cs</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Interface Name="PowerArgs.IConsoleProvider" Collapsed="true">
+    <Position X="45.5" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAIAAAAAAAAAAAAAACAAIAAAAFAAAA=</HashCode>
+      <FileName>HelperTypesInternal\IConsoleProvider.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PowerArgs.ITabCompletionSourceWithContext" Collapsed="true">
+    <Position X="6.5" Y="8.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesInternal\ITabCompletionSourceWithContext.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PowerArgs.ITabCompletionSource" Collapsed="true">
+    <Position X="6.5" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>HelperTypesPublic\ITabCompletionSource.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PowerArgs.IStickyArgPersistenceProvider" Collapsed="true">
+    <Position X="47.25" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Hooks\StickyArg.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="PowerArgs.ArgExceptionPolicy" Collapsed="true">
+    <Position X="45.5" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAEAAAACAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Metadata\ArgExceptionBehavior.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PowerArgs.ArgShortcutPolicy" Collapsed="true">
+    <Position X="47.25" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAIAAAAAAABAAAAAAAAAIAAAA=</HashCode>
+      <FileName>Metadata\ArgShortcut.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="PowerArgs.ArgStyle" Collapsed="true">
+    <Position X="49" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>Metadata\ArgStyleAttribute.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

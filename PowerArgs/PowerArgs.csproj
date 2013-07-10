@@ -46,13 +46,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\FieldInfo.cs" />
+    <Compile Include="Extensions\IEnumerableOfAttributes.cs" />
     <Compile Include="Extensions\MatchCollection.cs" />
     <Compile Include="Extensions\MemberInfo.cs" />
     <Compile Include="Extensions\Object.cs" />
     <Compile Include="Extensions\ParemeterInfo.cs" />
     <Compile Include="Extensions\PropertyInfo.cs" />
     <Compile Include="Extensions\Type.cs" />
+    <Compile Include="HelperTypesPublic\AliasCollection.cs" />
     <Compile Include="HelperTypesInternal\CaseAwareStringComparer.cs" />
+    <Compile Include="HelperTypesInternal\AttrOverride.cs" />
     <Compile Include="HelperTypesInternal\REPL.cs" />
     <Compile Include="HelperTypesPublic\ArgAction.cs" />
     <Compile Include="HelperTypesInternal\ConsoleHelper.cs" />
@@ -86,6 +89,7 @@
     <Compile Include="Metadata\ArgExceptionBehavior.cs" />
     <Compile Include="Metadata\ArgIgnoreAttribute.cs" />
     <Compile Include="Metadata\ArgIgnoreCase.cs" />
+    <Compile Include="Metadata\ArgMetadata.cs" />
     <Compile Include="Metadata\ArgPosition.cs" />
     <Compile Include="Metadata\ArgReviverAttribute.cs" />
     <Compile Include="Metadata\ArgShortcut.cs" />
@@ -117,6 +121,7 @@
     <Compile Include="Validators\ArgValidator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
     <None Include="PowerArgs.nuspec" />
   </ItemGroup>
   <ItemGroup>

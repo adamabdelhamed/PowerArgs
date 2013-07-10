@@ -20,13 +20,14 @@ namespace PowerArgs
         /// <summary>
         /// The values that the user can specify on the command line to specify this action.
         /// </summary>
-        public List<string> Aliases { get; private set; }
+        public AliasCollection Aliases { get; private set; }
 
         /// <summary>
         /// The action specific arguments that are applicable to the end user should they specify this action.
         /// </summary>
         public List<CommandLineArgument> Arguments { get; private set; }
 
+        // TODO P0 - Make this metadata driven
         /// <summary>
         /// The description that will be shown in the auto generated usage.
         /// </summary>
@@ -37,6 +38,7 @@ namespace PowerArgs
         /// </summary>
         public object Source { get; set; }
 
+        // TODO P0 - Make this metadata driven
         /// <summary>
         /// Examples that show users how to use this action.
         /// </summary>
@@ -47,6 +49,7 @@ namespace PowerArgs
         /// </summary>
         public bool IsSpecifiedAction { get; internal set; }
 
+        // TODO P0 - Make this metadata driven
         /// <summary>
         /// Indicates whether or not the parser should ignore case when matching a user string with this action.
         /// </summary>
@@ -62,6 +65,8 @@ namespace PowerArgs
                 return Aliases.FirstOrDefault();
             }
         }
+
+        public List<ArgMetadata> Metadata { get; private set; }
 
         /// <summary>
         /// Creates a new command line action given an implementation.
@@ -89,6 +94,7 @@ namespace PowerArgs
 
         internal CommandLineAction()
         {
+            Aliases = new AliasCollection(() => { return Metadata.Attrs<ArgShortcut>(); }, () => { return IgnoreCase; });
             PropertyInitializer.InitializeFields(this, 1);
             IgnoreCase = true;
         }
@@ -113,7 +119,7 @@ namespace PowerArgs
                 ret.IgnoreCase = false;
             }
 
-            ret.Aliases.AddRange(CommandLineArgument.FindAliases(actionProperty, knownAliases, ret.IgnoreCase));
+            ret.Aliases.AddRange(CommandLineArgument.FindDefaultShortcuts(actionProperty, knownAliases, ret.IgnoreCase));
 
             return ret;
         }

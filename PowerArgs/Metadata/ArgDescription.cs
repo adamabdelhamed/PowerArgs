@@ -7,7 +7,7 @@ namespace PowerArgs
     /// usage documentation.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Parameter)]
-    public class ArgDescription : Attribute
+    public class ArgDescription : ArgMetadata
     {
         /// <summary>
         /// A brief description of your argument property.

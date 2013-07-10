@@ -24,7 +24,13 @@ namespace PowerArgs
         /// <summary>
         /// Global hooks that can execute all hook override methods except those that target a particular argument.
         /// </summary>
-        public List<ArgHook> Hooks { get; private set; }
+        public IEnumerable<ArgHook> Hooks
+        {
+            get
+            {
+                return Metadata.Attrs<ArgHook>().AsReadOnly();
+            }
+        }
         
         /// <summary>
         /// Actions that are defined for this definition.  If you have at least one action then the end user must specify the action as the first argument to your program.
@@ -32,9 +38,20 @@ namespace PowerArgs
         public List<CommandLineAction> Actions { get; private set; }
 
         /// <summary>
+        /// Arbitrary metadata that has been added to the definition
+        /// </summary>
+        public List<ArgMetadata> Metadata { get; private set; }
+
+        /// <summary>
         /// Examples that show users how to use your program.
         /// </summary>
-        public List<ArgExample> Examples { get; private set; }
+        public IEnumerable<ArgExample> Examples
+        {
+            get
+            {
+                return Metadata.Attrs<ArgExample>();
+            }
+        }
 
         /// <summary>
         /// Determines how end user errors should be handled by the parser.  By default all exceptions flow through to your program.
@@ -59,11 +76,8 @@ namespace PowerArgs
         /// </summary>
         public CommandLineArgumentsDefinition()
         {
-            Arguments = new List<CommandLineArgument>();
-            Hooks = new List<ArgHook>();
-            Actions = new List<CommandLineAction>();
+            PropertyInitializer.InitializeFields(this, 1);
             ExceptionBehavior = new ArgExceptionBehavior();
-            Examples = new List<ArgExample>();
         }
 
         /// <summary>
@@ -74,12 +88,10 @@ namespace PowerArgs
         {
             PropertyInitializer.InitializeFields(this, 1);
             ArgumentScaffoldType = t;
-
-            Examples.AddRange(t.Attrs<ArgExample>());
             ExceptionBehavior = t.HasAttr<ArgExceptionBehavior>() ? t.Attr<ArgExceptionBehavior>() : new ArgExceptionBehavior();
             Arguments.AddRange(FindCommandLineArguments(t));
             Actions.AddRange(FindCommandLineActions(t));
-            Hooks.AddRange(t.Attrs<ArgHook>());
+            Metadata.AddRange(t.Attrs<ArgMetadata>());
         }
 
         /// <summary>
@@ -93,7 +105,7 @@ namespace PowerArgs
             if (ArgumentScaffoldType != null) ret += ArgumentScaffoldType.Name;
             ret += "(Arguments=" + Arguments.Count + ")";
             ret += "(Actions=" + Actions.Count + ")";
-            ret += "(Hooks=" + Hooks.Count + ")";
+            ret += "(Hooks=" + Hooks.Count() + ")";
 
             return ret;
         }
@@ -156,6 +168,12 @@ namespace PowerArgs
 
             var knownAliases = new List<string>();
 
+            foreach (var prop in t.GetProperties(flags))
+            {
+                // This makes sure that explicit aliases get put into the known aliases before any auto generated aliases
+                knownAliases.AddRange(prop.Attrs<ArgShortcut>().Select(s => s.Shortcut));
+            }
+
             var ret = from p in t.GetProperties(flags) 
                       where  CommandLineArgument.IsArgument(p) 
                       select CommandLineArgument.Create(p, knownAliases);
@@ -190,6 +208,22 @@ namespace PowerArgs
                 if (argument.ArgumentType.IsEnum)
                 {
                     argument.ArgumentType.ValidateNoDuplicateEnumShortcuts(argument.IgnoreCase);
+                }
+
+                try
+                {
+                    foreach (var property in argument.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                    {
+                        // Getting each property will result in all AttrOverrides being validated
+                        var val = property.GetValue(argument, null);
+                    }
+                }
+                catch (TargetInvocationException ex)
+                {
+                    if (ex.InnerException is InvalidArgDefinitionException)
+                    {
+                        throw ex.InnerException;
+                    }
                 }
             }
         }

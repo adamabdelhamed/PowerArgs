@@ -16,20 +16,33 @@ namespace PowerArgs
     /// </summary>
     public class CommandLineArgument
     {
+        private AttrOverride overrides;
+
         /// <summary>
         /// The values that can be used as specifiers for this argument on the command line
         /// </summary>
-        public List<string> Aliases { get; private set; }
+        public AliasCollection Aliases { get; private set; }
 
         /// <summary>
-        /// The validators that will execute when this argument is parsed
+        /// Metadata that has been injected into this Argument
         /// </summary>
-        public List<ArgValidator> Validators { get; private set; }
+        public List<ArgMetadata> Metadata { get; private set; }
 
-        /// <summary>
-        /// The hooks that specifically target this argument
-        /// </summary>
-        public List<ArgHook> Hooks { get; private set; }
+        internal IEnumerable<ArgValidator> Validators
+        {
+            get
+            {
+                return Metadata.Attrs<ArgValidator>().AsReadOnly();
+            }
+        }
+
+        internal IEnumerable<ArgHook> Hooks
+        {
+            get
+            {
+                return Metadata.Attrs<ArgHook>().AsReadOnly();
+            }
+        }
 
         /// <summary>
         /// The CLR type of this argument.
@@ -39,22 +52,77 @@ namespace PowerArgs
         /// <summary>
         /// Specifies whether or not the parser should ignore case when trying to find a match for this argument on the command line.  Defaults to true.
         /// </summary>
-        public bool IgnoreCase { get; set; }
+        public bool IgnoreCase
+        {
+            get
+            {
+                return overrides.Get<ArgIgnoreCase, bool>(Metadata, p => p.IgnoreCase, true);
+            }
+            set
+            {
+                overrides.Set(value);
+            }
+        }
 
         /// <summary>
         /// If this is a positional argument then set this value >= 0 and users can specify a value without specifying an argument alias.  Defaults to -1.
         /// </summary>
-        public int Position { get; set; }
+        public int Position
+        {
+            get
+            {
+                return overrides.Get<ArgPosition, int>(Metadata, p => p.Position, -1);
+            }
+            set
+            {
+                overrides.Set(value);
+            }
+        }
 
         /// <summary>
         /// The default value for this argument in the event it is optional and the user did not specify it.
         /// </summary>
-        public object DefaultValue { get; set; }
+        public object DefaultValue
+        {
+            get
+            {
+                return overrides.Get<DefaultValueAttribute, object>(Hooks, d => d.Value);
+            }
+            set
+            {
+                overrides.Set(value);
+            }
+        }
 
         /// <summary>
         /// The description for this argument that appears in the auto generated usage.
         /// </summary>
-        public string Description { get; set; }
+        public string Description
+        {
+            get
+            {
+                return overrides.Get<ArgDescription, string>(Metadata, d => d.Description, string.Empty);
+            }
+            set
+            {
+                overrides.Set(value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets whether or not this argument is required.
+        /// </summary>
+        public bool IsRequired
+        {
+            get
+            {
+                return overrides.Get<ArgRequired, bool>(Validators, v => true, false);
+            }
+            set
+            {
+                overrides.Set(value);
+            }
+        }
 
         /// <summary>
         /// If this argument was inferred from a type then the source is either a PropertyInfo or a ParameterInfo.  If this argument
@@ -77,20 +145,11 @@ namespace PowerArgs
                 return Aliases.FirstOrDefault();
             }
         }
-        
-        /// <summary>
-        /// Returns true if the Validators collection contains an ArgRequired validator.
-        /// </summary>
-        public bool IsRequired
-        {
-            get
-            {
-                return Validators.Where(v => v is ArgRequired).Count() != 0;
-            }
-        }
 
         internal CommandLineArgument()
         {
+            overrides = new AttrOverride();
+            Aliases = new AliasCollection(() => { return Metadata.Attrs<ArgShortcut>(); }, () => { return IgnoreCase; });
             PropertyInitializer.InitializeFields(this, 1);
             ArgumentType = typeof(string);
             Position = -1;
@@ -109,6 +168,7 @@ namespace PowerArgs
             ArgumentType = t;
             IgnoreCase = ignoreCase;
             Aliases.Add(defaultAlias);
+            Metadata.AddRange(t.Attrs<ArgMetadata>());
         }
 
         /// <summary>
@@ -121,8 +181,8 @@ namespace PowerArgs
             if (Aliases.Count > 0) ret += DefaultAlias + "<" + ArgumentType.Name + ">";
 
             ret += "(Aliases=" + Aliases.Count + ")";
-            ret += "(Validators=" + Validators.Count + ")";
-            ret += "(Hooks=" + Hooks.Count + ")";
+            ret += "(Validators=" + Validators.Count() + ")";
+            ret += "(Hooks=" + Hooks.Count() + ")";
 
             return ret;
         }
@@ -130,7 +190,6 @@ namespace PowerArgs
         internal static CommandLineArgument Create(PropertyInfo property, List<string> knownAliases)
         {
             var ret = PropertyInitializer.CreateInstance<CommandLineArgument>();
-            ret.Description = property.HasAttr<ArgDescription>() ? property.Attr<ArgDescription>().Description : string.Empty;
             ret.DefaultValue = property.HasAttr<DefaultValueAttribute>() ? property.Attr<DefaultValueAttribute>().Value : null;
             ret.Position = property.HasAttr<ArgPosition>() ? property.Attr<ArgPosition>().Position : -1;
             ret.Source = property;
@@ -149,9 +208,8 @@ namespace PowerArgs
             }
 
 
-            ret.Aliases.AddRange(FindAliases(property, knownAliases, ret.IgnoreCase));
-            ret.Validators.AddRange(property.Attrs<ArgValidator>().OrderByDescending(val => val.Priority));
-            ret.Hooks.AddRange(property.Attrs<ArgHook>());
+            ret.Aliases.AddRange(FindDefaultShortcuts(property, knownAliases, ret.IgnoreCase));
+            ret.Metadata.AddRange(property.Attrs<ArgMetadata>());
 
             return ret;
         }
@@ -162,7 +220,6 @@ namespace PowerArgs
             ret.Position = parameter.Position;
             ret.ArgumentType = parameter.ParameterType;
             ret.Source = parameter;
-            ret.Description = parameter.HasAttr<ArgDescription>() ? parameter.Attr<ArgDescription>().Description : string.Empty;
             ret.DefaultValue = parameter.HasAttr<DefaultValueAttribute>() ? parameter.Attr<DefaultValueAttribute>().Value : null;
             
             ret.IgnoreCase = true;
@@ -178,8 +235,9 @@ namespace PowerArgs
             }
 
             ret.Aliases.Add(parameter.Name);
-            ret.Validators.AddRange(parameter.Attrs<ArgValidator>().OrderByDescending(val => val.Priority));
-            ret.Hooks.AddRange(parameter.Attrs<ArgHook>());
+            ret.Metadata.AddRange(parameter.Attrs<ArgValidator>().OrderByDescending(val => val.Priority));
+            ret.Metadata.AddRange(parameter.Attrs<ArgHook>());
+            ret.Metadata.AddRange(parameter.Attrs<ArgMetadata>());
 
             return ret;
         }
@@ -211,7 +269,7 @@ namespace PowerArgs
 
         internal void Validate(ref string commandLineValue)
         {
-            if (ArgumentType == typeof(SecureStringArgument) && Validators.Count > 0)
+            if (ArgumentType == typeof(SecureStringArgument) && Validators.Count() > 0)
             {
                 throw new InvalidArgDefinitionException("Properties of type SecureStringArgument cannot be validated.  If your goal is to make the argument required then the[ArgRequired] attribute is not needed.  The SecureStringArgument is designed to prompt the user for a value only if your code asks for it after parsing.  If your code never reads the SecureString property then the user is never prompted and it will be treated as an optional parameter.  Although discouraged, if you really, really need to run custom logic against the value before the rest of your program runs then you can implement a custom ArgHook, override RunAfterPopulateProperty, and add your custom attribute to the SecureStringArgument property.");
             }
@@ -316,7 +374,7 @@ namespace PowerArgs
             }
         }
 
-        internal static List<string> FindAliases(PropertyInfo info, List<string> knownShortcuts, bool ignoreCase)
+        internal static List<string> FindDefaultShortcuts(PropertyInfo info, List<string> knownShortcuts, bool ignoreCase)
         {
             List<string> ret = new List<string>();
 
@@ -351,34 +409,6 @@ namespace PowerArgs
             }
             else
             {
-                foreach (var attr in attrs.OrderBy(a => a.Shortcut == null ? 0 : a.Shortcut.Length))
-                {
-                    bool noShortcut = false;
-                    if (attr.Policy == ArgShortcutPolicy.NoShortcut)
-                    {
-                        noShortcut = true;
-                    }
-
-                    var value = attr.Shortcut;
-
-                    if (noShortcut && value != null)
-                    {
-                        throw new InvalidArgDefinitionException("You cannot specify a shortcut value and an ArgShortcutPolicy of NoShortcut");
-                    }
-
-                    if (value != null)
-                    {
-                        if (value.StartsWith("-")) value = value.Substring(1);
-                        else if (value.StartsWith("/")) value = value.Substring(1);
-                    }
-
-                    if (value != null)
-                    {
-                        ret.Add(value);
-                        knownShortcuts.Add(value);
-                    }
-                }
-
                 return ret;
             }
         }

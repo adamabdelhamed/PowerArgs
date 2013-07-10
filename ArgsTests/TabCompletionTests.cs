@@ -253,7 +253,7 @@ namespace ArgsTests
             int invokeCount = 0;
 
             CommandLineArgumentsDefinition definition = new CommandLineArgumentsDefinition();
-            definition.Hooks.Add(new TabCompletion() { REPL = true, Indicator = "$" });
+            definition.Metadata.Add(new TabCompletion() { REPL = true, Indicator = "$" });
 
             var action = new CommandLineAction((d) =>
             {
@@ -276,7 +276,7 @@ namespace ArgsTests
             definition.Actions.Add(action);
 
             var destination = new CommandLineArgument(typeof(string), "destination");
-            destination.Validators.Add(new ArgRequired());
+            destination.Metadata.Add(new ArgRequired());
             destination.Description = "The place to go to";
 
             action.Arguments.Add(destination);

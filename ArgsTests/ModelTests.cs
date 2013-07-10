@@ -1,6 +1,10 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
+
+using System.Linq;
+
+
 namespace ArgsTests
 {
     [TestClass]
@@ -39,7 +43,7 @@ namespace ArgsTests
 
             var argument = new CommandLineArgument(typeof(int), "somenumber");
             definition.Arguments.Add(argument);
-            argument.Validators.Add(new ArgRequired());
+            argument.Metadata.Add(new ArgRequired());
 
             try
             {
@@ -93,7 +97,7 @@ namespace ArgsTests
             var actionString = action.ToString(); // Make sure it doesn't throw
 
             var destination  = new CommandLineArgument(typeof(string),"destination");
-            destination.Validators.Add(new ArgRequired());
+            destination.Metadata.Add(new ArgRequired());
             destination.Description = "The place to go to";
 
             action.Arguments.Add(destination);
@@ -104,6 +108,117 @@ namespace ArgsTests
             var usage = ArgUsage.GetUsage(definition, "test");
             Assert.IsTrue(usage.Contains("A simple action"));
             Assert.IsTrue(usage.Contains("The place to go to"));
+        }
+
+        [TestMethod]
+        public void TestConflictingIsRequiredOverride()
+        {
+            TestConflictingOverride((argument) =>
+            {
+                argument.IsRequired = false;
+                argument.Metadata.Add(new ArgRequired());
+            }, "IsRequired");
+        }
+
+        [TestMethod]
+        public void ValidateNoDanglingAttributes()
+        {
+            // This list represents attributes that have been cleared to ship without deriving
+            // from ArgMetadata.  This test is here to make sure that, by default, the attributes
+            // in this project behave like most of the others.  That is, most attributes should
+            // derive from ArgMetadata.
+            var whitelist = new Type[]
+            {
+                typeof(ArgMetadata), // Include the base class since it's obviously ok that it doesn't derive from itself
+                typeof(ArgHook),
+                typeof(UsageHook),
+                typeof(ArgActionMethod),
+                typeof(ArgReviverAttribute),
+                typeof(OmitFromUsageDocs),
+            };
+
+            var danglingAttrs = typeof(Args).Assembly.GetTypes().Where(t => 
+                t.IsSubclassOf(typeof(ArgMetadata)) == false && 
+                t.IsSubclassOf(typeof(Attribute))   == true && 
+                whitelist.Contains(t) == false
+            ).ToList();
+
+            Assert.AreEqual(0, danglingAttrs.Count);
+        }
+
+        [TestMethod]
+        public void TestConflictingAliasDefinitions()
+        {
+            CommandLineArgumentsDefinition definition = new CommandLineArgumentsDefinition();
+            var argument = new CommandLineArgument(typeof(int), "somenumber");
+            argument.Metadata.Add(new ArgShortcut("some"));
+
+            try
+            {
+                argument.Aliases.Add("some");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.AreEqual(ex.Message, "The alias 'some' has already been added");
+            }
+        }
+
+        [TestMethod]
+        public void TestConflictingDescriptionOverride()
+        {
+            TestConflictingOverride((argument) =>
+            {
+                argument.Description = "Foo";
+                argument.Metadata.Add(new ArgDescription("Bar"));
+            }, "Description");
+        }
+
+        [TestMethod]
+        public void TestConflictingPositionOverride()
+        {
+            TestConflictingOverride((argument) =>
+            {
+                argument.Position = 1;
+                argument.Metadata.Add(new ArgPosition(0));
+            }, "Position");
+        }
+
+        [TestMethod]
+        public void TestConflictingDefaultValueOverride()
+        {
+            TestConflictingOverride((argument) =>
+            {
+                argument.DefaultValue = 0;
+                argument.Metadata.Add(new DefaultValueAttribute(1));
+            }, "DefaultValue");
+        }
+
+        [TestMethod]
+        public void TestConflictingIgnoreCaseOverride()
+        {
+            TestConflictingOverride((argument) =>
+            {
+                argument.IgnoreCase = true;
+                argument.Metadata.Add(new ArgIgnoreCase(false));
+            }, "IgnoreCase");
+        }
+
+        public void TestConflictingOverride(Action<CommandLineArgument> variation, string errorMessageExpectedContents)
+        {
+            CommandLineArgumentsDefinition definition = new CommandLineArgumentsDefinition();
+            var argument = new CommandLineArgument(typeof(int), "somenumber");
+            definition.Arguments.Add(argument);
+            variation(argument);
+            try
+            {
+                Args.Parse(definition, "-somenumber", "100");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains(errorMessageExpectedContents));
+            }
         }
     }
 }

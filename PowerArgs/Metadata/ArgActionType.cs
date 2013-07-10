@@ -7,7 +7,7 @@ namespace PowerArgs
     /// type being passed to Args.ParseAction() or Args.InvokeAction().
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class ArgActionType : Attribute
+    public class ArgActionType : ArgMetadata
     {
         /// <summary>
         /// The type that implements your action methods.

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+
 
 namespace PowerArgs
 {
@@ -50,9 +50,9 @@ namespace PowerArgs
         {
             if (Context.ArgumentValue == null)
             {
-                if (userSpecifiedPersistenceProvider == null && Context.Property.DeclaringType.HasAttr<StickyArgPersistence>())
+                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasAttr<StickyArgPersistence>())
                 {
-                    userSpecifiedPersistenceProvider = Context.Property.DeclaringType.Attr<StickyArgPersistence>().PersistenceProvider;
+                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Attr<StickyArgPersistence>().PersistenceProvider;
                 }
 
                 Context.ArgumentValue = GetStickyArg(Context.CurrentArgument.DefaultAlias);
@@ -67,9 +67,9 @@ namespace PowerArgs
         {
             if (Context.ArgumentValue != null)
             {
-                if (userSpecifiedPersistenceProvider == null && Context.Property.DeclaringType.HasAttr<StickyArgPersistence>())
+                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasAttr<StickyArgPersistence>())
                 {
-                    userSpecifiedPersistenceProvider = Context.Property.DeclaringType.Attr<StickyArgPersistence>().PersistenceProvider;
+                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Attr<StickyArgPersistence>().PersistenceProvider;
                 }
 
                 SetStickyArg(Context.CurrentArgument.DefaultAlias, Context.ArgumentValue);
@@ -134,7 +134,7 @@ namespace PowerArgs
     /// An attribute you can put on a type in order to override how StickyArg properties are saved and loaded.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class StickyArgPersistence : Attribute
+    public class StickyArgPersistence : ArgMetadata
     {
         private Type persistenceProviderType;
         private IStickyArgPersistenceProvider _persistenceProvider;
@@ -215,7 +215,7 @@ namespace PowerArgs
             {
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                    "PowerArgs",
-                   Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location)) + ".StickyArgs.txt";
+                   Path.GetFileNameWithoutExtension(System.Reflection.Assembly.GetEntryAssembly().Location)) + ".StickyArgs.txt";
             }
         }
     }

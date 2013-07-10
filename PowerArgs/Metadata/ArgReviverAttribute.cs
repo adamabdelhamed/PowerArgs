@@ -8,13 +8,5 @@ namespace PowerArgs
     /// and the return type is the type that you are reviving (or converting) the string into.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class ArgReviverAttribute : Attribute
-    {
-        /// <summary>
-        /// Creates a new ArgReviverAttribute
-        /// </summary>
-        public ArgReviverAttribute()
-        {
-        }
-    }
+    public class ArgReviverAttribute : Attribute { }
 }

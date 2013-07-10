@@ -7,7 +7,7 @@ namespace PowerArgs
     /// case is ignored.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Parameter)]
-    public class ArgIgnoreCase : Attribute
+    public class ArgIgnoreCase : ArgMetadata
     {
         /// <summary>
         /// Flag to set whether or not case is ignored.

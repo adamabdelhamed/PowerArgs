@@ -7,7 +7,7 @@ namespace PowerArgs
     /// An abstract class that all validators should extend to validate user input from the command line.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
-    public abstract class ArgValidator : Attribute
+    public abstract class ArgValidator : ArgMetadata
     {
         /// <summary>
         /// Determines the order in which validators are executed.  Higher numbers execute first.

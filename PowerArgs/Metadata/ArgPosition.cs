@@ -9,7 +9,7 @@ namespace PowerArgs
     /// position 1.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
-    public class ArgPosition : Attribute
+    public class ArgPosition : ArgMetadata
     {
         /// <summary>
         /// The expected position of this argument

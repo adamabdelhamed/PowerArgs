@@ -22,7 +22,7 @@ namespace PowerArgs
     /// Use this attrbiute to opt into standard error handling of user input errors.  
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class ArgExceptionBehavior : Attribute
+    public class ArgExceptionBehavior : ArgMetadata
     {
         /// <summary>
         /// The policy to use, defaults to DontHandleExceptions.

@@ -10,7 +10,7 @@ namespace PowerArgs
     /// parsing pipeline.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Parameter)]
-    public abstract class ArgHook : Attribute
+    public abstract class ArgHook : ArgMetadata
     {
         /// <summary>
         /// Context that is passed to your hook.  Different parts of the context will be available
@@ -41,6 +41,7 @@ namespace PowerArgs
             /// The current property being operating on.  This is not available during BeforePopulateProperties or
             /// AfterPopulateProperties.
             /// </summary>
+            [Obsolete("You should use CurrentArgument instead of Property since it offers more metadata.  It also exposes the PropertyInfo via CommandLineArgument.Source if the argument was created from a PropertyInfo.")]
             public PropertyInfo Property { get; set; }
 
             /// <summary>
@@ -56,7 +57,7 @@ namespace PowerArgs
             public string[] CmdLineArgs;
 
             /// <summary>
-            /// The string value that was specified for the current property.  This will align with the value of ArgHook.Property.
+            /// The string value that was specified for the current argument.  This will align with the value of ArgHook.CurrentArgument.
             /// 
             /// This is not available during BeforePopulateProperties or
             /// AfterPopulateProperties.

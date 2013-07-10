@@ -23,7 +23,7 @@ namespace PowerArgs
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     [Obsolete("The ArgStyle attribute is obsolete.  Both styles are now supported automatically")]
-    public class ArgStyleAttribute : Attribute
+    public class ArgStyleAttribute : ArgMetadata
     {
         /// <summary>
         /// Obsolete - Don't use this.  Both the -name value and /name:value styles are now both supported automatically.
