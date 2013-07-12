@@ -45,6 +45,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\IEnumerableOfIArgMetadata.cs" />
     <Compile Include="Extensions\FieldInfo.cs" />
     <Compile Include="Extensions\IEnumerableOfAttributes.cs" />
     <Compile Include="Extensions\MatchCollection.cs" />
@@ -89,7 +90,7 @@
     <Compile Include="Metadata\ArgExceptionBehavior.cs" />
     <Compile Include="Metadata\ArgIgnoreAttribute.cs" />
     <Compile Include="Metadata\ArgIgnoreCase.cs" />
-    <Compile Include="Metadata\ArgMetadata.cs" />
+    <Compile Include="ArgDefinition\IArgMetadata.cs" />
     <Compile Include="Metadata\ArgPosition.cs" />
     <Compile Include="Metadata\ArgReviverAttribute.cs" />
     <Compile Include="Metadata\ArgShortcut.cs" />

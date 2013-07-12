@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
@@ -26,21 +27,29 @@ namespace PowerArgs
         /// <summary>
         /// Metadata that has been injected into this Argument
         /// </summary>
-        public List<ArgMetadata> Metadata { get; private set; }
+        public List<ICommandLineArgumentMetadata> Metadata { get; private set; }
 
-        internal IEnumerable<ArgValidator> Validators
+        internal ReadOnlyCollection<ArgValidator> Validators
         {
             get
             {
-                return Metadata.Attrs<ArgValidator>().AsReadOnly();
+                return Metadata.Metas<ArgValidator>().AsReadOnly();
             }
         }
 
-        internal IEnumerable<ArgHook> Hooks
+        internal ReadOnlyCollection<ArgHook> Hooks
         {
             get
             {
-                return Metadata.Attrs<ArgHook>().AsReadOnly();
+                return Metadata.Metas<ArgHook>().AsReadOnly();
+            }
+        }
+
+        internal ReadOnlyCollection<UsageHook> UsageHooks
+        {
+            get
+            {
+                return Metadata.Metas<UsageHook>().AsReadOnly();
             }
         }
 
@@ -149,7 +158,7 @@ namespace PowerArgs
         internal CommandLineArgument()
         {
             overrides = new AttrOverride();
-            Aliases = new AliasCollection(() => { return Metadata.Attrs<ArgShortcut>(); }, () => { return IgnoreCase; });
+            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; });
             PropertyInitializer.InitializeFields(this, 1);
             ArgumentType = typeof(string);
             Position = -1;
@@ -168,7 +177,8 @@ namespace PowerArgs
             ArgumentType = t;
             IgnoreCase = ignoreCase;
             Aliases.Add(defaultAlias);
-            Metadata.AddRange(t.Attrs<ArgMetadata>());
+
+            Metadata.AddRange(t.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineArgumentMetadata>());
         }
 
         /// <summary>
@@ -209,7 +219,8 @@ namespace PowerArgs
 
 
             ret.Aliases.AddRange(FindDefaultShortcuts(property, knownAliases, ret.IgnoreCase));
-            ret.Metadata.AddRange(property.Attrs<ArgMetadata>());
+
+            ret.Metadata.AddRange(property.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineArgumentMetadata>());
 
             return ret;
         }
@@ -235,9 +246,8 @@ namespace PowerArgs
             }
 
             ret.Aliases.Add(parameter.Name);
-            ret.Metadata.AddRange(parameter.Attrs<ArgValidator>().OrderByDescending(val => val.Priority));
-            ret.Metadata.AddRange(parameter.Attrs<ArgHook>());
-            ret.Metadata.AddRange(parameter.Attrs<ArgMetadata>());
+
+            ret.Metadata.AddRange(parameter.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineArgumentMetadata>());
 
             return ret;
         }

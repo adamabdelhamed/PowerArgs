@@ -110,7 +110,7 @@ namespace PowerArgs
     /// <summary>
     /// A hook you can use to easily query a data source.  See an example here: https://github.com/adamabdelhamed/PowerArgs#data-source-queries
     /// </summary>
-    public class Query : ArgHook
+    public class Query : ArgHook, ICommandLineArgumentMetadata
     {
         /// <summary>
         /// Your data source implementation.  The query will create a new instance of this type and use a property

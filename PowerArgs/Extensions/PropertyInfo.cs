@@ -32,20 +32,7 @@ namespace PowerArgs
             if (ignoreCase) return prop.Name.ToLower();
             else return prop.Name;
         }
-
-        internal static List<UsageHook> GetUsageHooks(this PropertyInfo member)
-        {
-            var hooks = member.Attrs<UsageHook>();
-            if (ArgUsage.ExplicitPropertyHooks.ContainsKey(member))
-            {
-                hooks.AddRange(ArgUsage.ExplicitPropertyHooks[member]);
-            }
-
-            hooks.AddRange(ArgUsage.GlobalUsageHooks);
-
-            hooks.AddRange(member.DeclaringType.Attrs<UsageHook>());
-            return hooks;
-        }
+ 
 
         internal static void ValidateNoConflictingShortcutPolicies(this PropertyInfo property)
         {

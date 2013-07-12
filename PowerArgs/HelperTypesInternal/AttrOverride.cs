@@ -38,7 +38,7 @@ namespace PowerArgs
             }
         }
 
-        internal T2 Get<T1, T2>(IEnumerable<Attribute> attriibutes, Func<T1, T2> getter, T2 defaultValue = default(T2)) where T1 : Attribute
+        internal T2 Get<T1, T2>(IEnumerable<IArgMetadata> attriibutes, Func<T1, T2> getter, T2 defaultValue = default(T2)) where T1 : Attribute
         {
             StackTrace stackTrace = new StackTrace();
             var callingMethod = stackTrace.GetFrame(1).GetMethod() as MethodInfo;
@@ -52,7 +52,7 @@ namespace PowerArgs
             string typeName = callingMethod.DeclaringType.Name;
 
             bool hasOverride = overrideValues.ContainsKey(propertyName);
-            bool hasMatchingAttribute = attriibutes.HasAttr<T1>();
+            bool hasMatchingAttribute = attriibutes.HasMeta<T1>();
 
             object attributeVal = default(T2);
             object overrideVal = default(T2);
@@ -64,7 +64,7 @@ namespace PowerArgs
 
             if (hasMatchingAttribute)
             {
-                T1 attribute = attriibutes.Attr<T1>();
+                T1 attribute = attriibutes.Meta<T1>();
                 attributeVal = getter(attribute);
             }
 

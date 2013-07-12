@@ -10,7 +10,7 @@ namespace PowerArgs
     /// A useful arg hook that will store the last used value for an argument and repeat it the next time.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
-    public class StickyArg : ArgHook
+    public class StickyArg : ArgHook, ICommandLineArgumentMetadata
     {
         private static Lazy<IStickyArgPersistenceProvider> defaultPersistenceProvider = new Lazy<IStickyArgPersistenceProvider>(() => { return new DefaultStickyArgPersistenceProvider(); });
 
@@ -50,9 +50,9 @@ namespace PowerArgs
         {
             if (Context.ArgumentValue == null)
             {
-                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasAttr<StickyArgPersistence>())
+                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasMeta<StickyArgPersistence>())
                 {
-                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Attr<StickyArgPersistence>().PersistenceProvider;
+                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Meta<StickyArgPersistence>().PersistenceProvider;
                 }
 
                 Context.ArgumentValue = GetStickyArg(Context.CurrentArgument.DefaultAlias);
@@ -67,9 +67,9 @@ namespace PowerArgs
         {
             if (Context.ArgumentValue != null)
             {
-                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasAttr<StickyArgPersistence>())
+                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasMeta<StickyArgPersistence>())
                 {
-                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Attr<StickyArgPersistence>().PersistenceProvider;
+                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Meta<StickyArgPersistence>().PersistenceProvider;
                 }
 
                 SetStickyArg(Context.CurrentArgument.DefaultAlias, Context.ArgumentValue);
@@ -134,7 +134,7 @@ namespace PowerArgs
     /// An attribute you can put on a type in order to override how StickyArg properties are saved and loaded.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class StickyArgPersistence : ArgMetadata
+    public class StickyArgPersistence : Attribute, ICommandLineArgumentsDefinitionMetadata
     {
         private Type persistenceProviderType;
         private IStickyArgPersistenceProvider _persistenceProvider;

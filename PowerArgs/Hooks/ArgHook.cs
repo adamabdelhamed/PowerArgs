@@ -10,7 +10,7 @@ namespace PowerArgs
     /// parsing pipeline.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Parameter)]
-    public abstract class ArgHook : ArgMetadata
+    public abstract class ArgHook : Attribute, IGlobalArgMetadata
     {
         /// <summary>
         /// Context that is passed to your hook.  Different parts of the context will be available

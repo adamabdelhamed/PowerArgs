@@ -9,7 +9,7 @@ namespace PowerArgs
     /// position 1.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
-    public class ArgPosition : ArgMetadata
+    public class ArgPosition : Attribute, ICommandLineArgumentMetadata
     {
         /// <summary>
         /// The expected position of this argument

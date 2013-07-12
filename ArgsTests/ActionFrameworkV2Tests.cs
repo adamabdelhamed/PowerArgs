@@ -209,12 +209,12 @@ namespace ArgsTests
 
             var actionInfo = Args.InvokeAction<ActionScaffoldWithActionPropertyAndAttributesAndProperties>("Command1", "-s", "SomeStringValue", "-g");
             Assert.IsTrue(ActionFrameworkV2Tests.Message.Contains("SomeStringValue"));
-            Assert.AreEqual("SomeStringValue", actionInfo.Args.Command1Args.S1);
+            Assert.AreEqual(null, actionInfo.Args.Command1Args);
             Assert.AreEqual("Command1", actionInfo.Args.Action);
 
             var actionInfo2 = Args.InvokeAction<ActionScaffoldWithActionPropertyAndAttributesAndProperties>("Command2", "-i", "1000", "-g");
             Assert.IsTrue(ActionFrameworkV2Tests.Message.Contains("1000"));
-            Assert.AreEqual(1000, actionInfo2.Args.Command2Args.I1);
+            Assert.AreEqual(null, actionInfo2.Args.Command2Args);
             Assert.AreEqual("Command2", actionInfo2.Args.Action);
         }
 

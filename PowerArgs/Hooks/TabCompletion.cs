@@ -13,7 +13,7 @@ namespace PowerArgs
     /// the tab key.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class TabCompletion : ArgHook
+    public class TabCompletion : ArgHook, ICommandLineArgumentsDefinitionMetadata
     {
         Type completionSource;
 

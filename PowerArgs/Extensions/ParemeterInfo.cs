@@ -62,7 +62,10 @@ namespace PowerArgs
                 if (cachedValue != null) return cachedValue;
             }
 
-            var freshValue = (from attr in info.GetCustomAttributes(true) where attr.GetType() == typeof(T) || attr.GetType().IsSubclassOf(typeof(T)) select (T)attr).ToList();
+            var freshValue = (from attr in info.GetCustomAttributes(true) where attr.GetType() == typeof(T) || 
+                                  attr.GetType().IsSubclassOf(typeof(T)) ||
+                                  attr.GetType().GetInterfaces().Contains(typeof(T))
+                              select (T)attr).ToList();
 
             if (cachedAttributes.ContainsKey(cacheKey))
             {

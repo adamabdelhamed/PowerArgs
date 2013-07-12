@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -12,10 +13,7 @@ namespace PowerArgs
     /// </summary>
     public class CommandLineAction
     {
-        /// <summary>
-        /// The implementation of the action that can be invoked by the parser if the user specifies this action.
-        /// </summary>
-        public MethodInfo ActionMethod { get; private set; }
+        private AttrOverride overrides;
 
         /// <summary>
         /// The values that the user can specify on the command line to specify this action.
@@ -27,33 +25,45 @@ namespace PowerArgs
         /// </summary>
         public List<CommandLineArgument> Arguments { get; private set; }
 
-        // TODO P0 - Make this metadata driven
         /// <summary>
         /// The description that will be shown in the auto generated usage.
         /// </summary>
-        public string Description { get; set; }
+        public string Description
+        {
+            get
+            {
+                return overrides.Get<ArgDescription, string>(Metadata, d => d.Description, string.Empty);
+            }
+            set
+            {
+                overrides.Set(value);
+            }
+        }
         
         /// <summary>
         /// The method or property that was used to define this action.
         /// </summary>
         public object Source { get; set; }
 
-        // TODO P0 - Make this metadata driven
-        /// <summary>
-        /// Examples that show users how to use this action.
-        /// </summary>
-        public List<ArgExample> Examples { get; private set; }
-
         /// <summary>
         /// This will be set by the parser if the parse was successful and this was the action the user specified.
         /// </summary>
         public bool IsSpecifiedAction { get; internal set; }
 
-        // TODO P0 - Make this metadata driven
         /// <summary>
         /// Indicates whether or not the parser should ignore case when matching a user string with this action.
         /// </summary>
-        public bool IgnoreCase { get; set; }
+        public bool IgnoreCase
+        {
+            get
+            {
+                return overrides.Get<ArgIgnoreCase, bool>(Metadata, i => i.IgnoreCase, true);
+            }
+            set
+            {
+                overrides.Set(value);
+            }
+        }
 
         /// <summary>
         /// The first alias or null if there are no aliases.
@@ -66,7 +76,27 @@ namespace PowerArgs
             }
         }
 
-        public List<ArgMetadata> Metadata { get; private set; }
+        /// <summary>
+        /// The list of metadata that can be used to inject behavior into the action
+        /// </summary>
+        public List<ICommandLineActionMetadata> Metadata { get; private set; }
+
+
+        /// <summary>
+        /// The implementation of the action that can be invoked by the parser if the user specifies this action.
+        /// </summary>
+        internal MethodInfo ActionMethod { get; private set; }
+
+        /// <summary>
+        /// Examples that show users how to use this action.
+        /// </summary>
+        internal ReadOnlyCollection<ArgExample> Examples
+        {
+            get
+            {
+                return Metadata.Metas<ArgExample>().AsReadOnly();
+            }
+        }
 
         /// <summary>
         /// Creates a new command line action given an implementation.
@@ -94,7 +124,8 @@ namespace PowerArgs
 
         internal CommandLineAction()
         {
-            Aliases = new AliasCollection(() => { return Metadata.Attrs<ArgShortcut>(); }, () => { return IgnoreCase; });
+            overrides = new AttrOverride();
+            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; });
             PropertyInitializer.InitializeFields(this, 1);
             IgnoreCase = true;
         }
@@ -103,9 +134,7 @@ namespace PowerArgs
         {
             var ret = PropertyInitializer.CreateInstance<CommandLineAction>();
             ret.ActionMethod = ArgAction.ResolveMethod(actionProperty.DeclaringType, actionProperty);
-            ret.Examples.AddRange(actionProperty.Attrs<ArgExample>());
             ret.Source = actionProperty;
-            ret.Description = actionProperty.HasAttr<ArgDescription>() ? actionProperty.Attr<ArgDescription>().Description : "";
             ret.Arguments.AddRange(new CommandLineArgumentsDefinition(actionProperty.PropertyType).Arguments);
             ret.IgnoreCase = true;
 
@@ -119,6 +148,8 @@ namespace PowerArgs
                 ret.IgnoreCase = false;
             }
 
+            ret.Metadata.AddRange(actionProperty.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineActionMetadata>());
+
             ret.Aliases.AddRange(CommandLineArgument.FindDefaultShortcuts(actionProperty, knownAliases, ret.IgnoreCase));
 
             return ret;
@@ -131,8 +162,8 @@ namespace PowerArgs
 
             ret.Source = actionMethod;
             ret.Aliases.AddRange(FindAliases(actionMethod));
-            ret.Description = actionMethod.HasAttr<ArgDescription>() ? actionMethod.Attr<ArgDescription>().Description : "";
-            ret.Examples.AddRange(actionMethod.Attrs<ArgExample>());
+
+            ret.Metadata.AddRange(actionMethod.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineActionMetadata>());
 
             ret.IgnoreCase = true;
 
@@ -221,7 +252,9 @@ namespace PowerArgs
 
         internal static bool IsActionImplementation(PropertyInfo property)
         {
-            return property.Name.EndsWith(Constants.ActionArgConventionSuffix) && ArgAction.GetActionProperty(property.DeclaringType) != null;
+            return property.Name.EndsWith(Constants.ActionArgConventionSuffix) && 
+                   property.HasAttr<ArgIgnoreAttribute>() == false &&
+                ArgAction.GetActionProperty(property.DeclaringType) != null;
         }
 
         private static List<string> FindAliases(MethodInfo methodAction)

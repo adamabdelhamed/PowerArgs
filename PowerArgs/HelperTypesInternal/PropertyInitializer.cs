@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reflection;
 
 namespace PowerArgs
 {
@@ -24,11 +26,20 @@ namespace PowerArgs
 
             foreach (var prop in o.GetType().GetProperties())
             {
-                if (prop.PropertyType.GetInterfaces().Contains(typeof(IList)))
+                if (ShouldInitialize(prop))
                 {
                     prop.SetValue(o, CreateInstance(prop.PropertyType, maxDepth - 1), null);
                 }
             }
+        }
+
+        private static bool ShouldInitialize(PropertyInfo prop)
+        {
+            if (prop.PropertyType.GetInterfaces().Contains(typeof(IList)) == false) return false;
+            if(prop.GetSetMethod(true) == null)return false;
+            if (prop.PropertyType.IsGenericType == false) return false;
+
+            return true;
         }
     }
 }

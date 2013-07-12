@@ -6,5 +6,5 @@ namespace PowerArgs
     /// Use this attribute if you want PowerArgs to ignore a property completely.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
-    public class ArgIgnoreAttribute : ArgMetadata { }
+    public class ArgIgnoreAttribute : Attribute, IArgumentOrActionMetadata { }
 }

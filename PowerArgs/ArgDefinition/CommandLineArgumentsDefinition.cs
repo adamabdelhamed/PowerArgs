@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
@@ -24,11 +25,11 @@ namespace PowerArgs
         /// <summary>
         /// Global hooks that can execute all hook override methods except those that target a particular argument.
         /// </summary>
-        public IEnumerable<ArgHook> Hooks
+        public ReadOnlyCollection<ArgHook> Hooks
         {
             get
             {
-                return Metadata.Attrs<ArgHook>().AsReadOnly();
+                return Metadata.Metas<ArgHook>().AsReadOnly();
             }
         }
         
@@ -40,16 +41,16 @@ namespace PowerArgs
         /// <summary>
         /// Arbitrary metadata that has been added to the definition
         /// </summary>
-        public List<ArgMetadata> Metadata { get; private set; }
+        public List<ICommandLineArgumentsDefinitionMetadata> Metadata { get; private set; }
 
         /// <summary>
         /// Examples that show users how to use your program.
         /// </summary>
-        public IEnumerable<ArgExample> Examples
+        public ReadOnlyCollection<ArgExample> Examples
         {
             get
             {
-                return Metadata.Attrs<ArgExample>();
+                return Metadata.Metas<ArgExample>().AsReadOnly();
             }
         }
 
@@ -84,14 +85,13 @@ namespace PowerArgs
         /// Creates a command line arguments definition and infers things like Arguments, Actions, etc. from the type's metadata.
         /// </summary>
         /// <param name="t">The argument scaffold type used to infer the definition</param>
-        public CommandLineArgumentsDefinition (Type t)
+        public CommandLineArgumentsDefinition (Type t) : this()
         {
-            PropertyInitializer.InitializeFields(this, 1);
             ArgumentScaffoldType = t;
             ExceptionBehavior = t.HasAttr<ArgExceptionBehavior>() ? t.Attr<ArgExceptionBehavior>() : new ArgExceptionBehavior();
             Arguments.AddRange(FindCommandLineArguments(t));
             Actions.AddRange(FindCommandLineActions(t));
-            Metadata.AddRange(t.Attrs<ArgMetadata>());
+            Metadata.AddRange(t.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineArgumentsDefinitionMetadata>());
         }
 
         /// <summary>

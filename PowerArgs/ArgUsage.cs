@@ -48,8 +48,8 @@ namespace PowerArgs
     /// An attribute used to hook into the usage generation process and influence
     /// the content that is written.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple=true)]
-    public class UsageHook : Attribute
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = true)]
+    public class UsageHook : Attribute, IGlobalArgMetadata
     {
         /// <summary>
         /// An event you can subscribe to in the case where you created
@@ -162,6 +162,7 @@ namespace PowerArgs
         public ArgumentUsageInfo(CommandLineArgument toAutoGen)
             : this()
         {
+            this.Argument = toAutoGen;
             Property = toAutoGen.Source as PropertyInfo;
             Ignore = false;
             IsAction = toAutoGen.DefaultAlias == Constants.ActionPropertyConventionName;
@@ -218,6 +219,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="prop">The property to hook into or null to hook into all properties.</param>
         /// <param name="hook">The hook implementation.</param>
+        [Obsolete("With the new CommandLineArgumentsDefinition model, you can add your usage hooks to the Metadata in the definition explicity and then pass the definition to the GetUsage() methods.  Example: myDefinition.Metadata.Add(myHook);")]
         public static void RegisterHook(PropertyInfo prop, UsageHook hook)
         {
             if (prop == null)
@@ -337,10 +339,6 @@ namespace PowerArgs
 
                 foreach (var action in definition.Actions)
                 {
-                    //TODO - Make this completely ArgumentUsageInfo based
-
-                    //TODO P0 - Invoke usage hooks
-
                     ret += "\n\n" + action.DefaultAlias + " - "+action.Description + "\n\n";
 
                     foreach (var example in action.Examples)
@@ -401,13 +399,21 @@ namespace PowerArgs
 
             foreach (ArgumentUsageInfo usageInfo in usageInfos.OrderBy(i => i.Position >= 0 ? i.Position : 1000))
             {
-                if (usageInfo.Property != null)
+                var hooks = new List<UsageHook>();
+                if (usageInfo.Property != null && ArgUsage.ExplicitPropertyHooks.ContainsKey(usageInfo.Property))
                 {
-                    foreach (var hook in usageInfo.Property.GetUsageHooks())
-                    {
-                        hook.BeforeGenerateUsage(usageInfo);
-                    }
+                    hooks.AddRange(ArgUsage.ExplicitPropertyHooks[usageInfo.Property]);
                 }
+
+                hooks.AddRange(ArgUsage.GlobalUsageHooks);
+
+                hooks.AddRange(usageInfo.Argument.UsageHooks);
+
+                foreach (var hook in hooks)
+                {
+                    hook.BeforeGenerateUsage(usageInfo);
+                }
+               
 
                 if (usageInfo.Ignore) continue;
                 if (usageInfo.IsAction && ignoreActionProperties) continue;

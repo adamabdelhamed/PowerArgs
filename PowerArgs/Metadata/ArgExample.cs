@@ -6,7 +6,7 @@ namespace PowerArgs
     /// Use this attribute to provide an example of how to use your program.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class, AllowMultiple = true)]
-    public class ArgExample : ArgMetadata
+    public class ArgExample : Attribute, IGlobalArgMetadata
     {
         /// <summary>
         /// The example command line.

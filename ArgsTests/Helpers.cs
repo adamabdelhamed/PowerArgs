@@ -19,7 +19,7 @@ namespace ArgsTests
         {
             return (T)t.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).Invoke(null, parameters);
         }
-
+ 
         public static List<string> GetShortcuts(this Type t, string propertyName)
         {
             var d = new CommandLineArgumentsDefinition(t);

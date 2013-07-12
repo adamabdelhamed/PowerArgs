@@ -129,21 +129,30 @@ namespace ArgsTests
             // derive from ArgMetadata.
             var whitelist = new Type[]
             {
-                typeof(ArgMetadata), // Include the base class since it's obviously ok that it doesn't derive from itself
-                typeof(ArgHook),
-                typeof(UsageHook),
-                typeof(ArgActionMethod),
                 typeof(ArgReviverAttribute),
-                typeof(OmitFromUsageDocs),
             };
 
+            var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>
+                t.IsInterface &&
+                t.GetInterfaces().Contains(typeof(IArgMetadata))).ToList();
+
+            // In general, attributes in this project should derive from ArgMetadata
             var danglingAttrs = typeof(Args).Assembly.GetTypes().Where(t => 
-                t.IsSubclassOf(typeof(ArgMetadata)) == false && 
-                t.IsSubclassOf(typeof(Attribute))   == true && 
+                t.IsSubclassOf(typeof(Attribute))   == true &&
+                t.GetInterfaces().Contains(typeof(IArgMetadata)) == false && 
                 whitelist.Contains(t) == false
             ).ToList();
 
+            // In general, attibutes should use more specific IArgMetadata interfaces
+            var danglingAttrs2 = typeof(Args).Assembly.GetTypes().Where(t =>
+                t.GetInterfaces().Contains(typeof(Attribute)) == true &&
+                (from i in t.GetInterfaces() where iArgMetadataSubInterfaces.Contains(i) select i).Count() == 0 &&
+                whitelist.Contains(t) == false
+            ).ToList();
+
+
             Assert.AreEqual(0, danglingAttrs.Count);
+            Assert.AreEqual(0, danglingAttrs2.Count);
         }
 
         [TestMethod]
