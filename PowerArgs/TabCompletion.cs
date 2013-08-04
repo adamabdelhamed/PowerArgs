@@ -727,7 +727,6 @@ namespace PowerArgs
 
         private static void RefreshConsole(int leftStart, int topStart, List<char> chars, int offset = 0, int lookAhead = 1)
         {
-            int left = ConsoleImpl.CursorLeft;
             ConsoleImpl.CursorLeft = leftStart;
             ConsoleImpl.CursorTop = topStart;
             for (int i = 0; i < chars.Count; i++) ConsoleImpl.Write(chars[i]);

@@ -216,6 +216,32 @@ namespace ArgsTests
             Assert.AreEqual(EnumWithShortcuts.One, parsed.Enum);
         }
 
+        [TabCompletion(typeof(MyLongCompletionSource), "$", ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
+        public class LongTestArgs
+        {
+            public string SomeParam { get; set; }
+            public int AnotherParam { get; set; }
+            public bool BoolParam { get; set; }
+        }
+
+        public class MyLongCompletionSource : SimpleTabCompletionSource
+        {
+            public MyLongCompletionSource() : base(MyLongCompletionSource.GetWords()) { }
+            private static IEnumerable<string> GetWords()
+            {
+                return "AVeryLongWordSoThatTheBufferWidthOfTheConsoleWillBeExceededAndAnExceptionWouldBeRisedIfNoMeasureIsTaken|Abdelhamed".Split('|');
+            }
+        }
+
+        [TestMethod]
+        public void TestDoNotExceedConsoleWidth()
+        {
+            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("-s AVe\t");
+            var parsed = Args.Parse<LongTestArgs>("$");
+
+            Assert.AreEqual(26, ConsoleHelper.ConsoleImpl.CursorLeft);
+        }
+
         private string Repeat(string s, int num)
         {
             string ret = "";
@@ -255,6 +281,8 @@ namespace ArgsTests
         }
 
         public int CursorLeft { get; set; }
+        public int CursorTop { get; set; }
+        public int BufferWidth { get { return 80; } }
 
         bool shift = false;
         public ConsoleKeyInfo ReadKey()
