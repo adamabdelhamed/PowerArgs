@@ -26,6 +26,58 @@ namespace PowerArgs
         private Args() { }
 
         /// <summary>
+        /// Converts a single string that represents a command line to be executed into a string[], 
+        /// accounting for quoted arguments that may or may not contain spaces.
+        /// </summary>
+        /// <param name="commandLine">The raw arguments as a single string</param>
+        /// <returns>a converted string array with the arguments properly broken up</returns>
+        public static string[] Convert(string commandLine)
+        {
+            List<string> ret = new List<string>();
+            string currentArg = string.Empty;
+            bool insideDoubleQuotes = false;
+
+            for(int i = 0; i < commandLine.Length;i++)
+            {
+                var c = commandLine[i];
+
+                if (insideDoubleQuotes && c == '"')
+                {
+                    ret.Add(currentArg);
+                    currentArg = string.Empty;
+                    insideDoubleQuotes = !insideDoubleQuotes;
+                }
+                else if (!insideDoubleQuotes && c == ' ')
+                {
+                    if (currentArg.Length > 0)
+                    {
+                        ret.Add(currentArg);
+                        currentArg = string.Empty;
+                    }
+                }
+                else if (c == '"')
+                {
+                    insideDoubleQuotes = !insideDoubleQuotes;
+                }
+                else if (c == '\\' && i < commandLine.Length - 1 && commandLine[i + 1] == '"')
+                {
+                    currentArg += '"';
+                }
+                else
+                {
+                    currentArg += c;
+                }
+            }
+
+            if (currentArg.Length > 0)
+            {
+                ret.Add(currentArg);
+            }
+
+            return ret.ToArray();
+        }
+
+        /// <summary>
         /// Gets the last instance of this type of argument that was parsed on the current thread
         /// or null if PowerArgs did not parse an object of this type.
         /// </summary>
@@ -395,7 +447,7 @@ namespace PowerArgs
 
                 if (ArgRevivers.CanRevive(prop.PropertyType) == false)
                 {
-                    throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.GetArgumentName());
+                    throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.Name);
                 }
 
                 if (prop.PropertyType.IsEnum)
@@ -403,7 +455,14 @@ namespace PowerArgs
                     prop.PropertyType.ValidateNoDuplicateEnumShortcuts(ignoreCase);
                 }
 
-                prop.ValidateNoConflictingShortcutPolicies();
+                var attrs = prop.Attrs<ArgShortcut>();
+                var noShortcutsAllowed = attrs.Where(a => a.Policy == ArgShortcutPolicy.NoShortcut).Count() != 0;
+                var shortcutsOnly = attrs.Where(a => a.Policy == ArgShortcutPolicy.ShortcutsOnly).Count() != 0;
+                var actualShortcutValues = attrs.Where(a => a.Policy == ArgShortcutPolicy.Default && a.Shortcut != null).Count() != 0;
+
+                if (noShortcutsAllowed && shortcutsOnly) throw new InvalidArgDefinitionException("You cannot specify a policy of NoShortcut and another policy of ShortcutsOnly.");
+                if (noShortcutsAllowed && actualShortcutValues) throw new InvalidArgDefinitionException("You cannot specify a policy of NoShortcut and then also specify shortcut values via another attribute.");
+                if (shortcutsOnly && actualShortcutValues == false) throw new InvalidArgDefinitionException("You specified a policy of ShortcutsOnly, but did not specify any shortcuts by adding another ArgShortcut attrivute.");
             }
 
             if (actionProp != null)

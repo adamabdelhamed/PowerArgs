@@ -10,6 +10,8 @@ namespace PowerArgs
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
     public class ArgExistingFile : ArgValidator
     {
+        // TODO P2 - Add a file extension filter
+
         /// <summary>
         /// Validates that the given file exists and cleans up the argument so that the application has access
         /// to the full path.

@@ -613,5 +613,65 @@ namespace ArgsTests
             var uae = new UnexpectedArgException("test");
             Assert.IsInstanceOfType(uae, typeof(ArgException));
         }
+
+        [TestMethod]
+        public void TestConvert1()
+        {
+            AssertConversion("");
+        }
+
+        [TestMethod]
+        public void TestConvert2()
+        {
+            AssertConversion("John", "John");
+        }
+
+        [TestMethod]
+        public void TestConvert3()
+        {
+            AssertConversion("John Doe", "John", "Doe");
+        }
+
+        [TestMethod]
+        public void TestConvert4()
+        {
+            AssertConversion("John A Doe", "John", "A", "Doe");
+        }
+
+        [TestMethod]
+        public void TestConvert5()
+        {
+            AssertConversion("\"John A Doe\"", "John A Doe");
+        }
+
+        [TestMethod]
+        public void TestConvert6()
+        {
+            AssertConversion("\"John A Doe\" -foo bar", "John A Doe", "-foo", "bar");
+        }
+
+        [TestMethod]
+        public void TestConvert7()
+        {
+            AssertConversion("Foo \"John A Doe\" -foo bar","Foo", "John A Doe", "-foo", "bar");
+        }
+
+        [TestMethod]
+        public void TestConvert8()
+        {
+            AssertConversion("\"1\" \"\" Foo \"John A Doe\" -foo         bar","1", "", "Foo", "John A Doe", "-foo", "bar");
+        }
+
+        private void AssertConversion(string commandLine, params string[] expectedResult)
+        {
+            var result = Args.Convert(commandLine);
+
+            Assert.AreEqual(expectedResult.Length, result.Length);
+
+            for (int i = 0; i < expectedResult.Length; i++)
+            {
+                Assert.AreEqual(expectedResult[i], result[i]);
+            }
+        }
     }
 }

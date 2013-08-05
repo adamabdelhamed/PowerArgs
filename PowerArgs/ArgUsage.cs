@@ -212,7 +212,7 @@ namespace PowerArgs
         internal static Dictionary<PropertyInfo, List<UsageHook>> ExplicitPropertyHooks = new Dictionary<PropertyInfo,List<UsageHook>>();
         internal static List<UsageHook> GlobalUsageHooks = new List<UsageHook>();
 
-        // TODO - Need unit tests for usage hooks
+        // TODO P0 - Need unit tests for usage hooks
 
         /// <summary>
         /// Registers a usage hook for the given property.

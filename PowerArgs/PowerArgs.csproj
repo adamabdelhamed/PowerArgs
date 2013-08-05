@@ -47,12 +47,10 @@
   <ItemGroup>
     <Compile Include="Extensions\IEnumerableOfIArgMetadata.cs" />
     <Compile Include="Extensions\FieldInfo.cs" />
-    <Compile Include="Extensions\IEnumerableOfAttributes.cs" />
     <Compile Include="Extensions\MatchCollection.cs" />
     <Compile Include="Extensions\MemberInfo.cs" />
     <Compile Include="Extensions\Object.cs" />
     <Compile Include="Extensions\ParemeterInfo.cs" />
-    <Compile Include="Extensions\PropertyInfo.cs" />
     <Compile Include="Extensions\Type.cs" />
     <Compile Include="HelperTypesPublic\AliasCollection.cs" />
     <Compile Include="HelperTypesInternal\CaseAwareStringComparer.cs" />
