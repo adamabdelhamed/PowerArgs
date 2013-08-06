@@ -32,6 +32,29 @@ namespace PowerArgs
         /// <summary>
         /// Used for internal implementation, but marked public for testing, please do not use.
         /// </summary>
+        public int CursorTop
+        {
+            get
+            {
+                return Console.CursorTop;
+            }
+            set
+            {
+                Console.CursorTop = value;
+            }
+        }
+
+        /// <summary>
+        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// </summary>
+        public int BufferWidth
+        {
+            get { return Console.BufferWidth; }
+        }
+
+        /// <summary>
+        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// </summary>
         /// <returns>Used for internal implementation, but marked public for testing, please do not use.</returns>
         public ConsoleKeyInfo ReadKey()
         {

@@ -15,6 +15,16 @@ namespace PowerArgs
         /// <summary>
         /// Used for internal implementation, but marked public for testing, please do not use.
         /// </summary>
+        int CursorTop { get; set; }
+
+        /// <summary>
+        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// </summary>
+        int BufferWidth { get; }
+
+        /// <summary>
+        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// </summary>
         ConsoleKeyInfo ReadKey();
 
         /// <summary>
