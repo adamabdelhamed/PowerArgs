@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
@@ -182,6 +183,8 @@ namespace ArgsTests
         [TestMethod]
         public void TestSlashColonStyle()
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
             var args = new string[] { "/string:stringValue", "/i:34", "/d:33.33", "/b" };
 
             var parsed = Args.Parse<BasicArgsSC>(args);
@@ -200,6 +203,7 @@ namespace ArgsTests
             BasicHook.WasRun = false;
             Guid g = Guid.NewGuid();
             DateTime d = DateTime.Today;
+            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 
             var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue+"", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com"  };
 
@@ -231,6 +235,7 @@ namespace ArgsTests
             BasicHook.WasRun = false;
             Guid g = Guid.NewGuid();
             DateTime d = DateTime.Today;
+            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 
             var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue + "", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com" };
 

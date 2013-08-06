@@ -61,13 +61,15 @@ namespace PowerArgs
             return (from t in ret where string.IsNullOrWhiteSpace(t) == false select t.Trim()).ToArray();
         }
 
-        private static void RefreshConsole(int leftStart, List<char> chars, int offset = 0, int lookAhead = 1)
+        private static void RefreshConsole(int leftStart, int topStart, List<char> chars, int offset = 0, int lookAhead = 1)
         {
             int left = ConsoleImpl.CursorLeft;
             ConsoleImpl.CursorLeft = leftStart;
+            ConsoleImpl.CursorTop = topStart;
             for (int i = 0; i < chars.Count; i++) ConsoleImpl.Write(chars[i]);
-            for (int i = 0; i < lookAhead; i++) ConsoleImpl.Write(" ");
-            ConsoleImpl.CursorLeft = left + offset;
+            for(int i = 0; i < lookAhead; i++) ConsoleImpl.Write(" ");
+            ConsoleImpl.CursorTop = topStart + (int)Math.Floor((leftStart + chars.Count) / (double)ConsoleImpl.BufferWidth);
+            ConsoleImpl.CursorLeft = (leftStart + chars.Count) % ConsoleImpl.BufferWidth;
         }
 
         private enum QuoteStatus
@@ -149,6 +151,7 @@ namespace PowerArgs
         internal static string[] ReadLine(ref string rawInput, List<string> history, params ITabCompletionSource[] tabCompletionHooks)
         {
             var leftStart = ConsoleImpl.CursorLeft;
+            var topStart = ConsoleImpl.CursorTop;
             var chars = new List<char>();
 
             int historyIndex = -1;
@@ -157,16 +160,18 @@ namespace PowerArgs
             while (true)
             {
                 var info = ConsoleImpl.ReadKey();
-                int i = ConsoleImpl.CursorLeft - leftStart;
+                int i = ConsoleImpl.CursorLeft - leftStart + (ConsoleImpl.CursorTop - topStart) * ConsoleImpl.BufferWidth;
 
                 if (info.Key == ConsoleKey.Home)
                 {
+                    ConsoleImpl.CursorTop = topStart;
                     ConsoleImpl.CursorLeft = leftStart;
                     continue;
                 }
                 else if (info.Key == ConsoleKey.End)
                 {
-                    ConsoleImpl.CursorLeft = leftStart + chars.Count;
+                    ConsoleImpl.CursorTop = topStart + (int)(Math.Floor((leftStart + chars.Count) / (double)ConsoleImpl.BufferWidth));
+                    ConsoleImpl.CursorLeft = (leftStart + chars.Count) % ConsoleImpl.BufferWidth;
                     continue;
                 }
                 else if (info.Key == ConsoleKey.UpArrow)
@@ -176,7 +181,7 @@ namespace PowerArgs
                     historyIndex++;
                     if (historyIndex >= history.Count) historyIndex = 0;
                     chars = history[historyIndex].ToList();
-                    RefreshConsole(leftStart, chars, chars.Count, lookAhead: 80);
+                    RefreshConsole(leftStart, topStart, chars, chars.Count, lookAhead: 80);
                     continue;
                 }
                 else if (info.Key == ConsoleKey.DownArrow)
@@ -186,7 +191,7 @@ namespace PowerArgs
                     historyIndex--;
                     if (historyIndex < 0) historyIndex = history.Count - 1;
                     chars = history[historyIndex].ToList();
-                    RefreshConsole(leftStart, chars, chars.Count, lookAhead: 80);
+                    RefreshConsole(leftStart, topStart, chars, chars.Count, lookAhead: 80);
                     continue;
                 }
                 else if (info.Key == ConsoleKey.LeftArrow)
@@ -204,7 +209,7 @@ namespace PowerArgs
                     if (i < chars.Count)
                     {
                         chars.RemoveAt(i);
-                        RefreshConsole(leftStart, chars);
+                        RefreshConsole(leftStart, topStart, chars);
                     }
                     continue;
                 }
@@ -216,7 +221,7 @@ namespace PowerArgs
                     if (i < chars.Count)
                     {
                         chars.RemoveAt(i);
-                        RefreshConsole(leftStart, chars);
+                        RefreshConsole(leftStart, topStart, chars);
                     }
                     continue;
                 }
@@ -317,7 +322,7 @@ namespace PowerArgs
                         chars.RemoveAt(j + completion.Length);
                     }
 
-                    RefreshConsole(leftStart, chars, completion.Length - token.Length, extraChars);
+                    RefreshConsole(leftStart, topStart, chars, completion.Length - token.Length, extraChars);
                 }
                 else
                 {
@@ -329,7 +334,7 @@ namespace PowerArgs
                     else
                     {
                         chars.Insert(i, info.KeyChar);
-                        RefreshConsole(leftStart, chars, 1);
+                        RefreshConsole(leftStart, topStart, chars, 1);
                     }
                     continue;
                 }
