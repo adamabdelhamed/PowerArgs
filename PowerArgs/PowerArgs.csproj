@@ -43,40 +43,84 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArgAction.cs" />
-    <Compile Include="ArgLongForm.cs" />
-    <Compile Include="ArgMetadataAttributes.cs" />
-    <Compile Include="ConsoleString.cs" />
-    <Compile Include="ConsoleTable.cs" />
+    <Compile Include="Extensions\IEnumerableOfIArgMetadata.cs" />
+    <Compile Include="Extensions\FieldInfo.cs" />
+    <Compile Include="Extensions\MatchCollection.cs" />
+    <Compile Include="Extensions\MemberInfo.cs" />
+    <Compile Include="Extensions\Object.cs" />
+    <Compile Include="Extensions\ParemeterInfo.cs" />
+    <Compile Include="Extensions\Type.cs" />
+    <Compile Include="HelperTypesPublic\AliasCollection.cs" />
+    <Compile Include="HelperTypesInternal\CaseAwareStringComparer.cs" />
+    <Compile Include="HelperTypesInternal\AttrOverride.cs" />
+    <Compile Include="HelperTypesInternal\REPL.cs" />
+    <Compile Include="HelperTypesPublic\ArgAction.cs" />
+    <Compile Include="HelperTypesInternal\ConsoleHelper.cs" />
+    <Compile Include="HelperTypesPublic\ConsoleString.cs" />
+    <Compile Include="HelperTypesPublic\ConsoleTable.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="ArgRevivers.cs" />
+    <Compile Include="HelperTypesInternal\ArgRevivers.cs" />
     <Compile Include="Args.cs" />
-    <Compile Include="ArgParser.cs" />
+    <Compile Include="HelperTypesInternal\ArgParser.cs" />
     <Compile Include="ArgUsage.cs" />
-    <Compile Include="EasterEggs\MatrixMode.cs" />
+    <Compile Include="HelperTypesInternal\MatrixMode.cs" />
     <Compile Include="Exceptions.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="HelperTypes.cs" />
+    <Compile Include="HelperTypesInternal\ArgActionMethodVirtualProperty.cs" />
+    <Compile Include="HelperTypesInternal\EnumTabCompletionSource.cs" />
+    <Compile Include="HelperTypesInternal\FileSystemTabCompletionSource.cs" />
+    <Compile Include="HelperTypesInternal\IConsoleProvider.cs" />
+    <Compile Include="HelperTypesInternal\ITabCompletionSourceWithContext.cs" />
+    <Compile Include="HelperTypesInternal\PropertyInitializer.cs" />
+    <Compile Include="HelperTypesInternal\StdConsoleProvider.cs" />
+    <Compile Include="HelperTypesInternal\VirtualPropertyInfo.cs" />
+    <Compile Include="HelperTypesInternal\ActionMethodInfo.cs" />
+    <Compile Include="HelperTypesPublic\ITabCompletionSource.cs" />
+    <Compile Include="HelperTypesPublic\ParseResult.cs" />
+    <Compile Include="Hooks\ArgHook.cs" />
+    <Compile Include="Hooks\DefaultValueAttribute.cs" />
+    <Compile Include="Hooks\StickyArg.cs" />
+    <Compile Include="Metadata\ArgActionMethod.cs" />
+    <Compile Include="Metadata\ArgActionType.cs" />
+    <Compile Include="Metadata\ArgDescription.cs" />
+    <Compile Include="Metadata\ArgExample.cs" />
+    <Compile Include="Metadata\ArgExceptionBehavior.cs" />
+    <Compile Include="Metadata\ArgIgnoreAttribute.cs" />
+    <Compile Include="Metadata\ArgIgnoreCase.cs" />
+    <Compile Include="ArgDefinition\IArgMetadata.cs" />
+    <Compile Include="Metadata\ArgPosition.cs" />
+    <Compile Include="Metadata\ArgReviverAttribute.cs" />
+    <Compile Include="Metadata\ArgShortcut.cs" />
+    <Compile Include="Metadata\ArgStyleAttribute.cs" />
+    <Compile Include="Metadata\OmitFromUsageDocs.cs" />
+    <Compile Include="ArgDefinition\CommandLineAction.cs" />
+    <Compile Include="ArgDefinition\CommandLineArgument.cs" />
+    <Compile Include="ArgDefinition\CommandLineArgumentsDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ArgValidatorAttributes.cs" />
-    <Compile Include="Query.cs" />
+    <Compile Include="Hooks\Query.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SecureStringArgument.cs" />
-    <Compile Include="TabCompletion.cs" />
+    <Compile Include="HelperTypesPublic\SecureStringArgument.cs" />
+    <Compile Include="HelperTypesPublic\ArgumentAwareTabCompletionSource.cs" />
+    <Compile Include="HelperTypesPublic\CycledTabCompletionManager.cs" />
+    <Compile Include="HelperTypesPublic\GroupedRegexArg.cs" />
+    <Compile Include="HelperTypesPublic\MultiTabCompletionSource.cs" />
+    <Compile Include="HelperTypesPublic\SimpleTabCompletionSource.cs" />
+    <Compile Include="HelperTypesPublic\USPhoneNumber.cs" />
+    <Compile Include="Hooks\TabCompletion.cs" />
+    <Compile Include="Validators\ArgExistingDirectory.cs" />
+    <Compile Include="Validators\ArgExistingFile.cs" />
+    <Compile Include="Validators\ArgRange.cs" />
+    <Compile Include="Validators\ArgRegex.cs" />
+    <Compile Include="Validators\ArgRequired.cs" />
+    <Compile Include="Validators\ArgValidator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
     <None Include="PowerArgs.nuspec" />
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +132,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

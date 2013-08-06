@@ -19,10 +19,15 @@ namespace ArgsTests
         {
             return (T)t.GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static).Invoke(null, parameters);
         }
-
+ 
         public static List<string> GetShortcuts(this Type t, string propertyName)
         {
-            return typeof(ArgShortcut).InvokeStatic<List<string>>("GetShortcutsInternal", t.GetProperty(propertyName)).Select(s => "-"+s).ToList();
+            var d = new CommandLineArgumentsDefinition(t);
+            var p = d.Arguments.Where(a => a.DefaultAlias == propertyName).Single();
+
+            var aliases = p.Aliases.ToList();
+            aliases.RemoveAt(0);
+            return aliases;
         }
 
         public static string GetShortcut(this Type t, string propertyName)
@@ -44,12 +49,12 @@ namespace ArgsTests
                 if (caseSensitive &&
                     ex.Message.Contains(expectedText) == false)
                 {
-                    Assert.Fail("Error message did not contain the expected case sensitive text. Actual<[0]>. Expected<[1]>", ex.Message, expectedText);
+                    Assert.Fail("Error message did not contain the expected case sensitive text. Actual<{0}>. Expected<{1}>", ex.Message, expectedText);
                 }
                 else if (!caseSensitive &&
                     ex.Message.IndexOf(expectedText, StringComparison.CurrentCultureIgnoreCase) < 0)
                 {
-                    Assert.Fail("Error message did not contain the expected case insensitive text. Actual<[0]>. Expected<[1]>", ex.Message, expectedText);
+                    Assert.Fail("Error message did not contain the expected case insensitive text. Actual<{0}>. Expected<{1}>", ex.Message, expectedText);
                 }
             };
         }

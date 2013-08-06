@@ -36,6 +36,48 @@ namespace ArgsTests
             public SomeActionArgs SomeActionArgs { get; set; }
         }
 
+        public class ActionTestArgsActionMethodHasNoParemeters
+        {
+            [ArgRequired]
+            [ArgPosition(0)]
+            public string Action { get; set; }
+
+            public SomeActionArgs SomeActionArgs { get; set; }
+
+            public void SomeAction()
+            {
+                Assert.Fail("This should never get called");
+            }
+        }
+
+
+        public class ActionTestArgsActionMethodHasWrongParameterType
+        {
+            [ArgRequired]
+            [ArgPosition(0)]
+            public string Action { get; set; }
+
+            public SomeActionArgs SomeActionArgs { get; set; }
+
+            public void SomeAction(object o)
+            {
+                Assert.Fail("This should never get called");
+            }
+        }
+
+        public class ActionTestArgsActionMethodHasTooManyParameters
+        {
+            [ArgRequired]
+            [ArgPosition(0)]
+            public string Action { get; set; }
+
+            [ArgActionMethod]
+            public void SomeAction(SomeActionArgs o, bool someOtherParemeter)
+            {
+                Assert.Fail("This should never get called");
+            }
+        }
+
         public class FakeProgram
         {
             public static int InvokeCount { get; set; }
@@ -99,8 +141,7 @@ namespace ArgsTests
             }
             catch (ArgException ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("required") &&
-                    ex.Message.ToLower().Contains("action"));
+                Assert.IsTrue(ex.Message.ToLower().Contains("no action was specified"));
             }
         }
 
@@ -113,10 +154,9 @@ namespace ArgsTests
                 var parsed = Args.InvokeAction<ActionTestArgs>(args);
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (ArgException ex)
+            catch (UnknownActionArgException ex)
             {
-                Assert.IsTrue(ex.Message.ToLower().Contains("unknown") &&
-                    ex.Message.ToLower().Contains("thisisnotarealaction"));
+                Assert.IsTrue(ex.Message.ToLower().Contains("thisisnotarealaction"));
             }
         }
 
@@ -133,6 +173,54 @@ namespace ArgsTests
             catch (InvalidArgDefinitionException ex)
             {
 
+            }
+        }
+
+        [TestMethod]
+        public void TestActionHasNoParameters()
+        {
+            var args = new string[] { "someaction", "aval", "bval" };
+
+            try
+            {
+                var parsed = Args.ParseAction<ActionTestArgsActionMethodHasNoParemeters>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.AreEqual("PowerArg action methods must take one parameter that matches the property type for the attribute", ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestActionHasWrongParameterType()
+        {
+            var args = new string[] { "someaction", "aval", "bval" };
+
+            try
+            {
+                var parsed = Args.ParseAction<ActionTestArgsActionMethodHasWrongParameterType>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.AreEqual("Argument of type 'Object' does not match expected type 'SomeActionArgs'", ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestActionHasTooManyParameters()
+        {
+            var args = new string[] { "someaction", "aval", "bval" };
+
+            try
+            {
+                var parsed = Args.ParseAction<ActionTestArgsActionMethodHasTooManyParameters>(args);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.AreEqual("Your action method contains a parameter that cannot be revived on its own.  That is only valid if the non-revivable parameter is the only parameter.  In that case, the properties of that parameter type will be used.", ex.Message);
             }
         }
 

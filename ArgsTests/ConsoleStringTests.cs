@@ -240,6 +240,7 @@ namespace ArgsTests
         private static void ValidateStringCharacteristics(string expected, ConsoleString actual)
         {
             Assert.AreEqual(expected, string.Join("", actual.Select(c => c.Value)));
+            Assert.AreEqual(0, actual.CompareTo(expected));
             Assert.AreEqual(expected, actual.ToString());
             Assert.AreEqual(expected.Length, actual.Length);
 

@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ArgsTests
 {
@@ -32,7 +33,6 @@ namespace ArgsTests
             [ArgLongForm("--your-real-age")]
             public int Age { get; set; }
 
-            [ArgShortcut("help")]
             [ArgLongForm("--help")]
             [ArgLongForm("--help-please")]
             public bool Help { get; set; }
@@ -64,9 +64,11 @@ namespace ArgsTests
             var args2 = Args.Parse<LongFormArgs>("--your-age=100");
             Assert.AreEqual(100, args2.Age);
 
-            var shortcuts = (typeof(LongFormArgs)).GetShortcuts("Age");
-            Assert.AreEqual(1, shortcuts.Count);
-            Assert.AreEqual("--your-age", shortcuts[0]);
+            var definition = new CommandLineArgumentsDefinition(typeof(LongFormArgs));
+
+            var aliases = definition.Arguments.Where(a => a.DefaultAlias == "Age").Single().Aliases;
+            Assert.AreEqual(2, aliases.Count);
+            Assert.AreEqual("-your-age", aliases[1]);
         }
 
         [TestMethod]

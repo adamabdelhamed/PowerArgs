@@ -48,8 +48,8 @@ namespace PowerArgs
     /// An attribute used to hook into the usage generation process and influence
     /// the content that is written.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple=true)]
-    public class UsageHook : Attribute
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = true)]
+    public class UsageHook : Attribute, IGlobalArgMetadata
     {
         /// <summary>
         /// An event you can subscribe to in the case where you created
@@ -131,12 +131,18 @@ namespace PowerArgs
         /// <summary>
         /// True if this represents a nested action argument property
         /// </summary>
+        [Obsolete("Usage is not affected by this property")]
         public bool IsActionArgs { get; set; }
 
         /// <summary>
         /// The reflected property that this info object represents
         /// </summary>
         public PropertyInfo Property { get; set; }
+
+        /// <summary>
+        /// The command line argument that the system is currently generating usage for
+        /// </summary>
+        public CommandLineArgument Argument { get; set; }
 
         /// <summary>
         /// The default value for the argument
@@ -153,30 +159,26 @@ namespace PowerArgs
         /// Generate a new info instance given a reflected property. 
         /// </summary>
         /// <param name="toAutoGen">The property to use to seed the usage info</param>
-        public ArgumentUsageInfo(PropertyInfo toAutoGen)
+        public ArgumentUsageInfo(CommandLineArgument toAutoGen)
             : this()
         {
-            Property = toAutoGen;
-            Ignore = toAutoGen.HasAttr<ArgIgnoreAttribute>();
-            IsAction = toAutoGen.IsActionArgProperty();
-            IsActionArgs = toAutoGen.Name == Constants.ActionPropertyConventionName;
-            DefaultValue = toAutoGen.HasAttr<DefaultValueAttribute>() ? toAutoGen.Attr<DefaultValueAttribute>().Value : null;
-            
-            Name = "-"+toAutoGen.GetArgumentName();
-            IsRequired = toAutoGen.HasAttr<ArgRequired>();
-            foreach (var shortcut in ArgShortcut.GetShortcutsInternal(toAutoGen))
+            this.Argument = toAutoGen;
+            Property = toAutoGen.Source as PropertyInfo;
+            Ignore = false;
+            IsAction = toAutoGen.DefaultAlias == Constants.ActionPropertyConventionName;
+            DefaultValue = toAutoGen.DefaultValue;
+            IsRequired = toAutoGen.IsRequired;
+
+            Name = "-"+toAutoGen.DefaultAlias;
+
+            if (Name.EndsWith(Constants.ActionArgConventionSuffix))
             {
-                Aliases.Add("-"+shortcut);
+                Name = Name.Substring(0, Name.Length - Constants.ActionArgConventionSuffix.Length);
             }
 
-            bool removeName = toAutoGen.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Count() > 0;
-            if (removeName)
-            {
-                Name = Aliases.First();
-                Aliases.RemoveAt(0);
-            }
+            Aliases.AddRange(toAutoGen.Aliases.Skip(1).Select(a => "-"+a));
 
-            Type = toAutoGen.PropertyType.Name;
+            Type = toAutoGen.ArgumentType.Name;
             if (KnownTypeMappings.ContainsKey(Type))
             {
                 Type = KnownTypeMappings[Type];
@@ -186,18 +188,12 @@ namespace PowerArgs
                 Type = Type.ToLower();
             }
 
-            Position = toAutoGen.HasAttr<ArgPosition>() ? new int?(toAutoGen.Attr<ArgPosition>().Position) : null;
+            Position = toAutoGen.Position >= 0 ? new int?(toAutoGen.Position) : null;
+            Description = toAutoGen.Description ?? "";
 
-            Description = "";
-
-            if (toAutoGen.HasAttr<ArgDescription>())
+            if (toAutoGen.ArgumentType.IsEnum)
             {
-                Description = toAutoGen.Attr<ArgDescription>().Description;
-            }
-
-            if (toAutoGen.PropertyType.IsEnum)
-            {
-                foreach (var val in toAutoGen.PropertyType.GetFields().Where(v => v.IsSpecialName == false))
+                foreach (var val in toAutoGen.ArgumentType.GetFields().Where(v => v.IsSpecialName == false))
                 {
                     var description = val.HasAttr<ArgDescription>() ? " - " + val.Attr<ArgDescription>().Description : "";
                     var valText = val.Name;
@@ -216,13 +212,14 @@ namespace PowerArgs
         internal static Dictionary<PropertyInfo, List<UsageHook>> ExplicitPropertyHooks = new Dictionary<PropertyInfo,List<UsageHook>>();
         internal static List<UsageHook> GlobalUsageHooks = new List<UsageHook>();
 
-        // TODO - Need unit tests for usage hooks
+        // TODO P0 - Need unit tests for usage hooks
 
         /// <summary>
         /// Registers a usage hook for the given property.
         /// </summary>
         /// <param name="prop">The property to hook into or null to hook into all properties.</param>
         /// <param name="hook">The hook implementation.</param>
+        [Obsolete("With the new CommandLineArgumentsDefinition model, you can add your usage hooks to the Metadata in the definition explicity and then pass the definition to the GetUsage() methods.  Example: myDefinition.Metadata.Add(myHook);")]
         public static void RegisterHook(PropertyInfo prop, UsageHook hook)
         {
             if (prop == null)
@@ -255,10 +252,22 @@ namespace PowerArgs
         /// <typeparam name="T">Your custom argument scaffold type</typeparam>
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
-        /// <returns></returns>
+        /// <returns>the usage documentation as a string</returns>
         public static string GetUsage<T>(string exeName = null, ArgUsageOptions options = null)
         { 
             return GetStyledUsage<T>(exeName, options).ToString();
+        }
+
+        /// <summary>
+        /// Generates usage documentation for the given argument definition.
+        /// </summary>
+        /// <param name="definition">The definition of the command line arguments for a program</param>
+        /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
+        /// <param name="options">Specify custom usage options</param>
+        /// <returns>the usage documentation as a string</returns>
+        public static string GetUsage(CommandLineArgumentsDefinition definition, string exeName = null, ArgUsageOptions options = null)
+        {
+            return GetStyledUsage(definition, exeName, options).ToString();
         }
 
         /// <summary>
@@ -267,20 +276,32 @@ namespace PowerArgs
         /// <typeparam name="T">Your custom argument scaffold type</typeparam>
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
-        /// <returns></returns>
+        /// <returns>the usage documentation as a styled string that can be printed to the console</returns>
         public static ConsoleString GetStyledUsage<T>(string exeName = null, ArgUsageOptions options = null)
         {
             return GetStyledUsage(typeof(T), exeName, options);
         }
 
         /// <summary>
-        /// Generates color styled usage documentation for the given argument scaffold type. 
+        /// Generates color styled usage documentation for the given argument scaffold type.  
         /// </summary>
         /// <param name="t">Your custom argument scaffold type</param>
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
-        /// <returns></returns>
+        /// <returns>the usage documentation as a styled string that can be printed to the console</returns>
         public static ConsoleString GetStyledUsage(Type t, string exeName = null, ArgUsageOptions options = null)
+        {
+            return GetStyledUsage(new CommandLineArgumentsDefinition(t), exeName, options);
+        }
+ 
+        /// <summary>
+        /// Generates color styled usage documentation for the given arguments definition.  
+        /// </summary>
+        /// <param name="definition">The definition of the command line arguments for a program</param>
+        /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
+        /// <param name="options">Specify custom usage options</param>
+        /// <returns>the usage documentation as a styled string that can be printed to the console</returns>
+        public static ConsoleString GetStyledUsage(CommandLineArgumentsDefinition definition, string exeName = null, ArgUsageOptions options = null)
         {
             options = options ?? new ArgUsageOptions();
             if (exeName == null)
@@ -298,16 +319,16 @@ namespace PowerArgs
             ret += new ConsoleString("Usage: " + exeName, ConsoleColor.Cyan);
 
  
-            if (t.GetActionArgProperties().Count > 0)
+            if (definition.Actions.Count > 0)
             {
                 ret.AppendUsingCurrentFormat(" <action> options\n\n");
 
-                foreach (var example in t.Attrs<ArgExample>())
+                foreach (var example in definition.Examples)
                 {
                     ret += new ConsoleString("EXAMPLE: " + example.Example + "\n" + example.Description + "\n\n", ConsoleColor.DarkGreen);
                 }
 
-                var global = GetOptionsUsage(t.GetProperties(BindingFlags.Instance | BindingFlags.Public), true, options);
+                var global = GetOptionsUsage(definition.Arguments, true, options);
 
                 if (string.IsNullOrEmpty(global.ToString()) == false)
                 {
@@ -316,32 +337,28 @@ namespace PowerArgs
 
                 ret += "Actions:";
 
-                foreach (PropertyInfo prop in t.GetActionArgProperties())
+                foreach (var action in definition.Actions)
                 {
-                    if (prop.IsActionArgProperty() == false) continue;
+                    ret += "\n\n" + action.DefaultAlias + " - "+action.Description + "\n\n";
 
-                    var actionDescription = prop.HasAttr<ArgDescription>() ? " - " + prop.Attr<ArgDescription>().Description : "";
-
-                    ret += "\n\n" + prop.GetArgumentName().Substring(0, prop.GetArgumentName().Length - Constants.ActionArgConventionSuffix.Length) + actionDescription + "\n\n";
-
-                    foreach (var example in prop.Attrs<ArgExample>())
+                    foreach (var example in action.Examples)
                     {
                         ret += new ConsoleString() + "   EXAMPLE: " + new ConsoleString(example.Example + "\n", ConsoleColor.Green) +
                             new ConsoleString("   " + example.Description + "\n\n", ConsoleColor.DarkGreen);
                     }
 
-                    ret += GetOptionsUsage(prop.PropertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
+                    ret += GetOptionsUsage(action.Arguments, false, options);
                 }
             }
             else
             {
                 ret.AppendUsingCurrentFormat(" options\n\n");
 
-                ret += GetOptionsUsage(t.GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
+                ret += GetOptionsUsage(definition.Arguments, false, options);
 
                 ret += "\n";
 
-                foreach (var example in t.Attrs<ArgExample>())
+                foreach (var example in definition.Examples)
                 {
                     ret += new ConsoleString() + "   EXAMPLE: " + new ConsoleString(example.Example + "\n" , ConsoleColor.Green) + 
                         new ConsoleString("   "+example.Description + "\n\n", ConsoleColor.DarkGreen);
@@ -351,7 +368,7 @@ namespace PowerArgs
             return ret;
         }
 
-        private static ConsoleString GetOptionsUsage(IEnumerable<PropertyInfo> opts, bool ignoreActionProperties, ArgUsageOptions options)
+        private static ConsoleString GetOptionsUsage(IEnumerable<CommandLineArgument> opts, bool ignoreActionProperties, ArgUsageOptions options)
         {
             var usageInfos = opts.Select(o => new ArgumentUsageInfo(o));
 
@@ -382,14 +399,24 @@ namespace PowerArgs
 
             foreach (ArgumentUsageInfo usageInfo in usageInfos.OrderBy(i => i.Position >= 0 ? i.Position : 1000))
             {
-                foreach (var hook in usageInfo.Property.GetUsageHooks())
+                var hooks = new List<UsageHook>();
+                if (usageInfo.Property != null && ArgUsage.ExplicitPropertyHooks.ContainsKey(usageInfo.Property))
+                {
+                    hooks.AddRange(ArgUsage.ExplicitPropertyHooks[usageInfo.Property]);
+                }
+
+                hooks.AddRange(ArgUsage.GlobalUsageHooks);
+
+                hooks.AddRange(usageInfo.Argument.UsageHooks);
+
+                foreach (var hook in hooks)
                 {
                     hook.BeforeGenerateUsage(usageInfo);
                 }
+               
 
                 if (usageInfo.Ignore) continue;
                 if (usageInfo.IsAction && ignoreActionProperties) continue;
-                if (usageInfo.IsActionArgs && ignoreActionProperties) continue;
 
                 var positionString = new ConsoleString(usageInfo.Position >= 0 ? usageInfo.Position + "" : "NA");
                 var requiredString = new ConsoleString(usageInfo.IsRequired ? "*" : "", ConsoleColor.Red);

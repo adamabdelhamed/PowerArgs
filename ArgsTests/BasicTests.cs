@@ -77,6 +77,52 @@ namespace ArgsTests
             }
         }
 
+        public class BasicHook : ArgHook
+        {
+            public static bool WasRun { get; set; }
+
+            public override void BeforeParse(ArgHook.HookContext context)
+            {
+                context.SetProperty("Year", 2013);
+                context.SetProperty("Year", 2013);
+                context.SetProperty("Name", "Adam");
+                context.SetProperty("Name", "Adam");
+            }
+
+            public override void AfterPopulateProperties(ArgHook.HookContext context)
+            {
+                Assert.IsTrue(context.HasProperty("Year"));
+                Assert.IsTrue(context.HasProperty("Name"));
+
+                var year = context.GetProperty<int>("Year");
+                var name = context.GetProperty<string>("Name");
+
+                Assert.AreEqual(2013, year);
+                Assert.AreEqual("Adam", name);
+
+                context.ClearProperty("Year");
+                context.SetProperty<string>("Name", null);
+
+                Assert.IsFalse(context.HasProperty("Year"));
+                Assert.IsFalse(context.HasProperty("Name"));
+
+                Assert.IsNull(context.GetProperty<string>("Name"));
+
+                try
+                {
+                    context.GetProperty<int>("Year");
+                    Assert.Fail("An exception should have been thrown");
+                }
+                catch (KeyNotFoundException)
+                {
+                    // Throw for value types, return null for reference types
+                }
+
+                WasRun = true;
+            }
+        }
+
+        [BasicHook]
         public class BasicArgs
         {
             public string String { get; set; }
@@ -154,6 +200,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestPowerShellStyle()
         {
+            BasicHook.WasRun = false;
             Guid g = Guid.NewGuid();
             DateTime d = DateTime.Today;
             System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
@@ -179,6 +226,39 @@ namespace ArgsTests
             Assert.AreEqual(20, parsed.ArrayOfBytes[1]);
             Assert.AreEqual(30, parsed.ArrayOfBytes[2]);
             Assert.AreEqual(new Uri("http://www.bing.com"), parsed.Uri);
+            Assert.IsTrue(BasicHook.WasRun);
+        }
+
+        [TestMethod]
+        public void TestPowerShellStyleWeak()
+        {
+            BasicHook.WasRun = false;
+            Guid g = Guid.NewGuid();
+            DateTime d = DateTime.Today;
+            System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
+
+            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue + "", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com" };
+
+            BasicArgs parsed = (BasicArgs)Args.Parse(typeof(BasicArgs), args);
+
+            Assert.AreEqual("stringValue", parsed.String);
+            Assert.AreEqual(34, parsed.Int);
+            Assert.AreEqual(33.33, parsed.Double);
+            Assert.AreEqual(true, parsed.Bool);
+            Assert.AreEqual(255, parsed.Byte);
+            Assert.AreEqual(g, parsed.Guid);
+            Assert.AreEqual(d, parsed.Time);
+            Assert.AreEqual(long.MaxValue, parsed.Long);
+            Assert.AreEqual(3, parsed.List.Count);
+            Assert.AreEqual(100, parsed.List[0]);
+            Assert.AreEqual(200, parsed.List[1]);
+            Assert.AreEqual(300, parsed.List[2]);
+            Assert.AreEqual(3, parsed.ArrayOfBytes.Length);
+            Assert.AreEqual(10, parsed.ArrayOfBytes[0]);
+            Assert.AreEqual(20, parsed.ArrayOfBytes[1]);
+            Assert.AreEqual(30, parsed.ArrayOfBytes[2]);
+            Assert.AreEqual(new Uri("http://www.bing.com"), parsed.Uri);
+            Assert.IsTrue(BasicHook.WasRun);
         }
 
         [TestMethod]
@@ -480,7 +560,7 @@ namespace ArgsTests
             catch (Exception ex)
             {
                 Assert.IsInstanceOfType(ex, typeof(DuplicateArgException));
-                Assert.AreEqual("Argument specified more than once: string", ex.Message);
+                Assert.AreEqual("Argument specified more than once: String", ex.Message);
             }
         }
 
@@ -537,6 +617,66 @@ namespace ArgsTests
         {
             var uae = new UnexpectedArgException("test");
             Assert.IsInstanceOfType(uae, typeof(ArgException));
+        }
+
+        [TestMethod]
+        public void TestConvert1()
+        {
+            AssertConversion("");
+        }
+
+        [TestMethod]
+        public void TestConvert2()
+        {
+            AssertConversion("John", "John");
+        }
+
+        [TestMethod]
+        public void TestConvert3()
+        {
+            AssertConversion("John Doe", "John", "Doe");
+        }
+
+        [TestMethod]
+        public void TestConvert4()
+        {
+            AssertConversion("John A Doe", "John", "A", "Doe");
+        }
+
+        [TestMethod]
+        public void TestConvert5()
+        {
+            AssertConversion("\"John A Doe\"", "John A Doe");
+        }
+
+        [TestMethod]
+        public void TestConvert6()
+        {
+            AssertConversion("\"John A Doe\" -foo bar", "John A Doe", "-foo", "bar");
+        }
+
+        [TestMethod]
+        public void TestConvert7()
+        {
+            AssertConversion("Foo \"John A Doe\" -foo bar","Foo", "John A Doe", "-foo", "bar");
+        }
+
+        [TestMethod]
+        public void TestConvert8()
+        {
+            AssertConversion("\"1\" \"\" Foo \"John A Doe\" -foo         bar","1", "", "Foo", "John A Doe", "-foo", "bar");
+        }
+
+        private void AssertConversion(string commandLine, params string[] expectedResult)
+        {
+            var result = Args.Convert(commandLine);
+
+            Assert.AreEqual(expectedResult.Length, result.Length);
+
+            for (int i = 0; i < expectedResult.Length; i++)
+            {
+                Assert.AreEqual(expectedResult[i], result[i]);
+            }
         }
     }
 }

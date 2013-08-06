@@ -96,7 +96,7 @@ namespace ArgsTests
             catch (Exception ex)
             {
                 Assert.IsInstanceOfType(ex, typeof(MissingArgException));
-                Assert.AreEqual("The argument 'from' is required", ex.Message);
+                Assert.AreEqual("The argument 'From' is required", ex.Message);
             }
         }
 
@@ -112,7 +112,7 @@ namespace ArgsTests
             catch (Exception ex)
             {
                 Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
-                Assert.AreEqual("Expected a number for arg: start", ex.Message);
+                Assert.AreEqual("Expected a number for arg: Start", ex.Message);
             }
         }
 
@@ -128,7 +128,7 @@ namespace ArgsTests
             catch (Exception ex)
             {
                 Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
-                Assert.AreEqual("start must be at least 0, but not greater than 100", ex.Message);
+                Assert.AreEqual("Start must be at least 0, but not greater than 100", ex.Message);
             }
         }
 
@@ -144,7 +144,7 @@ namespace ArgsTests
             catch (Exception ex)
             {
                 Assert.IsInstanceOfType(ex, typeof(ValidationArgException));
-                Assert.AreEqual("somenumber must be at least 0, and less than 100", ex.Message);
+                Assert.AreEqual("SomeNumber must be at least 0, and less than 100", ex.Message);
             }
         }
 
