@@ -174,7 +174,7 @@ namespace PowerArgs
             {
                 var seen = new List<PropertyInfo>();
 
-                foreach (var hook in Definition.Hooks.OrderBy(orderby))
+                foreach (var hook in Definition.Hooks.OrderByDescending(orderby))
                 {
                     hookAction(hook);
                 }
@@ -185,7 +185,7 @@ namespace PowerArgs
                     Property = argument.Source as PropertyInfo;
                     if (Property != null) seen.Add(Property);
 
-                    foreach (var hook in argument.Hooks.OrderBy(orderby))
+                    foreach (var hook in argument.Hooks.OrderByDescending(orderby))
                     {
                         hookAction(hook);
                     }
@@ -198,7 +198,7 @@ namespace PowerArgs
                 {
                     foreach (var property in Definition.ArgumentScaffoldType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => seen.Contains(p) == false))
                     {
-                        foreach (var hook in property.Attrs<ArgHook>().OrderBy(orderby))
+                        foreach (var hook in property.Attrs<ArgHook>().OrderByDescending(orderby))
                         {
                             Property = property;
                             hookAction(hook);
@@ -213,7 +213,7 @@ namespace PowerArgs
                         CurrentArgument = argument;
                         Property = argument.Source as PropertyInfo;
 
-                        foreach (var hook in argument.Hooks.OrderBy(orderby))
+                        foreach (var hook in argument.Hooks.OrderByDescending(orderby))
                         {
                             hookAction(hook);
                         }
