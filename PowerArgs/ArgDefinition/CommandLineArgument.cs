@@ -33,7 +33,7 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgValidator>().AsReadOnly();
+                return Metadata.Metas<ArgValidator>().OrderByDescending(v => v.Priority).ToList().AsReadOnly();
             }
         }
 
