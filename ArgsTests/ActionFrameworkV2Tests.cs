@@ -23,6 +23,8 @@ namespace ArgsTests
         [ArgIgnore]
         public bool Command4Fired { get; private set; }
 
+        public static event Action Command5Fired;
+
         [ArgIgnore]
         public string Command4FirstName { get; private set; }
         [ArgIgnore]
@@ -57,6 +59,14 @@ namespace ArgsTests
             Command4LastName = lastName;
             Command4Age = age;
             Command4Fired = true;
+        }
+
+        
+
+        [ArgActionMethod]
+        public static void Command5()
+        {
+            if (Command5Fired != null) Command5Fired();
         }
     }
 
@@ -156,6 +166,25 @@ namespace ArgsTests
             var actionInfo = Args.InvokeAction<ActionScaffold>("Command3");
             Assert.IsInstanceOfType(actionInfo.Args, typeof(ActionScaffold));
             Assert.IsTrue(actionInfo.Args.Command3Fired);
+        }
+
+        [TestMethod]
+        public void TestStaticActions()
+        {
+            bool fired = false;
+
+            Action handler = () => { fired = true; };
+            ActionScaffold.Command5Fired += handler;
+            try
+            {
+                var actionInfo = Args.InvokeAction<ActionScaffold>("Command5");
+                Assert.IsInstanceOfType(actionInfo.Args, typeof(ActionScaffold));
+                Assert.IsTrue(fired);
+            }
+            finally
+            {
+                ActionScaffold.Command5Fired -= handler;
+            }
         }
 
         [TestMethod]

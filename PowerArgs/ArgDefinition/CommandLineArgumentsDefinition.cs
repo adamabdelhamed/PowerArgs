@@ -140,7 +140,7 @@ namespace PowerArgs
             var knownAliases = new List<string>();
             foreach (var argument in Arguments) knownAliases.AddRange(argument.Aliases);
 
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Public;
+            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public;
 
             var actions = (from p in t.GetProperties(flags)
                            where  CommandLineAction.IsActionImplementation(p)
@@ -149,7 +149,6 @@ namespace PowerArgs
             if (t.HasAttr<ArgActionType>())
             {
                 t = t.Attr<ArgActionType>().ActionType;
-                flags = BindingFlags.Static | BindingFlags.Public;
             }
 
             foreach (var action in t.GetMethods(flags).Where(m => CommandLineAction.IsActionImplementation(m)).Select(m => CommandLineAction.Create(m, knownAliases.ToList())))
