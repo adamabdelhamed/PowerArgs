@@ -117,8 +117,12 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction<T> ParseAction<T>(params string[] args)
         {
-            Args instance = new Args();
-            return instance.ParseInternal<T>(args);
+            ArgAction<T> ret = Execute<ArgAction<T>>(() =>
+            {
+                Args instance = new Args();
+                return instance.ParseInternal<T>(args);
+            });
+            return ret;
         }
 
         /// <summary>
@@ -142,8 +146,13 @@ namespace PowerArgs
         /// <returns></returns>
         public static ArgAction ParseAction(CommandLineArgumentsDefinition definition, params string[] args)
         {
-            Args instance = new Args();
-            return instance.ParseInternal(definition, args);
+            ArgAction ret = Execute(() =>
+            {
+                Args instance = new Args();
+                return instance.ParseInternal(definition, args);
+            });
+
+            return ret;
         }
 
         /// <summary>
@@ -154,13 +163,21 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction InvokeMain(Type t, params string[] args)
         {
-            var ret = REPL.DriveREPL<ArgAction>(t.Attr<TabCompletion>(), (a) =>
+            ArgAction ret = Execute(() =>
             {
-                var result = ParseAction(t, a);
-                if (result.HandledException == null) result.Value.InvokeMainMethod();
-                return result;
-            }
-            , args);
+                return REPL.DriveREPL<ArgAction>(t.Attr<TabCompletion>(), (a) =>
+                {
+                    var result = ParseAction(t, a);
+                    if (result.HandledException == null)
+                    {
+                        result.Context.RunBeforeInvoke();
+                        result.Value.InvokeMainMethod();
+                        result.Context.RunAfterInvoke();
+                    }
+                    return result;
+                }
+                , args);
+            });
 
             return ret;
         }
@@ -173,15 +190,21 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction<T> InvokeMain<T>(params string[] args)
         {
-
-            var ret = REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) => 
+            ArgAction<T> ret = Execute(() =>
             {
-                var result = ParseAction<T>(a);
-                if (result.HandledException == null) result.Value.InvokeMainMethod();
-                return result;
-            }
-            , args);
-
+                return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
+                {
+                    var result = ParseAction<T>(a);
+                    if (result.HandledException == null)
+                    {
+                        result.Context.RunBeforeInvoke();
+                        result.Value.InvokeMainMethod();
+                        result.Context.RunAfterInvoke();
+                    }
+                    return result;
+                }
+                , args);
+            });
             return ret;
         }
 
@@ -195,14 +218,21 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static ArgAction<T> InvokeAction<T>(params string[] args)
         {
-            var ret = REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
+            ArgAction<T> ret = Execute<ArgAction<T>>(() =>
             {
-                var result = ParseAction<T>(a);
-                if (result.HandledException == null) result.Invoke();
-                return result;
-            }
-            , args);
-
+                return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
+                {
+                    var result = ParseAction<T>(a);
+                    if (result.HandledException == null)
+                    {
+                        result.Context.RunBeforeInvoke();
+                        result.Invoke();
+                        result.Context.RunAfterInvoke();
+                    }
+                    return result;
+                }
+                , args);
+            });
             return ret;
         }
 
@@ -215,14 +245,21 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static ArgAction InvokeAction(CommandLineArgumentsDefinition definition, params string[] args)
         {
-            var ret = REPL.DriveREPL<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
+            ArgAction ret = Execute(() =>
             {
-                var result = ParseAction(definition, a);
-                if (result.HandledException == null) result.Invoke();
-                return result;
-            }
-            , args);
-
+                return REPL.DriveREPL<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
+                {
+                    var result = ParseAction(definition, a);
+                    if (result.HandledException == null)
+                    {
+                        result.Context.RunBeforeInvoke();
+                        result.Invoke();
+                        result.Context.RunAfterInvoke();
+                    }
+                    return result;
+                }
+                , args);
+            });
             return ret;
         }
 
@@ -232,9 +269,13 @@ namespace PowerArgs
         /// <typeparam name="T">The argument scaffold type.</typeparam>
         /// <param name="args">The command line arguments to parse</param>
         /// <returns>A new instance of T with all of the properties correctly populated</returns>
-        public static T Parse<T>(params string[] args)
+        public static T Parse<T>(params string[] args) where T : class
         {
-            return ParseAction<T>(args).Args;
+            T ret = Execute(() =>
+            {
+                return ParseAction<T>(args).Args;
+            });
+            return ret;
         }
 
         /// <summary>
@@ -245,7 +286,11 @@ namespace PowerArgs
         /// <returns>A new instance of the given type with all of the properties correctly populated</returns>
         public static object Parse(Type t, params string[] args)
         {
-            return ParseAction(t, args).Value;
+            object ret = Execute(() =>
+            {
+                return ParseAction(t, args).Value;
+            });
+            return ret;
         }
 
         /// <summary>
@@ -254,9 +299,101 @@ namespace PowerArgs
         /// </summary>
         /// <param name="definition">The definition that defines a set of command line arguments and/or actions.</param>
         /// <param name="args">The command line arguments to parse</param>
-        public static void Parse(CommandLineArgumentsDefinition definition, params string[] args)
+        public static ArgAction Parse(CommandLineArgumentsDefinition definition, params string[] args)
         {
-            ParseAction(definition, args);
+            ArgAction ret = Execute(() =>
+            {
+                return ParseAction(definition, args);
+            });
+            return ret;
+        }
+
+        [ThreadStatic]
+        private static int executeRecursionCounter = 0;
+
+        private static T Execute<T>(Func<T> argsProcessingCode) where T : class
+        {
+            executeRecursionCounter++;
+            ArgHook.HookContext.Current = new ArgHook.HookContext();
+
+            try
+            {
+                return argsProcessingCode();
+            }
+            catch (ArgCancelProcessingException ex)
+            {
+                if (executeRecursionCounter > 1)
+                {
+                    throw;
+                }
+
+                return CreateEmptyResult<T>(ArgHook.HookContext.Current, cancelled: true);
+            }
+            catch (ArgException ex)
+            {
+                if (executeRecursionCounter > 1)
+                {
+                    throw;
+                }
+
+                var context = ArgHook.HookContext.Current;
+                var definition = context.Definition;
+                if (definition.ExceptionBehavior.Policy == ArgExceptionPolicy.StandardExceptionHandling)
+                {
+                    return DoStandardExceptionHandling<T>(ex, context, definition);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                executeRecursionCounter--;
+                if (executeRecursionCounter == 0)
+                {
+                    ArgHook.HookContext.Current = null;
+                }
+            }
+        }
+
+        private static T DoStandardExceptionHandling<T>(ArgException ex, ArgHook.HookContext context, CommandLineArgumentsDefinition definition) where T : class
+        {
+            Console.WriteLine(ex.Message);
+
+            ArgUsage.GetStyledUsage(definition, definition.ExceptionBehavior.ExeName, new ArgUsageOptions
+            {
+                ShowPosition = definition.ExceptionBehavior.ShowPositionColumn,
+                ShowType = definition.ExceptionBehavior.ShowTypeColumn,
+                ShowPossibleValues = definition.ExceptionBehavior.ShowPossibleValues,
+
+            }).Write();
+
+            return CreateEmptyResult<T>(context, ex);
+        }
+
+        private static T CreateEmptyResult<T>(ArgHook.HookContext context, ArgException ex = null, bool cancelled = false)
+        {
+            ArgAction ret = new ArgAction();
+
+            if (typeof(T) == typeof(ArgAction))
+            {
+                ret = new ArgAction();
+            }
+            else if (typeof(T).IsSubclassOf(typeof(ArgAction)))
+            {
+                ret = Activator.CreateInstance(typeof(T)) as ArgAction;
+            }
+            else
+            {
+                return default(T);
+            }
+
+            ret.HandledException = ex;
+            ret.Definition = context.Definition;
+            ret.Context = context;
+            ret.Cancelled = cancelled;
+            return (T)((object)ret);
         }
 
         private ArgAction<T> ParseInternal<T>(string[] input)
@@ -271,142 +408,108 @@ namespace PowerArgs
                 ActionArgsMethod = weak.ActionArgsMethod,
                 HandledException = weak.HandledException,
                 Definition = weak.Definition,
+                Context = weak.Context,
             };
         }
 
         private ArgAction ParseInternal(CommandLineArgumentsDefinition definition, string[] input)
         {
-            try
+            // TODO P0 - Validation should be consistently done against the definition, not against the raw type
+            if (definition.ArgumentScaffoldType != null) ValidateArgScaffold(definition.ArgumentScaffoldType);
+            definition.Validate();
+
+            var context = ArgHook.HookContext.Current;
+            context.Definition = definition;
+            if (definition.ArgumentScaffoldType != null) context.Args = Activator.CreateInstance(definition.ArgumentScaffoldType);
+            context.CmdLineArgs = input;
+
+            context.RunBeforeParse();
+            context.ParserData = ArgParser.Parse(context.CmdLineArgs);
+
+            context.RunBeforePopulateProperties();
+            CommandLineArgument.PopulateArguments(context.Definition.Arguments, context);
+            context.Definition.SetPropertyValues(context.Args);
+
+            object actionArgs = null;
+            object[] actionParameters = null;
+            var specifiedAction = context.Definition.Actions.Where(a => a.IsMatch(context.CmdLineArgs.FirstOrDefault())).SingleOrDefault();
+            if (specifiedAction == null && context.Definition.Actions.Count > 0)
             {
-                // TODO P0 - Validation should be consistently done against the definition, not against the raw type
-                if (definition.ArgumentScaffoldType != null) ValidateArgScaffold(definition.ArgumentScaffoldType);
-                definition.Validate();
-
-                var context = new ArgHook.HookContext();
-                context.Definition = definition;
-                if (definition.ArgumentScaffoldType != null) context.Args = Activator.CreateInstance(definition.ArgumentScaffoldType);
-                context.CmdLineArgs = input;
-                ArgHook.HookContext.Current = context;
-
-                context.RunBeforeParse();
-                context.ParserData = ArgParser.Parse(context.CmdLineArgs);
-
-                context.RunBeforePopulateProperties();
-                CommandLineArgument.PopulateArguments(context.Definition.Arguments, context);
-                context.Definition.SetPropertyValues(context.Args);
-
-                object actionArgs = null;
-                object[] actionParameters = null;
-                var specifiedAction = context.Definition.Actions.Where(a => a.IsMatch(context.CmdLineArgs.FirstOrDefault())).SingleOrDefault();
-                if (specifiedAction == null && context.Definition.Actions.Count > 0)
+                if (context.CmdLineArgs.FirstOrDefault() == null)
                 {
-                    if (context.CmdLineArgs.FirstOrDefault() == null)
-                    {
-                        throw new MissingArgException("No action was specified");
-                    }
-                    else
-                    {
-                        throw new UnknownActionArgException(string.Format("Unknown action: '{0}'", context.CmdLineArgs.FirstOrDefault()));
-                    }
-                }
-                else if (specifiedAction != null)
-                {
-                    foreach (var action in context.Definition.Actions)
-                    {
-                        action.IsSpecifiedAction = false;
-                    }
-                    specifiedAction.IsSpecifiedAction = true;
-                    
-                    PropertyInfo actionProp = null;
-                    if (context.Definition.ArgumentScaffoldType != null)
-                    {
-                        actionProp = ArgAction.GetActionProperty(context.Definition.ArgumentScaffoldType);
-                    }
-
-                    if (actionProp != null)
-                    {
-                        actionProp.SetValue(context.Args, specifiedAction.Aliases.First(), null);
-                    }
-
-                    context.ParserData.ImplicitParameters.Remove(0);
-                    CommandLineArgument.PopulateArguments(specifiedAction.Arguments, context);
-                    actionArgs = specifiedAction.PopulateArguments(context.Args, ref actionParameters);
-                }
-
-                context.RunAfterPopulateProperties();
-
-                if (context.ParserData.ImplicitParameters.Count > 0)
-                {
-                    throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
-                }
-
-                if (context.ParserData.ExplicitParameters.Count > 0)
-                {
-                    throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
-                }
-
-                if (definition.ArgumentScaffoldType != null)
-                {
-                    if (AmbientArgs.ContainsKey(definition.ArgumentScaffoldType))
-                    {
-                        AmbientArgs[definition.ArgumentScaffoldType] = context.Args;
-                    }
-                    else
-                    {
-                        AmbientArgs.Add(definition.ArgumentScaffoldType, context.Args);
-                    }
-                }
-
-                PropertyInfo actionArgsPropertyInfo = null;
-
-                if(specifiedAction != null)
-                {
-                    if(specifiedAction.Source is PropertyInfo) actionArgsPropertyInfo = specifiedAction.Source as PropertyInfo;
-                    else if(specifiedAction.Source is MethodInfo) actionArgsPropertyInfo = new ArgActionMethodVirtualProperty(specifiedAction.Source as MethodInfo);
-                }
-
-                return new ArgAction()
-                {
-                    Value = context.Args,
-                    ActionArgs = actionArgs,
-                    ActionParameters = actionParameters,
-                    ActionArgsProperty = actionArgsPropertyInfo,
-                    ActionArgsMethod = specifiedAction != null ? specifiedAction.ActionMethod : null,
-                    Definition = context.Definition,
-                };
-            }
-            catch (ArgException ex)
-            {
-                if (definition.ExceptionBehavior.Policy == ArgExceptionPolicy.StandardExceptionHandling)
-                {
-                    Console.WriteLine(ex.Message);
-
-                    ArgUsage.GetStyledUsage(definition, definition.ExceptionBehavior.ExeName, new ArgUsageOptions
-                    {
-                        ShowPosition = definition.ExceptionBehavior.ShowPositionColumn,
-                        ShowType = definition.ExceptionBehavior.ShowTypeColumn,
-                        ShowPossibleValues = definition.ExceptionBehavior.ShowPossibleValues,
-
-                    }).Write();
-
-                    return new ArgAction()
-                    {
-                        Value = null,
-                        ActionArgs = null,
-                        ActionArgsProperty = null,
-                        HandledException = ex,
-                        Definition = definition,
-                    };
+                    throw new MissingArgException("No action was specified");
                 }
                 else
                 {
-                    throw;
+                    throw new UnknownActionArgException(string.Format("Unknown action: '{0}'", context.CmdLineArgs.FirstOrDefault()));
                 }
             }
-            finally
+            else if (specifiedAction != null)
             {
-                ArgHook.HookContext.Current = null;
+                foreach (var action in context.Definition.Actions)
+                {
+                    action.IsSpecifiedAction = false;
+                }
+                specifiedAction.IsSpecifiedAction = true;
+                    
+                PropertyInfo actionProp = null;
+                if (context.Definition.ArgumentScaffoldType != null)
+                {
+                    actionProp = ArgAction.GetActionProperty(context.Definition.ArgumentScaffoldType);
+                }
+
+                if (actionProp != null)
+                {
+                    actionProp.SetValue(context.Args, specifiedAction.Aliases.First(), null);
+                }
+
+                context.ParserData.ImplicitParameters.Remove(0);
+                CommandLineArgument.PopulateArguments(specifiedAction.Arguments, context);
+                actionArgs = specifiedAction.PopulateArguments(context.Args, ref actionParameters);
             }
+
+            context.RunAfterPopulateProperties();
+
+            if (context.ParserData.ImplicitParameters.Count > 0)
+            {
+                throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+            }
+
+            if (context.ParserData.ExplicitParameters.Count > 0)
+            {
+                throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+            }
+
+            if (definition.ArgumentScaffoldType != null)
+            {
+                if (AmbientArgs.ContainsKey(definition.ArgumentScaffoldType))
+                {
+                    AmbientArgs[definition.ArgumentScaffoldType] = context.Args;
+                }
+                else
+                {
+                    AmbientArgs.Add(definition.ArgumentScaffoldType, context.Args);
+                }
+            }
+
+            PropertyInfo actionArgsPropertyInfo = null;
+
+            if(specifiedAction != null)
+            {
+                if(specifiedAction.Source is PropertyInfo) actionArgsPropertyInfo = specifiedAction.Source as PropertyInfo;
+                else if(specifiedAction.Source is MethodInfo) actionArgsPropertyInfo = new ArgActionMethodVirtualProperty(specifiedAction.Source as MethodInfo);
+            }
+
+            return new ArgAction()
+            {
+                Value = context.Args,
+                ActionArgs = actionArgs,
+                ActionParameters = actionParameters,
+                ActionArgsProperty = actionArgsPropertyInfo,
+                ActionArgsMethod = specifiedAction != null ? specifiedAction.ActionMethod : null,
+                Definition = context.Definition,
+                Context = context,
+            };
         }
 
         private void ValidateArgScaffold(Type t, List<string> shortcuts = null, Type parentType = null)

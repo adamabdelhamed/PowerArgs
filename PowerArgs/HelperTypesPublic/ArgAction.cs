@@ -62,8 +62,15 @@ namespace PowerArgs
         /// </summary>
         public ArgException HandledException { get; internal set; }
 
+        /// <summary>
+        /// If processing was cancelled then this property will be set to true.
+        /// </summary>
+        public bool Cancelled { get; internal set; }
+
 
         internal MethodInfo ActionArgsMethod { get; set; }
+
+        internal PowerArgs.ArgHook.HookContext Context { get; set; }
 
         /// <summary>
         /// This will find the implementation method for your action and invoke it, passing the action specific

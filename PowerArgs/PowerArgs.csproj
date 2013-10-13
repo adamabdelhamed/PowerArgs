@@ -35,11 +35,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>PowerArgsKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -124,6 +123,7 @@
     <None Include="PowerArgs.nuspec" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="PowerArgsKey.pfx" />
     <None Include="Resources\QueryTemplate.txt" />
   </ItemGroup>
   <ItemGroup>

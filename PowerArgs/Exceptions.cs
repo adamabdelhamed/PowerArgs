@@ -164,4 +164,6 @@ namespace PowerArgs
 
     }
 
+    internal class ArgCancelProcessingException : Exception { }
+
 }

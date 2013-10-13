@@ -135,6 +135,16 @@ namespace PowerArgs
                 this[key] = null;
             }
 
+            /// <summary>
+            /// Stops all argument processing, hooks, and action invocation as soon as is feasable.  You
+            /// can implement an ArgHook that receives an event when this is called.
+            /// </summary>
+            public void CancelAllProcessing()
+            {
+                this.RunAfterCancel();
+                throw new ArgCancelProcessingException();
+            }
+
             private Dictionary<string, object> _properties = new Dictionary<string, object>();
             private object this[string key]
             {
@@ -170,7 +180,7 @@ namespace PowerArgs
                 }
             }
 
-            internal void RunGlobalHook(Func<ArgHook, int> orderby, Action<ArgHook> hookAction)
+            internal void RunHook(Func<ArgHook, int> orderby, Action<ArgHook> hookAction)
             {
                 var seen = new List<PropertyInfo>();
 
@@ -226,17 +236,32 @@ namespace PowerArgs
 
             internal void RunBeforeParse()
             {
-                RunGlobalHook(h => h.BeforeParsePriority, (h) => { h.BeforeParse(this); });
+                RunHook(h => h.BeforeParsePriority, (h) => { h.BeforeParse(this); });
             }
 
             internal void RunBeforePopulateProperties()
             {
-                RunGlobalHook(h => h.BeforePopulatePropertiesPriority, (h) => { h.BeforePopulateProperties(this); });
+                RunHook(h => h.BeforePopulatePropertiesPriority, (h) => { h.BeforePopulateProperties(this); });
             }
 
             internal void RunAfterPopulateProperties()
             {
-                RunGlobalHook(h => h.AfterPopulatePropertiesPriority, (h) => { h.AfterPopulateProperties(this); });
+                RunHook(h => h.AfterPopulatePropertiesPriority, (h) => { h.AfterPopulateProperties(this); });
+            }
+
+            internal void RunBeforeInvoke()
+            {
+                RunHook(h => h.BeforeInvokePriority, (h) => { h.BeforeInvoke(this); });
+            }
+
+            internal void RunAfterInvoke()
+            {
+                RunHook(h => h.AfterInvokePriority, (h) => { h.AfterInvoke(this); });
+            }
+
+            internal void RunAfterCancel()
+            {
+                RunHook(h => h.AfterCancelPriority, (h) => { h.AfterCancel(this); });
             }
         }
 
@@ -265,6 +290,20 @@ namespace PowerArgs
         /// </summary>
         public int AfterPopulatePropertiesPriority { get; set; }
 
+        /// <summary>
+        /// The priority of the BeforeInvoke hook.  Higher numbers execute first.
+        /// </summary>
+        public int BeforeInvokePriority { get; set; }
+
+        /// <summary>
+        /// The priority of the AfterInvoke hook.  Higher numbers execute first.
+        /// </summary>
+        public int AfterInvokePriority { get; set; }
+
+        /// <summary>
+        /// The priority of the AfterCancel hook.  Higher numbers execute first.
+        /// </summary>
+        public int AfterCancelPriority { get; set; }
 
         /// <summary>
         /// This hook is called before the parser ever looks at the command line.  You can do some preprocessing of the 
@@ -299,5 +338,23 @@ namespace PowerArgs
         /// </summary>
         /// <param name="context">An object that has useful context.  See the documentation of each property for information about when those properties are populated.</param>
         public virtual void AfterPopulateProperties(HookContext context) { }
+
+        /// <summary>
+        /// This hook is called after parsing is complete, but before any Action or Main method is invoked.
+        /// </summary>
+        /// <param name="context">An object that has useful context.  See the documentation of each property for information about when those properties are populated.</param>
+        public virtual void BeforeInvoke(HookContext context) { }
+
+        /// <summary>
+        /// This hook is called after any Action or Main method is invoked.
+        /// </summary>
+        /// <param name="context">An object that has useful context.  See the documentation of each property for information about when those properties are populated.</param>
+        public virtual void AfterInvoke(HookContext context) { }
+
+        /// <summary>
+        /// This hook is called if CancelAllProcessing() is called on a HookContext object.
+        /// </summary>
+        /// <param name="context">An object that has useful context.  See the documentation of each property for information about when those properties are populated.</param>
+        public virtual void AfterCancel(HookContext context) { }
     }
 }
