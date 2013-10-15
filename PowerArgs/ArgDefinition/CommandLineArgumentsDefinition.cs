@@ -95,6 +95,40 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Finds the first CommandLineArgument that matches the given key.
+        /// </summary>
+        /// <param name="key">The key as if it was typed in on the command line.  This can also be an alias. </param>
+        /// <param name="throwIfMoreThanOneMatch">If set to true then this method will throw and InvalidArgDeginitionException if more than 1 match is found</param>
+        /// <returns>The first argument that matches the key.</returns>
+        public CommandLineArgument FindMatchingArgument(string key, bool throwIfMoreThanOneMatch = false)
+        {
+            var match = from a in Arguments where a.IsMatch(key) select a;
+            if (match.Count() > 1 && throwIfMoreThanOneMatch)
+            {
+                throw new InvalidArgDefinitionException("The key '" + key + "' matches more than one argument");
+            }
+
+            return match.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Finds the first CommandLineAction that matches the given key
+        /// </summary>
+        /// <param name="key">The key as if it was typed in on the command line.  This can also be an alias. </param>
+        /// <param name="throwIfMoreThanOneMatch">If set to true then this method will throw and InvalidArgDeginitionException if more than 1 match is found</param>
+        /// <returns>The first action that matches the key.</returns>
+        public CommandLineAction FindMatchingAction(string key, bool throwIfMoreThanOneMatch = false)
+        {
+            var match = from a in Actions where a.IsMatch(key) select a;
+            if (match.Count() > 1 && throwIfMoreThanOneMatch)
+            {
+                throw new InvalidArgDefinitionException("The key '" + key + "' matches more than one action");
+            }
+
+            return match.FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets a basic string representation of the definition.
         /// </summary>
         /// <returns>a basic string representation of the definition</returns>
@@ -109,9 +143,6 @@ namespace PowerArgs
 
             return ret;
         }
-
-
-
 
         internal void SetPropertyValues(object o)
         {

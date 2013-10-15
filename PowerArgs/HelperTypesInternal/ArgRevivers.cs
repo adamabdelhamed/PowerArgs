@@ -136,7 +136,9 @@ namespace PowerArgs
             }
             else
             {
-                throw new ArgumentException("Cannot revive type "+t.FullName);
+                // Intentionally not an InvalidArgDefinitionException.  Other internal code should call 
+                // CanRevive and this block should never be executed.
+                throw new ArgumentException("Cannot revive type "+t.FullName+". Callers should be calling CanRevive before calling Revive()");
             }
         }
 

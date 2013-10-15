@@ -146,11 +146,38 @@ namespace ArgsTests
         }
     }
 
+    public class ActionWithSharedPropertyNameArgs
+    {
+        [ArgIgnore]
+        public bool DupeTriggered { get; set; }
+
+        [ArgActionMethod]
+        public void Duplicate(DuplicateArgsClass args)
+        {
+            if (args.Duplicate != "Dupe") Assert.Fail("'Dupe' value was not passed: "+args.Duplicate);
+            DupeTriggered = true;
+        }
+    }
+
+    public class DuplicateArgsClass
+    {
+        public string Duplicate { get; set; }
+    }
+
     [TestClass]
     public class ActionFrameworkV2Tests
     {
         public static string Message { get; set; }
 
+
+        [TestMethod]
+        public void TestActionNameMatchesPropertyName()
+        {
+            var actionInfo = Args.InvokeAction<ActionWithSharedPropertyNameArgs>("Duplicate", "-Duplicate", "Dupe");
+            Assert.IsInstanceOfType(actionInfo.ActionArgs, typeof(DuplicateArgsClass));
+            Assert.AreEqual("Dupe", ((DuplicateArgsClass)actionInfo.ActionArgs).Duplicate);
+            Assert.IsTrue(actionInfo.Args.DupeTriggered);
+        }
 
         [TestMethod]
         public void TestParseOnlyActionsV2()

@@ -4,8 +4,10 @@ namespace PowerArgs
 {
     internal class ArgParser
     {
-        internal static ParseResult Parse(string[] args)
+        internal static ParseResult Parse(PowerArgs.ArgHook.HookContext context)
         {
+            var args = context.CmdLineArgs;
+
             ParseResult result = new ParseResult();
 
             int argumentPosition = 0;
@@ -13,7 +15,12 @@ namespace PowerArgs
             {
                 var token = args[i];
 
-                if (token.StartsWith("/"))
+                if (i == 0 && context.Definition.Actions.Count > 0 && context.Definition.FindMatchingAction(token) != null)
+                {
+                    result.ImplicitParameters.Add(0, token);
+                    argumentPosition++;
+                }
+                else if (token.StartsWith("/"))
                 {
                     var param = ParseSlashExplicitOption(token);
                     if (result.ExplicitParameters.ContainsKey(param.Key)) throw new DuplicateArgException("Argument specified more than once: " + param.Key);
@@ -37,11 +44,23 @@ namespace PowerArgs
                     }
                     else
                     {
-                        if (i == args.Length - 1 ||
-                            (args[i + 1].StartsWith("-") && args[i + 1].Length > 1 && !char.IsDigit(args[i + 1][1])) ||
-                            args[i + 1].StartsWith("/"))
+                        if (i == args.Length - 1)
                         {
                             value = "";
+                        }
+                        else if (IsBool(key, context))
+                        {
+                            var next = args[i + 1].ToLower();
+
+                            if (next == "true" || next == "false" || next == "0" || next == "1")
+                            {
+                                i++;
+                                value = next;
+                            }
+                            else
+                            {
+                                value = "true";
+                            }
                         }
                         else
                         {
@@ -67,6 +86,14 @@ namespace PowerArgs
             }
 
             return result;
+        }
+
+        private static bool IsBool(string key, PowerArgs.ArgHook.HookContext context)
+        {
+            var match = context.Definition.FindMatchingArgument(key, true);
+            if (match == null) return false;
+
+            return match.ArgumentType == typeof(bool);
         }
 
         private static KeyValuePair<string, string> ParseSlashExplicitOption(string a)

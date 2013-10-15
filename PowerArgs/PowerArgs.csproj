@@ -38,7 +38,8 @@
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>PowerArgsKey.pfx</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -119,11 +120,9 @@
     <Compile Include="Validators\ArgValidator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
     <None Include="PowerArgs.nuspec" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PowerArgsKey.pfx" />
     <None Include="Resources\QueryTemplate.txt" />
   </ItemGroup>
   <ItemGroup>

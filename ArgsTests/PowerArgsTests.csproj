@@ -71,6 +71,7 @@
     <Compile Include="AmbientArgsAndExceptionHandlingTests.cs" />
     <Compile Include="InvokeMainMethodTests.cs" />
     <Compile Include="ModelTests.cs" />
+    <Compile Include="ReadMeTests.cs" />
     <Compile Include="CancellationTests.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />

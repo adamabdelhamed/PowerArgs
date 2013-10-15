@@ -620,6 +620,13 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestArgWithValueThatStartsWithIndicator()
+        {
+            var parsed = Args.Parse<BasicArgs>("-String", "/Root");
+            Assert.AreEqual("/Root", parsed.String);
+        }
+
+        [TestMethod]
         public void TestConvert1()
         {
             AssertConversion("");
