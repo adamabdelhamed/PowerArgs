@@ -220,6 +220,7 @@ namespace PowerArgs
 
             ret.Aliases.AddRange(FindDefaultShortcuts(property, knownAliases, ret.IgnoreCase));
 
+            // TODO - I think the first generic call can just be more specific
             ret.Metadata.AddRange(property.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineArgumentMetadata>());
 
             return ret;

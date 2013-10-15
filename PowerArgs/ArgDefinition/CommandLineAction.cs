@@ -125,7 +125,7 @@ namespace PowerArgs
         internal CommandLineAction()
         {
             overrides = new AttrOverride();
-            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; });
+            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);
             PropertyInitializer.InitializeFields(this, 1);
             IgnoreCase = true;
         }
@@ -150,6 +150,9 @@ namespace PowerArgs
 
             ret.Metadata.AddRange(actionProperty.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineActionMetadata>());
 
+            // This line only calls into CommandLineArgument because the code to strip 'Args' off the end of the
+            // action property name lives here.  This is a pre 2.0 hack that's only left in place to support apps that
+            // use the 'Args' suffix pattern.
             ret.Aliases.AddRange(CommandLineArgument.FindDefaultShortcuts(actionProperty, knownAliases, ret.IgnoreCase));
 
             return ret;
@@ -161,7 +164,7 @@ namespace PowerArgs
             ret.ActionMethod = actionMethod;
 
             ret.Source = actionMethod;
-            ret.Aliases.AddRange(FindAliases(actionMethod));
+            ret.Aliases.Add(actionMethod.Name);
 
             ret.Metadata.AddRange(actionMethod.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineActionMetadata>());
 
@@ -255,14 +258,6 @@ namespace PowerArgs
             return property.Name.EndsWith(Constants.ActionArgConventionSuffix) && 
                    property.HasAttr<ArgIgnoreAttribute>() == false &&
                 ArgAction.GetActionProperty(property.DeclaringType) != null;
-        }
-
-        private static List<string> FindAliases(MethodInfo methodAction)
-        {
-            List<string> ret = new List<string>();
-            ret.Add(methodAction.Name);
-            // TODO = Add real support for aliases for action methods
-            return ret;
         }
     }
 }

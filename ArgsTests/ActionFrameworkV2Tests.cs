@@ -24,6 +24,7 @@ namespace ArgsTests
         public bool Command4Fired { get; private set; }
 
         public static event Action Command5Fired;
+        public static event Action HelpFired;
 
         [ArgIgnore]
         public string Command4FirstName { get; private set; }
@@ -67,6 +68,12 @@ namespace ArgsTests
         public static void Command5()
         {
             if (Command5Fired != null) Command5Fired();
+        }
+
+        [ArgActionMethod, ArgShortcut("-?")]
+        public static void Help()
+        {
+            if (HelpFired != null) HelpFired();
         }
     }
 
@@ -280,6 +287,24 @@ namespace ArgsTests
             ActionFrameworkV2Tests.Message = null;
             var actionInfo = Args.InvokeAction<ActionScaffoldDeferred>("Command1", "-s", "SomeStringValue", "-g");
             Assert.IsTrue(ActionFrameworkV2Tests.Message.Contains("SomeStringValue"));
+        }
+
+        [TestMethod]
+        public void TestHelpWithAlias()
+        {
+            bool helpFired = false;
+            Action helpHandler = () => { helpFired = true; };
+            ActionScaffold.HelpFired += helpHandler;
+
+            try
+            {
+                Args.InvokeAction<ActionScaffold>("-?");
+                Assert.IsTrue(helpFired);
+            }
+            finally
+            {
+                ActionScaffold.HelpFired -= helpHandler;
+            }
         }
     }
 }

@@ -77,10 +77,10 @@ namespace PowerArgs
             this.ignoreCaseEval = ignoreCaseEval;
         }
 
-        internal AliasCollection(Func<List<ArgShortcut>> aliases, Func<bool> ignoreCaseEval) : this(EvaluateAttributes(aliases), ignoreCaseEval) { }
+        internal AliasCollection(Func<List<ArgShortcut>> aliases, Func<bool> ignoreCaseEval, bool stripLeadingArgInticatorsOnAttributeValues = true) : this(EvaluateAttributes(aliases, stripLeadingArgInticatorsOnAttributeValues), ignoreCaseEval) { }
 
 
-        private static Func<List<string>> EvaluateAttributes(Func<List<ArgShortcut>> eval)
+        private static Func<List<string>> EvaluateAttributes(Func<List<ArgShortcut>> eval, bool stripLeadingArgInticatorsOnAttributeValues)
         {
             return () =>
             {
@@ -105,8 +105,11 @@ namespace PowerArgs
 
                     if (value != null)
                     {
-                        if (value.StartsWith("-")) value = value.Substring(1);
-                        else if (value.StartsWith("/")) value = value.Substring(1);
+                        if (stripLeadingArgInticatorsOnAttributeValues == true)
+                        {
+                            if (value.StartsWith("-")) value = value.Substring(1);
+                            else if (value.StartsWith("/")) value = value.Substring(1);
+                        }
                     }
 
                     if (value != null)

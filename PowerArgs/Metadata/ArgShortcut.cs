@@ -29,7 +29,7 @@ namespace PowerArgs
     /// <summary>
     /// Use this attribute to override the shortcut that PowerArgs automatically assigns to each property.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Method, AllowMultiple = true)]
     public class ArgShortcut : Attribute, IArgumentOrActionMetadata
     {
         /// <summary>
