@@ -429,7 +429,7 @@ namespace ArgsTests
         {
             var basicUsage = ArgUsage.GetUsage<BasicArgs>("basic");
             ArgUsage.GetUsage<PointArgs>("basic");
-            ArgUsage.GetStyledUsage<PointArgs>("basic").Write();
+            ArgUsage.GetStyledUsage<PointArgs>(exeName: "basic").Write();
             Console.WriteLine(basicUsage);
         }
 
@@ -437,7 +437,7 @@ namespace ArgsTests
         public void TestBasicUsageWithPositioning()
         {
             var basicUsage = ArgUsage.GetUsage<PositionedArgs>( "basic");
-            ArgUsage.GetStyledUsage<PositionedArgs>("basic").Write();
+            ArgUsage.GetStyledUsage<PositionedArgs>(exeName: "basic").Write();
             Console.WriteLine(basicUsage);
         }
 

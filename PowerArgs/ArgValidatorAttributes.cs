@@ -54,6 +54,18 @@ namespace PowerArgs
     }
 
     /// <summary>
+    /// A validator that validates an entire args object.
+    /// </summary>
+    public interface IArgClassValidator
+    {
+        /// <summary>
+        /// A validation method that should throw an exception if any instance member is not valid.
+        /// This validation check occurs after the standard validation mechanism
+        /// </summary>
+        void Validate();
+    }
+
+    /// <summary>
     /// Validates that if the user specifies a value for a property that the value represents a file that exists
     /// as determined by System.IO.File.Exists(file).
     /// </summary>

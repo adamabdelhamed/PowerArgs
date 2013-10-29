@@ -6,6 +6,8 @@ using System.Linq;
 
 namespace PowerArgs
 {
+    using System.Text.RegularExpressions;
+
     /// <summary>
     /// The main entry point for PowerArgs that includes the public parsing functions such as Parse, ParseAction, and InvokeAction.
     /// </summary>
@@ -86,7 +88,8 @@ namespace PowerArgs
             {
                 Args = (T)weak.Value,
                 ActionArgs = weak.ActionArgs,
-                ActionArgsProperty = weak.ActionArgsProperty
+                ActionArgsProperty = weak.ActionArgsProperty,
+                EmptyArgActionValue = weak.EmptyArgActionValue
             };
         }
 
@@ -101,38 +104,102 @@ namespace PowerArgs
 
             t.RunBeforeParse(context);
             var specifiedActionProperty = FindSpecifiedAction(t, ref context.CmdLineArgs);
+
             context.ParserData = ArgParser.Parse(context.CmdLineArgs);
             PopulateProperties(context);
 
+            var argActionValueIntentionallyNull = false;
             if (specifiedActionProperty != null)
             {
+                ArgException.LastAction = Regex.Replace(
+                    specifiedActionProperty.Name,
+                    Constants.ActionArgConventionSuffix + "$",
+                    "",
+                    RegexOptions.IgnoreCase);
+
                 var actionPropertyValue = Activator.CreateInstance(specifiedActionProperty.PropertyType);
                 var toRestore = context.Args;
                 context.Args = actionPropertyValue;
-                PopulateProperties(context);
+
+                if (this.AllowNullArgumentsCheck(context, specifiedActionProperty, t))
+                {
+                    actionPropertyValue = null;
+                    argActionValueIntentionallyNull = true;
+                }
+                else
+                {
+                    PopulateProperties(context);
+                }
+
                 context.Args = toRestore;
                 specifiedActionProperty.SetValue(context.Args, actionPropertyValue, null);
             }
 
             if (context.ParserData.ImplicitParameters.Count > 0)
             {
-                throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+                throw new UnexpectedArgException(
+                    "Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
             }
 
             if (context.ParserData.ExplicitParameters.Count > 0)
             {
-                throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+                throw new UnexpectedArgException(
+                    "Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
             }
 
             return new ArgAction()
-            {
-                Value = context.Args,
-                ActionArgs = specifiedActionProperty != null ? specifiedActionProperty.GetValue(context.Args, null) : null,
-                ActionArgsProperty = specifiedActionProperty
-            };
+                   {
+                       Value = context.Args,
+                       ActionArgs =
+                           specifiedActionProperty != null
+                               ? specifiedActionProperty.GetValue(context.Args, null)
+                               : null,
+                       ActionArgsProperty = specifiedActionProperty,
+                       EmptyArgActionValue = argActionValueIntentionallyNull
+                   };
+
         }
 
-        private PropertyInfo FindSpecifiedAction(Type t, ref string[] args)
+        private bool AllowNullArgumentsCheck(ArgHook.HookContext context, PropertyInfo actionPropertyInfo, Type arguments)
+        {
+            var noRemainingArguments = context.ParserData.ExplicitParameters.Count == 0
+                                       && context.ParserData.ImplicitParameters.Count == 0;
+            if (noRemainingArguments)
+            {
+                bool? globalAllowNull = null;
+                if (arguments.HasAttr<ArgAllowNullActions>())
+                {
+                    globalAllowNull = (arguments.Attr<ArgAllowNullActions>()).AllowNullActions;
+                }
+
+                bool? actionAllowNull = null;
+                if (actionPropertyInfo.HasAttr<ArgAllowNullAction>())
+                {
+                    actionAllowNull = (actionPropertyInfo.Attr<ArgAllowNullAction>()).AllowNullAction;
+                }
+
+                if (globalAllowNull.HasValue && actionAllowNull.HasValue)
+                {
+                    return globalAllowNull.Value && actionAllowNull.Value;
+                }
+
+                if (!globalAllowNull.HasValue && actionAllowNull.HasValue)
+                {
+                    return actionAllowNull.Value;
+                }
+
+                if (globalAllowNull.HasValue && !actionAllowNull.HasValue)
+                {
+                    return globalAllowNull.Value;
+                }
+
+                return false;
+            }
+
+            return false;
+        }
+
+        public static PropertyInfo FindSpecifiedAction(Type t, ref string[] args)
         {
             var actionProperty = ArgAction.GetActionProperty(t);
             if (actionProperty == null) return null;
@@ -204,6 +271,13 @@ namespace PowerArgs
 
                 prop.RunAfterPopulateProperty(context);
             }
+
+            var args = context.Args as IArgClassValidator;
+            if (args != null)
+            {
+                args.Validate();
+            }
+
             context.Args.GetType().RunAfterPopulateProperties(context);
         }
 
@@ -212,7 +286,7 @@ namespace PowerArgs
             ValidateArgScaffold(typeof(T));
         }
 
-        private void ValidateArgScaffold(Type t, List<string> shortcuts = null, Type parentType = null)
+        private void ValidateArgScaffold(Type t, List<string> parentShortcuts = null, List<string> shortcuts = null, Type parentType = null)
         {
             if (parentType != null)
             {
@@ -230,7 +304,9 @@ namespace PowerArgs
 
 
             var actionProp = ArgAction.GetActionProperty(t);
+            parentShortcuts = parentShortcuts ?? new List<string>();
             shortcuts = shortcuts ?? new List<string>();
+
             bool ignoreCase = true;
             if (t.HasAttr<ArgIgnoreCase>() && t.Attr<ArgIgnoreCase>().IgnoreCase == false) ignoreCase = false;
 
@@ -248,9 +324,9 @@ namespace PowerArgs
 
                 if (ignoreCase && shortcut != null) shortcut = shortcut.ToLower();
                 
-                if (shortcut != null && shortcuts.Contains(shortcut))
+                if (shortcut != null && (shortcuts.Contains(shortcut) || parentShortcuts.Contains(shortcut)) )
                 {
-                    throw new InvalidArgDefinitionException("Duplicate arg options with shortcut '" + ArgShortcut.GetShortcut(prop) + "'.  Keep in mind that shortcuts are not case sensitive unless you use the [ArgIgnoreCase(false)] attribute.  For example, Without this attribute the shortcuts '-a' and '-A' would cause this exception.");
+                    throw new InvalidArgDefinitionException("Duplicate arg options with shortcut '" + shortcut + "'.  Keep in mind that shortcuts are not case sensitive unless you use the [ArgIgnoreCase(false)] attribute.  For example, Without this attribute the shortcuts '-a' and '-A' would cause this exception.");
                 }
                 else if(shortcut != null)
                 {
@@ -265,7 +341,7 @@ namespace PowerArgs
                     if (prop.IsActionArgProperty())
                     {
                         ArgAction.ResolveMethod(t,prop);
-                        ValidateArgScaffold(prop.PropertyType, shortcuts.ToArray().ToList(), t);
+                        ValidateArgScaffold(prop.PropertyType, shortcuts.ToArray().ToList(), null, t);
                     }
                 }
             }

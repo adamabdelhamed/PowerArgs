@@ -34,7 +34,8 @@ namespace PowerArgs
                 (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0]) ) ||
                 (t.IsArray && CanRevive(t.GetElementType()) ))
                 return true;
-            SearchAssemblyForRevivers(t.Assembly);
+            //SearchAssemblyForRevivers(t.Assembly);
+            SearchAssemblyForRevivers(Assembly.GetEntryAssembly());
             return Revivers.ContainsKey(t);
         }
 

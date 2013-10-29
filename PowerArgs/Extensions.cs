@@ -263,6 +263,41 @@ namespace PowerArgs
             }
         }
 
+        internal static T InheritedAttr<T>(this MemberInfo info) where T : class 
+        {
+            var attributes = info.GetCustomAttributes(true);
+            return InheritedAttributes<T>(attributes);
+        }
+
+        internal static T InheritedAttr<T>(this Type info) where T : class 
+        {
+            var attributes = info.GetCustomAttributes(true);
+            return InheritedAttributes<T>(attributes);
+        }
+
+        private static T InheritedAttributes<T>(IEnumerable<object> attributes) where T : class 
+        {
+            T result = default(T);
+
+            bool defined = false;
+            foreach (var attribute in attributes)
+            {
+                if ((attribute as T) != null)
+                {
+                    if (defined)
+                    {
+                        throw new Exception("Too many attributes of same type.");
+                    }
+                    else
+                    {
+                        result = (T)attribute;
+                        defined = true;
+                    }
+                }
+            }
+
+            return result;
+        }
 
         internal static List<T> Attrs<T>(this MemberInfo info)
         {

@@ -10,18 +10,35 @@ namespace PowerArgs
     /// </summary>
     public class ArgException : Exception
     {
+
+        internal static string LastAction { get; set; }
+
+        /// <summary>
+        /// If the processing of the arguments has proceed past the stage of determining what action 
+        /// (if any) was issued, this field will hold the action that was parsed.
+        /// </summary>
+        public string Action { get; protected set; }
+
         /// <summary>
         /// Creates a new ArgException given a user friendly message
         /// </summary>
         /// <param name="msg">A user friendly message.</param>
-        public ArgException(string msg) : base(msg) { }
+        public ArgException(string msg)
+            : base(msg)
+        {
+            this.Action = LastAction == null ? null : string.Copy(LastAction);
+        }
 
         /// <summary>
         /// Creates a new ArgException given a user friendly message
         /// </summary>
         /// <param name="msg">A user friendly message.</param>
         /// <param name="inner">The inner exception that caused the problem</param>
-        public ArgException(string msg, Exception inner) : base(msg, inner) { }
+        public ArgException(string msg, Exception inner)
+            : base(msg, inner)
+        {
+            this.Action = LastAction == null ? null : string.Copy(LastAction);
+        }
     }
 
     /// <summary>

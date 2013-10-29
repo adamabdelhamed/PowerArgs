@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 namespace PowerArgs
 {
+    using System.Diagnostics;
+
     /// <summary>
     /// The attribute used when you want to create an arg reviver. You should put this on public static methods 
     /// that take 2 string parameters (the first represents the name of the property, the second represents the string value
@@ -40,6 +42,52 @@ namespace PowerArgs
         public ArgActionType(Type t)
         {
             this.ActionType = t;
+        }
+    }
+
+    /// <summary>
+    /// Use this attribute if you want to allow calling an action with no parameters (even if there are ArgRequired
+    /// or other validation attributes attached the action property's members).
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
+    public class ArgAllowNullAction : Attribute
+    {
+        /// <summary>
+        /// Whether or not to allow a null to passed to an action method.
+        /// </summary>
+        public bool AllowNullAction { get; set; }
+
+        /// <summary>
+        /// Creates a new ArgAllowNullAction attribute to allow null to be passed to an action method. This attribute 
+        /// should be attached to an action property.
+        /// </summary>
+        /// <param name="allowNullAction">Whether or not to allow nulls. If true, nulls can be passed. Default is true.</param>
+        public ArgAllowNullAction(bool allowNullAction = true)
+        {
+            this.AllowNullAction = allowNullAction;
+        }
+    }
+
+    /// <summary>
+    /// Use this attribute if you want to allow calling any action with no parameters (even if there are ArgRequired
+    /// or other validation attributes attached the action property's members).
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
+    public class ArgAllowNullActions : Attribute
+    {
+        /// <summary>
+        /// Whether or not to allow a null to passed to any action method.
+        /// </summary>
+        public bool AllowNullActions { get; set; }
+
+        /// <summary>
+        /// Creates a new ArgAllowNullAction attribute to allow null to be passed to an action method. This attribute
+        /// should be attached to a class.
+        /// </summary>
+        /// <param name="allowNullActions">Whether or not to allow nulls on every action. If true, nulls can be passed. Default is true.</param>
+        public ArgAllowNullActions(bool allowNullActions = true)
+        {
+            this.AllowNullActions = allowNullActions;
         }
     }
 
@@ -123,6 +171,8 @@ namespace PowerArgs
 
         private ArgShortcutPolicy? policy;
 
+        private static string argumentName;
+
         /// <summary>
         /// The shortcut for the given property
         /// </summary>
@@ -171,12 +221,14 @@ namespace PowerArgs
             else return null;
         }
 
-        internal static void RegisterShortcuts(Type t, List<string> shortcuts = null)
+        // HACK: un-tested side affects. modded shortcuts so that only global shortcuts are unique.
+        // this means arguments inside seperate actions will be able to use the same shortcuts
+        internal static void RegisterShortcuts(Type t, Dictionary<string, string> globalshortcuts = null, Dictionary<string, string> actionShortcuts = null)
         {
             RegisteredTypes.Add(t);
-            bool isNested = shortcuts != null;
+            bool isNested = globalshortcuts != null && actionShortcuts != null;
 
-            shortcuts = isNested ? shortcuts : new List<string>();
+            globalshortcuts = isNested ? globalshortcuts : new Dictionary<string, string>();
             var actionProp = ArgAction.GetActionProperty(t);
 
             foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
@@ -184,10 +236,26 @@ namespace PowerArgs
                 if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
                 if (prop.IsActionArgProperty() && actionProp != null) continue;
 
-                var shortcut = ArgShortcut.GetShortcutInternal(prop, shortcuts);
+                var shortcut = ArgShortcut.GetShortcutInternal(prop, globalshortcuts, actionShortcuts);
                 if (shortcut != null)
                 {
-                    shortcuts.Add(shortcut);
+                    if (isNested)
+                    {
+                        if (actionShortcuts.ContainsKey(argumentName))
+                        {
+                            Debug.Assert(actionShortcuts[argumentName] == shortcut);
+                        }
+                        else
+                        {
+                            actionShortcuts.Add(argumentName, shortcut);
+                        }
+                    }
+                    else
+                    {
+                        globalshortcuts.Add(argumentName, shortcut);
+                    }
+                    
+
                     if (KnownShortcuts.ContainsKey(prop) == false)
                     {
                         KnownShortcuts.Add(prop, shortcut);
@@ -202,17 +270,18 @@ namespace PowerArgs
 
             if (actionProp != null)
             {
+                var nestedShortcuts = new Dictionary<string, string>();
                 foreach (PropertyInfo prop in t.GetProperties(BindingFlags.Instance | BindingFlags.Public))
                 {
                     if (prop.IsActionArgProperty())
                     {
-                        RegisterShortcuts(prop.PropertyType, shortcuts);
+                        RegisterShortcuts(prop.PropertyType, globalshortcuts, nestedShortcuts);
                     }
                 }
             }
         }
 
-        private static string GetShortcutInternal(PropertyInfo info, List<string> knownShortcuts)
+        private static string GetShortcutInternal(PropertyInfo info, Dictionary<string, string> knownShortcuts, Dictionary<string, string> actionShortcuts)
         {
             var actionProperty = ArgAction.GetActionProperty(info.DeclaringType);
             if (actionProperty != null && actionProperty.Name == info.Name) return null;
@@ -222,10 +291,22 @@ namespace PowerArgs
             if (attr == null)
             {
                 string shortcutVal = "";
-                foreach (char c in info.GetArgumentName())
+                argumentName = info.GetArgumentName();
+
+                if (actionShortcuts != null && actionShortcuts.ContainsKey(argumentName))
+                {
+                    return actionShortcuts[argumentName];
+                }
+
+                foreach (char c in argumentName)
                 {
                     shortcutVal += c;
-                    if (knownShortcuts.Contains(shortcutVal) == false) return shortcutVal;
+                    if (knownShortcuts.ContainsValue(shortcutVal) || (actionShortcuts != null && actionShortcuts.ContainsValue(shortcutVal)))
+                    {
+                        continue;
+                    }
+
+                    return shortcutVal;
                 }
                 return shortcutVal;
             }
@@ -280,8 +361,10 @@ namespace PowerArgs
     /// <summary>
     /// Use this attribute to describe your argument property.  This will show up in the auto generated
     /// usage documentation.
+    /// 
+    /// Optionally, this property can be attached to an action or global class.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class)]
     public class ArgDescription : Attribute
     {
         /// <summary>
@@ -296,6 +379,61 @@ namespace PowerArgs
         public ArgDescription(string description)
         {
             this.Description = description;
+        }
+
+        public ArgDescription()
+        {
+            this.Description = null;
+        }
+
+        /// <summary>
+        /// The method used by PowerArgs to retrieve the description.
+        /// Override this if you don't want to attach detailed descriptions in attributes.
+        /// </summary>
+        /// <param name="propertyInfoOrClassType">
+        /// The type for the arguments that are currently being evaluated. Can either by a PropertyType or a class type.
+        /// </param>
+        /// <returns>A brief description of your argument property</returns>
+        public virtual string GetDescription(object propertyInfoOrClassType)
+        {
+            return this.Description;
+        }
+    }
+
+    /// <summary>
+    /// Use this attribute to provide extensive details your argument classes.  This will show up in the auto generated
+    /// usage documentation.
+    /// 
+    /// Optionally, this property can be attached to an action or global class.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
+    public class ArgDetailedDescription : Attribute
+    {
+        /// <summary>
+        /// A detailed description of your arguments.
+        /// </summary>
+        public string DetailedDescription { get; private set; }
+
+        /// <summary>
+        /// Creates a new ArgDetailedDescription attribute.
+        /// </summary>
+        /// <param name="detailedDescription">A detailed description of your argument class.</param>
+        public ArgDetailedDescription(string detailedDescription = null)
+        {
+            this.DetailedDescription = detailedDescription;
+        }
+
+        /// <summary>
+        /// The method used by PowerArgs to retrieve the detailed description.
+        /// Override this if you don't want to attach detailed descriptions in attributes.
+        /// </summary>
+        /// <param name="classType">
+        /// The type for the arguments that are currently being evaluated.
+        /// </param>
+        /// <returns>A detailed description of the class of arguments</returns>
+        public virtual string GetDetailedDescription(Type classType)
+        {
+            return this.DetailedDescription;
         }
     }
 

@@ -23,12 +23,36 @@ namespace PowerArgs
         public bool ShowPosition { get; set; }
 
         /// <summary>
+        /// Set to true print the column headers on the usage output (true by default).
+        /// </summary>
+        public bool ShowColumnHeaders { get; set; }
+
+        /// <summary>
+        /// Set to true to reduce the padding and linebreaks output (false by default).
+        /// </summary>
+        public bool CompactFormat { get; set; }
+
+        /// <summary>
+        /// Set to true to print the shortcuts first, followed by the full argument names (false by default).
+        /// </summary>
+        public bool ShortcutThenName { get; set; }
+
+        /// <summary>
+        /// The message displayed when no options are found (string.Empty by default).
+        /// </summary>
+        public string NoOptionsMessage { get; set; }
+
+        /// <summary>
         /// Creates a new instance of ArgUsageOptions
         /// </summary>
         public ArgUsageOptions()
         {
             ShowType = true;
             ShowPosition = true;
+            ShowColumnHeaders = true;
+            CompactFormat = false;
+            ShortcutThenName = false;
+            NoOptionsMessage = string.Empty;
         }
     }
 
@@ -159,11 +183,10 @@ namespace PowerArgs
 
             Description = "";
 
-            if (toAutoGen.HasAttr<ArgDescription>())
-            {
-                Description = toAutoGen.Attr<ArgDescription>().Description;
-            }
+            Description = ArgUsage.GetDescription(toAutoGen);
         }
+
+        
     }
 
     /// <summary>
@@ -213,9 +236,9 @@ namespace PowerArgs
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
         /// <returns></returns>
-        public static string GetUsage<T>(string exeName = null, ArgUsageOptions options = null)
-        { 
-            return GetStyledUsage<T>(exeName, options).ToString();
+        public static string GetUsage<T>(string exeName = null, ArgUsageOptions options = null, IEnumerable<string> includedActions = null)
+        {
+            return GetStyledUsage<T>(exeName, options, includedActions).ToString();
         }
 
         /// <summary>
@@ -224,8 +247,21 @@ namespace PowerArgs
         /// <typeparam name="T">Your custom argument scaffold type</typeparam>
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
+        /// <param name="singleAction"></param>
         /// <returns></returns>
-        public static ConsoleString GetStyledUsage<T>(string exeName = null, ArgUsageOptions options = null)
+        public static ConsoleString GetStyledUsage<T>(string exeName = null, ArgUsageOptions options = null, IEnumerable<string> includedActions = null)
+        {
+            return GetStyledUsage(typeof(T), exeName, options, includedActions);
+        }
+
+        /// <summary>
+        /// Generates color styled usage documentation for the given argument scaffold type.  
+        /// </summary>
+        /// <param name="Type">Your custom argument scaffold type</param>
+        /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
+        /// <param name="options">Specify custom usage options</param>
+        /// <returns></returns>
+        private static ConsoleString GetStyledUsage(Type type, string exeName = null, ArgUsageOptions options = null, IEnumerable<string> includedActions = null)
         {
             options = options ?? new ArgUsageOptions();
             if (exeName == null)
@@ -242,52 +278,78 @@ namespace PowerArgs
 
             ret += new ConsoleString("Usage: " + exeName, ConsoleColor.Cyan);
 
-            var actionProperty = ArgAction.GetActionProperty<T>();
+            var actionProperty = ArgAction.GetActionProperty(type);
+
+            var numberActionsToPrint = includedActions == null ? -1 : includedActions.Count();
+
+            var newlines = options.CompactFormat ? Environment.NewLine : Environment.NewLine + Environment.NewLine;
+            const string baseIndendation = "  ";
 
             if (actionProperty != null)
             {
-                ret.AppendUsingCurrentFormat(" <action> options\n\n");
+                ret.AppendUsingCurrentFormat(" <action> options" + "\n\n");
 
-                foreach (var example in typeof(T).Attrs<ArgExample>())
+                foreach (var example in type.Attrs<ArgExample>())
                 {
-                    ret += new ConsoleString("EXAMPLE: " + example.Example + "\n" + example.Description + "\n\n", ConsoleColor.DarkGreen);
+                    ret += new ConsoleString("EXAMPLE: " + example.Example + "\n" + example.Description + Environment.NewLine, ConsoleColor.DarkGreen);
                 }
 
-                var global = GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), true, options);
+                var global = GetOptionsUsage(type.GetProperties(BindingFlags.Instance | BindingFlags.Public), true, options, baseIndendation);
 
                 if (string.IsNullOrEmpty(global.ToString()) == false)
                 {
-                    ret += new ConsoleString("Global options:\n\n", ConsoleColor.Cyan) + global + "\n";
+                    ret += new ConsoleString("Global options:" + newlines, ConsoleColor.Cyan) + global + (options.CompactFormat ? string.Empty : "\n");
                 }
 
-                ret += "Actions:";
+                ret += numberActionsToPrint == 1 ? "Action: " : "Actions:";
 
-                foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+
+                foreach (PropertyInfo prop in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
                 {
                     if (prop.IsActionArgProperty() == false) continue;
 
-                    var actionDescription = prop.HasAttr<ArgDescription>() ? " - " + prop.Attr<ArgDescription>().Description : "";
+                    if (numberActionsToPrint >= 1
+                        && !includedActions.Any( s => prop.MatchesSpecifiedAction(s)))
+                    {
+                        continue;
+                    }
 
-                    ret += "\n\n" + prop.GetArgumentName().Substring(0, prop.GetArgumentName().Length - Constants.ActionArgConventionSuffix.Length) + actionDescription + "\n\n";
+                    var actionDescription = GetDescription(prop);
+                    if (!string.IsNullOrWhiteSpace(actionDescription))
+                    {
+                        actionDescription = " - " + actionDescription;
+                    }
+
+                    ret += newlines + baseIndendation
+                           + prop.GetArgumentName()
+                               .Substring(0, prop.GetArgumentName().Length - Constants.ActionArgConventionSuffix.Length)
+                           + actionDescription + newlines;
 
                     foreach (var example in prop.Attrs<ArgExample>())
                     {
-                        ret += new ConsoleString() + "   EXAMPLE: " + new ConsoleString(example.Example + "\n", ConsoleColor.Green) +
-                            new ConsoleString("   " + example.Description + "\n\n", ConsoleColor.DarkGreen);
+                        ret += new ConsoleString(baseIndendation) + baseIndendation + "EXAMPLE: " + new ConsoleString(example.Example + "\n", ConsoleColor.Green) +
+                            new ConsoleString(baseIndendation + baseIndendation + "       " + example.Description + "\n\n", ConsoleColor.DarkGreen);
                     }
 
-                    ret += GetOptionsUsage(prop.PropertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
+                    ret += GetOptionsUsage(prop.PropertyType.GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options, baseIndendation);
+
+                    var detailedAttr = prop.PropertyType.InheritedAttr<ArgDetailedDescription>();
+                    if (detailedAttr != null)
+                    {
+                        ret += "\n";
+                        ret += FormatIntoBlock(baseIndendation + baseIndendation, detailedAttr.GetDetailedDescription(prop.PropertyType));
+                    }
                 }
             }
             else
             {
-                ret.AppendUsingCurrentFormat(" options\n\n");
+                ret.AppendUsingCurrentFormat(" options" + newlines);
 
-                ret += GetOptionsUsage(typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options);
+                ret += GetOptionsUsage(type.GetProperties(BindingFlags.Instance | BindingFlags.Public), false, options, baseIndendation);
 
                 ret += "\n";
 
-                foreach (var example in typeof(T).Attrs<ArgExample>())
+                foreach (var example in type.Attrs<ArgExample>())
                 {
                     ret += new ConsoleString() + "   EXAMPLE: " + new ConsoleString(example.Example + "\n" , ConsoleColor.Green) + 
                         new ConsoleString("   "+example.Description + "\n\n", ConsoleColor.DarkGreen);
@@ -297,28 +359,109 @@ namespace PowerArgs
             return ret;
         }
 
-        private static ConsoleString GetOptionsUsage(IEnumerable<PropertyInfo> opts, bool ignoreActionProperties, ArgUsageOptions options)
+        private static string FormatIntoBlock(string indent, string text)
         {
+            int maxWidth = Console.WindowWidth;
+            int indentWidth = indent.Length;
+
+            var parts = text.Split(' ');
+
+            string result = indent;
+            int lineLength = indentWidth;
+            foreach (string word in parts)
+            {
+                int wordLength = word.Length;
+
+                if (word.EndsWith("\r\n") || word.EndsWith("\n"))
+                {
+                    result += word + indent;
+                    lineLength = indentWidth;
+                }
+                else if (lineLength + wordLength >= maxWidth)
+                {
+                    result += '\n' + indent + word;
+                    lineLength = indentWidth + wordLength;
+                }
+                else
+                {
+                    result += word + ' ';
+                    lineLength += wordLength + 1;
+                }
+            }
+
+            return result;
+        }
+
+        internal static string GetDescription(PropertyInfo prop)
+        {
+            var propAttr = prop.InheritedAttr<ArgDescription>();
+            var actionAttr = prop.PropertyType.InheritedAttr<ArgDescription>();
+
+            var actionDescription = propAttr != null ? propAttr.GetDescription(prop) : "";
+            var actionDescriptionClass = actionAttr != null ? actionAttr.GetDescription(prop.PropertyType) : "";
+
+            return actionDescription + actionDescriptionClass;
+        }
+
+        public static IEnumerable<Tuple<PropertyInfo, string, string>> GetActionsList<T>()
+        {
+                        var actionProperty = ArgAction.GetActionProperty<T>();
+
+            if (actionProperty != null)
+            {
+                foreach (PropertyInfo prop in typeof(T).GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                {
+                    if (prop.IsActionArgProperty() == false) continue;
+
+                    var name = prop.GetArgumentName()
+                        .Substring(0, prop.GetArgumentName().Length - Constants.ActionArgConventionSuffix.Length);
+
+                    var actionDescription = GetDescription(prop);
+
+                    yield return Tuple.Create(prop, name, actionDescription);
+                }
+            }
+        }
+
+        private static ConsoleString GetOptionsUsage(
+            IEnumerable<PropertyInfo> opts,
+            bool ignoreActionProperties,
+            ArgUsageOptions options,
+            string baseIndentation)
+        {
+            if (!opts.Any())
+            {
+                return new ConsoleString(string.IsNullOrWhiteSpace(options.NoOptionsMessage) ? string.Empty : baseIndentation + baseIndentation + options.NoOptionsMessage);
+            }
+
             var usageInfos = opts.Select(o => new ArgumentUsageInfo(o));
 
-            var hasPositionalArgs = usageInfos.Where(i => i.Position >= 0).Count() > 0;
+            var hasPositionalArgs = usageInfos.Any(i => i.Position >= 0);
 
-            List<ConsoleString> columnHeaders = new List<ConsoleString>()
+            var columnHeaders = new List<ConsoleString>()
+                                {
+                                    new ConsoleString("OPTION", ConsoleColor.Yellow),
+                                    new ConsoleString("DESCRIPTION", ConsoleColor.Yellow),
+                                };
+
+            int colInsertPosition = 1;
+            if (options.ShortcutThenName)
             {
-                new ConsoleString("OPTION", ConsoleColor.Yellow),
-                new ConsoleString("DESCRIPTION", ConsoleColor.Yellow),
-            };
-
-            int insertPosition = 1;
+                columnHeaders.Insert(0, new ConsoleString("SHORTCUT", ConsoleColor.Yellow));
+                colInsertPosition = 2;
+            }
+            
             if (options.ShowType)
             {
-                columnHeaders.Insert(insertPosition++, new ConsoleString("TYPE", ConsoleColor.Yellow));
+                columnHeaders.Insert(colInsertPosition, new ConsoleString("TYPE", ConsoleColor.Yellow));
+                colInsertPosition++;
             }
 
             if (hasPositionalArgs && options.ShowPosition)
             {
-                columnHeaders.Insert(insertPosition, new ConsoleString("POSITION", ConsoleColor.Yellow));  
+                columnHeaders.Insert(colInsertPosition, new ConsoleString("POSITION", ConsoleColor.Yellow));
             }
+
 
             List<List<ConsoleString>> rows = new List<List<ConsoleString>>();
 
@@ -333,23 +476,47 @@ namespace PowerArgs
                 if (usageInfo.IsAction && ignoreActionProperties) continue;
                 if (usageInfo.IsActionArgs && ignoreActionProperties) continue;
 
-                var positionString = new ConsoleString(usageInfo.Position >= 0 ? usageInfo.Position + "" : "NA");
-                var requiredString = new ConsoleString(usageInfo.IsRequired ? "*" : "", ConsoleColor.Red);
+                var positionString = new ConsoleString(usageInfo.Position >= 0 ? usageInfo.Position + "" : (options.ShortcutThenName ? "*" : "NA"));
+                var requiredString = new ConsoleString(usageInfo.IsRequired && !options.ShortcutThenName ? "*" : "", ConsoleColor.Red);
+                var optionalStringPrefix =
+                    new ConsoleString(options.ShortcutThenName && !usageInfo.IsRequired ? "[" : "");
+                var optionalStringSuffix =
+                    new ConsoleString(options.ShortcutThenName && !usageInfo.IsRequired ? "]" : "");
                 var descriptionString = new ConsoleString(usageInfo.Description);
                 var typeString = new ConsoleString(usageInfo.Type);
 
                 var indicator = "-";
 
-                rows.Add(new List<ConsoleString>()
+                if (options.ShortcutThenName)
                 {
-                    new ConsoleString(indicator)+(usageInfo.Name + (usageInfo.Aliases.Count > 0 ? " ("+ usageInfo.Aliases[0] +")" : "")),
-                    descriptionString,
-                });
+                    rows.Add(
+                        new List<ConsoleString>()
+                        {
+                            new ConsoleString(
+                                (usageInfo.Aliases.Count > 0 ? usageInfo.Aliases[0] : "")),
+                            new ConsoleString(indicator + usageInfo.Name),
+                            descriptionString,
+                        });
+                }
+                else
+                {
+                    rows.Add(
+                        new List<ConsoleString>()
+                        {
+                            new ConsoleString(indicator)
+                            + (usageInfo.Name
+                               + (usageInfo.Aliases.Count > 0
+                                   ? " (" + usageInfo.Aliases[0] + ")"
+                                   : "")),
+                            descriptionString,
+                        });
+                }
 
-                insertPosition = 1;
+
+                var insertPosition = options.ShortcutThenName ? 2 : 1;
                 if (options.ShowType)
                 {
-                    rows.Last().Insert(insertPosition++, typeString + requiredString);
+                    rows.Last().Insert(insertPosition++, optionalStringPrefix + typeString + optionalStringSuffix + requiredString);
                 }
 
                 if (hasPositionalArgs && options.ShowPosition)
@@ -359,29 +526,40 @@ namespace PowerArgs
 
                 for (int i = 1; i < usageInfo.Aliases.Count; i++)
                 {
-                    rows.Add(new List<ConsoleString>()
-                    {
-                        new ConsoleString("    "+usageInfo.Aliases[i]),
-                        ConsoleString.Empty,
-                        ConsoleString.Empty,
-                    });
+                    rows.Add(
+                        new List<ConsoleString>()
+                        {
+                            new ConsoleString("    " + usageInfo.Aliases[i]),
+                            ConsoleString.Empty,
+                            ConsoleString.Empty,
+                        });
 
                     if (hasPositionalArgs) rows.Last().Insert(2, positionString);
                 }
 
-       
+
             }
 
-            return FormatAsTable(columnHeaders, rows, "   ");
+            return FormatAsTable(
+                columnHeaders,
+                rows,
+                options.ShowColumnHeaders,
+                options.CompactFormat ? "  " : "   ",
+                options.CompactFormat ? 2 : 3,
+                baseIndentation);
         }
 
-        private static ConsoleString FormatAsTable(List<ConsoleString> columns, List<List<ConsoleString>> rows, string rowPrefix = "")
+        private static ConsoleString FormatAsTable(List<ConsoleString> columns, List<List<ConsoleString>> rows, bool printColumnHeaders, string rowPrefix = "", int buffer = 3, string baseIndentation = "  ")
         {
             if (rows.Count == 0) return new ConsoleString();
 
             Dictionary<int, int> maximums = new Dictionary<int, int>();
 
-            for (int i = 0; i < columns.Count; i++) maximums.Add(i, columns[i].Length);
+            for (int i = 0; i < columns.Count; i++)
+            {
+                maximums.Add(i, printColumnHeaders ? columns[i].Length : 0);
+            }
+
             for (int i = 0; i < columns.Count; i++)
             {
                 foreach (var row in rows)
@@ -391,21 +569,25 @@ namespace PowerArgs
             }
 
             ConsoleString ret = new ConsoleString();
-            int buffer = 3;
 
-            ret += rowPrefix;
+            var columnHeader = new ConsoleString(baseIndentation + rowPrefix);
             for (int i = 0; i < columns.Count; i++)
             {
                 var val = columns[i];
                 while (val.Length < maximums[i] + buffer) val += " ";
-                ret += val;
+                columnHeader += val;
             }
 
-            ret += "\n";
+            columnHeader += "\n";
+
+            if (printColumnHeaders)
+            {
+                ret += columnHeader;
+            }
 
             foreach (var row in rows)
             {
-                ret += rowPrefix;
+                ret += baseIndentation + rowPrefix;
                 for (int i = 0; i < columns.Count; i++)
                 {
                     var val = row[i];
