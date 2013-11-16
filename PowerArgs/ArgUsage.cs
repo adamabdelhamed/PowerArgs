@@ -443,7 +443,7 @@ namespace PowerArgs
                     }
                 }
 
-                if (inlineAliasInfo != string.Empty) inlineAliasInfo = "(" + inlineAliasInfo + ")";
+                if (inlineAliasInfo != string.Empty) inlineAliasInfo = " (" + inlineAliasInfo + ")";
 
                 rows.Add(new List<ConsoleString>()
                 {
