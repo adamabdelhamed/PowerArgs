@@ -80,6 +80,7 @@
     <Compile Include="HelperTypesPublic\ParseResult.cs" />
     <Compile Include="Hooks\ArgHook.cs" />
     <Compile Include="Hooks\DefaultValueAttribute.cs" />
+    <Compile Include="Hooks\HelpHook.cs" />
     <Compile Include="Hooks\StickyArg.cs" />
     <Compile Include="Metadata\ArgActionMethod.cs" />
     <Compile Include="Metadata\ArgActionType.cs" />

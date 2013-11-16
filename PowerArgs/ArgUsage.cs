@@ -370,6 +370,11 @@ namespace PowerArgs
 
         private static ConsoleString GetOptionsUsage(IEnumerable<CommandLineArgument> opts, bool ignoreActionProperties, ArgUsageOptions options)
         {
+            if (opts.Count() == 0)
+            {
+                return new ConsoleString("There are no options");
+            }
+
             var usageInfos = opts.Select(o => new ArgumentUsageInfo(o));
 
             var hasPositionalArgs = usageInfos.Where(i => i.Position >= 0).Count() > 0;
