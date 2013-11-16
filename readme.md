@@ -36,10 +36,6 @@ Here's a simple example.
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(ArgUsage.GetUsage<MyArgs>());
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
         }
     }
     
