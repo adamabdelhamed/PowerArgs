@@ -70,7 +70,11 @@ namespace PowerArgs
         public override void AfterPopulateProperty(HookContext context)
         {
             base.AfterPopulateProperty(context);
-            context.CancelAllProcessing();
+            if (context.CurrentArgument.RevivedValue is bool &&
+                ((bool)context.CurrentArgument.RevivedValue) == true)
+            {
+                context.CancelAllProcessing();
+            }
         }
 
         /// <summary>

@@ -9,13 +9,15 @@ namespace ArgsTests
     {
         public class Command
         {
+            public static event Action Action1Fired;
+
             [HelpHook(EXEName="test"), ArgShortcut("?"), ArgDescription("Displays this help")]
             public bool Help { get; set; }
 
             [ArgActionMethod,ArgDescription("Runs action 1, a really great action")]
             public void Action1()
             {
-                throw new NotImplementedException();
+                if (Action1Fired != null) Action1Fired();
             }
 
             [ArgActionMethod, ArgDescription("Runs action 1, a really great action")]
@@ -28,7 +30,17 @@ namespace ArgsTests
         [TestMethod]
         public void TestHelpHook()
         {
+            int fireCount = 0;
+            Action handler = () =>
+            {
+                fireCount++;
+            };
+
+            Command.Action1Fired += handler;
+
             var result = Args.InvokeAction<Command>("-?");
+            var result2 = Args.InvokeAction<Command>("Action1");
+            Assert.AreEqual(1, fireCount);
         }
     }
 }
