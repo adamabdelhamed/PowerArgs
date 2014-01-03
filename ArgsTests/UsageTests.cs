@@ -17,6 +17,9 @@ namespace ArgsTests
         public string StringArgs { get; set; }
         [ArgDescription("An int arg")]
         public int IntArgs { get; set; }
+
+        [ArgHiddenFromUsage, ArgDescription("WE SHOULD NEVER SEE THIS")]
+        public string SecretArg { get; set; }
     }
 
     public class ArgsForActionSpecificUsage
@@ -103,6 +106,15 @@ namespace ArgsTests
 
             Assert.IsFalse(usage.Contains("TYPE"));
             Assert.IsFalse(usage.Contains("POSITION"));
+        }
+
+        [TestMethod]
+        public void TestArgHiddenFromUsage()
+        {
+            var usage = ArgUsage.GetUsage<BasicUsageArgs>("test");
+
+            Assert.IsFalse(usage.ToUpper().Contains("WE SHOULD NEVER SEE THIS"));
+            Assert.IsFalse(usage.Contains("SecretArg"));
         }
 
         [TestMethod]
