@@ -67,6 +67,7 @@ namespace PowerArgs
             {
                 return overrides.Get<ArgIgnoreCase, bool>(Metadata, p => p.IgnoreCase, true);
             }
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
                 overrides.Set(value);
@@ -82,6 +83,7 @@ namespace PowerArgs
             {
                 return overrides.Get<ArgPosition, int>(Metadata, p => p.Position, -1);
             }
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
                 overrides.Set(value);
@@ -97,6 +99,7 @@ namespace PowerArgs
             {
                 return overrides.Get<DefaultValueAttribute, object>(Hooks, d => d.Value);
             }
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
                 overrides.Set(value);
@@ -112,6 +115,7 @@ namespace PowerArgs
             {
                 return overrides.Get<ArgDescription, string>(Metadata, d => d.Description, string.Empty);
             }
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
                 overrides.Set(value);
@@ -127,6 +131,7 @@ namespace PowerArgs
             {
                 return overrides.Get<ArgRequired, bool>(Validators, v => true, false);
             }
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
                 overrides.Set(value);

@@ -34,6 +34,7 @@ namespace PowerArgs
             {
                 return overrides.Get<ArgDescription, string>(Metadata, d => d.Description, string.Empty);
             }
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
                 overrides.Set(value);
@@ -59,6 +60,7 @@ namespace PowerArgs
             {
                 return overrides.Get<ArgIgnoreCase, bool>(Metadata, i => i.IgnoreCase, true);
             }
+            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
                 overrides.Set(value);
