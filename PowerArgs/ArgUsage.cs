@@ -358,7 +358,7 @@ namespace PowerArgs
 
                 if (specifiedAction == null)
                 {
-                    ret += "Actions:";
+                    ret += new ConsoleString("Actions:", ConsoleColor.Cyan);
                 }
 
                 foreach (var action in definition.Actions)
