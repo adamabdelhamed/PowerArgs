@@ -103,7 +103,7 @@ namespace PowerArgs
         /// <summary>
         /// Creates a new command line action given an implementation.
         /// </summary>
-        /// <param name="actionHandler">The implementation of the aciton.</param>
+        /// <param name="actionHandler">The implementation of the action.</param>
         public CommandLineAction(Action<CommandLineArgumentsDefinition> actionHandler) : this()
         {
             ActionMethod = new ActionMethodInfo(actionHandler);
