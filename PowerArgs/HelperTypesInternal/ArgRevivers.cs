@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 
 namespace PowerArgs
@@ -25,10 +26,10 @@ namespace PowerArgs
 
         internal static bool CanRevive(Type t)
         {
-            if (Revivers.ContainsKey(t) || 
-                t.IsEnum || 
-                (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0]) ) ||
-                (t.IsArray && CanRevive(t.GetElementType()) ))
+            if (Revivers.ContainsKey(t) ||
+                t.IsEnum ||
+                (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
+                (t.IsArray && CanRevive(t.GetElementType())))
                 return true;
             SearchAssemblyForRevivers(t.Assembly);
 
@@ -95,7 +96,7 @@ namespace PowerArgs
         {
             if (t.IsArray == false && t.GetInterfaces().Contains(typeof(IList)))
             {
-                var list = (IList) Activator.CreateInstance(t);
+                var list = (IList)Activator.CreateInstance(t);
                 // TODO - Maybe support custom delimiters via an attribute on the property
                 // TODO - Maybe do a full parse of the value to check for quoted strings
 
@@ -138,7 +139,7 @@ namespace PowerArgs
             {
                 // Intentionally not an InvalidArgDefinitionException.  Other internal code should call 
                 // CanRevive and this block should never be executed.
-                throw new ArgumentException("Cannot revive type "+t.FullName+". Callers should be calling CanRevive before calling Revive()");
+                throw new ArgumentException("Cannot revive type " + t.FullName + ". Callers should be calling CanRevive before calling Revive()");
             }
         }
 
@@ -238,6 +239,11 @@ namespace PowerArgs
                 {
                     throw new UriFormatException("value must be a valid URI: " + val);
                 }
+            });
+
+            revivers.Add(typeof(IPAddress), (prop, val) =>
+            {
+                return IPAddress.Parse(val);
             });
         }
     }
