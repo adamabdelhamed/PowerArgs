@@ -119,6 +119,23 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Parses the given arguments using a command line arguments definition.  
+        /// </summary>
+        /// <param name="definition">The definition that defines a set of command line arguments and/or actions.</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns></returns>
+        public static ArgAction ParseAction(CommandLineArgumentsDefinition definition, params string[] args)
+        {
+            ArgAction ret = Execute(() =>
+            {
+                Args instance = new Args();
+                return instance.ParseInternal(definition, args);
+            });
+
+            return ret;
+        }
+
+        /// <summary>
         /// Creates a new instance of T and populates it's properties based on the given arguments.
         /// If T correctly implements the heuristics for Actions (or sub commands) then the complex property
         /// that represents the options of a sub command are also populated.
@@ -130,8 +147,8 @@ namespace PowerArgs
         {
             ArgAction<T> ret = Execute<ArgAction<T>>(() =>
             {
-            Args instance = new Args();
-            return instance.ParseInternal<T>(args);
+                Args instance = new Args();
+                return instance.ParseInternal<T>(args);
             });
             return ret;
         }
@@ -146,25 +163,15 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction ParseAction(Type t, params string[] args)
         {
-            return ParseAction(new CommandLineArgumentsDefinition(t), args);
-        }
-
-        /// <summary>
-        /// Parses the given arguments using a command line arguments definition.  
-        /// </summary>
-        /// <param name="definition">The definition that defines a set of command line arguments and/or actions.</param>
-        /// <param name="args">The command line arguments to parse</param>
-        /// <returns></returns>
-        public static ArgAction ParseAction(CommandLineArgumentsDefinition definition, params string[] args)
-        {
-            ArgAction ret = Execute(() =>
+            ArgAction ret = Execute<ArgAction>(() =>
             {
-            Args instance = new Args();
-            return instance.ParseInternal(definition, args);
+                Args instance = new Args();
+                return instance.ParseInternal(t, args);
             });
-
             return ret;
         }
+
+
 
         /// <summary>
         /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
@@ -174,23 +181,21 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction InvokeMain(Type t, params string[] args)
         {
-            ArgAction ret = Execute(() =>
+            return REPL.DriveREPL<ArgAction>(t.Attr<TabCompletion>(), (a) =>
             {
-                return REPL.DriveREPL<ArgAction>(t.Attr<TabCompletion>(), (a) =>
+                return Execute<ArgAction>(() =>
                 {
-                var result = ParseAction(t, a);
+                    Args instance = new Args();
+                    var result = instance.ParseInternal(new CommandLineArgumentsDefinition(t), a);
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
                         result.Value.InvokeMainMethod();
                         result.Context.RunAfterInvoke();
                     }
-                return result;
-            }
-            , args);
-            });
-
-            return ret;
+                    return result;
+                });
+            }, args);
         }
 
         /// <summary>
@@ -201,22 +206,22 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction<T> InvokeMain<T>(params string[] args)
         {
-            ArgAction<T> ret = Execute(() =>
+            return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
             {
-                return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
+                return Execute<ArgAction<T>>(() =>
                 {
-                var result = ParseAction<T>(a);
+                    Args instance = new Args();
+                    var result = instance.ParseInternal<T>(a);
+
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
                         result.Value.InvokeMainMethod();
                         result.Context.RunAfterInvoke();
                     }
-                return result;
-            }
-            , args);
-            });
-            return ret;
+                    return result;
+                });
+            }, args);
         }
 
         /// <summary>
@@ -229,22 +234,21 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static ArgAction<T> InvokeAction<T>(params string[] args)
         {
-            ArgAction<T> ret = Execute<ArgAction<T>>(() =>
+            return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
             {
-                return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
+                return Execute<ArgAction<T>>(() =>
                 {
-                var result = ParseAction<T>(a);
+                    Args instance = new Args();
+                    var result = instance.ParseInternal<T>(a);
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
                         result.Invoke();
                         result.Context.RunAfterInvoke();
                     }
-                return result;
-            }
-            , args);
-            });
-            return ret;
+                    return result;
+                });
+            } , args);
         }
 
         /// <summary>
@@ -256,22 +260,21 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static ArgAction InvokeAction(CommandLineArgumentsDefinition definition, params string[] args)
         {
-            ArgAction ret = Execute(() =>
+            return REPL.DriveREPL<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
             {
-                return REPL.DriveREPL<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
+                return Execute<ArgAction>(() =>
                 {
-                var result = ParseAction(definition, a);
+                    Args instance = new Args();
+                    var result = instance.ParseInternal(definition, a);
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
                         result.Invoke();
                         result.Context.RunAfterInvoke();
                     }
-                return result;
-            }
-            , args);
-            });
-            return ret;
+                    return result;
+                });
+            }, args);
         }
 
         /// <summary>
@@ -284,7 +287,8 @@ namespace PowerArgs
         {
             T ret = Execute(() =>
             {
-            return ParseAction<T>(args).Args;
+                Args instance = new Args();
+                return instance.ParseInternal<T>(args).Args;
             });
             return ret;
         }
@@ -299,7 +303,8 @@ namespace PowerArgs
         {
             object ret = Execute(() =>
             {
-            return ParseAction(t, args).Value;
+                Args instance = new Args();
+                return instance.ParseInternal(t, args).Value;
             });
             return ret;
         }
@@ -314,17 +319,14 @@ namespace PowerArgs
         {
             ArgAction ret = Execute(() =>
             {
-                return ParseAction(definition, args);
+                Args instance = new Args();
+                return instance.ParseInternal(definition, args);
             });
             return ret;
         }
 
-        [ThreadStatic]
-        private static int executeRecursionCounter = 0;
-
         private static T Execute<T>(Func<T> argsProcessingCode) where T : class
         {
-            executeRecursionCounter++;
             ArgHook.HookContext.Current = new ArgHook.HookContext();
 
             try
@@ -333,26 +335,15 @@ namespace PowerArgs
             }
             catch (ArgCancelProcessingException ex)
             {
-                if (executeRecursionCounter > 1)
-                {
-                    throw;
-                }
-
                 return CreateEmptyResult<T>(ArgHook.HookContext.Current, cancelled: true);
             }
             catch (ArgException ex)
             {
                 ex.Context = ArgHook.HookContext.Current;
-                if (executeRecursionCounter > 1)
-                {
-                    throw;
-                }
-
-                var context = ArgHook.HookContext.Current;
-                var definition = context.Definition;
+                var definition = ArgHook.HookContext.Current.Definition;
                 if (definition.ExceptionBehavior.Policy == ArgExceptionPolicy.StandardExceptionHandling)
                 {
-                    return DoStandardExceptionHandling<T>(ex, context, definition);
+                    return DoStandardExceptionHandling<T>(ex, ArgHook.HookContext.Current, definition);
                 }
                 else
                 {
@@ -361,11 +352,7 @@ namespace PowerArgs
             }
             finally
             {
-                executeRecursionCounter--;
-                if (executeRecursionCounter == 0)
-                {
-                    ArgHook.HookContext.Current = null;
-                }
+                ArgHook.HookContext.Current = null;
             }
         }
 
@@ -421,6 +408,11 @@ namespace PowerArgs
                 Definition = weak.Definition,
                 Context = weak.Context,
             };
+        }
+
+        private ArgAction ParseInternal(Type t, string[] input)
+        {
+            return ParseInternal(new CommandLineArgumentsDefinition(t), input);
         }
 
         private ArgAction ParseInternal(CommandLineArgumentsDefinition definition, string[] input)

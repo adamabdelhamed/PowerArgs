@@ -402,7 +402,7 @@ namespace PowerArgs
         {
             if (opts.Count() == 0)
             {
-                return new ConsoleString("There are no options");
+                return new ConsoleString("There are no options\n");
             }
 
             var usageInfos = opts.Select(o => new ArgumentUsageInfo(o));
