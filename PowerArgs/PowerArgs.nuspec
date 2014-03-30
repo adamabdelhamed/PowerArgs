@@ -2,17 +2,16 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>2.0.4-preview</version>
+    <version>2.0.5</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
-    <iconUrl>http://adamabdelhamed.com/downloader/powerargs.png</iconUrl>
     <licenseUrl>https://github.com/adamabdelhamed/PowerArgs/blob/master/LICENSE.txt</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage documentation, tab completion, Entity Framework querying, secure string arguments, and plenty of hooks for extensibility.</description>
     <summary>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.</summary>
-    <releaseNotes>Added the [HelpHook] class to make boolean help properties able to stop command processing earlier and just print the help.  Other minor fixes.</releaseNotes>
+    <releaseNotes>Fixed a few issues from GitHub.</releaseNotes>
     <copyright>Copyright 2012 Adam Abdelhamed</copyright>
     <tags>Command Line Argument Parser</tags>
   </metadata>
