@@ -13,6 +13,11 @@ namespace PowerArgs
     public class CommandLineArgumentsDefinition
     {
         /// <summary>
+        /// When set to true, TabCompletion is completely disabled and required fields will ignore the PromptIfMissing flag.
+        /// </summary>
+        public bool IsNonInteractive { get; set; }
+
+        /// <summary>
         /// The type that was used to generate this definition.  This will only be populated if you use the constructor that takes in a type and the definition is inferred.
         /// </summary>
         public Type ArgumentScaffoldType { get; private set; }

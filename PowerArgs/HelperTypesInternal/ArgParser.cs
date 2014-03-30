@@ -88,6 +88,48 @@ namespace PowerArgs
             return result;
         }
 
+        internal static bool TryParseKey(string cmdLineArg, out string key)
+        {
+            if(cmdLineArg.StartsWith("-") == false && cmdLineArg.StartsWith("/") == false)
+            {
+                key = null;
+                return false;
+            }
+            else
+            {
+                key = ParseKey(cmdLineArg);
+                return true;
+            }
+        }
+
+        internal static string ParseKey(string cmdLineArg)
+        {
+            if (cmdLineArg.StartsWith("/"))
+            {
+                var param = ParseSlashExplicitOption(cmdLineArg);
+                return param.Key;
+            }
+            else if (cmdLineArg.StartsWith("-"))
+            {
+                string key = cmdLineArg.Substring(1);
+                if (key.Length == 0) throw new ArgException("Missing argument value after '-'");
+                
+
+                // Handles long form syntax --argName=argValue.
+                if (key.StartsWith("-") && key.Contains("="))
+                {
+                    var index = key.IndexOf("=");
+                    key = key.Substring(0, index);
+                }
+
+                return key;
+            }
+            else
+            {
+                throw new ArgException("Could not parse key '"+cmdLineArg+"' because it did not start with a - or a /");
+            }
+        }
+
         private static bool IsBool(string key, PowerArgs.ArgHook.HookContext context)
         {
             var match = context.Definition.FindMatchingArgument(key, true);

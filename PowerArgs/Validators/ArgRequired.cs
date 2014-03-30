@@ -40,7 +40,7 @@ namespace PowerArgs
         /// <param name="arg">The value specified on the command line or null if it wasn't specified</param>
         public override void ValidateAlways(CommandLineArgument argument, ref string arg)
         {
-            if (arg == null && PromptIfMissing)
+            if (arg == null && PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
             {
                 var value = "";
                 while (string.IsNullOrWhiteSpace(value))

@@ -195,39 +195,42 @@ namespace PowerArgs
                 }
             }
 
+            private class ContextualHookInfo
+            {
+                public ArgHook Hook { get; set; }
+                public CommandLineArgument Argument { get; set; }
+                public PropertyInfo Property { get; set; }
+            }
+
             internal void RunHook(Func<ArgHook, int> orderby, Action<ArgHook> hookAction)
             {
+                List<ContextualHookInfo> hooksToRun = new List<ContextualHookInfo>();
+
                 var seen = new List<PropertyInfo>();
 
-                foreach (var hook in Definition.Hooks.OrderByDescending(orderby))
-                {
-                    hookAction(hook);
-                }
-
+                hooksToRun.AddRange(Definition.Hooks.Select(h => new ContextualHookInfo { Hook = h }));
+                
                 foreach (var argument in Definition.Arguments)
                 {
-                    CurrentArgument = argument;
-                    Property = argument.Source as PropertyInfo;
-                    if (Property != null) seen.Add(Property);
+                    if (argument.Source as PropertyInfo != null) seen.Add(argument.Source as PropertyInfo);
 
-                    foreach (var hook in argument.Hooks.OrderByDescending(orderby))
-                    {
-                        hookAction(hook);
-                    }
-
-                    CurrentArgument = null;
-                    Property = null;
+                    hooksToRun.AddRange(argument.Hooks.Select(h => new ContextualHookInfo 
+                    { 
+                        Hook = h, 
+                        Argument = argument,
+                        Property = argument.Source as PropertyInfo 
+                    }));
                 }
 
                 if (Definition.ArgumentScaffoldType != null)
                 {
                     foreach (var property in Definition.ArgumentScaffoldType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => seen.Contains(p) == false))
                     {
-                        foreach (var hook in property.Attrs<ArgHook>().OrderByDescending(orderby))
+                        hooksToRun.AddRange(property.Attrs<ArgHook>().Select(h => new ContextualHookInfo
                         {
-                            Property = property;
-                            hookAction(hook);
-                        }
+                            Hook = h,
+                            Property = property
+                        }));
                     }
                 }
 
@@ -235,17 +238,24 @@ namespace PowerArgs
                 {
                     foreach (var argument in action.Arguments)
                     {
-                        CurrentArgument = argument;
-                        Property = argument.Source as PropertyInfo;
-
-                        foreach (var hook in argument.Hooks.OrderByDescending(orderby))
-                        {
-                            hookAction(hook);
-                        }
-
-                        CurrentArgument = null;
-                        Property = null;
+                        hooksToRun.AddRange(argument.Hooks.Select(h => new ContextualHookInfo 
+                        { 
+                            Hook = h, 
+                            Argument = argument,
+                            Property = argument.Source as PropertyInfo 
+                        }));
                     }
+                }
+
+                hooksToRun = hooksToRun.OrderByDescending(info => orderby(info.Hook)).ToList();
+
+                foreach(var info in hooksToRun)
+                {
+                    this.CurrentArgument = info.Argument;
+                    this.Property = info.Property;
+                    hookAction(info.Hook);
+                    this.CurrentArgument = null;
+                    this.Property = null;
                 }
             }
 

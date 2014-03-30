@@ -39,7 +39,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>
-      </AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -85,6 +85,7 @@
     <Compile Include="Hooks\StickyArg.cs" />
     <Compile Include="Metadata\ArgActionMethod.cs" />
     <Compile Include="Metadata\ArgActionType.cs" />
+    <Compile Include="Metadata\NonInteractiveIndicator.cs" />
     <Compile Include="Metadata\ArgDescription.cs" />
     <Compile Include="Metadata\ArgExample.cs" />
     <Compile Include="Metadata\ArgExceptionBehavior.cs" />

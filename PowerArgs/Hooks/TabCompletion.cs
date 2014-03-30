@@ -102,8 +102,14 @@ namespace PowerArgs
         /// <param name="context">The context used to inspect the command line arguments.</param>
         public override void BeforeParse(ArgHook.HookContext context)
         {
+            if (context.Definition.IsNonInteractive)
+            {
+                this.REPL = false;
+                return;
+            }
             if (Indicator == "" && context.CmdLineArgs.Length != 0) return;
-            else if (Indicator != "" && (context.CmdLineArgs.Length != 1 || context.CmdLineArgs[0] != Indicator)) return;
+            if (Indicator != "" && (context.CmdLineArgs.Length != 1 || context.CmdLineArgs[0] != Indicator)) return;
+          
 
             var existingColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Cyan;

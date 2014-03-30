@@ -75,6 +75,7 @@
     <Compile Include="ReadMeTests.cs" />
     <Compile Include="CancellationTests.cs" />
     <Compile Include="HelpHookTests.cs" />
+    <Compile Include="TestNonInteractiveMode.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />
