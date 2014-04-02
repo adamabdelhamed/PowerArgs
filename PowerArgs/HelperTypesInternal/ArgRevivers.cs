@@ -243,7 +243,9 @@ namespace PowerArgs
 
             revivers.Add(typeof(IPAddress), (prop, val) =>
             {
-                return IPAddress.Parse(val);
+				System.Net.IPAddress ret;
+				if (System.Net.IPAddress.TryParse(val, out ret) == false) throw new FormatException("value must be a valid IP address: " + val);
+				return ret;
             });
         }
     }
