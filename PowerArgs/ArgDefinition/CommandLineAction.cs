@@ -276,5 +276,16 @@ namespace PowerArgs
                    property.HasAttr<ArgIgnoreAttribute>() == false &&
                 ArgAction.GetActionProperty(property.DeclaringType) != null;
         }
+
+        /// <summary>
+        /// Finds the first CommandLineArgument that matches the given key.
+        /// </summary>
+        /// <param name="key">The key as if it was typed in on the command line.  This can also be an alias. </param>
+        /// <param name="throwIfMoreThanOneMatch">If set to true then this method will throw and InvalidArgDeginitionException if more than 1 match is found</param>
+        /// <returns>The first argument that matches the key.</returns>
+        public CommandLineArgument FindMatchingArgument(string key, bool throwIfMoreThanOneMatch = false)
+        {
+            return CommandLineArgumentsDefinition.FindMatchingArgument(key, throwIfMoreThanOneMatch, this.Arguments);
+        }
     }
 }

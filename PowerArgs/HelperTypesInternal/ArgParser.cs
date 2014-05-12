@@ -48,7 +48,7 @@ namespace PowerArgs
                         {
                             value = "";
                         }
-                        else if (IsBool(key, context))
+                        else if (IsBool(key, context, result))
                         {
                             var next = args[i + 1].ToLower();
 
@@ -130,10 +130,33 @@ namespace PowerArgs
             }
         }
 
-        private static bool IsBool(string key, PowerArgs.ArgHook.HookContext context)
+        private static bool IsBool(string key, PowerArgs.ArgHook.HookContext context, ParseResult resultContext)
         {
             var match = context.Definition.FindMatchingArgument(key, true);
-            if (match == null) return false;
+            if (match == null)
+            {
+                var possibleActionContext = resultContext.ImplicitParameters.ContainsKey(0) ? resultContext.ImplicitParameters[0] : null;
+
+                if (possibleActionContext == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    var actionContext = context.Definition.FindMatchingAction(possibleActionContext, true);
+                    if (actionContext == null)
+                    {
+                        return false;
+                    }
+
+                    match = actionContext.FindMatchingArgument(key, true);
+                    if (match == null)
+                    {
+                        return false;
+                    }
+                }
+
+            }
 
             return match.ArgumentType == typeof(bool);
         }

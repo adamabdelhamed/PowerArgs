@@ -115,13 +115,7 @@ namespace PowerArgs
         /// <returns>The first argument that matches the key.</returns>
         public CommandLineArgument FindMatchingArgument(string key, bool throwIfMoreThanOneMatch = false)
         {
-            var match = from a in Arguments where a.IsMatch(key) select a;
-            if (match.Count() > 1 && throwIfMoreThanOneMatch)
-            {
-                throw new InvalidArgDefinitionException("The key '" + key + "' matches more than one argument");
-            }
-
-            return match.FirstOrDefault();
+            return CommandLineArgumentsDefinition.FindMatchingArgument(key, throwIfMoreThanOneMatch, this.Arguments);
         }
 
         /// <summary>
@@ -136,6 +130,17 @@ namespace PowerArgs
             if (match.Count() > 1 && throwIfMoreThanOneMatch)
             {
                 throw new InvalidArgDefinitionException("The key '" + key + "' matches more than one action");
+            }
+
+            return match.FirstOrDefault();
+        }
+
+        internal static CommandLineArgument FindMatchingArgument(string key, bool throwIfMoreThanOneMatch, IEnumerable<CommandLineArgument> searchSpace)
+        {
+            var match = from a in searchSpace where a.IsMatch(key) select a;
+            if (match.Count() > 1 && throwIfMoreThanOneMatch)
+            {
+                throw new InvalidArgDefinitionException("The key '" + key + "' matches more than one argument");
             }
 
             return match.FirstOrDefault();

@@ -50,6 +50,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionSwitchHandlingRegression.cs" />
     <Compile Include="ActionTests.cs" />
     <Compile Include="BasicTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
