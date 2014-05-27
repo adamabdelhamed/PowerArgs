@@ -148,7 +148,17 @@ namespace PowerArgs
                     throw new InvalidArgDefinitionException("Failed to parse the Unless clause on target '" + targetText + "'" + ex.Message);
                 }
 
-                var unlessIsTrue = expression.Evaluate(variableResolver);
+                bool unlessIsTrue;
+
+                try
+                {
+                    unlessIsTrue = expression.Evaluate(variableResolver);
+                }
+                catch(Exception ex)
+                {
+                    var targetText = context.CurrentArgument.DefaultAlias + " (" + parent.Unless + ")";
+                    throw new InvalidArgDefinitionException("Failed to parse the Unless clause on target '" + targetText + "'" + ex.Message);
+                }
 
                 if (unlessIsTrue == false && context.CurrentArgument.RevivedValue == null)
                 {
@@ -173,7 +183,17 @@ namespace PowerArgs
                     throw new InvalidArgDefinitionException("Failed to parse the If clause on target '" + targetText + "'" + ex.Message);
                 }
 
-                var ifIsTrue = expression.Evaluate(variableResolver);
+                bool ifIsTrue;
+
+                try
+                {
+                    ifIsTrue = expression.Evaluate(variableResolver);
+                }
+                catch(Exception ex)
+                {
+                    var targetText = context.CurrentArgument.DefaultAlias + " (" + parent.Unless + ")";
+                    throw new InvalidArgDefinitionException("Failed to parse the If clause on target '" + targetText + "'" + ex.Message);
+                }
 
                 if(ifIsTrue == true && context.CurrentArgument.RevivedValue == null)
                 {

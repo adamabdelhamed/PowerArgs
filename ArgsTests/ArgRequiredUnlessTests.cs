@@ -17,6 +17,24 @@ namespace ArgsTests
             public string SecondArgument { get; set; }
         }
 
+        public class SimpleUnlessArgsWithTypo
+        {
+            [ArgRequired(Unless = "SecondArgumentABC")]
+            public string FirstArgument { get; set; }
+
+            [ArgShortcut("-s")]
+            public string SecondArgument { get; set; }
+        }
+
+        public class SimpleUnlessArgsWithLogicError
+        {
+            [ArgRequired(Unless = "SecondArgument||SecondArgument")]
+            public string FirstArgument { get; set; }
+
+            [ArgShortcut("-s")]
+            public string SecondArgument { get; set; }
+        }
+
         public class UnexclusiveUnlessArgs
         {
             [ArgRequired(Unless = "SecondArgument",UnlessIsExclusive=false)]
@@ -54,6 +72,39 @@ namespace ArgsTests
 
             [ArgRequired(If = "LogFileOutputPath")]
             public long LogFileOutputMaxSize { get; set; }
+        }
+        
+        [TestMethod]
+        public void TestSimpleUnlessArgsWithTypo()
+        {
+            SimpleUnlessArgsWithTypo parsed;
+
+            try
+            {
+                parsed = Args.Parse<SimpleUnlessArgsWithTypo>();
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("not a valid argument alias"));
+                Assert.IsTrue(ex.Message.Contains("SecondArgumentABC"));
+            }
+        }
+
+        [TestMethod]
+        public void TestSimpleUnlessArgsWithLogicError()
+        {
+            SimpleUnlessArgsWithLogicError parsed;
+
+            try
+            {
+                parsed = Args.Parse<SimpleUnlessArgsWithLogicError>();
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("number of operators"));
+            }
         }
 
         [TestMethod]
