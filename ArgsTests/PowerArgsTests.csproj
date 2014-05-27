@@ -53,6 +53,7 @@
     <Compile Include="ActionSwitchHandlingRegression.cs" />
     <Compile Include="ActionTests.cs" />
     <Compile Include="BasicTests.cs" />
+    <Compile Include="ArgRequiredUnlessTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="CancellationTests.cs" />
     <Compile Include="HelpHookTests.cs" />
     <Compile Include="TestNonInteractiveMode.cs" />
+    <Compile Include="BooleanExpressionEvaluatorUnitTests.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />

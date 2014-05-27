@@ -124,6 +124,11 @@ namespace PowerArgs
             return ret;
         }
 
+        /// <summary>
+        /// Determines if 2 actions are the same based on their source.  
+        /// </summary>
+        /// <param name="obj">The other action</param>
+        /// <returns>True if equal, false otherwise</returns>
         public override bool Equals(object obj)
         {
             var other = obj as CommandLineAction;

@@ -58,6 +58,7 @@
     <Compile Include="HelperTypesInternal\REPL.cs" />
     <Compile Include="HelperTypesPublic\ArgAction.cs" />
     <Compile Include="HelperTypesInternal\ConsoleHelper.cs" />
+    <Compile Include="HelperTypesPublic\BooleanExpressionParser.cs" />
     <Compile Include="HelperTypesPublic\ConsoleString.cs" />
     <Compile Include="HelperTypesPublic\ConsoleTable.cs" />
     <Compile Include="Constants.cs" />
