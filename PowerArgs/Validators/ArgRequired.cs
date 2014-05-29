@@ -23,34 +23,27 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// A valid command line alias or a boolean expression of aliases (and/or both supported as and '&amp;' and or '|').  
-        /// When specified, the target argument is required unless the alternative argument(s) are specified.
-        /// </summary>
-        public string Unless { get; set; }
-
-        /// <summary>
-        /// True by default.  When set to true the user must specify either the target argument, the alternative arguments(s), but not both.
-        /// When set to false the user can specify both the target and alternate arguments.
-        /// </summary>
-        public bool UnlessIsExclusive { get; set; }
-
-        /// <summary>
-        /// Your expression may be complex.  If so, set this optional property to customize the message shown if the user specifies both the
-        /// target and alternate arguments and if UnlessIsExclusive is set to true.
-        /// </summary>
-        public string ExclusiveUnlessViolationErrorMessage { get; set;  }
-
-        /// <summary>
-        /// Your expression may be complex.  If so, set this optional property to customize the message shown if the user did not set target or
-        /// alternate arguments.
-        /// </summary>
-        public string UnlessDescription { get; set; }
-
-        /// <summary>
-        /// A valid command line alias or boolean expression of aliases (and/or both supported as and '&amp;' and or '|').
+        /// A valid command line alias or boolean expression of aliases (and/or/not supported as and '&amp;', or '|', and not '!').
         /// When specified the target argument is only required if the referenced argument(s) were specified on the command line.
         /// </summary>
         public string If { get; set; }
+
+        /// <summary>
+        /// A valid command line alias or boolean expression of aliases (and/or/not supported as and '&amp;', or '|', and not '!').
+        /// When specified the target argument is only required if the referenced argument(s) were not specified on the command line.
+        /// </summary>
+        public string IfNot { get; set; }
+
+        /// <summary>
+        /// Determines if this metadata represents an argument conditionionally required.  This will be true if you've set the If or the IfNot property.
+        /// </summary>
+        public bool IsConditionallyRequired
+        {
+            get
+            {
+                return If != null || IfNot != null;
+            }
+        }
 
         /// <summary>
         /// Creates a new ArgRequired attribute.
@@ -58,7 +51,6 @@ namespace PowerArgs
         public ArgRequired()
         {
             Priority = 100;
-            UnlessIsExclusive = true;
         }
 
         /// <summary>
@@ -73,12 +65,16 @@ namespace PowerArgs
         /// <param name="arg">The value specified on the command line or null if it wasn't specified</param>
         public override void ValidateAlways(CommandLineArgument argument, ref string arg)
         {
-            if (Unless != null || If != null)
+            if (IsConditionallyRequired)
             {
-                argument.Metadata.Add(new ArgRequiredConditionalHook(this));
+                var matchingHook = (from h in argument.Metadata.Metas<ArgRequiredConditionalHook>() where h.parent == this select h).SingleOrDefault();
+                if(matchingHook == null)
+                {
+                    argument.Metadata.Add(new ArgRequiredConditionalHook(this));
+                }
             }
 
-            if (arg == null && PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
+            if (IsConditionallyRequired == false && arg == null && PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
             {
                 var value = "";
                 while (string.IsNullOrWhiteSpace(value))
@@ -89,116 +85,107 @@ namespace PowerArgs
 
                 arg = value;
             }
-            if (arg == null)
+
+            if (arg == null && IsConditionallyRequired == false)
             {
-                if (Unless == null && If == null)
-                {
-                    throw new MissingArgException("The argument '" + argument.DefaultAlias + "' is required", new ArgumentNullException(argument.DefaultAlias));
-                }
+                throw new MissingArgException("The argument '" + argument.DefaultAlias + "' is required", new ArgumentNullException(argument.DefaultAlias));
             }
         }
     }
 
     internal class ArgRequiredConditionalHook : ArgHook
     {
-        private ArgRequired parent;
+        internal ArgRequired parent;
 
         public ArgRequiredConditionalHook(ArgRequired parent)
         {
             this.parent = parent;
+            this.AfterPopulatePropertiesPriority = 2;
         }
 
         public override void AfterPopulateProperties(ArgHook.HookContext context)
         {
-            BooleanExpression expression;
-
-            var variableResolver = new FuncVariableResolver((variableIdentifier) =>
+            if(parent.If != null && parent.IfNot != null)
             {
-                foreach (var argument in context.Definition.Arguments)
+                throw new InvalidArgDefinitionException("You cannot specify both the 'If' and the 'IfNot' properties on the ArgRequired metadata");
+            }
+            else if(parent.If != null)
+            {
+                Evaluate(context, parent.If, false);
+            }
+            else if (parent.IfNot != null)
+            {
+                Evaluate(context, parent.IfNot, true);
+            }
+            else
+            {
+                throw new InvalidOperationException("ArgRequired could not determine if the given argument was required.  This is likely a bug in PowerArgs.");
+            }
+        }
+
+        private void Evaluate(ArgHook.HookContext context, string expressionText, bool not)
+        {
+            try
+            {
+                var newExpressionText = expressionText;
+                if(not)
                 {
-                    if (argument.IsMatch(variableIdentifier))
-                    {
-                        return argument.RevivedValue != null;
-                    }
+                    newExpressionText = "!(" + expressionText + ")";
                 }
 
-                if (context.SpecifiedAction != null)
+                var expression = BooleanExpressionParser.Parse(newExpressionText);
+                var eval = expression.Evaluate(context.Definition.CreateVariableResolver());
+
+                if(not)
                 {
-                    foreach (var argument in context.SpecifiedAction.Arguments)
+                    if (eval == true && context.CurrentArgument.RevivedValue == null)
                     {
-                        if (argument.IsMatch(variableIdentifier))
+                        if (TryPreventExceptionWithPrompt(context) == false)
                         {
-                            return argument.RevivedValue != null;
+                            throw new MissingArgException("The argument '" + context.CurrentArgument.DefaultAlias + "' is required if the following argument(s) are not specified: " + expressionText);
                         }
                     }
                 }
-
-                throw new InvalidArgDefinitionException(string.Format("'{0}' is not a valid argument alias", variableIdentifier));
-            });
-
-            if (parent.Unless != null)
-            {
-                try
+                else
                 {
-                    expression = BooleanExpressionParser.Parse(parent.Unless);
-                }
-                catch (Exception ex)
-                {
-                    var targetText =context.CurrentArgument.DefaultAlias + " (" + parent.Unless + ")";
-                    throw new InvalidArgDefinitionException("Failed to parse the Unless clause on target '" + targetText + "'" + ex.Message);
-                }
-
-                bool unlessIsTrue;
-
-                try
-                {
-                    unlessIsTrue = expression.Evaluate(variableResolver);
-                }
-                catch(Exception ex)
-                {
-                    var targetText = context.CurrentArgument.DefaultAlias + " (" + parent.Unless + ")";
-                    throw new InvalidArgDefinitionException("Failed to parse the Unless clause on target '" + targetText + "'" + ex.Message);
-                }
-
-                if (unlessIsTrue == false && context.CurrentArgument.RevivedValue == null)
-                {
-                    throw new MissingArgException("The argument '" + context.CurrentArgument.DefaultAlias + "' is required unless " + (parent.UnlessDescription ?? "the following is true: " + parent.Unless), new ArgumentNullException(context.CurrentArgument.DefaultAlias));
-                }
-
-                if (unlessIsTrue == true && context.CurrentArgument.RevivedValue != null && parent.UnlessIsExclusive)
-                {
-                    throw new UnexpectedArgException("The argument '" + context.CurrentArgument.DefaultAlias + "' can't be specified if  " + (parent.UnlessDescription ?? "the following is true: " + parent.Unless + ". "), new ArgumentNullException(context.CurrentArgument.DefaultAlias));
+                    if (eval == true && context.CurrentArgument.RevivedValue == null)
+                    {
+                        if (TryPreventExceptionWithPrompt(context) == false)
+                        {
+                            throw new MissingArgException("The argument '" + context.CurrentArgument.DefaultAlias + "' is required if the following argument(s) are specified: " + expressionText);
+                        }
+                    }
                 }
             }
-
-            if(parent.If != null)
+            catch(MissingArgException)
             {
-                try
+                throw;
+            }
+            catch (Exception ex)
+            {
+                var targetText = context.CurrentArgument.DefaultAlias + " (" + expressionText + ")";
+                throw new InvalidArgDefinitionException("Failed to evaluate conditional ArgRequired clause on target '" + targetText + "'" + ex.Message);
+            }
+        }
+
+        private bool TryPreventExceptionWithPrompt(ArgHook.HookContext context)
+        {
+            if (parent.PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
+            {
+                var value = "";
+                while (string.IsNullOrWhiteSpace(value))
                 {
-                    expression = BooleanExpressionParser.Parse(parent.If);
-                }
-                catch (Exception ex)
-                {
-                    var targetText = context.CurrentArgument.DefaultAlias + " (" + parent.Unless + ")";
-                    throw new InvalidArgDefinitionException("Failed to parse the If clause on target '" + targetText + "'" + ex.Message);
+                    Console.Write("Enter value for " + context.CurrentArgument.DefaultAlias + ": ");
+                    value = Console.ReadLine();
                 }
 
-                bool ifIsTrue;
-
-                try
-                {
-                    ifIsTrue = expression.Evaluate(variableResolver);
-                }
-                catch(Exception ex)
-                {
-                    var targetText = context.CurrentArgument.DefaultAlias + " (" + parent.Unless + ")";
-                    throw new InvalidArgDefinitionException("Failed to parse the If clause on target '" + targetText + "'" + ex.Message);
-                }
-
-                if(ifIsTrue == true && context.CurrentArgument.RevivedValue == null)
-                {
-                    throw new MissingArgException("The argument '" + context.CurrentArgument.DefaultAlias + "' is required if the following argument(s) are specified: " + parent.If);
-                }
+                context.ArgumentValue = value;
+                context.CurrentArgument.Populate(context);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }

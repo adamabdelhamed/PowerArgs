@@ -135,6 +135,37 @@ namespace PowerArgs
             return match.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gives you an object that you can use to tell if a particular argument was specified on the command line.
+        /// </summary>
+        /// <returns>object that you can use to tell if a particular argument was specified on the command line</returns>
+        public IVariableResolver CreateVariableResolver()
+        {
+            return new FuncVariableResolver((variableIdentifier) =>
+            {
+                foreach (var argument in this.Arguments)
+                {
+                    if (argument.IsMatch(variableIdentifier))
+                    {
+                        return argument.RevivedValue != null;
+                    }
+                }
+
+                if (this.SpecifiedAction != null)
+                {
+                    foreach (var argument in this.SpecifiedAction.Arguments)
+                    {
+                        if (argument.IsMatch(variableIdentifier))
+                        {
+                            return argument.RevivedValue != null;
+                        }
+                    }
+                }
+
+                throw new InvalidArgDefinitionException(string.Format("'{0}' is not a valid argument alias", variableIdentifier));
+            });
+        }
+
         internal static CommandLineArgument FindMatchingArgument(string key, bool throwIfMoreThanOneMatch, IEnumerable<CommandLineArgument> searchSpace)
         {
             var match = from a in searchSpace where a.IsMatch(key) select a;

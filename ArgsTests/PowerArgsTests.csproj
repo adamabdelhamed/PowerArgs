@@ -53,7 +53,7 @@
     <Compile Include="ActionSwitchHandlingRegression.cs" />
     <Compile Include="ActionTests.cs" />
     <Compile Include="BasicTests.cs" />
-    <Compile Include="ArgRequiredUnlessTests.cs" />
+    <Compile Include="ArgRequiredConditionalTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />

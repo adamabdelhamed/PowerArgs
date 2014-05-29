@@ -26,6 +26,8 @@ namespace PowerArgs
         {
             BooleanExpression rootNode = new BooleanExpression();
 
+            bool not = false;
+
             for (int i = 0; i < tokens.Count; i++)
             {
                 var token = tokens[i];
@@ -67,34 +69,54 @@ namespace PowerArgs
                         throw new ArgumentException("You are missing at least 1 closing parenthesis");
                     }
 
-                    if (numOpen < 0)
-                    {
-                        throw new ArgumentException("You have at least 1 extra closing parenthesis");
-                    }
-
                     if (groupedExpression.Count == 0)
                     {
                         throw new ArgumentException("You have an empty set of parenthesis");
                     }
 
-                    rootNode.Operands.Add(BuildTree(groupedExpression));
+                    var group = BuildTree(groupedExpression);
+                    group.Not = not;
+                    rootNode.Operands.Add(group);
+                    not = false;
                 }
                 else if (token.Type == BooleanExpressionTokenType.Variable)
                 {
-                    rootNode.Operands.Add(new BooleanExpressionVariable() { VariableName = token.TokenValue });
+                    rootNode.Operands.Add(new BooleanExpressionVariable() { VariableName = token.TokenValue, Not = not });
+                    not = false;
                 }
                 else if (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)
                 {
-                    if (rootNode.Operators.Count > rootNode.Operands.Count)
+                    if(not)
+                    {
+                        throw new ArgumentException("You cannot have an operator '&' or '|' after a '!'");
+                    }
+
+                    if (rootNode.Operators.Count >= rootNode.Operands.Count)
                     {
                         throw new ArgumentException("You cannot have two consecutive operators '&&' or '||', use '&' or '|'");
                     }
                     rootNode.Operators.Add((BooleanOperator)token.Type);
                 }
+                else if(token.Type == BooleanExpressionTokenType.Not)
+                {
+                    if (not)
+                    {
+                        throw new ArgumentException("You cannot have two consecutive '!' operators");
+                    }
+                    else
+                    {
+                        not = true;
+                    }
+                }
                 else
                 {
                     throw new ArgumentException("Unexpected token '" + token.TokenValue + "'");
                 }
+            }
+
+            if(not == true)
+            {
+                throw new ArgumentException("Unexpected token '!' at end of expression");
             }
 
             return rootNode;
@@ -104,7 +126,10 @@ namespace PowerArgs
         {
             List<BooleanExpressionToken> ret = new List<BooleanExpressionToken>();
             BooleanExpressionToken currentToken = null;
-            List<char> specialsChars = new List<char>() { '(', ')', '&', '|' };
+
+            List<char> specialsChars = (from val in Enum.GetValues(typeof(BooleanExpressionTokenType)).ToList<BooleanExpressionTokenType>()
+                                        where val != BooleanExpressionTokenType.Variable
+                                        select (char)val).ToList();
 
             foreach (var c in expressionText)
             {
@@ -115,10 +140,8 @@ namespace PowerArgs
                         ret.Add(currentToken);
                         currentToken = null;
                     }
-                    continue;
                 }
-
-                if (specialsChars.Contains(c))
+                else if (specialsChars.Contains(c))
                 {
                     if (currentToken != null)
                     {
@@ -160,11 +183,11 @@ namespace PowerArgs
         /// <summary>
         /// Represents an 'and' boolean operation
         /// </summary>
-        And = (int)'&',
+        And = '&',
         /// <summary>
         /// Represents an 'or' boolean operation
         /// </summary>
-        Or = (int)'|',
+        Or = '|',
     }
 
     /// <summary>
@@ -179,19 +202,23 @@ namespace PowerArgs
         /// <summary>
         /// Represents the beginning of a logically grouped boolean expression
         /// </summary>
-        GroupOpen = (int)'(',
+        GroupOpen = '(',
         /// <summary>
         /// Represents the end of a logically grouped boolean expression
         /// </summary>
-        GroupClose = (int)')',
+        GroupClose = ')',
         /// <summary>
         /// Represents an 'and' clause in a boolean expression
         /// </summary>
-        And = (int)'&',
+        And = BooleanOperator.And,
         /// <summary>
         /// Represents an 'or' clause in a boolean expression
         /// </summary>
-        Or = (int)'|',
+        Or = BooleanOperator.Or,
+        /// <summary>
+        /// Indicates that an expression should be negated
+        /// </summary>
+        Not = '!',
     }
 
     /// <summary>
@@ -291,6 +318,11 @@ namespace PowerArgs
         /// <param name="resolver"></param>
         /// <returns></returns>
         bool Evaluate(IVariableResolver resolver);
+
+        /// <summary>
+        /// Gets or sets a flag indicating that the expression should be negated
+        /// </summary>
+        bool Not { get; set; }
     }
 
     /// <summary>
@@ -298,6 +330,11 @@ namespace PowerArgs
     /// </summary>
     public class BooleanExpressionVariable : IBooleanExpressionNode
     {
+        /// <summary>
+        /// Gets or sets a flag indicating that the variable's value should be negated
+        /// </summary>
+        public bool Not { get; set; }
+
         /// <summary>
         /// The name of the variable referenced by this node
         /// </summary>
@@ -311,7 +348,7 @@ namespace PowerArgs
         public bool Evaluate(IVariableResolver resolver)
         {
             bool val = resolver.ResolveBoolean(this.VariableName);
-            return val;
+            return Not ? !val : val;
         }
     }
 
@@ -320,6 +357,11 @@ namespace PowerArgs
     /// </summary>
     public class BooleanExpression : IBooleanExpressionNode
     {
+        /// <summary>
+        /// Gets or sets a flag indicating that the expression should be negated
+        /// </summary>
+        public bool Not { get; set; }
+
         /// <summary>
         /// The operands (variables or grouped child expressions) that make up this expression.
         /// </summary>
@@ -378,16 +420,16 @@ namespace PowerArgs
 
                     if (currentValue == true && currentOperator == BooleanOperator.Or)
                     {
-                        return true;
+                        return Not ? false : true;
                     }
                     else if (currentValue == false && currentOperator == BooleanOperator.And)
                     {
-                        return false;
+                        return Not ? true : false;
                     }
                 }
                 else
                 {
-                    return currentValue;
+                    return Not ? !currentValue : currentValue;
                 }
             }
 

@@ -45,6 +45,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\Array.cs" />
     <Compile Include="Extensions\IEnumerableOfIArgMetadata.cs" />
     <Compile Include="Extensions\FieldInfo.cs" />
     <Compile Include="Extensions\MatchCollection.cs" />
@@ -116,6 +117,7 @@
     <Compile Include="HelperTypesPublic\SimpleTabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\USPhoneNumber.cs" />
     <Compile Include="Hooks\TabCompletion.cs" />
+    <Compile Include="Validators\ArgCantBeCombinedWith.cs" />
     <Compile Include="Validators\ArgExistingDirectory.cs" />
     <Compile Include="Validators\ArgExistingFile.cs" />
     <Compile Include="Validators\ArgRange.cs" />

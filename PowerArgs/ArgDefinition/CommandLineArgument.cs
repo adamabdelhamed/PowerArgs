@@ -383,11 +383,16 @@ namespace PowerArgs
             foreach (var argument in arguments)
             {
                 argument.FindMatchingArgumentInRawParseData(context);
-                argument.RunBeforePopulateProperty(context);
-                argument.Validate(ref context.ArgumentValue);
-                argument.Revive(context.ArgumentValue);
-                argument.RunAfterPopulateProperty(context);
+                argument.Populate(context);
             }
+        }
+
+        internal void Populate(ArgHook.HookContext context)
+        {
+            RunBeforePopulateProperty(context);
+            Validate(ref context.ArgumentValue);
+            Revive(context.ArgumentValue);
+            RunAfterPopulateProperty(context);
         }
 
         internal static List<string> FindDefaultShortcuts(PropertyInfo info, List<string> knownShortcuts, bool ignoreCase)
