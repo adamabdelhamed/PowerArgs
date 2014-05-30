@@ -9,6 +9,21 @@ namespace ArgsTests
     public class BooleanExpressionEvaluatorUnitTests
     {
         [TestMethod]
+        public void TestBooleanExpressionReplay()
+        {
+            Dictionary<string, bool> variableValues = new Dictionary<string, bool>
+            {
+                {"cake", true},
+                {"eatIt", true},
+            };
+
+            var expressionText = "!(cake & eatIt)";
+            var expression = BooleanExpressionParser.Parse(expressionText);
+            Assert.IsFalse(expression.Evaluate(variableValues));
+            Assert.AreEqual(expressionText, expression.ToString());
+        }
+
+        [TestMethod]
         public void TestBooleanExpressionsSimpleOr()
         {
             Dictionary<string, bool> variableValues = new Dictionary<string, bool>

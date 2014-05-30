@@ -10,7 +10,7 @@ namespace PowerArgs
     /// </summary>
     public class ArgCantBeCombinedWith : ArgHook
     {
-        private BooleanExpression Expression { get;  set; }
+        private IBooleanExpression Expression { get;  set; }
 
         /// <summary>
         /// The expression text that was passed into the constructor.  This can either be an alias argument or a boolean expression of arguments (e.g. Argument1 | Argument2). Valid operators are

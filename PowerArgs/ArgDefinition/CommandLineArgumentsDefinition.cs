@@ -139,9 +139,9 @@ namespace PowerArgs
         /// Gives you an object that you can use to tell if a particular argument was specified on the command line.
         /// </summary>
         /// <returns>object that you can use to tell if a particular argument was specified on the command line</returns>
-        public IVariableResolver CreateVariableResolver()
+        public IBooleanVariableResolver CreateVariableResolver()
         {
-            return new FuncVariableResolver((variableIdentifier) =>
+            return new FuncBooleanVariableResolver((variableIdentifier) =>
             {
                 foreach (var argument in this.Arguments)
                 {
@@ -155,6 +155,7 @@ namespace PowerArgs
                 {
                     foreach (var argument in this.SpecifiedAction.Arguments)
                     {
+
                         if (argument.IsMatch(variableIdentifier))
                         {
                             return argument.RevivedValue != null;

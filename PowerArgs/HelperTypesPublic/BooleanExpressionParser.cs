@@ -15,16 +15,16 @@ namespace PowerArgs
         /// </summary>
         /// <param name="expressionText">The expression to parse</param>
         /// <returns>The parsed expression</returns>
-        public static BooleanExpression Parse(string expressionText)
+        public static IBooleanExpression Parse(string expressionText)
         {
             List<BooleanExpressionToken> tokens = Tokenize(expressionText);
-            BooleanExpression tree = BuildTree(tokens);
+            IBooleanExpression tree = BuildTree(tokens);
             return tree;
         }
 
-        private static BooleanExpression BuildTree(List<BooleanExpressionToken> tokens)
+        private static IBooleanExpression BuildTree(List<BooleanExpressionToken> tokens)
         {
-            BooleanExpression rootNode = new BooleanExpression();
+            BooleanExpressionGroup defaultGroup = new BooleanExpressionGroup();
 
             bool not = false;
 
@@ -33,7 +33,7 @@ namespace PowerArgs
                 var token = tokens[i];
 
                 if (token.Type == BooleanExpressionTokenType.GroupClose ||
-                    (rootNode.Operands.Count == 0 && (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)) ||
+                    (defaultGroup.Operands.Count == 0 && (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)) ||
                     (i == tokens.Count - 1 && (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)))
                 {
                     throw new ArgumentException("Unexpected token '" + token.TokenValue + "'");
@@ -76,12 +76,12 @@ namespace PowerArgs
 
                     var group = BuildTree(groupedExpression);
                     group.Not = not;
-                    rootNode.Operands.Add(group);
+                    defaultGroup.Operands.Add(group);
                     not = false;
                 }
                 else if (token.Type == BooleanExpressionTokenType.Variable)
                 {
-                    rootNode.Operands.Add(new BooleanExpressionVariable() { VariableName = token.TokenValue, Not = not });
+                    defaultGroup.Operands.Add(new BooleanVariable() { VariableName = token.TokenValue, Not = not });
                     not = false;
                 }
                 else if (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)
@@ -91,11 +91,11 @@ namespace PowerArgs
                         throw new ArgumentException("You cannot have an operator '&' or '|' after a '!'");
                     }
 
-                    if (rootNode.Operators.Count >= rootNode.Operands.Count)
+                    if (defaultGroup.Operators.Count >= defaultGroup.Operands.Count)
                     {
                         throw new ArgumentException("You cannot have two consecutive operators '&&' or '||', use '&' or '|'");
                     }
-                    rootNode.Operators.Add((BooleanOperator)token.Type);
+                    defaultGroup.Operators.Add((BooleanOperator)token.Type);
                 }
                 else if(token.Type == BooleanExpressionTokenType.Not)
                 {
@@ -119,7 +119,14 @@ namespace PowerArgs
                 throw new ArgumentException("Unexpected token '!' at end of expression");
             }
 
-            return rootNode;
+            if (defaultGroup.Operands.Count == 1)
+            {
+                return defaultGroup.Operands[0];
+            }
+            else
+            {
+                return defaultGroup;
+            }
         }
 
         private static List<BooleanExpressionToken> Tokenize(string expressionText)
@@ -240,7 +247,7 @@ namespace PowerArgs
     /// <summary>
     /// An interface that describes how to resolve boolean variables that can be either true or false
     /// </summary>
-    public interface IVariableResolver
+    public interface IBooleanVariableResolver
     {
         /// <summary>
         /// Implementations should provide a value of true or false for each variable specified.  Implementations can
@@ -254,7 +261,7 @@ namespace PowerArgs
     /// <summary>
     /// A class that can resolve a boolean variable based on a function.
     /// </summary>
-    public class FuncVariableResolver : IVariableResolver
+    public class FuncBooleanVariableResolver : IBooleanVariableResolver
     {
         /// <summary>
         /// The function that knows how to resolve boolean variables
@@ -265,7 +272,7 @@ namespace PowerArgs
         /// Creates a new variable resolver given an implementation as a function.
         /// </summary>
         /// <param name="resolverImpl"></param>
-        public FuncVariableResolver(Func<string, bool> resolverImpl)
+        public FuncBooleanVariableResolver(Func<string, bool> resolverImpl)
         {
             if (resolverImpl == null) throw new ArgumentNullException("resolverImpl cannot be null");
             this.ResolverImpl = resolverImpl;
@@ -283,11 +290,11 @@ namespace PowerArgs
         }
     }
 
-    internal class DictionaryVariableResolver : IVariableResolver
+    internal class DictionaryBooleanVariableResolver : IBooleanVariableResolver
     {
         public Dictionary<string, bool> InnerDictionary { get; private set; }
 
-        public DictionaryVariableResolver(Dictionary<string, bool> innerDictionary)
+        public DictionaryBooleanVariableResolver(Dictionary<string, bool> innerDictionary)
         {
             if (innerDictionary == null)
             {
@@ -310,14 +317,21 @@ namespace PowerArgs
     /// <summary>
     /// An interface representing a node in a boolean expression that can either be true or false.
     /// </summary>
-    public interface IBooleanExpressionNode
+    public interface IBooleanExpression
     {
         /// <summary>
         /// Evaluates the state of the node (true or false) given a variable resolver.
         /// </summary>
-        /// <param name="resolver"></param>
-        /// <returns></returns>
-        bool Evaluate(IVariableResolver resolver);
+        /// <param name="resolver">the object to use to resolve boolean variables</param>
+        /// <returns>the result of the expression, true or false</returns>
+        bool Evaluate(IBooleanVariableResolver resolver);
+
+        /// <summary>
+        /// Evaluates the state of the node (true or false) given a set of variable values.
+        /// </summary>
+        /// <param name="variableValues">The current state of variables</param>
+        /// <returns>the result of the expression, true or false</returns>
+        bool Evaluate(Dictionary<string, bool> variableValues);
 
         /// <summary>
         /// Gets or sets a flag indicating that the expression should be negated
@@ -328,7 +342,7 @@ namespace PowerArgs
     /// <summary>
     /// A node in a boolean expression that represents a variable that can either be true or false.
     /// </summary>
-    public class BooleanExpressionVariable : IBooleanExpressionNode
+    public class BooleanVariable : IBooleanExpression
     {
         /// <summary>
         /// Gets or sets a flag indicating that the variable's value should be negated
@@ -345,17 +359,39 @@ namespace PowerArgs
         /// </summary>
         /// <param name="resolver">The object used to resolve boolean variables</param>
         /// <returns>the result of the resolver</returns>
-        public bool Evaluate(IVariableResolver resolver)
+        public bool Evaluate(IBooleanVariableResolver resolver)
         {
             bool val = resolver.ResolveBoolean(this.VariableName);
             return Not ? !val : val;
+        }
+
+        /// <summary>
+        /// Evaluates the expression given a set of variable values
+        /// </summary>
+        /// <param name="variableValues">The value of variables that appear in the expression</param>
+        /// <returns>True if the expression was true, false otherwise</returns>
+        public bool Evaluate(Dictionary<string, bool> variableValues)
+        {
+            return Evaluate(new DictionaryBooleanVariableResolver(variableValues));
+        }
+
+        /// <summary>
+        /// Gets a string representation of the variable
+        /// </summary>
+        /// <returns>a string representation of the variable</returns>
+        public override string ToString()
+        {
+            var ret = "";
+            if (Not) ret += "!";
+            ret += VariableName;
+            return ret;
         }
     }
 
     /// <summary>
     /// A class that represents a boolean expression that supports and, or, and grouping.
     /// </summary>
-    public class BooleanExpression : IBooleanExpressionNode
+    public class BooleanExpressionGroup : IBooleanExpression
     {
         /// <summary>
         /// Gets or sets a flag indicating that the expression should be negated
@@ -365,7 +401,7 @@ namespace PowerArgs
         /// <summary>
         /// The operands (variables or grouped child expressions) that make up this expression.
         /// </summary>
-        public List<IBooleanExpressionNode> Operands { get; private set; }
+        public List<IBooleanExpression> Operands { get; private set; }
 
         /// <summary>
         /// The operators to apply between each operand
@@ -376,9 +412,9 @@ namespace PowerArgs
         /// <summary>
         /// Creates a new empty boolean expression
         /// </summary>
-        public BooleanExpression()
+        public BooleanExpressionGroup()
         {
-            Operands = new List<IBooleanExpressionNode>();
+            Operands = new List<IBooleanExpression>();
             Operators = new List<BooleanOperator>();
         }
 
@@ -389,7 +425,7 @@ namespace PowerArgs
         /// <returns>True if the expression was true, false otherwise</returns>
         public bool Evaluate(Dictionary<string, bool> variableValues)
         {
-            return Evaluate(new DictionaryVariableResolver(variableValues));
+            return Evaluate(new DictionaryBooleanVariableResolver(variableValues));
         }
 
         /// <summary>
@@ -397,7 +433,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="resolver">An object used to resolve variables that appear in the expression</param>
         /// <returns>True if the expression was true, false otherwise</returns>
-        public bool Evaluate(IVariableResolver resolver)
+        public bool Evaluate(IBooleanVariableResolver resolver)
         {
             if (Operands.Count == 0)
             {
@@ -434,6 +470,41 @@ namespace PowerArgs
             }
 
             throw new ArgumentException("This should never happen :)");
+        }
+
+        /// <summary>
+        /// Gets a string representation of the variable
+        /// </summary>
+        /// <returns>a string representation of the variable</returns>
+        public override string ToString()
+        {
+            if (Operands.Count == 0)
+            {
+                return "empty expression";
+            }
+
+            if (Operators.Count != Operands.Count - 1)
+            {
+                return "Unexpected number of operators";
+            }
+
+            var ret = "";
+            if (Not) ret += "!";
+            ret += "(";
+
+            for (int i = 0; i < Operands.Count; i++)
+            {
+                var operand = Operands[i];
+                ret += operand.ToString();
+
+                if(i < Operators.Count)
+                {
+                    ret += " " +((char) Operators[i]) + " ";
+                }
+
+            }
+            ret += ")";
+            return ret;
         }
     }
 }
