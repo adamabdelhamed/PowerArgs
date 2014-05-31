@@ -37,6 +37,36 @@ namespace PowerArgs
         /// </summary>
         public List<ICommandLineArgumentMetadata> Metadata { get; private set; }
 
+        /// <summary>
+        /// Gets a friendly type name for this argument.
+        /// </summary>
+        public string FriendlyTypeName
+        {
+            get
+            {
+                string ret;
+                if (ArgumentType.IsGenericType)
+                {
+                    if (ArgumentType.GetGenericArguments().Length == 1 && ArgumentType.GetGenericTypeDefinition() == typeof(Nullable<int>).GetGenericTypeDefinition())
+                    {
+                        ret = MapTypeName(ArgumentType.GetGenericArguments()[0]);
+                    }
+                    else
+                    {
+                        string name = GetTypeNameWithGenericsStripped(ArgumentType.GetGenericTypeDefinition());
+                        string parameters = string.Join(", ", ArgumentType.GetGenericArguments().Select(a => MapTypeName(a)));
+                        ret = name + "<" + parameters + ">";
+                    }
+                }
+                else
+                {
+                    ret = MapTypeName(ArgumentType);
+                }
+
+                return ret;
+            }
+        }
+
         internal ReadOnlyCollection<ArgValidator> Validators
         {
             get
@@ -481,38 +511,7 @@ namespace PowerArgs
             }
             return null;
         }
-
-        /// <summary>
-        /// Gets a friendly type name for this argument.
-        /// </summary>
-        public string FriendlyTypeName
-        {
-            get
-            {
-                string ret;
-                if(ArgumentType.IsGenericType)
-                {
-                    if(ArgumentType.GetGenericArguments().Length == 1 && ArgumentType.GetGenericTypeDefinition() == typeof(Nullable<int>).GetGenericTypeDefinition())
-                    {
-                        ret = MapTypeName(ArgumentType.GetGenericArguments()[0]);
-                    }
-                    else
-                    {
-                        string name = GetTypeNameWithGenericsStripped(ArgumentType.GetGenericTypeDefinition());
-                        string parameters = string.Join(", ", ArgumentType.GetGenericArguments().Select(a => MapTypeName(a)));
-                        ret = name + "<" + parameters + ">";
-                    }
-                }
-                else
-                {
-                    ret = MapTypeName(ArgumentType);
-                }
-
-                return ret;
-            }
-        }
-
-        public static string GetTypeNameWithGenericsStripped(Type t)
+        private static string GetTypeNameWithGenericsStripped(Type t)
         {
             string name = t.Name;
             int index = name.IndexOf('`');
