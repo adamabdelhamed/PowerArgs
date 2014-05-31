@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using System.Text.RegularExpressions;
 using System.Net.Mail;
+using System.Net;
 
 namespace ArgsTests
 {
@@ -150,6 +151,8 @@ namespace ArgsTests
 
             public Uri Uri { get; set; }
 
+            public IPAddress IPAddress { get; set; }
+
             [ArgShortcut("li")]
             public List<int> List { get; set; }
 
@@ -240,10 +243,8 @@ namespace ArgsTests
             DateTime d = DateTime.Today;
             System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 
-            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue+"", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com"  };
-
+            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue+"", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com", "-ipaddress", IPAddress.Loopback.ToString() };
             BasicArgs parsed = Args.Parse<BasicArgs>(args);
-
             Assert.AreEqual("stringValue", parsed.String);
             Assert.AreEqual(34, parsed.Int);
             Assert.AreEqual(33.33, parsed.Double);
@@ -261,6 +262,7 @@ namespace ArgsTests
             Assert.AreEqual(20, parsed.ArrayOfBytes[1]);
             Assert.AreEqual(30, parsed.ArrayOfBytes[2]);
             Assert.AreEqual(new Uri("http://www.bing.com"), parsed.Uri);
+            Assert.AreEqual(IPAddress.Loopback, parsed.IPAddress);
             Assert.IsTrue(BasicHook.WasRun);
         }
 
@@ -272,7 +274,7 @@ namespace ArgsTests
             DateTime d = DateTime.Today;
             System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 
-            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue + "", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com" };
+            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue + "", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com", "-ipaddress", IPAddress.Loopback.ToString() };
 
             BasicArgs parsed = (BasicArgs)Args.Parse(typeof(BasicArgs), args);
 
@@ -293,6 +295,7 @@ namespace ArgsTests
             Assert.AreEqual(20, parsed.ArrayOfBytes[1]);
             Assert.AreEqual(30, parsed.ArrayOfBytes[2]);
             Assert.AreEqual(new Uri("http://www.bing.com"), parsed.Uri);
+            Assert.AreEqual(IPAddress.Loopback, parsed.IPAddress);
             Assert.IsTrue(BasicHook.WasRun);
         }
 
