@@ -365,6 +365,7 @@ namespace PowerArgs
                 ShowPosition = definition.ExceptionBehavior.ShowPositionColumn,
                 ShowType = definition.ExceptionBehavior.ShowTypeColumn,
                 ShowPossibleValues = definition.ExceptionBehavior.ShowPossibleValues,
+                SpecifiedActionOverride = definition.SpecifiedAction,
             }).Write();
 
             return CreateEmptyResult<T>(context, ex);

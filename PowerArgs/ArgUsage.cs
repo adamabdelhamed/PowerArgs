@@ -327,7 +327,8 @@ namespace PowerArgs
  
             if (definition.Actions.Count > 0)
             {
-                ret.AppendUsingCurrentFormat(" <action> options\n");
+                string actionText = options.SpecifiedActionOverride == null ? "<action>" : options.SpecifiedActionOverride.DefaultAlias;
+                ret.AppendUsingCurrentFormat(" " + actionText + " options\n");
 
                 foreach (var example in definition.Examples)
                 {
