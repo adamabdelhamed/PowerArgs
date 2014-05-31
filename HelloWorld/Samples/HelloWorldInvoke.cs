@@ -3,11 +3,11 @@ using System;
 
 namespace HelloWorld.Samples
 {
-     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = false), TabCompletion /* [TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
+     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = true), TabCompletion /* [TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
     public class HelloWorldInvokeArgs
     {
         public string StringArg { get; set; }
-        public int    IntArg    { get; set; }
+        public int?    IntArg    { get; set; }
         public bool   SwitchArg { get; set; }
   
         public void Main()

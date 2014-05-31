@@ -78,6 +78,20 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestNullableFriendlyTypeName()
+        {
+            var arg = new CommandLineArgument(typeof(Nullable<int>), "someInt");
+            Assert.AreEqual("integer", arg.FriendlyTypeName);
+        }
+
+        [TestMethod]
+        public void TestGenericFriendlyTypeName()
+        {
+            var arg = new CommandLineArgument(typeof(List<int>), "someInt");
+            Assert.AreEqual("List<integer>", arg.FriendlyTypeName);
+        }
+
+        [TestMethod]
         public void TestActionSpecificUsage()
         {
             try

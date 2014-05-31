@@ -80,14 +80,6 @@ namespace PowerArgs
     /// </summary>
     public class ArgumentUsageInfo
     {
-        private static Dictionary<string, string> KnownTypeMappings = new Dictionary<string, string>()
-        {
-            {"Int32", "integer"},
-            {"Int64", "integer"},
-            {"Boolean", "switch"},
-            {"Guid", "guid"},
-        };
-
         /// <summary>
         /// The name that will be written as part of the usage.
         /// </summary>
@@ -184,15 +176,7 @@ namespace PowerArgs
 
             Aliases.AddRange(toAutoGen.Aliases.Skip(1).Select(a => "-"+a));
 
-            Type = toAutoGen.ArgumentType.Name;
-            if (KnownTypeMappings.ContainsKey(Type))
-            {
-                Type = KnownTypeMappings[Type];
-            }
-            else
-            {
-                Type = Type.ToLower();
-            }
+            Type = toAutoGen.FriendlyTypeName;
 
             Position = toAutoGen.Position >= 0 ? new int?(toAutoGen.Position) : null;
             Description = toAutoGen.Description ?? "";

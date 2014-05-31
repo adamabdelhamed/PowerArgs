@@ -17,6 +17,14 @@ namespace PowerArgs
     /// </summary>
     public class CommandLineArgument
     {
+        private static Dictionary<string, string> KnownTypeMappings = new Dictionary<string, string>()
+        {
+            {"Int32", "integer"},
+            {"Int64", "integer"},
+            {"Boolean", "switch"},
+            {"Guid", "guid"},
+        };
+
         private AttrOverride overrides;
 
         /// <summary>
@@ -472,6 +480,56 @@ namespace PowerArgs
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Gets a friendly type name for this argument.
+        /// </summary>
+        public string FriendlyTypeName
+        {
+            get
+            {
+                string ret;
+                if(ArgumentType.IsGenericType)
+                {
+                    if(ArgumentType.GetGenericArguments().Length == 1 && ArgumentType.GetGenericTypeDefinition() == typeof(Nullable<int>).GetGenericTypeDefinition())
+                    {
+                        ret = MapTypeName(ArgumentType.GetGenericArguments()[0]);
+                    }
+                    else
+                    {
+                        string name = GetTypeNameWithGenericsStripped(ArgumentType.GetGenericTypeDefinition());
+                        string parameters = string.Join(", ", ArgumentType.GetGenericArguments().Select(a => MapTypeName(a)));
+                        ret = name + "<" + parameters + ">";
+                    }
+                }
+                else
+                {
+                    ret = MapTypeName(ArgumentType);
+                }
+
+                return ret;
+            }
+        }
+
+        public static string GetTypeNameWithGenericsStripped(Type t)
+        {
+            string name = t.Name;
+            int index = name.IndexOf('`');
+            return index == -1 ? name : name.Substring(0, index);
+        }
+        private static string MapTypeName(Type t)
+        {
+            string ret;
+            if (KnownTypeMappings.ContainsKey(t.Name))
+            {
+                ret = KnownTypeMappings[t.Name];
+            }
+            else
+            {
+                ret = t.Name.ToLower();
+            }
+            return ret;
         }
     }
 }
