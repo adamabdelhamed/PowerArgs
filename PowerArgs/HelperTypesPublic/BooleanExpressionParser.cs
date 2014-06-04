@@ -36,7 +36,7 @@ namespace PowerArgs
                     (defaultGroup.Operands.Count == 0 && (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)) ||
                     (i == tokens.Count - 1 && (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)))
                 {
-                    throw new ArgumentException("Unexpected token '" + token.TokenValue + "'");
+                    throw new ArgumentException("Unexpected token '" + token.Value + "'");
                 }
 
                 if (token.Type == BooleanExpressionTokenType.GroupOpen)
@@ -81,7 +81,7 @@ namespace PowerArgs
                 }
                 else if (token.Type == BooleanExpressionTokenType.Variable)
                 {
-                    defaultGroup.Operands.Add(new BooleanVariable() { VariableName = token.TokenValue, Not = not });
+                    defaultGroup.Operands.Add(new BooleanVariable() { VariableName = token.Value, Not = not });
                     not = false;
                 }
                 else if (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)
@@ -110,7 +110,7 @@ namespace PowerArgs
                 }
                 else
                 {
-                    throw new ArgumentException("Unexpected token '" + token.TokenValue + "'");
+                    throw new ArgumentException("Unexpected token '" + token.Value + "'");
                 }
             }
 
@@ -131,54 +131,31 @@ namespace PowerArgs
 
         private static List<BooleanExpressionToken> Tokenize(string expressionText)
         {
-            List<BooleanExpressionToken> ret = new List<BooleanExpressionToken>();
-            BooleanExpressionToken currentToken = null;
-
-            List<char> specialsChars = (from val in Enum.GetValues(typeof(BooleanExpressionTokenType)).ToList<BooleanExpressionTokenType>()
+            List<string> delimiters = (from val in Enum.GetValues(typeof(BooleanExpressionTokenType)).ToList<BooleanExpressionTokenType>()
                                         where val != BooleanExpressionTokenType.Variable
-                                        select (char)val).ToList();
+                                        select ""+((char)val)).ToList();
 
-            foreach (var c in expressionText)
+            Tokenizer<BooleanExpressionToken> tokenizer = new Tokenizer<BooleanExpressionToken>();
+            tokenizer.Delimiters.AddRange(delimiters);
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
+            tokenizer.TokenFactory = (Token currentToken, List<BooleanExpressionToken> previousTokens) =>
             {
-                if(char.IsWhiteSpace(c))
-                {
-                    if(currentToken != null)
-                    {
-                        ret.Add(currentToken);
-                        currentToken = null;
-                    }
-                }
-                else if (specialsChars.Contains(c))
-                {
-                    if (currentToken != null)
-                    {
-                        ret.Add(currentToken);
-                        currentToken = null;
-                    }
+                var ret = new BooleanExpressionToken(currentToken.Value, currentToken.StartIndex);
 
-                    ret.Add(new BooleanExpressionToken() { TokenValue = c + "", Type = (BooleanExpressionTokenType)Enum.ToObject(typeof(BooleanExpressionTokenType), ((int)c)) });
+                if(delimiters.Contains(currentToken.Value))
+                {
+                    var asChar = currentToken.Value[0];
+                    ret.Type = (BooleanExpressionTokenType)Enum.ToObject(typeof(BooleanExpressionTokenType), ((int)asChar));    
                 }
                 else
                 {
-                    if (currentToken == null)
-                    {
-                        currentToken = new BooleanExpressionToken() { Type = BooleanExpressionTokenType.Variable };
-                        currentToken.TokenValue = "" + c;
-                    }
-                    else
-                    {
-                        currentToken.TokenValue += c;
-                    }
+                    ret.Type = BooleanExpressionTokenType.Variable;
                 }
-            }
 
-            if (currentToken != null)
-            {
-                ret.Add(currentToken);
-                currentToken = null;
-            }
+                return ret;
+            };
 
-            return ret;
+            return tokenizer.Tokenize(expressionText);
         }
     }
 
@@ -231,17 +208,15 @@ namespace PowerArgs
     /// <summary>
     /// A class that represents a boolean expression token
     /// </summary>
-    public class BooleanExpressionToken
+    public class BooleanExpressionToken : Token
     {
         /// <summary>
         /// The type of token
         /// </summary>
         public BooleanExpressionTokenType Type { get; set; }
 
-        /// <summary>
-        /// The value of the token as a string
-        /// </summary>
-        public string TokenValue { get; set; }
+        public BooleanExpressionToken(string tokenText, int startIndex) : base(tokenText, startIndex) { }
+        public BooleanExpressionToken(char tokenText, int startIndex) : base(tokenText, startIndex) { }
     }
 
     /// <summary>
