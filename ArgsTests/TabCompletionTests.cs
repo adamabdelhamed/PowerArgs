@@ -51,6 +51,13 @@ namespace ArgsTests
             public EnumWithShortcuts Enum { get; set; }
         }
 
+        [TabCompletion("$")]
+        public class ArgsWithActionsAndEnums
+        {
+            [ArgActionMethod]
+            public void Do(DayOfWeek week) { }
+        }
+
         public class MyCompletionSource : SimpleTabCompletionSource
         {
             public MyCompletionSource() : base(MyCompletionSource.GetWords()) {}
@@ -58,6 +65,14 @@ namespace ArgsTests
             {
                 return "Adam|Abdelhamed".Split('|');
             }
+        }
+
+        [TestMethod]
+        public void TestActionEnumArgCompletion()
+        {
+            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("Do -week Mo\t");
+            var parsed = Args.ParseAction<ArgsWithActionsAndEnums>("$");
+            Assert.AreEqual(DayOfWeek.Monday, parsed.Definition.SpecifiedAction.Arguments[0].RevivedValue);
         }
 
         [TestMethod]

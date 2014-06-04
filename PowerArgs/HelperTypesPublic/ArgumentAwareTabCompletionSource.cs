@@ -30,6 +30,16 @@ namespace PowerArgs
             }
 
             var match = definition.Arguments.Where(arg => arg.IsMatch(context)).SingleOrDefault();
+
+            if(match == null)
+            {
+                foreach(var action in definition.Actions)
+                {
+                    match = action.Arguments.Where(arg => arg.IsMatch(context)).SingleOrDefault();
+                    if (match != null) break;
+                }
+            }
+
             if (match == null)
             {
                 completion = null;
