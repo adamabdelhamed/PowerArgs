@@ -22,6 +22,25 @@ namespace PowerArgs
             return tree;
         }
 
+        /// <summary>
+        /// A reviver that makes boolean expressions specificable on the command line
+        /// </summary>
+        /// <param name="key">not used</param>
+        /// <param name="val">the expression text</param>
+        /// <returns></returns>
+        [ArgReviver]
+        public static IBooleanExpression Revive(string key, string val)
+        {
+            try
+            {
+                return Parse(val);
+            }
+            catch(Exception ex)
+            {
+                throw new ValidationArgException(string.Format("Unable to parse expression '{0}'", val), ex);
+            }
+        }
+
         private static IBooleanExpression BuildTree(List<BooleanExpressionToken> tokens)
         {
             BooleanExpressionGroup defaultGroup = new BooleanExpressionGroup();

@@ -8,6 +8,34 @@ namespace ArgsTests
     [TestClass]
     public class BooleanExpressionEvaluatorUnitTests
     {
+        public class ArgsWithExpression
+        {
+            public IBooleanExpression Expression { get; set; }
+        }
+
+        [TestMethod]
+        public void TestParseExpression()
+        {
+            var exp = "(a | b)";
+            var parsed = Args.Parse<ArgsWithExpression>("-e", exp);
+            Assert.AreEqual(exp, parsed.Expression.ToString());
+        }
+
+        [TestMethod]
+        public void TestParseInvalidExpression()
+        {
+            try
+            {
+                var invalidExp = "!!!!!!!!!!!(a | b)";
+                var parsed = Args.Parse<ArgsWithExpression>("-e", invalidExp);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch(ValidationArgException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentException));
+            }
+        }
+
         [TestMethod]
         public void TestBooleanExpressionReplay()
         {
