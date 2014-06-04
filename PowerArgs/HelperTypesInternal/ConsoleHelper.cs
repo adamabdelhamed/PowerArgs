@@ -61,15 +61,22 @@ namespace PowerArgs
             return (from t in ret where string.IsNullOrWhiteSpace(t) == false select t.Trim()).ToArray();
         }
 
-        private static void RefreshConsole(int leftStart, int topStart, List<char> chars, int offset = 0, int lookAhead = 1)
+        private static void RefreshConsole(int leftStart, int topStart, List<char> chars, int offset = 0, int lookAhead = 1, int leftAdjust = -1)
         {
             int left = ConsoleImpl.CursorLeft;
             ConsoleImpl.CursorLeft = leftStart;
             ConsoleImpl.CursorTop = topStart;
             for (int i = 0; i < chars.Count; i++) ConsoleImpl.Write(chars[i]);
-            for(int i = 0; i < lookAhead; i++) ConsoleImpl.Write(" ");
+            for (int i = 0; i < lookAhead; i++) ConsoleImpl.Write(" ");
             ConsoleImpl.CursorTop = topStart + (int)Math.Floor((leftStart + chars.Count) / (double)ConsoleImpl.BufferWidth);
-            ConsoleImpl.CursorLeft = (leftStart + chars.Count) % ConsoleImpl.BufferWidth;
+            if (leftAdjust != -1)
+            {
+                ConsoleImpl.CursorLeft = left+leftAdjust;
+            }
+            else
+            {
+                ConsoleImpl.CursorLeft = (leftStart + chars.Count) % ConsoleImpl.BufferWidth;
+            }
         }
 
         private enum QuoteStatus
@@ -209,7 +216,7 @@ namespace PowerArgs
                     if (i < chars.Count)
                     {
                         chars.RemoveAt(i);
-                        RefreshConsole(leftStart, topStart, chars);
+                        RefreshConsole(leftStart, topStart, chars, leftAdjust: 0);
                     }
                     continue;
                 }
@@ -221,7 +228,7 @@ namespace PowerArgs
                     if (i < chars.Count)
                     {
                         chars.RemoveAt(i);
-                        RefreshConsole(leftStart, topStart, chars);
+                        RefreshConsole(leftStart, topStart, chars, leftAdjust: 0);
                     }
                     continue;
                 }
@@ -334,7 +341,7 @@ namespace PowerArgs
                     else
                     {
                         chars.Insert(i, info.KeyChar);
-                        RefreshConsole(leftStart, topStart, chars, 1);
+                        RefreshConsole(leftStart, topStart, chars, 1, leftAdjust: 1);
                     }
                     continue;
                 }

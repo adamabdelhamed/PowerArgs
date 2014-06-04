@@ -3,7 +3,7 @@ using System;
 
 namespace HelloWorld.Samples
 {
-     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = true), TabCompletion /* [TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
+     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = true), TabCompletion(HistoryToSave=10,REPL=true) /* [TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
     public class HelloWorldInvokeArgs
     {
         public string StringArg { get; set; }
