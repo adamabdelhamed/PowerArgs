@@ -93,8 +93,12 @@ namespace PowerArgs
 
                 lastTokenWasNavigation = false;
 
-                if (currentToken.TokenType == ObjectPathTokenType.NavigationElement ||
-                    currentToken.TokenType == ObjectPathTokenType.IndexerClose ||
+                if(pathElements.Count == 0 && currentToken.TokenType == ObjectPathTokenType.NavigationElement)
+                {
+                    throw new FormatException("Expected property or index, got '" + currentToken.Value + "'" + " at " + currentToken.Position);
+                }
+
+                if (currentToken.TokenType == ObjectPathTokenType.IndexerClose ||
                     currentToken.TokenType == ObjectPathTokenType.DoubleQuote)
                 {
                     throw new FormatException("Expected property or index, got '" + currentToken.Value + "'" + " at " + currentToken.Position);
@@ -155,6 +159,10 @@ namespace PowerArgs
                 {
                     PropertyPathElement el = new PropertyPathElement(currentToken.Value);
                     pathElements.Add(el);
+                }
+                else if(currentToken.TokenType == ObjectPathTokenType.NavigationElement)
+                {
+                    // do nothing
                 }
                 else
                 {

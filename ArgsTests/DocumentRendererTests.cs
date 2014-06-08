@@ -37,5 +37,19 @@ namespace ArgsTests
             var rendered = DocumentRenderer.Render("{{each number in Numbers}}{{number!}}!{{each}}", new { Numbers = new int[] { 1, 2, 3, 4 } });
             Assert.AreEqual("1234", rendered);
         }
+
+        class TestArgs
+        {
+            public string StringArg { get; set; }
+            public string IntArg { get; set; }
+        }
+
+        [TestMethod]
+        public void TestUsagePrimitive()
+        {
+            CommandLineArgumentsDefinition def = new CommandLineArgumentsDefinition(typeof(TestArgs));
+            var rendered = DocumentRenderer.Render("Your program has {{Arguments.Count!}} arguments", def);
+            Assert.AreEqual("Your program has 2 arguments", rendered);
+        }
     }
 }
