@@ -159,7 +159,7 @@ namespace PowerArgs
             tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
             tokenizer.TokenFactory = (Token currentToken, List<BooleanExpressionToken> previousTokens) =>
             {
-                var ret = new BooleanExpressionToken(currentToken.Value, currentToken.StartIndex);
+                var ret = currentToken.As<BooleanExpressionToken>();
 
                 if(delimiters.Contains(currentToken.Value))
                 {
@@ -234,8 +234,7 @@ namespace PowerArgs
         /// </summary>
         public BooleanExpressionTokenType Type { get; set; }
 
-        public BooleanExpressionToken(string tokenText, int startIndex) : base(tokenText, startIndex) { }
-        public BooleanExpressionToken(char tokenText, int startIndex) : base(tokenText, startIndex) { }
+        public BooleanExpressionToken(string tokenText, int startIndex, int line, int col) : base(tokenText, startIndex, line, col) { }
     }
 
     /// <summary>
