@@ -18,8 +18,12 @@ namespace PowerArgs
         public DocumentExpressionParser()
         {
             this.ExpressionProviders = new Dictionary<string, IDocumentExpressionProvider>();
-            this.ExpressionProviders.Add("if", new IfExpressionProvider());
+            this.ExpressionProviders.Add("if", new IfExpressionProvider(false));
+            this.ExpressionProviders.Add("ifnot", new IfExpressionProvider(true));
             this.ExpressionProviders.Add("each", new EachExpressionProvider());
+            this.ExpressionProviders.Add("var", new VarExpressionProvider());
+            this.ExpressionProviders.Add("clearvar", new ClearVarExpressionProvider());
+            this.ExpressionProviders.Add("table", new TableExpressionProvider());
         }
 
         public List<IDocumentExpression> Parse(List<DocumentToken> tokens, string scopeKey = null, int numSameScopesOpen = 0)
@@ -81,7 +85,7 @@ namespace PowerArgs
             IDocumentExpressionProvider provider;
             if(this.ExpressionProviders.TryGetValue(replacementKeyToken.Value, out provider) == false)
             {
-                parameters.Add(replacementKeyToken);
+                parameters.Insert(0, replacementKeyToken);
                 provider = new EvalExpressionProvider();
             }
 

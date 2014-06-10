@@ -22,21 +22,26 @@ namespace PowerArgs
             this.Body = body;
         }
 
-        public string Evaluate(DataContext context)
+        public ConsoleString Evaluate(DataContext context)
         {
             var collection = context.EvaluateExpression(this.CollectionVariableExpressionToken.Value);
-            if (collection == null) return "";
+            if (collection == null) return ConsoleString.Empty;
 
             if(collection is IEnumerable == false)
             {
                 throw new InvalidCastException("'" + this.CollectionVariableExpressionToken.Value + "' does not resolve to a collection at " + this.CollectionVariableExpressionToken.Position);
             }
-            var ret = "";
+            ConsoleString ret = ConsoleString.Empty;
+            int index = 0;
+            var iterationVariableName = this.IterationVariableNameToken.Value + "-index";
             foreach(var item in (IEnumerable)collection)
             {
                 context.LocalVariables.Add(this.IterationVariableNameToken, item);
+                context.LocalVariables.Force(iterationVariableName, index);
                 ret+= DocumentRenderer.Render(this.Body, context);
                 context.LocalVariables.Remove(this.IterationVariableNameToken);
+                context.LocalVariables.ForceClear(iterationVariableName);
+                index++;
             }
             return ret;
         }

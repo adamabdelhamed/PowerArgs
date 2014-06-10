@@ -81,6 +81,8 @@
     <Compile Include="HelperTypesPublic\ITabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\ParseResult.cs" />
     <Compile Include="Templating\DataContext.cs" />
+    <Compile Include="Templating\TableExpression.cs" />
+    <Compile Include="Templating\VarExpression.cs" />
     <Compile Include="Templating\EvalExpression.cs" />
     <Compile Include="Templating\EachExpression.cs" />
     <Compile Include="Templating\LocalVariableSet.cs" />
@@ -148,9 +150,15 @@
     <EmbeddedResource Include="Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\DefaultBrowserUsageTemplate.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DefaultConsoleUsageTemplate.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

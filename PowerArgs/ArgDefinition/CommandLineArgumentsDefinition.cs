@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -12,6 +13,90 @@ namespace PowerArgs
     /// </summary>
     public class CommandLineArgumentsDefinition
     {
+        private string exeName;
+
+        public string ExeName
+        {
+            get
+            {
+                if(exeName != null)
+                {
+                    return exeName;
+                }
+                else
+                {
+                    var assemblyName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
+                    return assemblyName;
+                }
+            }
+            set
+            {
+                exeName = value;
+            }
+        }
+
+        public string Description
+        {
+            get
+            {
+                var meta = Metadata.Meta<ArgDescription>();
+                if (meta == null) return "";
+                else return meta.Description;
+            }
+        }
+
+        public bool HasGlobalArguments
+        {
+            get
+            {
+                return Arguments.Count > 0;
+            }
+        }
+
+        public bool HasActions
+        {
+            get
+            {
+                return this.Actions.Count > 0;
+            }
+        }
+
+        public string UsageSummary
+        {
+            get
+            {
+                string ret = "";
+                ret += ExeName + " ";
+
+                int minPosition = 0;
+                if(HasActions)
+                {
+                    ret += "&lt;action&gt; ";
+                    minPosition = 1;
+                }
+
+
+                foreach(var positionArg in (from a in Arguments where a.Position >= minPosition select a).OrderBy(a => a.Position))
+                {
+                    if(positionArg.IsRequired)
+                    {
+                        ret += "&lt;" + positionArg.DefaultAlias + "&gt; ";
+                    }
+                    else
+                    {
+                        ret += "[&lt;" + positionArg.DefaultAlias + "&gt;] ";
+                    }
+                }
+
+                if(Arguments.Where(a => a.Position < 0).Count() > 0)
+                {
+                    ret += "-options";
+                }
+
+                return ret;
+            }
+        }
+
         /// <summary>
         /// When set to true, TabCompletion is completely disabled and required fields will ignore the PromptIfMissing flag.
         /// </summary>
@@ -47,6 +132,14 @@ namespace PowerArgs
         /// Arbitrary metadata that has been added to the definition
         /// </summary>
         public List<ICommandLineArgumentsDefinitionMetadata> Metadata { get; private set; }
+
+        public bool HasExamples
+        {
+            get
+            {
+                return Examples.Count > 0;
+            }
+        }
 
         /// <summary>
         /// Examples that show users how to use your program.

@@ -14,13 +14,26 @@ namespace PowerArgs
             this.tokens = tokens;
         }
         public PlainTextDocumentExpression(DocumentToken singleToken) : this(new List<DocumentToken> { singleToken }) { }
-        public string Evaluate(DataContext context)
+        public ConsoleString Evaluate(DataContext context)
         {
-            var ret = "";
+            var ret = new ConsoleString();
+
+            ConsoleColor fg = new ConsoleCharacter('a').ForegroundColor;
+            ConsoleColor bg = new ConsoleCharacter('a').BackgroundColor;
+
+            if(context.LocalVariables.IsDefined("ConsoleForegroundColor"))
+            {
+                fg = (ConsoleColor)context.LocalVariables["ConsoleForegroundColor"];
+            }
+
+            if (context.LocalVariables.IsDefined("ConsoleBackgroundColor"))
+            {
+                bg = (ConsoleColor)context.LocalVariables["ConsoleBackgroundColor"];
+            }
 
             foreach (var token in this.tokens)
             {
-                ret += token.Value;
+                ret += new ConsoleString(token.Value, fg, bg);
             }
 
             return ret;

@@ -9,6 +9,11 @@ namespace PowerArgs
     public class ArgExample : Attribute, IGlobalArgMetadata
     {
         /// <summary>
+        /// An optional title for this example
+        /// </summary>
+        public string Title { get; set; }
+
+        /// <summary>
         /// The example command line.
         /// </summary>
         public string Example { get; private set; }

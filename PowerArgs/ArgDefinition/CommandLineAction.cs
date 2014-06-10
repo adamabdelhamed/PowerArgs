@@ -25,6 +25,35 @@ namespace PowerArgs
         /// </summary>
         public List<CommandLineArgument> Arguments { get; private set; }
 
+        public string UsageSummary
+        {
+            get
+            {
+                string ret = "";
+
+                ret += DefaultAlias + " ";
+
+                foreach (var positionArg in (from a in Arguments where a.Position >= 1 select a).OrderBy(a => a.Position))
+                {
+                    if (positionArg.IsRequired)
+                    {
+                        ret += "&lt;" + positionArg.DefaultAlias + "&gt; ";
+                    }
+                    else
+                    {
+                        ret += "[&lt;" + positionArg.DefaultAlias + "&gt;] ";
+                    }
+                }
+
+                if (Arguments.Where(a => a.Position < 0).Count() > 0)
+                {
+                    ret += "-options";
+                }
+
+                return ret;
+            }
+        }
+
         /// <summary>
         /// The description that will be shown in the auto generated usage.
         /// </summary>

@@ -6,7 +6,7 @@ namespace PowerArgs
     /// Use this attribute to describe your argument property.  This will show up in the auto generated
     /// usage documentation.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Parameter)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Class)]
     public class ArgDescription : Attribute, IGlobalArgMetadata
     {
         /// <summary>

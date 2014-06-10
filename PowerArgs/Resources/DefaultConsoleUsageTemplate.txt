@@ -1,0 +1,18 @@
+Usage {{UsageSummary!}} 
+
+{{if HasGlobalArguments}}{{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}:!{{if}}
+
+{{table Arguments DefaultAlias Description !}}!{{if}}
+
+{{if HasActions}}
+Actions:
+{{each action in Actions}}{{action.DefaultAlias!}} - {{action.Description!}}
+
+{{action.UsageSummary!}}
+
+{{table action.Arguments DefaultAlias Description !}}
+!{{each}}!{{if}}
+{{if HasExamples }}Examples:{{each example in Examples}}
+{{example.Title!}} - {{example.Description!}}
+{{example.Example!}}
+!{{each}}!{{if}}

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Reflection;
+using System.Diagnostics;
+using System.Threading;
 
 namespace PowerArgs
 {
@@ -234,6 +236,54 @@ namespace PowerArgs
                     hookCollection.Add(hook);
                 }
             }
+        }
+
+        public static ConsoleString GenerateUsageFromTemplate<T>(string template = null)
+        {
+            return GenerateUsageFromTemplate(new CommandLineArgumentsDefinition(typeof(T)), template);
+        }
+
+        public static ConsoleString GenerateUsageFromTemplate(CommandLineArgumentsDefinition def, string template = null)
+        {
+            template = template ?? Resources.DefaultConsoleUsageTemplate;
+            var document = DocumentRenderer.Render(template, def);
+            return document;
+        }
+
+        public static string ShowUsageInBrowser<T>(string template = null, string outputFileName = null, bool deleteFileAfterBrowse = true, bool waitForBrowserExit = false)
+        {
+            return ShowUsageInBrowser(new CommandLineArgumentsDefinition(typeof(T)), template, outputFileName, deleteFileAfterBrowse, waitForBrowserExit);
+        }
+
+        public static string ShowUsageInBrowser(CommandLineArgumentsDefinition def, string template = null, string outputFileName = null, bool deleteFileAfterBrowse = true, bool waitForBrowserExit = true)
+        {
+            var usage = ArgUsage.GenerateUsageFromTemplate(def, template ?? Resources.DefaultBrowserUsageTemplate);
+            outputFileName = outputFileName ?? Path.GetTempFileName().ToLower().Replace(".tmp", ".html");
+            try
+            {
+                File.WriteAllText(outputFileName, usage.ToString());
+                var proc = Process.Start(outputFileName);
+                if (waitForBrowserExit)
+                {
+                    proc.WaitForExit();
+                }
+            }
+            finally
+            {
+                if (deleteFileAfterBrowse)
+                {
+                    if (File.Exists(outputFileName))
+                    {
+                        if(waitForBrowserExit == false)
+                        {
+                            Thread.Sleep(3000); // Gives the browser a few seconds to read the file before deleting it.
+                        }
+
+                        File.Delete(outputFileName);
+                    }
+                }
+            }
+            return usage.ToString();
         }
 
         /// <summary>

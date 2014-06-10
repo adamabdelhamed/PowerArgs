@@ -14,13 +14,19 @@ namespace PowerArgs
 
     public static class DocumentRenderer
     {
-        public static string Render(string template, object data)
+        public static ConsoleString Render(string template, object data)
         {
             List<DocumentToken> tokens = DocumentToken.Tokenize(template);
             return Render(tokens, new DataContext(data));
         }
 
-        internal static string Render(List<DocumentToken> tokens, DataContext context)
+        public static ConsoleString Render(string template, DataContext context)
+        {
+            List<DocumentToken> tokens = DocumentToken.Tokenize(template);
+            return Render(tokens, context);
+        }
+
+        internal static ConsoleString Render(List<DocumentToken> tokens, DataContext context)
         {
             DocumentExpressionParser parser = new DocumentExpressionParser();
             var expressions = parser.Parse(tokens);
@@ -28,9 +34,9 @@ namespace PowerArgs
             return ret;
         }
 
-        private static string Evaluate(List<IDocumentExpression> expressions, DataContext context)
+        private static ConsoleString Evaluate(List<IDocumentExpression> expressions, DataContext context)
         {
-            string ret = "";
+            ConsoleString ret = new ConsoleString();
 
             foreach (var expression in expressions)
             {

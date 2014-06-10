@@ -8,7 +8,7 @@ namespace PowerArgs
 {
     public interface IDocumentExpression
     {
-        string Evaluate(DataContext context);
+        ConsoleString Evaluate(DataContext context);
     }
 
  
