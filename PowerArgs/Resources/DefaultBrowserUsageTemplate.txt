@@ -8,7 +8,7 @@
 <p class="program-specific-content">{{Description!}}</p>
 
 <h2>Usage</h2>
-<pre class="code-sample">{{UsageSummary!}}</pre>
+<pre class="code-sample">{{UsageSummaryHTMLEncoded!}}</pre>
 
 {{if HasGlobalArguments}}
 	{{if HasActions}}<h2>Global options</h2>!{{if}}
@@ -22,8 +22,16 @@
 	{{each argument in Arguments}}
 		<tr>
 			<td class="option-col program-specific-content">-{{argument.DefaultAlias!}}</td>
-			<td class="desc-col program-specific-content">{{argument.Description!}}</td>
+			<td class="desc-col program-specific-content">{{argument.Description!}}{{if argument.HasDefaultValue}}<span class="defaultvalue"> Default<span/><span class="defaultvalue">=<span/><span class="defaultvalue">{{argument.DefaultValue!}}<span/>!{{if}}</td>
 		</tr>
+		{{if argument.ArgumentType.IsEnum}}
+			{{each enumVal in argument.EnumValuesAndDescriptions}}
+			<tr>
+				<td class="option-col program-specific-content"></td>
+				<td class="defaultValue"> {{enumVal!}}</td>
+			</tr>
+			!{{each}}
+		!{{if}}
 	!{{each}}
 	</table>
 !{{if}}
@@ -37,10 +45,10 @@
 				<span class="program-specific-content">{{action.DefaultAlias!}}</span>
 				<span> - </span>
 				<span class="program-specific-content">{{action.Description!}}</span>
-				<button id="action{{action-index!}}ExpandButton" onclick="toggleAction({{action-index!}})" class="expander-button">show details</button>
-				<div id="action{{action-index!}}details" class="expandable hidden">
+				<button id="action{{action-index!}}ExpandButton" onclick="toggleAction({{action-index!}})" class="expander-button">{{ifnot action.IsSpecifiedAction}}show details!{{ifnot}}{{if action.IsSpecifiedAction}}hide details!{{if}}</button>
+				<div id="action{{action-index!}}details" class="expandable {{ifnot action.IsSpecifiedAction}}hidden!{{ifnot}}">
 					<h4>{{action.DefaultAlias!}} Usage</h4>
-					<pre class="code-sample">{{ExeName!}} {{action.UsageSummary!}}</pre>
+					<pre class="code-sample">{{ExeName!}} {{action.UsageSummaryHTMLEncoded!}}</pre>
 					<h4>Action options</h4>
 					<table>
 						<tr>
@@ -50,14 +58,26 @@
 						{{each actionArgument in action.Arguments}}
 							<tr>
 								<td class="option-col program-specific-content">{{actionArgument.DefaultAlias!}}</td>
-								<td class="desc-col program-specific-content">-{{actionArgument.Description!}}</td>
+								<td class="desc-col program-specific-content">-{{actionArgument.Description!}}{{if actionArgument.HasDefaultValue}}<span class="defaultvalue"> Default<span/><span class="defaultvalue">=<span/><span class="defaultvalue">{{actionArgument.DefaultValue!}}<span/>!{{if}}</td>
 							</tr>
+							{{if actionArgument.ArgumentType.IsEnum}}
+								{{each enumVal in actionArgument.EnumValuesAndDescriptions}}
+								<tr>
+									<td class="option-col program-specific-content"></td>
+									<td class="defaultValue"> enumVal</td>
+								</tr>
+								!{{each}}
+							!{{if}}
 						!{{each}}
 					</table>
+					{{if action.HasExamples }}
 					<h4>Examples</h4>
-					<h5>Some example title</h5>
-					<p>Some example description</p>
-					<pre class="code-sample">programName myaction2 someRequiredPositionalArg [someOptionalPositionalArg] -options</pre>
+					{{each example in action.Examples}}
+						<h3>{{example.Title!}}</h3>
+						<p>{{example.Description!}}</p>
+						<pre class="code-sample">{{example.Example!}}</pre>
+					!{{each}}
+					!{{if}}
 				</div>
 			</div>
 		</li>
@@ -219,6 +239,11 @@
 		padding-top: 14px;
 		max-width: 600px;
 		vertical-align: text-top;
+	}
+
+	.defaultvalue
+	{
+		font-weight: bold;
 	}
 
 	</style>

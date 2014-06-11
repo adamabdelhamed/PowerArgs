@@ -17,7 +17,8 @@ namespace PowerArgs
         public static ConsoleString Render(string template, object data)
         {
             List<DocumentToken> tokens = DocumentToken.Tokenize(template);
-            return Render(tokens, new DataContext(data));
+            List<DocumentToken> filtered = RemoveLinesThatOnlyContainReplacements(tokens);
+            return Render(filtered, new DataContext(data));
         }
 
         public static ConsoleString Render(string template, DataContext context)
@@ -44,6 +45,75 @@ namespace PowerArgs
             }
 
             return ret;
+        }
+
+        private static List<DocumentToken> RemoveLinesThatOnlyContainReplacements(List<DocumentToken> tokens)
+        {
+            var currentLine = 1;
+            int numContentTokensOnCurrentLine = 0;
+            int numReplacementTokensOnCurrentLine = 0;
+
+            List<DocumentToken> filtered = new List<DocumentToken>();
+            foreach(var token in tokens)
+            {
+                if(token.Line != currentLine)
+                {
+                    currentLine = token.Line;
+
+                    if(numContentTokensOnCurrentLine == 0 && numReplacementTokensOnCurrentLine > 0)
+                    {
+                        if(filtered.Count >= 2 && filtered[filtered.Count-2].Value == "\r" && filtered[filtered.Count-1].Value == "\n")
+                        {
+                            // this line only had replacements so remove the trailing carriage return and newline
+                            filtered.RemoveAt(filtered.Count - 1);
+                            filtered.RemoveAt(filtered.Count - 1);
+                            //Console.WriteLine("removed CR+NL as 2 tokens");
+                        }
+                        if (filtered.Count >= 1 && filtered[filtered.Count - 1].Value == "\r\n")
+                        {
+                            // this line only had replacements so remove the trailing carriage return and newline (in the same token)
+                            filtered.RemoveAt(filtered.Count - 1);
+                            //Console.WriteLine("removed CR+NL as 1 token");
+                        }
+                        else if (filtered.Count >= 1 && filtered[filtered.Count - 1].Value == "\n")
+                        {
+                            // this line only had replacements so remove the trailing newline
+                            filtered.RemoveAt(filtered.Count - 1);
+                            //Console.WriteLine("removed NL token");
+                        }
+                    }
+
+                    numReplacementTokensOnCurrentLine = 0;
+                    numContentTokensOnCurrentLine = 0;
+                }
+
+                if(string.IsNullOrWhiteSpace(token.Value))
+                {
+                    // do nothing
+                }
+                else if(IsReplacementToken(token))
+                {
+                    numReplacementTokensOnCurrentLine++;
+                }
+                else
+                {
+                    numContentTokensOnCurrentLine++;
+                }
+
+                filtered.Add(token);
+            }
+
+            return filtered;
+        }
+
+        private static bool IsReplacementToken(DocumentToken token)
+        {
+            return token.TokenType == DocumentTokenType.BeginReplacementSegment ||
+                    token.TokenType == DocumentTokenType.BeginTerminateReplacementSegment ||
+                    token.TokenType == DocumentTokenType.EndReplacementSegment ||
+                    token.TokenType == DocumentTokenType.QuickTerminateReplacementSegment ||
+                    token.TokenType == DocumentTokenType.ReplacementKey ||
+                    token.TokenType == DocumentTokenType.ReplacementParameter;
         }
     }
 }

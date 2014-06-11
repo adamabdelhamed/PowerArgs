@@ -32,7 +32,7 @@ namespace PowerArgs
                 el.FG = (ConsoleColor)this["ConsoleForegroundColor"];
             }
 
-            if (IsDefined("ConsoleForegroundColor"))
+            if (IsDefined("ConsoleBackgroundColor"))
             {
                 el.BG = (ConsoleColor)this["ConsoleBackgroundColor"];
             }
@@ -62,7 +62,7 @@ namespace PowerArgs
                 ForceClear("ConsoleForegroundColor");
             }
 
-            if (popped.FG.HasValue)
+            if (popped.BG.HasValue)
             {
                 Force("ConsoleBackgroundColor", popped.BG.Value);
             }

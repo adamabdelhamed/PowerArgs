@@ -113,5 +113,27 @@ namespace PowerArgs
             lastPeekIndex = peekIndex;
             return true;
         }
+
+        public override string ToString()
+        {
+            return ToString(skipWhitespace: false);
+        }
+
+        public string ToString(bool skipWhitespace= false)
+        {
+            var ret = "";
+            foreach(var token in tokens)
+            {
+                if (skipWhitespace == true && string.IsNullOrWhiteSpace(token.Value))
+                {
+                    // skip
+                }
+                else
+                {
+                    ret += token.Value;
+                }
+            }
+            return ret;
+        }
     }
 }

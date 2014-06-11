@@ -19,11 +19,20 @@ namespace PowerArgs
 
         public ConsoleString Evaluate(DataContext context)
         {
-            var value = context.EvaluateExpression(ValueToken.Value);
-
-           // TODO - if console color match then parse it before storing
-            
-            context.LocalVariables.Add(NameToken, value);
+            if (NameToken.Value == "ConsoleForegroundColor" || NameToken.Value == "ConsoleBackgroundColor")
+            {
+                ConsoleColor value;
+                if(Enum.TryParse<ConsoleColor>(ValueToken.Value,out value) == false)
+                {
+                    throw new ArgumentException("Invalid ConsoleColor '" + ValueToken.Value + "' at " + ValueToken.Position);
+                }
+                context.LocalVariables.Add(NameToken, value);
+            }
+            else
+            {
+                var value = context.EvaluateExpression(ValueToken.Value);
+                context.LocalVariables.Add(NameToken, value);
+            }
             return ConsoleString.Empty;
         }
     }

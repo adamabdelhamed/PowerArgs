@@ -29,29 +29,51 @@ namespace PowerArgs
         {
             get
             {
-                string ret = "";
-
-                ret += DefaultAlias + " ";
-
-                foreach (var positionArg in (from a in Arguments where a.Position >= 1 select a).OrderBy(a => a.Position))
-                {
-                    if (positionArg.IsRequired)
-                    {
-                        ret += "&lt;" + positionArg.DefaultAlias + "&gt; ";
-                    }
-                    else
-                    {
-                        ret += "[&lt;" + positionArg.DefaultAlias + "&gt;] ";
-                    }
-                }
-
-                if (Arguments.Where(a => a.Position < 0).Count() > 0)
-                {
-                    ret += "-options";
-                }
-
-                return ret;
+                return MakeUsageSummary(false);
             }
+        }
+
+        public string UsageSummaryHTMLEncoded
+        {
+            get
+            {
+                return MakeUsageSummary(true);
+            }
+        }
+
+        private string MakeUsageSummary(bool htmlEncodeBrackets = false)
+        {
+            var gt = ">";
+            var lt = "<";
+
+            if (htmlEncodeBrackets)
+            {
+                gt = "&gt;";
+                lt = "&lt;";
+            }
+
+            string ret = "";
+
+            ret += DefaultAlias + " ";
+
+            foreach (var positionArg in (from a in Arguments where a.Position >= 1 select a).OrderBy(a => a.Position))
+            {
+                if (positionArg.IsRequired)
+                {
+                    ret += lt + positionArg.DefaultAlias + gt+" ";
+                }
+                else
+                {
+                    ret += "[" + lt + positionArg.DefaultAlias + gt + "] ";
+                }
+            }
+
+            if (Arguments.Where(a => a.Position < 0).Count() > 0)
+            {
+                ret += "-options";
+            }
+
+            return ret;
         }
 
         /// <summary>
@@ -118,10 +140,26 @@ namespace PowerArgs
         /// </summary>
         internal MethodInfo ActionMethod { get; private set; }
 
+        public bool HasExamples
+        {
+            get
+            {
+                return Metadata.Metas<ArgExample>().Count > 0;
+            }
+        }
+
+        public bool HasArguments
+        {
+            get
+            {
+                return Arguments.Count > 0;
+            }
+        }
+
         /// <summary>
         /// Examples that show users how to use this action.
         /// </summary>
-        internal ReadOnlyCollection<ArgExample> Examples
+        public ReadOnlyCollection<ArgExample> Examples
         {
             get
             {

@@ -13,10 +13,16 @@ namespace PowerArgs
 
         public List<DocumentToken> Columns { get; private set; }
 
+        public bool ShowPossibleValuesForArguments { get; set; }
+
+        public bool ShowDefaultValuesForArguments { get; set; }
+
         public TableExpression(DocumentToken evalToken, List<DocumentToken> columns)
         {
             this.EvalToken = evalToken;
             this.Columns = columns;
+            this.ShowDefaultValuesForArguments = true;
+            this.ShowPossibleValuesForArguments = true;
         }
 
         public ConsoleString Evaluate(DataContext context)
@@ -39,7 +45,15 @@ namespace PowerArgs
 
             foreach (var col in Columns)
             {
-                headers.Add(new ConsoleString(col.Value, ConsoleColor.Yellow));
+                if (col.Value.Contains(">"))
+                {
+                    var newColName = col.Value.Split('>')[1];
+                    headers.Add(new ConsoleString(newColName, ConsoleColor.Yellow));
+                }
+                else
+                {
+                    headers.Add(new ConsoleString(col.Value, ConsoleColor.Yellow));
+                }
             }
 
             foreach(var element in collection)
@@ -47,15 +61,55 @@ namespace PowerArgs
                 var row = new List<ConsoleString>();
                 foreach (var col in Columns)
                 {
-                    var propToGet = element.GetType().GetProperty(col.Value);
+                    string propName;
+                    if (col.Value.Contains(">"))
+                    {
+                        propName = col.Value.Split('>')[0];
+                    }
+                    else
+                    {
+                        propName = col.Value;
+                    }
+
+                    var propToGet = element.GetType().GetProperty(propName);
                     if (propToGet == null) throw new InvalidOperationException("'" + col.Value + "' is not a valid property for type '" + element.GetType().FullName + "' at " + col.Position);
                     var value = propToGet.GetValue(element, null);
-                    row.Add(value == null ? ConsoleString.Empty : new ConsoleString(value.ToString()));
+
+                    ConsoleString valueString;
+
+                    if(value != null)
+                    {
+                        valueString = new ConsoleString(value.ToString());
+                        if (ShowDefaultValuesForArguments && element is CommandLineArgument && propToGet.Name == "Description" && ((CommandLineArgument)element).DefaultValue != null)
+                        {
+                            valueString+= new ConsoleString(" [Default='" + ((CommandLineArgument)element).DefaultValue.ToString() + "'] ", ConsoleColor.DarkGreen);
+                        }
+                    }
+                    else
+                    {
+                        valueString = ConsoleString.Empty;
+                    }
+                    row.Add(valueString);
                 }
                 rows.Add(row);
+
+                if(ShowPossibleValuesForArguments && element is CommandLineArgument && ((CommandLineArgument)element).ArgumentType.IsEnum)
+                {
+                    foreach (var val in ((CommandLineArgument)element).EnumValuesAndDescriptions)
+                    {
+                        List<ConsoleString> possibilitiesRow = new List<ConsoleString>();
+                        for (int i = 0; i < Columns.Count - 1; i++)
+                        {
+                            possibilitiesRow.Add(ConsoleString.Empty);
+                        }
+                        possibilitiesRow.Add(new ConsoleString(val, ConsoleColor.DarkGreen));
+                        rows.Add(possibilitiesRow);
+                    }   
+                }
             }
 
             var tableText = FormatAsTable(headers, rows);
+
             return tableText;
         }
 
@@ -123,9 +177,26 @@ namespace PowerArgs
             }
 
             List<DocumentToken> columns = new List<DocumentToken>();
+
+            bool showDefaults = true;
+            bool showPossibilities = true;
+
             while(reader.CanAdvance(skipWhitespace: true))
             {
-                columns.Add(reader.Advance(skipWhitespace: true));
+                var nextToken = reader.Advance(skipWhitespace: true);
+
+                if (nextToken.Value == "-HideDefaults")
+                {
+                    showDefaults = false;
+                }
+                else if(nextToken.Value == "-HideEnumValues")
+                {
+                    showPossibilities = false;
+                }
+                else
+                {
+                    columns.Add(nextToken);
+                }
             }
 
             if (columns.Count == 0)
@@ -133,7 +204,7 @@ namespace PowerArgs
                 throw new InvalidOperationException("table elements need to have at least one column parameter");
             }
 
-            return new TableExpression(variableExpressionToken, columns);
+            return new TableExpression(variableExpressionToken, columns) { ShowDefaultValuesForArguments = showDefaults, ShowPossibleValuesForArguments = showPossibilities };
         }
     }
 }

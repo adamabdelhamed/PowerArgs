@@ -1,18 +1,44 @@
-Usage {{UsageSummary!}} 
+{{ifnot HasSpecifiedAction}}
+Usage - {{UsageSummary Cyan!}}
+!{{ifnot}}
+{{if HasGlobalArguments}}
+{{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}:
 
-{{if HasGlobalArguments}}{{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}:!{{if}}
-
-{{table Arguments DefaultAlias Description !}}!{{if}}
-
+{{table Arguments DefaultAlias>Option Description !}}
+!{{if}}
 {{if HasActions}}
+{{if HasSpecifiedAction}}
+
+Usage - {{ExeName Cyan!}} {{SpecifiedAction.UsageSummary Cyan!}}
+
+{{if SpecifiedAction.HasArguments }}
+{{SpecifiedAction.DefaultAlias!}} Options:
+{{table SpecifiedAction.Arguments DefaultAlias>Name Description !}}
+!{{if}}
+!{{if}}
+{{ifnot HasSpecifiedAction}}
+
 Actions:
-{{each action in Actions}}{{action.DefaultAlias!}} - {{action.Description!}}
+{{each action in Actions}}
 
-{{action.UsageSummary!}}
+{{action.DefaultAlias!}} - {{action.Description!}}
+{{ExeName Cyan!}} {{action.UsageSummary Cyan!}}
 
-{{table action.Arguments DefaultAlias Description !}}
-!{{each}}!{{if}}
-{{if HasExamples }}Examples:{{each example in Examples}}
-{{example.Title!}} - {{example.Description!}}
-{{example.Example!}}
-!{{each}}!{{if}}
+
+{{if action.HasArguments }}
+{{action.DefaultAlias!}} Options:
+{{table action.Arguments DefaultAlias>Name Description !}}
+!{{if}}
+!{{each}}
+!{{ifnot}}
+!{{if}}
+
+Options can be specified using -<option> <value> or as /<option>:<value>
+
+{{if HasExamples }}
+Examples:
+{{each example in Examples}}
+{{example.Title Cyan!}} - {{example.Description!}}
+{{example.Example Green!}}
+!{{each}}
+!{{if}}

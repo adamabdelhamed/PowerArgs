@@ -128,6 +128,14 @@ namespace PowerArgs
             }
         }
 
+        public bool HasDefaultValue
+        {
+            get
+            {
+                return DefaultValue != null;
+            }
+        }
+
         /// <summary>
         /// The default value for this argument in the event it is optional and the user did not specify it.
         /// </summary>
@@ -141,6 +149,23 @@ namespace PowerArgs
             set
             {
                 overrides.Set(value);
+            }
+        }
+
+        public List<string> EnumValuesAndDescriptions
+        {
+            get
+            {
+                if (ArgumentType.IsEnum == false) throw new InvalidOperationException("This argument is not an enum type");
+
+                List<string> ret = new List<string>();
+                foreach (var val in ArgumentType.GetFields().Where(v => v.IsSpecialName == false))
+                {
+                    var description = val.HasAttr<ArgDescription>() ? " - " + val.Attr<ArgDescription>().Description : "";
+                    var valText = "  " + val.Name;
+                    ret.Add(val.Name + description);
+                }
+                return ret;
             }
         }
 

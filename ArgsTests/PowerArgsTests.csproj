@@ -60,6 +60,12 @@
     <Compile Include="DocumentRendererTests.cs" />
     <Compile Include="InheritenceTests.cs" />
     <Compile Include="NullableTests.cs" />
+    <Compile Include="PhotoAlbumManagerArgs.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="SecureStringTests.cs" />
     <Compile Include="TabCompletionTests.cs" />
     <Compile Include="EdgeCases.cs" />
@@ -81,6 +87,7 @@
     <Compile Include="HelpHookTests.cs" />
     <Compile Include="TestNonInteractiveMode.cs" />
     <Compile Include="BooleanExpressionEvaluatorUnitTests.cs" />
+    <Compile Include="TemplatedUsageTests.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />
@@ -92,7 +99,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\APISurface.txt" />
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PhotoAlbumManagerExpectedConsoleUsage.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -360,13 +360,7 @@ namespace PowerArgs
         {
             Console.WriteLine(ex.Message);
 
-            ArgUsage.GetStyledUsage(definition, definition.ExceptionBehavior.ExeName, new ArgUsageOptions
-            {
-                ShowPosition = definition.ExceptionBehavior.ShowPositionColumn,
-                ShowType = definition.ExceptionBehavior.ShowTypeColumn,
-                ShowPossibleValues = definition.ExceptionBehavior.ShowPossibleValues,
-                SpecifiedActionOverride = definition.SpecifiedAction,
-            }).Write();
+           ArgUsage.GenerateUsageFromTemplate(definition, definition.ExceptionBehavior.UsageTemplateFile).Write();
 
             return CreateEmptyResult<T>(context, ex);
         }

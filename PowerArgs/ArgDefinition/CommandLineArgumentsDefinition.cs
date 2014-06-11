@@ -25,8 +25,15 @@ namespace PowerArgs
                 }
                 else
                 {
-                    var assemblyName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
-                    return assemblyName;
+                    try
+                    {
+                        var assemblyName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
+                        return assemblyName;
+                    }
+                    catch(Exception ex)
+                    {
+                        return "<program>";
+                    }
                 }
             }
             set
@@ -65,36 +72,58 @@ namespace PowerArgs
         {
             get
             {
-                string ret = "";
-                ret += ExeName + " ";
-
-                int minPosition = 0;
-                if(HasActions)
-                {
-                    ret += "&lt;action&gt; ";
-                    minPosition = 1;
-                }
-
-
-                foreach(var positionArg in (from a in Arguments where a.Position >= minPosition select a).OrderBy(a => a.Position))
-                {
-                    if(positionArg.IsRequired)
-                    {
-                        ret += "&lt;" + positionArg.DefaultAlias + "&gt; ";
-                    }
-                    else
-                    {
-                        ret += "[&lt;" + positionArg.DefaultAlias + "&gt;] ";
-                    }
-                }
-
-                if(Arguments.Where(a => a.Position < 0).Count() > 0)
-                {
-                    ret += "-options";
-                }
-
-                return ret;
+                return MakeUsageSummary(false);
             }
+        }
+
+        public string UsageSummaryHTMLEncoded
+        {
+            get
+            {
+                return MakeUsageSummary(true);
+            }
+        }
+
+        private string MakeUsageSummary(bool htmlEncodeBrackets = false)
+        {
+            var gt = ">";
+            var lt = "<";
+
+            if(htmlEncodeBrackets)
+            {
+                gt = "&gt;";
+                lt = "&lt;";
+            }
+
+            string ret = "";
+            ret += ExeName + " ";
+
+            int minPosition = 0;
+            if (HasActions)
+            {
+                ret += lt + "action" + gt + " ";
+                minPosition = 1;
+            }
+
+
+            foreach (var positionArg in (from a in Arguments where a.Position >= minPosition select a).OrderBy(a => a.Position))
+            {
+                if (positionArg.IsRequired)
+                {
+                    ret += lt + positionArg.DefaultAlias + lt+" ";
+                }
+                else
+                {
+                    ret += "[" + lt + positionArg.DefaultAlias + gt + "] ";
+                }
+            }
+
+            if (Arguments.Where(a => a.Position < 0).Count() > 0)
+            {
+                ret += "-options";
+            }
+
+            return ret;
         }
 
         /// <summary>
@@ -168,13 +197,21 @@ namespace PowerArgs
                 var ret = Actions.Where(a => a.IsSpecifiedAction).SingleOrDefault();
                 return ret;
             }
-            internal set
+            set
             {
                 foreach (var action in Actions)
                 {
                     action.IsSpecifiedAction = false;
                 }
                 value.IsSpecifiedAction = true;
+            }
+        }
+
+        public bool HasSpecifiedAction
+        {
+            get
+            {
+                return SpecifiedAction != null;
             }
         }
 
@@ -383,21 +420,27 @@ namespace PowerArgs
                     argument.ArgumentType.ValidateNoDuplicateEnumShortcuts(argument.IgnoreCase);
                 }
 
-                try
+
+                foreach (var property in argument.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    foreach (var property in argument.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                    // Getting each property will result in all AttrOverrides being validated
+                    try
                     {
-                        // Getting each property will result in all AttrOverrides being validated
                         var val = property.GetValue(argument, null);
                     }
-                }
-                catch (TargetInvocationException ex)
-                {
-                    if (ex.InnerException is InvalidArgDefinitionException)
+                    catch(TargetInvocationException ex)
                     {
-                        throw ex.InnerException;
+                        if (ex.InnerException is InvalidArgDefinitionException)
+                        {
+                            throw ex.InnerException;
+                        }
+                        else
+                        {
+                            // swallow
+                        }
                     }
                 }
+
             }
         }
     }

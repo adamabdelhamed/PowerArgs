@@ -156,7 +156,7 @@ namespace PowerArgs
                 {
                     Tokenize_EscapeCharacter(input, ref currentIndex, ref currentCharacter, ref currentLine, ref currentColumn, ref currentToken, tokens);
                 }
-                if (Delimiters.Contains("" + currentCharacter))
+                else if (Delimiters.Contains("" + currentCharacter))
                 {
                     Tokenize_DelimiterCharacter(input, ref currentIndex, ref currentCharacter, ref currentLine, ref currentColumn, ref currentToken, tokens);
                 }
