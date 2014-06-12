@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PowerArgs
 {
@@ -35,7 +33,7 @@ namespace PowerArgs
             T ret;
             if (TryAdvance(out ret, skipWhitespace) == false)
             {
-                throw new DocumentRenderedException("Unexpected end of file");
+                throw new IndexOutOfRangeException("Unexpected end of file");
             }
             return ret;
         }
@@ -46,7 +44,7 @@ namespace PowerArgs
             int lastPeekIndex;
             if (TryPeek(out ret, out lastPeekIndex,skipWhitespace: skipWhitespace) == false)
             {
-                throw new DocumentRenderedException("Unexpected end of file");
+                throw new IndexOutOfRangeException("Unexpected end of file");
             }
             return ret;
         }

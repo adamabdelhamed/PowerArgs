@@ -22,7 +22,7 @@ namespace PowerArgs {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace PowerArgs {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PowerArgs.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace PowerArgs {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -71,7 +71,7 @@ namespace PowerArgs {
         ///&lt;p class=&quot;program-specific-content&quot;&gt;{{Description!}}&lt;/p&gt;
         ///
         ///&lt;h2&gt;Usage&lt;/h2&gt;
-        ///&lt;pre class=&quot;code-sample&quot;&gt;{{UsageSummary!}}&lt;/pre&gt;
+        ///&lt;pre class=&quot;code-sample&quot;&gt;{{UsageSummaryHTMLEncoded!}}&lt;/pre&gt;
         ///
         ///{{if HasGlobalArguments}}
         ///	{{if HasActions}}&lt;h2&gt;Global options&lt;/h2&gt;!{{if}}
@@ -79,34 +79,34 @@ namespace PowerArgs {
         ///
         ///	&lt;table&gt;
         ///		&lt;tr&gt;
-        ///			&lt;td class=&quot;option-col table-header&quot;&gt;OPTION&lt;/t [rest of string was truncated]&quot;;.
+        ///			&lt;td class=&quot;option-col table-header [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string DefaultBrowserUsageTemplate {
+        public static string DefaultBrowserUsageTemplate {
             get {
                 return ResourceManager.GetString("DefaultBrowserUsageTemplate", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Usage {{UsageSummary!}} 
+        ///   Looks up a localized string similar to {{ifnot HasSpecifiedAction}}
+        ///Usage - {{UsageSummary Cyan!}}
+        ///!{{ifnot}}
+        ///{{if HasGlobalArguments}}
+        ///{{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}:
         ///
-        ///{{if HasGlobalArguments}}{{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}:!{{if}}
-        ///
-        ///{{table Arguments DefaultAlias Description !}}!{{if}}
-        ///
+        ///{{table Arguments DefaultAlias&gt;Option Description !}}
+        ///!{{if}}
         ///{{if HasActions}}
-        ///Actions:
-        ///{{each action in Actions}}{{action.DefaultAlias!}} - {{action.Description!}}
+        ///{{if HasSpecifiedAction}}
         ///
-        ///{{action.UsageSummary!}}
+        ///Usage - {{ExeName Cyan!}} {{SpecifiedAction.UsageSummary Cyan!}}
         ///
-        ///{{table action.Arguments DefaultAlias Description !}}
-        ///!{{each}}!{{if}}
-        ///{{if HasExamples }}Examples:{{each example in Examples}}
-        ///{{example.Title!}} - {{example.Description!}}
+        ///{{if SpecifiedAction.HasArguments }}
+        ///{{SpecifiedAction.DefaultAlias!}} Options:
+        ///{{table SpecifiedAction.Arguments DefaultAlias&gt;Name Description !}}
         /// [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string DefaultConsoleUsageTemplate {
+        public static string DefaultConsoleUsageTemplate {
             get {
                 return ResourceManager.GetString("DefaultConsoleUsageTemplate", resourceCulture);
             }
@@ -130,7 +130,7 @@ namespace PowerArgs {
         ///            $OrderByDescendingComment$  query = query.OrderByDescending($OrderByDescending$);
         ///    [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string QueryTemplate {
+        public static string QueryTemplate {
             get {
                 return ResourceManager.GetString("QueryTemplate", resourceCulture);
             }

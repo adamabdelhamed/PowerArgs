@@ -14,6 +14,7 @@ namespace ArgsTests
         public int I1 { get; set; }
     }
 
+    [UsageAutomation]
     public class ActionScaffold
     {
         public bool GlobalFlag { get; set; }
@@ -77,6 +78,7 @@ namespace ArgsTests
         }
     }
 
+    [UsageAutomation]
     [ArgActionType(typeof(DeferredActions))]
     public class ActionScaffoldDeferred
     {
@@ -100,6 +102,7 @@ namespace ArgsTests
         }
     }
 
+    [UsageAutomation]
     public class ActionScaffoldWithActionPropertyAndAttributes
     {
         public bool GlobalFlag { get; set; }
@@ -123,6 +126,7 @@ namespace ArgsTests
         }
     }
 
+    [UsageAutomation]
     public class ActionScaffoldWithActionPropertyAndAttributesAndProperties
     {
         public bool GlobalFlag { get; set; }

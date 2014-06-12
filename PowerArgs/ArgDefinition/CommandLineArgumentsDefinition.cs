@@ -32,7 +32,7 @@ namespace PowerArgs
                     }
                     catch(Exception ex)
                     {
-                        return "<program>";
+                        return "YourProgram";
                     }
                 }
             }

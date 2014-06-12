@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace PowerArgs
 {
@@ -250,7 +249,7 @@ namespace PowerArgs
             }
             else
             {
-                throw new Exception("Unknown whitespace behavior: " + WhitespaceBehavior);
+                throw new TokenizerException("Unknown whitespace behavior: " + WhitespaceBehavior);
             }
         }
 

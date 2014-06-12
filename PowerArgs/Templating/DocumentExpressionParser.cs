@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace PowerArgs
 {
     public interface IDocumentExpressionProvider
     {
-        IDocumentExpression CreateExpression(List<DocumentToken> parameters, List<DocumentToken> body);
+        IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body);
     }
 
     public class DocumentExpressionParser
@@ -26,7 +22,7 @@ namespace PowerArgs
             this.ExpressionProviders.Add("table", new TableExpressionProvider());
         }
 
-        public List<IDocumentExpression> Parse(List<DocumentToken> tokens, string scopeKey = null, int numSameScopesOpen = 0)
+        public List<IDocumentExpression> Parse(List<DocumentToken> tokens)
         {
             List<IDocumentExpression> ret = new List<IDocumentExpression>();
 
@@ -52,7 +48,7 @@ namespace PowerArgs
 
         private void ParseReplacement(TokenReader<DocumentToken> reader, List<IDocumentExpression> ret)
         {
-            var openToken = AdvanceAndExpect(reader, DocumentTokenType.BeginReplacementSegment, "{{");
+            var openToken = AdvanceAndExpectConstantType(reader, DocumentTokenType.BeginReplacementSegment);
             var replacementKeyToken = AdvanceAndExpect(reader, DocumentTokenType.ReplacementKey, "replacement key", skipWhitespace: true);
 
             List<DocumentToken> parameters = new List<DocumentToken>();
@@ -65,7 +61,7 @@ namespace PowerArgs
 
             if(reader.CanAdvance(skipWhitespace: true) == false)
             {
-                throw new ArgumentException("Expected '}}' or '!}}', got end of string");
+                throw Unexpected(string.Format("'{0}' or '{1}'", DocumentToken.GetTokenTypeValue(DocumentTokenType.EndReplacementSegment), DocumentToken.GetTokenTypeValue(DocumentTokenType.QuickTerminateReplacementSegment)));
             }
 
             reader.Advance(skipWhitespace: true);
@@ -75,11 +71,11 @@ namespace PowerArgs
             }
             else if (reader.CurrentToken.TokenType == DocumentTokenType.QuickTerminateReplacementSegment)
             {
-                // do nothing, there is no body
+                // do nothing, there is no body when the quick termination replacement segment is used
             }
             else
             {
-                throw Unexpected("}} or !}}", reader.CurrentToken);
+                throw Unexpected(string.Format("'{0}' or '{1}'", DocumentToken.GetTokenTypeValue(DocumentTokenType.EndReplacementSegment), DocumentToken.GetTokenTypeValue(DocumentTokenType.QuickTerminateReplacementSegment)), reader.CurrentToken);
             }
 
             IDocumentExpressionProvider provider;
@@ -89,7 +85,7 @@ namespace PowerArgs
                 provider = new EvalExpressionProvider();
             }
 
-            var expression = provider.CreateExpression(parameters, body);
+            var expression = provider.CreateExpression(replacementKeyToken, parameters, body);
             ret.Add(expression);
         }
 
@@ -121,9 +117,9 @@ namespace PowerArgs
 
                     if(numOpenReplacements == 0)
                     {
-                        AdvanceAndExpect(reader, DocumentTokenType.BeginTerminateReplacementSegment, "!{{", skipWhitespace: true);
+                        AdvanceAndExpectConstantType(reader, DocumentTokenType.BeginTerminateReplacementSegment);
                         AdvanceAndExpect(reader, DocumentTokenType.ReplacementKey, replacementKeyToken.Value, skipWhitespace: true);
-                        AdvanceAndExpect(reader, DocumentTokenType.EndReplacementSegment, "}}", skipWhitespace: true);
+                        AdvanceAndExpectConstantType(reader, DocumentTokenType.EndReplacementSegment);
                         break;
                     }
                 }
@@ -133,11 +129,26 @@ namespace PowerArgs
  
             if(numOpenReplacements != 0)
             {
-                throw Unexpected("end of " + replacementKeyToken.Value + " replacement");
+                throw Unexpected("end of '" + replacementKeyToken.Value + "' replacement");
             }
 
             return replacementContents;
 
+        }
+
+        private DocumentToken AdvanceAndExpectConstantType(TokenReader<DocumentToken> reader, DocumentTokenType expectedType)
+        {
+            DocumentToken read;
+            if(reader.TryAdvance(out read,skipWhitespace: true) == false)
+            {
+                throw Unexpected(DocumentToken.GetTokenTypeValue(expectedType));
+            }
+
+            if (read.TokenType != expectedType)
+            {
+                throw Unexpected(DocumentToken.GetTokenTypeValue(expectedType), reader.CurrentToken);
+            }
+            return read;
         }
 
         private DocumentToken AdvanceAndExpect(TokenReader<DocumentToken> reader, DocumentTokenType expectedType, string expectedText, bool skipWhitespace = false)
@@ -155,27 +166,23 @@ namespace PowerArgs
             return read;
         }
 
-        private Exception Unexpected(string expected, Token actual = null)
+        private DocumentRenderException Unexpected(string expected, DocumentToken actual = null)
         {
             if (actual != null)
             {
-                var format = "Expected '{0}', got '{1}' at {2}";
-                var msg = string.Format(format, expected, actual.Value, actual.Position);
-                return new ArgumentException(msg);
+                return new DocumentRenderException(string.Format("Expected '{0}', got '{1}'", expected, actual.Value), actual);
             }
             else
             {
-                var format = "Expected '{0}', got end of string";
+                var format = "Expected '{0}'";
                 var msg = string.Format(format, expected);
-                return new ArgumentException(msg);
+                return new DocumentRenderException(msg, DocumentRenderException.NoTokenReason.EndOfString);
             }
         }
 
-        private Exception Unexpected(Token t)
+        private DocumentRenderException Unexpected(DocumentToken t)
         {
-            var format = "Unexpected '{0}' at {1}";
-            var msg = string.Format(format, t.Value, t.Position);
-            return new ArgumentException(msg);
+            return new DocumentRenderException(string.Format("Unexpected token '{0}'", t.Value), t);
         }
     }
 }

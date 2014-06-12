@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace PowerArgs
 {
@@ -69,11 +66,11 @@ namespace PowerArgs
 
     public class EvalExpressionProvider : IDocumentExpressionProvider
     {
-        public IDocumentExpression CreateExpression(List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if (body.Count > 0)
             {
-                throw new InvalidOperationException("eval tags can't have a body");
+                throw new DocumentRenderException("eval tags can't have a body", replacementKeyToken);
             }
 
             TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
@@ -82,7 +79,7 @@ namespace PowerArgs
 
             if (reader.TryAdvance(out variableExpressionToken, skipWhitespace: true) == false)
             {
-                throw new InvalidOperationException("missing variable expression");
+                throw new DocumentRenderException("missing variable expression", replacementKeyToken);
             }
 
             var ret = new EvalExpression(variableExpressionToken);

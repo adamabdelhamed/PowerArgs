@@ -1,0 +1,58 @@
+Usage - PhotoManager <action> -options
+Global options:
+
+Option   Description                                                                            
+Output   How much output to display while performing management operations [Default='Light']    
+         Verbose                                                                                
+         Light                                                                                  
+         Quiet                                                                                  
+
+Actions:
+
+CreateAlbum - Creates a new album in the target container, creating the container if it does not exist
+PhotoManager CreateAlbum <StorageAccountName> <StorageAccountKey> [<Container>] -options
+
+CreateAlbum Options:
+Name                 Description                                                 
+StorageAccountName   The storage account to connect to                           
+StorageAccountKey    The storage key to use to connect                           
+Container            The storage container to target [Default='DefaultAlbum']    
+UseHttps             Set this flag to use https                                  
+
+Download - Downloads a single blob to the local file system
+PhotoManager Download <StorageAccountName> <StorageAccountKey> [<Container>] -options
+
+Download Options:
+Name                 Description                                                                    
+BlobFilePath         The name of a blob to download                                                 
+LocalFile            The local path to download to                                                  
+ConflictPolicy       What do do if there is a conflict when downloading a file [Default='Throw']    
+                     Throw                                                                          
+                     ServerWins                                                                     
+                     ClientWins                                                                     
+StorageAccountName   The storage account to connect to                                              
+StorageAccountKey    The storage key to use to connect                                              
+Container            The storage container to target [Default='DefaultAlbum']                       
+UseHttps             Set this flag to use https                                                     
+
+Upload - Uploads one or more files from the local file system to the target container
+PhotoManager Upload <StorageAccountName> <StorageAccountKey> [<Container>] -options
+
+Upload Options:
+Name                 Description                                                                  
+LocalFile            If specified the single file will be uploaded                                
+LocalDirectory       If specified, all files in the directory will be uploaded                    
+ConflictPolicy       What do do if there is a conflict when uploading a file [Default='Throw']    
+                     Throw                                                                        
+                     ServerWins                                                                   
+                     ClientWins                                                                   
+StorageAccountName   The storage account to connect to                                            
+StorageAccountKey    The storage key to use to connect                                            
+Container            The storage container to target [Default='DefaultAlbum']                     
+UseHttps             Set this flag to use https                                                   
+
+Options can be specified using -<option> <value> or as /<option>:<value>
+
+Examples:
+ - creates an album called 'wedding' in a container named 'wedding'
+photos createalbum -a myaccount -k mykey -c wedding

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace PowerArgs
 {
@@ -57,20 +53,19 @@ namespace PowerArgs
         {
             this.not = not;
         }
-        public IDocumentExpression CreateExpression(List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
 
-            if (reader.CanAdvance(skipWhitespace: true) == false)
+            DocumentToken ifExpressionToken;            
+            if(reader.TryAdvance(out ifExpressionToken, skipWhitespace: true) == false)
             {
-                throw new InvalidOperationException("missing if expression");
+                throw new DocumentRenderException("missing if expression", replacementKeyToken);
             }
-
-            var ifExpressionToken = reader.Advance(skipWhitespace: true);
 
             if (reader.CanAdvance(skipWhitespace: true))
             {
-                throw new InvalidOperationException("unexpected parameters after if expression at " + ifExpressionToken.Position);
+                throw new DocumentRenderException("unexpected parameters after if expression", reader.Advance(skipWhitespace: true));
             }
 
             return not ? new IfNotExpression(ifExpressionToken, body) : new IfExpression(ifExpressionToken, body);

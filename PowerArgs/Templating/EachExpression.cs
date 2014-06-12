@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace PowerArgs
 {
@@ -29,7 +25,7 @@ namespace PowerArgs
 
             if(collection is IEnumerable == false)
             {
-                throw new InvalidCastException("'" + this.CollectionVariableExpressionToken.Value + "' does not resolve to a collection at " + this.CollectionVariableExpressionToken.Position);
+                throw new DocumentRenderException("'" + this.CollectionVariableExpressionToken.Value + "' does not resolve to a collection", this.CollectionVariableExpressionToken);
             }
             ConsoleString ret = ConsoleString.Empty;
             int index = 0;
@@ -49,11 +45,11 @@ namespace PowerArgs
 
     public class EachExpressionProvider : IDocumentExpressionProvider
     {
-        public IDocumentExpression CreateExpression(List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if(body.Count == 0)
             {
-                throw new InvalidOperationException("each tags must contain a body");
+                throw new DocumentRenderException("Each tag has no body", replacementKeyToken);
             }
 
             TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
@@ -61,32 +57,32 @@ namespace PowerArgs
             DocumentToken variableName;
             if (reader.TryAdvance(out variableName, skipWhitespace: true) == false)
             {
-                throw new InvalidOperationException("missing variable name");
+                throw new DocumentRenderException("missing variable name in each tag", replacementKeyToken);
             }
 
             DocumentToken inToken;
 
             if (reader.TryAdvance(out inToken, skipWhitespace: true) == false)
             {
-                throw new InvalidOperationException("Expected 'in' after "+variableName.Position);
+                throw new DocumentRenderException("Expected 'in' after iteration variable", variableName);
             }
 
             if (inToken.Value != "in")
             {
-                throw new InvalidOperationException("Expected 'in', got '" + inToken.Value + "' at " + inToken.Position);
+                throw new DocumentRenderException("Expected 'in', got '" + inToken.Value + "'", inToken);
             }
 
             DocumentToken collectionExpressionToken;
 
             if(reader.TryAdvance(out collectionExpressionToken, skipWhitespace: true) == false)
             {
-                throw new InvalidOperationException("Expected collection expression after 'in' at "+inToken.Position);
+                throw new DocumentRenderException("Expected collection expression after 'in' ", inToken);
             }
 
             DocumentToken unexpected;
             if(reader.TryAdvance(out unexpected, skipWhitespace: true))
             {
-                throw new InvalidOperationException("Unexpected parameter '" + unexpected.Value + "' after collection at " + unexpected.Position);
+                throw new DocumentRenderException("Unexpected parameter '" + unexpected.Value + "' after collection", unexpected);
             }
 
             return new EachExpression(variableName, collectionExpressionToken, body);

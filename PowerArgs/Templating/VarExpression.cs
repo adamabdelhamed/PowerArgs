@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 
 namespace PowerArgs
 {
@@ -24,7 +22,7 @@ namespace PowerArgs
                 ConsoleColor value;
                 if(Enum.TryParse<ConsoleColor>(ValueToken.Value,out value) == false)
                 {
-                    throw new ArgumentException("Invalid ConsoleColor '" + ValueToken.Value + "' at " + ValueToken.Position);
+                    throw new DocumentRenderException("Invalid ConsoleColor '" + ValueToken.Value + "'", ValueToken);
                 }
                 context.LocalVariables.Add(NameToken, value);
             }
@@ -55,11 +53,11 @@ namespace PowerArgs
 
     public class VarExpressionProvider : IDocumentExpressionProvider
     {
-        public IDocumentExpression CreateExpression(List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if (body.Count > 0)
             {
-                throw new InvalidOperationException("var tags can't have a body");
+                throw new DocumentRenderException("var tags can't have a body", body.First());
             }
 
             TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
@@ -68,15 +66,14 @@ namespace PowerArgs
 
             if(reader.TryAdvance(out variableName,skipWhitespace:true) == false)
             {
-                throw new InvalidOperationException("Expected variable name");
+                throw new DocumentRenderException("Expected variable name after var tag", replacementKeyToken);
             }
-
 
             DocumentToken variableValue;
 
             if (reader.TryAdvance(out variableValue, skipWhitespace: true) == false)
             {
-                throw new InvalidOperationException("Expected variable value expression after " + variableName.Position);
+                throw new DocumentRenderException("Expected variable value expression", variableName);
             }
 
             return new VarExpression(variableName, variableValue);
@@ -85,11 +82,11 @@ namespace PowerArgs
 
     public class ClearVarExpressionProvider : IDocumentExpressionProvider
     {
-        public IDocumentExpression CreateExpression(List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if (body.Count > 0)
             {
-                throw new InvalidOperationException("clearvar tags can't have a body");
+                throw new DocumentRenderException("clearvar tags can't have a body", replacementKeyToken);
             }
 
             TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
@@ -98,10 +95,8 @@ namespace PowerArgs
 
             if (reader.TryAdvance(out variableName, skipWhitespace: true) == false)
             {
-                throw new InvalidOperationException("Expected variable name");
+                throw new DocumentRenderException("Expected variable name after clearvar tag", replacementKeyToken);
             }
-
-
 
             return new ClearVarExpression(variableName);
         }

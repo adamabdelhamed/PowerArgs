@@ -246,6 +246,11 @@ namespace PowerArgs
             return GenerateUsageFromTemplate(new CommandLineArgumentsDefinition(typeof(T)), template);
         }
 
+        public static ConsoleString GenerateUsageFromTemplate(Type t, string template = null)
+        {
+            return GenerateUsageFromTemplate(new CommandLineArgumentsDefinition(t), template);
+        }
+
         public static ConsoleString GenerateUsageFromTemplate(CommandLineArgumentsDefinition def, string template = null)
         {
             template = template ?? Resources.DefaultConsoleUsageTemplate;

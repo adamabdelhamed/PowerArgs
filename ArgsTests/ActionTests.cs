@@ -10,6 +10,7 @@ namespace ArgsTests
     [TestClass]
     public class ActionTests
     {
+        [UsageAutomation]
         public class ActionTestArgs
         {
             [ArgRequired]
@@ -26,6 +27,7 @@ namespace ArgsTests
             }
         }
 
+        [UsageAutomation]
         [ArgActionType(typeof(FakeProgram))]
         public class ActionTestArgsDeferredType
         {

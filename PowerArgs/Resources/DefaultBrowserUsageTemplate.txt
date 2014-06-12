@@ -64,7 +64,7 @@
 								{{each enumVal in actionArgument.EnumValuesAndDescriptions}}
 								<tr>
 									<td class="option-col program-specific-content"></td>
-									<td class="defaultValue"> enumVal</td>
+									<td class="defaultValue"> {{enumVal!}}</td>
 								</tr>
 								!{{each}}
 							!{{if}}

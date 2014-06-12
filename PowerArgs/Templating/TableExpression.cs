@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
 
 namespace PowerArgs
 {
@@ -31,11 +28,11 @@ namespace PowerArgs
 
             if(eval == null)
             {
-                return new ConsoleString("null", ConsoleColor.Red);
+                throw new DocumentRenderException("NullReference for '" + this.EvalToken.Value + "'", this.EvalToken);
             }
             else if(eval is IEnumerable == false)
             {
-                throw new InvalidOperationException("'" + this.EvalToken + "' is not enumerable at " + this.EvalToken.Position);
+                throw new DocumentRenderException("'" + this.EvalToken.Value + "' is not enumerable", this.EvalToken);
             }
 
             IEnumerable collection = (IEnumerable)eval;
@@ -72,7 +69,7 @@ namespace PowerArgs
                     }
 
                     var propToGet = element.GetType().GetProperty(propName);
-                    if (propToGet == null) throw new InvalidOperationException("'" + col.Value + "' is not a valid property for type '" + element.GetType().FullName + "' at " + col.Position);
+                    if (propToGet == null) throw new DocumentRenderException("'" + col.Value + "' is not a valid property for type '" + element.GetType().FullName + "'", col);
                     var value = propToGet.GetValue(element, null);
 
                     ConsoleString valueString;
@@ -160,11 +157,11 @@ namespace PowerArgs
 
     public class TableExpressionProvider : IDocumentExpressionProvider
     {
-        public IDocumentExpression CreateExpression(List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if (body.Count > 0)
             {
-                throw new InvalidOperationException("table tags can't have a body");
+                throw new DocumentRenderException("table tags can't have a body", replacementKeyToken);
             }
 
             TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
@@ -173,7 +170,7 @@ namespace PowerArgs
 
             if (reader.TryAdvance(out variableExpressionToken, skipWhitespace: true) == false)
             {
-                throw new InvalidOperationException("missing collection expression");
+                throw new DocumentRenderException("missing collection expression after table tag", replacementKeyToken);
             }
 
             List<DocumentToken> columns = new List<DocumentToken>();
@@ -201,7 +198,7 @@ namespace PowerArgs
 
             if (columns.Count == 0)
             {
-                throw new InvalidOperationException("table elements need to have at least one column parameter");
+                throw new DocumentRenderException("table elements need to have at least one column parameter", replacementKeyToken);
             }
 
             return new TableExpression(variableExpressionToken, columns) { ShowDefaultValuesForArguments = showDefaults, ShowPossibleValuesForArguments = showPossibilities };
