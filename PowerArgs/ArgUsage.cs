@@ -251,10 +251,14 @@ namespace PowerArgs
             return GenerateUsageFromTemplate(new CommandLineArgumentsDefinition(t), template);
         }
 
-        public static ConsoleString GenerateUsageFromTemplate(CommandLineArgumentsDefinition def, string template = null)
+        public static ConsoleString GenerateUsageFromTemplate(CommandLineArgumentsDefinition def, string template = null, string templateSourceLocation = null)
         {
-            template = template ?? Resources.DefaultConsoleUsageTemplate;
-            var document = DocumentRenderer.Render(template, def);
+            if(template == null)
+            {
+                template = Resources.DefaultConsoleUsageTemplate;
+                templateSourceLocation = "Default console usage template";
+            }
+            var document = new DocumentRenderer().Render(template, def, templateSourceLocation);
             return document;
         }
 

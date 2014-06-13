@@ -7,6 +7,8 @@ namespace PowerArgs
         public LocalVariableSet LocalVariables{get;private set;}
         public object RootDataObject{get;private set;}
 
+        public DocumentRenderer DocumentRenderer { get; internal set; }
+
         public DataContext(object rootDataObject)
         {
             if(rootDataObject == null) throw new ArgumentNullException("rootDataObject cannot be null");

@@ -57,7 +57,7 @@
     <Compile Include="CaseSensitiveTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />
-    <Compile Include="DocumentRendererTests.cs" />
+    <Compile Include="Templating\DocumentRendererTests.cs" />
     <Compile Include="InheritenceTests.cs" />
     <Compile Include="NullableTests.cs" />
     <Compile Include="PhotoAlbumManagerArgs.cs" />
@@ -85,6 +85,8 @@
     <Compile Include="ReadMeTests.cs" />
     <Compile Include="CancellationTests.cs" />
     <Compile Include="HelpHookTests.cs" />
+    <Compile Include="Templating\ObjectPathExpressionTests.cs" />
+    <Compile Include="Templating\TokenizerTests.cs" />
     <Compile Include="TestNonInteractiveMode.cs" />
     <Compile Include="BooleanExpressionEvaluatorUnitTests.cs" />
     <Compile Include="TemplatedUsageTests.cs" />

@@ -20,6 +20,7 @@ namespace PowerArgs
             this.ExpressionProviders.Add("var", new VarExpressionProvider());
             this.ExpressionProviders.Add("clearvar", new ClearVarExpressionProvider());
             this.ExpressionProviders.Add("table", new TableExpressionProvider());
+            this.ExpressionProviders.Add("template", new TemplateExpressionProvider());
         }
 
         public List<IDocumentExpression> Parse(List<DocumentToken> tokens)

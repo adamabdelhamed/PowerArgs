@@ -103,9 +103,10 @@ namespace PowerArgs
             return true;
         }
 
-        public static List<DocumentToken> Tokenize(string text)
+        public static List<DocumentToken> Tokenize(string text, string sourceLocation)
         {
             Tokenizer<DocumentToken> tokenizer = new Tokenizer<DocumentToken>();
+            tokenizer.SourceFileLocation = sourceLocation;
             tokenizer.Delimiters.AddRange(DocumentToken.Delimiters);
             tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndInclude;
             tokenizer.TokenFactory = DocumentToken.TokenFactoryImpl;

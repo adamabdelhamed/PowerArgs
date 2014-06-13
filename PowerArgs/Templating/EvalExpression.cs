@@ -52,7 +52,7 @@ namespace PowerArgs
                     else
                     {
                         var result = eval.ToString();
-                        var ret = DocumentRenderer.Render(result, context);
+                        var ret = context.DocumentRenderer.Render(result, context, "dynamic evaluation sourced from '" + this.EvalToken.Position + "'");
                         return ret;
                     }
                 }

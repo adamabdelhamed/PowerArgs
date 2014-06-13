@@ -26,16 +26,29 @@ namespace PowerArgs
         }
     }
 
-    public static class DocumentRenderer
+    public class DocumentTemplateInfo
     {
-        public static ConsoleString Render(string template, object data)
+        public string Value { get; set; }
+        public string SourceLocation { get; set; }
+    }
+
+    public class DocumentRenderer
+    {
+        public Dictionary<string, DocumentTemplateInfo> NamedTemplates { get; private set; }
+
+        public DocumentRenderer()
         {
-            return Render(template, new DataContext(data));
+            NamedTemplates = new Dictionary<string, DocumentTemplateInfo>();
         }
 
-        public static ConsoleString Render(string template, DataContext context)
+        public ConsoleString Render(string template, object data, string sourceFileLocation = null)
         {
-            List<DocumentToken> tokens = DocumentToken.Tokenize(template);
+            return Render(template, new DataContext(data) { DocumentRenderer = this }, sourceFileLocation);
+        }
+
+        public ConsoleString Render(string template, DataContext context, string sourceFileLocation = null)
+        {
+            List<DocumentToken> tokens = DocumentToken.Tokenize(template, sourceFileLocation);
             List<DocumentToken> filtered = DocumentToken.RemoveLinesThatOnlyContainReplacements(tokens);
             return Render(filtered, context);
         }

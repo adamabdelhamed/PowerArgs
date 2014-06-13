@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,9 +11,9 @@ namespace PowerArgs
         IndexerOpen,       // '['
         IndexerClose,      // ']'
         NavigationElement, // '.'
-        DoubleQuote,       // '"'
         Text,              // Other text
         Whitespace,        // whitespace
+        StringLiteral,     // text inside double quotes
     }
 
     public class ObjectPathToken : Token
@@ -36,9 +37,9 @@ namespace PowerArgs
             {
                 ret.TokenType = ObjectPathTokenType.NavigationElement;
             }
-            else if (ret.Value == "\"")
+            else if (ret.Value.StartsWith("\"") && ret.Value.EndsWith("\"") && ret.Value.Length > 1)
             {
-                ret.TokenType = ObjectPathTokenType.DoubleQuote;
+                ret.TokenType = ObjectPathTokenType.StringLiteral;
             }
             else if(string.IsNullOrWhiteSpace(ret.Value))
             {
@@ -69,10 +70,10 @@ namespace PowerArgs
             Tokenizer<ObjectPathToken> tokenizer = new Tokenizer<ObjectPathToken>();
             tokenizer.TokenFactory = ObjectPathToken.TokenFactoryImpl;
             tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndInclude;
+            tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
             tokenizer.Delimiters.Add("[");
             tokenizer.Delimiters.Add("]");
             tokenizer.Delimiters.Add(".");
-            tokenizer.Delimiters.Add("\"");
             List<ObjectPathToken> tokens = tokenizer.Tokenize(expression);
 
             TokenReader<ObjectPathToken> reader = new TokenReader<ObjectPathToken>(tokens);
@@ -80,7 +81,7 @@ namespace PowerArgs
             List<IObjectPathElement> pathElements = new List<IObjectPathElement>();
 
             bool lastTokenWasNavigation = false;
-            while (reader.CanAdvance())
+            while (reader.CanAdvance(skipWhitespace: true))
             {
                 var currentToken = reader.Advance(skipWhitespace: true);
 
@@ -97,7 +98,7 @@ namespace PowerArgs
                 }
 
                 if (currentToken.TokenType == ObjectPathTokenType.IndexerClose ||
-                    currentToken.TokenType == ObjectPathTokenType.DoubleQuote)
+                    currentToken.TokenType == ObjectPathTokenType.StringLiteral)
                 {
                     throw new FormatException("Expected property or index, got '" + currentToken.Value + "'" + " at " + currentToken.Position);
                 }
@@ -107,31 +108,24 @@ namespace PowerArgs
                     // read index value
                     if (reader.TryAdvance(out currentToken,skipWhitespace: true) == false) throw new FormatException("Expected index value, got end of string");
 
-                    bool expectClosingQuote = false;
+                    if (currentToken.TokenType == ObjectPathTokenType.Text || currentToken.TokenType == ObjectPathTokenType.StringLiteral)
+                    {
+                        string indexValueText = currentToken.Value;
 
-                    if(currentToken.TokenType == ObjectPathTokenType.DoubleQuote)
-                    {
-                        expectClosingQuote = true;
-                        if (reader.TryAdvance(out currentToken, skipWhitespace: true) == false) throw new FormatException("Expected index literal string value, got end of string");
-                    }
-                    
-                    if (currentToken.TokenType == ObjectPathTokenType.Text)
-                    {
+                        if(currentToken.TokenType == ObjectPathTokenType.StringLiteral)
+                        {
+                            indexValueText = indexValueText.Substring(1, indexValueText.Length - 2);
+                        }
+
                         object indexValue;
                         int indexValueInt;
-                        if (int.TryParse(currentToken.Value, out indexValueInt) == false)
+                        if (int.TryParse(indexValueText, out indexValueInt) == false)
                         {
-                            indexValue = currentToken.Value;
+                            indexValue = indexValueText;
                         }
                         else
                         {
                             indexValue = indexValueInt;
-                        }
-
-                        if(expectClosingQuote)
-                        {
-                            if (reader.TryAdvance(out currentToken, skipWhitespace: true) == false) throw new FormatException("Expected '\"', got end of string");
-                            if (currentToken.TokenType != ObjectPathTokenType.DoubleQuote) throw new FormatException("Expected '\"', got '" + currentToken.Value + "' at " + currentToken.Position);
                         }
 
                         // read index close
@@ -210,12 +204,26 @@ namespace PowerArgs
                 else if (pathElement is IndexerPathElement)
                 {
                     var collectionEl = pathElement as IndexerPathElement;
-                    var indexerProperty = collectionEl.FindMatchingProperty(currentObject);
-                    if(indexerProperty == null)
+
+                    if(currentObject.GetType().IsArray)
                     {
-                        throw new InvalidOperationException("Type "+currentObject.GetType().Name+" does not have a supported indexer property of type "+collectionEl.Index.GetType());
+                        object[] arr = ((IEnumerable)currentObject).Cast<object>().ToArray();
+                        currentObject = arr[(int)collectionEl.Index];
                     }
-                    currentObject = indexerProperty.GetValue(currentObject, new object[]{collectionEl.Index});
+                    else if (currentObject is string)
+                    {
+                        var objString = (string)currentObject;
+                        currentObject = objString[(int)collectionEl.Index];
+                    }
+                    else
+                    {
+                        var indexerProperty = collectionEl.FindMatchingProperty(currentObject);
+                        if (indexerProperty == null)
+                        {
+                            throw new InvalidOperationException("Type " + currentObject.GetType().Name + " does not have a supported indexer property of type " + collectionEl.Index.GetType());
+                        }
+                        currentObject = indexerProperty.GetValue(currentObject, new object[] { collectionEl.Index });
+                    }
                     ret.Add(currentObject);
                 }
                 else
@@ -261,6 +269,7 @@ namespace PowerArgs
                 {
                     throw new ArgumentException("Value must be an integer or a string");
                 }
+                this._index = value;
             }
         }
         
@@ -271,9 +280,9 @@ namespace PowerArgs
 
         public PropertyInfo FindMatchingProperty(object target)
         {
-            var match = from p in target.GetType().GetProperties()
+            var match = from p in target.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
                         where p.GetIndexParameters().Length == 1 &&
-                              p.GetIndexParameters()[0].GetType() == this.Index.GetType()
+                              p.GetIndexParameters()[0].ParameterType == this.Index.GetType()
                         select p;
             if(match.Count() > 1)
             {

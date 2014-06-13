@@ -21,7 +21,10 @@ namespace PowerArgs
         public ConsoleString Evaluate(DataContext context)
         {
             var collection = context.EvaluateExpression(this.CollectionVariableExpressionToken.Value);
-            if (collection == null) return ConsoleString.Empty;
+            if (collection == null)
+            {
+                throw new DocumentRenderException("'" + this.CollectionVariableExpressionToken.Value + "' resolved to a null reference", this.CollectionVariableExpressionToken);
+            }
 
             if(collection is IEnumerable == false)
             {

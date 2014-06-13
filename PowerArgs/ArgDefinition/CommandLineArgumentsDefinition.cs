@@ -439,6 +439,10 @@ namespace PowerArgs
                             // swallow
                         }
                     }
+                    catch(Exception)
+                    {
+                        // swallow
+                    }
                 }
 
             }
