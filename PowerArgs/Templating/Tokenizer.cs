@@ -4,18 +4,43 @@ using System.Linq;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// An exception that will be thrown if there was an error while tokenizing a string.
+    /// </summary>
     public class TokenizerException : Exception
     {
+        /// <summary>
+        /// Creates a new tokenizer exception given a message
+        /// </summary>
+        /// <param name="message">The exception message</param>
         public TokenizerException(string message) : base(message) { }
     }
 
+    /// <summary>
+    /// A base token class that represents a substring from a document.  The location in the source
+    /// document is tracked along with the substring so that code that processes the token can indicate
+    /// where problems are to the user who supplied the document if needed.
+    /// </summary>
     public class Token
     {
+        /// <summary>
+        /// Gets the value of the token
+        /// </summary>
         public string Value { get; internal set; }
+        
+        /// <summary>
+        /// Gets the zero based start index of this token in the document
+        /// </summary>
         public int StartIndex { get; private set; }
 
+        /// <summary>
+        /// Gets a string that represents the source file of this document.  It does not need to be a file name, but it usually is.
+        /// </summary>
         public string SourceFileLocation { get; set; }
 
+        /// <summary>
+        /// Gets the end index of the token in the document
+        /// </summary>
         public int EndIndex
         {
             get
@@ -24,11 +49,21 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Gets the 1 based line number of the token in the document
+        /// </summary>
         public int Line { get; private set; }
-        public int Column { get; set; }
+        
+        /// <summary>
+        /// Gets the 1 based index of the token within it's line
+        /// </summary>
+        public int Column { get; private set; }
 
-        public List<int> ExplicitNonDelimiterCharacters { get; private set; }
+        internal List<int> ExplicitNonDelimiterCharacters { get; private set; }
 
+        /// <summary>
+        /// Gets a string that represents the position of this token in the source document. 
+        /// </summary>
         public string Position
         {
             get
@@ -37,6 +72,14 @@ namespace PowerArgs
             }
 
         }
+
+        /// <summary>
+        /// Creates a token given an initial value, a start index, a line number, and a column number
+        /// </summary>
+        /// <param name="initialValue">The initial value of a token.  You can append to the token later</param>
+        /// <param name="startIndex">the zero based start index of this token in the document</param>
+        /// <param name="line">the 1 based line number of the token in the document</param>
+        /// <param name="col">the 1 based index of the token within it's line</param>
         public Token(string initialValue, int startIndex, int line, int col)
         {
             if (startIndex < 0)
@@ -51,19 +94,7 @@ namespace PowerArgs
             Column = col;
         }
 
-        public Token(char firstCharacter, int startIndex, int line, int col) : this("" + firstCharacter, startIndex, line, col) { }
-
-        public void Append(string s)
-        {
-            Value += s;
-        }
-
-        public void Append(char c)
-        {
-            Append("" + c);
-        }
-
-        public void SetLastCharacterAsExplicitNonDelimiter()
+        internal void SetLastCharacterAsExplicitNonDelimiter()
         {
             if(this.Value.Length == 0)
             {
@@ -72,7 +103,7 @@ namespace PowerArgs
             ExplicitNonDelimiterCharacters.Add(this.Value.Length - 1);
         }
 
-        public bool EndsWithDelimiter(string delimiter)
+        internal bool EndsWithDelimiter(string delimiter)
         {
             if(this.Value.EndsWith(delimiter) == false)
             {
@@ -85,18 +116,27 @@ namespace PowerArgs
             {
                 if(ExplicitNonDelimiterCharacters.Contains(i))
                 {
-                    return false;
+                    return false; // TODO - P0 - no code coverage for this case
                 }
             }
 
             return true;
         }
 
+        /// <summary>
+        /// Gets a string representation of the token, along with position info
+        /// </summary>
+        /// <returns>a string representation of the token, along with position info</returns>
         public override string ToString()
         {
             return "---> '" + Value + "'<--- - " + Position;
         }
 
+        /// <summary>
+        /// Creates a new instance of the strongly typed token and copies all of the base token's properties to the new value
+        /// </summary>
+        /// <typeparam name="T">The type of the derived token.</typeparam>
+        /// <returns>The strongly typed token</returns>
         public T As<T>() where T : Token
         {
             var ret = (T)Activator.CreateInstance(typeof(T), this.Value, this.StartIndex, this.Line, this.Column);
@@ -105,35 +145,83 @@ namespace PowerArgs
         }
     }
 
+    /// <summary>
+    /// An enum describing the different ways the tokenizer can handle whitespace
+    /// </summary>
     public enum WhitespaceBehavior
     {
+        /// <summary>
+        /// Treats whitespace as a delimiter and includes the whitespace tokens in the output list of tokens
+        /// </summary>
         DelimitAndInclude,
+        /// <summary>
+        /// Treats whitespace as a delimiter, but excludes the whitespace tokens from the output list of tokens
+        /// </summary>
         DelimitAndExclude,
+        /// <summary>
+        /// Includes whitespace in the output and does not treat it as a delimiter
+        /// </summary>
         Include,
     }
 
+    /// <summary>
+    /// An enum describing the different ways the tokenizer can handle double quotes
+    /// </summary>
     public enum DoubleQuoteBehavior
     {
+        /// <summary>
+        /// No special handling.  Double quotes will be treated like any normal character.  You can include the double quote in the delimiters list.
+        /// </summary>
         NoSpecialHandling,
+        /// <summary>
+        /// Treat values within double quotes as string literals.
+        /// </summary>
         IncludeQuotedTokensAsStringLiterals,
     }
 
+    /// <summary>
+    /// A general purpose string tokenizer
+    /// </summary>
+    /// <typeparam name="T">The type of tokens that this tokenizer should output</typeparam>
     public class Tokenizer<T> where T : Token
     {
+        /// <summary>
+        /// strings to treat as delimiters.  Delimiters with longer lengths will take preference over
+        /// those with shorter lengths.  For example if you add delimiters '{{' and '{' and the document
+        /// contains '{{Hello' then you'll get 2 tokens, first '{{', then 'hello'
+        /// </summary>
         public List<string> Delimiters { get; private set; }
 
+        /// <summary>
+        /// A function that given a plain token can transform it into the strongly typed token
+        /// </summary>
         public Func<Token, List<T>, T> TokenFactory { get; set; }
 
+        /// <summary>
+        /// Gets or sets the option that describes how whitespace should be treated.
+        /// </summary>
         public WhitespaceBehavior WhitespaceBehavior { get; set; }
 
+        /// <summary>
+        /// Gets or sets the option that describes how double quotes should be treated.
+        /// </summary>
         public DoubleQuoteBehavior DoubleQuoteBehavior { get; set; }
 
+        /// <summary>
+        /// An escape sequence identifier.  By default it is '\'
+        /// </summary>
         public char EscapeSequenceIndicator { get; set; }
 
-        private bool insideStringLiteral = false;
-
+        /// <summary>
+        /// A string that describes the source location for the given document
+        /// </summary>
         public string SourceFileLocation { get; set; }
-
+        
+        private bool insideStringLiteral = false;
+        
+        /// <summary>
+        /// Creates a new tokenizer
+        /// </summary>
         public Tokenizer()
         {
             this.Delimiters = new List<string>();
@@ -150,6 +238,11 @@ namespace PowerArgs
             this.EscapeSequenceIndicator = '\\';
         }
 
+        /// <summary>
+        /// Tokenizes the given string into a list of tokens
+        /// </summary>
+        /// <param name="input">The string to tokenize</param>
+        /// <returns>The list of tokens</returns>
         public List<T> Tokenize(string input)
         {
             List<T> tokens = new List<T>();
@@ -273,8 +366,6 @@ namespace PowerArgs
             FinalizeTokenIfNotNull(ref currentToken, tokens);
         }
 
-
-
         private void Tokenize_Whitespace(string input, ref int currentIndex, ref char currentCharacter, ref int line, ref int col, ref Token currentToken, List<T> tokens)
         {
             if (WhitespaceBehavior == WhitespaceBehavior.DelimitAndExclude)
@@ -316,7 +407,7 @@ namespace PowerArgs
             }
             else
             {
-                currentToken.Append(toAppend);
+                currentToken.Value += toAppend;
             }
         }
 

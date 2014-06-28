@@ -130,6 +130,7 @@ namespace ArgsTests
             var whitelist = new Type[]
             {
                 typeof(ArgReviverAttribute),
+                typeof(DynamicExpressionProviderAttribute),
             };
 
             var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>

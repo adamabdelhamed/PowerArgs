@@ -25,6 +25,9 @@ namespace PowerArgs
         /// </summary>
         public List<CommandLineArgument> Arguments { get; private set; }
 
+        /// <summary>
+        /// Creates a usage summary string that is specific to this action and accounts for positional argument, etc.
+        /// </summary>
         public string UsageSummary
         {
             get
@@ -33,6 +36,10 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Creates a usage summary string that is specific to this action and accounts for positional argument, etc. where the
+        /// brackets are html encoded
+        /// </summary>
         public string UsageSummaryHTMLEncoded
         {
             get
@@ -140,6 +147,9 @@ namespace PowerArgs
         /// </summary>
         internal MethodInfo ActionMethod { get; private set; }
 
+        /// <summary>
+        /// Returns true if there is at least 1 ArgExample metadata on this action
+        /// </summary>
         public bool HasExamples
         {
             get
@@ -148,6 +158,9 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Returns true if this action has at least 1 action specific argument
+        /// </summary>
         public bool HasArguments
         {
             get

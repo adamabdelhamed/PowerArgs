@@ -3,34 +3,60 @@ using System.Collections.Generic;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// A document expression that can render a named template
+    /// </summary>
     public class TemplateExpression : IDocumentExpression
     {
+        /// <summary>
+        /// A token containing the id of the template to render
+        /// </summary>
         public DocumentToken IdToken { get; private set; }
 
+        /// <summary>
+        /// A token containing an expression to be evaluated.  The result of the evaluation
+        /// will be used as the root data object to be bound to the named template.
+        /// </summary>
         public DocumentToken EvalToken { get; private set; }
 
+        /// <summary>
+        /// Creates a new template expression given an id token and a data evaluation token.
+        /// </summary>
+        /// <param name="idToken">A token containing the id of the template to render</param>
+        /// <param name="evalToken">A token containing an expression to be evaluated.  The result of the evaluation will be
+        /// used as the root data object to be bound to the named template.</param>
         public TemplateExpression(DocumentToken idToken, DocumentToken evalToken)
         {
             this.IdToken = idToken;
             this.EvalToken = evalToken;
         }
 
-        public ConsoleString Evaluate(DataContext context)
+        /// <summary>
+        /// Finds the matching template from the data context, evaluates the data expression, then renders
+        /// the template against the data.  The rendered document is inserted into the parent document.
+        /// </summary>
+        /// <param name="context">The data context used to find the named template and to evaluate the data expression</param>
+        /// <returns>The rendered child document to be inserted into the parent document</returns>
+        public ConsoleString Evaluate(DocumentRendererContext context)
         {
-            DocumentTemplateInfo target;
-            if(context.DocumentRenderer.NamedTemplates.TryGetValue(this.IdToken.Value,out target) == false)
-            {
-                throw new DocumentRenderException("There is no template named '" + IdToken.Value + "'", IdToken);
-            }
-
+            DocumentTemplateInfo target = context.DocumentRenderer.GetTemplate(this.IdToken);
             var eval = context.EvaluateExpression(this.EvalToken.Value);
-
             return context.DocumentRenderer.Render(target.Value, eval, target.SourceLocation);
         }
     }
 
+    /// <summary>
+    /// A provider that can create a template expression from a replacement token and parameters.
+    /// </summary>
     public class TemplateExpressionProvider : IDocumentExpressionProvider
     {
+        /// <summary>
+        /// Creates a template expression given a replacement token and parameters.
+        /// </summary>
+        /// <param name="replacementKeyToken">The token whose value should be 'template'</param>
+        /// <param name="parameters">There should be 2 parameters.  One representing the name of the template to render and one representing the data to bind to the template.</param>
+        /// <param name="body">Should be empty.  Template expressions do not support a body.</param>
+        /// <returns>a template expression</returns>
         public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if (body.Count > 0)

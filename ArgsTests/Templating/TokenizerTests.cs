@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
+using System.Collections.Generic;
 
 namespace ArgsTests.Templating
 {
@@ -120,6 +121,56 @@ namespace ArgsTests.Templating
             }
 
             Assert.AreEqual(input, reconstructed);
+        }
+
+        [TestMethod]
+        public void TestTokenizerQuoteHandling()
+        {
+            var input = "Hi, my name is \"John Smith\"";
+            Tokenizer<Token> tokenizer = new Tokenizer<Token>();
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
+            tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
+            var tokens = tokenizer.Tokenize(input);
+            AssertEqual(tokens, "Hi,", "my", "name", "is", "\"John Smith\"");
+
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndInclude;
+            tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.NoSpecialHandling;
+            tokenizer.Delimiters.Add("\"");
+            tokens = tokenizer.Tokenize(input);
+            AssertEqual(tokens, "Hi,", " ", "my", " ", "name", " ", "is", " ", "\"", "John", " ", "Smith", "\"");
+        }
+
+        [TestMethod]
+        public void TestTokenizerQuoteHandlingWithEscapeSequenceWithinQuotes()
+        {
+            var input = "Hi, my name is \"John \\\"Smith\\\"\"";
+            Tokenizer<Token> tokenizer = new Tokenizer<Token>();
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
+            tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
+            var tokens = tokenizer.Tokenize(input);
+            AssertEqual(tokens, "Hi,", "my", "name", "is", "\"John \"Smith\"\"");
+        }
+
+
+        [TestMethod]
+        public void TestTokenizerQuoteHandlingWithEscapeSequenceBlockingQuotes()
+        {
+            var input = "Hi, my name is \\\"John Smith\\\"";
+            Tokenizer<Token> tokenizer = new Tokenizer<Token>();
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
+            tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
+            tokenizer.Delimiters.Add("\"");
+            var tokens = tokenizer.Tokenize(input);
+            AssertEqual(tokens, "Hi,", "my", "name", "is", "\"John", "Smith\"");
+        }
+
+        private void AssertEqual(List<Token> tokens, params string[] expected)
+        {
+            Assert.AreEqual(expected.Length, tokens.Count);
+            for(int i = 0; i < tokens.Count; i++)
+            {
+                Assert.AreEqual(expected[i], tokens[i].Value);
+            }
         }
     }
 }

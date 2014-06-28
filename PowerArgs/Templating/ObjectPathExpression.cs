@@ -6,22 +6,62 @@ using System.Reflection;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// An enum used to add type metadata to object path expression tokens
+    /// </summary>
     public enum ObjectPathTokenType
     {
-        IndexerOpen,       // '['
-        IndexerClose,      // ']'
-        NavigationElement, // '.'
-        Text,              // Other text
-        Whitespace,        // whitespace
-        StringLiteral,     // text inside double quotes
+        /// <summary>
+        /// Indicates the start of an index navigation for objects like arrays, lists, and dictionaries.  '['
+        /// </summary>
+        IndexerOpen,       
+        /// <summary>
+        /// Indicates the end of an index navigation for objects like arrays, lists, and dictionaries. ']'
+        /// </summary>
+        IndexerClose,     
+        /// <summary>
+        /// Indicates a property navigation for an object.
+        /// </summary>
+        NavigationElement,
+        /// <summary>
+        /// Indicates a property identifier
+        /// </summary>
+        Identifier,            
+        /// <summary>
+        /// Indicates whitespace
+        /// </summary>
+        Whitespace,       
+        /// <summary>
+        /// Indicates a string literal inside of double quotes
+        /// </summary>
+        StringLiteral,    
     }
 
+    /// <summary>
+    /// A token that is a part of an object path expression string
+    /// </summary>
     public class ObjectPathToken : Token
     {
-        public ObjectPathTokenType TokenType { get; set; }
+        /// <summary>
+        /// Gets the type of token
+        /// </summary>
+        public ObjectPathTokenType TokenType { get; private set; }
 
+        /// <summary>
+        /// Creates an object path token
+        /// </summary>
+        /// <param name="initialValue">The initial value of the token</param>
+        /// <param name="startIndex">The start index of the token in the source string</param>
+        /// <param name="line">The line number that this token is on</param>
+        /// <param name="col">The column within the line that this token is on</param>
         public ObjectPathToken(string initialValue, int startIndex, int line, int col) : base(initialValue, startIndex, line, col) { }
 
+        /// <summary>
+        /// A method that can determine which type of token the given value is
+        /// </summary>
+        /// <param name="token">The token to classify</param>
+        /// <param name="previous">Previously classified tokens in the source string</param>
+        /// <returns>The classified token</returns>
         public static ObjectPathToken TokenFactoryImpl(Token token, List<ObjectPathToken> previous)
         {
             var ret = token.As<ObjectPathToken>();
@@ -47,21 +87,36 @@ namespace PowerArgs
             }
             else
             {
-                ret.TokenType = ObjectPathTokenType.Text;
+                ret.TokenType = ObjectPathTokenType.Identifier;
             }
             return ret;
         }
     }
 
+    /// <summary>
+    /// An object that represents navigation into an object properties or indexed elements
+    /// </summary>
     public class ObjectPathExpression
     {
+        /// <summary>
+        /// The path elements for this expression
+        /// </summary>
         public List<IObjectPathElement> Elements { get; private set; }
 
+        /// <summary>
+        /// Create a path expression given a collection of path elements
+        /// </summary>
+        /// <param name="elements">The path elements</param>
         public ObjectPathExpression(IEnumerable<IObjectPathElement> elements)
         {
             this.Elements = elements.ToList();
         }
 
+        /// <summary>
+        /// Parses an object path expression from a string.
+        /// </summary>
+        /// <param name="expression">The expression text to parse</param>
+        /// <returns>The parsed expression</returns>
         public static ObjectPathExpression Parse(string expression)
         {
             if (expression == null) throw new ArgumentNullException("path cannot be null");
@@ -108,7 +163,7 @@ namespace PowerArgs
                     // read index value
                     if (reader.TryAdvance(out currentToken,skipWhitespace: true) == false) throw new FormatException("Expected index value, got end of string");
 
-                    if (currentToken.TokenType == ObjectPathTokenType.Text || currentToken.TokenType == ObjectPathTokenType.StringLiteral)
+                    if (currentToken.TokenType == ObjectPathTokenType.Identifier || currentToken.TokenType == ObjectPathTokenType.StringLiteral)
                     {
                         string indexValueText = currentToken.Value;
 
@@ -147,7 +202,7 @@ namespace PowerArgs
                         throw new ArgumentException("Unexpected token '" + currentToken.Value + "' at " + currentToken.Position);
                     }
                 }
-                else if(currentToken.TokenType == ObjectPathTokenType.Text)
+                else if(currentToken.TokenType == ObjectPathTokenType.Identifier)
                 {
                     PropertyPathElement el = new PropertyPathElement(currentToken.Value);
                     pathElements.Add(el);
@@ -165,12 +220,21 @@ namespace PowerArgs
             return new ObjectPathExpression(pathElements);
         }
 
-
+        /// <summary>
+        /// Evaluates the expression and returns the value
+        /// </summary>
+        /// <param name="root">the object to evaluate against</param>
+        /// <returns>The result of the evaluation</returns>
         public object Evaluate(object root)
         {
             return EvaluateAndTrace(root).Last();
         }
 
+        /// <summary>
+        /// Evaluates the expression, returning the object that corresponds to each element in the path.
+        /// </summary>
+        /// <param name="root">the object to evaluate against</param>
+        /// <returns>A list of object where each object corresponds to an element in the path</returns>
         public List<object> EvaluateAndTrace(object root)
         {
             if (root == null) throw new ArgumentNullException("root cannot be null");
@@ -236,27 +300,52 @@ namespace PowerArgs
         }
     }
 
+    /// <summary>
+    /// An object that represents a path element
+    /// </summary>
     public interface IObjectPathElement { }
 
+    /// <summary>
+    /// A path element that represents an object's property
+    /// </summary>
     public class PropertyPathElement : IObjectPathElement
     {
+
+        /// <summary>
+        /// Gets the name of the property
+        /// </summary>
         public string PropertyName { get; private set; }
 
+        /// <summary>
+        /// Creates a property path element given a property name
+        /// </summary>
+        /// <param name="propertyName">the name of the property</param>
         public PropertyPathElement(string propertyName)
         {
             if (propertyName == null) throw new ArgumentNullException("info cannot be null");
             this.PropertyName = propertyName;
         }
 
+        /// <summary>
+        /// Returns the property name
+        /// </summary>
+        /// <returns>the property name</returns>
         public override string ToString()
         {
             return PropertyName;
         }
     }
 
+    /// <summary>
+    /// A path element that represents an index navigation
+    /// </summary>
     public class IndexerPathElement : IObjectPathElement
     {
-        public object _index;
+        private object _index;
+
+        /// <summary>
+        /// The indexer value, either a literal string or an integer
+        /// </summary>
         public object Index
         {
             get
@@ -273,11 +362,20 @@ namespace PowerArgs
             }
         }
         
+        /// <summary>
+        /// Creates an indexer element given an indexer value
+        /// </summary>
+        /// <param name="index"></param>
         public IndexerPathElement(object index)
         {
             this.Index = index;
         }
 
+        /// <summary>
+        /// Finds the matching property info that represents an indexer property (do not use for strings or arrays).
+        /// </summary>
+        /// <param name="target">The object to search</param>
+        /// <returns>The matching property</returns>
         public PropertyInfo FindMatchingProperty(object target)
         {
             var match = from p in target.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -291,6 +389,10 @@ namespace PowerArgs
             return match.SingleOrDefault();
         }
 
+        /// <summary>
+        /// returns '[' + the index value + ']'
+        /// </summary>
+        /// <returns>'[' + the index value + ']'</returns>
         public override string ToString()
         {
             if (Index is int)

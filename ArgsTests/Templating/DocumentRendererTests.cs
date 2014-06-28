@@ -2,11 +2,95 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using System.Collections.Generic;
+using System.Reflection;
 namespace ArgsTests.Templating
 {
+    public class FuncDocExpression : IDocumentExpression
+    {
+        Func<DocumentRendererContext, ConsoleString> impl;
+        public FuncDocExpression(Func<DocumentRendererContext,ConsoleString> impl)
+        {
+            this.impl = impl;
+        }
+
+        public ConsoleString Evaluate(DocumentRendererContext context)
+        {
+            return impl(context);
+        }
+    }
+
+    [DynamicExpressionProvider("date")]
+    public class DateExpressionProvider : IDocumentExpressionProvider
+    {
+        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        {
+            return new FuncDocExpression((context) => { return new ConsoleString(DateTime.Now.Date.ToString()); });
+        }
+    }
+
+    [DynamicExpressionProvider("if")]
+    public class IfOverrideExpressionProvider : IDocumentExpressionProvider
+    {
+        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        {
+            return new FuncDocExpression((context) => { return new ConsoleString("if override"); });
+        }
+    }
+
     [TestClass]
     public class DocumentRendererTests
     {
+        [TestMethod]
+        public void TestDocumentRenderingVarExpressionColors()
+        {
+            var rendered = new DocumentRenderer().Render("{{var ConsoleForegroundColor Red!}}Hi {{FirstName!}}{{clearvar ConsoleForegroundColor !}}.  How are you?", new { FirstName = "Adam" });
+            Assert.AreEqual(new ConsoleString("Hi Adam",foregroundColor: ConsoleColor.Red) + new ConsoleString(".  How are you?"), rendered);
+        }
+
+        [TestMethod]
+        public void TestDocumentRenderingVarExpression()
+        {
+            var rendered = new DocumentRenderer().Render("{{var first FirstName!}}Hi {{first!}}{{clearvar first!}}", new { FirstName="Adam" });
+            Assert.AreEqual("Hi Adam", rendered.ToString());
+        }
+
+        [TestMethod]
+        public void TestDocumentRenderingWithCustomExpressions()
+        {
+            DocumentRenderer renderer = new DocumentRenderer();
+            renderer.ExpressionParser.RegisterDynamicReplacementExpressionProviders(Assembly.GetExecutingAssembly(), true);
+            var rendered = renderer.Render("{{ date !}}", new { });
+            Assert.AreEqual(DateTime.Today.ToString(), rendered.ToString());
+
+            Assert.IsTrue(renderer.ExpressionParser.RegisteredReplacementExpressionProviderKeys.Contains("date"));
+            renderer.ExpressionParser.UnregisterReplacementExpressionProvider("date");
+            Assert.IsFalse(renderer.ExpressionParser.RegisteredReplacementExpressionProviderKeys.Contains("date"));
+        }
+
+        [TestMethod]
+        public void TestDocumentRenderingWithCustomOverrideExpressions()
+        {
+            DocumentRenderer renderer = new DocumentRenderer();
+            renderer.ExpressionParser.RegisterDynamicReplacementExpressionProviders(Assembly.GetExecutingAssembly(), true);
+            var rendered = renderer.Render("{{ if !}}", new { });
+            Assert.AreEqual("if override", rendered.ToString());
+        }
+
+        [TestMethod]
+        public void TestDocumentRenderingWithCustomInvalidOverrideExpressions()
+        {
+            try
+            {
+                DocumentRenderer renderer = new DocumentRenderer();
+                renderer.ExpressionParser.RegisterDynamicReplacementExpressionProviders(Assembly.GetExecutingAssembly(), false);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch(ArgumentException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("already exists"));
+            }
+        }
+
         [TestMethod]
         public void TestDocumentRenderingWithNoReplacements()
         {
@@ -59,7 +143,7 @@ namespace ArgsTests.Templating
         public void TestDocumentRenderingWithNamedTemplates()
         {
             DocumentRenderer renderer = new DocumentRenderer();
-            renderer.NamedTemplates.Add("TheOneAndOnlyTemplate", new DocumentTemplateInfo()
+            renderer.RegisterTemplate("TheOneAndOnlyTemplate", new DocumentTemplateInfo()
             {
                 Value = "Hi {{LastName!}}, {{FirstName!}}",
             });
@@ -72,7 +156,7 @@ namespace ArgsTests.Templating
         public void TestDocumentRenderingSourcePropagation()
         {
             DocumentRenderer renderer = new DocumentRenderer();
-            renderer.NamedTemplates.Add("TheOneAndOnlyTemplate", new DocumentTemplateInfo()
+            renderer.RegisterTemplate("TheOneAndOnlyTemplate", new DocumentTemplateInfo()
             {
                 Value = "Hi {{!}}, {{FirstName!}}",
                 SourceLocation = "The bad template",

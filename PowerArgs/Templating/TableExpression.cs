@@ -4,16 +4,42 @@ using System.Collections.Generic;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// A document expression that can be used to render a table that is specifically formatted to display
+    /// in a console window.
+    /// </summary>
     public class TableExpression : IDocumentExpression
     {
+        /// <summary>
+        /// The token representing the expression to evaluate.  The expression is expected to resolve to
+        /// an IEnumerable.
+        /// </summary>
         public DocumentToken EvalToken { get; private set; }
 
+        /// <summary>
+        /// The tokens that represent the columns to display.  Each value is expected to be a property name.  Optionally, you can
+        /// override the display name by appending '>NewDisplayName' to the value.  For example, if there was a property called 'TheName'
+        /// and you wanted it to display as 'Name' then the value of the column token would be 'TheName>Name'.
+        /// </summary>
         public List<DocumentToken> Columns { get; private set; }
 
+        /// <summary>
+        /// PowerArgs specific property - Set to false if using outside of Powerargs - If true then properties that are enums 
+        /// will have their values inserted into the table.
+        /// </summary>
         public bool ShowPossibleValuesForArguments { get; set; }
 
+        /// <summary>
+        /// PowerArgs specific property - Set to false if using outside of Powerargs - If true then the properties that have a default 
+        /// value will have that inserted into the table
+        /// </summary>
         public bool ShowDefaultValuesForArguments { get; set; }
 
+        /// <summary>
+        /// Creates a new table expression given a collection evaluation expression and a list of column tokens
+        /// </summary>
+        /// <param name="evalToken">A token containing an expression that should evaluate to an IEnumerable</param>
+        /// <param name="columns">A list of tokens containing the names of columns to display in the table</param>
         public TableExpression(DocumentToken evalToken, List<DocumentToken> columns)
         {
             this.EvalToken = evalToken;
@@ -22,7 +48,12 @@ namespace PowerArgs
             this.ShowPossibleValuesForArguments = true;
         }
 
-        public ConsoleString Evaluate(DataContext context)
+        /// <summary>
+        /// Renders the table given a data context
+        /// </summary>
+        /// <param name="context">the data context</param>
+        /// <returns>the console friendly table, as a ConsoleString</returns>
+        public ConsoleString Evaluate(DocumentRendererContext context)
         {
             var eval = context.EvaluateExpression(this.EvalToken.Value);
 
@@ -110,6 +141,13 @@ namespace PowerArgs
             return tableText;
         }
 
+        /// <summary>
+        /// Formats the given column headers and rows as a table.
+        /// </summary>
+        /// <param name="columns">The column headers</param>
+        /// <param name="rows">The row data</param>
+        /// <param name="rowPrefix">A string to prepend to each row.  This can be used to indent a table.</param>
+        /// <returns>The rendered table as a ConsoleString</returns>
         public static ConsoleString FormatAsTable(List<ConsoleString> columns, List<List<ConsoleString>> rows, string rowPrefix = "")
         {
             if (rows.Count == 0) return new ConsoleString();
@@ -155,8 +193,18 @@ namespace PowerArgs
         }
     }
 
+    /// <summary>
+    /// A provider that can create a table expression given a replacement token and parameters.
+    /// </summary>
     public class TableExpressionProvider : IDocumentExpressionProvider
     {
+        /// <summary>
+        /// Creates a table expression from the given document info.
+        /// </summary>
+        /// <param name="replacementKeyToken">The token that should contain a value of 'table'</param>
+        /// <param name="parameters">Replacement parameters that should be column names and optional properties</param>
+        /// <param name="body">Should be empty.  Table expressions don't support bodies</param>
+        /// <returns>The created document expression</returns>
         public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if (body.Count > 0)

@@ -4,41 +4,66 @@ using System.Linq;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// An enum defining the types of tokens that can appear in a templated document
+    /// </summary>
     public enum DocumentTokenType
     {
+        /// <summary>
+        /// Indicates the Key of a replacement tag.  Example: 'each' in '{{each foo in bar}}'
+        /// </summary>
         ReplacementKey,
+        /// <summary>
+        /// Indicates a parameter in a replacement tag.  Example: 'foo', 'in', and 'bar' in '{{each foo in bar}}'
+        /// </summary>
         ReplacementParameter,
+        /// <summary>
+        /// Text that is not transformed by the document renderer
+        /// </summary>
         PlainText,
+        /// <summary>
+        /// Indicates the beginning of a replacement tag '{{'.
+        /// </summary>
         BeginReplacementSegment,
+        /// <summary>
+        /// Indicates the end of a replacement segment '}}'
+        /// </summary>
         EndReplacementSegment,
+        /// <summary>
+        /// Indicates the beginning of a termination segment '!{{'
+        /// </summary>
         BeginTerminateReplacementSegment,
+        /// <summary>
+        /// Indicates that a replacement segment has no body and this is the end of the segment '!}}'
+        /// </summary>
         QuickTerminateReplacementSegment,
     }
 
+    /// <summary>
+    /// A class that represents a token in a templated document
+    /// </summary>
     public class DocumentToken : Token
     {
+        /// <summary>
+        /// The type of this token
+        /// </summary>
         public DocumentTokenType TokenType { get; set; }
 
+        /// <summary>
+        /// Creates a new document token
+        /// </summary>
+        /// <param name="initialValue">The initial value of the token</param>
+        /// <param name="startIndex">the zero based character index of this token in a document template</param>
+        /// <param name="line">The line number of this token in a document template (starts at 1)</param>
+        /// <param name="col">The column number of this token in a document template (starts at 1)</param>
         public DocumentToken(string initialValue, int startIndex, int line, int col) : base(initialValue, startIndex, line, col) { }
 
-        public static List<string> Delimiters
-        {
-            get
-            {
-                List<string> ret = new List<string>();
-                foreach (DocumentTokenType type in Enum.GetValues(typeof(DocumentTokenType)))
-                {
-                    string textVal;
-                    if (TryGetTokenTypeValue(type, out textVal))
-                    {
-                        ret.Add(textVal);
-                    }
-                }
-
-                return ret;
-            }
-        }
-
+        /// <summary>
+        /// Gets the constant string value of a given token type.  This method will throw an exception if the
+        /// type provided does not map to a constant string value.
+        /// </summary>
+        /// <param name="type">The type to lookup</param>
+        /// <returns>The literal string value expected of a token of the given type</returns>
         public static string GetTokenTypeValue(DocumentTokenType type)
         {
             string ret;
@@ -49,6 +74,13 @@ namespace PowerArgs
             return ret;
         }
 
+        /// <summary>
+        /// Tries to get the constant string value of a given token type.  This method will return false for types that don't
+        /// map to a constant string value.
+        /// </summary>
+        /// <param name="type">The type to lookup</param>
+        /// <param name="val">The literal string value expected of a token of the given type</param>
+        /// <returns>true if 'val' was populated, false otherwise</returns>
         public static bool TryGetTokenTypeValue(DocumentTokenType type, out string val)
         {
             if (type == DocumentTokenType.BeginReplacementSegment)
@@ -76,6 +108,12 @@ namespace PowerArgs
             return true;
         }
 
+        /// <summary>
+        /// Tries to parse a literal string value to a well known document token type.
+        /// </summary>
+        /// <param name="stringVal">The value to try to parse</param>
+        /// <param name="type">The reference to populate if parsing is successful</param>
+        /// <returns>True if the string could be successfully mapped to a DocumentTokenType, false otherwise</returns>
         public static bool TryParseDocumentTokenType(string stringVal, out DocumentTokenType type)
         {
             if (stringVal == "{{")
@@ -103,6 +141,12 @@ namespace PowerArgs
             return true;
         }
 
+        /// <summary>
+        /// Tokenizes the given text into a list of DocumentToken objects.
+        /// </summary>
+        /// <param name="text">The text to tokenize</param>
+        /// <param name="sourceLocation">A string describing the source of the text.  This could be a text file path or some other identifier.</param>
+        /// <returns>A list of tokens</returns>
         public static List<DocumentToken> Tokenize(string text, string sourceLocation)
         {
             Tokenizer<DocumentToken> tokenizer = new Tokenizer<DocumentToken>();
@@ -111,23 +155,54 @@ namespace PowerArgs
             tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndInclude;
             tokenizer.TokenFactory = DocumentToken.TokenFactoryImpl;
             List<DocumentToken> tokens = tokenizer.Tokenize(text);
-            return tokens;
+            List<DocumentToken> filtered = RemoveLinesThatOnlyContainReplacements(tokens);
+            return filtered;
         }
 
-        public static DocumentToken TokenFactoryImpl(Token token, List<DocumentToken> previous)
+        private static List<string> Delimiters
+        {
+            get
+            {
+                List<string> ret = new List<string>();
+                foreach (DocumentTokenType type in Enum.GetValues(typeof(DocumentTokenType)))
+                {
+                    string textVal;
+                    if (TryGetTokenTypeValue(type, out textVal))
+                    {
+                        ret.Add(textVal);
+                    }
+                }
+
+                return ret;
+            }
+        }
+
+        private static DocumentToken TokenFactoryImpl(Token token, List<DocumentToken> previous)
         {
             var utToken = token.As<DocumentToken>();
+
+            DocumentTokenType? previousNonWhitespaceTokenType = null;
+
+            for(var i = previous.Count-1;i >= 0; i--)
+            {
+                var current = previous[i];
+                if(string.IsNullOrWhiteSpace(current.Value) == false)
+                {
+                    previousNonWhitespaceTokenType = current.TokenType;
+                    break;
+                }
+            }
 
             DocumentTokenType constantValueType;
             if(TryParseDocumentTokenType(token.Value, out constantValueType))
             {
                 utToken.TokenType = constantValueType;
             }
-            else if (previous.Count > 0 && (previous.Last().TokenType == DocumentTokenType.BeginReplacementSegment || previous.Last().TokenType == DocumentTokenType.BeginTerminateReplacementSegment))
+            else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginReplacementSegment || previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginTerminateReplacementSegment))
             {
                 utToken.TokenType = DocumentTokenType.ReplacementKey;
             }
-            else if (previous.Count > 0 && (previous.Last().TokenType == DocumentTokenType.ReplacementKey || previous.Last().TokenType == DocumentTokenType.ReplacementParameter))
+            else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementKey || previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementParameter))
             {
                 utToken.TokenType = DocumentTokenType.ReplacementParameter;
             }
@@ -139,7 +214,7 @@ namespace PowerArgs
             return utToken;
         }
 
-        public static List<DocumentToken> RemoveLinesThatOnlyContainReplacements(List<DocumentToken> tokens)
+        private static List<DocumentToken> RemoveLinesThatOnlyContainReplacements(List<DocumentToken> tokens)
         {
             var currentLine = 1;
             int numContentTokensOnCurrentLine = 0;

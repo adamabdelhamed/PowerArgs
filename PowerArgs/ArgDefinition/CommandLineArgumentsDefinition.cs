@@ -15,6 +15,10 @@ namespace PowerArgs
     {
         private string exeName;
 
+        /// <summary>
+        /// Gets or sets the ExeName for this command line argument definition's program.  If not specified the entry assembly's file name
+        /// is used, without the file extension.
+        /// </summary>
         public string ExeName
         {
             get
@@ -42,6 +46,9 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Gets the description from ArgDescriptionMetadata if it exists, or empty string if it does not.
+        /// </summary>
         public string Description
         {
             get
@@ -52,6 +59,9 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Returns true if there is at least 1 global argument, false otherwise
+        /// </summary>
         public bool HasGlobalArguments
         {
             get
@@ -60,6 +70,9 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Returns true if there is at least 1 action, false otherwise
+        /// </summary>
         public bool HasActions
         {
             get
@@ -68,6 +81,9 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Creates a usage summary string that takes into account actions, positional argument, etc.
+        /// </summary>
         public string UsageSummary
         {
             get
@@ -76,6 +92,10 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Creates a usage summary string that takes into account actions, positional argument, etc. where the
+        /// brackets are html encoded
+        /// </summary>
         public string UsageSummaryHTMLEncoded
         {
             get
@@ -162,6 +182,9 @@ namespace PowerArgs
         /// </summary>
         public List<ICommandLineArgumentsDefinitionMetadata> Metadata { get; private set; }
 
+        /// <summary>
+        /// Returns true if there is at least 1 example registered for this definition
+        /// </summary>
         public bool HasExamples
         {
             get
@@ -207,6 +230,9 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Returns true if this definition has been processed and an action was specified
+        /// </summary>
         public bool HasSpecifiedAction
         {
             get

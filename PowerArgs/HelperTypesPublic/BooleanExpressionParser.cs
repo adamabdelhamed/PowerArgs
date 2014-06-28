@@ -234,6 +234,13 @@ namespace PowerArgs
         /// </summary>
         public BooleanExpressionTokenType Type { get; set; }
 
+        /// <summary>
+        /// Creates a boolean expression token
+        /// </summary>
+        /// <param name="tokenText">the token text</param>
+        /// <param name="startIndex">the start index of the token value</param>
+        /// <param name="line">the line number of the token value</param>
+        /// <param name="col">the column number of the token value</param>
         public BooleanExpressionToken(string tokenText, int startIndex, int line, int col) : base(tokenText, startIndex, line, col) { }
     }
 

@@ -4,18 +4,38 @@ using System.Linq;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// An expression that indicates the beginning of a local variable's scope
+    /// </summary>
     public class VarExpression : IDocumentExpression
     {
+        /// <summary>
+        /// A token containing the name of the local variable to initialize
+        /// </summary>
         public DocumentToken NameToken { get; private set; }
+
+        /// <summary>
+        /// A token containing an expression that should resolve to the initial value of the variable
+        /// </summary>
         public DocumentToken ValueToken { get; private set; }
 
+        /// <summary>
+        /// Creates a new variable expression given a name and value expression
+        /// </summary>
+        /// <param name="name">A token containing the name of the local variable to initialize</param>
+        /// <param name="value">A token containing an expression that should resolve to the initial value of the variable</param>
         public VarExpression(DocumentToken name, DocumentToken value)
         {
             this.NameToken = name;
             this.ValueToken = value;
         }
 
-        public ConsoleString Evaluate(DataContext context)
+        /// <summary>
+        /// Always results in an empty string, but initializes the local value in the data context
+        /// </summary>
+        /// <param name="context">The data context used to store the newly initialized variable</param>
+        /// <returns>an empty string</returns>
+        public ConsoleString Evaluate(DocumentRendererContext context)
         {
             if (NameToken.Value == "ConsoleForegroundColor" || NameToken.Value == "ConsoleBackgroundColor")
             {
@@ -35,24 +55,49 @@ namespace PowerArgs
         }
     }
 
+    /// <summary>
+    /// An expression that indicates the end of a local variable's scope
+    /// </summary>
     public class ClearVarExpression : IDocumentExpression
     {
+        /// <summary>
+        /// A token containing the name of the variable whose scope is ending
+        /// </summary>
         public DocumentToken NameToken { get; private set; }
 
+        /// <summary>
+        /// Creates a new clear variable expression given a variable name
+        /// </summary>
+        /// <param name="name">A token containing the name of the variable whose scope is ending</param>
         public ClearVarExpression(DocumentToken name)
         {
             this.NameToken = name;
         }
 
-        public ConsoleString Evaluate(DataContext context)
+        /// <summary>
+        /// Removes the named variable from the context's local variable set
+        /// </summary>
+        /// <param name="context">the context that should contain the local variable to remove</param>
+        /// <returns>an empty string</returns>
+        public ConsoleString Evaluate(DocumentRendererContext context)
         {
             context.LocalVariables.Remove(NameToken);
             return ConsoleString.Empty;
         }
     }
 
+    /// <summary>
+    /// A provider that can create a variable expression
+    /// </summary>
     public class VarExpressionProvider : IDocumentExpressionProvider
     {
+        /// <summary>
+        /// Creates a variable expression given replacement info
+        /// </summary>
+        /// <param name="replacementKeyToken">The replacement key token that should have a value of 'var'</param>
+        /// <param name="parameters">There should be 2 parameters.  The name of the variable and the initial value.</param>
+        /// <param name="body">There should be no body</param>
+        /// <returns>A variable expression</returns>
         public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if (body.Count > 0)
@@ -80,8 +125,18 @@ namespace PowerArgs
         }
     }
 
+    /// <summary>
+    /// A provider that can create an expression to clear a local variable
+    /// </summary>
     public class ClearVarExpressionProvider : IDocumentExpressionProvider
     {
+        /// <summary>
+        /// Creates a clear variable expression given replacement info
+        /// </summary>
+        /// <param name="replacementKeyToken">The replacement key token that should have a value of 'clearvar'</param>
+        /// <param name="parameters">There should be 1 parameter, the name of the variable.</param>
+        /// <param name="body">There should be no body</param>
+        /// <returns>a clear variable expression</returns>
         public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if (body.Count > 0)

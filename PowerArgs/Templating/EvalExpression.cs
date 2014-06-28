@@ -3,13 +3,29 @@ using System.Collections.Generic;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// The core expression that knows how to evaluate C# object expressions like property navigation, including indexed properties.
+    /// </summary>
     public class EvalExpression : IDocumentExpression
     {
+        /// <summary>
+        /// Gets the evaluation token that will be evaluated against a data context
+        /// </summary>
         public DocumentToken EvalToken { get; private set; }
 
+        /// <summary>
+        /// The optional foreground color token that can be used to customize the color of the resulting value
+        /// </summary>
         public DocumentToken ForegroundColorToken { get; set; }
+
+        /// <summary>
+        /// The optional background color token that can be used to customize the color of the resulting value
+        /// </summary>
         public DocumentToken BackgroundColorToken { get; set; }
 
+        /// <summary>
+        /// Gets the ConsoleColor that matches the provided foreground color token, if it was provided.
+        /// </summary>
         public ConsoleColor? FG
         {
             get
@@ -19,6 +35,9 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Gets the ConsoleColor that matches the provided background color token, if it was provided.
+        /// </summary>
         public ConsoleColor? BG
         {
             get
@@ -28,12 +47,21 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Creates an eval expression given a token that represents the expression to evaluate
+        /// </summary>
+        /// <param name="evalToken">The token containing the expression to evaluate</param>
         public EvalExpression(DocumentToken evalToken)
         {
             this.EvalToken = evalToken;
         }
 
-        public ConsoleString Evaluate(DataContext context)
+        /// <summary>
+        /// Evaluates the evaluation expression against a data context, optionally setting the console color if the expression contains those parameters
+        /// </summary>
+        /// <param name="context">The datta context to evaluate against</param>
+        /// <returns>The result of the evaluation as a ConsoleString</returns>
+        public ConsoleString Evaluate(DocumentRendererContext context)
         {
             context.LocalVariables.PushConsoleColors(FG, BG);
             try
@@ -52,7 +80,7 @@ namespace PowerArgs
                     else
                     {
                         var result = eval.ToString();
-                        var ret = context.DocumentRenderer.Render(result, context, "dynamic evaluation sourced from '" + this.EvalToken.Position + "'");
+                        var ret = context.RenderDynamicContent(result, this.EvalToken);
                         return ret;
                     }
                 }
@@ -64,8 +92,18 @@ namespace PowerArgs
         }
     }
 
+    /// <summary>
+    /// The provider that can create an eval expression from template replacement info
+    /// </summary>
     public class EvalExpressionProvider : IDocumentExpressionProvider
     {
+        /// <summary>
+        /// Creates an eval expression given template replacement info
+        /// </summary>
+        /// <param name="replacementKeyToken">The replacement key token which in this case is the evaluation expression</param>
+        /// <param name="parameters">Optional parameters for foreground and background colors.  The values should be valid ConsoleColor values.</param>
+        /// <param name="body">Should be empty.  Eval expressions don't support bodies.</param>
+        /// <returns></returns>
         public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
         {
             if (body.Count > 0)
@@ -75,14 +113,9 @@ namespace PowerArgs
 
             TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
 
-            DocumentToken variableExpressionToken, fgToken, bgToken;
+            DocumentToken fgToken, bgToken;
 
-            if (reader.TryAdvance(out variableExpressionToken, skipWhitespace: true) == false)
-            {
-                throw new DocumentRenderException("missing variable expression", replacementKeyToken);
-            }
-
-            var ret = new EvalExpression(variableExpressionToken);
+            var ret = new EvalExpression(replacementKeyToken);
 
             if(reader.TryAdvance(out fgToken, skipWhitespace: true) == false)
             {

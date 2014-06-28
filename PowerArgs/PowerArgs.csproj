@@ -85,7 +85,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Templating\DataContext.cs" />
+    <Compile Include="Templating\DocumentRendererContext.cs" />
     <Compile Include="Templating\TemplateExpression.cs" />
     <Compile Include="Templating\TableExpression.cs" />
     <Compile Include="Templating\VarExpression.cs" />

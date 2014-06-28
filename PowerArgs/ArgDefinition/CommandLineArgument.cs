@@ -128,6 +128,9 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Returns true if a default value has been explicitly registered for this argument
+        /// </summary>
         public bool HasDefaultValue
         {
             get
@@ -152,6 +155,10 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Only works if the ArgumentType is an enum.  Returns a list where each element is a string containing an
+        /// enum value and optionally its description.  Each enum value is represented in the list.
+        /// </summary>
         public List<string> EnumValuesAndDescriptions
         {
             get
