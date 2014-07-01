@@ -77,6 +77,10 @@ namespace PowerArgs
                     {
                         return (ConsoleString)eval;
                     }
+                    else if(eval is string)
+                    {
+                        return new ConsoleString(eval as string, context.LocalVariables.CurrentForegroundColor, context.LocalVariables.CurrentBackgroundColor);
+                    }
                     else
                     {
                         var result = eval.ToString();

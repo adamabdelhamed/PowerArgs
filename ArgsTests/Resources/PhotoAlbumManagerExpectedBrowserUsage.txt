@@ -132,7 +132,7 @@
 										<h4>Examples</h4>
 											<h3></h3>
 						<p>Downloads a blob called ceremony.png to a temp folder on the local machine</p>
-						<pre class="code-sample">photos download -a myaccount -k mykey -c wedding -BlobFilePath ceremony.png -LocalFile C:tempceremony.png</pre>
+						<pre class="code-sample">photos download -a myaccount -k mykey -c wedding -BlobFilePath ceremony.png -LocalFile C:\temp\ceremony.png</pre>
 														</div>
 			</div>
 		</li>
@@ -195,7 +195,7 @@
 										<h4>Examples</h4>
 											<h3></h3>
 						<p>Uploads all the files in the local directory to the 'wedding' container</p>
-						<pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:images</pre>
+						<pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images</pre>
 														</div>
 			</div>
 		</li>

@@ -38,6 +38,36 @@ namespace PowerArgs
             consoleStack = new Stack<ConsoleColorStackElement>();
         }
 
+        public ConsoleColor? CurrentForegroundColor
+        {
+            get
+            {
+                if (IsDefined("ConsoleForegroundColor"))
+                {
+                    return (ConsoleColor)this["ConsoleForegroundColor"];
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        public ConsoleColor? CurrentBackgroundColor
+        {
+            get
+            {
+                if (IsDefined("ConsoleBackgroundColor"))
+                {
+                    return (ConsoleColor)this["ConsoleBackgroundColor"];
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         /// <summary>
         /// Sets the current console color variables to the given values, pushing the existing values onto a stack
         /// </summary>
