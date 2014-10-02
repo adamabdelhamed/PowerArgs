@@ -80,7 +80,27 @@
     <Compile Include="HelperTypesInternal\ActionMethodInfo.cs" />
     <Compile Include="HelperTypesPublic\ITabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\ParseResult.cs" />
-    <Compile Include="HelperTypesPublic\Tokenizer.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Templating\DocumentRendererContext.cs" />
+    <Compile Include="Templating\TemplateExpression.cs" />
+    <Compile Include="Templating\TableExpression.cs" />
+    <Compile Include="Templating\VarExpression.cs" />
+    <Compile Include="Templating\EvalExpression.cs" />
+    <Compile Include="Templating\EachExpression.cs" />
+    <Compile Include="Templating\LocalVariableSet.cs" />
+    <Compile Include="Templating\DocumentExpressionParser.cs" />
+    <Compile Include="Templating\PlainTextExpression.cs" />
+    <Compile Include="Templating\TokenReader.cs" />
+    <Compile Include="Templating\DocumentToken.cs" />
+    <Compile Include="Templating\IfExpression.cs" />
+    <Compile Include="Templating\IDocumentExpression.cs" />
+    <Compile Include="Templating\DocumentRenderer.cs" />
+    <Compile Include="Templating\ObjectPathExpression.cs" />
+    <Compile Include="Templating\Tokenizer.cs" />
     <Compile Include="Hooks\ArgHiddenFromUsage.cs" />
     <Compile Include="Hooks\ArgHook.cs" />
     <Compile Include="Hooks\DefaultValueAttribute.cs" />
@@ -105,11 +125,6 @@
     <Compile Include="ArgDefinition\CommandLineArgumentsDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Hooks\Query.cs" />
-    <Compile Include="Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="HelperTypesPublic\SecureStringArgument.cs" />
     <Compile Include="HelperTypesPublic\ArgumentAwareTabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\CycledTabCompletionManager.cs" />
@@ -134,11 +149,17 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Resources\DefaultBrowserUsageTemplate.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DefaultConsoleUsageTemplate.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

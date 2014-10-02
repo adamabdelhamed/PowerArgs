@@ -7,6 +7,48 @@ namespace PowerArgs
 {
     internal class REPLExitException : Exception {}
     internal class REPLContinueException : Exception { }
+    
+    /// <summary>
+    /// An attribute that can be placed on an argument property that adds argument aware tab completion for users who press the tab key while
+    /// in the context of the targeted argument.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property,AllowMultiple=true)]
+    public class ArgumentAwareTabCompletionAttribute : Attribute, ICommandLineArgumentMetadata
+    {
+        /// <summary>
+        /// The tab completion source type that will be used to implement tab completion
+        /// </summary>
+        public Type CompletionSourceType { get; private set; }
+
+        /// <summary>
+        /// Creates a new ArgumentAwareTabCompletionAttribute given a completion source type
+        /// </summary>
+        /// <param name="completionSourceType"></param>
+        public ArgumentAwareTabCompletionAttribute(Type completionSourceType)
+        {
+            this.CompletionSourceType = completionSourceType;
+        }
+
+        internal ITabCompletionSource CreateTabCompletionSource(CommandLineArgumentsDefinition definition, CommandLineArgument argument)
+        {
+            if (this.CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)) == false)
+            {
+                throw new InvalidArgDefinitionException("The type " + this.CompletionSourceType.FullName + " does not implement ITabCompletionSource.  The target argument was " + argument.DefaultAlias);
+            }
+
+            ITabCompletionSource ret;
+            if (this.CompletionSourceType.IsSubclassOf(typeof(ArgumentAwareTabCompletionSource)))
+            {
+                ret = (ITabCompletionSource)Activator.CreateInstance(this.CompletionSourceType, definition, argument);
+            }
+            else
+            {
+                var toWrap = (ITabCompletionSource)Activator.CreateInstance(this.CompletionSourceType);
+                ret = new ArgumentAwareWrapperTabCompletionSource(definition, argument, toWrap);
+            }
+            return ret;
+        }
+    }
 
     /// <summary>
     /// A hook that takes over the command line and provides tab completion for known strings when the user presses
@@ -153,15 +195,31 @@ namespace PowerArgs
                 Console.ForegroundColor = existingColor;
             }
 
-            List<string> completions = FindTabCompletions(context.Definition.Arguments, context.Definition.Actions);
+            List<string> defaultCompletions = FindTabCompletions(context.Definition.Arguments, context.Definition.Actions);
 
             List<ITabCompletionSource> completionSources = new List<ITabCompletionSource>();
 
-            if(this.completionSource != null) completionSources.Add((ITabCompletionSource)Activator.CreateInstance(this.completionSource));
-            completionSources.Add(new EnumTabCompletionSource(context.Definition));
-            completionSources.Add(new SimpleTabCompletionSource(completions) { MinCharsBeforeCyclingBegins = 0 });
+            if (this.completionSource != null)
+            {
+                completionSources.Add((ITabCompletionSource)Activator.CreateInstance(this.completionSource));
+            }
+
+            foreach(var argument in context.Definition.AllGlobalAndActionArguments)
+            {
+                foreach (var argSource in argument.Metadata.Metas<ArgumentAwareTabCompletionAttribute>())
+                {
+                    completionSources.Add(argSource.CreateTabCompletionSource(context.Definition, argument));
+                }
+
+                if(argument.ArgumentType.IsEnum)
+                {
+                    completionSources.Add(new EnumTabCompletionSource(context.Definition, argument));
+                }
+            }
+
+            completionSources.Add(new SimpleTabCompletionSource(defaultCompletions) { MinCharsBeforeCyclingBegins = 0 });
             completionSources.Add(new FileSystemTabCompletionSource());
-            
+
             string str = null;
             var newCommandLine = ConsoleHelper.ReadLine(ref str, LoadHistory(), new MultiTabCompletionSource(completionSources));
 

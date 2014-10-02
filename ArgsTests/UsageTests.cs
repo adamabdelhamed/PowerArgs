@@ -40,41 +40,29 @@ namespace ArgsTests
         public TestContext TestContext { get; set; }
 
         [TestMethod]
-        public void TestAllUsageOutputs()
+        public void TestAllUsageOutputsDontThrowExceptionsOrContainUnprocessedReplacements()
         {
-            var outputDataFile = @"C:\temp\PowerArgsUsageTestOutput.txt";
-            string s = "";
-
-            try
+            int verifyCount = 0;
+            foreach (var type in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttributes(typeof(UsageAutomation), true).Length > 0))
             {
-                if (Directory.Exists(Path.GetDirectoryName(outputDataFile)))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(outputDataFile));
-                }
+                ArgUsage.GetStyledUsage(type, "testusage.exe");
+                var consoleOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultConsoleUsageTemplate);
+                var browserOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultBrowserUsageTemplate);
 
-                Dictionary<string, ArgUsageOptions> optionVariations = new Dictionary<string, ArgUsageOptions>()
-            {
-                { "Default" , new ArgUsageOptions() },
-                { "Minimal", new ArgUsageOptions(){ ShowPosition = false, ShowType = false } },
-            };
+                Assert.IsFalse(consoleOutput.Contains("{{"));
+                Assert.IsFalse(consoleOutput.Contains("}}"));
 
+                Assert.IsFalse(browserOutput.Contains("{{"));
+                Assert.IsFalse(browserOutput.Contains("}}"));
+                verifyCount++;
 
-                foreach (var type in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttributes(typeof(UsageAutomation), true).Length > 0))
-                {
-                    s+= (type.FullName + "\n\n");
-                    foreach (var variation in optionVariations.Keys)
-                    {
-                        s += (variation + "\n\n");
-                        s += ("" + ArgUsage.GetStyledUsage(type, "testusage.exe", options: optionVariations[variation]));
-                        s += "\n\n";
-                    }
-                }
-
+                Console.WriteLine("*************************************");
+                Console.WriteLine("* " + type.Name);
+                Console.WriteLine("*************************************\n");
+                Console.WriteLine(consoleOutput);
+                Console.WriteLine("*************************************\n");
             }
-            finally
-            {
-                File.WriteAllText(outputDataFile, s.Replace("\n","\r\n"), Encoding.UTF8);
-            }
+            Console.WriteLine("Verified usage output for "+verifyCount+" types");
         }
 
         [TestMethod]

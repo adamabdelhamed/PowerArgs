@@ -5,9 +5,14 @@ namespace PowerArgs
     /// <summary>
     /// Use this attribute to provide an example of how to use your program.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class ArgExample : Attribute, IGlobalArgMetadata
     {
+        /// <summary>
+        /// An optional title for this example
+        /// </summary>
+        public string Title { get; set; }
+
         /// <summary>
         /// The example command line.
         /// </summary>

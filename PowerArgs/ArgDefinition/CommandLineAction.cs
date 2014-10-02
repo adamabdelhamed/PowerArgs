@@ -26,6 +26,64 @@ namespace PowerArgs
         public List<CommandLineArgument> Arguments { get; private set; }
 
         /// <summary>
+        /// Creates a usage summary string that is specific to this action and accounts for positional argument, etc.
+        /// </summary>
+        public string UsageSummary
+        {
+            get
+            {
+                return MakeUsageSummary(false);
+            }
+        }
+
+        /// <summary>
+        /// Creates a usage summary string that is specific to this action and accounts for positional argument, etc. where the
+        /// brackets are html encoded
+        /// </summary>
+        public string UsageSummaryHTMLEncoded
+        {
+            get
+            {
+                return MakeUsageSummary(true);
+            }
+        }
+
+        private string MakeUsageSummary(bool htmlEncodeBrackets = false)
+        {
+            var gt = ">";
+            var lt = "<";
+
+            if (htmlEncodeBrackets)
+            {
+                gt = "&gt;";
+                lt = "&lt;";
+            }
+
+            string ret = "";
+
+            ret += DefaultAlias + " ";
+
+            foreach (var positionArg in (from a in Arguments where a.Position >= 1 select a).OrderBy(a => a.Position))
+            {
+                if (positionArg.IsRequired)
+                {
+                    ret += lt + positionArg.DefaultAlias + gt+" ";
+                }
+                else
+                {
+                    ret += "[" + lt + positionArg.DefaultAlias + gt + "] ";
+                }
+            }
+
+            if (Arguments.Where(a => a.Position < 0).Count() > 0)
+            {
+                ret += "-options";
+            }
+
+            return ret;
+        }
+
+        /// <summary>
         /// The description that will be shown in the auto generated usage.
         /// </summary>
         public string Description
@@ -90,9 +148,31 @@ namespace PowerArgs
         internal MethodInfo ActionMethod { get; private set; }
 
         /// <summary>
+        /// Returns true if there is at least 1 ArgExample metadata on this action
+        /// </summary>
+        public bool HasExamples
+        {
+            get
+            {
+                return Metadata.Metas<ArgExample>().Count > 0;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if this action has at least 1 action specific argument
+        /// </summary>
+        public bool HasArguments
+        {
+            get
+            {
+                return Arguments.Count > 0;
+            }
+        }
+
+        /// <summary>
         /// Examples that show users how to use this action.
         /// </summary>
-        internal ReadOnlyCollection<ArgExample> Examples
+        public ReadOnlyCollection<ArgExample> Examples
         {
             get
             {

@@ -6,28 +6,17 @@ namespace PowerArgs
 {
     internal class EnumTabCompletionSource : ArgumentAwareTabCompletionSource
     {
-        CycledTabCompletionManager manager;
-        public EnumTabCompletionSource(CommandLineArgumentsDefinition definition)
-            : base(definition)
+        SimpleTabCompletionSource wrappedSource;
+        public EnumTabCompletionSource(CommandLineArgumentsDefinition definition, CommandLineArgument argument)
+            : base(definition, argument)
         {
-            manager = new CycledTabCompletionManager();
+            var options = Enum.GetNames(argument.ArgumentType).Union(argument.ArgumentType.GetEnumShortcuts());
+            wrappedSource = new SimpleTabCompletionSource(options);
         }
 
         public override bool TryComplete(bool shift, CommandLineArgument context, string soFar, out string completion)
         {
-            if (context.ArgumentType.IsEnum == false)
-            {
-                completion = null;
-                return false;
-            }
-
-            return manager.Cycle(shift, ref soFar, () =>
-            {
-                var options = Enum.GetNames(context.ArgumentType).Union(context.ArgumentType.GetEnumShortcuts());
-                options = options.Where(o => o.StartsWith(soFar, context.IgnoreCase, CultureInfo.CurrentCulture)).ToArray();
-
-                return options.ToList();
-            }, out completion);
+            return wrappedSource.TryComplete(shift, soFar, out completion);
         }
     }
 }

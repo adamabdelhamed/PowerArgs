@@ -49,12 +49,12 @@ namespace PowerArgs
         /// Not implemented since this type implements ITabCompletionSourceWithContext
         /// </summary>
         /// <param name="shift"></param>
-        /// <param name="context"></param>
+        /// <param name="soFar"></param>
         /// <param name="completion"></param>
         /// <returns></returns>
-        public bool TryComplete(bool shift, string context, out string completion)
+        public bool TryComplete(bool shift, string soFar, out string completion)
         {
-            throw new NotImplementedException();
+            return TryComplete(shift, null, soFar, out completion);
         }
 
         /// <summary>

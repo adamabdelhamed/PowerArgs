@@ -32,17 +32,20 @@ namespace ArgsTests
             Sixteen = 16,
         }
 
+                [UsageAutomation]
         public class EnumArgs
         {
             [DefaultValue(BasicEnum.Option2)]
             public BasicEnum Option { get; set; }
         }
 
+        [UsageAutomation]
         public class EnumArgsWithFlags
         {
             public EnumWithFlags Option { get; set; }
         }
 
+        [UsageAutomation]
         public class EnumArgsExplicitIgnoreCase
         {
             [DefaultValue(BasicEnum.Option2)]
@@ -50,6 +53,7 @@ namespace ArgsTests
             public BasicEnum Option { get; set; }
         }
 
+        [UsageAutomation]
         public class ArgsThatNeedManualReviverRegistration
         {
             public MailAddress Address { get; set; }
@@ -66,7 +70,7 @@ namespace ArgsTests
             public int X { get; set; }
             public int Y { get; set; }
         }
-
+        [UsageAutomation]
         [ArgExample("sometool -point 100,50", "Creates a new point with x = 100 and y = 50")]
         public class PointArgs
         {
@@ -135,6 +139,7 @@ namespace ArgsTests
             }
         }
 
+        [UsageAutomation]
         [BasicHook]
         public class BasicArgs
         {
@@ -163,6 +168,7 @@ namespace ArgsTests
             public object SomeObjectToIgnore { get; set; }
         }
 
+        [UsageAutomation]
         public class BasicArgsSC
         {
             public string String { get; set; }
@@ -186,6 +192,7 @@ namespace ArgsTests
             public object SomeObjectToIgnore { get; set; }
         }
 
+        [UsageAutomation]
         public class PositionedArgs
         {
             [ArgPosition(0)]

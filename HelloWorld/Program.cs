@@ -1,5 +1,7 @@
 ﻿using System;
 using PowerArgs;
+using System.IO;
+using System.Diagnostics;
 
 namespace HelloWorld
 {

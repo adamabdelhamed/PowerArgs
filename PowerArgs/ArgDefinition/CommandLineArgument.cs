@@ -67,6 +67,47 @@ namespace PowerArgs
             }
         }
 
+        internal string PrimaryShortcutAlias
+        {
+            get
+            {
+                var aliases = Aliases.OrderBy(a => a.Length).ToList();
+                var maxInlineAliasLength = 8;
+                string inlineAliasInfo = "";
+
+                int aliasIndex;
+                for (aliasIndex = 0; aliasIndex < aliases.Count; aliasIndex++)
+                {
+                    if (aliases[aliasIndex] == DefaultAlias) continue;
+                    var proposedInlineAliases = inlineAliasInfo == string.Empty ? "-"+aliases[aliasIndex] : inlineAliasInfo + ", -" + aliases[aliasIndex];
+                    if (proposedInlineAliases.Length <= maxInlineAliasLength)
+                    {
+                        inlineAliasInfo = proposedInlineAliases;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                return inlineAliasInfo;
+            }
+        }
+
+     
+        internal string Syntax
+        {
+            get
+            {
+                var ret = DefaultAlias;
+                if(PrimaryShortcutAlias.Length > 0)
+                {
+                    ret += " ("+PrimaryShortcutAlias+")";
+                }
+                return ret;
+            }
+        }
+
         internal ReadOnlyCollection<ArgValidator> Validators
         {
             get
@@ -129,6 +170,17 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Returns true if a default value has been explicitly registered for this argument
+        /// </summary>
+        public bool HasDefaultValue
+        {
+            get
+            {
+                return DefaultValue != null;
+            }
+        }
+
+        /// <summary>
         /// The default value for this argument in the event it is optional and the user did not specify it.
         /// </summary>
         public object DefaultValue
@@ -141,6 +193,30 @@ namespace PowerArgs
             set
             {
                 overrides.Set(value);
+            }
+        }
+
+        /// <summary>
+        /// Only works if the ArgumentType is an enum.  Returns a list where each element is a string containing an
+        /// enum value and optionally its description.  Each enum value is represented in the list.
+        /// </summary>
+        public List<string> EnumValuesAndDescriptions
+        {
+            get
+            {
+                if (ArgumentType.IsEnum == false)
+                {
+                    return new List<string>();
+                }
+
+                List<string> ret = new List<string>();
+                foreach (var val in ArgumentType.GetFields().Where(v => v.IsSpecialName == false))
+                {
+                    var description = val.HasAttr<ArgDescription>() ? " - " + val.Attr<ArgDescription>().Description : "";
+                    var valText = "  " + val.Name;
+                    ret.Add(val.Name + description);
+                }
+                return ret;
             }
         }
 

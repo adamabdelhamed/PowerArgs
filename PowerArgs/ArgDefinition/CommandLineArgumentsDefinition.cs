@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -12,6 +13,139 @@ namespace PowerArgs
     /// </summary>
     public class CommandLineArgumentsDefinition
     {
+        private string exeName;
+
+        /// <summary>
+        /// Gets or sets the ExeName for this command line argument definition's program.  If not specified the entry assembly's file name
+        /// is used, without the file extension.
+        /// </summary>
+        public string ExeName
+        {
+            get
+            {
+                if(exeName != null)
+                {
+                    return exeName;
+                }
+                else
+                {
+                    try
+                    {
+                        var assemblyName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location);
+                        return assemblyName;
+                    }
+                    catch(Exception ex)
+                    {
+                        return "YourProgram";
+                    }
+                }
+            }
+            set
+            {
+                exeName = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the description from ArgDescriptionMetadata if it exists, or empty string if it does not.
+        /// </summary>
+        public string Description
+        {
+            get
+            {
+                var meta = Metadata.Meta<ArgDescription>();
+                if (meta == null) return "";
+                else return meta.Description;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if there is at least 1 global argument, false otherwise
+        /// </summary>
+        public bool HasGlobalArguments
+        {
+            get
+            {
+                return Arguments.Count > 0;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if there is at least 1 action, false otherwise
+        /// </summary>
+        public bool HasActions
+        {
+            get
+            {
+                return this.Actions.Count > 0;
+            }
+        }
+
+        /// <summary>
+        /// Creates a usage summary string that takes into account actions, positional argument, etc.
+        /// </summary>
+        public string UsageSummary
+        {
+            get
+            {
+                return MakeUsageSummary(false);
+            }
+        }
+
+        /// <summary>
+        /// Creates a usage summary string that takes into account actions, positional argument, etc. where the
+        /// brackets are html encoded
+        /// </summary>
+        public string UsageSummaryHTMLEncoded
+        {
+            get
+            {
+                return MakeUsageSummary(true);
+            }
+        }
+
+        private string MakeUsageSummary(bool htmlEncodeBrackets = false)
+        {
+            var gt = ">";
+            var lt = "<";
+
+            if(htmlEncodeBrackets)
+            {
+                gt = "&gt;";
+                lt = "&lt;";
+            }
+
+            string ret = "";
+            ret += ExeName + " ";
+
+            int minPosition = 0;
+            if (HasActions)
+            {
+                ret += lt + "action" + gt + " ";
+                minPosition = 1;
+            }
+
+
+            foreach (var positionArg in (from a in Arguments where a.Position >= minPosition select a).OrderBy(a => a.Position))
+            {
+                if (positionArg.IsRequired)
+                {
+                    ret += lt + positionArg.DefaultAlias + lt+" ";
+                }
+                else
+                {
+                    ret += "[" + lt + positionArg.DefaultAlias + gt + "] ";
+                }
+            }
+
+            if (Arguments.Where(a => a.Position < 0).Count() > 0)
+            {
+                ret += "-options";
+            }
+
+            return ret;
+        }
+
         /// <summary>
         /// When set to true, TabCompletion is completely disabled and required fields will ignore the PromptIfMissing flag.
         /// </summary>
@@ -26,6 +160,25 @@ namespace PowerArgs
         /// The command line arguments that are global to this definition.
         /// </summary>
         public List<CommandLineArgument> Arguments { get; private set; }
+
+        /// <summary>
+        /// Gets all global command line arguments as well as all arguments of any actions in this definition
+        /// </summary>
+        public ReadOnlyCollection<CommandLineArgument> AllGlobalAndActionArguments
+        {
+            get
+            {
+                List<CommandLineArgument> ret = new List<CommandLineArgument>();
+                ret.AddRange(this.Arguments);
+
+                foreach (var action in Actions)
+                {
+                    ret.AddRange(action.Arguments);
+                }
+
+                return ret.AsReadOnly();
+            }
+        }
 
         /// <summary>
         /// Global hooks that can execute all hook override methods except those that target a particular argument.
@@ -47,6 +200,17 @@ namespace PowerArgs
         /// Arbitrary metadata that has been added to the definition
         /// </summary>
         public List<ICommandLineArgumentsDefinitionMetadata> Metadata { get; private set; }
+
+        /// <summary>
+        /// Returns true if there is at least 1 example registered for this definition
+        /// </summary>
+        public bool HasExamples
+        {
+            get
+            {
+                return Examples.Count > 0;
+            }
+        }
 
         /// <summary>
         /// Examples that show users how to use your program.
@@ -75,13 +239,24 @@ namespace PowerArgs
                 var ret = Actions.Where(a => a.IsSpecifiedAction).SingleOrDefault();
                 return ret;
             }
-            internal set
+            set
             {
                 foreach (var action in Actions)
                 {
                     action.IsSpecifiedAction = false;
                 }
                 value.IsSpecifiedAction = true;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if this definition has been processed and an action was specified
+        /// </summary>
+        public bool HasSpecifiedAction
+        {
+            get
+            {
+                return SpecifiedAction != null;
             }
         }
 
@@ -290,21 +465,27 @@ namespace PowerArgs
                     argument.ArgumentType.ValidateNoDuplicateEnumShortcuts(argument.IgnoreCase);
                 }
 
-                try
+
+                foreach (var property in argument.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    foreach (var property in argument.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                    // Getting each property will result in all AttrOverrides being validated
+                    try
                     {
-                        // Getting each property will result in all AttrOverrides being validated
                         var val = property.GetValue(argument, null);
                     }
-                }
-                catch (TargetInvocationException ex)
-                {
-                    if (ex.InnerException is InvalidArgDefinitionException)
+                    catch(TargetInvocationException ex)
                     {
-                        throw ex.InnerException;
+                        if (ex.InnerException is InvalidArgDefinitionException)
+                        {
+                            throw ex.InnerException;
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
                 }
+
             }
         }
     }

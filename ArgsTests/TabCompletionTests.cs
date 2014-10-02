@@ -67,6 +67,19 @@ namespace ArgsTests
             }
         }
 
+        public class NameSource : SimpleTabCompletionSource
+        {
+            public NameSource() : base(new string[] { "Adam", "Joe" }) { }
+        }
+
+        [TabCompletion(typeof(MyCompletionSource), "$", ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
+        public class ArgAwareCompletionArgs
+        {
+            [ArgumentAwareTabCompletionAttribute(typeof(NameSource))]
+            public string Name { get; set; }
+            public string Address { get; set; }
+        }
+
         [TestMethod]
         public void TestActionEnumArgCompletion()
         {
@@ -325,6 +338,23 @@ namespace ArgsTests
             var provider = TestConsoleProvider.SimulateConsoleInput("g\t -dest\t Hawaii{enter}go -dest\t Mexico{enter}quit");
             Args.InvokeAction(definition, "$");
             Assert.AreEqual(2, invokeCount);
+        }
+
+
+        [TestMethod]
+        public void TestArgAwareCompletionPositive()
+        {
+            TestConsoleProvider.SimulateConsoleInput("-name a\t");
+            var parsed = Args.Parse<ArgAwareCompletionArgs>("$");
+            Assert.AreEqual("Adam", parsed.Name);
+        }
+
+        [TestMethod]
+        public void TestArgAwareCompletionNegative()
+        {
+            TestConsoleProvider.SimulateConsoleInput("-address a\t");
+            var parsed = Args.Parse<ArgAwareCompletionArgs>("$");
+            Assert.AreNotEqual("Adam", parsed.Address);
         }
 
         private string Repeat(string s, int num)
