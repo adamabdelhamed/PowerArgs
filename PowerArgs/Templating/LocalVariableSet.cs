@@ -38,6 +38,9 @@ namespace PowerArgs
             consoleStack = new Stack<ConsoleColorStackElement>();
         }
 
+        /// <summary>
+        /// Gets the current foreground color that is in scope or null if it is not currently defined
+        /// </summary>
         public ConsoleColor? CurrentForegroundColor
         {
             get
@@ -53,6 +56,9 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Gets the current background color that is in scope or null if it is not currently defined
+        /// </summary>
         public ConsoleColor? CurrentBackgroundColor
         {
             get

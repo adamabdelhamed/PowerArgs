@@ -67,6 +67,47 @@ namespace PowerArgs
             }
         }
 
+        internal string PrimaryShortcutAlias
+        {
+            get
+            {
+                var aliases = Aliases.OrderBy(a => a.Length).ToList();
+                var maxInlineAliasLength = 8;
+                string inlineAliasInfo = "";
+
+                int aliasIndex;
+                for (aliasIndex = 0; aliasIndex < aliases.Count; aliasIndex++)
+                {
+                    if (aliases[aliasIndex] == DefaultAlias) continue;
+                    var proposedInlineAliases = inlineAliasInfo == string.Empty ? "-"+aliases[aliasIndex] : inlineAliasInfo + ", -" + aliases[aliasIndex];
+                    if (proposedInlineAliases.Length <= maxInlineAliasLength)
+                    {
+                        inlineAliasInfo = proposedInlineAliases;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                return inlineAliasInfo;
+            }
+        }
+
+     
+        internal string Syntax
+        {
+            get
+            {
+                var ret = DefaultAlias;
+                if(PrimaryShortcutAlias.Length > 0)
+                {
+                    ret += " ("+PrimaryShortcutAlias+")";
+                }
+                return ret;
+            }
+        }
+
         internal ReadOnlyCollection<ArgValidator> Validators
         {
             get
@@ -163,7 +204,10 @@ namespace PowerArgs
         {
             get
             {
-                if (ArgumentType.IsEnum == false) throw new InvalidOperationException("This argument is not an enum type");
+                if (ArgumentType.IsEnum == false)
+                {
+                    return new List<string>();
+                }
 
                 List<string> ret = new List<string>();
                 foreach (var val in ArgumentType.GetFields().Where(v => v.IsSpecialName == false))

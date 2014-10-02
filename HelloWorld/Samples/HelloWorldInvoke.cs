@@ -16,12 +16,16 @@ namespace HelloWorld.Samples
     public class HelloWorldInvokeArgs
     {
         [DefaultValue("Hello!")]
+        [ArgumentAwareTabCompletion(typeof(MetalTabCompletionSource))]
         [ArgDescription("An optional string arg")]
         public string StringArg { get; set; }
         [ArgDescription("An optional int arg")]
         public int?    IntArg    { get; set; }
         [ArgDescription("An optional switch arg")]
         public bool   SwitchArg { get; set; }
+
+        [HelpHook]
+        public bool Help { get; set; }
 
         [DefaultValue(Environment.Dev), ArgDescription("The target environment for this operation")]
         public Environment Environment { get; set; }
@@ -37,6 +41,14 @@ namespace HelloWorld.Samples
         public static void _Main(string[] args)
         {
             var parsed = Args.InvokeMain<HelloWorldInvokeArgs>(args);
+        }
+    }
+
+    public class MetalTabCompletionSource : SimpleTabCompletionSource
+    {
+        public MetalTabCompletionSource() : base(new string[] { "Gold", "Silver", "Iron" })
+        {
+            this.MinCharsBeforeCyclingBegins = 0;
         }
     }
 }

@@ -99,7 +99,7 @@ namespace PowerArgs
                         propName = col.Value;
                     }
 
-                    var propToGet = element.GetType().GetProperty(propName);
+                    var propToGet = element.GetType().GetProperty(propName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
                     if (propToGet == null) throw new DocumentRenderException("'" + col.Value + "' is not a valid property for type '" + element.GetType().FullName + "'", col);
                     var value = propToGet.GetValue(element, null);
 

@@ -459,7 +459,14 @@ namespace PowerArgs
                         continue;
                     }
 
-                    ret += "\n" + action.DefaultAlias + " - "+action.Description + "\n\n";
+                    if (string.IsNullOrWhiteSpace(action.Description) == false)
+                    {
+                        ret += "\n" + action.DefaultAlias + " - " + action.Description + "\n\n";
+                    }
+                    else
+                    {
+                        ret += "\n" + action.DefaultAlias + "\n\n";
+                    }
 
                     foreach (var example in action.Examples)
                     {

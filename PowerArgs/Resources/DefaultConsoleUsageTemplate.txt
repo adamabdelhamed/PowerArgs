@@ -4,7 +4,7 @@ Usage - {{UsageSummary Cyan!}}
 {{if HasGlobalArguments}}
 {{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}:
 
-{{table Arguments DefaultAlias>Option Description !}}
+{{table Arguments Syntax>Option Description !}}
 !{{if}}
 {{if HasActions}}
 {{if HasSpecifiedAction}}
@@ -13,7 +13,7 @@ Usage - {{ExeName Cyan!}} {{SpecifiedAction.UsageSummary Cyan!}}
 
 {{if SpecifiedAction.HasArguments }}
 {{SpecifiedAction.DefaultAlias!}} Options:
-{{table SpecifiedAction.Arguments DefaultAlias>Name Description !}}
+{{table SpecifiedAction.Arguments Syntax>Option Description !}}
 !{{if}}
 !{{if}}
 {{ifnot HasSpecifiedAction}}
@@ -27,7 +27,7 @@ Actions:
 
 {{if action.HasArguments }}
 {{action.DefaultAlias!}} Options:
-{{table action.Arguments DefaultAlias>Name Description !}}
+{{table action.Arguments Syntax>Option Description !}}
 !{{if}}
 !{{each}}
 !{{ifnot}}

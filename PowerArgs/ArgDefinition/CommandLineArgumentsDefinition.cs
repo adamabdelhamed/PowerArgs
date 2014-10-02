@@ -162,6 +162,25 @@ namespace PowerArgs
         public List<CommandLineArgument> Arguments { get; private set; }
 
         /// <summary>
+        /// Gets all global command line arguments as well as all arguments of any actions in this definition
+        /// </summary>
+        public ReadOnlyCollection<CommandLineArgument> AllGlobalAndActionArguments
+        {
+            get
+            {
+                List<CommandLineArgument> ret = new List<CommandLineArgument>();
+                ret.AddRange(this.Arguments);
+
+                foreach (var action in Actions)
+                {
+                    ret.AddRange(action.Arguments);
+                }
+
+                return ret.AsReadOnly();
+            }
+        }
+
+        /// <summary>
         /// Global hooks that can execute all hook override methods except those that target a particular argument.
         /// </summary>
         public ReadOnlyCollection<ArgHook> Hooks
@@ -462,12 +481,8 @@ namespace PowerArgs
                         }
                         else
                         {
-                            // swallow
+                            throw;
                         }
-                    }
-                    catch(Exception)
-                    {
-                        // swallow
                     }
                 }
 
