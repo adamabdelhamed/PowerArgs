@@ -60,9 +60,67 @@ These can be specified on argument properties.  You can create custom validators
     [ArgExistingDirectory]
     [ArgRange(from, to)]
     [ArgRegex("MyRegex")]               // Apply a regular expression validation rule
-    [UsPhoneNumber]                     // A good example of how to create a custom data type
+    [UsPhoneNumber]                     // A good example of how to create a custom validator
 
-###Latest Features
+##Latest Features
+
+###Generate usage documentation from templates (built in or custom)
+
+PowerArgs has always provided auto-generated usage documentation via the ArgUsage class.  However, the format was hard coded, and gave very little flexibility in terms of the output format. With the latest release of PowerArgs usage documentation can be fully customized via templates.  A template is just a piece of text that represents the documentation structure you want along with some placeholders that will be replaced with the actual information about your command line application.  There are built in templates designed for the console and a web browser, and you can also create your own.  
+
+In its latest release, PowerArgs adds a new method called ArgUsage.GenerateUsageFromTemplate().  The method has several overloads, most of which are documented via XML intellisense comments.  The part that needs a little more explanation is the template format.  To start, let's talk about the built in templates.
+
+The first one, the default, is designed to create general purpose command line usage documentation that is similar to the older usage documentation that PowerArgs generated.  You can see what that template looks like [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/Resources/DefaultConsoleUsageTemplate.txt).
+
+
+The second one is designed to create documentation that looks good in a browser.  You can see what that template looks like [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/Resources/DefaultBrowserUsageTemplate.html).  
+
+[Here is an example of what the built in browser usage looks like](http://adamabdelhamed2.blob.core.windows.net/powerargs/Samples/BrowserUsage.html).
+
+
+You can create your own templates from scratch, or modify these default templates to suit your needs.  The templating engine was built specifically for PowerArgs.  It has quite a bit of functionality and extensibility, but for now I'm only going to document the basics.
+
+Most of you probably use the class and attributes model when using PowerArgs, but under the hood there's a pretty extensive object model that gets generated from the classes you build.  That model is what is bound to the template.   If you're not familiar with the object model you can explore the code [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/ArgDefinition/CommandLineArgumentsDefinition.cs).
+
+You can see from the built in templates that there is placeholder syntax that lets you insert information from the model into template.  For example, if your program is called 'myprogram' then the following text in the template would be replaced with 'myprogram'.
+    
+    {{ExeName !}} is the best
+    // outputs - 'myprogram is the best'
+    
+Additionally, you can add a parameter to the replacement tag that indicates the color to use when printed on the command line as a ConsoleString. You can use any [ConsoleColor](http://msdn.microsoft.com/en-us/library/system.consolecolor(v=vs.110).aspx) as a parameter.
+
+    {{ExeName Cyan !}}     
+
+You can also choose to conditionally include portions of a template based on a property.  Here's an example from the default template:
+
+    {{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}:
+
+In this case, if the HasActions property on the CommandLineArgumentsDefinition object is true then the usage will output 'Global options'.  Otherwise it will output 'Options'.  This flexibility is important since some command line programs have only simple options while others expose multiple commands within the same executable (e.g. git pull and git push).
+
+Another thing you can do is to enumerate over a collection to include multiple template fragments in your output.  Take this example.
+
+    {{each action in Actions}}
+    {{action.DefaultAlias!}} - {{action.Description!}}
+    !{{each}}
+
+If your program has 3 actions defined then you'd get output like this.
+
+    action1 - action 1 description here
+    action2 - action 2 description here
+    action3 - action 3 description here
+
+When referring to a part of your data model you can also navigate objects using dot '.' notation.  Notice in the example above I was able to express {{ action.DefaultAlias !}}.  You could go even deeper.  For example {{ someObj.SomeProperty.DeeperProperty !}}.  More advanced expressions like function calling with parameters are not supported.
+
+PS
+
+I'm pretty happy with the templating solution.  In fact, hidden in PowerArgs is a general purpose template rendering engine that I've found useful in other projects for things like code generation.  You can actually bind any string template to any plain old .NET object (dynamic objects not supported).  Here's a basic sample:
+
+    var renderer = new DocumentRenderer();
+    var document = renderer.Render("Hi {{ Name !}}", new { Name = "Adam" });
+    // outputs 'Hi Adam'
+
+
+###Ambient Args
 
 Access your parsed command line arguments from anywhere in your application.
 
