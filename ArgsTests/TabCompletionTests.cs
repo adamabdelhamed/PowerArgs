@@ -273,17 +273,8 @@ namespace ArgsTests
             public MyLongCompletionSource() : base(MyLongCompletionSource.GetWords()) { }
             private static IEnumerable<string> GetWords()
             {
-                return "AVeryLongWordSoThatTheBufferWidthOfTheConsoleWillBeExceededAndAnExceptionWouldBeRisedIfNoMeasureIsTaken|Abdelhamed".Split('|');
+                return "AVeryLongWordSoThatTheBufferWidthOfTheConsoleWillBeExceededAndAnExceptionWouldBeRisedIfNoMeasureIsTakendddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd|Abdelhamed".Split('|');
             }
-        }
-
-        [TestMethod]
-        public void TestDoNotExceedConsoleWidth()
-        {
-            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("-s AVe\t");
-            var parsed = Args.Parse<LongTestArgs>("$");
-
-            Assert.AreEqual(26, ConsoleHelper.ConsoleImpl.CursorLeft);
         }
 
         [TestMethod]

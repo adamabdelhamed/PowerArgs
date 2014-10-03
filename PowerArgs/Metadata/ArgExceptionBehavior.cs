@@ -57,7 +57,13 @@ namespace PowerArgs
         /// <summary>
         /// The usage template to use to display usage information.  You can leave this null if you want to use the default template.
         /// </summary>
+        [Obsolete("Use UsageTemplateProviderType")]
         public string UsageTemplateFile { get; set; }
+
+        /// <summary>
+        /// A type that should implement IUsageTemplateProvider.  When specified the help hook will use the GenerateUsageFromTemplate function rather than the obsolete GenerateStyledUsage function.
+        /// </summary>
+        public Type UsageTemplateProviderType { get; set; }
 
         /// <summary>
         /// Creates a new ArgExceptionBehavior attributes with the given policy.
@@ -71,6 +77,7 @@ namespace PowerArgs
             this.ShowPossibleValues = true;
             this.ExeName = null;
             this.UsageTemplateFile = null;
+            this.UsageTemplateProviderType = typeof(DefaultConsoleUsageTemplateProvider);
         }
     }
 }

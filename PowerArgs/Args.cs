@@ -181,12 +181,23 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction InvokeMain(Type t, params string[] args)
         {
-            return REPL.DriveREPL<ArgAction>(t.Attr<TabCompletion>(), (a) =>
+            return InvokeMain(new CommandLineArgumentsDefinition(t), args);
+        }
+
+        /// <summary>
+        /// Parses the args for the given definition and then calls the Main() method defined by the type.
+        /// </summary>
+        /// <param name="definition"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static ArgAction InvokeMain(CommandLineArgumentsDefinition definition, params string[] args)
+        {
+            return REPL.DriveREPL<ArgAction>(definition.Metadata.Meta<TabCompletion>(), (a) =>
             {
                 return Execute<ArgAction>(() =>
                 {
                     Args instance = new Args();
-                    var result = instance.ParseInternal(new CommandLineArgumentsDefinition(t), a);
+                    var result = instance.ParseInternal(definition, a);
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
@@ -360,7 +371,15 @@ namespace PowerArgs
         {
             Console.WriteLine(ex.Message);
 
-           ArgUsage.GenerateUsageFromTemplate(definition, definition.ExceptionBehavior.UsageTemplateFile).Write();
+            if (definition.ExceptionBehavior.UsageTemplateFile != null)
+            {
+                var template = File.ReadAllText(definition.ExceptionBehavior.UsageTemplateFile);
+                ArgUsage.GenerateUsageFromTemplate(definition, template).Write();
+            }
+            else
+            {
+                UsageTemplateProvider.GetUsage(definition.ExceptionBehavior.UsageTemplateProviderType, definition).Write();
+            }
 
             return CreateEmptyResult<T>(context, ex);
         }

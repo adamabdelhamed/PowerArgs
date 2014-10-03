@@ -34,10 +34,46 @@ namespace ArgsTests
         public void Bar() { }
     }
 
+    public class CustomUsageTemplateInHelpHookArgs
+    {
+        public class MyUsageProvider : IUsageTemplateProvider
+        {
+            public string GetTemplate()
+            {
+                return "Hello";
+            }
+        }
+
+        [HelpHook(UsageTemplateProviderType = typeof(MyUsageProvider))]
+        public bool Help { get; set; }
+
+        public void Main()
+        {
+            if (Help) throw new Exception("This should not run when the help hook is invoked");
+        }
+    }
+
+
     [TestClass]
     public class UsageTests
     {
         public TestContext TestContext { get; set; }
+
+        [TestMethod]
+        public void TestCustomTemplateInHelpHook()
+        {
+            var def = new CommandLineArgumentsDefinition(typeof(CustomUsageTemplateInHelpHookArgs));
+
+            bool validated = false;
+            def.Arguments.Find(a => a.DefaultAlias == "Help").Metadata.Meta<HelpHook>().UsageWritten += (theUsage) =>
+            {
+                Assert.AreEqual("Hello", theUsage.ToString());
+                validated = true;
+            };
+
+            var action = Args.InvokeMain(def, "-h");
+            Assert.IsTrue(validated);
+        }
 
         [TestMethod]
         public void TestAllUsageOutputsDontThrowExceptionsOrContainUnprocessedReplacements()
