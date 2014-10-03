@@ -1,8 +1,6 @@
 ###Binary
 PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
-Check out the [new homepage](http://www.powerargs.com) and [interactive demo](http://www.powerargs.com/home/demo).
-
 ###Overview
 
 PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility.
