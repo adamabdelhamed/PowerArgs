@@ -22,6 +22,14 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestParseExpressionWithQuotes()
+        {
+            var exp = "(\"a b c\" | b)";
+            var parsed = Args.Parse<ArgsWithExpression>("-e", exp);
+            Assert.AreEqual(exp, parsed.Expression.ToString());
+        }
+
+        [TestMethod]
         public void TestParseInvalidExpression()
         {
             try

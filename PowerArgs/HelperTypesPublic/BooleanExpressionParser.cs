@@ -157,6 +157,7 @@ namespace PowerArgs
             Tokenizer<BooleanExpressionToken> tokenizer = new Tokenizer<BooleanExpressionToken>();
             tokenizer.Delimiters.AddRange(delimiters);
             tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
+            tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
             tokenizer.TokenFactory = (Token currentToken, List<BooleanExpressionToken> previousTokens) =>
             {
                 var ret = currentToken.As<BooleanExpressionToken>();
