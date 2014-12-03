@@ -12,7 +12,7 @@ namespace PowerArgs
     /// An attribute that can be placed on an argument property that adds argument aware tab completion for users who press the tab key while
     /// in the context of the targeted argument.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property,AllowMultiple=true)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter,AllowMultiple=true)]
     public class ArgumentAwareTabCompletionAttribute : Attribute, ICommandLineArgumentMetadata
     {
         /// <summary>
@@ -29,23 +29,28 @@ namespace PowerArgs
             this.CompletionSourceType = completionSourceType;
         }
 
-        internal ITabCompletionSource CreateTabCompletionSource(CommandLineArgumentsDefinition definition, CommandLineArgument argument)
+        internal object CreateTabCompletionSource(CommandLineArgumentsDefinition definition, CommandLineArgument argument)
         {
-            if (this.CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)) == false)
-            {
-                throw new InvalidArgDefinitionException("The type " + this.CompletionSourceType.FullName + " does not implement ITabCompletionSource.  The target argument was " + argument.DefaultAlias);
-            }
-
             ITabCompletionSource ret;
-            if (this.CompletionSourceType.IsSubclassOf(typeof(ArgumentAwareTabCompletionSource)))
+            if(this.CompletionSourceType.GetInterfaces().Contains(typeof(ISmartTabCompletionSource)))
+            {
+                var source = Activator.CreateInstance(CompletionSourceType) as ISmartTabCompletionSource;
+                return new ArgumentAwareWrapperSmartTabCompletionSource(definition, argument, source);
+            }
+            else if (this.CompletionSourceType.IsSubclassOf(typeof(ArgumentAwareTabCompletionSource)))
             {
                 ret = (ITabCompletionSource)Activator.CreateInstance(this.CompletionSourceType, definition, argument);
             }
-            else
+            else if (this.CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)))
             {
                 var toWrap = (ITabCompletionSource)Activator.CreateInstance(this.CompletionSourceType);
                 ret = new ArgumentAwareWrapperTabCompletionSource(definition, argument, toWrap);
             }
+            else
+            {
+                throw new InvalidArgDefinitionException("The type " + this.CompletionSourceType.FullName + " does not implement ITabCompletionSource or ITabCompletionSource.  The target argument was " + argument.DefaultAlias);
+            }
+
             return ret;
         }
     }
@@ -57,7 +62,7 @@ namespace PowerArgs
     [AttributeUsage(AttributeTargets.Class)]
     public class TabCompletion : ArgHook, ICommandLineArgumentsDefinitionMetadata
     {
-        Type completionSource;
+        public Type CompletionSourceType { get; set; }
 
         /// <summary>
         /// When this indicator is the only argument the user specifies that triggers the hook to enhance the command prompt.  By default, the indicator is the empty string.
@@ -134,7 +139,7 @@ namespace PowerArgs
                 throw new InvalidArgDefinitionException("Type " + completionSource + " does not implement " + typeof(ITabCompletionSource).Name);
             }
 
-            this.completionSource = completionSource;
+            this.CompletionSourceType = completionSource;
         }
 
         /// <summary>
@@ -195,33 +200,8 @@ namespace PowerArgs
                 Console.ForegroundColor = existingColor;
             }
 
-            List<string> defaultCompletions = FindTabCompletions(context.Definition.Arguments, context.Definition.Actions);
-
-            List<ITabCompletionSource> completionSources = new List<ITabCompletionSource>();
-
-            if (this.completionSource != null)
-            {
-                completionSources.Add((ITabCompletionSource)Activator.CreateInstance(this.completionSource));
-            }
-
-            foreach(var argument in context.Definition.AllGlobalAndActionArguments)
-            {
-                foreach (var argSource in argument.Metadata.Metas<ArgumentAwareTabCompletionAttribute>())
-                {
-                    completionSources.Add(argSource.CreateTabCompletionSource(context.Definition, argument));
-                }
-
-                if(argument.ArgumentType.IsEnum)
-                {
-                    completionSources.Add(new EnumTabCompletionSource(context.Definition, argument));
-                }
-            }
-
-            completionSources.Add(new SimpleTabCompletionSource(defaultCompletions) { MinCharsBeforeCyclingBegins = 0 });
-            completionSources.Add(new FileSystemTabCompletionSource());
-
             string str = null;
-            var newCommandLine = ConsoleHelper.ReadLine(ref str, LoadHistory(), new MultiTabCompletionSource(completionSources));
+            var newCommandLine = ConsoleHelper.ReadLine(ref str, LoadHistory(), context.Definition);
 
             if (REPL && newCommandLine.Length == 1 && string.Equals(newCommandLine[0], REPLExitIndicator, StringComparison.OrdinalIgnoreCase))
             {
@@ -284,41 +264,6 @@ namespace PowerArgs
             }
         }
 
-        private List<string> FindTabCompletions(List<CommandLineArgument> arguments, List<CommandLineAction> actions)
-        {
-            List<string> ret = new List<string>();
 
-            var argIndicator = "-";
-
-            foreach (var argument in arguments)
-            {
-                // TODO - It would be great to support all aliases in the completions
-                ret.Add(argIndicator + argument.Aliases.First());
-            }
-        
-
-            foreach (var action in actions)
-            {
-                var name = action.Aliases.First();
-
-                if (name.EndsWith(Constants.ActionArgConventionSuffix))
-                {
-                    name = name.Substring(0, name.Length - Constants.ActionArgConventionSuffix.Length);
-                }
-
-                if (action.IgnoreCase)
-                {
-                    ret.Add(name.ToLower());
-                }
-                else
-                {
-                } ret.Add(name); 
-                
-                ret.AddRange(FindTabCompletions(action.Arguments, new List<CommandLineAction>()));
-            }
-
-            ret = ret.Distinct().ToList();
-            return ret;
-        }
     }
 }

@@ -100,6 +100,11 @@ namespace PowerArgs
                 }
                 else if (token.Type == BooleanExpressionTokenType.Variable)
                 {
+                    if(defaultGroup.Operands.Count != defaultGroup.Operators.Count)
+                    {
+                        throw new ArgumentException("Expected an operator, got variable: "+token.Value);
+                    }
+
                     defaultGroup.Operands.Add(new BooleanVariable() { VariableName = token.Value, Not = not });
                     not = false;
                 }

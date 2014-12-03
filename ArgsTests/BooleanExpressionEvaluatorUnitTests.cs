@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 
 namespace ArgsTests
 {
@@ -26,6 +28,17 @@ namespace ArgsTests
         {
             var exp = "(\"a b c\" | b)";
             var parsed = Args.Parse<ArgsWithExpression>("-e", exp);
+            Assert.AreEqual(exp, parsed.Expression.ToString());
+        }
+
+
+        [TestMethod]
+        public void TestParseExpressionWithQuotesAndNoOperators()
+        {
+            var exp = "\"a b c\"";
+            var parsed = Args.Parse<ArgsWithExpression>("-e", exp);
+            bool eval = parsed.Expression.Evaluate(new Dictionary<string, bool>() { { "\"a b c\"", true } });
+            Assert.IsTrue(eval);
             Assert.AreEqual(exp, parsed.Expression.ToString());
         }
 

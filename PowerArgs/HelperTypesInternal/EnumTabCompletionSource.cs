@@ -4,19 +4,27 @@ using System.Linq;
 
 namespace PowerArgs
 {
-    internal class EnumTabCompletionSource : ArgumentAwareTabCompletionSource
+    internal class EnumTabCompletionSource : ISmartTabCompletionSource
     {
         SimpleTabCompletionSource wrappedSource;
-        public EnumTabCompletionSource(CommandLineArgumentsDefinition definition, CommandLineArgument argument)
-            : base(definition, argument)
+        CommandLineArgument target;
+
+        public EnumTabCompletionSource(CommandLineArgument target)
         {
-            var options = Enum.GetNames(argument.ArgumentType).Union(argument.ArgumentType.GetEnumShortcuts());
-            wrappedSource = new SimpleTabCompletionSource(options);
+            this.target = target;
+            var options = Enum.GetNames(target.ArgumentType).Union(target.ArgumentType.GetEnumShortcuts());
+            wrappedSource = new SimpleTabCompletionSource(options) { MinCharsBeforeCyclingBegins = 0};
         }
 
-        public override bool TryComplete(bool shift, CommandLineArgument context, string soFar, out string completion)
+        public bool TryComplete(TabCompletionContext context, out string completion)
         {
-            return wrappedSource.TryComplete(shift, soFar, out completion);
+            if(context.TargetArgument != target)
+            {
+                completion = null;
+                return false;
+            }
+
+            return wrappedSource.TryComplete(context.Shift, context.CompletionCandidate, out completion);
         }
     }
 }

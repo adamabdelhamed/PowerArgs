@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace PowerArgs
 {
-    internal class FileSystemTabCompletionSource : ITabCompletionSource
+    internal class FileSystemTabCompletionSource : ITabCompletionSource, ISmartTabCompletionSource
     {
         string lastSoFar = null, lastCompletion = null;
         int tabIndex = -1;
@@ -85,6 +85,11 @@ namespace PowerArgs
                 Trace.TraceError(ex.ToString());
                 return false;  // We don't want a bug in this logic to break the app
             }
+        }
+
+        public bool TryComplete(TabCompletionContext context, out string completion)
+        {
+            return TryComplete(context.Shift, context.CompletionCandidate, out completion);
         }
     }
 }

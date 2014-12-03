@@ -90,12 +90,11 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgDescription, string>(Metadata, d => d.Description, string.Empty);
+                return overrides.Get<ArgDescription, string>("Description", Metadata, d => d.Description, string.Empty);
             }
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
-                overrides.Set(value);
+                overrides.Set("Description", value);
             }
         }
         
@@ -116,12 +115,11 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgIgnoreCase, bool>(Metadata, i => i.IgnoreCase, true);
+                return overrides.Get<ArgIgnoreCase, bool>("IgnoreCase", Metadata, i => i.IgnoreCase, true);
             }
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
-                overrides.Set(value);
+                overrides.Set("IgnoreCase", value);
             }
         }
 
@@ -226,7 +224,7 @@ namespace PowerArgs
 
         internal CommandLineAction()
         {
-            overrides = new AttrOverride();
+            overrides = new AttrOverride(GetType());
             Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);
             PropertyInitializer.InitializeFields(this, 1);
             IgnoreCase = true;

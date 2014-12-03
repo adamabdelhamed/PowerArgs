@@ -72,12 +72,40 @@ namespace ArgsTests
             public NameSource() : base(new string[] { "Adam", "Joe" }) { }
         }
 
+        public class CustomLegacySourceThatWillOnlyWorkWithATargetArgument : ITabCompletionSource
+        {
+            NameSource wrapped = new NameSource();
+
+  
+            public bool TryComplete(bool shift, string soFar, out string completion)
+            {
+                return wrapped.TryComplete(shift, soFar, out completion);
+            }
+        }
+
+        [TabCompletion("$", ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
+        public class ArgAwareCompletionArgsWithLegacySource
+        {
+            [ArgumentAwareTabCompletionAttribute(typeof(CustomLegacySourceThatWillOnlyWorkWithATargetArgument))]
+            public string Name { get; set; }
+            public string Address { get; set; }
+        }
+
         [TabCompletion(typeof(MyCompletionSource), "$", ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
         public class ArgAwareCompletionArgs
         {
             [ArgumentAwareTabCompletionAttribute(typeof(NameSource))]
             public string Name { get; set; }
             public string Address { get; set; }
+        }
+
+        [TestMethod]
+        public void LegacyTestWithArgSpecificTabCompletion()
+        {
+            
+            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("-N A\t");
+            var parsed = Args.Parse<ArgAwareCompletionArgsWithLegacySource>("$");
+            Assert.AreEqual("Adam", parsed.Name);
         }
 
         [TestMethod]

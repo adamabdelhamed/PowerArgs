@@ -186,8 +186,18 @@ namespace PowerArgs
 
         }
 
-        internal static string[] ReadLine(ref string rawInput, List<string> history, params ITabCompletionSource[] tabCompletionHooks)
+        /// <summary>
+        /// Only marked public for testing.  Please do not use.
+        /// </summary>
+        /// <param name="rawInput">a reference to the command line string</param>
+        /// <param name="history">Any previous command lines</param>
+        /// <param name="definition">The args definition</param>
+        /// <returns>A new set of command line args</returns>
+        public static string[] ReadLine(ref string rawInput, List<string> history, CommandLineArgumentsDefinition definition)
         {
+            IEnumerable<ITabCompletionSource> oldHooks = FindOldTabCompletionHooks(definition);
+            IEnumerable<ISmartTabCompletionSource> newHooks = FindNewTabCompletionHooks(definition);
+
             var leftStart = ConsoleImpl.CursorLeft;
             var topStart = ConsoleImpl.CursorTop;
             var chars = new List<char>();
@@ -331,27 +341,50 @@ namespace PowerArgs
 
                     if (j == -1) j = 0;
 
-                    var context = "";
+                    var previousToken = "";
                     for (int k = j - 1; k >= 0; k--)
                     {
-                        context += chars[k];
+                        previousToken += chars[k];
                     }
-                    context = new string(context.Reverse().ToArray());
-                    context = ParseContext(context);
+                    previousToken = new string(previousToken.Reverse().ToArray());
+                    previousToken = ParseContext(previousToken);
 
                     token = new string(token.Reverse().ToArray());
 
                     string completion = null;
 
-                    foreach (var completionSource in tabCompletionHooks)
+                    var tabCompletionContext = GenerateTabCompletionContext(definition,new String(chars.ToArray()), info.Modifiers.HasFlag(ConsoleModifiers.Shift), previousToken, token);
+
+                    bool oldHookWon = false;
+                    foreach (var completionSource in oldHooks)
                     {
                         if (completionSource is ITabCompletionSourceWithContext)
                         {
-                            if (((ITabCompletionSourceWithContext)completionSource).TryComplete(info.Modifiers.HasFlag(ConsoleModifiers.Shift), context, token, out completion)) break;
+                            if (((ITabCompletionSourceWithContext)completionSource).TryComplete(info.Modifiers.HasFlag(ConsoleModifiers.Shift), previousToken, token, out completion))
+                            {
+                                oldHookWon = true;
+                                break;
+                            }
                         }
                         else
                         {
-                            if (completionSource.TryComplete(info.Modifiers.HasFlag(ConsoleModifiers.Shift), token, out completion)) break;
+                            if (completionSource.TryComplete(info.Modifiers.HasFlag(ConsoleModifiers.Shift), token, out completion))
+                            {
+                                oldHookWon = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if(oldHookWon == false)
+                    {
+                        var context = GenerateTabCompletionContext(definition, ToString(chars), info.Modifiers.HasFlag(ConsoleModifiers.Shift), previousToken, token);
+                        foreach(var completionSource in newHooks)
+                        {
+                            if(completionSource.TryComplete(context, out completion))
+                            {
+                                break;
+                            }
                         }
                     }
 
@@ -411,6 +444,118 @@ namespace PowerArgs
             rawInput = new string(chars.ToArray());
 
             return GetArgs(chars);
+        }
+
+        private static string ToString(IEnumerable<char> chars)
+        {
+            var ret = "";
+            foreach(var c in chars)
+            {
+                ret += c;
+            }
+            return ret;
+        }
+
+        private static IEnumerable<ITabCompletionSource> FindOldTabCompletionHooks(CommandLineArgumentsDefinition definition)
+        {
+            List<ITabCompletionSource> completionSources = new List<ITabCompletionSource>();
+
+            if (definition.Metadata.HasMeta<TabCompletion>() && definition.Metadata.Meta<TabCompletion>().CompletionSourceType != null && definition.Metadata.Meta<TabCompletion>().CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)))
+            {
+                completionSources.Add((ITabCompletionSource)Activator.CreateInstance(definition.Metadata.Meta<TabCompletion>().CompletionSourceType));
+            }
+
+            foreach (var argument in definition.AllGlobalAndActionArguments)
+            {
+                foreach (var argSource in argument.Metadata.Metas<ArgumentAwareTabCompletionAttribute>())
+                {
+                    var source = argSource.CreateTabCompletionSource(definition, argument);
+                    if (source is ITabCompletionSource)
+                    {
+                        completionSources.Insert(0, (ITabCompletionSource)source);
+                    }
+                }
+            }
+
+            return completionSources;
+        }
+
+        private static IEnumerable<ISmartTabCompletionSource> FindNewTabCompletionHooks(CommandLineArgumentsDefinition definition)
+        {
+            List<ISmartTabCompletionSource> completionSources = new List<ISmartTabCompletionSource>();
+
+            if (definition.Metadata.HasMeta<TabCompletion>() && definition.Metadata.Meta<TabCompletion>().CompletionSourceType != null && definition.Metadata.Meta<TabCompletion>().CompletionSourceType.GetInterfaces().Contains(typeof(ISmartTabCompletionSource)))
+            {
+                completionSources.Add((ISmartTabCompletionSource)Activator.CreateInstance(definition.Metadata.Meta<TabCompletion>().CompletionSourceType));
+            }
+
+            foreach (var argument in definition.AllGlobalAndActionArguments)
+            {
+                foreach (var argSource in argument.Metadata.Metas<ArgumentAwareTabCompletionAttribute>())
+                {
+                    var source = argSource.CreateTabCompletionSource(definition, argument);
+                    if (source is ISmartTabCompletionSource)
+                    {
+                        completionSources.Insert(0, (ISmartTabCompletionSource)source);
+                    }
+                }
+
+                if (argument.ArgumentType.IsEnum)
+                {
+                    completionSources.Insert(0, new EnumTabCompletionSource(argument));
+                }
+            }
+            completionSources.Add(new ActionAndArgumentSmartTabCompletionSource());
+            completionSources.Add(new FileSystemTabCompletionSource());
+
+            return completionSources;
+        }
+
+        private static TabCompletionContext GenerateTabCompletionContext(CommandLineArgumentsDefinition definition, string commandLine, bool shift, string previousToken, string completionCandidate)
+        {
+            TabCompletionContext context = new TabCompletionContext();
+            context.Definition = definition;
+            context.Shift = shift;
+            context.PreviousToken = previousToken;
+            context.CompletionCandidate = completionCandidate;
+            context.CommandLineText = commandLine;
+
+            var firstToken = commandLine.Split(' ').FirstOrDefault();
+            if(firstToken != null)
+            {
+                var match = (from a in definition.Actions where a.IsMatch(firstToken) select a).SingleOrDefault();
+                if(match != null)
+                {
+                    context.TargetAction = match;
+                }
+            }
+
+            string argumentMatchId = null;
+            if (previousToken.StartsWith("-"))
+            {
+                argumentMatchId = previousToken.Substring(1);
+            }
+            else if (previousToken.StartsWith("/"))
+            {
+                argumentMatchId = previousToken.Substring(1);
+            }
+
+            if (argumentMatchId != null)
+            {
+                var match = definition.Arguments.Where(arg => arg.IsMatch(argumentMatchId) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
+
+                if (match == null && context.TargetAction != null)
+                {
+                    match = context.TargetAction.Arguments.Where(arg => arg.IsMatch(argumentMatchId) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
+                }
+
+                if(match != null)
+                {
+                    context.TargetArgument = match;
+                }
+            }
+
+            return context;
         }
 
         /// <summary>

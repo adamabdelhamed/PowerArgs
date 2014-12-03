@@ -39,7 +39,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+	</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -53,6 +53,7 @@
     <Compile Include="Extensions\Object.cs" />
     <Compile Include="Extensions\ParemeterInfo.cs" />
     <Compile Include="Extensions\Type.cs" />
+    <Compile Include="HelperTypesInternal\ActionAndArgumentSmartTabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\AliasCollection.cs" />
     <Compile Include="HelperTypesInternal\CaseAwareStringComparer.cs" />
     <Compile Include="HelperTypesInternal\AttrOverride.cs" />
@@ -156,7 +157,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Resources\DefaultBrowserUsageTemplate.html" />
+    <None Include="Resources\DefaultBrowserUsageTemplate.html" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\DefaultConsoleUsageTemplate.txt" />

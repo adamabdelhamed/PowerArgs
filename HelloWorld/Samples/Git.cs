@@ -3,7 +3,7 @@ using System;
 
 namespace HelloWorld.Samples
 {
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = false), ArgDescription("A sample that uses the familiar git command line tool to show how to implement programs with multiple actions."), TabCompletion /*[TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), ArgDescription("A sample that uses the familiar git command line tool to show how to implement programs with multiple actions."), TabCompletion(ExeName="git"), /*[TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
     public class GitExampleArgs
     {
         [HelpHook, ArgShortcut("-?"), ArgDescription("Shows this help documentation")]

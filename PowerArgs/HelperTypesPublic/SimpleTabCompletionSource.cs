@@ -8,7 +8,7 @@ namespace PowerArgs
     /// <summary>
     /// A simple tab completion source implementation that looks for matches over a set of pre-determined strings.
     /// </summary>
-    public class SimpleTabCompletionSource : ITabCompletionSourceWithContext
+    public class SimpleTabCompletionSource : ITabCompletionSourceWithContext, ISmartTabCompletionSource
     {
         Func<IEnumerable<string>> CandidateFunction { get; set; }
 
@@ -76,6 +76,11 @@ namespace PowerArgs
             {
                 return (from c in CandidateFunction() where c.StartsWith(soFar, ignoreCase, CultureInfo.CurrentCulture) select c).ToList();
             }, out completion);
+        }
+
+        public bool TryComplete(TabCompletionContext context, out string completion)
+        {
+            return TryComplete(context.Shift, context.CompletionCandidate, out completion);
         }
     }
 }

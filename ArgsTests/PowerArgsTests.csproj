@@ -57,6 +57,7 @@
     <Compile Include="CaseSensitiveTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />
+    <Compile Include="NewAwesomeTabCompletionTests.cs" />
     <Compile Include="Templating\DocumentRendererTests.cs" />
     <Compile Include="InheritenceTests.cs" />
     <Compile Include="NullableTests.cs" />

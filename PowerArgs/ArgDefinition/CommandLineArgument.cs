@@ -144,12 +144,11 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgIgnoreCase, bool>(Metadata, p => p.IgnoreCase, true);
+                return overrides.Get<ArgIgnoreCase, bool>("IgnoreCase", Metadata, p => p.IgnoreCase, true);
             }
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
-                overrides.Set(value);
+                overrides.Set("IgnoreCase", value);
             }
         }
 
@@ -160,12 +159,11 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgPosition, int>(Metadata, p => p.Position, -1);
+                return overrides.Get<ArgPosition, int>("Position", Metadata, p => p.Position, -1);
             }
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
-                overrides.Set(value);
+                overrides.Set("Position", value);
             }
         }
 
@@ -187,12 +185,11 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<DefaultValueAttribute, object>(Hooks, d => d.Value);
+                return overrides.Get<DefaultValueAttribute, object>("DefaultValue", Hooks, d => d.Value);
             }
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
-                overrides.Set(value);
+                overrides.Set("DefaultValue", value);
             }
         }
 
@@ -227,12 +224,11 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgDescription, string>(Metadata, d => d.Description, string.Empty);
+                return overrides.Get<ArgDescription, string>("Description", Metadata, d => d.Description, string.Empty);
             }
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
-                overrides.Set(value);
+                overrides.Set("Description", value);
             }
         }
 
@@ -243,12 +239,11 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgRequired, bool>(Validators, v => true, false);
+                return overrides.Get<ArgRequired, bool>("IsRequired", Validators, v => true, false);
             }
-            [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
             set
             {
-                overrides.Set(value);
+                overrides.Set("IsRequired", value);
             }
         }
 
@@ -276,7 +271,7 @@ namespace PowerArgs
 
         internal CommandLineArgument()
         {
-            overrides = new AttrOverride();
+            overrides = new AttrOverride(GetType());
             Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; });
             PropertyInitializer.InitializeFields(this, 1);
             ArgumentType = typeof(string);

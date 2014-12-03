@@ -103,4 +103,30 @@ namespace PowerArgs
             return WrappedSource.TryComplete(shift, soFar, out completion);
         }
     }
+
+    internal class ArgumentAwareWrapperSmartTabCompletionSource : ISmartTabCompletionSource
+    {
+        public CommandLineArgumentsDefinition Definition { get; set; }
+        public CommandLineArgument Target { get; set; }
+        public ISmartTabCompletionSource WrappedSource { get; private set; }
+        public ArgumentAwareWrapperSmartTabCompletionSource(CommandLineArgumentsDefinition definition, CommandLineArgument target, ISmartTabCompletionSource toWrap)
+        {
+            this.Target = target;
+            this.Definition = definition;
+            this.WrappedSource = toWrap;
+        }
+
+        public bool TryComplete(TabCompletionContext context, out string completion)
+        {
+            if (context.TargetArgument == Target)
+            {
+                return WrappedSource.TryComplete(context, out completion);
+            }
+            else
+            {
+                completion = null;
+                return false;
+            }
+        }
+    }
 }
