@@ -59,6 +59,12 @@ namespace PowerArgs
                 List<string> arguments = new List<string>();
                 foreach (var argument in action.Arguments)
                 {
+
+                    if (argument.ArgumentType == typeof(SecureStringArgument))
+                    {
+                        continue;
+                    }
+
                     arguments.Add(argIndicator + argument.Aliases.First());
                 }
                 ret.Add(action, new SimpleTabCompletionSource(arguments) { MinCharsBeforeCyclingBegins = 0 });
@@ -102,6 +108,11 @@ namespace PowerArgs
 
             foreach (var argument in definition.Arguments)
             {
+                if(argument.ArgumentType == typeof(SecureStringArgument))
+                {
+                    continue;
+                }
+
                 ret.Add(argIndicator + argument.Aliases.First());
             }
 

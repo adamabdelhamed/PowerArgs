@@ -29,6 +29,12 @@ namespace ArgsTests
             public bool BoolParam { get; set; }
         }
 
+        [TabCompletion(typeof(MyCompletionSource), "$", ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
+        public class TestArgsWithSecureStringArgument
+        {
+            public SecureStringArgument Password { get; set; }
+        }
+
         [TabCompletion(typeof(MyCompletionSource), "$", REPL = true, ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
         public class TestArgsWithREPL
         {
@@ -97,6 +103,21 @@ namespace ArgsTests
             [ArgumentAwareTabCompletionAttribute(typeof(NameSource))]
             public string Name { get; set; }
             public string Address { get; set; }
+        }
+
+        [TestMethod]
+        public void EnsureSecureStringsAreNotTabCompletable()
+        {
+            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("-pa\t");
+            try
+            {
+                var parsed = Args.Parse<TestArgsWithSecureStringArgument>("$");
+            }
+            catch(UnexpectedArgException ex)
+            {
+                // if we see 'pa' as the argument then we know that the tab completion system did not expand 'pa' to 'password'
+                Assert.AreEqual("Unexpected named argument: pa", ex.Message);
+            }
         }
 
         [TestMethod]
