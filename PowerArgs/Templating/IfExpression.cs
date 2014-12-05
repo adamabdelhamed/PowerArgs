@@ -15,14 +15,14 @@ namespace PowerArgs
         /// <summary>
         /// The contents of the expression to render only if the condition is true
         /// </summary>
-        public List<DocumentToken> Body { get; private set; }
+        public IEnumerable<DocumentToken> Body { get; private set; }
 
         /// <summary>
         /// Creates a new if expression given a conditional token and a body
         /// </summary>
         /// <param name="ifExpressionToken">The token containing the conditional expression</param>
         /// <param name="body">The body of the document to render only if the condition evaluates to true</param>
-        public IfExpression(DocumentToken ifExpressionToken, List<DocumentToken> body)
+        public IfExpression(DocumentToken ifExpressionToken, IEnumerable<DocumentToken> body)
         {
             this.IfExpressionToken = ifExpressionToken;
             this.Body = body;
@@ -57,7 +57,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="ifExpressionToken">The token containing the conditional expression</param>
         /// <param name="body">The body of the document to render only if the condition evaluates to false</param>
-        public IfNotExpression(DocumentToken ifExpressionToken, List<DocumentToken> body) : base(ifExpressionToken, body) { }
+        public IfNotExpression(DocumentToken ifExpressionToken, IEnumerable<DocumentToken> body) : base(ifExpressionToken, body) { }
 
         /// <summary>
         /// Evaluates the conditional expression against the given data context, rendering the body only if it is false.
@@ -97,18 +97,16 @@ namespace PowerArgs
         /// <summary>
         /// Creates either an if or an ifnot expression, based on its configuration, using the given document info.
         /// </summary>
-        /// <param name="replacementKeyToken">The replacement key token whose value is either 'if' or 'ifnot'</param>
-        /// <param name="parameters">There should be no parameters to an if or ifnot expression</param>
-        /// <param name="body">The body which will be conditionally rendered.</param>
+        /// <param name="context">The context that contains information about the document being rendered</param>
         /// <returns>The expression, either an if or an ifnot expression</returns>
-        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentExpressionContext context)
         {
-            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
+            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(context.Parameters);
 
             DocumentToken ifExpressionToken;            
             if(reader.TryAdvance(out ifExpressionToken, skipWhitespace: true) == false)
             {
-                throw new DocumentRenderException("missing if expression", replacementKeyToken);
+                throw new DocumentRenderException("missing if expression", context.ReplacementKeyToken);
             }
 
             if (reader.CanAdvance(skipWhitespace: true))
@@ -116,7 +114,7 @@ namespace PowerArgs
                 throw new DocumentRenderException("unexpected parameters after if expression", reader.Advance(skipWhitespace: true));
             }
 
-            return not ? new IfNotExpression(ifExpressionToken, body) : new IfExpression(ifExpressionToken, body);
+            return not ? new IfNotExpression(ifExpressionToken, context.Body) : new IfExpression(ifExpressionToken, context.Body);
         }
     }
 }

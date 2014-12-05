@@ -22,7 +22,7 @@ namespace ArgsTests.Templating
     [DynamicExpressionProvider("date")]
     public class DateExpressionProvider : IDocumentExpressionProvider
     {
-        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentExpressionContext c)
         {
             return new FuncDocExpression((context) => { return new ConsoleString(DateTime.Now.Date.ToString()); });
         }
@@ -31,7 +31,7 @@ namespace ArgsTests.Templating
     [DynamicExpressionProvider("if")]
     public class IfOverrideExpressionProvider : IDocumentExpressionProvider
     {
-        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentExpressionContext c)
         {
             return new FuncDocExpression((context) => { return new ConsoleString("if override"); });
         }

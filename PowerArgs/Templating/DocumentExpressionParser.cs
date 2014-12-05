@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
@@ -11,13 +12,21 @@ namespace PowerArgs
     public interface IDocumentExpressionProvider
     {
         /// <summary>
-        /// Transforms a replacement key, parameters, and body into a document expression
+        /// Transforms document expression context into a document expression
         /// </summary>
-        /// <param name="replacementKeyToken">The replacement key (e.g. 'each' in {{each foo in bar }})</param>
-        /// <param name="parameters">The parameters that were provided in the replacement tag.  Whitespace has not been removed for you.</param>
-        /// <param name="body">The contents of the doucment that are inside of the replacement tag</param>
+        /// <param name="context">Context about the expression being parsed</param>
         /// <returns>The formal expression that can be evaluated into text</returns>
-        IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body);
+        IDocumentExpression CreateExpression(DocumentExpressionContext context);
+    }
+
+    public class DocumentExpressionContext
+    {
+        public DocumentToken OpenToken { get; internal set; }
+        public DocumentToken CloseToken { get; internal set; }
+        public DocumentToken ReplacementKeyToken { get; internal set; }
+
+        public ReadOnlyCollection<DocumentToken> Parameters { get; internal set; }
+        public ReadOnlyCollection<DocumentToken> Body { get; internal set; }
     }
 
     /// <summary>
@@ -134,7 +143,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="tokens">The tokens to parse</param>
         /// <returns>a list of document expressions</returns>
-        public List<IDocumentExpression> Parse(List<DocumentToken> tokens)
+        public List<IDocumentExpression> Parse(IEnumerable<DocumentToken> tokens)
         {
             List<IDocumentExpression> ret = new List<IDocumentExpression>();
 
@@ -197,7 +206,16 @@ namespace PowerArgs
                 provider = new EvalExpressionProvider();
             }
 
-            var expression = provider.CreateExpression(replacementKeyToken, parameters, body);
+            var context = new DocumentExpressionContext
+            {
+                OpenToken = openToken,
+                CloseToken = closeReplacementToken,
+                Parameters = parameters.AsReadOnly(),
+                Body = body.AsReadOnly(),
+                ReplacementKeyToken = replacementKeyToken,
+            };
+
+            var expression = provider.CreateExpression(context);
             ret.Add(expression);
         }
 

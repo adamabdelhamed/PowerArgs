@@ -201,24 +201,22 @@ namespace PowerArgs
         /// <summary>
         /// Creates a table expression from the given document info.
         /// </summary>
-        /// <param name="replacementKeyToken">The token that should contain a value of 'table'</param>
-        /// <param name="parameters">Replacement parameters that should be column names and optional properties</param>
-        /// <param name="body">Should be empty.  Table expressions don't support bodies</param>
+        /// <param name="context">The context that contains information about the document being rendered</param>
         /// <returns>The created document expression</returns>
-        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentExpressionContext context)
         {
-            if (body.Count > 0)
+            if (context.Body.Count > 0)
             {
-                throw new DocumentRenderException("table tags can't have a body", replacementKeyToken);
+                throw new DocumentRenderException("table tags can't have a body", context.ReplacementKeyToken);
             }
 
-            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
+            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(context.Parameters);
 
             DocumentToken variableExpressionToken;
 
             if (reader.TryAdvance(out variableExpressionToken, skipWhitespace: true) == false)
             {
-                throw new DocumentRenderException("missing collection expression after table tag", replacementKeyToken);
+                throw new DocumentRenderException("missing collection expression after table tag", context.ReplacementKeyToken);
             }
 
             List<DocumentToken> columns = new List<DocumentToken>();
@@ -246,7 +244,7 @@ namespace PowerArgs
 
             if (columns.Count == 0)
             {
-                throw new DocumentRenderException("table elements need to have at least one column parameter", replacementKeyToken);
+                throw new DocumentRenderException("table elements need to have at least one column parameter", context.ReplacementKeyToken);
             }
 
             return new TableExpression(variableExpressionToken, columns) { ShowDefaultValuesForArguments = showDefaults, ShowPossibleValuesForArguments = showPossibilities };

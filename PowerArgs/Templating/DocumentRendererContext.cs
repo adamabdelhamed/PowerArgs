@@ -50,7 +50,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="body">The tokens to render</param>
         /// <returns>the rendered content</returns>
-        public ConsoleString RenderBody(List<DocumentToken> body)
+        public ConsoleString RenderBody(IEnumerable<DocumentToken> body)
         {
             return DocumentRenderer.Render(body, this);
         }

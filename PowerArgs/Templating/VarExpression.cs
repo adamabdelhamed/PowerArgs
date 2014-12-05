@@ -94,24 +94,22 @@ namespace PowerArgs
         /// <summary>
         /// Creates a variable expression given replacement info
         /// </summary>
-        /// <param name="replacementKeyToken">The replacement key token that should have a value of 'var'</param>
-        /// <param name="parameters">There should be 2 parameters.  The name of the variable and the initial value.</param>
-        /// <param name="body">There should be no body</param>
+        /// <param name="context">The context that contains information about the document being rendered</param>
         /// <returns>A variable expression</returns>
-        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentExpressionContext context)
         {
-            if (body.Count > 0)
+            if (context.Body.Count > 0)
             {
-                throw new DocumentRenderException("var tags can't have a body", body.First());
+                throw new DocumentRenderException("var tags can't have a body", context.Body.First());
             }
 
-            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
+            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(context.Parameters);
 
             DocumentToken variableName;
 
             if(reader.TryAdvance(out variableName,skipWhitespace:true) == false)
             {
-                throw new DocumentRenderException("Expected variable name after var tag", replacementKeyToken);
+                throw new DocumentRenderException("Expected variable name after var tag", context.ReplacementKeyToken);
             }
 
             DocumentToken variableValue;
@@ -133,24 +131,22 @@ namespace PowerArgs
         /// <summary>
         /// Creates a clear variable expression given replacement info
         /// </summary>
-        /// <param name="replacementKeyToken">The replacement key token that should have a value of 'clearvar'</param>
-        /// <param name="parameters">There should be 1 parameter, the name of the variable.</param>
-        /// <param name="body">There should be no body</param>
+        /// <param name="context">The context that contains information about the document being rendered</param>
         /// <returns>a clear variable expression</returns>
-        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentExpressionContext context)
         {
-            if (body.Count > 0)
+            if (context.Body.Count > 0)
             {
-                throw new DocumentRenderException("clearvar tags can't have a body", replacementKeyToken);
+                throw new DocumentRenderException("clearvar tags can't have a body", context.ReplacementKeyToken);
             }
 
-            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
+            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(context.Parameters);
 
             DocumentToken variableName;
 
             if (reader.TryAdvance(out variableName, skipWhitespace: true) == false)
             {
-                throw new DocumentRenderException("Expected variable name after clearvar tag", replacementKeyToken);
+                throw new DocumentRenderException("Expected variable name after clearvar tag", context.ReplacementKeyToken);
             }
 
             return new ClearVarExpression(variableName);

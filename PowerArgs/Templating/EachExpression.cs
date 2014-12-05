@@ -21,7 +21,7 @@ namespace PowerArgs
         /// <summary>
         /// Gets the body of the each expression.  This body will be evaluated once fore each element in the collection.
         /// </summary>
-        public List<DocumentToken> Body { get; private set; }
+        public IEnumerable<DocumentToken> Body { get; private set; }
 
         /// <summary>
         /// Creates a new each expression given an iteration variable name, a collection expression, and a body.
@@ -29,7 +29,7 @@ namespace PowerArgs
         /// <param name="iterationVariable">The name to assign to ther variable representing the current element in the template</param>
         /// <param name="collectionExpression">The expression used to determine the collection to enumerate</param>
         /// <param name="body">The body of the each loop</param>
-        public EachExpression(DocumentToken iterationVariable, DocumentToken collectionExpression, List<DocumentToken> body)
+        public EachExpression(DocumentToken iterationVariable, DocumentToken collectionExpression, IEnumerable<DocumentToken> body)
         {
             this.IterationVariableNameToken = iterationVariable;
             this.CollectionVariableExpressionToken = collectionExpression;
@@ -77,23 +77,21 @@ namespace PowerArgs
         /// <summary>
         /// Takes in document replacement info and converts it into a document expression that represents an each loop.
         /// </summary>
-        /// <param name="replacementKeyToken">The token that is expected to have a value of 'each'</param>
-        /// <param name="parameters">The parameters which should follow the format ITERATION_VARIABLE_NAME in COLLECTION_EXPRESSION</param>
-        /// <param name="body">The body of the each loop</param>
+        /// <param name="context">Context about the expression being parsed</param>
         /// <returns>The parsed each expression</returns>
-        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentExpressionContext context)
         {
-            if(body.Count == 0)
+            if(context.Body.Count == 0)
             {
-                throw new DocumentRenderException("Each tag has no body", replacementKeyToken);
+                throw new DocumentRenderException("Each tag has no body", context.ReplacementKeyToken);
             }
 
-            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
+            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(context.Parameters);
 
             DocumentToken variableName;
             if (reader.TryAdvance(out variableName, skipWhitespace: true) == false)
             {
-                throw new DocumentRenderException("missing variable name in each tag", replacementKeyToken);
+                throw new DocumentRenderException("missing variable name in each tag", context.ReplacementKeyToken);
             }
 
             DocumentToken inToken;
@@ -121,7 +119,7 @@ namespace PowerArgs
                 throw new DocumentRenderException("Unexpected parameter '" + unexpected.Value + "' after collection", unexpected);
             }
 
-            return new EachExpression(variableName, collectionExpressionToken, body);
+            return new EachExpression(variableName, collectionExpressionToken, context.Body);
         }
     }
 }

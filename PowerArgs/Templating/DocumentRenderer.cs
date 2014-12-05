@@ -158,7 +158,7 @@ namespace PowerArgs
             return ret;
         }
 
-        internal ConsoleString Render(List<DocumentToken> tokens, DocumentRendererContext context)
+        internal ConsoleString Render(IEnumerable<DocumentToken> tokens, DocumentRendererContext context)
         {
             var expressions = expressionParser.Parse(tokens);
             var ret = Evaluate(expressions, context);

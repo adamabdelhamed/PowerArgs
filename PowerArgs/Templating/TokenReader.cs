@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PowerArgs
 {
@@ -16,10 +17,10 @@ namespace PowerArgs
         /// Creates a token reader given a list of tokens
         /// </summary>
         /// <param name="tokens">The list of tokens to read through</param>
-        public TokenReader(List<T> tokens)
+        public TokenReader(IEnumerable<T> tokens)
         {
             if (tokens == null) throw new ArgumentNullException("tokens cannot be null");
-            this.tokens = tokens;
+            this.tokens = tokens.ToList();
             currentIndex = -1;
         }
 

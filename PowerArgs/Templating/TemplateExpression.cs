@@ -53,24 +53,22 @@ namespace PowerArgs
         /// <summary>
         /// Creates a template expression given a replacement token and parameters.
         /// </summary>
-        /// <param name="replacementKeyToken">The token whose value should be 'template'</param>
-        /// <param name="parameters">There should be 2 parameters.  One representing the name of the template to render and one representing the data to bind to the template.</param>
-        /// <param name="body">Should be empty.  Template expressions do not support a body.</param>
+        /// <param name="context">Context about the expression being parsed</param>
         /// <returns>a template expression</returns>
-        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentExpressionContext context)
         {
-            if (body.Count > 0)
+            if (context.Body.Count > 0)
             {
-                throw new DocumentRenderException("template tags can't have a body", replacementKeyToken);
+                throw new DocumentRenderException("template tags can't have a body", context.ReplacementKeyToken);
             }
 
-            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
+            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(context.Parameters);
 
             DocumentToken idToken;
 
             if (reader.TryAdvance(out idToken, skipWhitespace: true) == false)
             {
-                throw new DocumentRenderException("missing template Id", replacementKeyToken);
+                throw new DocumentRenderException("missing template Id", context.ReplacementKeyToken);
             }
 
             DocumentToken evalToken;

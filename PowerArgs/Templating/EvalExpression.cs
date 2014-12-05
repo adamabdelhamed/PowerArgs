@@ -104,22 +104,20 @@ namespace PowerArgs
         /// <summary>
         /// Creates an eval expression given template replacement info
         /// </summary>
-        /// <param name="replacementKeyToken">The replacement key token which in this case is the evaluation expression</param>
-        /// <param name="parameters">Optional parameters for foreground and background colors.  The values should be valid ConsoleColor values.</param>
-        /// <param name="body">Should be empty.  Eval expressions don't support bodies.</param>
+        /// <param name="context">The context that contains information about the document being rendered</param>
         /// <returns></returns>
-        public IDocumentExpression CreateExpression(DocumentToken replacementKeyToken, List<DocumentToken> parameters, List<DocumentToken> body)
+        public IDocumentExpression CreateExpression(DocumentExpressionContext context)
         {
-            if (body.Count > 0)
+            if (context.Body.Count > 0)
             {
-                throw new DocumentRenderException("eval tags can't have a body", replacementKeyToken);
+                throw new DocumentRenderException("eval tags can't have a body", context.ReplacementKeyToken);
             }
 
-            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(parameters);
+            TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(context.Parameters);
 
             DocumentToken fgToken, bgToken;
 
-            var ret = new EvalExpression(replacementKeyToken);
+            var ret = new EvalExpression(context.ReplacementKeyToken);
 
             if(reader.TryAdvance(out fgToken, skipWhitespace: true) == false)
             {
