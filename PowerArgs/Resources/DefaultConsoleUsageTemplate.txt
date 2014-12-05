@@ -2,7 +2,8 @@
 Usage - {{UsageSummary Cyan!}}
 !{{ifnot}}
 {{if HasGlobalArguments}}
-{{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}:
+
+{{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}
 
 {{table Arguments Syntax>Option Description !}}
 !{{if}}
@@ -12,31 +13,29 @@ Usage - {{UsageSummary Cyan!}}
 Usage - {{ExeName Cyan!}} {{SpecifiedAction.UsageSummary Cyan!}}
 
 {{if SpecifiedAction.HasArguments }}
-{{SpecifiedAction.DefaultAlias!}} Options:
+{{SpecifiedAction.DefaultAlias!}} Options
 {{table SpecifiedAction.Arguments Syntax>Option Description !}}
 !{{if}}
 !{{if}}
 {{ifnot HasSpecifiedAction}}
 
-Actions:
+Actions
 {{each action in Actions}}
 
 {{action.DefaultAlias!}} - {{action.Description!}}
-{{ExeName Cyan!}} {{action.UsageSummary Cyan!}}
 
+    Usage - {{ExeName Cyan!}} {{action.UsageSummary Cyan!}}
 
 {{if action.HasArguments }}
-{{action.DefaultAlias!}} Options:
-{{table action.Arguments Syntax>Option Description !}}
+    {{table action.Arguments Syntax>Option Description !}}
 !{{if}}
 
 {{if action.HasExamples }}
-{{action.DefaultAlias!}} Examples:
+    {{action.DefaultAlias!}} Examples
 
 {{each example in action.Examples}}
     {{if example.HasTitle}}{{example.Title Cyan!}} - !{{if}}{{example.Description!}}
     {{example.Example Green!}}
-
 
 !{{each}}
 !{{if}}
@@ -48,7 +47,7 @@ Actions:
 Options can be specified using -<option> <value> or as /<option>:<value>
 
 {{if HasExamples }}
-Examples:
+Examples
 
 {{each example in Examples}}
     {{if example.HasTitle}}{{example.Title Cyan!}} - !{{if}}{{example.Description!}}

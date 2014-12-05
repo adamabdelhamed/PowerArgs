@@ -35,17 +35,21 @@ namespace PowerArgs
         /// </summary>
         public bool ShowDefaultValuesForArguments { get; set; }
 
+        private int indent;
+
         /// <summary>
         /// Creates a new table expression given a collection evaluation expression and a list of column tokens
         /// </summary>
         /// <param name="evalToken">A token containing an expression that should evaluate to an IEnumerable</param>
         /// <param name="columns">A list of tokens containing the names of columns to display in the table</param>
-        public TableExpression(DocumentToken evalToken, List<DocumentToken> columns)
+        public TableExpression(DocumentToken evalToken, List<DocumentToken> columns, DocumentExpressionContext context)
         {
             this.EvalToken = evalToken;
             this.Columns = columns;
             this.ShowDefaultValuesForArguments = true;
             this.ShowPossibleValuesForArguments = true;
+
+            this.indent = context.OpenToken.Column - 1;
         }
 
         /// <summary>
@@ -136,7 +140,16 @@ namespace PowerArgs
                 }
             }
 
-            var tableText = FormatAsTable(headers, rows);
+            string rowPrefix = "";
+            for(int i = 0; i < indent; i++)
+            {
+                rowPrefix += " ";
+            }
+
+            var tableText = FormatAsTable(headers, rows, rowPrefix: rowPrefix);
+
+            // remove the prefix from the first row
+            tableText = tableText.Substring(indent);
 
             return tableText;
         }
@@ -247,7 +260,7 @@ namespace PowerArgs
                 throw new DocumentRenderException("table elements need to have at least one column parameter", context.ReplacementKeyToken);
             }
 
-            return new TableExpression(variableExpressionToken, columns) { ShowDefaultValuesForArguments = showDefaults, ShowPossibleValuesForArguments = showPossibilities };
+            return new TableExpression(variableExpressionToken, columns, context) { ShowDefaultValuesForArguments = showDefaults, ShowPossibleValuesForArguments = showPossibilities };
         }
     }
 }

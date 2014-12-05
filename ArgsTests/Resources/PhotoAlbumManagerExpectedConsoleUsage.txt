@@ -1,5 +1,6 @@
 Usage - PhotoManager <action> -options
-Global options:
+
+Global options
 
 Option        Description                                                                            
 Output (-O)   How much output to display while performing management operations [Default='Light']    
@@ -7,72 +8,69 @@ Output (-O)   How much output to display while performing management operations 
               Light                                                                                  
               Quiet                                                                                  
 
-Actions:
+Actions
 
 CreateAlbum - Creates a new album in the target container, creating the container if it does not exist
-PhotoManager CreateAlbum <StorageAccountName> <StorageAccountKey> [<Container>] -options
 
-CreateAlbum Options:
-Option                     Description                                                 
-StorageAccountName* (-a)   The storage account to connect to                           
-StorageAccountKey* (-k)    The storage key to use to connect                           
-Container (-c)             The storage container to target [Default='DefaultAlbum']    
-UseHttps (-U)              Set this flag to use https                                  
+    Usage - PhotoManager CreateAlbum <StorageAccountName> <StorageAccountKey> [<Container>] -options
+
+    Option                     Description                                                 
+    StorageAccountName* (-a)   The storage account to connect to                           
+    StorageAccountKey* (-k)    The storage key to use to connect                           
+    Container (-c)             The storage container to target [Default='DefaultAlbum']    
+    UseHttps (-U)              Set this flag to use https                                  
 
 
 
 Download - Downloads a single blob to the local file system
-PhotoManager Download <StorageAccountName> <StorageAccountKey> [<Container>] -options
 
-Download Options:
-Option                     Description                                                                    
-BlobFilePath* (-B)         The name of a blob to download                                                 
-LocalFile (-L)             The local path to download to                                                  
-ConflictPolicy (-C)        What do do if there is a conflict when downloading a file [Default='Throw']    
-                           Throw                                                                          
-                           ServerWins                                                                     
-                           ClientWins                                                                     
-StorageAccountName* (-a)   The storage account to connect to                                              
-StorageAccountKey* (-k)    The storage key to use to connect                                              
-Container (-c)             The storage container to target [Default='DefaultAlbum']                       
-UseHttps (-U)              Set this flag to use https                                                     
+    Usage - PhotoManager Download <StorageAccountName> <StorageAccountKey> [<Container>] -options
 
-Download Examples:
+    Option                     Description                                                                    
+    BlobFilePath* (-B)         The name of a blob to download                                                 
+    LocalFile (-L)             The local path to download to                                                  
+    ConflictPolicy (-C)        What do do if there is a conflict when downloading a file [Default='Throw']    
+                               Throw                                                                          
+                               ServerWins                                                                     
+                               ClientWins                                                                     
+    StorageAccountName* (-a)   The storage account to connect to                                              
+    StorageAccountKey* (-k)    The storage key to use to connect                                              
+    Container (-c)             The storage container to target [Default='DefaultAlbum']                       
+    UseHttps (-U)              Set this flag to use https                                                     
+
+    Download Examples
 
     Downloads a blob called ceremony.png to a temp folder on the local machine
     photos download -a myaccount -k mykey -c wedding -BlobFilePath ceremony.png -LocalFile C:\temp\ceremony.png
 
 
-
 Upload - Uploads one or more files from the local file system to the target container
-PhotoManager Upload <StorageAccountName> <StorageAccountKey> [<Container>] -options
 
-Upload Options:
-Option                     Description                                                                  
-LocalFile (-L)             If specified the single file will be uploaded                                
-LocalDirectory (-Lo)       If specified, all files in the directory will be uploaded                    
-ConflictPolicy (-C)        What do do if there is a conflict when uploading a file [Default='Throw']    
-                           Throw                                                                        
-                           ServerWins                                                                   
-                           ClientWins                                                                   
-StorageAccountName* (-a)   The storage account to connect to                                            
-StorageAccountKey* (-k)    The storage key to use to connect                                            
-Container (-c)             The storage container to target [Default='DefaultAlbum']                     
-UseHttps (-U)              Set this flag to use https                                                   
+    Usage - PhotoManager Upload <StorageAccountName> <StorageAccountKey> [<Container>] -options
 
-Upload Examples:
+    Option                     Description                                                                  
+    LocalFile (-L)             If specified the single file will be uploaded                                
+    LocalDirectory (-Lo)       If specified, all files in the directory will be uploaded                    
+    ConflictPolicy (-C)        What do do if there is a conflict when uploading a file [Default='Throw']    
+                               Throw                                                                        
+                               ServerWins                                                                   
+                               ClientWins                                                                   
+    StorageAccountName* (-a)   The storage account to connect to                                            
+    StorageAccountKey* (-k)    The storage key to use to connect                                            
+    Container (-c)             The storage container to target [Default='DefaultAlbum']                     
+    UseHttps (-U)              Set this flag to use https                                                   
+
+    Upload Examples
 
     Uploads all the files in the local directory to the 'wedding' container
     photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\videos
-
     Uploads all the files in the local directory to the 'wedding' container
     photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images
 
 
-
 Options can be specified using -<option> <value> or as /<option>:<value>
 
-Examples:
+Examples
 
     creates an album called 'wedding' in a container named 'wedding'
     photos createalbum -a myaccount -k mykey -c wedding 
