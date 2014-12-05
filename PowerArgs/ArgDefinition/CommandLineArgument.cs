@@ -100,10 +100,17 @@ namespace PowerArgs
             get
             {
                 var ret = DefaultAlias;
+
+                if (IsRequired && Metadata.Meta<ArgRequired>().IsConditionallyRequired == false)
+                {
+                    ret += "*";
+                }
+
                 if(PrimaryShortcutAlias.Length > 0)
                 {
                     ret += " ("+PrimaryShortcutAlias+")";
                 }
+
                 return ret;
             }
         }

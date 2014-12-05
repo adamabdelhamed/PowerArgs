@@ -9,6 +9,17 @@ namespace PowerArgs
     public class ArgExample : Attribute, IGlobalArgMetadata
     {
         /// <summary>
+        /// Returns true if this example has a title, false otherwwise
+        /// </summary>
+        public bool HasTitle
+        {
+            get
+            {
+                return Title != null;
+            }
+        }
+
+        /// <summary>
         /// An optional title for this example
         /// </summary>
         public string Title { get; set; }

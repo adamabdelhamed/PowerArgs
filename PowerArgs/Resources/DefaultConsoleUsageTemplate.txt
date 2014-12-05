@@ -29,6 +29,18 @@ Actions:
 {{action.DefaultAlias!}} Options:
 {{table action.Arguments Syntax>Option Description !}}
 !{{if}}
+
+{{if action.HasExamples }}
+{{action.DefaultAlias!}} Examples:
+
+{{each example in action.Examples}}
+    {{if example.HasTitle}}{{example.Title Cyan!}} - !{{if}}{{example.Description!}}
+    {{example.Example Green!}}
+
+
+!{{each}}
+!{{if}}
+
 !{{each}}
 !{{ifnot}}
 !{{if}}
@@ -37,8 +49,11 @@ Options can be specified using -<option> <value> or as /<option>:<value>
 
 {{if HasExamples }}
 Examples:
+
 {{each example in Examples}}
-{{example.Title Cyan!}} - {{example.Description!}}
-{{example.Example Green!}}
+    {{if example.HasTitle}}{{example.Title Cyan!}} - !{{if}}{{example.Description!}}
+    {{example.Example Green!}}
+ 
+
 !{{each}}
 !{{if}}

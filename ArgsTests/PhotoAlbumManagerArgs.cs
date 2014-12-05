@@ -39,6 +39,7 @@ namespace ArgsTests
 
         [ArgActionMethod]
         [ArgExample(@"photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images", "Uploads all the files in the local directory to the 'wedding' container")]
+        [ArgExample(@"photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\videos", "Uploads all the files in the local directory to the 'wedding' container")]
         [ArgDescription("Uploads one or more files from the local file system to the target container")]
         public void Upload(UploadArgs args) { }
     }
