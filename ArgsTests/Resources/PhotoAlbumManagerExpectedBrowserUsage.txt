@@ -195,10 +195,10 @@
 										<h4>Examples</h4>
 											<h3></h3>
 						<p>Uploads all the files in the local directory to the 'wedding' container</p>
-						<pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\videos</pre>
+						<pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images</pre>
 											<h3></h3>
 						<p>Uploads all the files in the local directory to the 'wedding' container</p>
-						<pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images</pre>
+						<pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\videos</pre>
 														</div>
 			</div>
 		</li>

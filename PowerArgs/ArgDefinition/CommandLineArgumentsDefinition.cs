@@ -402,20 +402,30 @@ namespace PowerArgs
                            where  CommandLineAction.IsActionImplementation(p)
                            select CommandLineAction.Create(p, knownAliases)).ToList();
 
-            if (t.HasAttr<ArgActionType>())
-            {
-                t = t.Attr<ArgActionType>().ActionType;
-            }
+            List<Type> typesToSearchForActions = new List<Type>() { t };
 
-            foreach (var action in t.GetMethods(flags).Where(m => CommandLineAction.IsActionImplementation(m)).Select(m => CommandLineAction.Create(m, knownAliases.ToList())))
+            typesToSearchForActions.AddRange(t.Attrs<ArgActionType>().Select(aat => aat.ActionType));
+
+            foreach (var typeToSearch in typesToSearchForActions)
             {
-                var matchingPropertyBasedAction = actions.Where(a => a.Aliases.First() == action.Aliases.First()).SingleOrDefault();
-                if (matchingPropertyBasedAction != null) continue;
-                actions.Add(action);
+                var requireStatic = typeToSearch != t;
+                foreach (var method in typeToSearch.GetMethods(flags).Where(m => CommandLineAction.IsActionImplementation(m)))
+                {
+                    if(requireStatic && method.IsStatic == false)
+                    {
+                        throw new InvalidArgDefinitionException("The method "+method.DeclaringType.FullName+"."+method.Name+" must be static because it has been imported using [ArgActionType]");
+                    }
+
+                    var action = CommandLineAction.Create(method, knownAliases.ToList());
+                    var matchingPropertyBasedAction = actions.Where(a => a.Aliases.First() == action.Aliases.First()).SingleOrDefault();
+                    if (matchingPropertyBasedAction != null) continue;
+                    actions.Add(action);
+                }
             }
 
             return actions;
         }
+
 
         private static List<CommandLineArgument> FindCommandLineArguments(Type t)
         {

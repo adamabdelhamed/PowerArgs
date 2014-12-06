@@ -4,9 +4,10 @@ namespace PowerArgs
 {
     /// <summary>
     /// Use this attribute if your action implementation methods are defined in a type other than the 
-    /// type being passed to Args.ParseAction() or Args.InvokeAction().
+    /// type being passed to Args.ParseAction() or Args.InvokeAction().  You can add multiple attributes
+    /// of this type if you want to combine actions from multiple classes.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class ArgActionType : Attribute, ICommandLineArgumentsDefinitionMetadata
     {
         /// <summary>
