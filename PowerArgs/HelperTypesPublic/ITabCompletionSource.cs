@@ -36,16 +36,49 @@ namespace PowerArgs
         bool TryComplete(TabCompletionContext context, out string completion);
     }
 
+    /// <summary>
+    /// A class that contains useful information when performing custom tab completion logic
+    /// </summary>
     public class TabCompletionContext
     {
-        public bool Shift { get; set; }
-        public string PreviousToken { get; set; }
-        public string CommandLineText { get; set; }
-        public int Position { get; set; }
-        public string CompletionCandidate { get; set; }
-        public CommandLineArgument TargetArgument { get; set; }
-        public CommandLineAction TargetAction { get; set; }
+        /// <summary>
+        /// Gets whether or not the shift key was down when the tab key was pressed
+        /// </summary>
+        public bool Shift { get; internal set; }
 
-        public CommandLineArgumentsDefinition Definition { get; set; }
+        /// <summary>
+        /// Gets the token that comes before the completion candidate on the command line
+        /// </summary>
+        public string PreviousToken { get; internal set; }
+
+        /// <summary>
+        /// Gets the full and current state of the command line text
+        /// </summary>
+        public string CommandLineText { get; internal set; }
+
+        /// <summary>
+        /// Gets the position of the cursor within the current command line
+        /// </summary>
+        public int Position { get; internal set; }
+
+        /// <summary>
+        /// Gets the token that is being considered for tab completion
+        /// </summary>
+        public string CompletionCandidate { get; internal set; }
+
+        /// <summary>
+        /// Gets the current command line argument that is being targeted based on the current state of the command line
+        /// </summary>
+        public CommandLineArgument TargetArgument { get; internal set; }
+
+        /// <summary>
+        /// Gets the current command line action that is being targeted based on the current state of the command line
+        /// </summary>
+        public CommandLineAction TargetAction { get; internal set; }
+
+        /// <summary>
+        /// Gets a reference to the command line arguments definition being processed
+        /// </summary>
+        public CommandLineArgumentsDefinition Definition { get; internal set; }
     }
 }

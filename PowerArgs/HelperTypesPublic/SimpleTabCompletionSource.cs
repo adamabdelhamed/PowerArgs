@@ -65,7 +65,7 @@ namespace PowerArgs
         /// <param name="soFar">The text token that the user has typed before pressing tab.</param>
         /// <param name="context"></param>
         /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
-        /// <returns></returns>
+        /// <returns>true if the tab completion was successful, false otherwise</returns>
         public bool TryComplete(bool shift, string context, string soFar, out string completion)
         {
             manager.MinCharsBeforeCyclingBegins = this.MinCharsBeforeCyclingBegins;
@@ -78,6 +78,13 @@ namespace PowerArgs
             }, out completion);
         }
 
+        /// <summary>
+        /// Iterates through the candidates to try to find a match.  If there are multiple possible matches it 
+        /// supports cycling through tem as the user continually presses tab.
+        /// </summary>
+        /// <param name="context">Information about the tab completion</param>
+        /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
+        /// <returns>true if the tab completion was successful, false otherwise</returns>
         public bool TryComplete(TabCompletionContext context, out string completion)
         {
             return TryComplete(context.Shift, context.CompletionCandidate, out completion);

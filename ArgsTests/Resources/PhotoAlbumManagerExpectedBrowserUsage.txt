@@ -77,7 +77,7 @@
 			<div>
 				<span class="program-specific-content">Download</span>
 				<span> - </span>
-				<span class="program-specific-content">Downloads a single blob to the local file system</span>
+				<span class="program-specific-content">Downloads a single blob to the local file system.</span>
 				<button id="action1ExpandButton" onclick="toggleAction(1)" class="expander-button">show details</button>
 				<div id="action1details" class="expandable hidden">
 					<h4>Download Usage</h4>
@@ -94,7 +94,7 @@
 							</tr>
 																				<tr>
 								<td class="option-col program-specific-content">LocalFile</td>
-								<td class="desc-col program-specific-content">-The local path to download to</td>
+								<td class="desc-col program-specific-content">-The local path to download to.  This description does not really need to be this long, but I need to test to make sure that the new description formatting feature that cleanly wraps long descriptions is working properly.  This long description should be enough to test that out!</td>
 							</tr>
 																				<tr>
 								<td class="option-col program-specific-content">ConflictPolicy</td>

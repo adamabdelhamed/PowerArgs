@@ -34,7 +34,7 @@ namespace ArgsTests
 
         [ArgActionMethod]
         [ArgExample(@"photos download -a myaccount -k mykey -c wedding -BlobFilePath ceremony.png -LocalFile C:\temp\ceremony.png", "Downloads a blob called ceremony.png to a temp folder on the local machine")]
-        [ArgDescription("Downloads a single blob to the local file system")]
+        [ArgDescription("Downloads a single blob to the local file system.")]
         public void Download(DownloadArgs args) { }
 
         [ArgActionMethod]
@@ -56,7 +56,7 @@ namespace ArgsTests
         [ArgDescription("The name of a blob to download")]
         public string BlobFilePath { get; set; }
 
-        [ArgDescription("The local path to download to")]
+        [ArgDescription("The local path to download to.  This description does not really need to be this long, but I need to test to make sure that the new description formatting feature that cleanly wraps long descriptions is working properly.  This long description should be enough to test that out!")]
         public string LocalFile { get; set; }
 
         [DefaultValue(ConflictPolicy.Throw)]

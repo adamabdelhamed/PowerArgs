@@ -38,6 +38,45 @@ namespace ArgsTests
 
     public static class Helpers
     {
+        public static void AssertAreEqualWithDiffInfo(string expected, string actual)
+        {
+            int verified = 0;
+
+            int line = 1, col = 1;
+
+            for (int i = 0; i < expected.Length; i++)
+            {
+                if (i > actual.Length - 1)
+                {
+                    break;
+                }
+
+                var expectedChar = expected[i];
+                var actualChar = actual[i];
+                if (expectedChar != actualChar)
+                {
+                    Assert.Fail("Character on line " + line + " and col " + col + " did not match.  Expected '" + expectedChar + ", actual '" + actualChar + "'");
+                }
+
+                verified++;
+
+                if (expected[i] == '\n')
+                {
+                    line++;
+                    col = 1;
+                }
+                else
+                {
+                    col++;
+                }
+            }
+
+            if (verified != expected.Length)
+            {
+                Assert.Fail("Verified " + verified + " characters, expected " + expected.Length + " characters");
+            }
+        }
+
         public static Action<Exception> ExpectedException<T>(string expectedText = null, bool caseSensitive =false)
         {
             return (ex) =>

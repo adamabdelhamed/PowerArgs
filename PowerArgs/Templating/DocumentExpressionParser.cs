@@ -19,13 +19,34 @@ namespace PowerArgs
         IDocumentExpression CreateExpression(DocumentExpressionContext context);
     }
 
+    /// <summary>
+    /// An object that contains contextual information that is useful for expression providers
+    /// </summary>
     public class DocumentExpressionContext
     {
+        /// <summary>
+        /// The opening token of the replacement expression '{{'
+        /// </summary>
         public DocumentToken OpenToken { get; internal set; }
+
+        /// <summary>
+        /// The closing topen of the replacement expression '!}}' or '!{{TAG}}'
+        /// </summary>
         public DocumentToken CloseToken { get; internal set; }
+
+        /// <summary>
+        /// The replacement key token.  Example: 'if' in {{ if Foo }}
+        /// </summary>
         public DocumentToken ReplacementKeyToken { get; internal set; }
 
+        /// <summary>
+        /// The parameters of the replacement.  Example: ["Foo", "Bar"] in '{{ someTag Foo Bar !}}'
+        /// </summary>
         public ReadOnlyCollection<DocumentToken> Parameters { get; internal set; }
+
+        /// <summary>
+        /// The body text between the tags.  Not populated if the tag is quick terminated.
+        /// </summary>
         public ReadOnlyCollection<DocumentToken> Body { get; internal set; }
     }
 

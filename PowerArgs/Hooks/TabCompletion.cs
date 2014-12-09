@@ -62,6 +62,9 @@ namespace PowerArgs
     [AttributeUsage(AttributeTargets.Class)]
     public class TabCompletion : ArgHook, ICommandLineArgumentsDefinitionMetadata
     {
+        /// <summary>
+        /// Gets or sets the type to be used for global tab completion.  The type should implement ITabCompletionSource or ISmartTabCompletionSource
+        /// </summary>
         public Type CompletionSourceType { get; set; }
 
         /// <summary>

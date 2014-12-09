@@ -92,6 +92,7 @@
     <Compile Include="TestNonInteractiveMode.cs" />
     <Compile Include="BooleanExpressionEvaluatorUnitTests.cs" />
     <Compile Include="TemplatedUsageTests.cs" />
+    <Compile Include="ConsoleTableBuilderTests.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />

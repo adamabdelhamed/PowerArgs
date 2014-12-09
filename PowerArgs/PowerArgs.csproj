@@ -39,7 +39,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>
-	</AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -62,7 +62,7 @@
     <Compile Include="HelperTypesInternal\ConsoleHelper.cs" />
     <Compile Include="HelperTypesPublic\BooleanExpressionParser.cs" />
     <Compile Include="HelperTypesPublic\ConsoleString.cs" />
-    <Compile Include="HelperTypesPublic\ConsoleTable.cs" />
+    <Compile Include="HelperTypesPublic\ConsoleTableBuilder.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="HelperTypesInternal\ArgRevivers.cs" />
     <Compile Include="Args.cs" />

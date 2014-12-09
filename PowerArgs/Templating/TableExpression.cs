@@ -42,6 +42,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="evalToken">A token containing an expression that should evaluate to an IEnumerable</param>
         /// <param name="columns">A list of tokens containing the names of columns to display in the table</param>
+        /// <param name="context">Context that is used to determine the indentation of the table within the document</param>
         public TableExpression(DocumentToken evalToken, List<DocumentToken> columns, DocumentExpressionContext context)
         {
             this.EvalToken = evalToken;
@@ -74,17 +75,35 @@ namespace PowerArgs
 
             List<ConsoleString> headers = new List<ConsoleString>();
             List<List<ConsoleString>> rows = new List<List<ConsoleString>>();
+            List<ColumnOverflowBehavior> overflows = new List<ColumnOverflowBehavior>();
 
-            foreach (var col in Columns)
+            for (int colIndex = 0; colIndex < Columns.Count; colIndex++ )
             {
-                if (col.Value.Contains(">"))
+                var col = Columns[colIndex];
+                var colValue = col.Value;
+
+                if (colValue.EndsWith("+"))
                 {
-                    var newColName = col.Value.Split('>')[1];
+                    colValue = colValue.Substring(0, colValue.Length - 1);
+                    overflows.Add(new SmartWrapOverflowBehavior());
+                    if(colIndex != Columns.Count-1)
+                    {
+                        throw new DocumentRenderException("The auto expand indicator '+' can only be used on the last column", col);
+                    }
+                }
+                else
+                {
+                    overflows.Add(new GrowUnboundedOverflowBehavior());
+                }
+
+                if (colValue.Contains(">"))
+                {
+                    var newColName = colValue.Split('>')[1];
                     headers.Add(new ConsoleString(newColName, ConsoleColor.Yellow));
                 }
                 else
                 {
-                    headers.Add(new ConsoleString(col.Value, ConsoleColor.Yellow));
+                    headers.Add(new ConsoleString(colValue, ConsoleColor.Yellow));
                 }
             }
 
@@ -103,8 +122,13 @@ namespace PowerArgs
                         propName = col.Value;
                     }
 
+                    if(propName.EndsWith("+"))
+                    {
+                        propName = propName.Substring(0, propName.Length - 1);
+                    }
+
                     var propToGet = element.GetType().GetProperty(propName, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
-                    if (propToGet == null) throw new DocumentRenderException("'" + col.Value + "' is not a valid property for type '" + element.GetType().FullName + "'", col);
+                    if (propToGet == null) throw new DocumentRenderException("'" + propName + "' is not a valid property for type '" + element.GetType().FullName + "'", col);
                     var value = propToGet.GetValue(element, null);
 
                     ConsoleString valueString;
@@ -146,63 +170,13 @@ namespace PowerArgs
                 rowPrefix += " ";
             }
 
-            var tableText = FormatAsTable(headers, rows, rowPrefix: rowPrefix);
+            ConsoleTableBuilder builder = new ConsoleTableBuilder();
+            var tableText = builder.FormatAsTable(headers, rows, rowPrefix: rowPrefix, columnOverflowBehaviors: overflows);
 
             // remove the prefix from the first row
             tableText = tableText.Substring(indent);
-
+            var tableTextStr = tableText.ToString();
             return tableText;
-        }
-
-        /// <summary>
-        /// Formats the given column headers and rows as a table.
-        /// </summary>
-        /// <param name="columns">The column headers</param>
-        /// <param name="rows">The row data</param>
-        /// <param name="rowPrefix">A string to prepend to each row.  This can be used to indent a table.</param>
-        /// <returns>The rendered table as a ConsoleString</returns>
-        public static ConsoleString FormatAsTable(List<ConsoleString> columns, List<List<ConsoleString>> rows, string rowPrefix = "")
-        {
-            if (rows.Count == 0) return new ConsoleString();
-
-            Dictionary<int, int> maximums = new Dictionary<int, int>();
-
-            for (int i = 0; i < columns.Count; i++) maximums.Add(i, columns[i].Length);
-            for (int i = 0; i < columns.Count; i++)
-            {
-                foreach (var row in rows)
-                {
-                    maximums[i] = Math.Max(maximums[i], row[i].Length);
-                }
-            }
-
-            ConsoleString ret = new ConsoleString();
-            int buffer = 3;
-
-            ret += rowPrefix;
-            for (int i = 0; i < columns.Count; i++)
-            {
-                var val = columns[i];
-                while (val.Length < maximums[i] + buffer) val += " ";
-                ret += val;
-            }
-
-            ret += "\n";
-
-            foreach (var row in rows)
-            {
-                ret += rowPrefix;
-                for (int i = 0; i < columns.Count; i++)
-                {
-                    var val = row[i];
-                    while (val.Length < maximums[i] + buffer) val += " ";
-
-                    ret += val;
-                }
-                ret += "\n";
-            }
-
-            return ret;
         }
     }
 
@@ -263,4 +237,7 @@ namespace PowerArgs
             return new TableExpression(variableExpressionToken, columns, context) { ShowDefaultValuesForArguments = showDefaults, ShowPossibleValuesForArguments = showPossibilities };
         }
     }
+
+    
+
 }

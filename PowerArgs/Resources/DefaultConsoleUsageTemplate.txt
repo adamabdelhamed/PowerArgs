@@ -14,7 +14,7 @@ Usage - {{ExeName Cyan!}} {{SpecifiedAction.UsageSummary Cyan!}}
 
 {{if SpecifiedAction.HasArguments }}
 {{SpecifiedAction.DefaultAlias!}} Options
-{{table SpecifiedAction.Arguments Syntax>Option Description !}}
+{{table SpecifiedAction.Arguments Syntax>Option Description+ !}}
 !{{if}}
 !{{if}}
 {{ifnot HasSpecifiedAction}}
@@ -27,16 +27,16 @@ Actions
     Usage - {{ExeName Cyan!}} {{action.UsageSummary Cyan!}}
 
 {{if action.HasArguments }}
-    {{table action.Arguments Syntax>Option Description !}}
+    {{table action.Arguments Syntax>Option Description+ !}}
 !{{if}}
-
 {{if action.HasExamples }}
-    {{action.DefaultAlias!}} Examples
 
+    {{action.DefaultAlias!}} Examples
 {{each example in action.Examples}}
+
+
     {{if example.HasTitle}}{{example.Title Cyan!}} - !{{if}}{{example.Description!}}
     {{example.Example Green!}}
-
 !{{each}}
 !{{if}}
 
@@ -48,11 +48,10 @@ Options can be specified using -<option> <value> or as /<option>:<value>
 
 {{if HasExamples }}
 Examples
-
 {{each example in Examples}}
+
+
     {{if example.HasTitle}}{{example.Title Cyan!}} - !{{if}}{{example.Description!}}
     {{example.Example Green!}}
- 
-
 !{{each}}
 !{{if}}
