@@ -172,5 +172,18 @@ namespace ArgsTests.Templating
                 Assert.IsTrue(ex.Message.Contains("The bad template"));
             }
         }
+
+        [TestMethod]
+        public void TestDocumentRenderingNewLinesBehvior()
+        {
+            var template = 
+@"
+{{ each foo in Foos }}
+
+!{{ each }}
+".TrimStart().Replace("\r\n","\n");
+            var rendered = new DocumentRenderer().Render(template, new { Foos = new int[] { 1, 2, 3 } }).ToString();
+            Assert.AreEqual("\n\n\n", rendered);
+        }
     }
 }

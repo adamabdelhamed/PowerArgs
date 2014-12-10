@@ -31,9 +31,7 @@ Actions
 !{{if}}
 {{if action.HasExamples }}
 
-    {{action.DefaultAlias!}} Examples
-{{each example in action.Examples}}
-
+    {{action.DefaultAlias!}} Examples{{each example in action.Examples}}
 
     {{if example.HasTitle}}{{example.Title Cyan!}} - !{{if}}{{example.Description!}}
     {{example.Example Green!}}
@@ -47,9 +45,7 @@ Actions
 Options can be specified using -<option> <value> or as /<option>:<value>
 
 {{if HasExamples }}
-Examples
-{{each example in Examples}}
-
+Examples{{each example in Examples}}
 
     {{if example.HasTitle}}{{example.Title Cyan!}} - !{{if}}{{example.Description!}}
     {{example.Example Green!}}

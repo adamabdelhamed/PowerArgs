@@ -114,6 +114,10 @@ namespace PowerArgs
                     (ex.InnerException as ArgException).Context = Context;
                     throw ex.InnerException;
                 }
+                else if(ex.InnerException != null)
+                {
+                    throw ex.InnerException;
+                }
                 else
                 {
                     throw;

@@ -221,35 +221,14 @@ namespace PowerArgs
             int numReplacementTokensOnCurrentLine = 0;
 
             List<DocumentToken> filtered = new List<DocumentToken>();
+            DocumentToken lastToken = null;
             foreach (var token in tokens)
             {
+                lastToken = token;
                 if (token.Line != currentLine)
                 {
                     currentLine = token.Line;
-
-                    if (numContentTokensOnCurrentLine == 0 && numReplacementTokensOnCurrentLine > 0)
-                    {
-                        if (filtered.Count >= 2 && filtered[filtered.Count - 2].Value == "\r" && filtered[filtered.Count - 1].Value == "\n")
-                        {
-                            // this line only had replacements so remove the trailing carriage return and newline
-                            filtered.RemoveAt(filtered.Count - 1);
-                            filtered.RemoveAt(filtered.Count - 1);
-                            //Console.WriteLine("removed CR+NL as 2 tokens");
-                        }
-                        if (filtered.Count >= 1 && filtered[filtered.Count - 1].Value == "\r\n")
-                        {
-                            // this line only had replacements so remove the trailing carriage return and newline (in the same token)
-                            filtered.RemoveAt(filtered.Count - 1);
-                            //Console.WriteLine("removed CR+NL as 1 token");
-                        }
-                        else if (filtered.Count >= 1 && filtered[filtered.Count - 1].Value == "\n")
-                        {
-                            // this line only had replacements so remove the trailing newline
-                            filtered.RemoveAt(filtered.Count - 1);
-                            //Console.WriteLine("removed NL token");
-                        }
-                    }
-
+                    FilterOutNewlinesIfNeeded(numContentTokensOnCurrentLine, numReplacementTokensOnCurrentLine, filtered);
                     numReplacementTokensOnCurrentLine = 0;
                     numContentTokensOnCurrentLine = 0;
                 }
@@ -270,7 +249,41 @@ namespace PowerArgs
                 filtered.Add(token);
             }
 
+            if (lastToken != null)
+            {
+                currentLine = lastToken.Line;
+                FilterOutNewlinesIfNeeded(numContentTokensOnCurrentLine, numReplacementTokensOnCurrentLine, filtered);
+                numReplacementTokensOnCurrentLine = 0;
+                numContentTokensOnCurrentLine = 0;
+            }
+
             return filtered;
+        }
+
+        private static void FilterOutNewlinesIfNeeded(int numContentTokensOnCurrentLine, int numReplacementTokensOnCurrentLine, List<DocumentToken> filtered)
+        {
+            if (numContentTokensOnCurrentLine == 0 && numReplacementTokensOnCurrentLine > 0)
+            {
+                if (filtered.Count >= 2 && filtered[filtered.Count - 2].Value == "\r" && filtered[filtered.Count - 1].Value == "\n")
+                {
+                    // this line only had replacements so remove the trailing carriage return and newline
+                    filtered.RemoveAt(filtered.Count - 1);
+                    filtered.RemoveAt(filtered.Count - 1);
+                    //Console.WriteLine("removed CR+NL as 2 tokens");
+                }
+                if (filtered.Count >= 1 && filtered[filtered.Count - 1].Value == "\r\n")
+                {
+                    // this line only had replacements so remove the trailing carriage return and newline (in the same token)
+                    filtered.RemoveAt(filtered.Count - 1);
+                    //Console.WriteLine("removed CR+NL as 1 token");
+                }
+                else if (filtered.Count >= 1 && filtered[filtered.Count - 1].Value == "\n")
+                {
+                    // this line only had replacements so remove the trailing newline
+                    filtered.RemoveAt(filtered.Count - 1);
+                    //Console.WriteLine("removed NL token");
+                }
+            }
         }
 
         private static bool IsReplacementToken(DocumentToken token)

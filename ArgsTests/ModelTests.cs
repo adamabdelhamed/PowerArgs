@@ -131,6 +131,7 @@ namespace ArgsTests
             {
                 typeof(ArgReviverAttribute),
                 typeof(DynamicExpressionProviderAttribute),
+                typeof(ArgActions),
             };
 
             var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>

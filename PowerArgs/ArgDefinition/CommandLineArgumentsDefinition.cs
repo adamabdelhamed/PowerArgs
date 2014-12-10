@@ -404,6 +404,11 @@ namespace PowerArgs
 
             List<Type> typesToSearchForActions = new List<Type>() { t };
 
+            if(t.HasAttr<ArgActionResolver>())
+            {
+                typesToSearchForActions.AddRange(t.Attr<ArgActionResolver>().ResolveActionTypes());
+            }
+
             typesToSearchForActions.AddRange(t.Attrs<ArgActionType>().Select(aat => aat.ActionType));
 
             foreach (var typeToSearch in typesToSearchForActions)
@@ -413,7 +418,7 @@ namespace PowerArgs
                 {
                     if(requireStatic && method.IsStatic == false)
                     {
-                        throw new InvalidArgDefinitionException("The method "+method.DeclaringType.FullName+"."+method.Name+" must be static because it has been imported using [ArgActionType]");
+                        throw new InvalidArgDefinitionException("The method "+method.DeclaringType.FullName+"."+method.Name+" must be static because it has been imported using [ArgActionType] or [ArgActions]");
                     }
 
                     var action = CommandLineAction.Create(method, knownAliases.ToList());
