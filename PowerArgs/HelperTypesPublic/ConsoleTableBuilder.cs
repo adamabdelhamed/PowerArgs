@@ -108,7 +108,7 @@ namespace PowerArgs
                             left += ret[j] + context.Gutter;
                         }
 
-                        (context.OverflowBehaviors[i] as SmartWrapOverflowBehavior).MaxWidthBeforeWrapping = Console.BufferWidth - left - 1; // The -1 is so newlines don't get double rendered on the console
+                        (context.OverflowBehaviors[i] as SmartWrapOverflowBehavior).MaxWidthBeforeWrapping = Console.BufferWidth - left - context.Gutter; // The Gutter is so newlines don't get double rendered on the console
                     }
 
                     ret[i] = (context.OverflowBehaviors[i] as SmartWrapOverflowBehavior).MaxWidthBeforeWrapping;
@@ -277,6 +277,7 @@ namespace PowerArgs
                     if (char.IsWhiteSpace(segment[i].Value))
                     {
                         segment = value.Substring(0, i);
+                        break;
                     }
                     lookBehindLimit--;
                 }
@@ -401,7 +402,7 @@ namespace PowerArgs
         public SmartWrapOverflowBehavior()
         {
             DefineMaxWidthBasedOnConsoleWidth = true;
-            WordBreakLookBehind = 6;
+            WordBreakLookBehind = 20;
         }
     }
 }
