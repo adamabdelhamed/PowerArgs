@@ -14,6 +14,32 @@ namespace ArgsTests
         public int I1 { get; set; }
     }
 
+    public class CommandsWithShortcuts
+    {
+        public static bool FooHappened = false;
+        [ArgActionMethod, ArgShortcut("FooAlias")]
+        public void Foo()
+        {
+            FooHappened = true;
+        }
+    }
+
+    public class CommandsWithConflictingNames
+    {
+        [ArgActionMethod, ArgShortcut("Bar")]
+        public void Foo()
+        {
+
+        }
+
+        [ArgActionMethod]
+        public void Bar()
+        {
+
+        }
+    }
+
+
     [UsageAutomation]
     public class ActionScaffold
     {
@@ -179,6 +205,38 @@ namespace ArgsTests
     public class ActionFrameworkV2Tests
     {
         public static string Message { get; set; }
+
+        [TestMethod]
+        public void TestActionShortcuts()
+        {
+            CommandsWithShortcuts.FooHappened = false;
+            Args.InvokeAction<CommandsWithShortcuts>("FooAlias");
+            Assert.IsTrue(CommandsWithShortcuts.FooHappened);
+        }
+
+        [TestMethod]
+        public void TestConflictingActionShortcuts()
+        {
+            try
+            {
+                Args.InvokeAction<CommandsWithConflictingNames>("Foo");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch(InvalidArgDefinitionException)
+            {
+
+            }
+
+            try
+            {
+                Args.InvokeAction<CommandsWithConflictingNames>("Bar");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (InvalidArgDefinitionException)
+            {
+
+            }
+        }
 
 
         [TestMethod]

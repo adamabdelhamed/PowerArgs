@@ -174,7 +174,7 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgExample>().AsReadOnly();
+                return Metadata.Metas<ArgExample>().OrderByDescending(e => e.Example).ToList().AsReadOnly();
             }
         }
 

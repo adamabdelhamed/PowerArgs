@@ -443,14 +443,26 @@ namespace PowerArgs
             context.RunBeforeParse();
             context.ParserData = ArgParser.Parse(context);
 
+            var actionToken = context.CmdLineArgs.FirstOrDefault();
+            var actionQuery = context.Definition.Actions.Where(a => a.IsMatch(actionToken));
+
+            if(actionQuery.Count() == 1)
+            {
+                context.SpecifiedAction = actionQuery.First();
+            }
+            else if(actionQuery.Count() > 1)
+            {
+                throw new InvalidArgDefinitionException("There are multiple actions that match argument '" + actionToken + "'");
+            }
+
             context.RunBeforePopulateProperties();
             CommandLineArgument.PopulateArguments(context.Definition.Arguments, context);
             context.Definition.SetPropertyValues(context.Args);
 
             object actionArgs = null;
             object[] actionParameters = null;
-            var specifiedAction = context.Definition.Actions.Where(a => a.IsMatch(context.CmdLineArgs.FirstOrDefault())).SingleOrDefault();
-            if (specifiedAction == null && context.Definition.Actions.Count > 0)
+
+            if (context.SpecifiedAction == null && context.Definition.Actions.Count > 0)
             {
                 if (context.CmdLineArgs.FirstOrDefault() == null)
                 {
@@ -461,10 +473,8 @@ namespace PowerArgs
                     throw new UnknownActionArgException(string.Format("Unknown action: '{0}'", context.CmdLineArgs.FirstOrDefault()));
                 }
             }
-            else if (specifiedAction != null)
+            else if (context.SpecifiedAction != null)
             {
-                context.SpecifiedAction = specifiedAction;
-                    
                 PropertyInfo actionProp = null;
                 if (context.Definition.ArgumentScaffoldType != null)
                 {
@@ -473,12 +483,12 @@ namespace PowerArgs
 
                 if (actionProp != null)
                 {
-                    actionProp.SetValue(context.Args, specifiedAction.Aliases.First(), null);
+                    actionProp.SetValue(context.Args, context.SpecifiedAction.Aliases.First(), null);
                 }
 
                 context.ParserData.ImplicitParameters.Remove(0);
-                CommandLineArgument.PopulateArguments(specifiedAction.Arguments, context);
-                actionArgs = specifiedAction.PopulateArguments(context.Args, ref actionParameters);
+                CommandLineArgument.PopulateArguments(context.SpecifiedAction.Arguments, context);
+                actionArgs = context.SpecifiedAction.PopulateArguments(context.Args, ref actionParameters);
             }
 
             context.RunAfterPopulateProperties();
@@ -507,10 +517,10 @@ namespace PowerArgs
 
             PropertyInfo actionArgsPropertyInfo = null;
 
-            if(specifiedAction != null)
+            if (context.SpecifiedAction != null)
             {
-                if(specifiedAction.Source is PropertyInfo) actionArgsPropertyInfo = specifiedAction.Source as PropertyInfo;
-                else if(specifiedAction.Source is MethodInfo) actionArgsPropertyInfo = new ArgActionMethodVirtualProperty(specifiedAction.Source as MethodInfo);
+                if (context.SpecifiedAction.Source is PropertyInfo) actionArgsPropertyInfo = context.SpecifiedAction.Source as PropertyInfo;
+                else if (context.SpecifiedAction.Source is MethodInfo) actionArgsPropertyInfo = new ArgActionMethodVirtualProperty(context.SpecifiedAction.Source as MethodInfo);
             }
 
             return new ArgAction()
@@ -519,7 +529,7 @@ namespace PowerArgs
                 ActionArgs = actionArgs,
                 ActionParameters = actionParameters,
                 ActionArgsProperty = actionArgsPropertyInfo,
-                ActionArgsMethod = specifiedAction != null ? specifiedAction.ActionMethod : null,
+                ActionArgsMethod = context.SpecifiedAction != null ? context.SpecifiedAction.ActionMethod : null,
                 Definition = context.Definition,
                 Context = context,
             };

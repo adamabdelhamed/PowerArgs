@@ -219,7 +219,7 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgExample>().AsReadOnly();
+                return Metadata.Metas<ArgExample>().OrderByDescending(e => e.Example).ToList().AsReadOnly();
             }
         }
 
@@ -245,7 +245,11 @@ namespace PowerArgs
                 {
                     action.IsSpecifiedAction = false;
                 }
-                value.IsSpecifiedAction = true;
+
+                if (value != null)
+                {
+                    value.IsSpecifiedAction = true;
+                }
             }
         }
 
@@ -382,7 +386,7 @@ namespace PowerArgs
         internal void Validate()
         {
             ValidateArguments(Arguments);
-
+            ValidateActionAliases();
             foreach (var action in Actions)
             {
                 if (action.Aliases.Count == 0) throw new InvalidArgDefinitionException("One of your actions has no aliases");
@@ -448,6 +452,25 @@ namespace PowerArgs
                       where  CommandLineArgument.IsArgument(p) 
                       select CommandLineArgument.Create(p, knownAliases);
             return ret.ToList();
+        }
+
+        private void ValidateActionAliases()
+        {
+            Func<List<ArgShortcut>> shortcutEval = () =>
+            {
+                return new List<ArgShortcut>();
+            };
+
+            AliasCollection aliases = new AliasCollection(shortcutEval, () =>
+            {
+                if (Actions.Count() == 0) return true;
+                return Actions.First().IgnoreCase;
+            });
+
+            foreach(var action in Actions)
+            {
+                aliases.AddRange(action.Aliases);
+            }
         }
 
         private static void ValidateArguments(IEnumerable<CommandLineArgument> arguments)

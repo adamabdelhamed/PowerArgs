@@ -415,7 +415,12 @@ namespace ArgsTests
 
     public class TestConsoleProvider : PowerArgs.IConsoleProvider
     {
+        public event Action<string> WriteHappened;
         public event Action ClearHappened;
+
+        public ConsoleColor ForegroundColor { get; set; }
+
+        public ConsoleColor BackgroundColor { get; set; }
 
         public static TestConsoleProvider SimulateConsoleInput(string input)
         {
@@ -426,7 +431,7 @@ namespace ArgsTests
 
         string input;
         int i;
-        public TestConsoleProvider(string input)
+        public TestConsoleProvider(string input = "")
         {
             this.input = input;
             i = 0;
@@ -490,10 +495,34 @@ namespace ArgsTests
 
         public void Write(object output)
         {
-            var str = output.ToString();
-            CursorLeft += str.Length;
+            string text = output == null ? "" : output.ToString();
+            CursorLeft += text.Length;
+
+            if (WriteHappened != null)
+            {
+                WriteHappened(text);
+            }
         }
-        public void WriteLine(object output) { }
-        public void WriteLine() { }
+        public void WriteLine(object output) 
+        {
+            if(WriteHappened != null)
+            {
+                string text = output == null ? "" : output.ToString();
+                WriteHappened(text);
+            }
+
+            CursorLeft = 0;
+            CursorTop++;
+        }
+        public void WriteLine() 
+        {
+            if (WriteHappened != null)
+            {
+                WriteHappened(Environment.NewLine);
+            }
+
+            CursorLeft = 0;
+            CursorTop++;
+        }
     }
 }

@@ -8,6 +8,15 @@ namespace PowerArgs
     public interface IConsoleProvider
     {
         /// <summary>
+        /// Gets or sets the foreground color
+        /// </summary>
+        ConsoleColor ForegroundColor { get; set; }
+        /// <summary>
+        /// Gets or sets the backgrund color
+        /// </summary>
+        ConsoleColor BackgroundColor { get; set; }
+
+        /// <summary>
         /// Used for internal implementation, but marked public for testing, please do not use.
         /// </summary>
         int CursorLeft { get; set; }

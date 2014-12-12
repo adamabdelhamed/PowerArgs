@@ -36,4 +36,18 @@ namespace PowerArgs
             if (Context.ArgumentValue == null) Context.ArgumentValue = Value.ToString();
         }
     }
+
+    /// <summary>
+    /// Use this attribute to set the default value for a parameter.  Note that this only
+    /// works for simple types since only compile time constants can be passed to an attribute.
+    /// </summary>
+    public class ArgDefaultValueAttribute : DefaultValueAttribute 
+    {
+        /// <summary>
+        /// Creates a new ArgDefaultValueAttribute with the given value.  Note that the value will get
+        /// converted to a string and then fed into the parser to be revived.
+        /// </summary>
+        /// <param name="value">The default value for the property</param>
+        public ArgDefaultValueAttribute(object value) : base(value) { }
+    }
 }

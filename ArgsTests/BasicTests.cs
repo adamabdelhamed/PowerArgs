@@ -39,6 +39,12 @@ namespace ArgsTests
             public BasicEnum Option { get; set; }
         }
 
+        public class EnumArgs2
+        {
+            [ArgDefaultValue(BasicEnum.Option2)]
+            public BasicEnum Option { get; set; }
+        }
+
         [UsageAutomation]
         public class EnumArgsWithFlags
         {
@@ -382,6 +388,15 @@ namespace ArgsTests
             Assert.AreEqual(BasicEnum.Option3, parsed.Option);
 
             parsed = Args.Parse<EnumArgs>(new string[] { }); // Test the default value
+            Assert.AreEqual(BasicEnum.Option2, parsed.Option);
+        }
+
+        [TestMethod]
+        public void TestArgDefaultValue()
+        {
+            var args = new string[] { };
+
+            var parsed = Args.Parse<EnumArgs2>(args);
             Assert.AreEqual(BasicEnum.Option2, parsed.Option);
         }
 

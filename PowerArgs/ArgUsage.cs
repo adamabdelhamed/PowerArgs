@@ -12,7 +12,7 @@ namespace PowerArgs
     /// <summary>
     /// A class that lets you customize how your usage displays
     /// </summary>
-    [Obsolete("You can now use usage templates to customize usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
+    [Obsolete("You can now use usage templates to customize usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")] 
     public class ArgUsageOptions
     {
         /// <summary>
@@ -58,7 +58,7 @@ namespace PowerArgs
     /// the content that is written.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = true)]
-    [Obsolete("You can now use usage templates to customize usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
+    [Obsolete("You can now use usage templates to customize usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")] 
     public class UsageHook : Attribute, IGlobalArgMetadata
     {
         /// <summary>
@@ -82,7 +82,7 @@ namespace PowerArgs
     /// <summary>
     /// A class that represents usage info to be written to the console.
     /// </summary>
-    [Obsolete("You can now use usage templates to customize usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
+    [Obsolete("You can now use usage templates to customize usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")] 
     public class ArgumentUsageInfo
     {
         /// <summary>
@@ -214,7 +214,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="prop">The property to hook into or null to hook into all properties.</param>
         /// <param name="hook">The hook implementation.</param>
-        [Obsolete("You can now use usage templates to customize usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
+        [Obsolete("You can now use usage templates to customize usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")]
         public static void RegisterHook(PropertyInfo prop, UsageHook hook)
         {
             if (prop == null)
@@ -343,7 +343,7 @@ namespace PowerArgs
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
         /// <returns>the usage documentation as a string</returns>
-        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
+        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")]
         public static string GetUsage<T>(string exeName = null, ArgUsageOptions options = null)
         { 
             return GetStyledUsage<T>(exeName, options).ToString();
@@ -356,7 +356,7 @@ namespace PowerArgs
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
         /// <returns>the usage documentation as a string</returns>
-        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
+        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")] 
         public static string GetUsage(CommandLineArgumentsDefinition definition, string exeName = null, ArgUsageOptions options = null)
         {
             return GetStyledUsage(definition, exeName, options).ToString();
@@ -369,7 +369,7 @@ namespace PowerArgs
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
         /// <returns>the usage documentation as a styled string that can be printed to the console</returns>
-        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
+        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")] 
         public static ConsoleString GetStyledUsage<T>(string exeName = null, ArgUsageOptions options = null)
         {
             return GetStyledUsage(typeof(T), exeName, options);
@@ -382,7 +382,7 @@ namespace PowerArgs
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
         /// <returns>the usage documentation as a styled string that can be printed to the console</returns>
-        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
+        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")]
         public static ConsoleString GetStyledUsage(Type t, string exeName = null, ArgUsageOptions options = null)
         {
             return GetStyledUsage(new CommandLineArgumentsDefinition(t), exeName, options);
@@ -395,7 +395,7 @@ namespace PowerArgs
         /// <param name="exeName">The name of your program or null if you want PowerArgs to automatically detect it.</param>
         /// <param name="options">Specify custom usage options</param>
         /// <returns>the usage documentation as a styled string that can be printed to the console</returns>
-        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
+        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")]
         public static ConsoleString GetStyledUsage(CommandLineArgumentsDefinition definition, string exeName = null, ArgUsageOptions options = null)
         {
             options = options ?? new ArgUsageOptions();
@@ -417,7 +417,7 @@ namespace PowerArgs
             if (definition.Actions.Count > 0)
             {
                 string actionText = options.SpecifiedActionOverride == null ? "<action>" : options.SpecifiedActionOverride.DefaultAlias;
-                ret.AppendUsingCurrentFormat(" " + actionText + " options\n");
+                ret = ret.AppendUsingCurrentFormat(" " + actionText + " options\n");
 
                 foreach (var example in definition.Examples)
                 {
@@ -479,7 +479,7 @@ namespace PowerArgs
             }
             else
             {
-                ret.AppendUsingCurrentFormat(" options\n\n");
+                ret = ret.AppendUsingCurrentFormat(" options\n\n");
 
                 ret += GetOptionsUsage(definition.Arguments, false, options);
 

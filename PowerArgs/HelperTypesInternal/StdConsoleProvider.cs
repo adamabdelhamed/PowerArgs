@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -13,6 +11,36 @@ namespace PowerArgs
     public class StdConsoleProvider : IConsoleProvider
     {
         const int STD_OUTPUT_HANDLE = -11;
+
+        /// <summary>
+        /// Gets or sets the console foreground color
+        /// </summary>
+        public ConsoleColor ForegroundColor
+        {
+            get
+            {
+                return Console.ForegroundColor;
+            }
+            set
+            {
+                Console.ForegroundColor = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the console background color
+        /// </summary>
+        public ConsoleColor BackgroundColor
+        {
+            get
+            {
+                return Console.BackgroundColor;
+            }
+            set
+            {
+                Console.BackgroundColor = value;
+            }
+        }
 
         /// <summary>
         /// Used for internal implementation, but marked public for testing, please do not use.

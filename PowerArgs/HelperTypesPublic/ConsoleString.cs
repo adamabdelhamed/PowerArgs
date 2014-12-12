@@ -133,19 +133,25 @@ namespace PowerArgs
     }
 
     /// <summary>
-    /// A wrapper for string that encapsulates foreground and background colors.
+    /// A wrapper for string that encapsulates foreground and background colors.  ConsoleStrings are immutable.
     /// </summary>
     public class ConsoleString : List<ConsoleCharacter>, IComparable<string>
     {
+        /// <summary>
+        /// The console provider to use when writing output
+        /// </summary>
+        public static IConsoleProvider ConsoleProvider { get; set; }
+
         internal static ConsoleColor DefaultForegroundColor;
         internal static ConsoleColor DefaultBackgroundColor;
         
         static ConsoleString ()
         {
+            ConsoleProvider = new StdConsoleProvider();
             try
             {
-                DefaultForegroundColor = Console.ForegroundColor;
-                DefaultBackgroundColor = Console.BackgroundColor;
+                DefaultForegroundColor = ConsoleProvider.ForegroundColor;
+                DefaultBackgroundColor = ConsoleProvider.BackgroundColor;
             }
             catch (Exception)
             {
@@ -155,15 +161,9 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Represents an empty string.  You will get a new instance each time you access this property.
+        /// Represents an empty string.
         /// </summary>
-        public static ConsoleString Empty
-        {
-            get
-            {
-                return new ConsoleString(string.Empty);
-            }
-        }
+        public static readonly ConsoleString Empty = new ConsoleString();
 
         /// <summary>
         /// The length of the string.
@@ -176,10 +176,26 @@ namespace PowerArgs
             }
         }
 
+        private bool ContentSet { get; set; }
+
         /// <summary>
         /// Create a new empty ConsoleString
         /// </summary>
-        public ConsoleString() : this("", DefaultForegroundColor, DefaultBackgroundColor) { }
+        public ConsoleString() : base()
+        {
+            ContentSet = false;
+            Append(string.Empty);
+        }
+
+        /// <summary>
+        /// Creates a new ConsoleString from another one
+        /// </summary>
+        /// <param name="other">The value to copy</param>
+        public ConsoleString(ConsoleString other) : base()
+        {
+            ContentSet = false;
+            Append(other);
+        }
 
         /// <summary>
         /// Create a ConsoleString given an initial text value and optional color info.
@@ -190,49 +206,36 @@ namespace PowerArgs
         public ConsoleString(string value = "", ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
             : base()
         {
+            ContentSet = false;
             Append(value, foregroundColor, backgroundColor);
         }
 
         /// <summary>
-        /// Appends the given value to this ConsoleString using the given formatting.
+        /// Converts a collection of plain strings into ConsoleStrings
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="foregroundColor">The foreground color (defaults to the console's foreground color at initialization time).</param>
-        /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
-        public void Append(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        /// <param name="plainStrings">the input strings</param>
+        /// <param name="foregroundColor">the foreground color of all returned ConsoleStrings</param>
+        /// <param name="backgroundColor">the background color of all returned ConsoleStrings</param>
+        /// <returns>a collection of ConsoleStrnigs</returns>
+        public static List<ConsoleString> ToConsoleStrings(IEnumerable<string> plainStrings, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
         {
-            foreach (var c in value)
-            {
-                this.Add(new ConsoleCharacter(c, foregroundColor, backgroundColor));
-            }
-        }
-
-        /// <summary>
-        /// Concatenates two ConsoleStrings together.
-        /// </summary>
-        /// <param name="other">The string to append.</param>
-        public void Append(ConsoleString other)
-        {
-            foreach (var c in other.ToArray()) // ToArray() prevents concurrent modification when a and b refer to the same object
-            {
-                this.Add(c);
-            }
+            return plainStrings.Select(s => new ConsoleString(s, foregroundColor, backgroundColor)).ToList();
         }
 
         /// <summary>
         /// Appends the given value using the formatting of the last character or the default formatting if this ConsoleString is empty.
         /// </summary>
         /// <param name="value">The string to append.</param>
-        public void AppendUsingCurrentFormat(string value)
+        public ConsoleString AppendUsingCurrentFormat(string value)
         {
             if (Count == 0)
             {
-                Append(value);
+                return ImmutableAppend(value);
             }
             else
             {
                 var prototype = this.Last();
-                Append(value, prototype.ForegroundColor, prototype.BackgroundColor);
+                return ImmutableAppend(value, prototype.ForegroundColor, prototype.BackgroundColor);
             }
         }
 
@@ -246,8 +249,7 @@ namespace PowerArgs
         /// <returns>A new ConsoleString with the replacements.</returns>
         public ConsoleString Replace(string toFind, string toReplace, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
         {
-            ConsoleString ret = new ConsoleString();
-            ret.Append(this);
+            ConsoleString ret = new ConsoleString(this);
 
             int startIndex = 0;
 
@@ -274,8 +276,7 @@ namespace PowerArgs
         /// <returns></returns>
         public ConsoleString ReplaceRegex(string regex, string toReplace, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
         {
-            ConsoleString ret = new ConsoleString();
-            ret.Append(this);
+            ConsoleString ret = new ConsoleString(this);
             MatchCollection matches = Regex.Matches(this.ToString(), regex);
             foreach (Match match in matches)
             {
@@ -358,7 +359,7 @@ namespace PowerArgs
         {
             string buffer = "";
 
-            ConsoleColor existingForeground = Console.ForegroundColor, existingBackground = Console.BackgroundColor;
+            ConsoleColor existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
             try
             {
                 ConsoleColor currentForeground = existingForeground, currentBackground = existingBackground;
@@ -367,9 +368,9 @@ namespace PowerArgs
                     if (character.ForegroundColor != currentForeground ||
                         character.BackgroundColor != currentBackground)
                     {
-                        Console.Write(buffer);
-                        Console.ForegroundColor = character.ForegroundColor;
-                        Console.BackgroundColor = character.BackgroundColor;
+                        ConsoleProvider.Write(buffer);
+                        ConsoleProvider.ForegroundColor = character.ForegroundColor;
+                        ConsoleProvider.BackgroundColor = character.BackgroundColor;
                         currentForeground = character.ForegroundColor;
                         currentBackground = character.BackgroundColor;
                         buffer = "";
@@ -378,13 +379,22 @@ namespace PowerArgs
                     buffer += character.Value;
                 }
 
-                if (buffer.Length > 0) Console.Write(buffer);
+                if (buffer.Length > 0) ConsoleProvider.Write(buffer);
             }
             finally
             {
-                Console.ForegroundColor = existingForeground;
-                Console.BackgroundColor = existingBackground;
+                ConsoleProvider.ForegroundColor = existingForeground;
+                ConsoleProvider.BackgroundColor = existingBackground;
             }
+        }
+
+        /// <summary>
+        /// Write this ConsoleString to the console using the desired style.  A newline is appended.
+        /// </summary>
+        public void WriteLine()
+        {
+            var withNewLine = this + Environment.NewLine;
+            withNewLine.Write();
         }
 
         /// <summary>
@@ -445,9 +455,13 @@ namespace PowerArgs
         /// <returns>A new, concatenated ConsoleString</returns>
         public static ConsoleString operator +(ConsoleString a, ConsoleString b)
         {
-            if(a == null) return b;
-            a.Append(b);
-            return a;
+            if (a == null)
+            {
+                return b != null ? new ConsoleString(b) :null;
+            }
+            
+            var ret = a.ImmutableAppend(b);
+            return ret;
         }
 
         /// <summary>
@@ -458,9 +472,12 @@ namespace PowerArgs
         /// <returns>A new, concatenated ConsoleString</returns>
         public static ConsoleString operator +(ConsoleString a, string b)
         {
-            if (a == null) return b != null ? new ConsoleString(b) : null;
-            a.Append(b);
-            return a;
+            if (a == null)
+            {
+                return b != null ? new ConsoleString(b) : null;
+            }
+            var ret = a.ImmutableAppend(b);
+            return ret;
         }
 
         /// <summary>
@@ -487,20 +504,57 @@ namespace PowerArgs
             return a.Equals(b) == false;
         }
 
+        private ConsoleString ImmutableAppend(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        {
+            ConsoleString str = new ConsoleString(this);
+            str.ContentSet = false;
+            str.Append(value, foregroundColor, backgroundColor);
+            return str;
+        }
+
+        private ConsoleString ImmutableAppend(ConsoleString other)
+        {
+            ConsoleString str = new ConsoleString(this);
+            str.ContentSet = false;
+            str.Append(other);
+            return str;
+        }
+
+
+        private void Append(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        {
+            if (ContentSet) throw new Exception("ConsoleStrings are immutable");
+            foreach (var c in value)
+            {
+                this.Add(new ConsoleCharacter(c, foregroundColor, backgroundColor));
+            }
+            ContentSet = true;
+        }
+
+        private void Append(ConsoleString other)
+        {
+            if (ContentSet) throw new Exception("ConsoleStrings are immutable");
+            foreach (var c in other)
+            {
+                this.Add(c);
+            }
+            ContentSet = true;
+        }
+
         internal static void WriteHelper(ConsoleColor foreground, ConsoleColor background, params char[] text)
         {
-            ConsoleColor existingForeground = Console.ForegroundColor, existingBackground = Console.BackgroundColor;
+            ConsoleColor existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
 
             try
             {
-                Console.ForegroundColor = foreground;
-                Console.BackgroundColor = background;
-                Console.Write(text);
+                ConsoleProvider.ForegroundColor = foreground;
+                ConsoleProvider.BackgroundColor = background;
+                ConsoleProvider.Write(text);
             }
             finally
             {
-                Console.ForegroundColor = existingForeground;
-                Console.BackgroundColor = existingBackground;
+                ConsoleProvider.ForegroundColor = existingForeground;
+                ConsoleProvider.BackgroundColor = existingBackground;
             }
         }
     }

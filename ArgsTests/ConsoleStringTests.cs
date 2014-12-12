@@ -17,6 +17,43 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestConsoleStringWriteLine()
+        {
+            var existingProvider = ConsoleString.ConsoleProvider;
+            try
+            {
+                var testProvider = new TestConsoleProvider();
+                ConsoleString.ConsoleProvider = testProvider;
+                ConsoleString str = new ConsoleString("Adam");
+
+                bool confirmed = false;
+
+                string written = "";
+                string target = "Adam" + Environment.NewLine;
+                testProvider.WriteHappened += (s) =>
+                {
+                    written += s;
+                    if (written == target)
+                    {
+                        confirmed = true;
+                    }
+                    else
+                    {
+                        Assert.IsFalse(written.StartsWith(target), "Extra characters after target: '" + written + "'");
+                    }
+
+                };
+
+                str.WriteLine();
+                Assert.IsTrue(confirmed);
+            }
+            finally
+            {
+                ConsoleString.ConsoleProvider = existingProvider;
+            }
+        }
+
+        [TestMethod]
         public void TestMultiSegmentConsoleString()
         {
             ConsoleString val = new ConsoleString("Adam", ConsoleColor.Red);
@@ -114,14 +151,14 @@ namespace ArgsTests
             Assert.AreEqual(1, s.IndexOf("12"));
             Assert.AreEqual(8, s.IndexOf("89"));
 
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 s += "-";
             }
 
             s += "!";
 
-           Assert.AreEqual(1000010,s.IndexOf("!"));
+           Assert.AreEqual(1010,s.IndexOf("!"));
         }
 
         [TestMethod]
@@ -177,14 +214,14 @@ namespace ArgsTests
         public void TestConsoleStringEdgeCases()
         {
             ConsoleString str = ConsoleString.Empty;
-            for(int i = 0; i < 99; i++) str.Append("");
+            for(int i = 0; i < 99; i++) str+=("");
 
             Assert.AreEqual(0, str.Length);
             Assert.AreEqual(string.Empty, str.ToString());
             Assert.AreEqual(ConsoleString.Empty, str);
 
             ConsoleString noSegments = new ConsoleString();
-            noSegments.AppendUsingCurrentFormat("Adam");
+            noSegments = noSegments.AppendUsingCurrentFormat("Adam");
             ValidateStringCharacteristics("Adam", noSegments);
 
             ConsoleString nullString = null;
