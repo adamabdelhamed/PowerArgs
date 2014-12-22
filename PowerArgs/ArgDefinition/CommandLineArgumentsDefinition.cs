@@ -60,6 +60,17 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Gets whether or not this program has a description
+        /// </summary>
+        public bool HasDescription
+        {
+            get
+            {
+                return string.IsNullOrEmpty(Description) == false;
+            }
+        }
+
+        /// <summary>
         /// Returns true if there is at least 1 global argument, false otherwise
         /// </summary>
         public bool HasGlobalArguments

@@ -1,11 +1,19 @@
 ###Binary
 PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
+Reference information for the entire API surface of the latest version is available (here)[http://adamabdelhamed2.blob.core.windows.net/powerargsdocs/2.5.1.0/html/classes.html].
+
 ###Overview
 
 PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility.
 
-Here's a simple example.
+It can also orchestrate the execution of your program. Giving you the following benefits:
+
+    - Consistent and natural user error handling
+	- Invoking the correct code based on an action (e.g. 'git push' vs. 'git pull')
+	- Focus on writing your code
+
+Here's a simple example that just uses the parsing capabilities of PowerArgs.  The command line arguments are parsed, but you still have to handle exceptions and ultimately do something with the result.
     
     // A class that describes the command line arguments for this program
     public class MyArgs
@@ -32,35 +40,193 @@ Here's a simple example.
             catch (ArgException ex)
             {
                 Console.WriteLine(ex.Message);
-                Console.WriteLine(ArgUsage.GetUsage<MyArgs>());
+                Console.WriteLine(ArgUsage.GenerateUsageFromTemplate<MyArgs>());
             }
         }
     }
+
+Here's the same example that lets PowerArgs do a little more for you.  The application logic is factored out of the Program class and user exceptions are handled automatically.  The way exceptions
+are handled is that any exception deriving from ArgException will be treated as user error.  PowerArgs' built in validation system always throws these type of exceptions when a validation error
+occurs.  PowerArgs will display the message as well as auto-generated usage documentation for your program.  All other exceptions will still bubble up and need to be handled by your code.
     
+    // A class that describes the command line arguments for this program
+   [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
+	public class MyArgs
+    {
+        // This argument is required and if not specified the user will 
+        // be prompted.
+        [ArgRequired(PromptIfMissing=true)]
+        public string StringArg { get; set; }
+
+        // This argument is not required, but if specified must be >= 0 and <= 60
+        [ArgRange(0,60)]
+        public int IntArg {get;set; }
+
+		// This non-static Main method will be called and it will be able to access the parsed and populated instance level properties.
+		public void Main()
+		{
+		    Console.WriteLine("You entered string '{0}' and int '{1}'", this.StringArg, this.IntArg);
+		}
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Args.InvokeMain<MyArgs>(args);
+        }
+    }
+
+Then there are more complicated programs that support multiple actions.  For example, the 'git' program that we all use supports several actions such as 'push' and 'pull'.  As a simpler example, let's 
+say you wanted to build a calculator program that has 4 actions; add, subtract, multiply, and divide.  Here's how PowerArgs makes that easy.
+
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
+    public class CalculatorProgram
+    {
+        [HelpHook, ArgShortcut("-?"), ArgDescription("Shows this help")]
+        public bool Help { get; set; }
+
+        [ArgActionMethod, ArgDescription("Adds the two operands")]
+        public void Add(TwoOperandArgs args)
+        {
+            Console.WriteLine(args.Value1 + args.Value2);
+        }
+
+        [ArgActionMethod, ArgDescription("Subtracts the two operands")]
+        public void Subtract(TwoOperandArgs args)
+        {
+            Console.WriteLine(args.Value1 - args.Value2);
+        }
+
+        [ArgActionMethod, ArgDescription("Multiplies the two operands")]
+        public void Multiply(TwoOperandArgs args)
+        {
+            Console.WriteLine(args.Value1 * args.Value2);
+        }
+
+        [ArgActionMethod, ArgDescription("Divides the two operands")]
+        public void Divide(TwoOperandArgs args)
+        {
+            Console.WriteLine(args.Value1 / args.Value2);
+        }
+    }
+
+    public class TwoOperandArgs
+    {
+        [ArgRequired, ArgDescription("The first operand to process"), ArgPosition(1)]
+        public double Value1 { get; set; }
+        [ArgRequired, ArgDescription("The second operand to process"), ArgPosition(2)]
+        public double Value2 { get; set; }
+    }
+
+	class Program
+    {
+        static void Main(string[] args)
+        {
+            Args.InvokeMain<CalculatorProgram>(args);
+        }
+    }
+
+Again, the Main method in your program class is just one line of code.  PowerArgs will automatically call the right method in the CalculatorProgram class based on the first argument passed
+on the command line.  If the user doesn't specify a valid action then they get a friendly error.  If different actions take different arguments then PowerArgs will handle the validation on
+a per action basis, just as you would expect.
+
+Here are some valid ways that an end user could call this program:
+
+    Calculator.exe add -Value1 1 -Value2 5 // outputs '6'
+	Calculator.exe multiply /Value1:2 /Value2:5 // outputs '10'
+	Calculator.exe add 1 4 // Outputs '5' - Since the [ArgPosition] attribute is specified on the Value1 and Value1 properties, PowerArgs knows how to map these arguments.
+
+If you wanted to, your action method could accept loose parameters in each action method.  I find this is useful for small, simple programs where the input parameters don't need to be
+reused across many actions. 
+
+	    [ArgActionMethod, ArgDescription("Divides the two operands")]
+        public void Add(
+			[ArgRequired][ArgDescription("The first value to add"), ArgPosition(1)] double value1, 
+			[ArgRequired][ArgDescription("The second value to add"), ArgPosition(2)] double value2)
+        {
+            Console.WriteLine(value1 / value2);
+        }
+
+You can't mix and match though.  An action method needs to be formatted in one of three ways:
+
+  - No parameters - Meaning the action takes no additional arguments except for the action name (i.e. '> myprogram.exe myaction').
+  - A single parameter of a complex type whose own properties describe the action's arguments, validation, and other metadata. The first calculator example used this pattern.
+  - One or more 'loose' parameters that are individually revivable, meaning that one command line parameter maps to one property in your class. The second calculator example 
+    showed a variation of the Add method that uses this pattern.
+
 ###Metadata Attributes 
-These can be specified on argument properties.
+These attributes can be specified on argument properties. PowerArgs uses this metadata to influence how the parser behaves.
  
     [ArgPosition(0)]                                    // This argument can be specified by position (no need for -propName)
     [ArgShortcut("n")]                                  // Let's the user specify -n
     [ArgDescription("Description of the argument")]
     [ArgExample("example text", "Example description")]
-    [DefaultValue("SomeDefault")]                       // Specify the default value
+	[HelpHook]                                          // Put this on a boolean property and when the user specifies that boolean
+	                                                    // PowerArgs will display the help info and stop processing any additional work.
+														// If the user is in the context of an action (e.g. myprogram myaction -help) then
+														// help is shown for the action in context only.
+    [ArgDefaultValue("SomeDefault")]                    // Specify the default value
     [ArgIgnore]                                         // Don't populate this property as an arg
-    [StickyArg]                                         // Use the last used value if not specified
-    [Query(typeof(MyDataSource))]                       // Easily query a data source
-    [TabCompletion]                                     // Enable tab completion for parameter names (Can be customized)
+    [StickyArg]                                         // Use the last used value if not specified.  This is preserved across sessions.  Data is
+	                                                    // stored in <User>/AppData/Roaming/PowerArgs by default.
+    [Query(typeof(MyDataSource))]                       // Easily query a data source (See documentation below).
+    [TabCompletion]                                     // Enable tab completion for parameter names (See documentation below)
     
 ###Validator Attributes
-These can be specified on argument properties.  You can create custom validators by implementing classes that derive from ArgValidator.
+These attributes can be specified on argument properties.  You can create custom validators by implementing classes that derive from ArgValidator.
 
-    [ArgRequired(PromptIfMissing=bool)] 
-    [ArgExistingFile]
-    [ArgExistingDirectory]
-    [ArgRange(from, to)]
+    [ArgRequired(PromptIfMissing=bool)] // This argument is required.  There is also support for conditionally being required.
+    [ArgExistingFile]                   // The value must match the path to an existing file
+    [ArgExistingDirectory]              // The value must match the path to an existing directory
+    [ArgRange(from, to)]                // The value must be a numeric value in the given range.
     [ArgRegex("MyRegex")]               // Apply a regular expression validation rule
-    [UsPhoneNumber]                     // A good example of how to create a custom validator
+    [UsPhoneNumber]                     // A good example of how to create a reuable, custom validator.
 
-##Latest Features
+###Custom Revivers
+Revivers are used to convert command line strings into their proper .NET types.  By default, many of the simple types such as int, DateTime, Guid, string, char,  and bool are supported.
+
+If you need to support a different type or want to support custom syntax to populate a complex object then you can create a custom reviver.
+
+This example converts strings in the format "x,y" into a Point object that has properties "X" and "Y".
+
+    public class CustomReviverExample
+    {
+        // By default, PowerArgs does not know what a 'Point' is.  So it will 
+        // automatically search your assembly for arg revivers that meet the 
+        // following criteria: 
+        //
+        //    - Have an [ArgReviver] attribute
+        //    - Are a public, static method
+        //    - Accepts exactly two string parameters
+        //    - The return value matches the type that is needed
+
+        public Point Point { get; set; }
+
+        // This ArgReviver matches the criteria for a "Point" reviver
+        // so it will be called when PowerArgs finds any Point argument.
+        //
+        // ArgRevivers should throw ArgException with a friendly message
+        // if the string could not be revived due to user error.
+      
+        [ArgReviver]
+        public static Point Revive(string key, string val)
+        {
+            var match = Regex.Match(val, @"(\d*),(\d*)");
+            if (match.Success == false)
+            {
+                throw new ArgException("Not a valid point: " + val);
+            }
+            else
+            {
+                Point ret = new Point();
+                ret.X = int.Parse(match.Groups[1].Value);
+                ret.Y = int.Parse(match.Groups[2].Value);
+                return ret;
+            }
+        }
+    }
+
 
 ###Generate usage documentation from templates (built in or custom)
 
@@ -256,107 +422,3 @@ Easily query a data source such as an Entity Framework Model (Code First or trad
     
     var parsed = Args.Parse<TestArgs>(args);
     var customers = parsed.Customers;
-    
-###Programs with actions
-This example shows various metadata and validator attributes.  It also uses the Action Framework that lets you separate your program into distinct actions that take different parameters.  In this case there are 2 actions called Encode and Clip.  It also shows how enums are supported.
-
-        [TabCompletion, ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), ArgExample("superencoder encode fromFile toFile -encoder Wmv", "Encode the file at 'fromFile' to an AVI at 'toFile'")]
-        public class VideoEncoderArgs
-        {
-            [ArgActionMethod]
-            public void Encode(EncodeArgs args)
-            {
-                Console.WriteLine("Encode called");
-            }
-
-            [ArgActionMethod]
-            public void Clip(ClipArgs args)
-            {
-                Console.WriteLine("Clip called");
-            }
-        }
-
-        public enum Encoder
-        {
-            Mpeg,
-            Avi,
-            Wmv
-        }
-
-        public class EncodeArgs
-        {
-            [ArgRequired, ArgExistingFile, ArgPosition(1)]
-            [ArgDescription("The source video file")]
-            public string Source { get; set; }
-
-            [ArgPosition(2)]
-            [ArgDescription("Output file.  If not specfied, defaults to current directory")]
-            public string Output { get; set; }
-
-            [DefaultValue(Encoder.Avi)]
-            [ArgDescription("The type of encoder to use")]
-            public Encoder Encoder { get; set; }
-        }
-
-        public class ClipArgs : EncodeArgs
-        {
-            [ArgRange(0, double.MaxValue)]
-            [ArgDescription("The starting point of the video, in seconds")]
-            public double From { get; set; }
-
-            [ArgRange(0, double.MaxValue)]
-            [ArgDescription("The ending point of the video, in seconds")]
-            public double To { get; set; }
-        }
-    
-    class Program
-    {
-        static void Main(string[] args)
-        {
-             Args.InvokeAction<VideoEncoderArgs>(args);
-        }
-    }
-    
-###Custom Revivers
-Revivers are used to convert command line strings into their proper .NET types.  By default, many of the simple types such as int, DateTime, Guid, string, char,  and bool are supported.
-
-If you need to support a different type or want to support custom syntax to populate a complex object then you can create a custom reviver.
-
-This example converts strings in the format "x,y" into a Point object that has properties "X" and "Y".
-
-    public class CustomReviverExample
-    {
-        // By default, PowerArgs does not know what a 'Point' is.  So it will 
-        // automatically search your assembly for arg revivers that meet the 
-        // following criteria: 
-        //
-        //    - Have an [ArgReviver] attribute
-        //    - Are a public, static method
-        //    - Accepts exactly two string parameters
-        //    - The return value matches the type that is needed
-
-        public Point Point { get; set; }
-
-        // This ArgReviver matches the criteria for a "Point" reviver
-        // so it will be called when PowerArgs finds any Point argument.
-        //
-        // ArgRevivers should throw ArgException with a friendly message
-        // if the string could not be revived due to user error.
-      
-        [ArgReviver]
-        public static Point Revive(string key, string val)
-        {
-            var match = Regex.Match(val, @"(\d*),(\d*)");
-            if (match.Success == false)
-            {
-                throw new ArgException("Not a valid point: " + val);
-            }
-            else
-            {
-                Point ret = new Point();
-                ret.X = int.Parse(match.Groups[1].Value);
-                ret.Y = int.Parse(match.Groups[2].Value);
-                return ret;
-            }
-        }
-    }

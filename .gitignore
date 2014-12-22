@@ -2,6 +2,7 @@ Thumbs.db
 *.nupkg
 *.obj
 *.exe
+*.dll
 *.pdb
 *.user
 *.aps
@@ -22,9 +23,12 @@ Thumbs.db
 *.log
 [Bb]in
 [Dd]ebug*/
+[Ll]ib*/
 *.lib
 *.sbr
 obj/
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
+DoxygenOutput*/
+[Pp]ackages*/

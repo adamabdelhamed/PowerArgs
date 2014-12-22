@@ -240,6 +240,12 @@ namespace PowerArgs
         private void AddToHistory(string item)
         {
             if (HistoryToSave == 0) return;
+
+            if(File.Exists(HistoryFileNameInternal) == false)
+            {
+                File.WriteAllLines(HistoryFileNameInternal, new string[0]);
+            }
+
             List<string> history = File.ReadAllLines(HistoryFileNameInternal).ToList();
             history.Insert(0, item);
             history = history.Distinct().ToList();

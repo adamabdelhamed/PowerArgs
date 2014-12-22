@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorld", "HelloWorld\HelloWorld.csproj", "{9FF5B5D7-B7FC-4F03-B13E-ADC16D4E8350}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArgs", "PowerArgs\PowerArgs.csproj", "{35809FAB-7FBD-4663-8409-2D6A312C8265}"
@@ -10,13 +12,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8159C52C-C248-4C1A-9B22-FF405280EB6F}"
 	ProjectSection(SolutionItems) = preProject
 		PowerArgs.vsmdi = PowerArgs.vsmdi
+		readme.md = readme.md
 		TestSettings1.testsettings = TestSettings1.testsettings
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoxygenPublisher", "DoxygenPublisher\DoxygenPublisher.csproj", "{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}"
+EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = PowerArgs.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -56,8 +58,21 @@ Global
 		{A059EF3C-3AC2-4DC2-9236-9328D3C3408E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A059EF3C-3AC2-4DC2-9236-9328D3C3408E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A059EF3C-3AC2-4DC2-9236-9328D3C3408E}.Release|x86.ActiveCfg = Release|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = PowerArgs.vsmdi
 	EndGlobalSection
 EndGlobal

@@ -46,6 +46,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Samples\HelloWorldConditionalIf.cs" />
+    <Compile Include="Samples\Calculator.cs" />
     <Compile Include="Samples\REPLInvoke.cs" />
     <Compile Include="Samples\HelloWorldInvoke.cs" />
     <Compile Include="Samples\Git.cs" />

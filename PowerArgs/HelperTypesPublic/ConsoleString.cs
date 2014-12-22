@@ -135,7 +135,7 @@ namespace PowerArgs
     /// <summary>
     /// A wrapper for string that encapsulates foreground and background colors.  ConsoleStrings are immutable.
     /// </summary>
-    public class ConsoleString : List<ConsoleCharacter>, IComparable<string>
+    public class ConsoleString : IEnumerable<ConsoleCharacter>, IComparable<string>
     {
         /// <summary>
         /// The console provider to use when writing output
@@ -165,6 +165,8 @@ namespace PowerArgs
         /// </summary>
         public static readonly ConsoleString Empty = new ConsoleString();
 
+        private List<ConsoleCharacter> characters;
+
         /// <summary>
         /// The length of the string.
         /// </summary>
@@ -172,7 +174,7 @@ namespace PowerArgs
         {
             get
             {
-                return Count;
+                return characters.Count;
             }
         }
 
@@ -181,8 +183,9 @@ namespace PowerArgs
         /// <summary>
         /// Create a new empty ConsoleString
         /// </summary>
-        public ConsoleString() : base()
+        public ConsoleString()
         {
+            characters = new List<ConsoleCharacter>();
             ContentSet = false;
             Append(string.Empty);
         }
@@ -191,8 +194,9 @@ namespace PowerArgs
         /// Creates a new ConsoleString from another one
         /// </summary>
         /// <param name="other">The value to copy</param>
-        public ConsoleString(ConsoleString other) : base()
+        public ConsoleString(ConsoleString other)
         {
+            characters = new List<ConsoleCharacter>();
             ContentSet = false;
             Append(other);
         }
@@ -204,8 +208,8 @@ namespace PowerArgs
         /// <param name="foregroundColor">The foreground color (defaults to the console's foreground color at initialization time).</param>
         /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
         public ConsoleString(string value = "", ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
-            : base()
         {
+            characters = new List<ConsoleCharacter>();
             ContentSet = false;
             Append(value, foregroundColor, backgroundColor);
         }
@@ -228,7 +232,7 @@ namespace PowerArgs
         /// <param name="value">The string to append.</param>
         public ConsoleString AppendUsingCurrentFormat(string value)
         {
-            if (Count == 0)
+            if (Length == 0)
             {
                 return ImmutableAppend(value);
             }
@@ -258,8 +262,8 @@ namespace PowerArgs
                 string toString = ret.ToString();
                 int currentIndex = toString.IndexOf(toFind, startIndex);
                 if (currentIndex < 0) break;
-                for (int i = 0; i < toFind.Length; i++) ret.RemoveAt(currentIndex);
-                ret.InsertRange(currentIndex, toReplace.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
+                for (int i = 0; i < toFind.Length; i++) ret.characters.RemoveAt(currentIndex);
+                ret.characters.InsertRange(currentIndex, toReplace.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
                 startIndex = currentIndex + toReplace.Length;
             }
 
@@ -303,7 +307,7 @@ namespace PowerArgs
                 j = 0;
                 k = 0;
 
-                while (toFind[j] == this[i + k].Value)
+                while (toFind[j] == characters[i + k].Value)
                 {
                     j++;
                     k++;
@@ -346,10 +350,74 @@ namespace PowerArgs
             ConsoleString ret = new ConsoleString();
             for(int i = start; i < start + length;i++)
             {
-                ret.Add(this[i]);
+                ret.characters.Add(this.characters[i]);
             }
 
             return ret;
+        }
+        
+        /// <summary>
+        /// Writes the string representation of the given object to the console using the specified colors.
+        /// </summary>
+        /// <param name="o">The object to write</param>
+        /// <param name="fg">The foreground color to use</param>
+        /// <param name="bg">The background color to use</param>
+        public static void Write(object o, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        {
+            string str = o == null ? "" : o.ToString();
+            new ConsoleString(str, fg, bg).Write();
+        }
+
+        /// <summary>
+        /// Writes the string representation of the given object to the console using the specified colors and appends a newline.
+        /// </summary>
+        /// <param name="o">The object to write</param>
+        /// <param name="fg">The foreground color to use</param>
+        /// <param name="bg">The background color to use</param>
+        public static void WriteLine(object o, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        {
+            string str = o == null ? "" : o.ToString();
+            new ConsoleString(str, fg, bg).WriteLine();
+        }
+        
+        /// <summary>
+        /// Writes the given ConsoleString to the console
+        /// </summary>
+        /// <param name="str">the string to write</param>
+        public static void Write(ConsoleString str)
+        {
+            str.Write();
+        }
+
+        /// <summary>
+        /// Writes the given ConsoleString to the console and appends a newline
+        /// </summary>
+        /// <param name="str">the string to write</param>
+        public static void WriteLine(ConsoleString str)
+        {
+            str.WriteLine();
+        }
+
+        /// <summary>
+        /// Writes the string to the console using the specified colors.
+        /// </summary>
+        /// <param name="str">The object to write</param>
+        /// <param name="fg">The foreground color to use</param>
+        /// <param name="bg">The background color to use</param>
+        public static void Write(string str, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        {
+            new ConsoleString(str, fg, bg).Write();
+        }
+
+        /// <summary>
+        /// Writes the string to the console using the specified colors and appends a newline.
+        /// </summary>
+        /// <param name="str">The object to write</param>
+        /// <param name="fg">The foreground color to use</param>
+        /// <param name="bg">The background color to use</param>
+        public static void WriteLine(string str, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        {
+            new ConsoleString(str, fg, bg).WriteLine();
         }
 
         /// <summary>
@@ -422,7 +490,7 @@ namespace PowerArgs
 
             for (int i = 0; i < this.Length; i++)
             {
-                if (this[i] != other[i]) return false;
+                if (this.characters[i] != other.characters[i]) return false;
             }
 
             return true;
@@ -504,6 +572,19 @@ namespace PowerArgs
             return a.Equals(b) == false;
         }
 
+        /// <summary>
+        /// Gets the character at the specified index
+        /// </summary>
+        /// <param name="index">the index of the character to find</param>
+        /// <returns>the character at the specified index</returns>
+        public ConsoleCharacter this[int index]
+        {
+            get
+            {
+                return characters[index];
+            }
+        }
+
         private ConsoleString ImmutableAppend(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
         {
             ConsoleString str = new ConsoleString(this);
@@ -526,7 +607,7 @@ namespace PowerArgs
             if (ContentSet) throw new Exception("ConsoleStrings are immutable");
             foreach (var c in value)
             {
-                this.Add(new ConsoleCharacter(c, foregroundColor, backgroundColor));
+                this.characters.Add(new ConsoleCharacter(c, foregroundColor, backgroundColor));
             }
             ContentSet = true;
         }
@@ -536,7 +617,7 @@ namespace PowerArgs
             if (ContentSet) throw new Exception("ConsoleStrings are immutable");
             foreach (var c in other)
             {
-                this.Add(c);
+                this.characters.Add(c);
             }
             ContentSet = true;
         }
@@ -556,6 +637,24 @@ namespace PowerArgs
                 ConsoleProvider.ForegroundColor = existingForeground;
                 ConsoleProvider.BackgroundColor = existingBackground;
             }
+        }
+
+        /// <summary>
+        /// Gets an enumerator for this string
+        /// </summary>
+        /// <returns>an enumerator for this string</returns>
+        public IEnumerator<ConsoleCharacter> GetEnumerator()
+        {
+            return characters.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Gets an enumerator for this string
+        /// </summary>
+        /// <returns>an enumerator for this string</returns>
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return characters.GetEnumerator();
         }
     }
 }

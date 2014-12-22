@@ -1,3 +1,6 @@
+
+A program that lets you manage a collection of photos in Azure storage containers.
+
 Usage - PhotoManager <action> -options
 
 Global options
