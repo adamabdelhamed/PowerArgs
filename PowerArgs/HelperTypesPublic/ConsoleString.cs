@@ -227,7 +227,7 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Appends the given value using the formatting of the last character or the default formatting if this ConsoleString is empty.
+        /// Returns a new string that Appends the given value to this one using the formatting of the last character or the default formatting if this ConsoleString is empty.
         /// </summary>
         /// <param name="value">The string to append.</param>
         public ConsoleString AppendUsingCurrentFormat(string value)

@@ -78,6 +78,11 @@ namespace PowerArgs
         /// </summary>
         public void Invoke()
         {
+            if (Context != null)
+            {
+                Context.RunBeforeInvoke();
+            }
+
             if (ActionArgsMethod == null && ActionArgsProperty == null) throw new MissingArgException("No action was specified");
             var resolved = ActionArgsMethod ?? ResolveMethod(ActionArgsProperty.DeclaringType, ActionArgsProperty);
 
@@ -122,6 +127,11 @@ namespace PowerArgs
                 {
                     throw;
                 }
+            }
+
+            if (Context != null)
+            {
+                Context.RunAfterInvoke();
             }
         }
 

@@ -82,6 +82,7 @@
     <Compile Include="HelperTypesPublic\ITabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\IUsageTemplateProvider.cs" />
     <Compile Include="HelperTypesPublic\ParseResult.cs" />
+    <Compile Include="Hooks\ArgPipeline.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

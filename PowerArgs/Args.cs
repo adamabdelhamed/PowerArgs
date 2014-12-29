@@ -136,55 +136,6 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Creates a new instance of T and populates it's properties based on the given arguments.
-        /// If T correctly implements the heuristics for Actions (or sub commands) then the complex property
-        /// that represents the options of a sub command are also populated.
-        /// </summary>
-        /// <typeparam name="T">The argument scaffold type.</typeparam>
-        /// <param name="args">The command line arguments to parse</param>
-        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
-        public static ArgAction<T> ParseAction<T>(params string[] args)
-        {
-            ArgAction<T> ret = Execute<ArgAction<T>>(() =>
-            {
-                Args instance = new Args();
-                return instance.ParseInternal<T>(args);
-            });
-            return ret;
-        }
-
-        /// <summary>
-        /// Creates a new instance of the given type and populates it's properties based on the given arguments.
-        /// If the type correctly implements the heuristics for Actions (or sub commands) then the complex property
-        /// that represents the options of a sub command are also populated.
-        /// </summary>
-        /// <param name="t">The argument scaffold type.</param>
-        /// <param name="args">The command line arguments to parse</param>
-        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
-        public static ArgAction ParseAction(Type t, params string[] args)
-        {
-            ArgAction ret = Execute<ArgAction>(() =>
-            {
-                Args instance = new Args();
-                return instance.ParseInternal(t, args);
-            });
-            return ret;
-        }
-
-
-
-        /// <summary>
-        /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
-        /// </summary>
-        /// <param name="t">The argument scaffold type.</param>
-        /// <param name="args">The command line arguments to parse</param>
-        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
-        public static ArgAction InvokeMain(Type t, params string[] args)
-        {
-            return InvokeMain(new CommandLineArgumentsDefinition(t), args);
-        }
-
-        /// <summary>
         /// Parses the args for the given definition and then calls the Main() method defined by the type.
         /// </summary>
         /// <param name="definition"></param>
@@ -210,59 +161,6 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
-        /// </summary>
-        /// <typeparam name="T">The argument scaffold type.</typeparam>
-        /// <param name="args">The command line arguments to parse</param>
-        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
-        public static ArgAction<T> InvokeMain<T>(params string[] args)
-        {
-            return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
-            {
-                return Execute<ArgAction<T>>(() =>
-                {
-                    Args instance = new Args();
-                    var result = instance.ParseInternal<T>(a);
-
-                    if (result.HandledException == null)
-                    {
-                        result.Context.RunBeforeInvoke();
-                        result.Value.InvokeMainMethod();
-                        result.Context.RunAfterInvoke();
-                    }
-                    return result;
-                });
-            }, args);
-        }
-
-        /// <summary>
-        /// Creates a new instance of T and populates it's properties based on the given arguments. T must correctly
-        /// implement the heuristics for Actions (or sub commands) because this method will not only detect the action
-        /// specified on the command line, but will also find and execute the method that implements the action.
-        /// </summary>
-        /// <typeparam name="T">The argument scaffold type that must properly implement at least one action.</typeparam>
-        /// <param name="args">The command line arguments to parse</param>
-        /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
-        public static ArgAction<T> InvokeAction<T>(params string[] args)
-        {
-            return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
-            {
-                return Execute<ArgAction<T>>(() =>
-                {
-                    Args instance = new Args();
-                    var result = instance.ParseInternal<T>(a);
-                    if (result.HandledException == null)
-                    {
-                        result.Context.RunBeforeInvoke();
-                        result.Invoke();
-                        result.Context.RunAfterInvoke();
-                    }
-                    return result;
-                });
-            } , args);
-        }
-
-        /// <summary>
         /// Parses the given arguments using a command line arguments definition.  Then, invokes the action
         /// that was specified.  
         /// </summary>
@@ -279,29 +177,11 @@ namespace PowerArgs
                     var result = instance.ParseInternal(definition, a);
                     if (result.HandledException == null)
                     {
-                        result.Context.RunBeforeInvoke();
                         result.Invoke();
-                        result.Context.RunAfterInvoke();
                     }
                     return result;
                 });
             }, args);
-        }
-
-        /// <summary>
-        /// Creates a new instance of T and populates it's properties based on the given arguments.
-        /// </summary>
-        /// <typeparam name="T">The argument scaffold type.</typeparam>
-        /// <param name="args">The command line arguments to parse</param>
-        /// <returns>A new instance of T with all of the properties correctly populated</returns>
-        public static T Parse<T>(params string[] args) where T : class
-        {
-            T ret = Execute(() =>
-            {
-                Args instance = new Args();
-                return instance.ParseInternal<T>(args).Args;
-            });
-            return ret;
         }
 
         /// <summary>
@@ -312,12 +192,81 @@ namespace PowerArgs
         /// <returns>A new instance of the given type with all of the properties correctly populated</returns>
         public static object Parse(Type t, params string[] args)
         {
-            object ret = Execute(() =>
-            {
-                Args instance = new Args();
-                return instance.ParseInternal(t, args).Value;
-            });
-            return ret;
+            return ParseAction(t, args).Value;
+        }
+
+        /// <summary>
+        /// Creates a new instance of T and populates it's properties based on the given arguments.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>A new instance of T with all of the properties correctly populated</returns>
+        public static T Parse<T>(params string[] args) where T : class
+        {
+            return Parse(typeof(T), args) as T;
+        }
+
+        /// <summary>
+        /// Creates a new instance of T and populates it's properties based on the given arguments.
+        /// If T correctly implements the heuristics for Actions (or sub commands) then the complex property
+        /// that represents the options of a sub command are also populated.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static ArgAction<T> ParseAction<T>(params string[] args)
+        {
+            return Strongify<T>(ParseAction(new CommandLineArgumentsDefinition(typeof(T)), args));
+        }
+
+        /// <summary>
+        /// Creates a new instance of the given type and populates it's properties based on the given arguments.
+        /// If the type correctly implements the heuristics for Actions (or sub commands) then the complex property
+        /// that represents the options of a sub command are also populated.
+        /// </summary>
+        /// <param name="t">The argument scaffold type.</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static ArgAction ParseAction(Type t, params string[] args)
+        {
+            return ParseAction(new CommandLineArgumentsDefinition(t), args);
+        }
+
+
+
+        /// <summary>
+        /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
+        /// </summary>
+        /// <param name="t">The argument scaffold type.</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static ArgAction InvokeMain(Type t, params string[] args)
+        {
+            return InvokeMain(new CommandLineArgumentsDefinition(t), args);
+        }
+
+        /// <summary>
+        /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static ArgAction<T> InvokeMain<T>(params string[] args)
+        {
+            return Strongify<T>(InvokeMain(new CommandLineArgumentsDefinition(typeof(T)), args));
+        }
+
+        /// <summary>
+        /// Creates a new instance of T and populates it's properties based on the given arguments. T must correctly
+        /// implement the heuristics for Actions (or sub commands) because this method will not only detect the action
+        /// specified on the command line, but will also find and execute the method that implements the action.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type that must properly implement at least one action.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
+        public static ArgAction<T> InvokeAction<T>(params string[] args)
+        {
+            return Strongify<T>(InvokeAction(new CommandLineArgumentsDefinition(typeof(T)), args));
         }
 
         /// <summary>
@@ -328,12 +277,7 @@ namespace PowerArgs
         /// <param name="args">The command line arguments to parse</param>
         public static ArgAction Parse(CommandLineArgumentsDefinition definition, params string[] args)
         {
-            ArgAction ret = Execute(() =>
-            {
-                Args instance = new Args();
-                return instance.ParseInternal(definition, args);
-            });
-            return ret;
+            return ParseAction(definition, args);
         }
 
         private static T Execute<T>(Func<T> argsProcessingCode) where T : class
@@ -408,9 +352,8 @@ namespace PowerArgs
             return (T)((object)ret);
         }
 
-        private ArgAction<T> ParseInternal<T>(string[] input)
+        private static ArgAction<T> Strongify<T>(ArgAction weak)
         {
-            var weak = ParseInternal(new CommandLineArgumentsDefinition(typeof(T)), input);
             return new ArgAction<T>()
             {
                 Args = (T)weak.Value,
@@ -421,12 +364,8 @@ namespace PowerArgs
                 HandledException = weak.HandledException,
                 Definition = weak.Definition,
                 Context = weak.Context,
+                Cancelled = weak.Cancelled,
             };
-        }
-
-        private ArgAction ParseInternal(Type t, string[] input)
-        {
-            return ParseInternal(new CommandLineArgumentsDefinition(t), input);
         }
 
         private ArgAction ParseInternal(CommandLineArgumentsDefinition definition, string[] input)
@@ -441,7 +380,7 @@ namespace PowerArgs
             context.CmdLineArgs = input;
 
             context.RunBeforeParse();
-            context.ParserData = ArgParser.Parse(context);
+            context.ParserData = ArgParser.Parse(definition, context.CmdLineArgs);
 
             var actionToken = context.CmdLineArgs.FirstOrDefault();
             var actionQuery = context.Definition.Actions.Where(a => a.IsMatch(actionToken));

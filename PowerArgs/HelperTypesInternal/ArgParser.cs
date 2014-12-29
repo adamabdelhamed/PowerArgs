@@ -4,9 +4,9 @@ namespace PowerArgs
 {
     internal class ArgParser
     {
-        internal static ParseResult Parse(PowerArgs.ArgHook.HookContext context)
+        internal static ParseResult Parse(CommandLineArgumentsDefinition Definition, string[] commandLineArgs)
         {
-            var args = context.CmdLineArgs;
+            var args = commandLineArgs;
 
             ParseResult result = new ParseResult();
 
@@ -15,7 +15,7 @@ namespace PowerArgs
             {
                 var token = args[i];
 
-                if (i == 0 && context.Definition.Actions.Count > 0 && context.Definition.FindMatchingAction(token) != null)
+                if (i == 0 && Definition.Actions.Count > 0 && Definition.FindMatchingAction(token) != null)
                 {
                     result.ImplicitParameters.Add(0, token);
                     argumentPosition++;
@@ -48,7 +48,7 @@ namespace PowerArgs
                         {
                             value = "";
                         }
-                        else if (IsBool(key, context, result))
+                        else if (IsBool(key, Definition, result))
                         {
                             var next = args[i + 1].ToLower();
 
@@ -130,9 +130,9 @@ namespace PowerArgs
             }
         }
 
-        private static bool IsBool(string key, PowerArgs.ArgHook.HookContext context, ParseResult resultContext)
+        private static bool IsBool(string key, CommandLineArgumentsDefinition definition, ParseResult resultContext)
         {
-            var match = context.Definition.FindMatchingArgument(key, true);
+            var match = definition.FindMatchingArgument(key, true);
             if (match == null)
             {
                 var possibleActionContext = resultContext.ImplicitParameters.ContainsKey(0) ? resultContext.ImplicitParameters[0] : null;
@@ -143,7 +143,7 @@ namespace PowerArgs
                 }
                 else
                 {
-                    var actionContext = context.Definition.FindMatchingAction(possibleActionContext, true);
+                    var actionContext = definition.FindMatchingAction(possibleActionContext, true);
                     if (actionContext == null)
                     {
                         return false;
