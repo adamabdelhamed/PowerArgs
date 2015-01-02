@@ -4,211 +4,211 @@
     <title>PhotoManager documentation</title>
 </head>
 <body>
-<h1 class="program-specific-content">PhotoManager</h1>
-<p class="program-specific-content">A program that lets you manage a collection of photos in Azure storage containers.</p>
+    <h1 class="program-specific-content">PhotoManager</h1>
+    <p class="program-specific-content">A program that lets you manage a collection of photos in Azure storage containers.</p>
 
-<h2>Usage</h2>
+    <h2>Usage</h2>
 <pre class="code-sample">PhotoManager &lt;action&gt; -options</pre>
 
-	<h2>Global options</h2>
-	
+        <h2>Global options</h2>
+    
 
-	<table>
-		<tr>
-			<td class="option-col table-header">OPTION</td>
-			<td class="desc-col table-header">DESCRIPTION</td>
-		</tr>
-			<tr>
-			<td class="option-col program-specific-content">-Output</td>
-			<td class="desc-col program-specific-content">How much output to display while performing management operations<span class="defaultvalue"> Default<span/><span class="defaultvalue">=<span/><span class="defaultvalue">Light<span/></td>
-		</tr>
-								<tr>
-				<td class="option-col program-specific-content"></td>
-				<td class="defaultValue"> Verbose</td>
-			</tr>
-						<tr>
-				<td class="option-col program-specific-content"></td>
-				<td class="defaultValue"> Light</td>
-			</tr>
-						<tr>
-				<td class="option-col program-specific-content"></td>
-				<td class="defaultValue"> Quiet</td>
-			</tr>
-							</table>
-
-	<h2>Actions</h2>
-	<ul>
-			<li>
-			<div>
-				<span class="program-specific-content">CreateAlbum</span>
-				<span> - </span>
-				<span class="program-specific-content">Creates a new album in the target container, creating the container if it does not exist</span>
-				<button id="action0ExpandButton" onclick="toggleAction(0)" class="expander-button">show details</button>
-				<div id="action0details" class="expandable hidden">
-					<h4>CreateAlbum Usage</h4>
-					<pre class="code-sample">PhotoManager CreateAlbum &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
-					<h4>Action options</h4>
-					<table>
-						<tr>
-							<td>OPTION</td>
-							<td>DESCRIPTION</td>
-						</tr>
-													<tr>
-								<td class="option-col program-specific-content">StorageAccountName</td>
-								<td class="desc-col program-specific-content">-The storage account to connect to</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">StorageAccountKey</td>
-								<td class="desc-col program-specific-content">-The storage key to use to connect</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">Container</td>
-								<td class="desc-col program-specific-content">-The storage container to target<span class="defaultvalue"> Default<span/><span class="defaultvalue">=<span/><span class="defaultvalue">DefaultAlbum<span/></td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">UseHttps</td>
-								<td class="desc-col program-specific-content">-Set this flag to use https</td>
-							</tr>
-																		</table>
-									</div>
-			</div>
-		</li>
-			<li>
-			<div>
-				<span class="program-specific-content">Download</span>
-				<span> - </span>
-				<span class="program-specific-content">Downloads a single blob to the local file system.</span>
-				<button id="action1ExpandButton" onclick="toggleAction(1)" class="expander-button">show details</button>
-				<div id="action1details" class="expandable hidden">
-					<h4>Download Usage</h4>
-					<pre class="code-sample">PhotoManager Download &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
-					<h4>Action options</h4>
-					<table>
-						<tr>
-							<td>OPTION</td>
-							<td>DESCRIPTION</td>
-						</tr>
-													<tr>
-								<td class="option-col program-specific-content">BlobFilePath</td>
-								<td class="desc-col program-specific-content">-The name of a blob to download</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">LocalFile</td>
-								<td class="desc-col program-specific-content">-The local path to download to.  This description does not really need to be this long, but I need to test to make sure that the new description formatting feature that cleanly wraps long descriptions is working properly.  This long description should be enough to test that out!</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">ConflictPolicy</td>
-								<td class="desc-col program-specific-content">-What do do if there is a conflict when downloading a file<span class="defaultvalue"> Default<span/><span class="defaultvalue">=<span/><span class="defaultvalue">Throw<span/></td>
-							</tr>
-																							<tr>
-									<td class="option-col program-specific-content"></td>
-									<td class="defaultValue"> Throw</td>
-								</tr>
-																<tr>
-									<td class="option-col program-specific-content"></td>
-									<td class="defaultValue"> ServerWins</td>
-								</tr>
-																<tr>
-									<td class="option-col program-specific-content"></td>
-									<td class="defaultValue"> ClientWins</td>
-								</tr>
-																												<tr>
-								<td class="option-col program-specific-content">StorageAccountName</td>
-								<td class="desc-col program-specific-content">-The storage account to connect to</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">StorageAccountKey</td>
-								<td class="desc-col program-specific-content">-The storage key to use to connect</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">Container</td>
-								<td class="desc-col program-specific-content">-The storage container to target<span class="defaultvalue"> Default<span/><span class="defaultvalue">=<span/><span class="defaultvalue">DefaultAlbum<span/></td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">UseHttps</td>
-								<td class="desc-col program-specific-content">-Set this flag to use https</td>
-							</tr>
-																		</table>
-										<h4>Examples</h4>
-											<h3></h3>
-						<p>Downloads a blob called ceremony.png to a temp folder on the local machine</p>
-						<pre class="code-sample">photos download -a myaccount -k mykey -c wedding -BlobFilePath ceremony.png -LocalFile C:\temp\ceremony.png</pre>
-														</div>
-			</div>
-		</li>
-			<li>
-			<div>
-				<span class="program-specific-content">Upload</span>
-				<span> - </span>
-				<span class="program-specific-content">Uploads one or more files from the local file system to the target container</span>
-				<button id="action2ExpandButton" onclick="toggleAction(2)" class="expander-button">show details</button>
-				<div id="action2details" class="expandable hidden">
-					<h4>Upload Usage</h4>
-					<pre class="code-sample">PhotoManager Upload &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
-					<h4>Action options</h4>
-					<table>
-						<tr>
-							<td>OPTION</td>
-							<td>DESCRIPTION</td>
-						</tr>
-													<tr>
-								<td class="option-col program-specific-content">LocalFile</td>
-								<td class="desc-col program-specific-content">-If specified the single file will be uploaded</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">LocalDirectory</td>
-								<td class="desc-col program-specific-content">-If specified, all files in the directory will be uploaded</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">ConflictPolicy</td>
-								<td class="desc-col program-specific-content">-What do do if there is a conflict when uploading a file<span class="defaultvalue"> Default<span/><span class="defaultvalue">=<span/><span class="defaultvalue">Throw<span/></td>
-							</tr>
-																							<tr>
-									<td class="option-col program-specific-content"></td>
-									<td class="defaultValue"> Throw</td>
-								</tr>
-																<tr>
-									<td class="option-col program-specific-content"></td>
-									<td class="defaultValue"> ServerWins</td>
-								</tr>
-																<tr>
-									<td class="option-col program-specific-content"></td>
-									<td class="defaultValue"> ClientWins</td>
-								</tr>
-																												<tr>
-								<td class="option-col program-specific-content">StorageAccountName</td>
-								<td class="desc-col program-specific-content">-The storage account to connect to</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">StorageAccountKey</td>
-								<td class="desc-col program-specific-content">-The storage key to use to connect</td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">Container</td>
-								<td class="desc-col program-specific-content">-The storage container to target<span class="defaultvalue"> Default<span/><span class="defaultvalue">=<span/><span class="defaultvalue">DefaultAlbum<span/></td>
-							</tr>
-																				<tr>
-								<td class="option-col program-specific-content">UseHttps</td>
-								<td class="desc-col program-specific-content">-Set this flag to use https</td>
-							</tr>
-																		</table>
-										<h4>Examples</h4>
-											<h3></h3>
-						<p>Uploads all the files in the local directory to the 'wedding' container</p>
-						<pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\videos</pre>
-											<h3></h3>
-						<p>Uploads all the files in the local directory to the 'wedding' container</p>
-						<pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images</pre>
-														</div>
-			</div>
-		</li>
-		</ul>
-
-	<h2>Examples</h2>
-			<h3></h3>
-		<p>creates an album called 'wedding' in a container named 'wedding'</p>
-		<pre class="code-sample">photos createalbum -a myaccount -k mykey -c wedding</pre>
-	</body>
+    <table>
+        <tr>
+            <td class="option-col table-header">OPTION</td>
+            <td class="desc-col table-header">DESCRIPTION</td>
+        </tr>
+                        <tr>
+            <td class="option-col program-specific-content">-Output</td>
+            <td class="desc-col program-specific-content">How much output to display while performing management operations<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">Light<span /></td>
+        </tr>
+                        <tr>
+            <td class="option-col program-specific-content"></td>
+            <td class="defaultValue"> Verbose</td>
+        </tr>
+                <tr>
+            <td class="option-col program-specific-content"></td>
+            <td class="defaultValue"> Light</td>
+        </tr>
+                <tr>
+            <td class="option-col program-specific-content"></td>
+            <td class="defaultValue"> Quiet</td>
+        </tr>
+                                    </table>
+    
+        <h2>Actions</h2>
+    <ul>
+                <li>
+            <div>
+                <span class="program-specific-content">CreateAlbum</span>
+                <span> - </span>
+                <span class="program-specific-content">Creates a new album in the target container, creating the container if it does not exist</span>
+                <button id="action0ExpandButton" onclick="toggleAction(0)" class="expander-button">show details</button>
+                <div id="action0details" class="expandable hidden">
+                    <h4>CreateAlbum Usage</h4>
+                    <pre class="code-sample">PhotoManager CreateAlbum &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
+                    <h4>Action options</h4>
+                    <table>
+                        <tr>
+                            <td>OPTION</td>
+                            <td>DESCRIPTION</td>
+                        </tr>
+                                                                        <tr>
+                            <td class="option-col program-specific-content">StorageAccountName</td>
+                            <td class="desc-col program-specific-content">-The storage account to connect to</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">StorageAccountKey</td>
+                            <td class="desc-col program-specific-content">-The storage key to use to connect</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">Container</td>
+                            <td class="desc-col program-specific-content">-The storage container to target<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">DefaultAlbum<span /></td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">UseHttps</td>
+                            <td class="desc-col program-specific-content">-Set this flag to use https</td>
+                        </tr>
+                                                                                            </table>
+                                    </div>
+            </div>
+        </li>
+                <li>
+            <div>
+                <span class="program-specific-content">Download</span>
+                <span> - </span>
+                <span class="program-specific-content">Downloads a single blob to the local file system.</span>
+                <button id="action1ExpandButton" onclick="toggleAction(1)" class="expander-button">show details</button>
+                <div id="action1details" class="expandable hidden">
+                    <h4>Download Usage</h4>
+                    <pre class="code-sample">PhotoManager Download &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
+                    <h4>Action options</h4>
+                    <table>
+                        <tr>
+                            <td>OPTION</td>
+                            <td>DESCRIPTION</td>
+                        </tr>
+                                                                        <tr>
+                            <td class="option-col program-specific-content">BlobFilePath</td>
+                            <td class="desc-col program-specific-content">-The name of a blob to download</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">LocalFile</td>
+                            <td class="desc-col program-specific-content">-The local path to download to.  This description does not really need to be this long, but I need to test to make sure that the new description formatting feature that cleanly wraps long descriptions is working properly.  This long description should be enough to test that out!</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">ConflictPolicy</td>
+                            <td class="desc-col program-specific-content">-What do do if there is a conflict when downloading a file<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">Throw<span /></td>
+                        </tr>
+                                                                        <tr>
+                            <td class="option-col program-specific-content"></td>
+                            <td class="defaultValue"> Throw</td>
+                        </tr>
+                                                <tr>
+                            <td class="option-col program-specific-content"></td>
+                            <td class="defaultValue"> ServerWins</td>
+                        </tr>
+                                                <tr>
+                            <td class="option-col program-specific-content"></td>
+                            <td class="defaultValue"> ClientWins</td>
+                        </tr>
+                                                                                                                                                <tr>
+                            <td class="option-col program-specific-content">StorageAccountName</td>
+                            <td class="desc-col program-specific-content">-The storage account to connect to</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">StorageAccountKey</td>
+                            <td class="desc-col program-specific-content">-The storage key to use to connect</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">Container</td>
+                            <td class="desc-col program-specific-content">-The storage container to target<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">DefaultAlbum<span /></td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">UseHttps</td>
+                            <td class="desc-col program-specific-content">-Set this flag to use https</td>
+                        </tr>
+                                                                                            </table>
+                                        <h4>Examples</h4>
+                                        <h3></h3>
+                    <p>Downloads a blob called ceremony.png to a temp folder on the local machine</p>
+                    <pre class="code-sample">photos download -a myaccount -k mykey -c wedding -BlobFilePath ceremony.png -LocalFile C:\temp\ceremony.png</pre>
+                                                        </div>
+            </div>
+        </li>
+                <li>
+            <div>
+                <span class="program-specific-content">Upload</span>
+                <span> - </span>
+                <span class="program-specific-content">Uploads one or more files from the local file system to the target container</span>
+                <button id="action2ExpandButton" onclick="toggleAction(2)" class="expander-button">show details</button>
+                <div id="action2details" class="expandable hidden">
+                    <h4>Upload Usage</h4>
+                    <pre class="code-sample">PhotoManager Upload &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
+                    <h4>Action options</h4>
+                    <table>
+                        <tr>
+                            <td>OPTION</td>
+                            <td>DESCRIPTION</td>
+                        </tr>
+                                                                        <tr>
+                            <td class="option-col program-specific-content">LocalFile</td>
+                            <td class="desc-col program-specific-content">-If specified the single file will be uploaded</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">LocalDirectory</td>
+                            <td class="desc-col program-specific-content">-If specified, all files in the directory will be uploaded</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">ConflictPolicy</td>
+                            <td class="desc-col program-specific-content">-What do do if there is a conflict when uploading a file<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">Throw<span /></td>
+                        </tr>
+                                                                        <tr>
+                            <td class="option-col program-specific-content"></td>
+                            <td class="defaultValue"> Throw</td>
+                        </tr>
+                                                <tr>
+                            <td class="option-col program-specific-content"></td>
+                            <td class="defaultValue"> ServerWins</td>
+                        </tr>
+                                                <tr>
+                            <td class="option-col program-specific-content"></td>
+                            <td class="defaultValue"> ClientWins</td>
+                        </tr>
+                                                                                                                                                <tr>
+                            <td class="option-col program-specific-content">StorageAccountName</td>
+                            <td class="desc-col program-specific-content">-The storage account to connect to</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">StorageAccountKey</td>
+                            <td class="desc-col program-specific-content">-The storage key to use to connect</td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">Container</td>
+                            <td class="desc-col program-specific-content">-The storage container to target<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">DefaultAlbum<span /></td>
+                        </tr>
+                                                                                                                        <tr>
+                            <td class="option-col program-specific-content">UseHttps</td>
+                            <td class="desc-col program-specific-content">-Set this flag to use https</td>
+                        </tr>
+                                                                                            </table>
+                                        <h4>Examples</h4>
+                                        <h3></h3>
+                    <p>Uploads all the files in the local directory to the 'wedding' container</p>
+                    <pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\videos</pre>
+                                        <h3></h3>
+                    <p>Uploads all the files in the local directory to the 'wedding' container</p>
+                    <pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images</pre>
+                                                        </div>
+            </div>
+        </li>
+            </ul>
+    
+        <h2>Examples</h2>
+        <h3></h3>
+    <p>creates an album called 'wedding' in a container named 'wedding'</p>
+    <pre class="code-sample">photos createalbum -a myaccount -k mykey -c wedding</pre>
+        </body>
 
 <script>
     function toggleAction(index)
@@ -229,137 +229,136 @@
     }
 </script>
 <style>
-	html
-	{
-		font-family: Verdana, Geneva, sans-serif;
-		padding: 0;
-		margin: 0;
-		color: #333;
-	}
+    html
+    {
+        font-family: Verdana, Geneva, sans-serif;
+        padding: 0;
+        margin: 0;
+        color: #333;
+    }
 
-	body
-	{
-		margin: 14px;
-	}
+    body
+    {
+        margin: 14px;
+    }
 
-	h1
-	{
-		font-size: 24px;
-	}
+    h1
+    {
+        font-size: 24px;
+    }
 
-	ul
-	{
-		padding-left: 0;
-		margin-left: 7px;
-	}
+    ul
+    {
+        padding-left: 0;
+        margin-left: 7px;
+    }
 
-	li
-	{
-		list-style-type: none;
-		padding-left: 0;
-		margin-left: 0;
-	}
+    li
+    {
+        list-style-type: none;
+        padding-left: 0;
+        margin-left: 0;
+    }
 
-	h2
-	{
-		margin-top: 24px;
-		margin-bottom: 24px;
-		color: #777;
-		font-size: 20px;
-	}
+    h2
+    {
+        margin-top: 24px;
+        margin-bottom: 24px;
+        color: #777;
+        font-size: 20px;
+    }
 
-	h3
-	{
-		margin-top: 21px;
-		margin-bottom: 21px;
-		color: #777;
-		font-size: 16px;
-	}
+    h3
+    {
+        margin-top: 21px;
+        margin-bottom: 21px;
+        color: #777;
+        font-size: 16px;
+    }
 
-	h4
-	{
-		margin-top: 7px;
-		margin-bottom: 7px;
-		color: #777;
-		font-size: 16px;
-		font-weight: light;
-	}
+    h4
+    {
+        margin-top: 7px;
+        margin-bottom: 7px;
+        color: #777;
+        font-size: 16px;
+        font-weight: light;
+    }
 
-	h5
-	{
-		color: #777;
-		font-size: 14px;
-	}
+    h5
+    {
+        color: #777;
+        font-size: 14px;
+    }
 
-	button
-	{	
-		text-transform: uppercase;
-		border: 0;
-		background-color: transparent;
-		color: #00C3FF;
-		cursor: pointer;
-		padding: 0;
-		display: inline;
-	}
+    button
+    {
+        text-transform: uppercase;
+        border: 0;
+        background-color: transparent;
+        color: #00C3FF;
+        cursor: pointer;
+        padding: 0;
+        display: inline;
+    }
 
-	.hidden
-	{
-		display: none;
-	}
+    .hidden
+    {
+        display: none;
+    }
 
-	.expandable
-	{
-		background-color: #eee;
-		padding: 14px;
-	}
+    .expandable
+    {
+        background-color: #eee;
+        padding: 14px;
+    }
 
-	.expander-button
-	{
-		margin-left: 7px;
-	}
+    .expander-button
+    {
+        margin-left: 7px;
+    }
 
-	.code-sample
-	{
-		font-family: "Courier New", Courier, monospace;
-		font-weight: bold;
-		background-color: #A3D8FF;
-		color: #333;
-		padding-top: 15px;
-		padding-bottom: 15px;
-		padding-left: 5px;
-		padding-right: 0px;
-		width: 100%;
-	}
+    .code-sample
+    {
+        font-family: "Courier New", Courier, monospace;
+        font-weight: bold;
+        background-color: #A3D8FF;
+        color: #333;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 5px;
+        padding-right: 0px;
+        width: 100%;
+    }
 
-	.program-specific-content
-	{
-		color: #005DA0;
-	}
+    .program-specific-content
+    {
+        color: #005DA0;
+    }
 
-	.table-header
-	{
-		font-weight: bold;
-	}
+    .table-header
+    {
+        font-weight: bold;
+    }
 
-	.option-col
-	{
-		padding-top: 14px;
-		padding-left: 14px;
-		padding-right: 14px;
-	}
+    .option-col
+    {
+        padding-top: 14px;
+        padding-left: 14px;
+        padding-right: 14px;
+    }
 
 
-	.desc-col
-	{
-		padding-top: 14px;
-		max-width: 600px;
-		vertical-align: text-top;
-	}
+    .desc-col
+    {
+        padding-top: 14px;
+        max-width: 600px;
+        vertical-align: text-top;
+    }
 
-	.defaultvalue
-	{
-		font-weight: bold;
-	}
-
-	</style>
+    .defaultvalue
+    {
+        font-weight: bold;
+    }
+</style>
 </html>

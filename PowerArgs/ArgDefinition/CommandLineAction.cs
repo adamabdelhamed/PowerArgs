@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Preview;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -65,6 +66,11 @@ namespace PowerArgs
 
             foreach (var positionArg in (from a in Arguments where a.Position >= 1 select a).OrderBy(a => a.Position))
             {
+                if(positionArg.OmitFromUsage)
+                {
+                    continue;
+                }
+
                 if (positionArg.IsRequired)
                 {
                     ret += lt + positionArg.DefaultAlias + gt+" ";
@@ -280,21 +286,39 @@ namespace PowerArgs
                 ret.IgnoreCase = false;
             }
 
-            if (actionMethod.GetParameters().Length == 1 && ArgRevivers.CanRevive(actionMethod.GetParameters()[0].ParameterType) == false)
+            var directPipelineTarget = (from p in actionMethod.GetParameters() where p.HasAttr<ArgPipelineTarget>() select p).SingleOrDefault();
+
+            if (directPipelineTarget != null)
             {
-                ret.Arguments.AddRange(actionMethod.GetParameters()[0].ParameterType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => CommandLineArgument.IsArgument(p)).Select(p => CommandLineArgument.Create(p, knownAliases)));
-            }
-            else if (actionMethod.GetParameters().Length > 0 && actionMethod.GetParameters().Where(p => ArgRevivers.CanRevive(p.ParameterType) == false).Count() == 0)
-            {
+                if(directPipelineTarget.Attr<ArgPipelineTarget>().PipelineOnly == false && ArgRevivers.CanRevive(directPipelineTarget.ParameterType) == false)
+                {
+                    throw new InvalidArgDefinitionException("Method "+actionMethod.DeclaringType.FullName+"."+actionMethod.Name+" has parameter "+directPipelineTarget.Name+" of type "+directPipelineTarget.ParameterType.FullName+" which has set PipelineOnly to false, but has no reviver");
+                }
+
                 ret.Arguments.AddRange(actionMethod.GetParameters().Where(p => CommandLineArgument.IsArgument(p)).Select(p => CommandLineArgument.Create(p)));
                 foreach (var arg in (ret.Arguments).Where(a => a.Position >= 0))
                 {
                     arg.Position++; // Since position 0 is reserved for the action specifier
                 }
             }
-            else if(actionMethod.GetParameters().Length > 0)
+            else
             {
-                throw new InvalidArgDefinitionException("Your action method contains a parameter that cannot be revived on its own.  That is only valid if the non-revivable parameter is the only parameter.  In that case, the properties of that parameter type will be used.");
+                if (actionMethod.GetParameters().Length == 1 && ArgRevivers.CanRevive(actionMethod.GetParameters()[0].ParameterType) == false)
+                {
+                    ret.Arguments.AddRange(actionMethod.GetParameters()[0].ParameterType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => CommandLineArgument.IsArgument(p)).Select(p => CommandLineArgument.Create(p, knownAliases)));
+                }
+                else if (actionMethod.GetParameters().Length > 0 && actionMethod.GetParameters().Where(p => ArgRevivers.CanRevive(p.ParameterType) == false).Count() == 0)
+                {
+                    ret.Arguments.AddRange(actionMethod.GetParameters().Where(p => CommandLineArgument.IsArgument(p)).Select(p => CommandLineArgument.Create(p)));
+                    foreach (var arg in (ret.Arguments).Where(a => a.Position >= 0))
+                    {
+                        arg.Position++; // Since position 0 is reserved for the action specifier
+                    }
+                }
+                else if (actionMethod.GetParameters().Length > 0)
+                {
+                    throw new InvalidArgDefinitionException("Your action method contains a parameter that cannot be revived on its own.  That is only valid if the non-revivable parameter is the only parameter.  In that case, the properties of that parameter type will be used.");
+                }
             }
             return ret;
         }

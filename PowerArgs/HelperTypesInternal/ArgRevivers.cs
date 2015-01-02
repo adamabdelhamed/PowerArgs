@@ -8,7 +8,10 @@ using System.Reflection;
 
 namespace PowerArgs
 {
-    internal static class ArgRevivers
+    /// <summary>
+    /// A class that knows how to revive .NET objects from strings provided on the command line
+    /// </summary>
+    public static class ArgRevivers
     {
         private static Dictionary<Type, Func<string, string, object>> revivers;
         private static Dictionary<Type, Func<string, string, object>> Revivers
@@ -24,7 +27,12 @@ namespace PowerArgs
             }
         }
 
-        internal static bool CanRevive(Type t)
+        /// <summary>
+        /// Returns true if the given type can be revived, false otherwise
+        /// </summary>
+        /// <param name="t">The type to test</param>
+        /// <returns>true if the given type can be revived, false otherwise</returns>
+        public static bool CanRevive(Type t)
         {
             if (Revivers.ContainsKey(t) ||
                 t.IsEnum ||
@@ -92,7 +100,14 @@ namespace PowerArgs
             return (int)Enum.Parse(t, valueString, ignoreCase);
         }
 
-        internal static object Revive(Type t, string name, string value)
+        /// <summary>
+        /// Revives the given string into the desired .NET type
+        /// </summary>
+        /// <param name="t">The type to revive to</param>
+        /// <param name="name">the name of the argument</param>
+        /// <param name="value">The string value to revive</param>
+        /// <returns>A revived object of the desired type</returns>
+        public static object Revive(Type t, string name, string value)
         {
             if (t.IsArray == false && t.GetInterfaces().Contains(typeof(IList)))
             {

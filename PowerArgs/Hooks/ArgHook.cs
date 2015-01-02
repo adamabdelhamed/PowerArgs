@@ -6,6 +6,142 @@ using System.Reflection;
 namespace PowerArgs
 {
     /// <summary>
+    /// Creates a hook from an action
+    /// </summary>
+    internal class SingleActionHook : ArgHook
+    {
+        // TODO - write test to make sure I don't ever miss a hook
+
+        /// <summary>
+        /// Gets the hook implementation that was passed to the constructor
+        /// </summary>
+        public Action<HookContext> HookImpl { get; private set; }
+
+        /// <summary>
+        /// Gets the Id or name of the hook
+        /// </summary>
+        public string HookId { get; set; }
+
+        /// <summary>
+        /// Creates a new hook with the given name, priority, and implementation
+        /// </summary>
+        /// <param name="hookId">The id or name of the hook</param>
+        /// <param name="priority">The priority of the hook (higher numbers execute first)</param>
+        /// <param name="hookImpl">The hook implementation</param>
+        public SingleActionHook(string hookId, int priority, Action<HookContext> hookImpl)
+        {
+            this.HookId = hookId;
+            this.HookImpl = hookImpl;
+
+            var priorityProperty = GetType().GetProperty(HookId + "Priority");
+            if(priorityProperty == null)
+            {
+                throw new InvalidArgDefinitionException("Unknown hook id: " + HookId);
+            }
+
+            priorityProperty.SetValue(this, priority, null);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void AfterCancel(HookContext context)
+        {
+            DoHook("AfterCancel", context);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void AfterInvoke(HookContext context)
+        {
+            DoHook("AfterInvoke", context);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void AfterPopulateProperties(HookContext context)
+        {
+            DoHook("AfterPopulateProperties", context);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void AfterPopulateProperty(HookContext context)
+        {
+            DoHook("AfterPopulateProperty", context);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void BeforeInvoke(HookContext context)
+        {
+            DoHook("BeforeInvoke", context);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void BeforeParse(HookContext context)
+        {
+            DoHook("BeforeParse", context);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void BeforePopulateProperties(HookContext context)
+        {
+            DoHook("BeforePopulateProperties", context);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void BeforePopulateProperty(HookContext context)
+        {
+            DoHook("BeforePopulateProperty", context);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void BeforePrepareUsage(HookContext context)
+        {
+            DoHook("BeforePrepareUsage", context);
+        }
+
+        /// <summary>
+        /// Calls the underlying hook if it was specified in the constructor
+        /// </summary>
+        /// <param name="context">The processing context</param>
+        public override void BeforeValidateDefinition(HookContext context)
+        {
+            DoHook("BeforeValidateDefinition", context);
+        }
+
+        private void DoHook(string runningHookId, HookContext context)
+        {
+            if (runningHookId == HookId)
+            {
+                HookImpl(context);
+            }
+        }
+    }
+
+    /// <summary>
     /// An abstract class that you can implement if you want to hook into various parts of the
     /// parsing pipeline.
     /// </summary>
@@ -236,14 +372,17 @@ namespace PowerArgs
 
                 foreach (var action in Definition.Actions)
                 {
-                    foreach (var argument in action.Arguments)
+                    if (Definition.SpecifiedAction == null || action == Definition.SpecifiedAction)
                     {
-                        hooksToRun.AddRange(argument.Hooks.Select(h => new ContextualHookInfo 
-                        { 
-                            Hook = h, 
-                            Argument = argument,
-                            Property = argument.Source as PropertyInfo 
-                        }));
+                        foreach (var argument in action.Arguments)
+                        {
+                            hooksToRun.AddRange(argument.Hooks.Select(h => new ContextualHookInfo
+                            {
+                                Hook = h,
+                                Argument = argument,
+                                Property = argument.Source as PropertyInfo
+                            }));
+                        }
                     }
                 }
 
@@ -288,7 +427,28 @@ namespace PowerArgs
             {
                 RunHook(h => h.AfterCancelPriority, (h) => { h.AfterCancel(this); });
             }
+
+            internal void RunBeforePrepareUsage()
+            {
+                RunHook(h => h.BeforePrepareUsagePriority, (h) => { h.BeforePrepareUsage(this); });
+            }
+
+            internal void RunBeforeValidateDefinition()
+            {
+                RunHook(h => h.BeforeValidateDefinitionPriority, (h) => { h.BeforeValidateDefinition(this); });
+            }
         }
+
+        
+        /// <summary>
+        /// The priority of the BeforeValidateDefinition hook.  Higher numbers execute first.
+        /// </summary>
+        public int BeforeValidateDefinitionPriority { get; set; }
+
+        /// <summary>
+        /// The priority of the BeforePrepareUsage hook.  Higher numbers execute first.
+        /// </summary>
+        public int BeforePrepareUsagePriority { get; set; }
 
         /// <summary>
         /// The priority of the BeforeParse hook.  Higher numbers execute first.
@@ -331,11 +491,56 @@ namespace PowerArgs
         public int AfterCancelPriority { get; set; }
 
         /// <summary>
+        /// This hook is called before the definition is validated for structural issues
+        /// </summary>
+        /// <param name="context"></param>
+        public virtual void BeforeValidateDefinition(HookContext context) { }
+
+        /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateBeforeValidateDefinitionHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("BeforeValidateDefinition", priority, action);
+        }
+
+        /// <summary>
+        /// This hook is called before the template based usage system prepares the usage documentation
+        /// </summary>
+        /// <param name="context"></param>
+        public virtual void BeforePrepareUsage(HookContext context) { }
+
+        /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateBeforePrepareUsageHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("BeforePrepareUsage", priority, action);
+        }
+
+        /// <summary>
         /// This hook is called before the parser ever looks at the command line.  You can do some preprocessing of the 
         /// raw string arguments here.
         /// </summary>
         /// <param name="context">An object that has useful context.  See the documentation of each property for information about when those properties are populated.</param>
         public virtual void BeforeParse(HookContext context) { }
+
+        /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateBeforeParseHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("BeforeParse", priority, action);
+        }
 
         /// <summary>
         /// This hook is called before the arguments defined in a class are populated.  For actions (or sub commands) this hook will
@@ -345,10 +550,32 @@ namespace PowerArgs
         public virtual void BeforePopulateProperties(HookContext context) { }
 
         /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateBeforePopulatePropertiesHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("BeforePopulateProperties", priority, action);
+        }
+
+        /// <summary>
         /// This hook is called before an argument is transformed from a string into a proper type and validated.
         /// </summary>
         /// <param name="context">An object that has useful context.  See the documentation of each property for information about when those properties are populated.</param>
         public virtual void BeforePopulateProperty(HookContext context) { }
+
+        /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateBeforePopulatePropertyHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("BeforePopulateProperty", priority, action);
+        }
 
         /// <summary>
         /// This hook is called after an argument is transformed from a string into a proper type and validated.
@@ -356,6 +583,16 @@ namespace PowerArgs
         /// <param name="context">An object that has useful context.  See the documentation of each property for information about when those properties are populated.</param>
         public virtual void AfterPopulateProperty(HookContext context) { }
 
+        /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateAfterPopulatePropertyHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("AfterPopulateProperty", priority, action);
+        }
 
         /// <summary>
         /// This hook is called after the arguments defined in a class are populated.  For actions (or sub commands) this hook will
@@ -365,10 +602,32 @@ namespace PowerArgs
         public virtual void AfterPopulateProperties(HookContext context) { }
 
         /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateAfterPopulatePropertiesHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("AfterPopulateProperties", priority, action);
+        }
+
+        /// <summary>
         /// This hook is called after parsing is complete, but before any Action or Main method is invoked.
         /// </summary>
         /// <param name="context">An object that has useful context.  See the documentation of each property for information about when those properties are populated.</param>
         public virtual void BeforeInvoke(HookContext context) { }
+
+        /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateBeforeInvokeHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("BeforeInvoke", priority, action);
+        }
 
         /// <summary>
         /// This hook is called after any Action or Main method is invoked.
@@ -377,9 +636,31 @@ namespace PowerArgs
         public virtual void AfterInvoke(HookContext context) { }
 
         /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateAfterInvokeHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("AfterInvoke", priority, action);
+        }
+
+        /// <summary>
         /// This hook is called if CancelAllProcessing() is called on a HookContext object.
         /// </summary>
         /// <param name="context">An object that has useful context.  See the documentation of each property for information about when those properties are populated.</param>
         public virtual void AfterCancel(HookContext context) { }
+
+        /// <summary>
+        /// Creates a hook that targets the corresponding hook method given an implementation and a priority
+        /// </summary>
+        /// <param name="action">The hook implementation</param>
+        /// <param name="priority">The hook priority (higher executes first)</param>
+        /// <returns>The hook</returns>
+        public static ArgHook CreateAfterCancelHook(Action<HookContext> action, int priority = 0)
+        {
+            return new SingleActionHook("AfterCancel", priority, action);
+        }
     }
 }

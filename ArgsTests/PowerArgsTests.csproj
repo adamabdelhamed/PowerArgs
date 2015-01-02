@@ -37,6 +37,10 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -94,11 +98,16 @@
     <Compile Include="TemplatedUsageTests.cs" />
     <Compile Include="ConsoleTableBuilderTests.cs" />
     <Compile Include="ComposableArgActionsTests.cs" />
+    <Compile Include="PipelineTests.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PowerArgs.HttpExternalPipelineProvider\PowerArgs.HttpExternalPipelineProvider.csproj">
+      <Project>{1656ec14-33ff-4589-a2f9-e4eaf789dc95}</Project>
+      <Name>PowerArgs.HttpExternalPipelineProvider</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowerArgs\PowerArgs.csproj">
       <Project>{35809FAB-7FBD-4663-8409-2D6A312C8265}</Project>
       <Name>PowerArgs</Name>
@@ -111,6 +120,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Resources\PhotoAlbumManagerExpectedConsoleUsage.txt" />
   </ItemGroup>
   <ItemGroup>

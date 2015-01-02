@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 
 using System.Linq;
+using PowerArgs.Preview;
 
 
 namespace ArgsTests
@@ -132,6 +133,9 @@ namespace ArgsTests
                 typeof(ArgReviverAttribute),
                 typeof(DynamicExpressionProviderAttribute),
                 typeof(ArgActions),
+                typeof(ExternalInputPipelineStageProviderAttribute),
+                typeof(ExternalOutputPipelineStageProviderAttribute),
+                typeof(ArgPipelineActionStage),
             };
 
             var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>

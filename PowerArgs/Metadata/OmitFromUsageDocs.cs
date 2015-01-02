@@ -15,7 +15,6 @@ namespace PowerArgs
         /// <param name="info">the context used to modify the usage documentation</param>
         public override void BeforeGenerateUsage(ArgumentUsageInfo info)
         {
-            // TODO P0 - Add a test that exercises this
             info.Ignore = true;
         }
     }

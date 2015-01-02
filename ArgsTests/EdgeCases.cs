@@ -157,7 +157,6 @@ namespace ArgsTests
             catch (InvalidArgDefinitionException ex)
             {
                 Assert.IsTrue(ex.Message.Contains(typeof(CustomType).Name));
-                Assert.IsTrue(ex.Message.ToLower().Contains(typeof(NoReviverArgs).GetProperties()[0].Name.ToLower()));
             }
         }
 

@@ -109,6 +109,11 @@ namespace PowerArgs
 
             foreach(var element in collection)
             {
+                if(element is CommandLineArgument && ((CommandLineArgument)element).OmitFromUsage)
+                {
+                    continue;
+                }
+
                 var row = new List<ConsoleString>();
                 foreach (var col in Columns)
                 {

@@ -394,8 +394,9 @@ namespace PowerArgs
             }
         }
 
-        internal void Validate()
+        internal void Validate(ArgHook.HookContext context)
         {
+            context.RunBeforeValidateDefinition();
             ValidateArguments(Arguments);
             ValidateActionAliases();
             foreach (var action in Actions)
@@ -504,7 +505,7 @@ namespace PowerArgs
                     throw new InvalidArgDefinitionException("Argument '" + argument.DefaultAlias + "' has a null ArgumentType");
                 }
 
-                if (ArgRevivers.CanRevive(argument.ArgumentType) == false)
+                if (argument.MustBeRevivable && ArgRevivers.CanRevive(argument.ArgumentType) == false)
                 {
                     throw new InvalidArgDefinitionException("There is no reviver for type '" + argument.ArgumentType.Name + '"');
                 }

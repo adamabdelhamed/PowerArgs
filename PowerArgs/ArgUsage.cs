@@ -272,13 +272,36 @@ namespace PowerArgs
         /// <returns>The usage document</returns>
         public static ConsoleString GenerateUsageFromTemplate(CommandLineArgumentsDefinition def, string template = null, string templateSourceLocation = null)
         {
-            if(template == null)
+            bool needsContextCleanup = false;
+            if(ArgHook.HookContext.Current == null)
             {
-                template = Resources.DefaultConsoleUsageTemplate;
-                templateSourceLocation = "Default console usage template";
+                needsContextCleanup = true;
+                ArgHook.HookContext.Current = new ArgHook.HookContext();
+                ArgHook.HookContext.Current.Definition = def;
             }
-            var document = new DocumentRenderer().Render(template, def, templateSourceLocation);
-            return document;
+
+            try
+            {
+                if (ArgHook.HookContext.Current.Definition == def)
+                {
+                    ArgHook.HookContext.Current.RunBeforePrepareUsage();
+                }
+
+                if (template == null)
+                {
+                    template = Resources.DefaultConsoleUsageTemplate;
+                    templateSourceLocation = "Default console usage template";
+                }
+                var document = new DocumentRenderer().Render(template, def, templateSourceLocation);
+                return document;
+            }
+            finally
+            {
+                if(needsContextCleanup)
+                {
+                    ArgHook.HookContext.Current = null;
+                }
+            }
         }
 
         /// <summary>
@@ -398,6 +421,11 @@ namespace PowerArgs
         [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to https://github.com/adamabdelhamed/PowerArgs#generate-usage-documentation-from-templates-built-in-or-custom to learn more.")]
         public static ConsoleString GetStyledUsage(CommandLineArgumentsDefinition definition, string exeName = null, ArgUsageOptions options = null)
         {
+            if (ArgHook.HookContext.Current != null && ArgHook.HookContext.Current.Definition == definition)
+            {
+                ArgHook.HookContext.Current.RunBeforePrepareUsage();
+            }
+
             options = options ?? new ArgUsageOptions();
             if (exeName == null)
             {

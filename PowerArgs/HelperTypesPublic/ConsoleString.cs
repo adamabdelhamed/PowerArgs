@@ -48,7 +48,7 @@ namespace PowerArgs
         /// </summary>
         public void Write()
         {
-            ConsoleString.WriteHelper(this.ForegroundColor, this.BackgroundColor, Value);
+            new ConsoleString(new ConsoleCharacter[] { this }).Write();
         }
 
         /// <summary>
@@ -168,6 +168,17 @@ namespace PowerArgs
         private List<ConsoleCharacter> characters;
 
         /// <summary>
+        /// Gets the string value of this ConsoleString.  Useful when using the debugger.
+        /// </summary>
+        public string StringValue
+        {
+            get
+            {
+                return ToString();
+            }
+        }
+
+        /// <summary>
         /// The length of the string.
         /// </summary>
         public int Length
@@ -199,6 +210,17 @@ namespace PowerArgs
             characters = new List<ConsoleCharacter>();
             ContentSet = false;
             Append(other);
+        }
+        
+        /// <summary>
+        /// Creates a new ConsoleString from a collection of ConsoleCharacter objects
+        /// </summary>
+        /// <param name="chars">The value to use to seed this string</param>
+        public ConsoleString(IEnumerable<ConsoleCharacter> chars)
+        {
+            characters = new List<ConsoleCharacter>();
+            ContentSet = false;
+            Append(chars);
         }
 
         /// <summary>
@@ -425,34 +447,41 @@ namespace PowerArgs
         /// </summary>
         public void Write()
         {
-            string buffer = "";
-
-            ConsoleColor existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
-            try
+            if (ConsoleOutInterceptor.IsInitialized)
             {
-                ConsoleColor currentForeground = existingForeground, currentBackground = existingBackground;
-                foreach (var character in this)
+                ConsoleOutInterceptor.Instance.Write(this);
+            }
+            else
+            {
+                string buffer = "";
+
+                ConsoleColor existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
+                try
                 {
-                    if (character.ForegroundColor != currentForeground ||
-                        character.BackgroundColor != currentBackground)
+                    ConsoleColor currentForeground = existingForeground, currentBackground = existingBackground;
+                    foreach (var character in this)
                     {
-                        ConsoleProvider.Write(buffer);
-                        ConsoleProvider.ForegroundColor = character.ForegroundColor;
-                        ConsoleProvider.BackgroundColor = character.BackgroundColor;
-                        currentForeground = character.ForegroundColor;
-                        currentBackground = character.BackgroundColor;
-                        buffer = "";
+                        if (character.ForegroundColor != currentForeground ||
+                            character.BackgroundColor != currentBackground)
+                        {
+                            ConsoleProvider.Write(buffer);
+                            ConsoleProvider.ForegroundColor = character.ForegroundColor;
+                            ConsoleProvider.BackgroundColor = character.BackgroundColor;
+                            currentForeground = character.ForegroundColor;
+                            currentBackground = character.BackgroundColor;
+                            buffer = "";
+                        }
+
+                        buffer += character.Value;
                     }
 
-                    buffer += character.Value;
+                    if (buffer.Length > 0) ConsoleProvider.Write(buffer);
                 }
-
-                if (buffer.Length > 0) ConsoleProvider.Write(buffer);
-            }
-            finally
-            {
-                ConsoleProvider.ForegroundColor = existingForeground;
-                ConsoleProvider.BackgroundColor = existingBackground;
+                finally
+                {
+                    ConsoleProvider.ForegroundColor = existingForeground;
+                    ConsoleProvider.BackgroundColor = existingBackground;
+                }
             }
         }
 
@@ -612,31 +641,14 @@ namespace PowerArgs
             ContentSet = true;
         }
 
-        private void Append(ConsoleString other)
+        private void Append(IEnumerable<ConsoleCharacter> chars)
         {
             if (ContentSet) throw new Exception("ConsoleStrings are immutable");
-            foreach (var c in other)
+            foreach (var c in chars)
             {
                 this.characters.Add(c);
             }
             ContentSet = true;
-        }
-
-        internal static void WriteHelper(ConsoleColor foreground, ConsoleColor background, params char[] text)
-        {
-            ConsoleColor existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
-
-            try
-            {
-                ConsoleProvider.ForegroundColor = foreground;
-                ConsoleProvider.BackgroundColor = background;
-                ConsoleProvider.Write(text);
-            }
-            finally
-            {
-                ConsoleProvider.ForegroundColor = existingForeground;
-                ConsoleProvider.BackgroundColor = existingBackground;
-            }
         }
 
         /// <summary>

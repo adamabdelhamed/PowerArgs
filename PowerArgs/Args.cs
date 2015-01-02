@@ -372,10 +372,12 @@ namespace PowerArgs
         {
             // TODO - Validation should be consistently done against the definition, not against the raw type
             if (definition.ArgumentScaffoldType != null) ValidateArgScaffold(definition.ArgumentScaffoldType);
-            definition.Validate();
 
             var context = ArgHook.HookContext.Current;
             context.Definition = definition;
+
+            definition.Validate(context);
+
             if (definition.ArgumentScaffoldType != null) context.Args = Activator.CreateInstance(definition.ArgumentScaffoldType);
             context.CmdLineArgs = input;
 
@@ -510,10 +512,12 @@ namespace PowerArgs
                 if (prop.Attr<ArgIgnoreAttribute>() != null) continue;
                 if (CommandLineAction.IsActionImplementation(prop)) continue;
 
-                if (ArgRevivers.CanRevive(prop.PropertyType) == false)
-                {
-                    throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.Name);
-                }
+                // This check happens in the CommandLineArgumentsDefinition validation method and should not be repeated here.  Leaving the code commented while this bakes, but this code
+                // should be removable in the future.
+                //if (ArgRevivers.CanRevive(prop.PropertyType) == false)
+                //{
+                //    throw new InvalidArgDefinitionException("There is no reviver for type " + prop.PropertyType.Name + ". Offending Property: " + prop.DeclaringType.Name + "." + prop.Name);
+                //}
 
                 if (prop.PropertyType.IsEnum)
                 {

@@ -36,6 +36,14 @@ namespace ArgsTests
         }
     }
 
+    public class UnitTestEXEAttribute : ArgHook
+    {
+        public override void BeforePrepareUsage(ArgHook.HookContext context)
+        {
+            context.Definition.ExeName = "UnitTests";
+        }
+    }
+
     public static class Helpers
     {
         public static void AssertAreEqualWithDiffInfo(string expected, string actual)
@@ -55,7 +63,7 @@ namespace ArgsTests
                 var actualChar = actual[i];
                 if (expectedChar != actualChar)
                 {
-                    Assert.Fail("Character on line " + line + " and col " + col + " did not match.  Expected '" + expectedChar + ", actual '" + actualChar + "'");
+                    Assert.Fail("Character on line " + line + " and col " + col + " did not match.  Expected '" + expectedChar + ", actual '" + actualChar + "'\n\nExpected:\n"+expected+"\n\nActual:\n"+actual);
                 }
 
                 verified++;

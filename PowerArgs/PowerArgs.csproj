@@ -45,6 +45,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
     <Compile Include="Extensions\Array.cs" />
     <Compile Include="Extensions\IEnumerableOfIArgMetadata.cs" />
     <Compile Include="Extensions\FieldInfo.cs" />
@@ -54,6 +55,8 @@
     <Compile Include="Extensions\ParemeterInfo.cs" />
     <Compile Include="Extensions\Type.cs" />
     <Compile Include="HelperTypesInternal\ActionAndArgumentSmartTabCompletionSource.cs" />
+    <Compile Include="HelperTypesInternal\ConsoleOutInterceptor.cs" />
+    <Compile Include="HelperTypesInternal\PowerLogger.cs" />
     <Compile Include="HelperTypesPublic\AliasCollection.cs" />
     <Compile Include="HelperTypesInternal\CaseAwareStringComparer.cs" />
     <Compile Include="HelperTypesInternal\AttrOverride.cs" />
@@ -82,7 +85,21 @@
     <Compile Include="HelperTypesPublic\ITabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\IUsageTemplateProvider.cs" />
     <Compile Include="HelperTypesPublic\ParseResult.cs" />
-    <Compile Include="Hooks\ArgPipeline.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipeline.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipelineActionStages\Collapse.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipelineActionStages\Expand.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipelineActionStages\Count.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipelineActionStages\Filter.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipelineActionStages\Table.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipelineManager.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipelineMapper.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipelineActionStage.cs" />
+    <Compile Include="Hooks\ArgPipeline\ArgPipelineTarget.cs" />
+    <Compile Include="Hooks\ArgPipeline\ExternalPipelineProvider.cs" />
+    <Compile Include="Hooks\ArgPipeline\InProcessPipelineStage.cs" />
+    <Compile Include="Hooks\ArgPipeline\PipelineOutputFormatter.cs" />
+    <Compile Include="Hooks\ArgPipeline\RootPipelineStage.cs" />
+    <Compile Include="Hooks\ArgPipeline\PipelineStage.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -163,6 +180,7 @@
   <ItemGroup>
     <None Include="Resources\DefaultConsoleUsageTemplate.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

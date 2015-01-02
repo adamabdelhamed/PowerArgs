@@ -140,6 +140,12 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Gets or sets a flag indicating that this argument must be revivable from a string.  If false, the argument can only be populated
+        /// programatically and if specified on the command line without a reviver the program will throw an InvalidArgDefinitionException.
+        /// </summary>
+        public bool MustBeRevivable { get; set; }
+
+        /// <summary>
         /// The CLR type of this argument.
         /// </summary>
         public Type ArgumentType { get; private set; }
@@ -156,6 +162,36 @@ namespace PowerArgs
             set
             {
                 overrides.Set("IgnoreCase", value);
+            }
+        }
+
+        /// <summary>
+        /// Specifies whether this argument should be omitted from usage documentation
+        /// </summary>
+        public bool OmitFromUsage
+        {
+            get
+            {
+                return overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p =>true, false);
+            }
+            set
+            {
+                overrides.Set("OmitFromUsage", value);
+            }
+        }
+
+        /// <summary>
+        /// True if this argument should be included in usage documentation
+        /// </summary>
+        public bool IncludeInUsage
+        {
+            get
+            {
+                return !OmitFromUsage;
+            }
+            set
+            {
+                OmitFromUsage = !value;
             }
         }
 
@@ -266,6 +302,11 @@ namespace PowerArgs
         public object RevivedValue { get; set; }
 
         /// <summary>
+        /// When set, the given value will be used to revive this argument rather than performing validation and revival.
+        /// </summary>
+        public object RevivedValueOverride { get; set; }
+
+        /// <summary>
         /// The first alias of this argument or null if no aliases are defined.
         /// </summary>
         public string DefaultAlias
@@ -278,6 +319,7 @@ namespace PowerArgs
 
         internal CommandLineArgument()
         {
+            MustBeRevivable = true;
             overrides = new AttrOverride(GetType());
             Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; });
             PropertyInitializer.InitializeFields(this, 1);
@@ -460,9 +502,13 @@ namespace PowerArgs
             {
                 RevivedValue = ArgRevivers.Revive(ArgumentType, Aliases.First(), commandLineValue);
             }
-            else if (commandLineValue != null)
+            else if (commandLineValue != null && ArgRevivers.CanRevive(ArgumentType))
             {
                 throw new ArgException("Unexpected argument '" + Aliases.First() + "' with value '" + commandLineValue + "'");
+            }
+            else if (commandLineValue != null && ArgRevivers.CanRevive(ArgumentType) == false)
+            {
+                throw new InvalidArgDefinitionException("There is no reviver for type '" + ArgumentType.Name + '"');
             }
         }
 
@@ -506,8 +552,18 @@ namespace PowerArgs
         internal void Populate(ArgHook.HookContext context)
         {
             RunBeforePopulateProperty(context);
-            Validate(ref context.ArgumentValue);
-            Revive(context.ArgumentValue);
+
+            if (RevivedValueOverride == null)
+            {
+                Validate(ref context.ArgumentValue);
+                Revive(context.ArgumentValue);
+            }
+            else
+            {
+                RevivedValue = RevivedValueOverride;
+                RevivedValueOverride = null;
+            }
+
             RunAfterPopulateProperty(context);
         }
 
