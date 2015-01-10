@@ -1,7 +1,7 @@
 ###Binary
 PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
-Reference information for the entire API surface of the latest version is available (here)[http://adamabdelhamed2.blob.core.windows.net/powerargsdocs/2.5.1.0/html/classes.html].
+Reference information for the entire API surface of the latest version is available [here](http://adamabdelhamed2.blob.core.windows.net/powerargsdocs/2.5.1.0/html/classes.html).
 
 ###Overview
 
@@ -50,7 +50,7 @@ are handled is that any exception deriving from ArgException will be treated as 
 occurs.  PowerArgs will display the message as well as auto-generated usage documentation for your program.  All other exceptions will still bubble up and need to be handled by your code.
     
     // A class that describes the command line arguments for this program
-   [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
 	public class MyArgs
     {
         // This argument is required and if not specified the user will 
