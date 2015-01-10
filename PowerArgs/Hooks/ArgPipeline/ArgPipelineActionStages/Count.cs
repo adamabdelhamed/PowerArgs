@@ -35,7 +35,7 @@
         /// </summary>
         protected override void BeforeSetDrainedToTrue()
         {
-            ArgPipeline.Push(count);
+            ArgPipeline.Push(count, this);
         }
     } 
 }

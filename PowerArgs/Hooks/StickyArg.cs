@@ -76,7 +76,12 @@ namespace PowerArgs
             }
         }
 
-        private string GetStickyArg(string name)
+        /// <summary>
+        /// Gets the value of the given sticky arg
+        /// </summary>
+        /// <param name="name">the argument key</param>
+        /// <returns>the sticky value or null if there is not one</returns>
+        public string GetStickyArg(string name)
         {
             Load();
             string ret = null;
@@ -84,7 +89,12 @@ namespace PowerArgs
             return ret;
         }
 
-        private void SetStickyArg(string name, string value)
+        /// <summary>
+        /// Sets the value of a sticky arg
+        /// </summary>
+        /// <param name="name">The identifier of the arg</param>
+        /// <param name="value">the sticky value</param>
+        public void SetStickyArg(string name, string value)
         {
             Load();
             if (stickyArgs.ContainsKey(name))

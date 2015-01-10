@@ -15,6 +15,8 @@ namespace PowerArgs.Preview
     {
         private List<PipelineStage> _stages;
 
+        private Dictionary<PipelineStage, Queue<object>> serializedStageInput;
+
         /// <summary>
         /// Gets a read only collection of stages in this pipeline
         /// </summary>
@@ -44,11 +46,19 @@ namespace PowerArgs.Preview
         object asyncExceptionLock;
         List<Exception> asyncExceptions;
 
-        internal ArgPipelineManager()
+        public PipelineMode Mode { get; private set; }
+
+        internal ArgPipelineManager(PipelineMode mode)
         {
+            this.Mode = mode;
             _stages = new List<PipelineStage>();
             asyncExceptions = new List<Exception>();
             asyncExceptionLock = new object();
+
+            if(Mode == PipelineMode.SerializedStages)
+            {
+                serializedStageInput = new Dictionary<PipelineStage, Queue<object>>();
+            }
         }
 
         internal PipelineStage CreateNextStage(ArgHook.HookContext context, string[] commandLine, ICommandLineArgumentsDefinitionFactory factory)
@@ -79,6 +89,27 @@ namespace PowerArgs.Preview
             return next;
         }
 
+        internal void Push(object o, PipelineStage current)
+        {
+            if (Mode == PipelineMode.ParallelStages)
+            {
+                current.NextStage.Accept(o);
+            }
+            else if (Mode == PipelineMode.SerializedStages)
+            {
+                if (serializedStageInput.ContainsKey(current.NextStage) == false)
+                {
+                    serializedStageInput.Add(current.NextStage, new Queue<object>());
+                }
+
+                serializedStageInput[current.NextStage].Enqueue(o);
+            }
+            else
+            {
+                throw new NotSupportedException("Unknown mode: " + Mode);
+            }
+        }
+
         internal void Drain(bool block = true)
         {
             if(_stages.Count > 0)
@@ -90,9 +121,9 @@ namespace PowerArgs.Preview
             {
                 Thread.Sleep(10);
             }
-
             if(block)
             {
+                PowerLogger.LogLine("The pipeline is drained");
                 lock (asyncExceptionLock)
                 {
                     try
@@ -140,6 +171,15 @@ namespace PowerArgs.Preview
             {
                 if(toAdd.NextStage != null)
                 {
+                    Queue<object> nextStageSerializedInput;
+                    if(Mode == PipelineMode.SerializedStages && serializedStageInput.TryGetValue(toAdd.NextStage, out nextStageSerializedInput))
+                    {
+                        while(nextStageSerializedInput.Count > 0)
+                        {
+                            toAdd.NextStage.Accept(nextStageSerializedInput.Dequeue());
+                        }
+                    }
+
                     toAdd.NextStage.Drain();
                 }
             };

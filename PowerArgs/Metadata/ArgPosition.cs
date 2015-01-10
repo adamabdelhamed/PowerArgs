@@ -8,7 +8,7 @@ namespace PowerArgs
     /// Zero '0' represents the first position.  If you are using the Action framework then subcommands must start at
     /// position 1.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter)]
     public class ArgPosition : Attribute, ICommandLineArgumentMetadata
     {
         /// <summary>

@@ -9,12 +9,16 @@ namespace PowerArgs.Preview
      * TODOs before publishing
      * 
      * P0 - Interprocess piping - error cases, particularly around disconnected pipes
-     * P0 - Code review, documentation, and cleanup
-     * P0 - PowerLogger cleanup
      * P1 - Implement $help to get usage info for built in commands.  Or $webhelp to get browser help.
      * P1 - Tab completion to support contextual pipeline info
      * 
      */
+
+    public enum PipelineMode
+    {
+        SerializedStages,
+        ParallelStages,
+    }
 
     /// <summary>
     /// A hook that enables the ArgPipeline capabilities.
@@ -69,6 +73,8 @@ namespace PowerArgs.Preview
             }
         }
 
+        public PipelineMode Mode { get; set; }
+
         private ICommandLineArgumentsDefinitionFactory commandLineDeinitionFactory;
 
         static ArgPipeline()
@@ -84,6 +90,7 @@ namespace PowerArgs.Preview
             // We want to be the last thing that executes before the parser runs
             this.BeforeParsePriority = 0;
             CommandLineDefinitionFactoryType = typeof(ArgumentScaffoldTypeCommandLineDefinitionFactory);
+            this.Mode = PipelineMode.SerializedStages;
         }
 
         /// <summary>
@@ -186,13 +193,13 @@ namespace PowerArgs.Preview
         /// <param name="context">The processing context</param>
         public override void AfterInvoke(ArgHook.HookContext context)
         {
+            context.Definition.Clean();
             if (ContextHasPipelineManager(context) == false)
             {
                 return;
             }
             var manager = GetPipelineManagerFromContext(context);
             manager.Drain();
-            context.Definition.SpecifiedAction = null;
         }
 
         /// <summary>
@@ -220,19 +227,23 @@ namespace PowerArgs.Preview
                 if (ConsoleOutInterceptor.IsInitialized) return;
                 ConsoleString.WriteLine("null object pushed through the pipeline", ConsoleColor.Yellow);
             }
-            else if (current != null && current.NextStage != null)
+            else if ( current != null && current.NextStage != null && current.Manager != null)
             {
-                current.NextStage.Accept(o);
+                current.Manager.Push(o, current);
             }
             else
             {
-                if (ObjectExitedPipeline != null)
-                {
-                    ObjectExitedPipeline(o);
-                }
-
+                ArgPipeline.FireObjectExited(o);
                 if (ConsoleOutInterceptor.IsInitialized) return;
                 PipelineOutputFormatter.Format(o).WriteLine();
+            }
+        }
+
+        private static void FireObjectExited(object o)
+        {
+            if (ObjectExitedPipeline != null)
+            {
+                ObjectExitedPipeline(o);
             }
         }
 
@@ -245,7 +256,7 @@ namespace PowerArgs.Preview
         {
             if (ContextHasPipelineManager(context) == false)
             {
-                context.SetProperty("ArgPipelineManager", new ArgPipelineManager());
+                context.SetProperty("ArgPipelineManager", new ArgPipelineManager(Mode));
             }
 
             return context.GetProperty<ArgPipelineManager>("ArgPipelineManager");

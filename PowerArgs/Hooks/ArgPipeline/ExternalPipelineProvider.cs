@@ -55,11 +55,18 @@ namespace PowerArgs.Preview
                 
             foreach(Assembly toInspect in GetSearchAssemblyCache())
             {
-                var match = (from t in toInspect.GetTypes() where t.HasAttr<TAttr>() && (t.GetInterfaces().Contains(typeof(TBaseReq)) || t.IsSubclassOf(typeof(TBaseReq)) ) select t).FirstOrDefault();
-                if(match != null)
+                try
                 {
-                    targetType = match;
-                    break;
+                    var match = (from t in toInspect.GetTypes() where t.HasAttr<TAttr>() && (t.GetInterfaces().Contains(typeof(TBaseReq)) || t.IsSubclassOf(typeof(TBaseReq))) select t).FirstOrDefault();
+                    if (match != null)
+                    {
+                        targetType = match;
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    PowerLogger.LogLine("Exception trying to reflect over an assembly to get type info: "+ex.ToString());
                 }
             }
 

@@ -32,10 +32,7 @@ namespace PowerArgs.Preview
 
         public override void Drain()
         {
-            if(NextStage != null)
-            {
-                NextStage.Drain();
-            }
+            FireDrained();
             PipelineStage.Current = null;
         }
 

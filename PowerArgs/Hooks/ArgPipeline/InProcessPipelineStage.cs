@@ -57,7 +57,7 @@ namespace PowerArgs.Preview
             {
                 if (drainRequested)
                 {
-                    throw new InvalidOperationException("This stage cannot accept objects since a drain request has been submitted.");
+                    throw new InvalidOperationException("STAGE "+StageIndex+" - This stage cannot accept objects since a drain request has been submitted.");
                 }
 
                 inputQueue.Enqueue(o);

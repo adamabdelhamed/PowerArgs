@@ -88,14 +88,14 @@ namespace PowerArgs.Preview
             {
                 foreach(var item in elements)
                 {
-                    ArgPipeline.Push(item.GetType().GetProperty("item").GetValue(item, null));
+                    ArgPipeline.Push(item.GetType().GetProperty("item").GetValue(item, null), this);
                 }
             }
             else
             {
                 foreach (var item in elements)
                 {
-                    ArgPipeline.Push(item);
+                    ArgPipeline.Push(item, this);
                 }
             }
         }

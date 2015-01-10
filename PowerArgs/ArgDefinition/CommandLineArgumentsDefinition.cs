@@ -384,6 +384,20 @@ namespace PowerArgs
             return ret;
         }
 
+        /// <summary>
+        /// Resets all portions of the model that may have side effects from being run through the 
+        /// argument processor.  
+        /// </summary>
+        public void Clean()
+        {
+            SpecifiedAction = null;
+            foreach(var arg in AllGlobalAndActionArguments)
+            {
+                arg.RevivedValue = null;
+                arg.RevivedValueOverride = null;
+            }
+        }
+
         internal void SetPropertyValues(object o)
         {
             foreach (var argument in Arguments)

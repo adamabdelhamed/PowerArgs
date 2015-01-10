@@ -121,6 +121,7 @@ namespace PowerArgs
                 }
                 else if(ex.InnerException != null)
                 {
+                    PowerLogger.LogLine("Inner exception stack trace: "+ex.InnerException.ToString());
                     throw ex.InnerException;
                 }
                 else

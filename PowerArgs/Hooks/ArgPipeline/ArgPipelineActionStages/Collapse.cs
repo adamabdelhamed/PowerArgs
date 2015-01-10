@@ -36,7 +36,7 @@ namespace PowerArgs.Preview
         /// </summary>
         protected override void BeforeSetDrainedToTrue()
         {
-            ArgPipeline.Push(objects);
+            ArgPipeline.Push(objects, this);
         }
     }
 }
