@@ -123,7 +123,7 @@ say you wanted to build a calculator program that has 4 actions; add, subtract, 
     {
         static void Main(string[] args)
         {
-            Args.InvokeMain<CalculatorProgram>(args);
+            Args.InvokeAction<CalculatorProgram>(args);
         }
     }
 
