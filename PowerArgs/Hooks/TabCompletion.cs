@@ -157,9 +157,16 @@ namespace PowerArgs
                 this.REPL = false;
                 return;
             }
-            if (Indicator == "" && context.CmdLineArgs.Length != 0) return;
-            if (Indicator != "" && (context.CmdLineArgs.Length != 1 || context.CmdLineArgs[0] != Indicator)) return;
-          
+            if (Indicator == "" && context.CmdLineArgs.Length != 0)
+            {
+                this.REPL = false;
+                return;
+            }
+            if (Indicator != "" && (context.CmdLineArgs.Length != 1 || context.CmdLineArgs[0] != Indicator))
+            {
+                this.REPL = false;
+                return;
+            }
 
             var existingColor = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Cyan;

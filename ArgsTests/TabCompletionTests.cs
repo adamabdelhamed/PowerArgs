@@ -342,6 +342,14 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestREPLExitsWhenIndicatorIsNotPresent()
+        {
+
+            var result = Args.InvokeMain<TestArgsWithREPL>("-someparam", "somevalue");
+            Assert.AreEqual("somevalue", result.Args.SomeParam);
+        }
+
+        [TestMethod]
         public void TestModeledActionREPL()
         {
             int invokeCount = 0;
