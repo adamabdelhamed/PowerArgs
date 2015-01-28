@@ -85,7 +85,7 @@ namespace PowerArgs.Preview
                 }
                 drainRequested = true;
 
-                if (executionThread == null || executionThread.IsAlive == false)
+                if ((executionThread == null || executionThread.IsAlive == false) && inputQueue.Count == 0)
                 {
                     SetDrainedToTrue();
                 }
@@ -161,7 +161,7 @@ namespace PowerArgs.Preview
                     }
                 }
                 while (wasDrainRequestedAtTimeOfDequeue == false || lastObjectProcessed != null);
-                
+
                 SetDrainedToTrue();
             }
             catch (Exception ex)
