@@ -532,5 +532,21 @@ namespace ArgsTests
             CursorLeft = 0;
             CursorTop++;
         }
+
+
+        public int Read()
+        {
+            throw new NotImplementedException();
+        }
+
+        public ConsoleKeyInfo ReadKey(bool intercept)
+        {
+            return ReadKey();
+        }
+
+        public string ReadLine()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

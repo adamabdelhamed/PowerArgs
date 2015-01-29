@@ -207,7 +207,7 @@ namespace PowerArgs
 
             while (true)
             {
-                var info = ConsoleImpl.ReadKey();
+                var info = ConsoleImpl.ReadKey(true);
                 int i = ConsoleImpl.CursorLeft - leftStart + (ConsoleImpl.CursorTop - topStart) * ConsoleImpl.BufferWidth;
 
                 if (info.Key == ConsoleKey.Home)
