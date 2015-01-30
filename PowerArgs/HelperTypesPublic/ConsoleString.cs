@@ -317,7 +317,7 @@ namespace PowerArgs
                 string replacement = "";
                 for (int i = 0; i < toFind.Length; i++)
                 {
-                    replacement += characters[currentIndex].Value;
+                    replacement += ret.characters[currentIndex].Value;
                     ret.characters.RemoveAt(currentIndex);
                 }
                 ret.characters.InsertRange(currentIndex, replacement.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));

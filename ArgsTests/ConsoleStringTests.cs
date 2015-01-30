@@ -187,6 +187,7 @@ namespace ArgsTests
             var highlighted = new ConsoleString("Adam").Highlight("a",foregroundColor: ConsoleColor.Red, comparison: StringComparison.InvariantCultureIgnoreCase);
             Assert.AreEqual(highlighted[0], new ConsoleCharacter('A', ConsoleColor.Red));
             Assert.AreEqual(highlighted[2], new ConsoleCharacter('a', ConsoleColor.Red));
+            Assert.AreEqual("The quick brown fox", new ConsoleString("The quick brown fox").Highlight("brown", ConsoleColor.Red).ToString());
         }
 
         [TestMethod]
