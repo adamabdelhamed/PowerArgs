@@ -272,8 +272,9 @@ namespace PowerArgs
         /// <param name="toReplace">The replacement value</param>
         /// <param name="foregroundColor">The foreground color (defaults to the console's foreground color at initialization time).</param>
         /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
+        /// <param name="comparison">Specifies how characters are compared</param>
         /// <returns>A new ConsoleString with the replacements.</returns>
-        public ConsoleString Replace(string toFind, string toReplace, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        public ConsoleString Replace(string toFind, string toReplace, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
             ConsoleString ret = new ConsoleString(this);
 
@@ -282,11 +283,45 @@ namespace PowerArgs
             while (true)
             {
                 string toString = ret.ToString();
-                int currentIndex = toString.IndexOf(toFind, startIndex);
+                int currentIndex = toString.IndexOf(toFind, startIndex, comparison);
                 if (currentIndex < 0) break;
                 for (int i = 0; i < toFind.Length; i++) ret.characters.RemoveAt(currentIndex);
                 ret.characters.InsertRange(currentIndex, toReplace.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
                 startIndex = currentIndex + toReplace.Length;
+            }
+
+            return ret;
+        }
+
+
+        /// <summary>
+        /// Highights all occurrances of the given string with the desired foreground and background color.
+        /// </summary>
+        /// <param name="toFind">The substring to find</param>
+        /// <param name="foregroundColor">The foreground color (defaults to the console's foreground color at initialization time).</param>
+        /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
+        /// <param name="comparison">Specifies how characters are compared</param>
+        /// <returns>A new ConsoleString with the highlights.</returns>
+        public ConsoleString Highlight(string toFind,ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
+        {
+            ConsoleString ret = new ConsoleString(this);
+
+            int startIndex = 0;
+
+            while (true)
+            {
+                string toString = ret.ToString();
+                int currentIndex = toString.IndexOf(toFind, startIndex, comparison);
+                if (currentIndex < 0) break;
+
+                string replacement = "";
+                for (int i = 0; i < toFind.Length; i++)
+                {
+                    replacement += characters[currentIndex].Value;
+                    ret.characters.RemoveAt(currentIndex);
+                }
+                ret.characters.InsertRange(currentIndex, replacement.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
+                startIndex = currentIndex + replacement.Length;
             }
 
             return ret;
@@ -316,8 +351,9 @@ namespace PowerArgs
         /// Finds the index of a given substring in this ConsoleString.
         /// </summary>
         /// <param name="toFind">The substring to search for.</param>
+        /// <param name="comparison">Specifies how characters are compared</param>
         /// <returns>The first index of the given substring or -1 if the substring was not found.</returns>
-        public int IndexOf(string toFind)
+        public int IndexOf(string toFind, StringComparison comparison = StringComparison.InvariantCulture)
         {
             if(toFind == null)return -1;
             if(toFind == "")return 0;
@@ -329,7 +365,7 @@ namespace PowerArgs
                 j = 0;
                 k = 0;
 
-                while (toFind[j] == characters[i + k].Value)
+                while ((toFind[j]+"").Equals(""+characters[i + k].Value, comparison))
                 {
                     j++;
                     k++;
@@ -345,10 +381,11 @@ namespace PowerArgs
         /// Determines if this ConsoleString contains the given substring.
         /// </summary>
         /// <param name="substr">The substring to search for.</param>
+        /// <param name="comparison">Specifies how characters are compared</param>
         /// <returns>True if found, false otherwise.</returns>
-        public bool Contains(string substr)
+        public bool Contains(string substr, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            return IndexOf(substr) >= 0;
+            return IndexOf(substr, comparison) >= 0;
         }
 
         /// <summary>

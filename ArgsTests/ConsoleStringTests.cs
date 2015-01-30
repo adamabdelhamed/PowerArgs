@@ -162,6 +162,34 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestIndexOfCustomComparison()
+        {
+            Assert.AreEqual(-1, new ConsoleString("Adam").IndexOf("adam", StringComparison.InvariantCulture));
+            Assert.AreEqual(0, new ConsoleString("Adam").IndexOf("adam", StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        [TestMethod]
+        public void TestContainsCustomComparison()
+        {
+            Assert.IsFalse(new ConsoleString("Adam").Contains("adam", StringComparison.InvariantCulture));
+            Assert.IsTrue(new ConsoleString("Adam").Contains("adam", StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        [TestMethod]
+        public void TestReplaceCustomComparison()
+        {
+            Assert.AreEqual(new ConsoleString("Adam"), new ConsoleString("adam").Replace("adam", "Adam", comparison: StringComparison.InvariantCulture));
+        }
+
+        [TestMethod]
+        public void TestHighlightCustomComparison()
+        {
+            var highlighted = new ConsoleString("Adam").Highlight("a",foregroundColor: ConsoleColor.Red, comparison: StringComparison.InvariantCultureIgnoreCase);
+            Assert.AreEqual(highlighted[0], new ConsoleCharacter('A', ConsoleColor.Red));
+            Assert.AreEqual(highlighted[2], new ConsoleCharacter('a', ConsoleColor.Red));
+        }
+
+        [TestMethod]
         public void TestContains()
         {
             ConsoleString s = new ConsoleString("0123456789");
