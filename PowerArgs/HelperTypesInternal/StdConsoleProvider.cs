@@ -166,5 +166,34 @@ namespace PowerArgs
         {
             Console.Clear();
         }
+
+        /// <summary>
+        /// Reads the next character of input from the console
+        /// </summary>
+        /// <returns>the char or -1 if there is no more input</returns>
+        public int Read()
+        {
+            return Console.Read();
+        }
+
+        /// <summary>
+        /// Reads a key from the console
+        /// </summary>
+        /// <param name="intercept">if true, intercept the key before it is shown on the console</param>
+        /// <returns>info about the key that was pressed</returns>
+        public ConsoleKeyInfo ReadKey(bool intercept)
+        {
+            return Console.ReadKey(intercept);
+        }
+
+
+        /// <summary>
+        /// Reads a line of text from the console
+        /// </summary>
+        /// <returns>a line of text that was read from the console</returns>
+        public string ReadLine()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
