@@ -429,10 +429,14 @@ namespace PowerArgs
 
                 context.ParserData.ImplicitParameters.Remove(0);
                 CommandLineArgument.PopulateArguments(context.SpecifiedAction.Arguments, context);
-                actionArgs = context.SpecifiedAction.PopulateArguments(context.Args, ref actionParameters);
             }
 
             context.RunAfterPopulateProperties();
+
+            if(context.SpecifiedAction != null)
+            {
+                actionArgs = context.SpecifiedAction.PopulateArguments(context.Args, ref actionParameters);
+            }
 
             if (context.ParserData.ImplicitParameters.Count > 0)
             {

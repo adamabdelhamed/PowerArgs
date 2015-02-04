@@ -15,6 +15,8 @@ namespace PowerArgs
     {
         private string exeName;
 
+        private AttrOverride overrides;
+
         /// <summary>
         /// Gets or sets the ExeName for this command line argument definition's program.  If not specified the entry assembly's file name
         /// is used, without the file extension.
@@ -237,7 +239,17 @@ namespace PowerArgs
         /// <summary>
         /// Determines how end user errors should be handled by the parser.  By default all exceptions flow through to your program.
         /// </summary>
-        public ArgExceptionBehavior ExceptionBehavior { get; set; }
+        public ArgExceptionBehavior ExceptionBehavior
+        {
+            get
+            {
+                return overrides.Get<ArgExceptionBehavior, ArgExceptionBehavior>("ExceptionBehavior", this.Metadata, attr => attr, new ArgExceptionBehavior(ArgExceptionPolicy.DontHandleExceptions));
+            }
+            set
+            {
+                overrides.Set("ExceptionBehavior", value);
+            }
+        }
 
         /// <summary>
         /// If your definition declares actions and has been successfully parsed then this property will be populated
@@ -281,7 +293,7 @@ namespace PowerArgs
         public CommandLineArgumentsDefinition()
         {
             PropertyInitializer.InitializeFields(this, 1);
-            ExceptionBehavior = new ArgExceptionBehavior();
+            overrides = new AttrOverride(GetType());
         }
 
         /// <summary>
@@ -291,7 +303,6 @@ namespace PowerArgs
         public CommandLineArgumentsDefinition (Type t) : this()
         {
             ArgumentScaffoldType = t;
-            ExceptionBehavior = t.HasAttr<ArgExceptionBehavior>() ? t.Attr<ArgExceptionBehavior>() : new ArgExceptionBehavior();
             Arguments.AddRange(FindCommandLineArguments(t));
             Actions.AddRange(FindCommandLineActions(t));
             Metadata.AddRange(t.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineArgumentsDefinitionMetadata>());

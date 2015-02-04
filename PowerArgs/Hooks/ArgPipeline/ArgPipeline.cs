@@ -224,7 +224,7 @@ namespace PowerArgs.Preview
         {
             if (o == null)
             {
-                if (ConsoleOutInterceptor.IsInitialized) return;
+                if (ConsoleOutInterceptor.Instance.IsInitialized) return;
                 ConsoleString.WriteLine("null object pushed through the pipeline", ConsoleColor.Yellow);
             }
             else if ( current != null && current.NextStage != null && current.Manager != null)
@@ -234,7 +234,7 @@ namespace PowerArgs.Preview
             else
             {
                 ArgPipeline.FireObjectExited(o);
-                if (ConsoleOutInterceptor.IsInitialized) return;
+                if (ConsoleOutInterceptor.Instance.IsInitialized) return;
                 PipelineOutputFormatter.Format(o).WriteLine();
             }
         }

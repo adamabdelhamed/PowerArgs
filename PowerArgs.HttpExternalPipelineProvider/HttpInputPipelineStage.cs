@@ -42,6 +42,7 @@ namespace PowerArgs.Preview
             Init.InitIfNotAlreadyDone();
 
             interceptor = ConsoleOutInterceptor.Instance;
+            interceptor.Attach();
             PowerLogger.LogLine("Initializing input pipe for command line on port "+port+": "+string.Join(" ", this.CmdLineArgs));
             wrappedStage = new InProcessPipelineStage(baseDefinition, this.CmdLineArgs.ToArray());
             listener = new HttpPipelineMessageListener(port, TimeSpan.FromSeconds(10));
@@ -210,7 +211,7 @@ namespace PowerArgs.Preview
                 {
                     if (outputQueue.Count > 0 || exceptionQueue.Count > 0 || textOutputQueue.Count > 0) return false;
                 }
-
+                interceptor.Detatch();
                 if (listener.IsListening) return false;
 
                 return true;

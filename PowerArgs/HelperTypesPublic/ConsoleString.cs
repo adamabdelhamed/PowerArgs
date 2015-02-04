@@ -8,7 +8,7 @@ namespace PowerArgs
     /// <summary>
     /// A wrapper for char that encapsulates foreground and background colors.
     /// </summary>
-    public struct ConsoleCharacter
+    public struct ConsoleCharacter : ICanBeAConsoleString
     {
         /// <summary>
         /// The value of the character
@@ -130,12 +130,21 @@ namespace PowerArgs
         {
             return Value.GetHashCode();
         }
+
+        /// <summary>
+        /// Formats this object as a ConsoleString
+        /// </summary>
+        /// <returns>a ConsoleString</returns>
+        public ConsoleString ToConsoleString()
+        {
+            return new ConsoleString(new ConsoleCharacter[] { this });
+        }
     }
 
     /// <summary>
     /// A wrapper for string that encapsulates foreground and background colors.  ConsoleStrings are immutable.
     /// </summary>
-    public class ConsoleString : IEnumerable<ConsoleCharacter>, IComparable<string>
+    public class ConsoleString : IEnumerable<ConsoleCharacter>, IComparable<string>, ICanBeAConsoleString
     {
         /// <summary>
         /// The console provider to use when writing output
@@ -201,17 +210,6 @@ namespace PowerArgs
             Append(string.Empty);
         }
 
-        /// <summary>
-        /// Creates a new ConsoleString from another one
-        /// </summary>
-        /// <param name="other">The value to copy</param>
-        public ConsoleString(ConsoleString other)
-        {
-            characters = new List<ConsoleCharacter>();
-            ContentSet = false;
-            Append(other);
-        }
-        
         /// <summary>
         /// Creates a new ConsoleString from a collection of ConsoleCharacter objects
         /// </summary>
@@ -484,7 +482,7 @@ namespace PowerArgs
         /// </summary>
         public void Write()
         {
-            if (ConsoleOutInterceptor.IsInitialized)
+            if (ConsoleOutInterceptor.Instance.IsInitialized)
             {
                 ConsoleOutInterceptor.Instance.Write(this);
             }
@@ -649,6 +647,15 @@ namespace PowerArgs
             {
                 return characters[index];
             }
+        }
+
+        /// <summary>
+        /// Formats this object as a ConsoleString
+        /// </summary>
+        /// <returns>a ConsoleString</returns>
+        public ConsoleString ToConsoleString()
+        {
+            return this;
         }
 
         private ConsoleString ImmutableAppend(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)

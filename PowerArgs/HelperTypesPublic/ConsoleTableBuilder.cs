@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PowerArgs
 {
@@ -69,6 +71,48 @@ namespace PowerArgs
             AddCellsToTable(context);
 
             return context.TableOutput;
+        }
+
+        /// <summary>
+        /// Formats the given collection as a string that looks and feels like a table when displayed in a console.
+        /// </summary>
+        /// <param name="objects">The objects to format</param>
+        /// <param name="format">A space delimited set of properties to use as column headers.  
+        /// You can change the display string for a particular property by using the format 'PropertyName>DisplayName' where PropertyName is a property name and DisplayName is the text to display.  If you omit this parameter then the first object in the collection will be inspected and it's public properties will be used as columns.</param>
+        /// <returns></returns>
+        public ConsoleString FormatAsTable(IEnumerable objects, string format = null)
+        {
+            var prototype = GetPrototype(objects);
+            if(prototype == null)
+            {
+                return ConsoleString.Empty;
+            }
+
+            format = format ?? InferFormat(prototype);
+            var documentTemplate = "{{ table objects "+format+" !}}";
+            DocumentRenderer renderer = new DocumentRenderer();
+            var document = renderer.Render(documentTemplate, new { objects = objects });
+            return document;
+        }
+
+
+        private object GetPrototype(IEnumerable objects)
+        {
+            object prototype = null;
+            foreach (var o in objects)
+            {
+                prototype = o;
+                break;
+            }
+
+            return prototype;
+        }
+
+        private string InferFormat(object prototype)
+        {
+            var ret = string.Join(" ", prototype.GetType().GetProperties().Select(p => p.Name));
+            ret += "+";
+            return ret;
         }
 
         private List<ColumnOverflowBehavior> CreateDefaultOverflowBehavior(int numColumns)

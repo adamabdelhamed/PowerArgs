@@ -71,5 +71,67 @@ Alic...      Two Microsoft     The wife of the author of PowerArgs, the world's 
 
             Helpers.AssertAreEqualWithDiffInfo(expected.Replace("\r\n", "\n"), outstr.Replace("\r\n", "\n"));
         }
+
+        [TestMethod]
+        public void ConsoleTableTestFromExpressionBasic()
+        {
+            var objects = new object[]
+            {
+                new{ FirstName = "Adam", LastName = "Abdelhamed" },
+                new{ FirstName = "John", LastName = "Doe" },
+            };
+
+            var table = new ConsoleTableBuilder().FormatAsTable(objects);
+            table.WriteLine();
+
+            Assert.IsTrue(table.Contains("FirstName"));
+            Assert.IsTrue(table.Contains("LastName"));
+            Assert.IsTrue(table.Contains("Adam"));
+            Assert.IsTrue(table.Contains("Abdelhamed"));
+            Assert.IsTrue(table.Contains("John"));
+            Assert.IsTrue(table.Contains("Doe"));
+        }
+
+        [TestMethod]
+        public void ConsoleTableTestFromExpressionManual()
+        {
+            var objects = new object[]
+            {
+                new{ FirstName = "Adam", LastName = "Abdelhamed" },
+                new{ FirstName = "John", LastName = "Doe" },
+            };
+
+            var table = new ConsoleTableBuilder().FormatAsTable(objects, "FirstName LastName");
+            table.WriteLine();
+
+            Assert.IsTrue(table.Contains("FirstName"));
+            Assert.IsTrue(table.Contains("LastName"));
+            Assert.IsTrue(table.Contains("Adam"));
+            Assert.IsTrue(table.Contains("Abdelhamed"));
+            Assert.IsTrue(table.Contains("John"));
+            Assert.IsTrue(table.Contains("Doe"));
+        }
+
+
+        [TestMethod]
+        public void ConsoleTableTestFromExpressionOptions()
+        {
+            var objects = new object[]
+            {
+                new{ FirstName = "Adam", LastName = "Abdelhamed" },
+                new{ FirstName = "John", LastName = "Doe" },
+            };
+
+            var table = new ConsoleTableBuilder().FormatAsTable(objects, "FirstName>First LastName>Last+");
+            table.WriteLine();
+
+            Assert.IsFalse(table.Contains("FirstName"));
+            Assert.IsFalse(table.Contains("LastName"));
+
+            Assert.IsTrue(table.Contains("Adam"));
+            Assert.IsTrue(table.Contains("Abdelhamed"));
+            Assert.IsTrue(table.Contains("John"));
+            Assert.IsTrue(table.Contains("Doe"));
+        }
     }
 }

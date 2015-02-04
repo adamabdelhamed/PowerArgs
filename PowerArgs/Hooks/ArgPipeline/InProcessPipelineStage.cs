@@ -256,7 +256,7 @@ namespace PowerArgs.Preview
             if (directMappingTarget != null)
             {
                 var revivedValue = o;
-                if(o.GetType() != directMappingTarget.ArgumentType)
+                if (IsCompatible(o, directMappingTarget) == false)
                 {
                     PowerLogger.LogLine("Need to map "+o.GetType().FullName+" to "+directMappingTarget.ArgumentType.FullName);
                     
@@ -310,6 +310,17 @@ namespace PowerArgs.Preview
             }
 
             return newCommandLine.ToArray();
+        }
+
+        private static bool IsCompatible(object o, CommandLineArgument directMappingTarget)
+        {
+            var oType = o.GetType();
+
+            if (oType == directMappingTarget.ArgumentType) return true;
+            if (oType.GetInterfaces().Contains(directMappingTarget.ArgumentType)) return true;
+            if (oType.IsSubclassOf(directMappingTarget.ArgumentType)) return true;
+
+            return false;
         }
 
         private bool TrySimpleConvert(object o, Type target, out object result)
