@@ -1,0 +1,17 @@
+Steps to release PowerArgs to Nuget
+
+0  - Build and run all tests
+1  - Update PowerArgs.nuspec.
+       - IF PREVIEW, hardcode a version with the -preview suffix. ELSE, use $version$.
+ 	   - Update the release notes
+2  - Update readme.md
+        - Update the version in the documentation link
+3  - IF NOT PREVIEW, update AssemblyInfo.cs and increment the version appropriately based on the changes.
+4  - Commit pending changes and push to github/master.
+5  - IF NOT PREVIEW, configure the project to be fully signed using the private key.
+6  - Build and run all tests.
+7  - Run DoxygenPublisher PublishDoxygenDocs
+8  - Run nuget pack -sym PowerArgs.csproj
+9  - Run nuget push PowerArgs.<version>.nupkg
+10  - IF NOT PREVIEW, revert the changes to the repository that fully signs the DLL.  
+11 - IF NOT PREVIEW, delete the private key from the local dev environment

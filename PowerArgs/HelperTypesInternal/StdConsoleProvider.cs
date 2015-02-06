@@ -211,6 +211,10 @@ namespace PowerArgs
         }
 
 
+        /// <summary>
+        /// Writes the given string to the console
+        /// </summary>
+        /// <param name="consoleString">the string to write</param>
         public void Write(ConsoleString consoleString)
         {
             var existing = ConsoleString.ConsoleProvider;
@@ -225,6 +229,10 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Writes the given string to the console, followed by a newline
+        /// </summary>
+        /// <param name="consoleString">the string to write</param>
         public void WriteLine(ConsoleString consoleString)
         {
             var existing = ConsoleString.ConsoleProvider;
@@ -239,7 +247,10 @@ namespace PowerArgs
             }
         }
 
-
+        /// <summary>
+        /// Writes the given character to the console
+        /// </summary>
+        /// <param name="consoleCharacter">the character to write</param>
         public void Write(ConsoleCharacter consoleCharacter)
         {
             var existing = ConsoleString.ConsoleProvider;

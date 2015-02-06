@@ -1,7 +1,7 @@
 ###Binary
 PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
-Reference information for the entire API surface of the latest version is available [here](http://adamabdelhamed2.blob.core.windows.net/powerargsdocs/2.5.1.0/html/classes.html).
+Reference information for the entire API surface of the latest version is available [here](http://adamabdelhamed2.blob.core.windows.net/powerargsdocs/2.5.9.1/html/classes.html).
 
 ###Overview
 

@@ -170,8 +170,6 @@ namespace PowerArgs
 
             TokenReader<DocumentToken> reader = new TokenReader<DocumentToken>(tokens);
 
-            DocumentToken currentToken;
-
             while(reader.CanAdvance())
             {
                 if(reader.Peek().TokenType == DocumentTokenType.BeginReplacementSegment)

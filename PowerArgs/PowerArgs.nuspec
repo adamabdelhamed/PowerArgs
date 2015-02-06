@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>2.5.9-preview</version>
+    <version>$version$</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
@@ -12,10 +12,7 @@
     <description>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage documentation, tab completion, Entity Framework querying, secure string arguments, and plenty of hooks for extensibility.</description>
     <summary>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.</summary>
     <releaseNotes>
-      Full support for aliases on actions
-      Made ConsoleStrings immutable
-      HelpHook adapts to show specific help based on the specified action automatically
-      Added missing documentation link
+      Syntax highlighting on the enhanced command prompt.  Some minor fixes.
     </releaseNotes>
     <copyright>Copyright 2012 Adam Abdelhamed</copyright>
     <tags>Command Line Argument Parser</tags>
