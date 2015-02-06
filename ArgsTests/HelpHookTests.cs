@@ -20,7 +20,7 @@ namespace ArgsTests
                 if (Action1Fired != null) Action1Fired();
             }
 
-            [ArgActionMethod, ArgDescription("Runs action 1, a really great action")]
+            [ArgActionMethod, ArgDescription("Runs action 2, a really great action")]
             public void Action2()
             {
                 throw new NotImplementedException();
@@ -41,6 +41,23 @@ namespace ArgsTests
             var result = Args.InvokeAction<Command>("-?");
             var result2 = Args.InvokeAction<Command>("Action1");
             Assert.AreEqual(1, fireCount);
+        }
+
+        [TestMethod]
+        public void TestHelpHookContextual()
+        {
+            try
+            {
+                ConsoleOutInterceptor.Instance.Attach();
+                ConsoleOutInterceptor.Instance.ReadAndClear();
+                var result = Args.InvokeAction<Command>("Action2", "-?");
+                var output = new ConsoleString(ConsoleOutInterceptor.Instance.ReadAndClear());
+                Assert.IsFalse(output.Contains("Action1", StringComparison.InvariantCultureIgnoreCase));
+            }
+            finally
+            {
+                ConsoleOutInterceptor.Instance.Detatch();
+            }
         }
     }
 }

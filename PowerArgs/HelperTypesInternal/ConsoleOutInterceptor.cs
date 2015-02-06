@@ -13,16 +13,11 @@ namespace PowerArgs
     {
         private static Lazy<ConsoleOutInterceptor> _interceptor = new Lazy<ConsoleOutInterceptor>(() => new ConsoleOutInterceptor());
 
+
         /// <summary>
         /// returns true if the instance is initialized and is intercepting
         /// </summary>
-        public static bool IsInitialized
-        {
-            get
-            {
-                return _interceptor.IsValueCreated;
-            }
-        }
+        public bool IsInitialized { get; private set; }
 
         /// <summary>
         /// Gets the interceptor, initializing it if needed.  
@@ -31,14 +26,26 @@ namespace PowerArgs
         {
             get
             {
-                var wasInitialized = IsInitialized;
-                var ret = _interceptor.Value;
-                if (wasInitialized == false)
-                {
-                    Console.SetOut(ret);
-                }
-                return ret;
+                return _interceptor.Value;
             }
+        }
+
+        /// <summary>
+        /// Attaches the interceptor to the Console so that it starts intercepting output
+        /// </summary>
+        public void Attach()
+        {
+            Console.SetOut(this);
+        }
+
+        /// <summary>
+        /// Detaches the interceptor.  Console output will be written as normal.
+        /// </summary>
+        public void Detatch()
+        {
+            StreamWriter standardOutput = new StreamWriter(Console.OpenStandardOutput());
+            standardOutput.AutoFlush = true;
+            Console.SetOut(standardOutput);
         }
 
         private ConsoleOutInterceptor() { }

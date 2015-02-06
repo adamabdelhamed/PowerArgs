@@ -60,6 +60,7 @@ namespace PowerArgs
         {
             WriteHelp = true;
             UsageTemplateProviderType = typeof(DefaultConsoleUsageTemplateProvider);
+            this.AfterCancelPriority = 0; // we want this to run last
         }
 
         /// <summary>
