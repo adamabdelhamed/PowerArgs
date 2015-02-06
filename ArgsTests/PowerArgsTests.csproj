@@ -59,6 +59,7 @@
     <Compile Include="BasicTests.cs" />
     <Compile Include="ArgRequiredConditionalTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
+    <Compile Include="CLI\PromptTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />
     <Compile Include="MultipleFactoredOutActionsTests.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="ConsoleTableBuilderTests.cs" />
     <Compile Include="ComposableArgActionsTests.cs" />
     <Compile Include="PipelineTests.cs" />
+    <Compile Include="ConsoleInDriverTests.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
     <Compile Include="VideoEncoderTests.cs" />

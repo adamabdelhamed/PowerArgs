@@ -51,6 +51,8 @@ namespace PowerArgs
 
         private CommandLineArgument target;
 
+        private bool iDidTheCancel;
+
         /// <summary>
         /// Creates a new help hook instance
         /// </summary>
@@ -80,10 +82,12 @@ namespace PowerArgs
         /// <param name="context">Context passed by the parser</param>
         public override void AfterPopulateProperty(HookContext context)
         {
+            iDidTheCancel = false;
             base.AfterPopulateProperty(context);
             if (context.CurrentArgument.RevivedValue is bool &&
                 ((bool)context.CurrentArgument.RevivedValue) == true)
             {
+                iDidTheCancel = true;
                 context.CancelAllProcessing();
             }
         }
@@ -95,7 +99,7 @@ namespace PowerArgs
         public override void AfterCancel(ArgHook.HookContext context)
         {
             base.AfterCancel(context);
-            
+            if (iDidTheCancel == false) return;
             if (WriteHelp == false) return;
             var usage = UsageTemplateProvider.GetUsage(UsageTemplateProviderType, context.Definition);
             usage.Write();

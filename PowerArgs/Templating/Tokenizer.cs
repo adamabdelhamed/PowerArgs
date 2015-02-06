@@ -248,12 +248,25 @@ namespace PowerArgs
             List<T> tokens = new List<T>();
             Token currentToken = null;
 
+            insideStringLiteral = false;
+
             char currentCharacter;
+            char? nextCharacter;
             int currentIndex = -1;
             int currentLine = 1;
             int currentColumn = 0;
             while (TryReadCharacter(input, ref currentIndex, out currentCharacter))
             {
+                char peeked;
+                if(TryPeekCharacter(input, currentIndex, out peeked))
+                {
+                    nextCharacter = peeked;
+                }
+                else
+                {
+                    nextCharacter = null;
+                }
+
                 currentColumn++;
                 if(currentCharacter == '\n')
                 {
@@ -261,7 +274,7 @@ namespace PowerArgs
                     currentLine++;
                     currentColumn = 0;
                 }
-                else if (currentCharacter == EscapeSequenceIndicator)
+                else if (IsEscapeSequence(currentCharacter, nextCharacter))
                 {
                     Tokenize_EscapeCharacter(input, ref currentIndex, ref currentCharacter, ref currentLine, ref currentColumn, ref currentToken, tokens);
                 }
@@ -286,6 +299,30 @@ namespace PowerArgs
             FinalizeTokenIfNotNull(ref currentToken, tokens);
 
             return tokens;
+        }
+
+        private bool IsEscapeSequence(char current, char? next)
+        {
+            if (current != EscapeSequenceIndicator)
+            {
+                return false;
+            }
+            else if (next.HasValue == false)
+            {
+                return false;
+            }
+            else if(DoubleQuoteBehavior == PowerArgs.DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals && next.Value == '"')
+            {
+                return true;
+            }
+            else if (Delimiters.Contains(next.Value + ""))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private void Tokenize_EscapeCharacter(string input, ref int currentIndex, ref char currentCharacter, ref int line, ref int col, ref Token currentToken, List<T> tokens)
@@ -422,6 +459,21 @@ namespace PowerArgs
             else
             {
                 toRead = input[index];
+                return true;
+            }
+        }
+
+        private static bool TryPeekCharacter(string input, int index, out char toRead)
+        {
+            var peekIndex = index + 1;
+            if (peekIndex >= input.Length)
+            {
+                toRead = default(char);
+                return false;
+            }
+            else
+            {
+                toRead = input[peekIndex];
                 return true;
             }
         }

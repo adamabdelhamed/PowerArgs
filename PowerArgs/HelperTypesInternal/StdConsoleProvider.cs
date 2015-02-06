@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Text;
 namespace PowerArgs
 {
     /// <summary>
-    /// Used for internal implementation, but marked public for testing, please do not use.
+    /// Used for internal implementation, but marked public for testing, please do not use.  This is basically a wrapper around the system console.
     /// </summary>
     public class StdConsoleProvider : IConsoleProvider
     {
@@ -183,7 +184,20 @@ namespace PowerArgs
         /// <returns>info about the key that was pressed</returns>
         public ConsoleKeyInfo ReadKey(bool intercept)
         {
-            return Console.ReadKey(intercept);
+            if (ConsoleInDriver.Instance.IsAttached)
+            {
+                var c = (char)ConsoleInDriver.Instance.Read();
+                ConsoleKeyInfo key;
+                if(KeyMap.TryGetValue(c, out key) == false)
+                {
+                    key = new ConsoleKeyInfo(c, ConsoleKey.NoName, false, false, false);
+                }
+                return key;
+            }
+            else
+            {
+                return Console.ReadKey(intercept);
+            }
         }
 
 
@@ -194,6 +208,109 @@ namespace PowerArgs
         public string ReadLine()
         {
             throw new NotImplementedException();
+        }
+
+
+        public void Write(ConsoleString consoleString)
+        {
+            var existing = ConsoleString.ConsoleProvider;
+            try
+            {
+                ConsoleString.ConsoleProvider = this;
+                consoleString.Write();
+            }
+            finally
+            {
+                ConsoleString.ConsoleProvider = existing;
+            }
+        }
+
+        public void WriteLine(ConsoleString consoleString)
+        {
+            var existing = ConsoleString.ConsoleProvider;
+            try
+            {
+                ConsoleString.ConsoleProvider = this;
+                consoleString.WriteLine();
+            }
+            finally
+            {
+                ConsoleString.ConsoleProvider = existing;
+            }
+        }
+
+
+        public void Write(ConsoleCharacter consoleCharacter)
+        {
+            var existing = ConsoleString.ConsoleProvider;
+            try
+            {
+                ConsoleString.ConsoleProvider = this;
+                consoleCharacter.Write();
+            }
+            finally
+            {
+                ConsoleString.ConsoleProvider = existing;
+            }
+        }
+
+        private static Dictionary<char, ConsoleKeyInfo> KeyMap = CreateKeyMap();
+
+        private static Dictionary<char, ConsoleKeyInfo> CreateKeyMap()
+        {
+            Dictionary<char, ConsoleKeyInfo> ret = new Dictionary<char, ConsoleKeyInfo>();
+
+            for(int i = (int)'a'; i <= 'z'; i++)
+            {
+                var c = (char)i;
+                var enumKey = Char.ToUpperInvariant(c)+"";
+                var enumValue = (ConsoleKey)Enum.Parse(typeof(ConsoleKey), enumKey);
+                ret.Add(c, new ConsoleKeyInfo(c, enumValue, false, false, false));
+            }
+
+            for (int i = (int)'A'; i <= 'Z'; i++)
+            {
+                var c = (char)i;
+                var enumKey = c + "";
+                var enumValue = (ConsoleKey)Enum.Parse(typeof(ConsoleKey), enumKey);
+                ret.Add(c, new ConsoleKeyInfo(c, enumValue, true, false, false));
+            }
+
+            for (int i = (int)'0'; i <= '9'; i++)
+            {
+                var c = (char)i;
+                var enumKey = "D"+c;
+                var enumValue = (ConsoleKey)Enum.Parse(typeof(ConsoleKey), enumKey);
+                ret.Add(c, new ConsoleKeyInfo(c, enumValue, false, false, false));
+            }
+
+            ret.Add('!', new ConsoleKeyInfo('!', ConsoleKey.D1, true, false, false));
+            ret.Add('@', new ConsoleKeyInfo('@', ConsoleKey.D2, true, false, false));
+            ret.Add('#', new ConsoleKeyInfo('#', ConsoleKey.D3, true, false, false));
+            ret.Add('$', new ConsoleKeyInfo('$', ConsoleKey.D4, true, false, false));
+            ret.Add('%', new ConsoleKeyInfo('%', ConsoleKey.D5, true, false, false));
+            ret.Add('^', new ConsoleKeyInfo('^', ConsoleKey.D6, true, false, false));
+            ret.Add('&', new ConsoleKeyInfo('&', ConsoleKey.D7, true, false, false));
+            ret.Add('*', new ConsoleKeyInfo('*', ConsoleKey.D8, true, false, false));
+            ret.Add('(', new ConsoleKeyInfo('(', ConsoleKey.D9, true, false, false));
+            ret.Add(')', new ConsoleKeyInfo(')', ConsoleKey.D0, true, false, false));
+
+            ret.Add(' ', new ConsoleKeyInfo(' ', ConsoleKey.Spacebar, false, false, false));
+            ret.Add('-', new ConsoleKeyInfo('-', ConsoleKey.OemMinus, false, false, false));
+            ret.Add('_', new ConsoleKeyInfo('_', ConsoleKey.OemMinus, true, false, false));
+            ret.Add('=', new ConsoleKeyInfo('=', ConsoleKey.OemPlus, false, false, false));
+            ret.Add('+', new ConsoleKeyInfo('+', ConsoleKey.OemPlus, true, false, false));
+
+            ret.Add('.', new ConsoleKeyInfo('.', ConsoleKey.OemPeriod, false, false, false));
+            ret.Add('>', new ConsoleKeyInfo('>', ConsoleKey.OemPeriod, true, false, false));
+
+            ret.Add(',', new ConsoleKeyInfo(',', ConsoleKey.OemComma, false, false, false));
+            ret.Add('<', new ConsoleKeyInfo('<', ConsoleKey.OemComma, true, false, false));
+
+            ret.Add('\r', new ConsoleKeyInfo('\r', ConsoleKey.Enter, false, false, false));
+            ret.Add('\n', new ConsoleKeyInfo('\n', ConsoleKey.Enter, false, false, false));
+            
+            return ret;
         }
     }
 }

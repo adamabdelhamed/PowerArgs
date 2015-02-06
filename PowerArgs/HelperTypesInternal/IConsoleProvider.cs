@@ -3,7 +3,7 @@
 namespace PowerArgs
 {
     /// <summary>
-    /// Used for internal implementation, but marked public for testing, please do not use.
+    /// An interface that serves as an abstraction layer for a console implementation.  
     /// </summary>
     public interface IConsoleProvider
     {
@@ -17,32 +17,50 @@ namespace PowerArgs
         ConsoleColor BackgroundColor { get; set; }
 
         /// <summary>
-        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// Gets or sets the left position of the console cursor
         /// </summary>
         int CursorLeft { get; set; }
 
         /// <summary>
-        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// Gets or sets the top position of the console cursor
         /// </summary>
         int CursorTop { get; set; }
 
         /// <summary>
-        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// Gets the buffer width of the console
         /// </summary>
         int BufferWidth { get; }
 
         /// <summary>
-        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// Write's the string representation of the given object to the console
         /// </summary>
         void Write(object output);
 
         /// <summary>
-        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// Write's the string representation of the given object to the console, followed by a newline.
         /// </summary>
         void WriteLine(object output);
 
         /// <summary>
-        /// Used for internal implementation, but marked public for testing, please do not use.
+        /// Writes the given console string to the console, preserving formatting
+        /// </summary>
+        /// <param name="consoleString">The string to write</param>
+        void Write(ConsoleString consoleString);
+
+        /// <summary>
+        /// Writes the given character to the console, preserving formatting
+        /// </summary>
+        /// <param name="consoleCharacter">The character to write</param>
+        void Write(ConsoleCharacter consoleCharacter);
+
+        /// <summary>
+        /// Writes the given console string to the console, followed by a newline, preserving formatting.
+        /// </summary>
+        /// <param name="consoleString">The string to write</param>
+        void WriteLine(ConsoleString consoleString);
+
+        /// <summary>
+        /// Writes a newline to the console
         /// </summary>
         void WriteLine();
 

@@ -46,6 +46,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
+    <Compile Include="CLI\Cli.cs" />
+    <Compile Include="CLI\PowerArgsRichCommandLineReader.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\ConsoleHistoryManager.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\RichCommandLineContext.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\ISyntaxHighlighter.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\IKeyHandler.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\ArrowKeysHandler.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\BackspaceAndDeleteKeysHandler.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\TabKeyHandler.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\EnterKeyHandler.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\HomeAndEndKeysHandler.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\RichTextCommandLineReader.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\SimpleSyntaxHighlighter.cs" />
     <Compile Include="Extensions\Array.cs" />
     <Compile Include="Extensions\IEnumerableOfIArgMetadata.cs" />
     <Compile Include="Extensions\FieldInfo.cs" />
@@ -56,13 +69,14 @@
     <Compile Include="Extensions\Type.cs" />
     <Compile Include="HelperTypesInternal\ActionAndArgumentSmartTabCompletionSource.cs" />
     <Compile Include="HelperTypesInternal\ConsoleOutInterceptor.cs" />
+    <Compile Include="HelperTypesPublic\ConsoleInDriver.cs" />
     <Compile Include="HelperTypesInternal\PowerLogger.cs" />
     <Compile Include="HelperTypesPublic\AliasCollection.cs" />
     <Compile Include="HelperTypesInternal\CaseAwareStringComparer.cs" />
     <Compile Include="HelperTypesInternal\AttrOverride.cs" />
     <Compile Include="HelperTypesInternal\REPL.cs" />
     <Compile Include="HelperTypesPublic\ArgAction.cs" />
-    <Compile Include="HelperTypesInternal\ConsoleHelper.cs" />
+    <Compile Include="HelperTypesInternal\ConsoleProvider.cs" />
     <Compile Include="HelperTypesPublic\BooleanExpressionParser.cs" />
     <Compile Include="HelperTypesPublic\ConsoleString.cs" />
     <Compile Include="HelperTypesPublic\ConsoleTableBuilder.cs" />

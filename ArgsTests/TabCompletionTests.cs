@@ -108,7 +108,7 @@ namespace ArgsTests
         [TestMethod]
         public void EnsureSecureStringsAreNotTabCompletable()
         {
-            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("-pa\t");
+            ConsoleProvider.Current = new TestConsoleProvider("-pa\t");
             try
             {
                 var parsed = Args.Parse<TestArgsWithSecureStringArgument>("$");
@@ -124,7 +124,7 @@ namespace ArgsTests
         public void LegacyTestWithArgSpecificTabCompletion()
         {
             
-            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("-N A\t");
+            ConsoleProvider.Current = new TestConsoleProvider("-N A\t");
             var parsed = Args.Parse<ArgAwareCompletionArgsWithLegacySource>("$");
             Assert.AreEqual("Adam", parsed.Name);
         }
@@ -132,7 +132,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestActionEnumArgCompletion()
         {
-            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("Do -week Mo\t");
+            ConsoleProvider.Current = new TestConsoleProvider("Do -week Mo\t");
             var parsed = Args.ParseAction<ArgsWithActionsAndEnums>("$");
             Assert.AreEqual(DayOfWeek.Monday, parsed.Definition.SpecifiedAction.Arguments[0].RevivedValue);
         }
@@ -140,7 +140,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestPassThrough()
         {
-            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("-s Adam -a 100");
+            ConsoleProvider.Current = new TestConsoleProvider("-s Adam -a 100");
             var parsed = Args.Parse<TestArgs>("$");
             Assert.AreEqual("Adam", parsed.SomeParam);
             Assert.AreEqual(100, parsed.AnotherParam);
@@ -149,7 +149,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestQuotesWithinArgs()
         {
-            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("-s \\\"Adam\\\" -a 100");
+            ConsoleProvider.Current = new TestConsoleProvider("-s \\\"Adam\\\" -a 100");
             var parsed = Args.Parse<TestArgs>("$");
             Assert.AreEqual("\"Adam\"", parsed.SomeParam);
             Assert.AreEqual(100, parsed.AnotherParam);
@@ -433,7 +433,7 @@ namespace ArgsTests
         public static TestConsoleProvider SimulateConsoleInput(string input)
         {
             var simulator = new TestConsoleProvider(input);
-            ConsoleHelper.ConsoleImpl = simulator;
+            ConsoleProvider.Current = simulator;
             return simulator; 
         }
 
@@ -547,6 +547,22 @@ namespace ArgsTests
         public string ReadLine()
         {
             throw new NotImplementedException();
+        }
+
+
+        public void Write(ConsoleString consoleString)
+        {
+            Write(consoleString.ToString());
+        }
+
+        public void Write(ConsoleCharacter consoleCharacter)
+        {
+            Write(consoleCharacter.ToString());
+        }
+
+        public void WriteLine(ConsoleString consoleString)
+        {
+            WriteLine(consoleString.ToString());
         }
     }
 }

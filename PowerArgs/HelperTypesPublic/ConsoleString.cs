@@ -378,6 +378,28 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Determines if this ConsoleString starts with the given string
+        /// </summary>
+        /// <param name="substr">the substring to look for</param>
+        /// <param name="comparison">Specifies how characters are compared</param>
+        /// <returns>true if this ConsoleString starts with the given substring, false otherwise</returns>
+        public bool StartsWith(string substr, StringComparison comparison = StringComparison.InvariantCulture)
+        {
+            return IndexOf(substr, comparison) == 0;
+        }
+
+        /// <summary>
+        /// Determines if this ConsoleString ends with the given string
+        /// </summary>
+        /// <param name="substr">the substring to look for</param>
+        /// <param name="comparison">Specifies how characters are compared</param>
+        /// <returns>true if this ConsoleString ends with the given substring, false otherwise</returns>
+        public bool EndsWith(string substr, StringComparison comparison = StringComparison.InvariantCulture)
+        {
+            return substr.Length <= this.Length && Substring(Length - substr.Length).StringValue.Equals(substr, comparison);
+        }
+
+        /// <summary>
         /// Determines if this ConsoleString contains the given substring.
         /// </summary>
         /// <param name="substr">The substring to search for.</param>

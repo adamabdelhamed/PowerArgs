@@ -58,7 +58,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestAwesomeTabCompletionKnowsWhichActionIAmPerforming()
         {
-            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("f\t \t \t"); // should expand to 'fruits -apples -bananas'
+            ConsoleProvider.Current = new TestConsoleProvider("f\t \t \t"); // should expand to 'fruits -apples -bananas'
             var parsed = Args.InvokeAction<ConflictingArgumentsThatAwesomeTabCompletionMakesBetter>("$");
             
             Assert.IsTrue(parsed.Args.apples);
@@ -66,7 +66,7 @@ namespace ArgsTests
             Assert.IsFalse(parsed.Args.asparagus);
             Assert.IsFalse(parsed.Args.beets);
 
-            ConsoleHelper.ConsoleImpl = new TestConsoleProvider("v\t \t \t"); // should expand to 'vegetables -asparagus -beets'
+            ConsoleProvider.Current = new TestConsoleProvider("v\t \t \t"); // should expand to 'vegetables -asparagus -beets'
             parsed = Args.InvokeAction<ConflictingArgumentsThatAwesomeTabCompletionMakesBetter>("$");
             Assert.IsFalse(parsed.Args.apples);
             Assert.IsFalse(parsed.Args.bananas);
@@ -78,10 +78,12 @@ namespace ArgsTests
         public void TestArgumentAwareSmartTabCompletion()
         {
             var input = "m\t -a\t \t"; // should expand to 'meats -animal Chicken;
-            ConsoleHelper.ConsoleImpl = new TestConsoleProvider(input);
+            ConsoleProvider.Current = new TestConsoleProvider(input);
             var definition = new CommandLineArgumentsDefinition(typeof(ConflictingArgumentsThatAwesomeTabCompletionMakesBetter));
 
-            var completed = string.Join(" ", ConsoleHelper.ReadLine(ref input, new List<string>(), definition));
+            PowerArgsRichCommandLineReader reader = new PowerArgsRichCommandLineReader(definition, new List<ConsoleString>());
+
+            var completed = string.Join(" ", reader.ReadCommandLine());
             Assert.AreEqual("meats -animal Chicken", completed);
              
         }

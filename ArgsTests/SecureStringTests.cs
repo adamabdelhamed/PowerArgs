@@ -33,7 +33,7 @@ namespace ArgsTests
         {
             try
             {
-                ConsoleHelper.ConsoleImpl = new StdConsoleProvider();
+                ConsoleProvider.Current = new StdConsoleProvider();
                 var parsed = Args.Parse<InvalidTestArgs>();
                 Assert.Fail("An exception should have been thrown");
             }
@@ -46,7 +46,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestSecureStringNotPromptedUnlessNeeded()
         {
-            ConsoleHelper.ConsoleImpl = new StdConsoleProvider();
+            ConsoleProvider.Current = new StdConsoleProvider();
             var parsed = Args.Parse<TestArgs>();
 
             var secureField = typeof(SecureStringArgument).GetField("secureString", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);

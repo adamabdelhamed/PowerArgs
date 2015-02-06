@@ -76,14 +76,7 @@ namespace PowerArgs
 
             if (IsConditionallyRequired == false && arg == null && PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
             {
-                var value = "";
-                while (string.IsNullOrWhiteSpace(value))
-                {
-                    Console.Write("Enter value for " + argument.DefaultAlias + ": ");
-                    value = Console.ReadLine();
-                }
-
-                arg = value;
+                arg = new Cli().PromptForLine("Enter value for " + argument.DefaultAlias + ": ");
             }
 
             if (arg == null && IsConditionallyRequired == false)
@@ -172,14 +165,7 @@ namespace PowerArgs
         {
             if (parent.PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
             {
-                var value = "";
-                while (string.IsNullOrWhiteSpace(value))
-                {
-                    Console.Write("Enter value for " + context.CurrentArgument.DefaultAlias + ": ");
-                    value = Console.ReadLine();
-                }
-
-                context.ArgumentValue = value;
+                context.ArgumentValue = new Cli().PromptForLine("Enter value for " + context.CurrentArgument.DefaultAlias + ": ");
                 context.CurrentArgument.Populate(context);
                 return true;
             }

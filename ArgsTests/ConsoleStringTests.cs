@@ -186,7 +186,10 @@ namespace ArgsTests
         {
             var highlighted = new ConsoleString("Adam").Highlight("a",foregroundColor: ConsoleColor.Red, comparison: StringComparison.InvariantCultureIgnoreCase);
             Assert.AreEqual(highlighted[0], new ConsoleCharacter('A', ConsoleColor.Red));
+            Assert.AreEqual(highlighted[1], new ConsoleCharacter('d'));
             Assert.AreEqual(highlighted[2], new ConsoleCharacter('a', ConsoleColor.Red));
+            Assert.AreEqual(highlighted[3], new ConsoleCharacter('m'));
+
             Assert.AreEqual("The quick brown fox", new ConsoleString("The quick brown fox").Highlight("brown", ConsoleColor.Red).ToString());
         }
 
@@ -237,6 +240,19 @@ namespace ArgsTests
 
             Assert.AreEqual("Number: 222-333-4444", hasPhoneNumber.ToString());
             Assert.AreEqual(new ConsoleString("222-333-4444", ConsoleColor.Green), hasPhoneNumber.Substring(8));
+        }
+
+        [TestMethod]
+        public void TestStartsWithAndEndsWith()
+        {
+            Assert.IsTrue(new ConsoleString("12345").StartsWith("123"));
+            Assert.IsFalse(new ConsoleString("12345").StartsWith("0123"));
+            Assert.IsFalse(new ConsoleString("12345").StartsWith("01231111111111111111111"));
+
+
+            Assert.IsTrue(new ConsoleString("12345").EndsWith("345"));
+            Assert.IsFalse(new ConsoleString("12345").EndsWith("234"));
+            Assert.IsFalse(new ConsoleString("12345").EndsWith("01231111111111111111111"));
         }
 
         [TestMethod]

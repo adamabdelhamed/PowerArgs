@@ -33,7 +33,7 @@ namespace PowerArgs
                 int index = 0;
                 while (true)
                 {
-                    var key = ConsoleHelper.ConsoleImpl.ReadKey(true);
+                    var key = ConsoleProvider.Current.ReadKey(true);
                     if (key.Key == ConsoleKey.Enter) break;
 
                     if (key.Key == ConsoleKey.Backspace && index > 0) ret.RemoveAt(--index);

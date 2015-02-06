@@ -167,70 +167,63 @@ namespace PowerArgs
                 this.REPL = false;
                 return;
             }
-
-            var existingColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            try
+            
+            if (REPL && ShowREPLWelcome)
             {
-                if (REPL && ShowREPLWelcome)
+                ConsoleString.Empty.WriteLine();
+                var message = REPLWelcomeMessage.Replace("{{Indicator}}", REPLExitIndicator);
+                ConsoleString.WriteLine(message, ConsoleColor.Cyan);
+                ConsoleString.Empty.WriteLine();
+                ConsoleString.Write(Indicator + "> ", ConsoleColor.Cyan);
+                ShowREPLWelcome = false;
+            }
+            else if (REPL)
+            {
+                ConsoleString.Write(Indicator + "> ", ConsoleColor.Cyan);
+            }
+            else
+            {
+
+                // This is a little hacky, but I could not find a better way to make the tab completion start on the same lime
+                // as the command line input
+                try
+                {
+                    var lastLine = StdConsoleProvider.ReadALineOfConsoleOutput(Console.CursorTop - 1);
+                    Console.CursorTop--;
+                    Console.WriteLine(lastLine);
+                    Console.CursorTop--;
+                    Console.CursorLeft = lastLine.Length + 1;
+                }
+                catch (Exception)
                 {
                     Console.WriteLine();
-                    var message = REPLWelcomeMessage.Replace("{{Indicator}}", REPLExitIndicator);
-                    Console.WriteLine(message);
-                    Console.WriteLine();
-                    Console.Write(Indicator + "> ");
-                    ShowREPLWelcome = false;
-                }
-                else if (REPL)
-                {
                     Console.Write(Indicator + "> ");
                 }
-                else
-                {
-
-                    // This is a little hacky, but I could not find a better way to make the tab completion start on the same lime
-                    // as the command line input
-                    try
-                    {
-                        var lastLine = StdConsoleProvider.ReadALineOfConsoleOutput(Console.CursorTop - 1);
-                        Console.CursorTop--;
-                        Console.WriteLine(lastLine);
-                        Console.CursorTop--;
-                        Console.CursorLeft = lastLine.Length + 1;
-                    }
-                    catch (Exception)
-                    {
-                        Console.WriteLine();
-                        Console.Write(Indicator + "> ");
-                    }
-                }
-            }
-            finally
-            {
-                Console.ForegroundColor = existingColor;
             }
 
-            string str = null;
-            var newCommandLine = ConsoleHelper.ReadLine(ref str, LoadHistory(), context.Definition);
+            PowerArgsRichCommandLineReader reader = new PowerArgsRichCommandLineReader(context.Definition, LoadHistory());
+            
+            var newCommandLineString = reader.ReadLine().ToString();
+            var newCommandLineArray = Args.Convert(newCommandLineString);
 
-            if (REPL && newCommandLine.Length == 1 && string.Equals(newCommandLine[0], REPLExitIndicator, StringComparison.OrdinalIgnoreCase))
+            if (REPL && newCommandLineArray.Length == 1 && string.Equals(newCommandLineArray[0], REPLExitIndicator, StringComparison.OrdinalIgnoreCase))
             {
                 throw new REPLExitException();
             }
 
-            if (REPL && newCommandLine.Length == 1 && newCommandLine[0] == "cls")
+            if (REPL && newCommandLineArray.Length == 1 && newCommandLineArray[0] == "cls")
             {
-                ConsoleHelper.ConsoleImpl.Clear();
+                ConsoleProvider.Current.Clear();
                 throw new REPLContinueException();
             }
 
-            else if (REPL && newCommandLine.Length == 0 && string.IsNullOrWhiteSpace(REPLExitIndicator) == false)
+            else if (REPL && newCommandLineArray.Length == 0 && string.IsNullOrWhiteSpace(REPLExitIndicator) == false)
             {
                 throw new REPLContinueException();
             }
 
-            context.CmdLineArgs = newCommandLine;
-            AddToHistory(str);
+            context.CmdLineArgs = newCommandLineArray;
+            AddToHistory(newCommandLineString);
         }
 
         /// <summary>
@@ -260,26 +253,30 @@ namespace PowerArgs
             File.WriteAllLines(HistoryFileNameInternal, history.ToArray());
         }
 
-        private List<string> LoadHistory()
+        private List<ConsoleString> LoadHistory()
         {
-            if (HistoryToSave == 0) return new List<string>();
+            if (HistoryToSave == 0) return new List<ConsoleString>();
 
             if (Directory.Exists(Path.GetDirectoryName(HistoryFileNameInternal)) == false)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(HistoryFileNameInternal));
-                return new List<string>();
+                return new List<ConsoleString>();
             }
             else if (File.Exists(HistoryFileNameInternal) == false)
             {
                 File.WriteAllLines(HistoryFileNameInternal, new string[0]);
-                return new List<string>();
+                return new List<ConsoleString>();
             }
             else
             {
-                return File.ReadAllLines(HistoryFileNameInternal).ToList();
+                var lines = File.ReadAllLines(HistoryFileNameInternal).ToList();
+                List<ConsoleString> ret = new List<ConsoleString>();
+                foreach(var line in lines)
+                {
+                    ret.Add(new ConsoleString(line));
+                }
+                return ret;
             }
-        }
-
-
+        } 
     }
 }
