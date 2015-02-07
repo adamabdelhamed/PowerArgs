@@ -137,11 +137,6 @@ namespace PowerArgs
         /// <param name="indicator">When this indicator is the only argument the user specifies that triggers the hook to enhance the command prompt.  By default, the indicator is the empty string.</param>
         public TabCompletion(Type completionSource, string indicator = "") : this(indicator)
         {
-            if (completionSource.GetInterfaces().Contains(typeof(ITabCompletionSource)) == false)
-            {
-                throw new InvalidArgDefinitionException("Type " + completionSource + " does not implement " + typeof(ITabCompletionSource).Name);
-            }
-
             this.CompletionSourceType = completionSource;
         }
 
@@ -152,6 +147,14 @@ namespace PowerArgs
         /// <param name="context">The context used to inspect the command line arguments.</param>
         public override void BeforeParse(ArgHook.HookContext context)
         {
+          
+            if (CompletionSourceType != null && 
+                CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)) == false &&
+                CompletionSourceType.GetInterfaces().Contains(typeof(ISmartTabCompletionSource)) == false)
+            {
+                throw new InvalidArgDefinitionException("Type does not implement ITabCompletionSource or ISmartTabCompletionSource: " + CompletionSourceType.FullName);
+            }
+            
             if (context.Definition.IsNonInteractive)
             {
                 this.REPL = false;

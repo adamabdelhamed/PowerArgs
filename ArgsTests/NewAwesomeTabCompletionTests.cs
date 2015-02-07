@@ -55,6 +55,41 @@ namespace ArgsTests
             }
         }
 
+        [TabCompletion(typeof(AnimalCompletionSource), "$")]
+        public class TopLevelSmartTabCompletionArgs
+        {
+            [ArgPosition(0)]
+            public string Animal { get; set; }
+        }
+
+        [TabCompletion(typeof(string), "$")] // string is not a valid completion source type
+        public class GarbageTabCompletionTypeArgs
+        {
+            public string Animal { get; set; }
+        }
+
+        [TestMethod]
+        public void TestTopLevelSmartTabCompletionSource()
+        {
+            ConsoleProvider.Current = new TestConsoleProvider("ch\t");
+            var parsed = Args.Parse<TopLevelSmartTabCompletionArgs>("$");
+            Assert.AreEqual("Chicken", parsed.Animal);
+        }
+
+        [TestMethod]
+        public void TestGarbageTopLevelSmartTabCompletionSource()
+        {
+            try
+            {
+                ConsoleProvider.Current = new TestConsoleProvider("ch\t");
+                Args.Parse<GarbageTabCompletionTypeArgs>("$");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch(InvalidArgDefinitionException ex)
+            {
+            }
+        }
+
         [TestMethod]
         public void TestAwesomeTabCompletionKnowsWhichActionIAmPerforming()
         {
