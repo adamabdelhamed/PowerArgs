@@ -8,7 +8,7 @@ namespace PowerArgs
     /// A customized version of the RichTextCommandLineReader that configures tab completion, history, and syntax highlighting for a given
     /// command line arguments definition.
     /// </summary>
-    public class PowerArgsRichCommandLineReader : RichTextCommandLineReader, ITabCompletionHandler, ISyntaxHighlighter
+    public class PowerArgsRichCommandLineReader : RichTextCommandLineReader, ITabCompletionHandler
     {
         /// <summary>
         /// Gets or sets the foreground color to use when a valid argument name appears on the command line
@@ -38,8 +38,7 @@ namespace PowerArgs
 
         private IEnumerable<ITabCompletionSource> oldHooks;
         private IEnumerable<ISmartTabCompletionSource> newHooks;
-        private SimpleSyntaxHighlighter wrappedHighlighter;
-
+        
         /// <summary>
         /// Configures the reader for the given definition and history information.
         /// </summary>
@@ -50,7 +49,6 @@ namespace PowerArgs
             this.Console = ConsoleProvider.Current;
             this.HistoryManager.Values.AddRange(history);
             this.TabHandler.TabCompletionHandlers.Add(this);
-            this.Highlighters.Add(this);
             this.Definition = definition;
 
             this.ArgumentNameForeground = ConsoleColor.Cyan;
@@ -60,18 +58,17 @@ namespace PowerArgs
 
             this.oldHooks = FindOldTabCompletionHooks(this.Definition);
             this.newHooks = FindNewTabCompletionHooks(this.Definition);
-
-            this.wrappedHighlighter = new SimpleSyntaxHighlighter();
             InitHighlighters();
         }
 
         private void InitHighlighters()
         {
+            this.Highlighter = new SimpleSyntaxHighlighter();
             foreach(var argument in Definition.Arguments)
             {
                 foreach(var alias in argument.Aliases)
                 {
-                    wrappedHighlighter.AddKeyword("-" + alias, ArgumentNameForeground, comparison: argument.IgnoreCase ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture);
+                    this.Highlighter.AddKeyword("-" + alias, ArgumentNameForeground, comparison: argument.IgnoreCase ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture);
                 }
             }
 
@@ -79,14 +76,14 @@ namespace PowerArgs
             {
                 foreach(var alias in action.Aliases)
                 {
-                    wrappedHighlighter.AddKeyword(alias, ActionForeground, comparison: action.IgnoreCase ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture , onlyIfFirst: true);
+                    this.Highlighter.AddConditionalKeyword(alias, (readerContext, highlighterContext) => { return highlighterContext.CurrentTokenIndex == 0; }, ActionForeground, comparison: action.IgnoreCase ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture);
                 }
 
                 foreach(var argument in action.Arguments)
                 {
                     foreach(var alias in argument.Aliases)
                     {
-                        wrappedHighlighter.AddConditionalKeyword("-"+alias, (context) => 
+                        this.Highlighter.AddConditionalKeyword("-" + alias, (context, highlighterContext) => 
                             {
                                 return action.IsMatch(context.Tokens.First().Value);
                             }
@@ -95,18 +92,8 @@ namespace PowerArgs
                 }
             }
 
-            wrappedHighlighter.SetNumericHighlight(NumericForeground);
-            wrappedHighlighter.SetQuotedStringLiteralHighlight(StringLiteralForeground);
-        }
-
-        /// <summary>
-        /// Implementation of the highlighter that highlights valid action names, arguments, numbers, etc.
-        /// </summary>
-        /// <param name="context">context used internally</param>
-        /// <returns>true if highlighting changes were made, false otherwise</returns>
-        public bool TryHighlight(RichCommandLineContext context)
-        {
-            return wrappedHighlighter.TryHighlight(context);
+            this.Highlighter.SetNumericHighlight(NumericForeground);
+            this.Highlighter.SetQuotedStringLiteralHighlight(StringLiteralForeground);
         }
 
         /// <summary>

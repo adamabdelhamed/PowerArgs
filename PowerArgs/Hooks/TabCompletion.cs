@@ -68,6 +68,11 @@ namespace PowerArgs
         public Type CompletionSourceType { get; set; }
 
         /// <summary>
+        /// Gets or sets the type to be used to dynamically configure syntax highlighting.  The type must implement IHighlighterConfigurator.
+        /// </summary>
+        public Type HighlighterConfiguratorType { get; set; }
+
+        /// <summary>
         /// When this indicator is the only argument the user specifies that triggers the hook to enhance the command prompt.  By default, the indicator is the empty string.
         /// </summary>
         public string Indicator { get; set; }
@@ -154,6 +159,11 @@ namespace PowerArgs
             {
                 throw new InvalidArgDefinitionException("Type does not implement ITabCompletionSource or ISmartTabCompletionSource: " + CompletionSourceType.FullName);
             }
+
+            if (HighlighterConfiguratorType != null && HighlighterConfiguratorType.GetInterfaces().Contains(typeof(IHighlighterConfigurator)) == false)
+            {
+                throw new InvalidArgDefinitionException("Type does not implement IHighlighterConfigurator: " + HighlighterConfiguratorType.FullName);
+            }
             
             if (context.Definition.IsNonInteractive)
             {
@@ -206,6 +216,12 @@ namespace PowerArgs
 
             PowerArgsRichCommandLineReader reader = new PowerArgsRichCommandLineReader(context.Definition, LoadHistory());
             
+            if(HighlighterConfiguratorType != null)
+            {
+                var provider = (IHighlighterConfigurator)Activator.CreateInstance(HighlighterConfiguratorType);
+                provider.Configure(reader.Highlighter);
+            }
+
             var newCommandLineString = reader.ReadLine().ToString();
             var newCommandLineArray = Args.Convert(newCommandLineString);
 

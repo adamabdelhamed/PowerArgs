@@ -29,9 +29,9 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Gets the collection of syntax highlighter implementations.  
+        /// Gets or sets the highlighter used to highlight tokens as the user types
         /// </summary>
-        public List<ISyntaxHighlighter> Highlighters { get; private set; }
+        public SimpleSyntaxHighlighter Highlighter { get; set; }
 
         /// <summary>
         /// Gets the tab hey handler.  This will let you plug in custom tab completion logic.
@@ -54,7 +54,6 @@ namespace PowerArgs
             TabHandler = new TabKeyHandler();
 
             KeyHandlers = new Dictionary<ConsoleKey, IKeyHandler>();
-            Highlighters = new List<ISyntaxHighlighter>();
             RegisterHandler(new EnterKeyHandler());
             RegisterHandler(new ArrowKeysHandler());
             RegisterHandler(new HomeAndEndKeysHandler());
@@ -155,12 +154,12 @@ namespace PowerArgs
 
         private void DoSyntaxHighlighting(RichCommandLineContext context)
         {
-            bool highlightChanged = false;
-            foreach(var highlighter in this.Highlighters)
+            if(Highlighter == null)
             {
-                var thisHighlighterDidWork = highlighter.TryHighlight(context);
-                highlightChanged = highlightChanged ? true : thisHighlighterDidWork;
+                return;
             }
+
+            bool highlightChanged = Highlighter.TryHighlight(context);
 
             if(highlightChanged)
             {

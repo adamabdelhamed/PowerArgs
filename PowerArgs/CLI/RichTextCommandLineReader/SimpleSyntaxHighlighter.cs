@@ -6,9 +6,30 @@ using System.Text.RegularExpressions;
 namespace PowerArgs
 {
     /// <summary>
-    /// An implementation of ISyntaxHighlighter that makes it easy to perform common types of syntax highlighting based on keywords, regular expressions, etc.
+    /// Context about a token that helps determine if it should be highlighted
     /// </summary>
-    public class SimpleSyntaxHighlighter : ISyntaxHighlighter
+    public class HighlighterContext
+    {
+        /// <summary>
+        /// The index of this token within the set of tokens in the base context
+        /// </summary>
+        public int CurrentTokenIndex { get; internal set; }
+
+        /// <summary>
+        /// The token that may or may not need to be highlighted
+        /// </summary>
+        public Token CurrentToken { get; internal set; }
+
+        /// <summary>
+        /// True if this is the last token, false otherwise
+        /// </summary>
+        public bool IsLastToken { get; internal set; }
+    }
+
+    /// <summary>
+    /// A utility that makes it easy to perform common types of syntax highlighting based on keywords, regular expressions, etc.
+    /// </summary>
+    public class SimpleSyntaxHighlighter
     {
         private List<ITokenHighlighter> TokenHighlighters { get; set; }
 
@@ -27,10 +48,9 @@ namespace PowerArgs
         /// <param name="fg">The foreground highlight color</param>
         /// <param name="bg">The background highlight color</param>
         /// <param name="comparison">Determines how strings are compared. </param>
-        /// <param name="onlyIfFirst">If true, only highlights the keyword if it is the first value on the command line</param>
-        public void AddKeyword(string keyword, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture, bool onlyIfFirst = false)
+        public void AddKeyword(string keyword, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            TokenHighlighters.Add(new KeywordHighlighter(keyword, fg, bg, comparison, onlyIfFirst));
+            TokenHighlighters.Add(new KeywordHighlighter(keyword, fg, bg, comparison));
         }
 
         /// <summary>
@@ -41,7 +61,7 @@ namespace PowerArgs
         /// <param name="fg">The foreground highlight color</param>
         /// <param name="bg">The background highlight color</param>
         /// <param name="comparison">Determines how strings are compared. </param>
-        public void AddConditionalKeyword(string keyword, Func<RichCommandLineContext, bool> conditionEval, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
+        public void AddConditionalKeyword(string keyword, Func<RichCommandLineContext,HighlighterContext, bool> conditionEval, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
             TokenHighlighters.Add(new ConditionalKeywordHighlighter(keyword, conditionEval,  fg, bg, comparison));
         }
@@ -55,6 +75,15 @@ namespace PowerArgs
         public void AddRegex(string regex, ConsoleColor? fg = null, ConsoleColor? bg = null)
         {
             TokenHighlighters.Add(new RegexHighlighter(regex, fg, bg));
+        }
+
+        /// <summary>
+        /// Registers a custom token highlighter
+        /// </summary>
+        /// <param name="highlighter">the custom highlighter</param>
+        public void AddTokenHighlighter(ITokenHighlighter highlighter)
+        {
+            TokenHighlighters.Add(highlighter);
         }
 
         /// <summary>
@@ -92,33 +121,39 @@ namespace PowerArgs
         /// <summary>
         /// The implementation of ISyntaxHighlighter that uses the configuration you've created to perform syntax highlighting.
         /// </summary>
-        /// <param name="context">Context that is used internally</param>
+        /// <param name="readerContext">Context that is used internally</param>
         /// <returns>true if any highlighting changes were made, false otherwise</returns>
-        public bool TryHighlight(RichCommandLineContext context)
+        public bool TryHighlight(RichCommandLineContext readerContext)
         {
-            context.RefreshTokenInfo();
+            readerContext.RefreshTokenInfo();
             bool didWork = false;
-            for (int i = 0; i < context.Tokens.Count; i++)
+            for (int i = 0; i < readerContext.Tokens.Count; i++)
             {
-                var token = context.Tokens[i];
-                bool hasMoreTokens = i < context.Tokens.Count - 1;
+                var highlighterContext = new HighlighterContext()
+                {
+                    CurrentToken = readerContext.Tokens[i],
+                    CurrentTokenIndex = i,
+                    IsLastToken = i == readerContext.Tokens.Count-1,
+
+                };
+
                 bool didWorkOnThisToken = false;
 
                 bool shouldBeHighlightedByAtLeastOneHighlighter = false;
                 foreach(var tokenHighlighter in TokenHighlighters)
                 {
-                    bool shouldBeHighlightedByThisHighlighter = tokenHighlighter.ShouldBeHighlighted(context,token, i, hasMoreTokens == false);
+                    bool shouldBeHighlightedByThisHighlighter = tokenHighlighter.ShouldBeHighlighted(readerContext, highlighterContext);
                     shouldBeHighlightedByAtLeastOneHighlighter = shouldBeHighlightedByAtLeastOneHighlighter || shouldBeHighlightedByThisHighlighter;
                     if (shouldBeHighlightedByThisHighlighter)
                     {
-                        didWorkOnThisToken = EnsureHighlighted(token, context, tokenHighlighter.HighlightForegroundColor, tokenHighlighter.HighlightBackgroundColor);
+                        didWorkOnThisToken = EnsureHighlighted(highlighterContext.CurrentToken, readerContext, tokenHighlighter.HighlightForegroundColor, tokenHighlighter.HighlightBackgroundColor);
                         if (didWorkOnThisToken) break;
                     }
                 }
 
                 if(shouldBeHighlightedByAtLeastOneHighlighter == false)
                 {
-                    didWorkOnThisToken = EnsureHighlighted(token, context, null, null);
+                    didWorkOnThisToken = EnsureHighlighted(highlighterContext.CurrentToken, readerContext, null, null);
                 }
 
                 didWork = didWork || didWorkOnThisToken;
@@ -144,61 +179,146 @@ namespace PowerArgs
         }
     }
 
-    internal interface ITokenHighlighter
+    /// <summary>
+    /// An interface that defines how to dynamically configure a highlighter
+    /// </summary>
+    public interface IHighlighterConfigurator
     {
-        bool ShouldBeHighlighted(RichCommandLineContext context, Token currentToken, int currentTokenIndex, bool isLastToken);
+        /// <summary>
+        /// Lets implementors configure a highlighter in a dynamic way
+        /// </summary>
+        /// <param name="highlighter">The highlighter to configure</param>
+        void Configure(SimpleSyntaxHighlighter highlighter);
+    }
+
+    /// <summary>
+    /// An interface the defines the contract for how individual tokens get syntax highlighting on the command line
+    /// </summary>
+    public interface ITokenHighlighter
+    {
+        /// <summary>
+        /// Determines if this highlighter should highlight the current token with this highlighter's foreground and background
+        /// colors.  
+        /// </summary>
+        /// <param name="readerContext">context from the reader</param>
+        /// <param name="highlighterContext">context about the current token</param>
+        /// <returns>true if this highlighter should highlight the current token, false otherwise</returns>
+        bool ShouldBeHighlighted(RichCommandLineContext readerContext, HighlighterContext highlighterContext);
+        
+        /// <summary>
+        /// The foreground color of this highlighter.  If null, the console default is used.
+        /// </summary>
         ConsoleColor? HighlightForegroundColor { get; }
+        /// <summary>
+        /// The background color of this highlighter.  If null, the console default is used.
+        /// </summary>
         ConsoleColor? HighlightBackgroundColor { get; }
     }
 
-    internal abstract class FixedHighlightTokenHighlighter : ITokenHighlighter
+    /// <summary>
+    /// A highlighter that has a fixed foreground and background color.  Most highlighters derive from this base.
+    /// </summary>
+    public abstract class FixedHighlightTokenHighlighter : ITokenHighlighter
     {
+        /// <summary>
+        /// The foreground color of this highlighter.  If null, the console default is used.
+        /// </summary>
         public ConsoleColor? HighlightForegroundColor { get; private set; }
+        /// <summary>
+        /// The background color of this highlighter.  If null, the console default is used.
+        /// </summary>
         public ConsoleColor? HighlightBackgroundColor { get; private set; }
 
+        /// <summary>
+        /// Creates a new highlighter using the given colors
+        /// </summary>
+        /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
+        /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
         public FixedHighlightTokenHighlighter(ConsoleColor? fg = null, ConsoleColor? bg = null)
         {
             this.HighlightForegroundColor = fg;
             this.HighlightBackgroundColor = bg;
         }
 
-        public abstract bool ShouldBeHighlighted(RichCommandLineContext context, Token currentToken, int currentTokenIndex, bool isLastToken);
+        /// <summary>
+        /// Determines if this highlighter should highlight the current token with this highlighter's foreground and background
+        /// colors.  
+        /// </summary>
+        /// <param name="readerContext">context from the reader</param>
+        /// <param name="highlighterContext">context about the current token</param>
+        /// <returns>true if this highlighter should highlight the current token, false otherwise</returns>
+        public abstract bool ShouldBeHighlighted(RichCommandLineContext readerContext, HighlighterContext highlighterContext);
     }
 
-    internal class KeywordHighlighter : FixedHighlightTokenHighlighter
+    /// <summary>
+    /// A highlighter that is used to highlight a specific keyword
+    /// </summary>
+    public class KeywordHighlighter : FixedHighlightTokenHighlighter
     {
+        /// <summary>
+        /// The keyword to highlight whenever it is found
+        /// </summary>
         protected string keyword;
         private StringComparison comparison;
-        private bool onlyIfFirst;
 
-        public KeywordHighlighter(string keyword, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture, bool onlyIfFirst = false) : base(fg, bg)
+        /// <summary>
+        /// Creates the highlighter.
+        /// </summary>
+        /// <param name="keyword">The keyword to highlight whenever it is found</param>
+        /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
+        /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
+        /// <param name="comparison">determines how strings are compared.  By default the comparison is case sensitive</param>
+        public KeywordHighlighter(string keyword, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture) : base(fg, bg)
         {
             this.keyword = keyword;
             this.comparison = comparison;
-            this.onlyIfFirst = onlyIfFirst;
         }
 
-        public override bool ShouldBeHighlighted(RichCommandLineContext context, Token currentToken, int currentTokenIndex, bool isLastToken)
+        /// <summary>
+        /// Returns true if the keyword is matched, false otherwise
+        /// </summary>
+        /// <param name="readerContext">context from the reader</param>
+        /// <param name="highlighterContext">context about the current token</param>
+        /// <returns>true if the keyword matched, false otherwise</returns>
+        public override bool ShouldBeHighlighted(RichCommandLineContext readerContext, HighlighterContext highlighterContext)
         {
-            if (isLastToken) return false;
-            if (onlyIfFirst && currentTokenIndex != 0) return false;
-            return currentToken.Value.Equals(keyword, comparison);
+            if (highlighterContext.IsLastToken) return false;
+            return highlighterContext.CurrentToken.Value.Equals(keyword, comparison);
         }
     }
 
-    internal class ConditionalKeywordHighlighter : KeywordHighlighter
+    /// <summary>
+    /// A keyword highlighter that highlights based on a condition
+    /// </summary>
+    public class ConditionalKeywordHighlighter : KeywordHighlighter
     {
-        Func<RichCommandLineContext, bool> conditionEval;
-        public ConditionalKeywordHighlighter(string keyword, Func<RichCommandLineContext, bool> conditionEval, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
-            : base(keyword, fg, bg,comparison, false)
+        private Func<RichCommandLineContext, HighlighterContext, bool> conditionEval;
+
+        /// <summary>
+        /// Creates the highlighter.
+        /// </summary>
+        /// <param name="keyword">The keyword to match</param>
+        /// <param name="conditionEval">The conditional match evaluation function</param>
+        /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
+        /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
+        /// <param name="comparison">determines how characters are compared</param>
+        public ConditionalKeywordHighlighter(string keyword, Func<RichCommandLineContext, HighlighterContext, bool> conditionEval, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
+            : base(keyword, fg, bg,comparison)
         {
             this.conditionEval = conditionEval;
         }
-        public override bool ShouldBeHighlighted(RichCommandLineContext context, Token currentToken, int currentTokenIndex, bool isLastToken)
+
+        /// <summary>
+        /// Returns true if the token matches the keyword and the given conditional evaluation returns true
+        /// </summary>
+        /// <param name="readerContext">context from the reader</param>
+        /// <param name="highlighterContext">context about the current token</param>
+        /// <returns>true if the token matches the keyword and the given conditional evaluation returns true</returns>
+        public override bool ShouldBeHighlighted(RichCommandLineContext readerContext, HighlighterContext highlighterContext)
         {
-            if (conditionEval(context))
+            if (conditionEval(readerContext, highlighterContext))
             {
-                return base.ShouldBeHighlighted(context, currentToken, currentTokenIndex, isLastToken);
+                return base.ShouldBeHighlighted(readerContext, highlighterContext);
             }
             else
             {
@@ -207,40 +327,77 @@ namespace PowerArgs
         }
     }
 
-    internal class RegexHighlighter : FixedHighlightTokenHighlighter
+    /// <summary>
+    /// A highlighter that highlights based on a regular expression match
+    /// </summary>
+    public class RegexHighlighter : FixedHighlightTokenHighlighter
     {
 
         private Regex regex;
 
+        /// <summary>
+        /// Creates the highlighter
+        /// </summary>
+        /// <param name="pattern">The regular expression pattern</param>
+        /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
+        /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
         public RegexHighlighter(string pattern, ConsoleColor? fg = null, ConsoleColor? bg = null) : base(fg,bg)
         {
             this.regex = new Regex(pattern);
         }
 
-        public override bool ShouldBeHighlighted(RichCommandLineContext context, Token currentToken, int currentTokenIndex, bool isLastToken)
+        /// <summary>
+        /// Returns true if the regular expression is matched, false otherwise
+        /// </summary>
+        /// <param name="readerContext">context from the reader</param>
+        /// <param name="highlighterContext">context about the current token</param>
+        /// <returns>true if the regular expression is matched, false otherwise</returns>
+        public override bool ShouldBeHighlighted(RichCommandLineContext readerContext, HighlighterContext highlighterContext)
         {
-            var matches = regex.Matches(currentToken.Value);
+            var matches = regex.Matches(highlighterContext.CurrentToken.Value);
             foreach(Match match in matches)
             {
-                if (match.Value == currentToken.Value) return true;
+                if (match.Value == highlighterContext.CurrentToken.Value) return true;
             }
             return false;
         }
     }
 
-    internal class StringLiteralHighlighter : RegexHighlighter
+    /// <summary>
+    /// A highlighter that highlights double quoted string literals
+    /// </summary>
+    public class StringLiteralHighlighter : RegexHighlighter
     {
+        /// <summary>
+        /// Creates the highlighter
+        /// </summary>
+        /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
+        /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
         public StringLiteralHighlighter(ConsoleColor? fg = null, ConsoleColor? bg = null) : base("\".*\"", fg, bg) { }
     }
 
-    internal class NumericHighlighter : FixedHighlightTokenHighlighter
+    /// <summary>
+    /// A highlighter that highlights numeric values
+    /// </summary>
+    public class NumericHighlighter : FixedHighlightTokenHighlighter
     {
+        /// <summary>
+        /// Creates the highlighter
+        /// </summary>
+        /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
+        /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
         public NumericHighlighter(ConsoleColor? fg = null, ConsoleColor? bg = null) : base(fg, bg) { }
 
-        public override bool ShouldBeHighlighted(RichCommandLineContext context, Token currentToken, int currentTokenIndex, bool isLastToken)
+        /// <summary>
+        /// Returns true if the current token is a numeric value, false otherwise
+        /// </summary>
+        /// <param name="readerContext">context from the reader</param>
+        /// <param name="highlighterContext">context about the current token</param>
+        /// <returns>true if the current token is a numeric value, false otherwise</returns>
+        public override bool ShouldBeHighlighted(RichCommandLineContext readerContext, HighlighterContext highlighterContext)
         {
             double numericValue;
-            return double.TryParse(currentToken.Value, out numericValue);
+            return double.TryParse(highlighterContext.CurrentToken.Value, out numericValue);
         }
     }
 }

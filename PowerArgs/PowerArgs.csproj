@@ -50,7 +50,6 @@
     <Compile Include="CLI\PowerArgsRichCommandLineReader.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ConsoleHistoryManager.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\RichCommandLineContext.cs" />
-    <Compile Include="CLI\RichTextCommandLineReader\ISyntaxHighlighter.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\IKeyHandler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\ArrowKeysHandler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\BackspaceAndDeleteKeysHandler.cs" />
