@@ -129,6 +129,11 @@ namespace PowerArgs
             bool didWork = false;
             for (int i = 0; i < readerContext.Tokens.Count; i++)
             {
+                if(string.IsNullOrWhiteSpace(readerContext.Tokens[i].Value))
+                {
+                    continue;
+                }
+
                 var highlighterContext = new HighlighterContext()
                 {
                     CurrentToken = readerContext.Tokens[i],
@@ -140,7 +145,7 @@ namespace PowerArgs
                 bool didWorkOnThisToken = false;
 
                 bool shouldBeHighlightedByAtLeastOneHighlighter = false;
-                foreach(var tokenHighlighter in TokenHighlighters)
+                foreach (var tokenHighlighter in TokenHighlighters)
                 {
                     bool shouldBeHighlightedByThisHighlighter = tokenHighlighter.ShouldBeHighlighted(readerContext, highlighterContext);
                     shouldBeHighlightedByAtLeastOneHighlighter = shouldBeHighlightedByAtLeastOneHighlighter || shouldBeHighlightedByThisHighlighter;

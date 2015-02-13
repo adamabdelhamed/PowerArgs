@@ -64,6 +64,7 @@ namespace PowerArgs
         private void InitHighlighters()
         {
             this.Highlighter = new SimpleSyntaxHighlighter();
+            this.Highlighter.AddTokenHighlighter(new ValidationEnforcementTokenHighlighter(this.Definition));
             foreach(var argument in Definition.Arguments)
             {
                 foreach(var alias in argument.Aliases)
@@ -103,7 +104,7 @@ namespace PowerArgs
         /// <returns>true if a tab completion was successfully made, false otherwise</returns>
         public bool TryTabComplete(RichCommandLineContext cliContext)
         {
-            var powerArgsContext = ConvertContext(cliContext);
+            var powerArgsContext = ConvertContext(this.Definition, cliContext);
 
             bool oldHookWon = false;
             string completion = null;
@@ -149,10 +150,10 @@ namespace PowerArgs
             }
         }
 
-        private TabCompletionContext ConvertContext(RichCommandLineContext innerContext)
+        internal static TabCompletionContext ConvertContext(CommandLineArgumentsDefinition definition, RichCommandLineContext innerContext)
         {
             TabCompletionContext context = new TabCompletionContext();
-            context.Definition = this.Definition;
+            context.Definition = definition;
             context.Shift = innerContext.KeyPressed.Modifiers.HasFlag(ConsoleModifiers.Shift);
             context.PreviousToken = innerContext.CurrentTokenIndex > 0 ? innerContext.PreviousNonWhitespaceToken.Value : string.Empty;
             context.CompletionCandidate = innerContext.CurrentToken.Value;
@@ -163,45 +164,8 @@ namespace PowerArgs
             }
 
             context.CommandLineText = new ConsoleString(innerContext.Buffer).ToString();
-
-            var firstToken = innerContext.Tokens.FirstOrDefault();
-            if (firstToken != null)
-            {
-                var match = (from a in this.Definition.Actions where a.IsMatch(firstToken.Value) select a).SingleOrDefault();
-                if (match != null)
-                {
-                    context.TargetAction = match;
-                }
-            }
-
-            string argumentMatchId = null;
-
-
-            if (context.PreviousToken.StartsWith("-"))
-            {
-                argumentMatchId = context.PreviousToken.Substring(1);
-            }
-            else if (context.PreviousToken.StartsWith("/"))
-            {
-                argumentMatchId = context.PreviousToken.Substring(1);
-            }
-
-
-            if (argumentMatchId != null)
-            {
-                var match = this.Definition.Arguments.Where(arg => arg.IsMatch(argumentMatchId) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
-
-                if (match == null && context.TargetAction != null)
-                {
-                    match = context.TargetAction.Arguments.Where(arg => arg.IsMatch(argumentMatchId) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
-                }
-
-                if (match != null)
-                {
-                    context.TargetArgument = match;
-                }
-            }
-
+            context.TargetAction = FindContextualAction(innerContext.Tokens.FirstOrDefault().Value, definition);
+            context.TargetArgument = FindContextualArgument(context.PreviousToken, context.TargetAction, definition);
             return context;
         }
 
@@ -258,6 +222,197 @@ namespace PowerArgs
             completionSources.Add(new FileSystemTabCompletionSource());
 
             return completionSources;
+        }
+
+        /// <summary>
+        /// A helper that detects the argument represented by the current token given a definition.  
+        /// </summary>
+        /// <param name="contextualAction">An action to inspect for a match if the current token does not match a global argument.  Pass null to only check global arguments.</param>
+        /// <param name="currentToken">The token to inspect.  If you pass null you will get null back.</param>
+        /// <param name="expectMatchingArg">This will be set to true if the current token starts with a '-' or a '/' meaning that the token was an argument indicator, even if it didn't match an argument in the definition.</param>
+        /// <param name="def">The definition to inspect.  If null, the ambient definition will be used.  If there is no ambient definition and null is passed then this method throws a NullReferenceException.</param>
+        /// <returns>An argument that is matched by the given token or null if there was no match</returns>
+        public static CommandLineArgument FindCurrentTokenArgument(CommandLineAction contextualAction, string currentToken, out bool expectMatchingArg, CommandLineArgumentsDefinition def = null)
+        {            
+            def = PassThroughOrTryGetAmbientDefinition(def);
+
+            if (currentToken == null)
+            {
+                expectMatchingArg = false;
+                return null;
+            }
+
+            string currentTokenArgumentNameValue = null;
+            expectMatchingArg = false;
+            if (currentToken.StartsWith("-"))
+            {
+                currentTokenArgumentNameValue = currentToken.Substring(1);
+                expectMatchingArg = true;
+            }
+            else if (currentToken.StartsWith("/"))
+            {
+                currentTokenArgumentNameValue = currentToken.Substring(1);
+                expectMatchingArg = true;
+            }
+
+            CommandLineArgument currentTokenArgument = null;
+            if (currentTokenArgumentNameValue != null)
+            {
+                currentTokenArgument = def.Arguments.Where(arg => arg.IsMatch(currentTokenArgumentNameValue)).SingleOrDefault();
+
+                if (currentTokenArgument == null && contextualAction != null)
+                {
+                    currentTokenArgument = contextualAction.Arguments.Where(arg => arg.IsMatch(currentTokenArgumentNameValue)).SingleOrDefault();
+                }
+            }
+            return currentTokenArgument;
+        }
+
+        /// <summary>
+        /// A helper that detects the argument represented by the current token given a definition.  
+        /// </summary>
+        /// <param name="previousToken">The token to inspect.  If you pass null you will get null back.</param>
+        /// <param name="contextualAction">An action to inspect for a match if the current token does not match a global argument.  Pass null to only check global arguments.</param>
+        /// <param name="def">The definition to inspect.  If null, the ambient definition will be used.  If there is no ambient definition and null is passed then this method throws a NullReferenceException.</param>
+        /// <returns>An argument that is matched by the given token or null if there was no match</returns>
+        public static CommandLineArgument FindContextualArgument(string previousToken, CommandLineAction contextualAction, CommandLineArgumentsDefinition def = null)
+        {
+            def = PassThroughOrTryGetAmbientDefinition(def);
+
+            if (previousToken == null)
+            {
+                return null;
+            }
+
+            string currentTokenArgumentNameValue = null;
+            if (previousToken.StartsWith("-"))
+            {
+                currentTokenArgumentNameValue = previousToken.Substring(1);
+            }
+            else if (previousToken.StartsWith("/"))
+            {
+                currentTokenArgumentNameValue = previousToken.Substring(1);
+            }
+
+            CommandLineArgument currentTokenArgument = null;
+            if (currentTokenArgumentNameValue != null)
+            {
+                currentTokenArgument = def.Arguments.Where(arg => arg.IsMatch(currentTokenArgumentNameValue) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
+
+                if (currentTokenArgument == null && contextualAction != null)
+                {
+                    currentTokenArgument = contextualAction.Arguments.Where(arg => arg.IsMatch(currentTokenArgumentNameValue) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
+                }
+            }
+            return currentTokenArgument;
+        }
+
+        /// <summary>
+        /// Searches the reader's tokens for a non whitespace token that preceeds the current token
+        /// </summary>
+        /// <param name="readerContext">the reader context to inspect</param>
+        /// <param name="highlighterContext">the highlighter context to inspect</param>
+        /// <returns>a non whitespace token that preceeds the current token or null if no such token is found</returns>
+        public static string FindPreviousNonWhitespaceToken(RichCommandLineContext readerContext, HighlighterContext highlighterContext)
+        {
+            string previousToken = null;
+
+            for (int i = highlighterContext.CurrentTokenIndex - 1; i >= 0; i--)
+            {
+                if (string.IsNullOrWhiteSpace(readerContext.Tokens[i].Value) == false)
+                {
+                    previousToken = readerContext.Tokens[i].Value;
+                    break;
+                }
+            }
+            return previousToken;
+        }
+
+        /// <summary>
+        /// Finds the action that matches the given token in the given definition
+        /// </summary>
+        /// <param name="firstToken">the token to test.  If you pass null you will get null back.</param>
+        /// <param name="def">The definition to inspect.  If null, the ambient definition will be used.  If there is no ambient definition and null is passed then this method throws a NullReferenceException.</param>
+        /// <returns>the action that matches the given token in the given definition or null if no such action is found</returns>
+        public static CommandLineAction FindContextualAction(string firstToken, CommandLineArgumentsDefinition def = null)
+        {
+            def = PassThroughOrTryGetAmbientDefinition(def);
+            if(firstToken == null)
+            {
+                return null;
+            }
+            return def.FindMatchingAction(firstToken);
+        }
+
+        private static CommandLineArgumentsDefinition PassThroughOrTryGetAmbientDefinition(CommandLineArgumentsDefinition def)
+        {
+            if(def != null)
+            {
+                return def;
+            }
+            else if(ArgHook.HookContext.Current != null && ArgHook.HookContext.Current.Definition != null)
+            {
+                return ArgHook.HookContext.Current.Definition;
+            }
+            else
+            {
+                throw new NullReferenceException("There is no ambient CommandLineArgumentsDefinition argument and you did not pass one in explicitly");
+            }
+        }
+    }
+
+    internal class ValidationEnforcementTokenHighlighter : ITokenHighlighter
+    {
+        CommandLineArgumentsDefinition definition;
+        public ValidationEnforcementTokenHighlighter(CommandLineArgumentsDefinition definition)
+        {
+            this.definition = definition;
+        }
+
+        public bool ShouldBeHighlighted(RichCommandLineContext readerContext, HighlighterContext highlighterContext)
+        {
+            // don't even try mark tokens as invalid unless the cursor is on it
+            if (readerContext.BufferPosition >= highlighterContext.CurrentToken.StartIndex && readerContext.BufferPosition < highlighterContext.CurrentToken.EndIndex)
+            {
+                return false;
+            }
+
+            var currentToken = highlighterContext.CurrentToken.Value;
+            var previousToken = PowerArgsRichCommandLineReader.FindPreviousNonWhitespaceToken(readerContext, highlighterContext);
+            var firstToken = readerContext.Tokens[0].Value;
+
+            CommandLineAction contextualAction = PowerArgsRichCommandLineReader.FindContextualAction(firstToken, definition);
+            CommandLineArgument contextualArgument = PowerArgsRichCommandLineReader.FindContextualArgument(previousToken, contextualAction, definition);
+
+            if (contextualArgument != null)
+            {
+                if(contextualArgument.TestIsValidAndRevivable(currentToken) == false)
+                {
+                    // the current token either failed validation or could not be revived
+                    return true;
+                }
+            }
+
+            bool expectMatchingArg;
+            CommandLineArgument currentTokenArgument = PowerArgsRichCommandLineReader.FindCurrentTokenArgument(contextualAction, currentToken, out expectMatchingArg, definition);
+
+            if(currentTokenArgument == null && expectMatchingArg)
+            {
+                // The current token starts with a - or /, but does not match a global or action specific argument, so we'll highlight the token red
+                return true;
+            }
+
+            return false;
+        }
+
+        public ConsoleColor? HighlightForegroundColor
+        {
+            get { return ConsoleColor.Red; }
+        }
+
+        public ConsoleColor? HighlightBackgroundColor
+        {
+            get { return null; }
         }
     }
 }

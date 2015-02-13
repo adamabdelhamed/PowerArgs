@@ -112,6 +112,135 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestTheTestIsValidAndRevivableMethod()
+        {
+            var arg = new CommandLineArgument(typeof(int), "TheInt");
+            Assert.IsTrue(arg.TestIsValidAndRevivable("100"));
+
+            // this should fail on the revive test
+            Assert.IsFalse(arg.TestIsValidAndRevivable("abc"));
+
+            Assert.IsTrue(arg.TestIsValidAndRevivable("2000"));
+            arg.Metadata.Add(new ArgRegex("1000"));
+
+            // this should fail the validation test
+            Assert.IsFalse(arg.TestIsValidAndRevivable("2000"));
+        }
+
+        [TestMethod]
+        public void TestPowerArgsRichCommandLineReaderFindContextualArgument()
+        {
+            try
+            {
+                PowerArgsRichCommandLineReader.FindContextualArgument("-TheString", null);
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch(NullReferenceException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("ambient"));
+            }
+
+            CommandLineArgumentsDefinition def = new CommandLineArgumentsDefinition();
+            var globalArg = new CommandLineArgument(typeof(string), "TheString");
+
+            def.Arguments.Add(globalArg);
+            var found = PowerArgsRichCommandLineReader.FindContextualArgument("-TheString", null, def);
+            Assert.AreSame(globalArg, found);
+
+            found = PowerArgsRichCommandLineReader.FindContextualArgument("/TheString", null, def);
+            Assert.AreSame(globalArg, found);
+
+            Assert.IsNull(PowerArgsRichCommandLineReader.FindContextualArgument("-ActionInt", null, def));
+            Assert.IsNull(PowerArgsRichCommandLineReader.FindContextualArgument(null, null, def));
+
+            var action = new CommandLineAction((d) => { });
+            action.Aliases.Add("TheAction");
+
+            var actionArg = new CommandLineArgument(typeof(int), "ActionInt");
+            action.Arguments.Add(actionArg);
+            def.Actions.Add(action);
+
+            found = PowerArgsRichCommandLineReader.FindContextualArgument("-TheString", action, def);
+            Assert.AreSame(globalArg, found);
+
+            found = PowerArgsRichCommandLineReader.FindContextualArgument("-ActionInt", action, def);
+            Assert.AreSame(actionArg, found);
+        }
+
+        [TestMethod]
+        public void TestPowerArgsRichCommandLineReaderFindContextualAction()
+        {
+            try
+            {
+                PowerArgsRichCommandLineReader.FindContextualAction("doesnotmatter");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (NullReferenceException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("ambient"));
+            }
+
+            CommandLineArgumentsDefinition def = new CommandLineArgumentsDefinition();
+            Assert.IsNull(PowerArgsRichCommandLineReader.FindContextualAction(null, def));
+            Assert.IsNull(PowerArgsRichCommandLineReader.FindContextualAction("", def));
+            Assert.IsNull(PowerArgsRichCommandLineReader.FindContextualAction("NonMatchingAction", def));
+
+            var action = new CommandLineAction((d) => { });
+            action.Aliases.Add("TheAction");
+
+            def.Actions.Add(action);
+
+            var found = PowerArgsRichCommandLineReader.FindContextualAction("theaction", def);
+            Assert.AreSame(action, found);
+        }
+
+        [TestMethod]
+        public void TestPowerArgsRichCommandLineReaderFindCurrentTokenArgument()
+        {
+            bool expect;
+            try
+            {
+                PowerArgsRichCommandLineReader.FindCurrentTokenArgument(null, null, out expect);
+            }
+            catch (NullReferenceException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("ambient"));
+            }
+
+            CommandLineArgumentsDefinition def = new CommandLineArgumentsDefinition();
+            var globalArg = new CommandLineArgument(typeof(int), "TheInt");
+            def.Arguments.Add(globalArg);
+            Assert.IsNull(PowerArgsRichCommandLineReader.FindCurrentTokenArgument(null, null, out expect, def));
+            Assert.IsFalse(expect);
+
+            var found = PowerArgsRichCommandLineReader.FindCurrentTokenArgument(null, "-TheInt", out expect, def);
+            Assert.AreSame(globalArg, found);
+            Assert.IsTrue(expect);
+
+            found = PowerArgsRichCommandLineReader.FindCurrentTokenArgument(null, "/TheInt", out expect, def);
+            Assert.AreSame(globalArg, found);
+            Assert.IsTrue(expect);
+
+            found = PowerArgsRichCommandLineReader.FindCurrentTokenArgument(null, "TheInt", out expect, def);
+            Assert.IsNull(found);
+            Assert.IsFalse(expect);
+
+            found = PowerArgsRichCommandLineReader.FindCurrentTokenArgument(null, "-ActionInt", out expect, def);
+            Assert.IsNull(found);
+            Assert.IsTrue(expect);
+
+            var action = new CommandLineAction((d) => { });
+            action.Aliases.Add("TheAction");
+            var actionArg = new CommandLineArgument(typeof(int), "ActionInt");
+            action.Arguments.Add(actionArg);
+            def.Actions.Add(action);
+
+            found = PowerArgsRichCommandLineReader.FindCurrentTokenArgument(action, "-ActionInt", out expect, def);
+            Assert.AreSame(actionArg, found);
+            Assert.IsTrue(expect);
+        }
+
+        [TestMethod]
         public void TestConflictingIsRequiredOverride()
         {
             TestConflictingOverride((argument) =>

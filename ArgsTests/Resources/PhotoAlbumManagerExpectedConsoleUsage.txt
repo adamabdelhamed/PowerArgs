@@ -3,19 +3,15 @@ A program that lets you manage a collection of photos in Azure storage container
 
 Usage - PhotoManager <action> -options
 
-Global options
-
-Option        Description                                                                            
-Output (-O)   How much output to display while performing management operations [Default='Light']    
-              Verbose                                                                                
-              Light                                                                                  
-              Quiet                                                                                  
+GlobalOption   Description                                                                            
+Output (-O)    How much output to display while performing management operations [Default='Light']    
+               Verbose                                                                                
+               Light                                                                                  
+               Quiet                                                                                  
 
 Actions
 
-CreateAlbum - Creates a new album in the target container, creating the container if it does not exist
-
-    Usage - PhotoManager CreateAlbum <StorageAccountName> <StorageAccountKey> [<Container>] -options
+  CreateAlbum <StorageAccountName> <StorageAccountKey> [<Container>] -options - Creates a new album in the target container, creating the container if it does not exist
 
     Option                     Description
     StorageAccountName* (-a)   The storage account to connect to
@@ -23,10 +19,7 @@ CreateAlbum - Creates a new album in the target container, creating the containe
     Container (-c)             The storage container to target [Default='DefaultAlbum'] 
     UseHttps (-U)              Set this flag to use https
 
-
-Download - Downloads a single blob to the local file system.
-
-    Usage - PhotoManager Download <StorageAccountName> <StorageAccountKey> [<Container>] -options
+  Download <StorageAccountName> <StorageAccountKey> [<Container>] -options - Downloads a single blob to the local file system.
 
     Option                     Description
     BlobFilePath* (-B)         The name of a blob to download
@@ -47,9 +40,7 @@ Download - Downloads a single blob to the local file system.
     Downloads a blob called ceremony.png to a temp folder on the local machine
     photos download -a myaccount -k mykey -c wedding -BlobFilePath ceremony.png -LocalFile C:\temp\ceremony.png
 
-Upload - Uploads one or more files from the local file system to the target container
-
-    Usage - PhotoManager Upload <StorageAccountName> <StorageAccountKey> [<Container>] -options
+  Upload <StorageAccountName> <StorageAccountKey> [<Container>] -options - Uploads one or more files from the local file system to the target container
 
     Option                     Description
     LocalFile (-L)             If specified the single file will be uploaded
@@ -70,8 +61,6 @@ Upload - Uploads one or more files from the local file system to the target cont
 
     Uploads all the files in the local directory to the 'wedding' container
     photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images
-
-Options can be specified using -<option> <value> or as /<option>:<value>
 
 Examples
 

@@ -39,6 +39,11 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Gets or sets whether or not to propagate exceptions thrown by tab completion highlighters.  The default is false.
+        /// </summary>
+        public bool ThrowOnTabCompletionHandlerException { get; set; }
+
+        /// <summary>
         /// Gets the list of registered tab completion handlers.
         /// </summary>
         public List<ITabCompletionHandler> TabCompletionHandlers { get; private set; }
@@ -57,17 +62,29 @@ namespace PowerArgs
         /// <param name="context">Context that can be used to inspect the current command line to perform tab completion</param>
         public void Handle(RichCommandLineContext context)
         {
+            context.Intercept = true;
             context.RefreshTokenInfo();
-
-            foreach(var handler in TabCompletionHandlers)
+            try
             {
-                if(handler.TryTabComplete(context))
+                foreach (var handler in TabCompletionHandlers)
                 {
-                    break;
+                    if (handler.TryTabComplete(context))
+                    {
+                        break;
+                    }
                 }
             }
-
-            context.Intercept = true;
+            catch(Exception ex)
+            {
+                if (ThrowOnTabCompletionHandlerException)
+                {
+                    throw;
+                }
+                else
+                {
+                    PowerLogger.LogLine("Tab completion handler threw exception: " + ex.ToString());
+                }
+            }
         }
     }
 }

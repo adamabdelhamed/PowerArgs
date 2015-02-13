@@ -17,7 +17,7 @@ namespace HelloWorld.Samples
         }
 
         [ArgActionMethod, ArgDescription("Pull remote changes from a remote repo")]
-        public void Pull([ArgRequired, ArgDescription("The name of the remote to pull from")]string remote, [DefaultValue("master"), ArgDescription("The name of the branch to pull")] string branch)
+        public void Pull([ArgRequired, ArgDescription("The name of the remote to pull from")]string remote, [DefaultValue("master"), PromptIfEmpty(HighlighterConfiguratorType=typeof(HashtagHighlighter)), ArgDescription("The name of the branch to pull")] string branch)
         {
             Console.WriteLine("Pulling from " + remote + ", branch=" + branch);
         }
@@ -26,6 +26,22 @@ namespace HelloWorld.Samples
         public void Status()
         {
             Console.WriteLine("Here is some status");
+        }
+
+        private class CustomHighlighter : IHighlighterConfigurator
+        {
+            public void Configure(SimpleSyntaxHighlighter highlighter)
+            {
+                highlighter.AddKeyword("master", ConsoleColor.Green);
+            }
+        }
+
+        private class HashtagHighlighter : IHighlighterConfigurator
+        {
+            public void Configure(SimpleSyntaxHighlighter highlighter)
+            {
+                highlighter.AddRegex("#.*", ConsoleColor.Cyan);
+            }
         }
     }
 
@@ -37,12 +53,11 @@ namespace HelloWorld.Samples
         }
     }
 
-
     public class Git
     {
         public static void _Main(string[] args)
         {
             Args.InvokeAction<GitExampleArgs>(args);
-        }
+        }    
     }
 }

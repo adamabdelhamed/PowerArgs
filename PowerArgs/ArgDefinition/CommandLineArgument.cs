@@ -345,6 +345,27 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Tests to see if the given value would pass validation and revival.  
+        /// </summary>
+        /// <param name="value">the value to test</param>
+        /// <returns>true if the value passes validation and is successfully revived, false otherwise</returns>
+        public bool TestIsValidAndRevivable(string value)
+        {
+            try
+            {
+                var cand = value;
+                Validate(ref cand);
+                Revive(cand);
+                RevivedValue = null;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets the string representation of this argument.
         /// </summary>
         /// <returns>the string representation of this argument.</returns>

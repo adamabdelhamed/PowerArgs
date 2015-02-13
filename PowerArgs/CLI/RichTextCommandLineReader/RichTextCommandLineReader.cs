@@ -44,6 +44,11 @@ namespace PowerArgs
         public ConsoleHistoryManager HistoryManager { get; private set; }
 
         /// <summary>
+        /// Gets or sets whether or not to propagate exceptions thrown by syntax highlighters.  The default is false.
+        /// </summary>
+        public bool ThrowOnSyntaxHighlightException { get; set; }
+
+        /// <summary>
         /// Creates a new reader.
         /// </summary>
         public RichTextCommandLineReader()
@@ -159,7 +164,23 @@ namespace PowerArgs
                 return;
             }
 
-            bool highlightChanged = Highlighter.TryHighlight(context);
+            bool highlightChanged = false;
+
+            try
+            {
+                highlightChanged = Highlighter.TryHighlight(context);
+            }
+            catch(Exception ex)
+            {
+                if (ThrowOnSyntaxHighlightException)
+                {
+                    throw;
+                }
+                else
+                {
+                    PowerLogger.LogLine("Syntax highlighting threw exception: " + ex.ToString());
+                }
+            }
 
             if(highlightChanged)
             {

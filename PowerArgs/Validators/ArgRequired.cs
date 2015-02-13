@@ -46,6 +46,16 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Gets or sets the type to be used for tab completion when prompting for a missing, required argument.  The type must implement ITabCompletionHandler
+        /// </summary>
+        public Type TabCompletionHandlerType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type to use inject custom syntax highlighting when prompting for a missing, required argument.  The type must implement IHighlighterConfigurator
+        /// </summary>
+        public Type HighlighterConfiguratorType { get; set; }
+
+        /// <summary>
         /// Creates a new ArgRequired attribute.
         /// </summary>
         public ArgRequired()
@@ -76,7 +86,22 @@ namespace PowerArgs
 
             if (IsConditionallyRequired == false && arg == null && PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
             {
-                arg = new Cli().PromptForLine("Enter value for " + argument.DefaultAlias + ": ");
+                var cli = new Cli();
+
+                ITabCompletionHandler tabHandler;
+                IHighlighterConfigurator highlighterConfigurator;
+
+                if (TabCompletionHandlerType.TryCreate<ITabCompletionHandler>(out tabHandler))
+                {
+                    cli.Reader.TabHandler.TabCompletionHandlers.Add(tabHandler);
+                }
+
+                if (HighlighterConfiguratorType.TryCreate<IHighlighterConfigurator>(out highlighterConfigurator))
+                {
+                    highlighterConfigurator.Configure(cli.Reader.Highlighter);
+                }
+
+                arg = cli.PromptForLine("Enter value for " + argument.DefaultAlias);
             }
 
             if (arg == null && IsConditionallyRequired == false)
@@ -88,12 +113,25 @@ namespace PowerArgs
 
     internal class ArgRequiredConditionalHook : ArgHook
     {
+        /// <summary>
+        /// Gets or sets the type to be used for tab completion when prompting for a missing, required argument.  The type must implement ITabCompletionHandler
+        /// </summary>
+        public Type TabCompletionHandlerType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type to use inject custom syntax highlighting when prompting for a missing, required argument.  The type must implement IHighlighterConfigurator
+        /// </summary>
+        public Type HighlighterConfiguratorType { get; set; }
+
+
         internal ArgRequired parent;
 
         public ArgRequiredConditionalHook(ArgRequired parent)
         {
             this.parent = parent;
             this.AfterPopulatePropertiesPriority = 2;
+            this.TabCompletionHandlerType = parent.TabCompletionHandlerType;
+            this.HighlighterConfiguratorType = parent.HighlighterConfiguratorType;
         }
 
         public override void AfterPopulateProperties(ArgHook.HookContext context)
@@ -165,7 +203,24 @@ namespace PowerArgs
         {
             if (parent.PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
             {
-                context.ArgumentValue = new Cli().PromptForLine("Enter value for " + context.CurrentArgument.DefaultAlias + ": ");
+
+                var cli = new Cli();
+
+                ITabCompletionHandler tabHandler;
+                IHighlighterConfigurator highlighterConfigurator;
+
+                if (TabCompletionHandlerType.TryCreate<ITabCompletionHandler>(out tabHandler))
+                {
+                    cli.Reader.TabHandler.TabCompletionHandlers.Add(tabHandler);
+                }
+
+                if (HighlighterConfiguratorType.TryCreate<IHighlighterConfigurator>(out highlighterConfigurator))
+                {
+                    highlighterConfigurator.Configure(cli.Reader.Highlighter);
+                }
+
+
+                context.ArgumentValue = cli.PromptForLine("Enter value for " + context.CurrentArgument.DefaultAlias);
                 context.CurrentArgument.Populate(context);
                 return true;
             }

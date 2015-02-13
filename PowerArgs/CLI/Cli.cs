@@ -99,7 +99,11 @@ namespace PowerArgs
         /// <returns>the input that the user entered</returns>
         public string PromptForLine(string message)
         {
-            ConsoleString.Write(message + ": ", ConsoleColor.Yellow);
+            if(message.EndsWith(": ") == false)
+            {
+                message += ": ";
+            }
+            ConsoleString.Write(message, ConsoleColor.Yellow);
             var input = Reader.ReadLine().ToString();
             return input;
         }

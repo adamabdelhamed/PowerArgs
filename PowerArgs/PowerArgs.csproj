@@ -114,6 +114,7 @@
     <Compile Include="Hooks\ArgPipeline\PipelineOutputFormatter.cs" />
     <Compile Include="Hooks\ArgPipeline\RootPipelineStage.cs" />
     <Compile Include="Hooks\ArgPipeline\PipelineStage.cs" />
+    <Compile Include="Metadata\PromptIfEmpty.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

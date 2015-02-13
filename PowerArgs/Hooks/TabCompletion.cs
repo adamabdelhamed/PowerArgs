@@ -160,11 +160,6 @@ namespace PowerArgs
                 throw new InvalidArgDefinitionException("Type does not implement ITabCompletionSource or ISmartTabCompletionSource: " + CompletionSourceType.FullName);
             }
 
-            if (HighlighterConfiguratorType != null && HighlighterConfiguratorType.GetInterfaces().Contains(typeof(IHighlighterConfigurator)) == false)
-            {
-                throw new InvalidArgDefinitionException("Type does not implement IHighlighterConfigurator: " + HighlighterConfiguratorType.FullName);
-            }
-            
             if (context.Definition.IsNonInteractive)
             {
                 this.REPL = false;
@@ -215,11 +210,11 @@ namespace PowerArgs
             }
 
             PowerArgsRichCommandLineReader reader = new PowerArgsRichCommandLineReader(context.Definition, LoadHistory());
-            
-            if(HighlighterConfiguratorType != null)
+
+            IHighlighterConfigurator customConfigurator;
+            if(HighlighterConfiguratorType.TryCreate<IHighlighterConfigurator>(out customConfigurator))
             {
-                var provider = (IHighlighterConfigurator)Activator.CreateInstance(HighlighterConfiguratorType);
-                provider.Configure(reader.Highlighter);
+                customConfigurator.Configure(reader.Highlighter);
             }
 
             var newCommandLineString = reader.ReadLine().ToString();

@@ -117,7 +117,8 @@ namespace ArgsTests
             var definition = new CommandLineArgumentsDefinition(typeof(ConflictingArgumentsThatAwesomeTabCompletionMakesBetter));
 
             PowerArgsRichCommandLineReader reader = new PowerArgsRichCommandLineReader(definition, new List<ConsoleString>());
-
+            reader.ThrowOnSyntaxHighlightException = true;
+            reader.TabHandler.ThrowOnTabCompletionHandlerException = true;
             var completed = string.Join(" ", reader.ReadCommandLine());
             Assert.AreEqual("meats -animal Chicken", completed);
              

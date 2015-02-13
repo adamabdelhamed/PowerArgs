@@ -66,5 +66,59 @@ namespace PowerArgs
                     where m.HasAttr<ArgActionMethod>()
                     select m).ToList();
         }
+
+        internal static bool TryCreate<T>(this Type t, out T val)
+        {
+            object ret;
+            if(TryCreate(t,new Type[]{typeof(T)},out ret))
+            {
+                val = (T)ret;
+                return true;
+            }
+            else
+            {
+                val = default(T);
+                return false;
+            }
+        }
+
+        internal static bool TryCreate(this Type t, IEnumerable<Type> acceptedTypes, out object val)
+        {
+            if (t == null)
+            {
+                val = null;
+                return false;
+            }
+
+            foreach(var acceptableType in acceptedTypes)
+            {
+                if (t != acceptableType && t.GetInterfaces().Contains(acceptableType) == false && t.IsSubclassOf(acceptableType) == false)
+                {
+                    // no match
+                }
+                else
+                {
+                    try
+                    {
+                        val =  Activator.CreateInstance(t);
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidArgDefinitionException("Could not initialize type using default constructor: " + t.FullName, ex);
+                    }
+                }
+            }
+
+            if(acceptedTypes.Count() == 1)
+            {
+                throw new InvalidArgDefinitionException("Type does not implement " + acceptedTypes.First().Name + ": " + t.FullName);
+            }
+            else
+            {
+                var acceptableTypeList = string.Join(", ", acceptedTypes.Select(type => type.Name));
+                throw new InvalidArgDefinitionException("Type does not implement any of the following types - " + acceptableTypeList + ": " + t.FullName);
+            } 
+        }
     }
 }
