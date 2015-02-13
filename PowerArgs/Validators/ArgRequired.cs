@@ -98,6 +98,7 @@ namespace PowerArgs
 
                 if (HighlighterConfiguratorType.TryCreate<IHighlighterConfigurator>(out highlighterConfigurator))
                 {
+                    cli.Reader.Highlighter = new SimpleSyntaxHighlighter();
                     highlighterConfigurator.Configure(cli.Reader.Highlighter);
                 }
 
@@ -216,6 +217,7 @@ namespace PowerArgs
 
                 if (HighlighterConfiguratorType.TryCreate<IHighlighterConfigurator>(out highlighterConfigurator))
                 {
+                    cli.Reader.Highlighter = new SimpleSyntaxHighlighter();
                     highlighterConfigurator.Configure(cli.Reader.Highlighter);
                 }
 
