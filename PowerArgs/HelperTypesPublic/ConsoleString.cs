@@ -735,4 +735,30 @@ namespace PowerArgs
             return characters.GetEnumerator();
         }
     }
+
+    /// <summary>
+    /// Extensions that make it easy to work with ConsoleStrings
+    /// </summary>
+    public static class ConsoleStringX
+    {
+        /// <summary>
+        /// Converts the given enumeration of console characters to a console string
+        /// </summary>
+        /// <param name="buffer">the characters to convert to a console string</param>
+        /// <returns>the new console string</returns>
+        public static ConsoleString ToConsoleString(this IEnumerable<ConsoleCharacter> buffer)
+        {
+            return new ConsoleString(buffer);
+        }
+
+        /// <summary>
+        /// Converts the given enumeration of console characters to a normal string
+        /// </summary>
+        /// <param name="buffer">the characters to convert to a normal string</param>
+        /// <returns>the new string</returns>
+        public static string ToNormalString(this IEnumerable<ConsoleCharacter> buffer)
+        {
+            return buffer.ToConsoleString().ToString();
+        }
+    }
 }

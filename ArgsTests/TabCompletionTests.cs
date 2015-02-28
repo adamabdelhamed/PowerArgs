@@ -1,10 +1,9 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace ArgsTests
 {
@@ -460,6 +459,7 @@ namespace ArgsTests
         public int BufferWidth { get { return 80; } }
 
         bool shift = false;
+        bool control = false;
         public ConsoleKeyInfo ReadKey()
         {
             if (i == input.Length) return new ConsoleKeyInfo((char)0, ConsoleKey.Enter, false, false, false);
@@ -467,15 +467,27 @@ namespace ArgsTests
             ConsoleKey key = ConsoleKey.NoName;
 
             if (c == '\b') key = ConsoleKey.Backspace;
+            else if (c == ' ') key = ConsoleKey.Spacebar;
             else if (c == '\t') key = ConsoleKey.Tab;
             else if (c == '{' && ReadAheadLookFor("delete}")) key = ConsoleKey.Delete;
             else if (c == '{' && ReadAheadLookFor("home}")) key = ConsoleKey.Home;
             else if (c == '{' && ReadAheadLookFor("end}")) key = ConsoleKey.End;
+            else if (c == '{' && ReadAheadLookFor("escape}")) key = ConsoleKey.Escape;
             else if (c == '{' && ReadAheadLookFor("left}")) key = ConsoleKey.LeftArrow;
             else if (c == '{' && ReadAheadLookFor("right}")) key = ConsoleKey.RightArrow;
             else if (c == '{' && ReadAheadLookFor("up}")) key = ConsoleKey.UpArrow;
             else if (c == '{' && ReadAheadLookFor("down}")) key = ConsoleKey.DownArrow;
             else if (c == '{' && ReadAheadLookFor("enter}")) key = ConsoleKey.Enter;
+            else if (c == '{' && ReadAheadLookFor("wait}"))
+            {
+                Thread.Sleep(1000);
+                return ReadKey();
+            }
+            else if (c == '{' && ReadAheadLookFor("w}"))
+            {
+                Thread.Sleep(100);
+                return ReadKey();
+            }
             else if (c == '{' && ReadAheadLookFor("shift}"))
             {
                 shift = true;
@@ -483,8 +495,15 @@ namespace ArgsTests
                 shift = false;
                 return ret;
             }
+            else if (c == '{' && ReadAheadLookFor("control}"))
+            {
+                control = true;
+                var ret = ReadKey();
+                control = false;
+                return ret;
+            }
 
-            return new ConsoleKeyInfo(c, key, shift, false, false);
+            return new ConsoleKeyInfo(c, key, shift, false, control);
         }
 
         private bool ReadAheadLookFor(string toFind)

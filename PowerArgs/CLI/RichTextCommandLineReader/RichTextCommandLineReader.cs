@@ -11,6 +11,12 @@ namespace PowerArgs
     public class RichTextCommandLineReader
     {
         /// <summary>
+        /// An event that fires after the user enters a key.  The event will not fire for
+        /// terminating keystrokes
+        /// </summary>
+        public event Action<RichCommandLineContext> AfterReadKey;
+
+        /// <summary>
         /// The console implementation to target
         /// </summary>
         public IConsoleProvider Console { get; set; }
@@ -38,6 +44,23 @@ namespace PowerArgs
         /// </summary>
         public TabKeyHandler TabHandler { get; private set; }
 
+        internal SpacebarKeyHandler SpacebarHandler { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the context assit provider that should be used for this reader
+        /// </summary>
+        public IContextAssistProvider ContextAssistProvider
+        {
+            get
+            {
+                return this.SpacebarHandler.ContextAssistProvider;
+            }
+            set
+            {
+                this.SpacebarHandler.ContextAssistProvider = value;
+            }
+        }
+
         /// <summary>
         /// Gets the history manager.  This will let you add your historical command line values so that end users can cycle through them using the up and down arrows.
         /// </summary>
@@ -49,20 +72,26 @@ namespace PowerArgs
         public bool ThrowOnSyntaxHighlightException { get; set; }
 
         /// <summary>
+        /// Gets or sets the object to use to synchronize reading with other threads that are interacting with the console
+        /// </summary>
+        public object SyncLock { get; set; }
+
+        /// <summary>
         /// Creates a new reader.
         /// </summary>
         public RichTextCommandLineReader()
         {
-            Console = new StdConsoleProvider();
+            Console = ConsoleProvider.Current;
             HistoryManager = new ConsoleHistoryManager();
-
+            SyncLock = new object();
             TabHandler = new TabKeyHandler();
-
+            SpacebarHandler = new SpacebarKeyHandler();
             KeyHandlers = new Dictionary<ConsoleKey, IKeyHandler>();
             RegisterHandler(new EnterKeyHandler());
             RegisterHandler(new ArrowKeysHandler());
             RegisterHandler(new HomeAndEndKeysHandler());
             RegisterHandler(new BackspaceAndDeleteKeysHandler());
+            RegisterHandler(SpacebarHandler);
             RegisterHandler(TabHandler);
         }
 
@@ -93,6 +122,16 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Unregisters the handler for the given key
+        /// </summary>
+        /// <param name="key">the key to unregister</param>
+        /// <returns>true if there was a handler registered and removed, false otherwise</returns>
+        public bool UnregisterHandler(ConsoleKey key)
+        {
+            return KeyHandlers.Remove(key);
+        }
+
+        /// <summary>
         /// Reads a line of text from the console and converts it into a string array that has accounted for escape sequences and quoted string literals.
         /// </summary>
         /// <param name="initialBuffer">Optionally seed the prompt with an initial value that the end user can modify</param>
@@ -111,50 +150,92 @@ namespace PowerArgs
         /// <returns>a line of text from the console</returns>
         public ConsoleString ReadLine(ConsoleString initialBuffer = null)
         {
-            RichCommandLineContext context = new RichCommandLineContext(this.HistoryManager);
-            context.Console = this.Console;
-            context.ConsoleStartTop = this.Console.CursorTop;
-            context.ConsoleStartLeft = this.Console.CursorLeft;
+            RichCommandLineContext context;
+            lock (SyncLock)
+            {
+                context = new RichCommandLineContext(this.HistoryManager);
+                context.Console = this.Console;
+                context.ConsoleStartTop = this.Console.CursorTop;
+                context.ConsoleStartLeft = this.Console.CursorLeft;
+            }
 
             if(initialBuffer != null)
             {
-                context.ReplaceConsole(initialBuffer);
+                lock (SyncLock)
+                {
+                    context.ReplaceConsole(initialBuffer);
+                }
             }
 
             while (true)
             {
                 context.Reset();
                 context.KeyPressed = this.Console.ReadKey(true);
-                context.CharacterToWrite = new ConsoleCharacter(context.KeyPressed.KeyChar);
-                context.BufferPosition = this.Console.CursorLeft - context.ConsoleStartLeft + (this.Console.CursorTop - context.ConsoleStartTop) * this.Console.BufferWidth;
-
-                IKeyHandler handler = null;
-
-                if (KeyHandlers.TryGetValue(context.KeyPressed.Key, out handler) == false && context.CharacterToWrite.Value != '\u0000')
+                lock (SyncLock)
                 {
-                    context.WriteCharacterForPressedKey();
-                    DoSyntaxHighlighting(context);
-                }
-                else if(handler != null)
-                {
-                    handler.Handle(context);
+                    context.CharacterToWrite = new ConsoleCharacter(context.KeyPressed.KeyChar);
+                    context.BufferPosition = this.Console.CursorLeft - context.ConsoleStartLeft + (this.Console.CursorTop - context.ConsoleStartTop) * this.Console.BufferWidth;
 
-                    if (context.Intercept == false && context.CharacterToWrite.Value != '\u0000')
+                    if(context.BufferPosition < 0 || context.BufferPosition > context.Buffer.Count)
                     {
-                        this.Console.Write(context.CharacterToWrite);
+                        var message = string.Format("The cursor is not located within the bounds of the buffer. Cursor: {0},{1}    Start position: {2},{3}    Buffer position: {4}    Buffer length: {5}", this.Console.CursorTop, this.Console.CursorLeft, context.ConsoleStartTop, context.ConsoleStartLeft, context.BufferPosition, context.Buffer.Count);
+                        try
+                        {
+                            throw new IndexOutOfRangeException(message);
+                        }
+                        catch(Exception ex)
+                        {
+                            PowerLogger.LogLine(ex.ToString());
+                            throw;
+                        }
                     }
 
-                    DoSyntaxHighlighting(context);
+                    IKeyHandler handler = null;
 
-                    if (context.IsFinished)
+                    if (KeyHandlers.TryGetValue(context.KeyPressed.Key, out handler) == false && IsWriteable(context.KeyPressed))
                     {
-                        this.Console.WriteLine();
-                        break;
+                        context.WriteCharacterForPressedKey();
+                        DoSyntaxHighlighting(context);
+                    }
+                    else if (handler != null)
+                    {
+                        handler.Handle(context);
+
+                        if (context.Intercept == false && IsWriteable(context.KeyPressed))
+                        {
+                            context.WriteCharacterForPressedKey();
+                        }
+
+                        DoSyntaxHighlighting(context);
+
+                        if (context.IsFinished)
+                        {
+                            this.Console.WriteLine();
+                            break;
+                        }
+                    }
+
+                    if (AfterReadKey != null)
+                    {
+                        AfterReadKey(context);
                     }
                 }
             }
 
             return new ConsoleString(context.Buffer);
+        }
+
+        /// <summary>
+        /// Determines if the given key is writable text
+        /// </summary>
+        /// <param name="info">the key info</param>
+        /// <returns>true if the given key is writable text, false otherwise</returns>
+        public static bool IsWriteable(ConsoleKeyInfo info)
+        {
+            if (info.KeyChar == '\u0000') return false;
+            if (info.Key == ConsoleKey.Escape) return false;
+
+            return true;
         }
 
         private void DoSyntaxHighlighting(RichCommandLineContext context)

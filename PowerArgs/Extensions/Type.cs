@@ -69,8 +69,13 @@ namespace PowerArgs
 
         internal static bool TryCreate<T>(this Type t, out T val)
         {
+            return TryCreate<T>(t, new object[0], out val);
+        }
+
+        internal static bool TryCreate<T>(this Type t, object[] contstructorArgs, out T val)
+        {
             object ret;
-            if(TryCreate(t,new Type[]{typeof(T)},out ret))
+            if (TryCreate(t, new Type[] { typeof(T) }, contstructorArgs, out ret))
             {
                 val = (T)ret;
                 return true;
@@ -82,7 +87,7 @@ namespace PowerArgs
             }
         }
 
-        internal static bool TryCreate(this Type t, IEnumerable<Type> acceptedTypes, out object val)
+        internal static bool TryCreate(this Type t, IEnumerable<Type> acceptedTypes, object[] contstructorArgs, out object val)
         {
             if (t == null)
             {
@@ -100,12 +105,12 @@ namespace PowerArgs
                 {
                     try
                     {
-                        val =  Activator.CreateInstance(t);
+                        val = Activator.CreateInstance(t, contstructorArgs);
                         return true;
                     }
                     catch (Exception ex)
                     {
-                        throw new InvalidArgDefinitionException("Could not initialize type using default constructor: " + t.FullName, ex);
+                        throw new InvalidArgDefinitionException("Could not initialize type using required constructor: " + t.FullName, ex);
                     }
                 }
             }

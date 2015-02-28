@@ -12,7 +12,7 @@
     <description>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage documentation, tab completion, Entity Framework querying, secure string arguments, and plenty of hooks for extensibility.</description>
     <summary>$description$ - PowerArgs converts command line arguments into .NET objects that are easy to program against.</summary>
     <releaseNotes>
-      Syntax highlighting on the enhanced command prompt.  Some minor fixes.
+      Added the contextual assist framework that can be used to provide intellisense like experiences while on the enhanced command line
     </releaseNotes>
     <copyright>Copyright 2012 Adam Abdelhamed</copyright>
     <tags>Command Line Argument Parser</tags>

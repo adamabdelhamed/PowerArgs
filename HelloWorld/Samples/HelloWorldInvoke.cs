@@ -1,5 +1,8 @@
 ﻿using PowerArgs;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace HelloWorld.Samples
 {
@@ -23,6 +26,9 @@ namespace HelloWorld.Samples
         public int?    IntArg    { get; set; }
         [ArgDescription("An optional switch arg")]
         public bool   SwitchArg { get; set; }
+
+        [ArgContextualAssistant(typeof(StatePickerAssistant))]
+        public string State { get; set; }
 
         [HelpHook]
         public bool Help { get; set; }
@@ -49,6 +55,68 @@ namespace HelloWorld.Samples
         public MetalTabCompletionSource() : base(new string[] { "Gold", "Silver", "Iron" })
         {
             this.MinCharsBeforeCyclingBegins = 0;
+        }
+    }
+
+    public class StatePickerAssistant : ContextAssistPicker
+    {
+        private static List<string> states = new List<string>
+        {
+            "Alabama",
+            "Alaska", 
+            "Arizona", 
+            "Arkansas", 
+            "California", 
+            "Colorado", 
+            "Connecticut", 
+            "Delaware", 
+            "Florida", 
+            "Georgia", 
+            "Hawaii", 
+            "Idaho", 
+            "Illinois", 
+            "Indiana", 
+            "Iowa", 
+            "Kansas", 
+            "Kentucky", 
+            "Louisiana", 
+            "Maine", 
+            "Maryland", 
+            "Massachusetts", 
+            "Michigan", 
+            "Minnesota", 
+            "Mississippi", 
+            "Missouri", 
+            "Montana", 
+            "Nebraska", 
+            "Nevada", 
+            "\"New Hampshire\"", 
+            "\"New Jersey\"", 
+            "\"New Mexico\"", 
+            "\"New York\"", 
+            "\"North Carolina\"", 
+            "\"North Dakota\"",
+            "Ohio",
+            "Oklahoma",
+            "Oregon",
+            "Pennsylvania\"",
+            "\"Rhode Island\"",
+            "\"South Carolina\"",
+            "\"South Dakota\"", 
+            "Tennessee", 
+            "Texas",
+            "Utah",
+            "Vermont",
+            "Virginia",
+            "Washington", 
+            "\"West Virginia\"",
+            "Wisconsin", 
+            "Wyoming",
+        };
+
+        public StatePickerAssistant()
+        {
+            Options.AddRange(states);
         }
     }
 }

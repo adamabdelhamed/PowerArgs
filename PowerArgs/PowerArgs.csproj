@@ -47,8 +47,15 @@
   <ItemGroup>
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
     <Compile Include="CLI\Cli.cs" />
-    <Compile Include="CLI\PowerArgsRichCommandLineReader.cs" />
+    <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
+    <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ConsoleHistoryManager.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistSearch.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\IContextAssistProvider.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistPicker.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\MultiContextAssistProvider.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistResult.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\SpacebarKeyHandler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\RichCommandLineContext.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\IKeyHandler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\ArrowKeysHandler.cs" />
@@ -63,11 +70,14 @@
     <Compile Include="Extensions\FieldInfo.cs" />
     <Compile Include="Extensions\MatchCollection.cs" />
     <Compile Include="Extensions\MemberInfo.cs" />
+    <Compile Include="Extensions\String.cs" />
     <Compile Include="Extensions\Object.cs" />
     <Compile Include="Extensions\ParemeterInfo.cs" />
     <Compile Include="Extensions\Type.cs" />
     <Compile Include="HelperTypesInternal\ActionAndArgumentSmartTabCompletionSource.cs" />
     <Compile Include="HelperTypesInternal\ConsoleOutInterceptor.cs" />
+    <Compile Include="HelperTypesInternal\ConsoleWiper.cs" />
+    <Compile Include="HelperTypesInternal\ExpireableAsyncRequestManager.cs" />
     <Compile Include="HelperTypesPublic\ConsoleInDriver.cs" />
     <Compile Include="HelperTypesInternal\PowerLogger.cs" />
     <Compile Include="HelperTypesPublic\AliasCollection.cs" />
@@ -115,6 +125,7 @@
     <Compile Include="Hooks\ArgPipeline\RootPipelineStage.cs" />
     <Compile Include="Hooks\ArgPipeline\PipelineStage.cs" />
     <Compile Include="Hooks\PromptIfEmpty.cs" />
+    <Compile Include="Metadata\ContextualAssistant.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

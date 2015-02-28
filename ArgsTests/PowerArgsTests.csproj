@@ -60,6 +60,7 @@
     <Compile Include="ArgRequiredConditionalTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
     <Compile Include="CLI\PromptTests.cs" />
+    <Compile Include="CLI\ContextAssistTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />
     <Compile Include="MultipleFactoredOutActionsTests.cs" />

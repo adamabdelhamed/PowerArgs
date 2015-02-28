@@ -130,6 +130,39 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Returns the portion of the buffer represented by the given token
+        /// </summary>
+        /// <param name="t">the token whose position to use to look into the buffer</param>
+        /// <returns>the portion of the buffer represented by the given token</returns>
+        public ConsoleString GetBufferSubstringFromToken(Token t)
+        {
+            List<ConsoleCharacter> buffer = new List<ConsoleCharacter>();
+            for(int i = t.StartIndex; i < t.EndIndex; i++)
+            {
+                buffer.Add(Buffer[i]);
+            }
+
+            return new ConsoleString(buffer);
+        }
+
+        /// <summary>
+        /// Clears the console
+        /// </summary>
+        public void ClearConsole()
+        {
+            int left = this.Console.CursorLeft;
+            var top = this.Console.CursorTop;
+
+            this.Console.CursorLeft = this.ConsoleStartLeft;
+            this.Console.CursorTop = this.ConsoleStartTop;
+
+            for (int i = 0; i < Buffer.Count; i++)
+            {
+                this.Console.Write(" ");
+            }
+        }
+
+        /// <summary>
         /// Rewrites the console using the latest values in the Buffer, preserving the cursor position with an optional adjustment.  
         /// </summary>
         /// <param name="leftAdjust">Adjusts the left cursor position by the desired amound.  If you want the cursor to stay where it was then use 0.</param>
@@ -212,10 +245,11 @@ namespace PowerArgs
                 Tokens.Add(new Token("", 0, 1, 1));
             }
 
+            CurrentToken = null;
             for (int i = 0; i < Tokens.Count; i++)
             {
                 var token = Tokens[i];
-                if (BufferPosition <= token.EndIndex && BufferPosition >= token.StartIndex)
+                if (BufferPosition < token.EndIndex && BufferPosition >= token.StartIndex)
                 {
                     // BUFFER---------: a command line string
                     // BUFFER POSITION:   [       ]
@@ -223,6 +257,12 @@ namespace PowerArgs
                     CurrentTokenIndex = i;
                     break;
                 }
+            }
+
+            if(CurrentToken == null)
+            {
+                CurrentToken = Tokens[Tokens.Count - 1];
+                CurrentTokenIndex = Tokens.Count - 1;
             }
         }
 
@@ -301,6 +341,31 @@ namespace PowerArgs
             }
 
             ReplaceConsole(new ConsoleString(newBuffer));
+        }
+
+        internal bool IsCursorOnToken(Token t)
+        {
+            if(Buffer.Count == 0 && t.StartIndex == 0 && t.EndIndex == 0)
+            {
+                // the buffer is empty, return true if we have an empty token
+                return true;
+            }
+            else if(Buffer.Count == 0)
+            {
+                // the buffer is empty and the given token is not, throw
+                throw new ArgumentException("The given token does not appear to be a part of the buffer");
+            }
+
+            // never say that the cursor is on a whitespace token - not sure about this :(
+            if (string.IsNullOrWhiteSpace(t.Value)) return false;
+
+
+            // the cursor is at a point in the buffer before the current token
+            if(BufferPosition < t.StartIndex) return false;
+            // the cursor is pointing at a specific character within the current token
+            if (BufferPosition <= t.EndIndex) return true;
+
+            return false;
         }
 
         private QuoteStatus GetQuoteStatus(List<ConsoleCharacter> chars, int startPosition)

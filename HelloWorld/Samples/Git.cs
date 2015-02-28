@@ -1,5 +1,7 @@
 ﻿using PowerArgs;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace HelloWorld.Samples
 {
@@ -17,7 +19,7 @@ namespace HelloWorld.Samples
         }
 
         [ArgActionMethod, ArgDescription("Pull remote changes from a remote repo")]
-        public void Pull([ArgRequired, ArgDescription("The name of the remote to pull from")]string remote, [DefaultValue("master"), PromptIfEmpty(HighlighterConfiguratorType=typeof(HashtagHighlighter)), ArgDescription("The name of the branch to pull")] string branch)
+        public void Pull([ArgContextualAssistant(typeof(RemotePicker))][ArgRequired, ArgDescription("The name of the remote to pull from")]string remote, [DefaultValue("master"), PromptIfEmpty(HighlighterConfiguratorType = typeof(HashtagHighlighter)), ArgDescription("The name of the branch to pull")] string branch)
         {
             Console.WriteLine("Pulling from " + remote + ", branch=" + branch);
         }
@@ -41,6 +43,39 @@ namespace HelloWorld.Samples
             public void Configure(SimpleSyntaxHighlighter highlighter)
             {
                 highlighter.AddRegex("#.*", ConsoleColor.Cyan);
+            }
+        }
+
+        private class RemotePicker : ContextAssistSearch
+        {
+            public RemotePicker()
+            {
+              
+            }
+
+            protected override System.Collections.Generic.List<string> GetResults(string searchString)
+            {
+                var allRemotes = new List<string>
+                {
+                    "origin",
+                    "upstream",
+                    "dev",
+                    "release",
+                    "foo",
+                    "bar"
+                };
+
+                return allRemotes.Where(r => r.StartsWith(searchString, StringComparison.InvariantCultureIgnoreCase)).ToList();
+            }
+
+            public override bool SupportsAsync
+            {
+                get { return false; }
+            }
+
+            protected override System.Threading.Tasks.Task<List<string>> GetResultsAsync(string searchString)
+            {
+                throw new NotImplementedException();
             }
         }
     }

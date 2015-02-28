@@ -49,6 +49,7 @@ namespace PowerArgs
             this.Console = ConsoleProvider.Current;
             this.HistoryManager.Values.AddRange(history);
             this.TabHandler.TabCompletionHandlers.Add(this);
+            this.ContextAssistProvider = new PowerArgsMultiContextAssistProvider(definition);
             this.Definition = definition;
 
             this.ArgumentNameForeground = ConsoleColor.Cyan;
