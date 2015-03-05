@@ -116,7 +116,7 @@ namespace HelloWorld.Samples
 
         public StatePickerAssistant()
         {
-            Options.AddRange(states);
+            Options.AddRange(states.Select(s => ContextAssistSearchResult.FromString(s)));
         }
     }
 }

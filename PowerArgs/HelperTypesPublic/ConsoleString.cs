@@ -326,6 +326,33 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Returns a new ConsoleString that is a copy of this ConsoleString, but applies the given style to the range of characters specified.
+        /// </summary>
+        /// <param name="start">the start index to apply the highlight</param>
+        /// <param name="length">the number of characters to apply the highlight</param>
+        /// <param name="foregroundColor">the foreground color to apply to the highlighted characters or null to use the default foreground color</param>
+        /// <param name="backgroundColor">the background color to apply to the highlighted characters or null to use the default background color</param>
+        /// <returns>a new ConsoleString that is a copy of this ConsoleString, but applies the given style to the range of characters specified.</returns>
+        public ConsoleString HighlightSubstring(int start, int length, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        {
+            List<ConsoleCharacter> buffer = new List<ConsoleCharacter>();
+            
+            for(int i = 0; i < this.Length; i++)
+            {
+                if(i >= start && i < start+length)
+                {
+                    buffer.Add(new ConsoleCharacter(this[i].Value, foregroundColor, backgroundColor));
+                }
+                else
+                {
+                    buffer.Add(this[i]);
+                }
+            }
+
+            return new ConsoleString(buffer);
+        }
+
+        /// <summary>
         /// Replaces all matches of the given regular expression with the replacement value using the specified formatting.
         /// </summary>
         /// <param name="regex">The regular expression to find.</param>

@@ -74,7 +74,7 @@ namespace PowerArgs
             if (TargetArgument != null && TargetArgument.ArgumentType.IsEnum)
             {
                 Options.Clear();
-                Options.AddRange(Enum.GetNames(TargetArgument.ArgumentType));
+                Options.AddRange(Enum.GetNames(TargetArgument.ArgumentType).Select(name => ContextAssistSearchResult.FromString(name)));
                 return true;
             }
             else
@@ -93,7 +93,7 @@ namespace PowerArgs
             if ( context.CurrentTokenIndex == 0 && Definition.Actions.Count > 0)
             {
                 Options.Clear();
-                Options.AddRange(Definition.Actions.Select(a => a.DefaultAlias));
+                Options.AddRange(Definition.Actions.Select(a => ContextAssistSearchResult.FromString(a.DefaultAlias)));
                 return true;
             }
             else

@@ -17,7 +17,7 @@ namespace PowerArgs
         /// <summary>
         /// The options the user can choose from
         /// </summary>
-        public List<string> Options { get; private set; }
+        public List<ContextAssistSearchResult> Options { get; private set; }
 
         /// <summary>
         /// Returns true if there is at least one option, false otherwise.
@@ -34,7 +34,7 @@ namespace PowerArgs
         /// </summary>
         public ContextAssistPicker()
         {
-            Options = new List<string>();
+            Options = new List<ContextAssistSearchResult>();
         }
 
         /// <summary>
@@ -42,11 +42,11 @@ namespace PowerArgs
         /// </summary>
         /// <param name="searchString">the search string</param>
         /// <returns>all options that contain the given search string, ignoring case</returns>
-        protected override List<string> GetResults(string searchString)
+        protected override List<ContextAssistSearchResult> GetResults(string searchString)
         {
             return Options
-                    .Where(o => o.IndexOf(searchString, StringComparison.InvariantCultureIgnoreCase) >= 0)
-                    .OrderByDescending(o => o.StartsWith(searchString, StringComparison.InvariantCultureIgnoreCase) ? 1 : 0)
+                    .Where(o => o.DisplayText.IndexOf(searchString, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    .OrderByDescending(o => o.DisplayText.StartsWith(searchString, StringComparison.InvariantCultureIgnoreCase) ? 1 : 0)
                     .ToList();
         }
 
@@ -55,9 +55,20 @@ namespace PowerArgs
         /// </summary>
         /// <param name="searchString">Not implemented</param>
         /// <returns>Not implemented</returns>
-        protected override System.Threading.Tasks.Task<List<string>> GetResultsAsync(string searchString)
+        protected override System.Threading.Tasks.Task<List<ContextAssistSearchResult>> GetResultsAsync(string searchString)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Lets the user pick from the set of options.
+        /// </summary>
+        /// <param name="console">optionally provide a custom console implementation</param>
+        /// <param name="allowCancel">if true, users can cancel picking by pressing the escape key.  If false, the escape key does nothing.</param>
+        /// <returns>A valid selection or null if the search was cancelled.</returns>
+        public ContextAssistSearchResult Pick(IConsoleProvider console = null, bool allowCancel = true)
+        {
+             return this.Search(console, allowCancel);
         }
     }
 }

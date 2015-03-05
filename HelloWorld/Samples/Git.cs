@@ -53,7 +53,7 @@ namespace HelloWorld.Samples
               
             }
 
-            protected override System.Collections.Generic.List<string> GetResults(string searchString)
+            protected override System.Collections.Generic.List<ContextAssistSearchResult> GetResults(string searchString)
             {
                 var allRemotes = new List<string>
                 {
@@ -65,7 +65,9 @@ namespace HelloWorld.Samples
                     "bar"
                 };
 
-                return allRemotes.Where(r => r.StartsWith(searchString, StringComparison.InvariantCultureIgnoreCase)).ToList();
+                return allRemotes.Where(r => r.StartsWith(searchString, StringComparison.InvariantCultureIgnoreCase))
+                    .Select(r => ContextAssistSearchResult.FromString(r))
+                    .ToList();
             }
 
             public override bool SupportsAsync
@@ -73,7 +75,7 @@ namespace HelloWorld.Samples
                 get { return false; }
             }
 
-            protected override System.Threading.Tasks.Task<List<string>> GetResultsAsync(string searchString)
+            protected override System.Threading.Tasks.Task<List<ContextAssistSearchResult>> GetResultsAsync(string searchString)
             {
                 throw new NotImplementedException();
             }

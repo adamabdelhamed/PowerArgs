@@ -10,13 +10,22 @@ namespace PowerArgs
     /// </summary>
     public abstract class ContextAssistSearch : IContextAssistProvider
     {
-        private RichCommandLineContext parentReaderContext;
+        /// <summary>
+        /// context about the parent reader that is only populated when used by a parent reader.
+        /// </summary>
+        protected RichCommandLineContext parentReaderContext;
+        private IConsoleProvider console;
         private ExpireableAsyncRequestManager expireableAsyncRequestManager;
         private ConsoleWiper menuWiper, resultsWiper;
         private RichTextCommandLineReader searchReader;
-        private List<string> latestResults;
+        private List<ContextAssistSearchResult> latestResults;
+        private string latestResultsSearchString;
         private int selectedIndex;
-        private ConsoleString selection;
+
+        /// <summary>
+        /// Gets the most recent search result that was selected and committed by the user
+        /// </summary>
+        public ContextAssistSearchResult SelectedValue { get; private set; }
 
         /// <summary>
         /// True indicates that the derived class has implemented GetResultsAsync(), which will be called by the base class.  If false then
@@ -29,7 +38,7 @@ namespace PowerArgs
         /// </summary>
         public ContextAssistSearch()
         {
-            latestResults = new List<string>();
+            latestResults = new List<ContextAssistSearchResult>();
             menuWiper = new ConsoleWiper();
             resultsWiper = new ConsoleWiper();
         }
@@ -39,14 +48,14 @@ namespace PowerArgs
         /// </summary>
         /// <param name="searchString">the search string entered by the user</param>
         /// <returns>the search results as a list of strings</returns>
-        protected abstract List<string> GetResults(string searchString);
+        protected abstract List<ContextAssistSearchResult> GetResults(string searchString);
 
         /// <summary>
         /// When implemented in the derived class, gets search results that match the search string asynchronously.  This ONLY gets called if SupportsAsync returns true.
         /// </summary>
         /// <param name="searchString">the search string entered by the user</param>
         /// <returns>an async task that will return the search results as a list of strings</returns>
-        protected abstract Task<List<string>> GetResultsAsync(string searchString);
+        protected abstract Task<List<ContextAssistSearchResult>> GetResultsAsync(string searchString);
 
         /// <summary>
         /// Always returns true.  When overrided in a derived class the derived class can provide custom logic to determine whether or not this assist provider
@@ -73,19 +82,51 @@ namespace PowerArgs
         /// <returns>A selection or cancellation result, never a NoOp</returns>
         public virtual ContextAssistResult DrawMenu(RichCommandLineContext parentContext)
         {
+            try
+            {
+                DoSearchInternal(parentContext, null, true);
+                return ContextAssistResult.CreateInsertResult(parentContext, SelectedValue.DisplayText.ToConsoleString());
+            }
+            catch (OperationCanceledException)
+            {
+                return ContextAssistResult.Cancel;
+            }
+        }
+
+        private void DoSearchInternal(RichCommandLineContext parentContext, IConsoleProvider standaloneConsole, bool allowCancel)
+        {
+            if(parentContext == null && standaloneConsole == null)
+            {
+                throw new ArgumentException("You must specify either parentContext or standaloneConsole");
+            }
+            else if(parentContext != null && standaloneConsole != null)
+            {
+                throw new ArgumentException("You cannot specify both parentContext and standaloneConsole, you must choose one or the other");
+            }
+
             this.parentReaderContext = parentContext;
-            this.menuWiper.Console = parentReaderContext.Console;
-            this.resultsWiper.Console = parentReaderContext.Console;
+            this.console = parentContext != null ? parentContext.Console : standaloneConsole;
+            this.menuWiper.Console = this.console;
+            this.resultsWiper.Console = this.console;
             this.expireableAsyncRequestManager = new ExpireableAsyncRequestManager();
-            this.selection = null;
+            SelectedValue = null;
 
             this.menuWiper.SetTopLeftFromConsole();
-            this.parentReaderContext.Console.Write(new ConsoleString("Type to search/filter.  Use up/down/enter to navigate and select: ", ConsoleColor.Cyan));
+            
+            if (allowCancel)
+            {
+                this.console.Write(new ConsoleString("Type to search. Use up/down/enter/escape to navigate/select/cancel: ", ConsoleColor.Cyan));
+            }
+            else
+            {
+                this.console.Write(new ConsoleString("Type to search. Use up/down/enter to navigate/select: ", ConsoleColor.Cyan));
+            }
+
             this.resultsWiper.SetTopLeftFromConsole();
             this.resultsWiper.Left = 0;
             this.resultsWiper.Top += 2;
 
-            this.searchReader = new RichTextCommandLineReader();
+            this.searchReader = new RichTextCommandLineReader() { Console = this.console };
             this.searchReader.UnregisterHandler(ConsoleKey.UpArrow);
             this.searchReader.UnregisterHandler(ConsoleKey.DownArrow);
             this.searchReader.UnregisterHandler(ConsoleKey.Escape);
@@ -93,7 +134,14 @@ namespace PowerArgs
 
             this.searchReader.RegisterHandler(KeyHandler.FromAction((searchReaderContext) => { _MoveSelectedIndex(-1); searchReaderContext.Intercept = true; }, ConsoleKey.UpArrow));
             this.searchReader.RegisterHandler(KeyHandler.FromAction((_searchReaderContext) => { _searchReaderContext.Intercept = true; _MoveSelectedIndex(1); }, ConsoleKey.DownArrow));
-            this.searchReader.RegisterHandler(KeyHandler.FromAction((searchReaderContext) => { searchReaderContext.Intercept = true; throw new OperationCanceledException(); }, ConsoleKey.Escape));
+            this.searchReader.RegisterHandler(KeyHandler.FromAction((searchReaderContext) => 
+            {
+                searchReaderContext.Intercept = true;
+                if (allowCancel)
+                {
+                    throw new OperationCanceledException();
+                }
+            }, ConsoleKey.Escape));
             this.searchReader.RegisterHandler(KeyHandler.FromAction((searchReaderContext) => { _SearchReader_HandleEnterKey(searchReaderContext); }, ConsoleKey.Enter));
             this.searchReader.AfterReadKey += (searchReaderContext) => { _SearchReader_HandleKeyPressed(searchReaderContext); };
 
@@ -101,11 +149,6 @@ namespace PowerArgs
             {
                 this.DoSearch(string.Empty);
                 this.searchReader.ReadLine();
-                return ContextAssistResult.CreateInsertResult(parentReaderContext, selection);
-            }
-            catch (OperationCanceledException)
-            {
-                return ContextAssistResult.Cancel;
             }
             finally
             {
@@ -125,6 +168,33 @@ namespace PowerArgs
             menuWiper.Wipe();
         }
 
+        /// <summary>
+        /// Performs a standalone search and cleans up the menu at the end.
+        /// </summary>
+        /// <param name="console">Optionally choose a custom console target</param>
+        /// <param name="allowCancel">if true, users can cancel the search by pressing the escape key.  If false, the escape key does nothing.</param>
+        /// <returns>A valid search result or null if the search was cancelled.</returns>
+        public ContextAssistSearchResult Search(IConsoleProvider console = null, bool allowCancel = true)
+        {
+            console = console ?? ConsoleProvider.Current;
+            using (var snapshot = console.TakeSnapshot())
+            {
+                try
+                {
+                    DoSearchInternal(null, console, allowCancel);
+                    return SelectedValue;
+                }
+                catch (OperationCanceledException)
+                {
+                    return null;
+                }
+                finally
+                {
+                    ClearMenu(null);
+                }
+            }
+        }
+
         private void _SearchReader_HandleKeyPressed(RichCommandLineContext searchReaderContext)
         {
             if(searchReaderContext.KeyPressed.Key == ConsoleKey.UpArrow || searchReaderContext.KeyPressed.Key == ConsoleKey.DownArrow)
@@ -142,7 +212,7 @@ namespace PowerArgs
             searchReaderContext.Intercept = true;
             if (latestResults.Count > 0)
             {
-                selection = new ConsoleString(latestResults[selectedIndex]);
+                SelectedValue = latestResults[selectedIndex];
                 searchReaderContext.IsFinished = true;
             }
         }
@@ -169,7 +239,7 @@ namespace PowerArgs
             {
                 try
                 {
-                    List<string> results;
+                    List<ContextAssistSearchResult> results;
 
                     try
                     {
@@ -200,6 +270,7 @@ namespace PowerArgs
                             selectedIndex = 0;
                             latestResults.Clear();
                             latestResults.AddRange(results);
+                            latestResultsSearchString = searchString;
                             RedrawSearchResults();
                         }, myRequestId);
                     }
@@ -214,31 +285,37 @@ namespace PowerArgs
 
         private void RedrawSearchResults()
         {
-            var leftNow = parentReaderContext.Console.CursorLeft;
-            var topNow = parentReaderContext.Console.CursorTop;
-
-            resultsWiper.Wipe();
-            resultsWiper.SetBottomToTop();
-            menuWiper.Bottom = resultsWiper.Bottom;
-
-            parentReaderContext.Console.CursorTop = resultsWiper.Top;
-            parentReaderContext.Console.CursorLeft = 0;
-
-            for (int i = 0; i < latestResults.Count; i++)
+            using (var snapshot = this.console.TakeSnapshot())
             {
-                ConsoleColor? fg = null;
-                ConsoleColor? bg = null;
-                if (i == selectedIndex)
-                {
-                    fg = ConsoleColor.Yellow;
-                }
-                parentReaderContext.Console.WriteLine(new ConsoleString(latestResults[i].ToString(), fg, bg));
-                resultsWiper.IncrementBottom();
-                menuWiper.IncrementBottom();
-            }
+                resultsWiper.Wipe();
+                resultsWiper.SetBottomToTop();
+                menuWiper.Bottom = resultsWiper.Bottom;
 
-            parentReaderContext.Console.CursorLeft = leftNow;
-            parentReaderContext.Console.CursorTop = topNow;
+                this.console.CursorTop = resultsWiper.Top;
+                this.console.CursorLeft = 0;
+
+
+                for (int i = 0; i < latestResults.Count; i++)
+                {
+                    ConsoleColor? fg = null;
+                    ConsoleColor? bg = null;
+                    if (i == selectedIndex)
+                    {
+                        fg = ConsoleColor.Yellow;
+                    }
+
+                    var searchResult = new ConsoleString(latestResults[i].DisplayText, fg, bg);
+
+                    if (latestResultsSearchString.Length > 0)
+                    {
+                        searchResult = searchResult.Highlight(latestResultsSearchString, ConsoleColor.Black, ConsoleColor.Yellow, StringComparison.InvariantCultureIgnoreCase);
+                    }
+
+                    this.console.WriteLine(searchResult);
+                    resultsWiper.IncrementBottom();
+                    menuWiper.IncrementBottom();
+                }
+            }
         }
     }
 }

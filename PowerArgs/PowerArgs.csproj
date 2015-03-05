@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
     <Compile Include="CLI\Cli.cs" />
+    <Compile Include="CLI\CliProgressBar.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ConsoleHistoryManager.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistPicker.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\MultiContextAssistProvider.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistResult.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistSearchResult.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\SpacebarKeyHandler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\RichCommandLineContext.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\IKeyHandler.cs" />
@@ -66,6 +68,7 @@
     <Compile Include="CLI\RichTextCommandLineReader\RichTextCommandLineReader.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\SimpleSyntaxHighlighter.cs" />
     <Compile Include="Extensions\Array.cs" />
+    <Compile Include="Extensions\IConsoleProvider.cs" />
     <Compile Include="Extensions\IEnumerableOfIArgMetadata.cs" />
     <Compile Include="Extensions\FieldInfo.cs" />
     <Compile Include="Extensions\MatchCollection.cs" />
@@ -87,6 +90,7 @@
     <Compile Include="HelperTypesPublic\ArgAction.cs" />
     <Compile Include="HelperTypesInternal\ConsoleProvider.cs" />
     <Compile Include="HelperTypesPublic\BooleanExpressionParser.cs" />
+    <Compile Include="HelperTypesPublic\ConsoleSnapshot.cs" />
     <Compile Include="HelperTypesPublic\ConsoleString.cs" />
     <Compile Include="HelperTypesPublic\ConsoleTableBuilder.cs" />
     <Compile Include="Constants.cs" />

@@ -17,7 +17,14 @@ namespace PowerArgs
         /// <returns>a console string</returns>
         public static ConsoleString ToConsoleString(this string s, ConsoleColor? fg = null, ConsoleColor? bg = null)
         {
-            return new ConsoleString(s, fg, bg);
+            if (s == null)
+            {
+                return null;
+            }
+            else
+            {
+                return new ConsoleString(s, fg, bg);
+            }
         }
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace PowerArgs
 {
-    internal class ConsoleWiper
+    internal class ConsoleWiper : IDisposable
     {
         public int Top { get; set; }
         public int Left { get; set; }
@@ -25,6 +25,19 @@ namespace PowerArgs
 
         public ConsoleWiper() { }
 
+        public ConsoleWiper(ConsoleSnapshot snapshot)
+        {
+            this.Console = snapshot.Console;
+            this.Top = snapshot.Top;
+            this.Left = snapshot.Left;
+        }
+
+        public void MoveCursorToLineAfterBottom()
+        {
+            Console.CursorLeft = 0;
+            Console.CursorTop = Bottom + 1;
+        }
+
         public void SetTopLeftFromConsole()
         {
             this.Top = Console.CursorTop;
@@ -43,14 +56,11 @@ namespace PowerArgs
 
         public void Wipe()
         {
-            var leftNow = Console.CursorLeft;
-            var topNow = Console.CursorTop;
-
-            try
+            using (Console.TakeSnapshot())
             {
                 Console.CursorLeft = Left;
                 Console.CursorTop = Top;
-                int linesToClear = Bottom - Top;
+                int linesToClear = (Bottom - Top)+1;
 
                 for (int i = 0; i < linesToClear; i++)
                 {
@@ -65,11 +75,6 @@ namespace PowerArgs
                     }
                 }
             }
-            finally
-            {
-                Console.CursorLeft = leftNow;
-                Console.CursorTop = topNow;
-            }
         }
 
         private void InitializeClearedLine()
@@ -80,6 +85,29 @@ namespace PowerArgs
                 buffer.Add(new ConsoleCharacter(' '));
             }
             clearedLine = new ConsoleString(buffer);
+        }
+
+        ~ConsoleWiper()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // free managed resources
+                if (Console != null)
+                {
+                    Wipe();
+                }
+            }
         }
     }
 }
