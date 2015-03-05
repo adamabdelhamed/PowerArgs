@@ -306,6 +306,11 @@ namespace PowerArgs
 
                     var searchResult = new ConsoleString(latestResults[i].DisplayText, fg, bg);
 
+                    if(searchResult.Length > this.console.BufferWidth - 1)
+                    {
+                        searchResult = searchResult.Substring(0, this.console.BufferWidth - 4) + "...";
+                    }
+
                     if (latestResultsSearchString.Length > 0)
                     {
                         searchResult = searchResult.Highlight(latestResultsSearchString, ConsoleColor.Black, ConsoleColor.Yellow, StringComparison.InvariantCultureIgnoreCase);
