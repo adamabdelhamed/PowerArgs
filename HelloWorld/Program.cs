@@ -13,8 +13,8 @@ namespace HelloWorld
             var logFile = @"C:\temp\powerargslog.txt";
             File.Delete(logFile);
             PowerLogger.LogFile = logFile;
-
-            Samples.SearchSample.Run();
+            Samples.CPUAndMemoryChartSample.Run();
+            // Samples.SearchSample.Run();
             // Samples.ProgressBarSample.Run();
             // Samples.Piping._Main(args);
             // Samples.CalculatorProgramSample._Main(args); // a simple 4 function calculator

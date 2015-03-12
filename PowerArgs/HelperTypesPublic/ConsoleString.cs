@@ -326,6 +326,22 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Creates a new ConsoleString with the sam characters as this one, but with a 
+        /// new background color
+        /// </summary>
+        /// <param name="bg">the new background color</param>
+        /// <returns>A  new string with a different background color</returns>
+        public ConsoleString ToDifferentBackground(ConsoleColor? bg)
+        {
+            List<ConsoleCharacter> ret = new List<ConsoleCharacter>();
+            foreach(var c in this)
+            {
+                ret.Add(new ConsoleCharacter(c.Value, c.ForegroundColor, bg));
+            }
+            return new ConsoleString(ret);
+        }
+
+        /// <summary>
         /// Returns a new ConsoleString that is a copy of this ConsoleString, but applies the given style to the range of characters specified.
         /// </summary>
         /// <param name="start">the start index to apply the highlight</param>
