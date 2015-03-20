@@ -154,7 +154,7 @@ namespace PowerArgs
                 }
                 rows.Add(row);
 
-                if(ShowPossibleValuesForArguments && element is CommandLineArgument && ((CommandLineArgument)element).ArgumentType.IsEnum)
+                if(ShowPossibleValuesForArguments && element is CommandLineArgument && ((CommandLineArgument)element).IsEnum)
                 {
                     foreach (var val in ((CommandLineArgument)element).EnumValuesAndDescriptions)
                     {

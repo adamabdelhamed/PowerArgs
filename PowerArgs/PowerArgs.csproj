@@ -63,7 +63,6 @@
     <Compile Include="CLI\Drawing\Size.cs" />
     <Compile Include="CLI\Helpers\ObservableCollection.cs" />
     <Compile Include="CLI\Helpers\ViewModelBase.cs" />
-    <Compile Include="CLI\PowerArgsRichCommandLineReader.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ConsoleHistoryManager.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistSearch.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\IContextAssistProvider.cs" />

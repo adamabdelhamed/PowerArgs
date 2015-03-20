@@ -442,6 +442,7 @@ namespace ArgsTests
         {
             this.input = input;
             i = 0;
+            BufferWidth = 80;
         }
 
         public void Append(string text)
@@ -456,7 +457,7 @@ namespace ArgsTests
 
         public int CursorLeft { get; set; }
         public int CursorTop { get; set; }
-        public int BufferWidth { get { return 80; } }
+        public int BufferWidth { get; set; }
 
         bool shift = false;
         bool control = false;

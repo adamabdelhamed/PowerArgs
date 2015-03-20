@@ -22,10 +22,7 @@ namespace ArgsTests.CLI
         [TestMethod]
         public void IsUserSure()
         {
-            ConsoleInDriver.Instance.DriveLine("y");
-            ConsoleInDriver.Instance.DriveLine("n");
-            ConsoleInDriver.Instance.DriveLine("notagoodanswer");
-            ConsoleInDriver.Instance.DriveLine("y");
+            ConsoleProvider.Current = new TestConsoleProvider("y{enter}n{enter}notagoodanswer{enter}y");
 
             var cli = new Cli();
             var firstAnswer = cli.IsUserSure("Dude this is dangerous");

@@ -25,7 +25,7 @@
             <td class="option-col program-specific-content">-{{argument.DefaultAlias!}}</td>
             <td class="desc-col program-specific-content">{{argument.Description!}}{{if argument.HasDefaultValue}}<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">{{argument.DefaultValue!}}<span />!{{if}}</td>
         </tr>
-        {{if argument.ArgumentType.IsEnum}}
+        {{if argument.IsEnum}}
         {{each enumVal in argument.EnumValuesAndDescriptions}}
         <tr>
             <td class="option-col program-specific-content"></td>
@@ -63,7 +63,7 @@
                             <td class="option-col program-specific-content">{{actionArgument.DefaultAlias!}}</td>
                             <td class="desc-col program-specific-content">-{{actionArgument.Description!}}{{if actionArgument.HasDefaultValue}}<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">{{actionArgument.DefaultValue!}}<span />!{{if}}</td>
                         </tr>
-                        {{if actionArgument.ArgumentType.IsEnum}}
+                        {{if actionArgument.IsEnum}}
                         {{each enumVal in actionArgument.EnumValuesAndDescriptions}}
                         <tr>
                             <td class="option-col program-specific-content"></td>

@@ -79,6 +79,7 @@ namespace PowerArgs
         public int BufferWidth
         {
             get { return Console.BufferWidth; }
+            set { Console.BufferWidth = value; }
         }
 
         /// <summary>

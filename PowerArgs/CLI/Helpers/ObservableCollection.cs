@@ -37,7 +37,7 @@ namespace PowerArgs
         /// Fires the Added event for the given item
         /// </summary>
         /// <param name="item">The item that was added</param>
-        protected void FireAdded(T item)
+        internal void FireAdded(T item)
         {
             if (Added != null) Added(item);
         }
@@ -46,7 +46,7 @@ namespace PowerArgs
         /// Fired the Removed event for the given item
         /// </summary>
         /// <param name="item">The item that was removed</param>
-        protected void FireRemoved(T item)
+        internal void FireRemoved(T item)
         {
             if (Removed != null) Removed(item);
         }

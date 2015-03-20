@@ -55,7 +55,7 @@ namespace HelloWorld.Samples
             cpuSeries.PlotCharacter = 'c';
 
             // optionally define a threshold for a series
-            cpuSeries.Threshold = new Threshold() { Value = 70, Title = "CPU Warning threshold", Type = ThresholdType.Maximum, PlotColor = ConsoleColor.DarkGreen };
+            cpuSeries.Threshold = new Threshold() { Value = 40, Title = "CPU Warning threshold", Type = ThresholdType.Maximum, PlotColor = ConsoleColor.DarkGreen };
 
             var memSeries = new DataSeries();
             memSeries.Title = "Memory %";

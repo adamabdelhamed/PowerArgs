@@ -15,6 +15,7 @@ namespace ArgsTests
             public Nullable<int> OptionalNumber{get;set;}
             public Nullable<char> OptionalCharacter{get;set;}
             public Nullable<Guid> OptionalGuid { get; set; }
+            public Nullable<DayOfWeek> OptionalDayOfWeek { get; set; }
         }
 
         [TestCleanup]
@@ -59,6 +60,27 @@ namespace ArgsTests
             {
                 Assert.IsTrue(ex.Message.Contains("CUSTOM MESSAGE"));
             }
+        }
+
+        [TestMethod]
+        public void TestNullableIsEnum()
+        {
+            var def = new CommandLineArgumentsDefinition(typeof(NullableArgs));
+            Assert.IsTrue(def.FindMatchingArgument("OptionalDayOfWeek").IsEnum);
+        }
+
+        [TestMethod]
+        public void TestNullablesInTableExpression()
+        {
+            var def = new CommandLineArgumentsDefinition(typeof(NullableArgs));
+            var usage = ArgUsage.GenerateUsageFromTemplate(def, PowerArgs.Resources.DefaultConsoleUsageTemplate, "dynamic template").ToString();
+            Assert.IsTrue(usage.Contains("Monday"));
+            Assert.IsTrue(usage.Contains("Tuesday"));
+            Assert.IsTrue(usage.Contains("Wednesday"));
+            Assert.IsTrue(usage.Contains("Thursday"));
+            Assert.IsTrue(usage.Contains("Friday"));
+            Assert.IsTrue(usage.Contains("Saturday"));
+            Assert.IsTrue(usage.Contains("Sunday"));
         }
     }
 

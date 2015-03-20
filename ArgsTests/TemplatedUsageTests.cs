@@ -12,7 +12,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestPhotoAlbumManagerConsoleUsage()
         {
-            Console.BufferWidth = 160;
+            ConsoleProvider.Current.BufferWidth = 160;
             var def = new CommandLineArgumentsDefinition(typeof(PhotoAlbumManagerArgs));
             def.ExeName = "PhotoManager";
             var browserUsage = ArgUsage.GenerateUsageFromTemplate(def, template: PowerArgs.Resources.DefaultBrowserUsageTemplate).ToString().Replace("\r\n", "\n");
