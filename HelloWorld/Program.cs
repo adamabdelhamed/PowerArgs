@@ -13,9 +13,9 @@ namespace HelloWorld
             var logFile = @"C:\temp\powerargslog.txt";
             File.Delete(logFile);
             PowerLogger.LogFile = logFile;
-            Samples.CPUAndMemoryChartSample.Run();
+            //Samples.CPUAndMemoryChartSample.Run();
             // Samples.SearchSample.Run();
-            // Samples.ProgressBarSample.Run();
+             Samples.ProgressBarSample.Run();
             // Samples.Piping._Main(args);
             // Samples.CalculatorProgramSample._Main(args); // a simple 4 function calculator
             // Samples.HelloWorldParse._Main(args);       //  The simplest way to use the parser.  All this sample does is parse the arguments and send them back to your program.

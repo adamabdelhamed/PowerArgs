@@ -1,5 +1,6 @@
 ﻿using PowerArgs;
 using System;
+using System.Threading;
 
 namespace HelloWorld.Samples
 {
@@ -9,6 +10,7 @@ namespace HelloWorld.Samples
         {
             DeterminateSample();
             IndeterminateSample();
+            IndeterminateSample2();
         }
 
         private static void DeterminateSample()
@@ -34,7 +36,24 @@ namespace HelloWorld.Samples
 
         private static void IndeterminateSample()
         {
-            Console.WriteLine("\nThis progress bar shows indeterminate progress and removes itself when complete");
+            Console.WriteLine("\nThis progress bar shows indeterminate progress as long as it takes to run the given action");
+
+            var bar = new CliProgressBar("Please wait");
+
+            bar.RenderUntilIndeterminate(() =>
+            {
+                bar.Message = "Phase 1".ToConsoleString();
+                Thread.Sleep(1000);
+                bar.Message = "Phase 2".ToConsoleString();
+                Thread.Sleep(1000);
+                bar.Message = "Phase 3".ToConsoleString();
+                Thread.Sleep(1000);
+            });
+        }
+
+        private static void IndeterminateSample2()
+        {
+            Console.WriteLine("\nThis progress bar shows indeterminate progress and removes itself when complete, polling periodically for an update");
 
             var bar = new CliProgressBar("Please wait");
 

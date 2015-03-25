@@ -152,7 +152,7 @@ namespace PowerArgs
                     if (shouldBeHighlightedByThisHighlighter)
                     {
                         didWorkOnThisToken = EnsureHighlighted(highlighterContext.CurrentToken, readerContext, tokenHighlighter.HighlightForegroundColor, tokenHighlighter.HighlightBackgroundColor);
-                        if (didWorkOnThisToken) break;
+                        break;
                     }
                 }
 
