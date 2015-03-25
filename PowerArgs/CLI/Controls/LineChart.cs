@@ -280,7 +280,7 @@ namespace PowerArgs
         {
             foreach (var series in ViewModel.DataSeriesCollection.OrderBy(s => s == ViewModel.FocusedDataSeries ? 1 : 0))
             {
-                if (ViewModel.FocusedDataPointIndex >= series.DataPoints.Count)
+                if (series == ViewModel.FocusedDataSeries && ViewModel.FocusedDataPointIndex >= series.DataPoints.Count)
                 {
                     ViewModel.FocusedDataPointIndex = 0;
                 }
