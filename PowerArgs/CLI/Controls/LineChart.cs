@@ -331,6 +331,11 @@ namespace PowerArgs
             }
 
             context.DrawPoint(x, y);
+
+            while (series.ShowAreaUnderEachDataPoint && ++y <= YAxisBottom)
+            {
+                context.DrawPoint(x, y);
+            }
         }
 
         private int ConvertXValueToPixel(double x)

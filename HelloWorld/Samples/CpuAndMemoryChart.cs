@@ -53,6 +53,7 @@ namespace HelloWorld.Samples
             cpuSeries.Title = "CPU %";
             cpuSeries.PlotColor = ConsoleColor.DarkGreen;
             cpuSeries.PlotCharacter = 'c';
+            cpuSeries.ShowAreaUnderEachDataPoint = true;
 
             // optionally define a threshold for a series
             cpuSeries.Threshold = new Threshold() { Value = 40, Title = "CPU Warning threshold", Type = ThresholdType.Maximum, PlotColor = ConsoleColor.DarkGreen };
@@ -63,8 +64,8 @@ namespace HelloWorld.Samples
             memSeries.PlotCharacter = 'm';
             memSeries.Threshold = new Threshold() { Value = 80, Title = "Memory Warning threshold" , Type = ThresholdType.Maximum, PlotColor = ConsoleColor.DarkMagenta};
 
-            ViewModel.DataSeriesCollection.Add(cpuSeries);
             ViewModel.DataSeriesCollection.Add(memSeries);
+            ViewModel.DataSeriesCollection.Add(cpuSeries);        
         }
 
         public override void OnAdd(ConsoleControl parent)

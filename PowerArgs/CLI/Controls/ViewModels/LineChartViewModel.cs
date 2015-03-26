@@ -11,7 +11,7 @@ namespace PowerArgs
         public double? YMinimumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
         public double? YMaximumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
         public double? XMinimumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
-        public double? XMaximumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
+        public double? XMaximumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }        
 
         public ObservableCollection<DataSeries> DataSeriesCollection { get; private set; }
 
@@ -203,6 +203,7 @@ namespace PowerArgs
 
     public class DataSeries : ViewModelBase
     {
+        public bool ShowAreaUnderEachDataPoint { get { return Get<bool>(); } set { Set<bool>(value); } }
         public Threshold Threshold { get; set; }
         public string Title { get { return Get<string>(); } set { Set<string>(value); } }
 
