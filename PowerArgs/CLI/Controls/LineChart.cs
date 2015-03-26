@@ -211,6 +211,7 @@ namespace PowerArgs
 
         private void RenderXAxisLabels(ConsoleBitmap context)
         {
+            ConsoleString lastLabel = null;
             int y = XAxisYValue + 1;
             for(int x = XAxisLeft; x < XAxisRight; x+=MaxXAxisLabelLength+1)
             {
@@ -222,12 +223,17 @@ namespace PowerArgs
                     label = label.Substring(0, MaxXAxisLabelLength - 1).AppendUsingCurrentFormat("_");
                 }
 
-                context.DrawString(label, x, y);
+                if (label != lastLabel)
+                {
+                    context.DrawString(label, x, y);
+                    lastLabel = label;
+                }
             }
         }
 
         private void RenderYAxisLabels(ConsoleBitmap context)
         {
+            ConsoleString lastLabel = null;
             for(int y = YAxisTop; y <= YAxisBottom; y+=2)
             {
                 double yConverted = ConvertYPixelToValue(y);
@@ -240,7 +246,12 @@ namespace PowerArgs
                 label = label.ToDifferentBackground(Foreground.BackgroundColor);
 
                 var labelLeft = YAxisLeftOffset - 1 - label.Length;
-                context.DrawString(label, labelLeft, y);
+
+                if (label != lastLabel)
+                {
+                    context.DrawString(label, labelLeft, y);
+                    lastLabel = label;
+                }
             }
         }
 
