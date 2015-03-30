@@ -115,6 +115,10 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Fires the PropertyChanged event with the given property name.
+        /// </summary>
+        /// <param name="propertyName">the name of the property that changed</param>
         protected void FirePropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)

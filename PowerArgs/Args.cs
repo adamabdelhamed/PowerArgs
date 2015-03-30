@@ -119,6 +119,36 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// If properties on the given object contain default value attributes then this method will initalize those properties with
+        /// the right defaults
+        /// </summary>
+        /// <param name="o">the object to initialize</param>
+        public static void InitializeDefaults(object o)
+        {
+            if(o == null)
+            {
+                throw new ArgumentNullException("o cannot be null");
+            }
+
+            var def = new CommandLineArgumentsDefinition(o.GetType());
+            var context = new ArgHook.HookContext();
+            context.Definition = def;
+            context.Args = o;
+
+            foreach(var arg in def.Arguments)
+            {
+                if(arg.HasDefaultValue == false)
+                {
+                    continue;
+                }
+
+                arg.Populate(context);
+            }
+
+            def.SetPropertyValues(o);
+        }
+
+        /// <summary>
         /// Parses the given arguments using a command line arguments definition.  
         /// </summary>
         /// <param name="definition">The definition that defines a set of command line arguments and/or actions.</param>

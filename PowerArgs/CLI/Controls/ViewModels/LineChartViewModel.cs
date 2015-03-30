@@ -6,9 +6,19 @@ using System.Threading.Tasks;
 
 namespace PowerArgs
 {
+    /// <summary>
+    /// A view model to be used in conjunction with the LineChart control. 
+    /// </summary>
     public class LineChartViewModel : ViewModelBase
     {
+        /// <summary>
+        /// If explicitly set then the minimum value of the Y axis will be forced to the value.  Otherwise, that value will be determined by the data.
+        /// </summary>
         public double? YMinimumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
+
+        /// <summary>
+        /// If explicitly set then the maximum value of the Y axis will be forced to the value.  Otherwise, that value will be determined by the data.
+        /// </summary>
         public double? YMaximumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
         public double? XMinimumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
         public double? XMaximumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }        

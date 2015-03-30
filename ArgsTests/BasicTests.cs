@@ -734,6 +734,15 @@ namespace ArgsTests
             AssertConversion("\"1\" \"\" Foo \"John A Doe\" -foo         bar","1", "", "Foo", "John A Doe", "-foo", "bar");
         }
 
+        [TestMethod]
+        public void TestInitializeDefaults()
+        {
+            var args = new EnumArgs();
+            Assert.AreNotEqual(BasicEnum.Option2, args.Option);
+            Args.InitializeDefaults(args);
+            Assert.AreEqual(BasicEnum.Option2, args.Option);
+        }
+
         private void AssertConversion(string commandLine, params string[] expectedResult)
         {
             var result = Args.Convert(commandLine);
