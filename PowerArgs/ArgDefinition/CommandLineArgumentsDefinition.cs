@@ -414,7 +414,7 @@ namespace PowerArgs
             foreach (var argument in Arguments)
             {
                 var property = argument.Source as PropertyInfo;
-                if (property == null) return;
+                if (property == null || argument.RevivedValue == null) continue;
                 property.SetValue(o, argument.RevivedValue, null);
             }
         }

@@ -137,6 +137,9 @@ namespace PowerArgs
 
             foreach(var arg in def.Arguments)
             {
+                context.ArgumentValue = null;
+                context.CurrentArgument = arg;
+                context.RevivedProperty = null;
                 if(arg.HasDefaultValue == false)
                 {
                     continue;
