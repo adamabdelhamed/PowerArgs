@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using System;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 
 namespace PowerArgs
 {
@@ -122,7 +123,7 @@ namespace PowerArgs
                 else if(ex.InnerException != null)
                 {
                     PowerLogger.LogLine("Inner exception stack trace: "+ex.InnerException.ToString());
-                    throw ex.InnerException;
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                 }
                 else
                 {
