@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace PowerArgs
 {
@@ -37,7 +36,7 @@ namespace PowerArgs
             string currentArg = string.Empty;
             bool insideDoubleQuotes = false;
 
-            for(int i = 0; i < commandLine.Length;i++)
+            for (int i = 0; i < commandLine.Length; i++)
             {
                 var c = commandLine[i];
 
@@ -119,8 +118,8 @@ namespace PowerArgs
         {
             ArgAction<T> ret = Execute<ArgAction<T>>(() =>
             {
-            Args instance = new Args();
-            return instance.ParseInternal<T>(args);
+                Args instance = new Args();
+                return instance.ParseInternal<T>(args);
             });
             return ret;
         }
@@ -148,8 +147,8 @@ namespace PowerArgs
         {
             ArgAction ret = Execute(() =>
             {
-            Args instance = new Args();
-            return instance.ParseInternal(definition, args);
+                Args instance = new Args();
+                return instance.ParseInternal(definition, args);
             });
 
             return ret;
@@ -167,15 +166,15 @@ namespace PowerArgs
             {
                 return REPL.DriveREPL<ArgAction>(t.Attr<TabCompletion>(), (a) =>
                 {
-                var result = ParseAction(t, a);
+                    var result = ParseAction(t, a);
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
                         result.Value.InvokeMainMethod();
                         result.Context.RunAfterInvoke();
                     }
-                return result;
-            }
+                    return result;
+                }
             , args);
             });
 
@@ -194,15 +193,15 @@ namespace PowerArgs
             {
                 return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
                 {
-                var result = ParseAction<T>(a);
+                    var result = ParseAction<T>(a);
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
                         result.Value.InvokeMainMethod();
                         result.Context.RunAfterInvoke();
                     }
-                return result;
-            }
+                    return result;
+                }
             , args);
             });
             return ret;
@@ -222,15 +221,15 @@ namespace PowerArgs
             {
                 return REPL.DriveREPL<ArgAction<T>>(typeof(T).Attr<TabCompletion>(), (a) =>
                 {
-                var result = ParseAction<T>(a);
+                    var result = ParseAction<T>(a);
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
                         result.Invoke();
                         result.Context.RunAfterInvoke();
                     }
-                return result;
-            }
+                    return result;
+                }
             , args);
             });
             return ret;
@@ -249,15 +248,15 @@ namespace PowerArgs
             {
                 return REPL.DriveREPL<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
                 {
-                var result = ParseAction(definition, a);
+                    var result = ParseAction(definition, a);
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
                         result.Invoke();
                         result.Context.RunAfterInvoke();
                     }
-                return result;
-            }
+                    return result;
+                }
             , args);
             });
             return ret;
@@ -273,7 +272,7 @@ namespace PowerArgs
         {
             T ret = Execute(() =>
             {
-            return ParseAction<T>(args).Args;
+                return ParseAction<T>(args).Args;
             });
             return ret;
         }
@@ -288,7 +287,7 @@ namespace PowerArgs
         {
             object ret = Execute(() =>
             {
-            return ParseAction(t, args).Value;
+                return ParseAction(t, args).Value;
             });
             return ret;
         }
@@ -320,7 +319,7 @@ namespace PowerArgs
             {
                 return argsProcessingCode();
             }
-            catch (ArgCancelProcessingException ex)
+            catch (ArgCancelProcessingException)
             {
                 if (executeRecursionCounter > 1)
                 {
@@ -414,103 +413,103 @@ namespace PowerArgs
 
         private ArgAction ParseInternal(CommandLineArgumentsDefinition definition, string[] input)
         {
-                // TODO P0 - Validation should be consistently done against the definition, not against the raw type
-                if (definition.ArgumentScaffoldType != null) ValidateArgScaffold(definition.ArgumentScaffoldType);
-                definition.Validate();
+            // TODO P0 - Validation should be consistently done against the definition, not against the raw type
+            if (definition.ArgumentScaffoldType != null) ValidateArgScaffold(definition.ArgumentScaffoldType);
+            definition.Validate();
 
             var context = ArgHook.HookContext.Current;
-                context.Definition = definition;
-                if (definition.ArgumentScaffoldType != null) context.Args = Activator.CreateInstance(definition.ArgumentScaffoldType);
-                context.CmdLineArgs = input;
+            context.Definition = definition;
+            if (definition.ArgumentScaffoldType != null) context.Args = Activator.CreateInstance(definition.ArgumentScaffoldType);
+            context.CmdLineArgs = input;
 
-                context.RunBeforeParse();
-                context.ParserData = ArgParser.Parse(context);
+            context.RunBeforeParse();
+            context.ParserData = ArgParser.Parse(context);
 
-                context.RunBeforePopulateProperties();
-                CommandLineArgument.PopulateArguments(context.Definition.Arguments, context);
-                context.Definition.SetPropertyValues(context.Args);
+            context.RunBeforePopulateProperties();
+            CommandLineArgument.PopulateArguments(context.Definition.Arguments, context);
+            context.Definition.SetPropertyValues(context.Args);
 
-                object actionArgs = null;
-                object[] actionParameters = null;
-                var specifiedAction = context.Definition.Actions.Where(a => a.IsMatch(context.CmdLineArgs.FirstOrDefault())).SingleOrDefault();
-                if (specifiedAction == null && context.Definition.Actions.Count > 0)
+            object actionArgs = null;
+            object[] actionParameters = null;
+            var specifiedAction = context.Definition.Actions.Where(a => a.IsMatch(context.CmdLineArgs.FirstOrDefault())).SingleOrDefault();
+            if (specifiedAction == null && context.Definition.Actions.Count > 0)
+            {
+                if (context.CmdLineArgs.FirstOrDefault() == null)
                 {
-                    if (context.CmdLineArgs.FirstOrDefault() == null)
-                    {
-                        throw new MissingArgException("No action was specified");
-                    }
-                    else
-                    {
-                        throw new UnknownActionArgException(string.Format("Unknown action: '{0}'", context.CmdLineArgs.FirstOrDefault()));
-                    }
+                    throw new MissingArgException("No action was specified");
                 }
-                else if (specifiedAction != null)
+                else
                 {
-                    foreach (var action in context.Definition.Actions)
-                    {
-                        action.IsSpecifiedAction = false;
-                    }
-                    specifiedAction.IsSpecifiedAction = true;
-                    
-                    PropertyInfo actionProp = null;
-                    if (context.Definition.ArgumentScaffoldType != null)
-                    {
-                        actionProp = ArgAction.GetActionProperty(context.Definition.ArgumentScaffoldType);
-                    }
+                    throw new UnknownActionArgException(string.Format("Unknown action: '{0}'", context.CmdLineArgs.FirstOrDefault()));
+                }
+            }
+            else if (specifiedAction != null)
+            {
+                foreach (var action in context.Definition.Actions)
+                {
+                    action.IsSpecifiedAction = false;
+                }
+                specifiedAction.IsSpecifiedAction = true;
 
-                    if (actionProp != null)
-                    {
-                        actionProp.SetValue(context.Args, specifiedAction.Aliases.First(), null);
-                    }
-
-                    context.ParserData.ImplicitParameters.Remove(0);
-                    CommandLineArgument.PopulateArguments(specifiedAction.Arguments, context);
-                    actionArgs = specifiedAction.PopulateArguments(context.Args, ref actionParameters);
+                PropertyInfo actionProp = null;
+                if (context.Definition.ArgumentScaffoldType != null)
+                {
+                    actionProp = ArgAction.GetActionProperty(context.Definition.ArgumentScaffoldType);
                 }
 
-                context.RunAfterPopulateProperties();
-
-                if (context.ParserData.ImplicitParameters.Count > 0)
+                if (actionProp != null)
                 {
-                    throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+                    actionProp.SetValue(context.Args, specifiedAction.Aliases.First(), null);
                 }
 
-                if (context.ParserData.ExplicitParameters.Count > 0)
+                context.ParserData.ImplicitParameters.Remove(0);
+                CommandLineArgument.PopulateArguments(specifiedAction.Arguments, context);
+                actionArgs = specifiedAction.PopulateArguments(context.Args, ref actionParameters);
+            }
+
+            context.RunAfterPopulateProperties();
+
+            if (context.ParserData.ImplicitParameters.Count > 0)
+            {
+                throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+            }
+
+            if (context.ParserData.ExplicitParameters.Count > 0)
+            {
+                throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+            }
+
+            if (definition.ArgumentScaffoldType != null)
+            {
+                if (AmbientArgs.ContainsKey(definition.ArgumentScaffoldType))
                 {
-                    throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+                    AmbientArgs[definition.ArgumentScaffoldType] = context.Args;
                 }
-
-                if (definition.ArgumentScaffoldType != null)
+                else
                 {
-                    if (AmbientArgs.ContainsKey(definition.ArgumentScaffoldType))
-                    {
-                        AmbientArgs[definition.ArgumentScaffoldType] = context.Args;
-                    }
-                    else
-                    {
-                        AmbientArgs.Add(definition.ArgumentScaffoldType, context.Args);
-                    }
+                    AmbientArgs.Add(definition.ArgumentScaffoldType, context.Args);
                 }
+            }
 
-                PropertyInfo actionArgsPropertyInfo = null;
+            PropertyInfo actionArgsPropertyInfo = null;
 
-                if(specifiedAction != null)
-                {
-                    if(specifiedAction.Source is PropertyInfo) actionArgsPropertyInfo = specifiedAction.Source as PropertyInfo;
-                    else if(specifiedAction.Source is MethodInfo) actionArgsPropertyInfo = new ArgActionMethodVirtualProperty(specifiedAction.Source as MethodInfo);
-                }
+            if (specifiedAction != null)
+            {
+                if (specifiedAction.Source is PropertyInfo) actionArgsPropertyInfo = specifiedAction.Source as PropertyInfo;
+                else if (specifiedAction.Source is MethodInfo) actionArgsPropertyInfo = new ArgActionMethodVirtualProperty(specifiedAction.Source as MethodInfo);
+            }
 
-                return new ArgAction()
-                {
-                    Value = context.Args,
-                    ActionArgs = actionArgs,
-                    ActionParameters = actionParameters,
-                    ActionArgsProperty = actionArgsPropertyInfo,
-                    ActionArgsMethod = specifiedAction != null ? specifiedAction.ActionMethod : null,
-                    Definition = context.Definition,
+            return new ArgAction()
+            {
+                Value = context.Args,
+                ActionArgs = actionArgs,
+                ActionParameters = actionParameters,
+                ActionArgsProperty = actionArgsPropertyInfo,
+                ActionArgsMethod = specifiedAction != null ? specifiedAction.ActionMethod : null,
+                Definition = context.Definition,
                 Context = context,
-                    };
-                }
+            };
+        }
 
         private void ValidateArgScaffold(Type t, List<string> shortcuts = null, Type parentType = null)
         {
@@ -525,17 +524,17 @@ namespace PowerArgs
 
             if (parentType != null)
             {
-                if(parentType.HasAttr<ArgIgnoreCase>() ^ t.HasAttr<ArgIgnoreCase>())
+                if (parentType.HasAttr<ArgIgnoreCase>() ^ t.HasAttr<ArgIgnoreCase>())
                 {
                     throw new InvalidArgDefinitionException("If you specify the " + typeof(ArgIgnoreCase).Name + " attribute on your base type then you must also specify it on each action type.");
                 }
                 else if (parentType.HasAttr<ArgIgnoreCase>() && parentType.Attr<ArgIgnoreCase>().IgnoreCase != t.Attr<ArgIgnoreCase>().IgnoreCase)
                 {
-                    throw new InvalidArgDefinitionException("If you specify the " + typeof(ArgIgnoreCase).Name + " attribute on your base and acton types then they must be configured to use the same value for IgnoreCase.");
+                    throw new InvalidArgDefinitionException("If you specify the " + typeof(ArgIgnoreCase).Name + " attribute on your base and action types then they must be configured to use the same value for IgnoreCase.");
                 }
             }
 
-            if (t.Attrs<ArgIgnoreCase>().Count > 1) throw new InvalidArgDefinitionException("An attribute that is or derives from " + typeof(ArgIgnoreCase).Name+" was specified on your type more than once");
+            if (t.Attrs<ArgIgnoreCase>().Count > 1) throw new InvalidArgDefinitionException("An attribute that is or derives from " + typeof(ArgIgnoreCase).Name + " was specified on your type more than once");
 
 
             var actionProp = ArgAction.GetActionProperty(t);
@@ -565,7 +564,7 @@ namespace PowerArgs
 
                 if (noShortcutsAllowed && shortcutsOnly) throw new InvalidArgDefinitionException("You cannot specify a policy of NoShortcut and another policy of ShortcutsOnly.");
                 if (noShortcutsAllowed && actualShortcutValues) throw new InvalidArgDefinitionException("You cannot specify a policy of NoShortcut and then also specify shortcut values via another attribute.");
-                if (shortcutsOnly && actualShortcutValues == false) throw new InvalidArgDefinitionException("You specified a policy of ShortcutsOnly, but did not specify any shortcuts by adding another ArgShortcut attrivute.");
+                if (shortcutsOnly && actualShortcutValues == false) throw new InvalidArgDefinitionException("You specified a policy of ShortcutsOnly, but did not specify any shortcuts by adding another ArgShortcut attribute.");
             }
 
             if (actionProp != null)
@@ -574,7 +573,7 @@ namespace PowerArgs
                 {
                     if (CommandLineAction.IsActionImplementation(prop))
                     {
-                        ArgAction.ResolveMethod(t,prop);
+                        ArgAction.ResolveMethod(t, prop);
                         ValidateArgScaffold(prop.PropertyType, shortcuts.ToArray().ToList(), t);
                     }
                 }
@@ -582,7 +581,7 @@ namespace PowerArgs
 
             foreach (var actionMethod in t.GetActionMethods())
             {
-                if(actionMethod.GetParameters().Length == 0)continue;
+                if (actionMethod.GetParameters().Length == 0) continue;
 
                 ValidateArgScaffold(actionMethod.GetParameters()[0].ParameterType, shortcuts.ToArray().ToList(), t);
             }

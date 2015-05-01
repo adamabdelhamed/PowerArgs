@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace PowerArgs
@@ -65,7 +64,7 @@ namespace PowerArgs
         /// <param name="info">An object that you can use to manipulate the usage output.</param>
         public virtual void BeforeGenerateUsage(ArgumentUsageInfo info)
         {
-            if(HookExecuting != null) HookExecuting(info);
+            if (HookExecuting != null) HookExecuting(info);
         }
     }
 
@@ -169,14 +168,14 @@ namespace PowerArgs
             DefaultValue = toAutoGen.DefaultValue;
             IsRequired = toAutoGen.IsRequired;
 
-            Name = "-"+toAutoGen.DefaultAlias;
+            Name = "-" + toAutoGen.DefaultAlias;
 
             if (Name.EndsWith(Constants.ActionArgConventionSuffix))
             {
                 Name = Name.Substring(0, Name.Length - Constants.ActionArgConventionSuffix.Length);
             }
 
-            Aliases.AddRange(toAutoGen.Aliases.Skip(1).Select(a => "-"+a));
+            Aliases.AddRange(toAutoGen.Aliases.Skip(1).Select(a => "-" + a));
 
             Type = toAutoGen.ArgumentType.Name;
             if (KnownTypeMappings.ContainsKey(Type))
@@ -209,7 +208,8 @@ namespace PowerArgs
     /// </summary>
     public static class ArgUsage
     {
-        internal static Dictionary<PropertyInfo, List<UsageHook>> ExplicitPropertyHooks = new Dictionary<PropertyInfo,List<UsageHook>>();
+        internal const int maxTableWidth = 79;
+        internal static Dictionary<PropertyInfo, List<UsageHook>> ExplicitPropertyHooks = new Dictionary<PropertyInfo, List<UsageHook>>();
         internal static List<UsageHook> GlobalUsageHooks = new List<UsageHook>();
 
         // TODO P0 - Need unit tests for usage hooks
@@ -219,7 +219,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="prop">The property to hook into or null to hook into all properties.</param>
         /// <param name="hook">The hook implementation.</param>
-        [Obsolete("With the new CommandLineArgumentsDefinition model, you can add your usage hooks to the Metadata in the definition explicity and then pass the definition to the GetUsage() methods.  Example: myDefinition.Metadata.Add(myHook);")]
+        [Obsolete("With the new CommandLineArgumentsDefinition model, you can add your usage hooks to the Metadata in the definition explicitly and then pass the definition to the GetUsage() methods.  Example: myDefinition.Metadata.Add(myHook);")]
         public static void RegisterHook(PropertyInfo prop, UsageHook hook)
         {
             if (prop == null)
@@ -254,7 +254,7 @@ namespace PowerArgs
         /// <param name="options">Specify custom usage options</param>
         /// <returns>the usage documentation as a string</returns>
         public static string GetUsage<T>(string exeName = null, ArgUsageOptions options = null)
-        { 
+        {
             return GetStyledUsage<T>(exeName, options).ToString();
         }
 
@@ -293,7 +293,7 @@ namespace PowerArgs
         {
             return GetStyledUsage(new CommandLineArgumentsDefinition(t), exeName, options);
         }
- 
+
         /// <summary>
         /// Generates color styled usage documentation for the given arguments definition.  
         /// </summary>
@@ -318,7 +318,7 @@ namespace PowerArgs
 
             ret += new ConsoleString("Usage: " + exeName, ConsoleColor.Cyan);
 
- 
+
             if (definition.Actions.Count > 0)
             {
                 ret.AppendUsingCurrentFormat(" <action> options\n\n");
@@ -339,7 +339,7 @@ namespace PowerArgs
 
                 foreach (var action in definition.Actions)
                 {
-                    ret += "\n\n" + action.DefaultAlias + " - "+action.Description + "\n\n";
+                    ret += "\n\n" + action.DefaultAlias + " - " + action.Description + "\n\n";
 
                     foreach (var example in action.Examples)
                     {
@@ -360,12 +360,55 @@ namespace PowerArgs
 
                 foreach (var example in definition.Examples)
                 {
-                    ret += new ConsoleString() + "   EXAMPLE: " + new ConsoleString(example.Example + "\n" , ConsoleColor.Green) + 
-                        new ConsoleString("   "+example.Description + "\n\n", ConsoleColor.DarkGreen);
+                    ret += new ConsoleString() + "   EXAMPLE: " + new ConsoleString(example.Example + "\n", ConsoleColor.Green);
+                    var lines = WordWrapDescription(example.Description, 3, maxTableWidth);
+                    foreach (string line in lines)
+                    {
+                        ret += new ConsoleString(line + "\n", ConsoleColor.DarkGreen);
+                    }
+                    ret += "\n";
                 }
             }
-            
+
             return ret;
+        }
+
+        private static string[] WordWrapDescription(string description, int indent, int width)
+        {
+            if ((description.Length + indent) <= width)
+                return new string[] { new string(' ', indent) + description };
+
+            List<string> lines = new List<string>(2);
+
+            int start = 0;
+            while (start < description.Length)
+            {
+                int pos = start + width - indent;
+                if (pos >= description.Length)
+                {
+                    pos = description.Length - 1;
+                }
+                else
+                {
+                    // since I am not at the end, move backwards to the next word
+                    while (pos > start && !char.IsWhiteSpace(description[pos])) pos--;
+                    if (pos <= start)
+                    {
+                        // we couldn't find a space because we have a really long word
+                        // so split back at the original position
+                        pos = start + width - indent;
+                    }
+                }
+
+                var line = new string('*', indent) + description.Substring(start, pos - start);
+                lines.Add(line);
+
+                // move the next work
+                start = pos + 1;
+                while (start < description.Length && char.IsWhiteSpace(description[start])) start++;
+            }
+
+            return lines.ToArray();
         }
 
         private static ConsoleString GetOptionsUsage(IEnumerable<CommandLineArgument> opts, bool ignoreActionProperties, ArgUsageOptions options)
@@ -413,7 +456,7 @@ namespace PowerArgs
                 {
                     hook.BeforeGenerateUsage(usageInfo);
                 }
-               
+
 
                 if (usageInfo.Ignore) continue;
                 if (usageInfo.IsAction && ignoreActionProperties) continue;
@@ -443,7 +486,7 @@ namespace PowerArgs
                     }
                 }
 
-                if (inlineAliasInfo != string.Empty) inlineAliasInfo = "(" + inlineAliasInfo + ")";
+                if (inlineAliasInfo != string.Empty) inlineAliasInfo = " (" + inlineAliasInfo + ")";
 
                 rows.Add(new List<ConsoleString>()
                 {
@@ -524,12 +567,56 @@ namespace PowerArgs
             foreach (var row in rows)
             {
                 ret += rowPrefix;
+                int columnPosition = rowPrefix.Length;
+
                 for (int i = 0; i < columns.Count; i++)
                 {
                     var val = row[i];
                     while (val.Length < maximums[i] + buffer) val += " ";
 
-                    ret += val;
+                    // wrap the last column if it goes over
+                    if (columnPosition + val.Length > maxTableWidth)
+                    {
+                        int limit = val.Length - 1;
+                        if (Char.IsWhiteSpace(val[limit].Value))
+                        {
+                            // because we add spaces to the end
+                            // we need to rewind
+                            while (Char.IsWhiteSpace(val[limit].Value)) limit--;
+                        }
+
+                        int columnWidth = maxTableWidth - columnPosition;
+
+                        // word-wrap the column string
+                        int start = 0;
+                        while (start < limit)
+                        {
+                            int pos = start + columnWidth;
+                            if (pos > limit) pos = limit + 1;
+                            if (start > 0) ret += "\n" + new string(' ', columnPosition);
+
+                            // adjust the pos backwards to a space / wrap on a word
+                            while (pos > start && !char.IsWhiteSpace(val[pos].Value)) pos--;
+                            if (pos <= start)
+                            {
+                                // we couldn't find a space because we have a really long word
+                                // so split back at the original position
+                                pos = start + columnWidth;
+                                if (pos > limit) pos = limit + 1;
+                            }
+
+                            ret += val.Substring(start, pos - start);
+
+                            // adjust to the next block of string
+                            start = pos + 1;
+                            while (start < limit && char.IsWhiteSpace(val[start].Value)) start++;
+                        }
+                    }
+                    else
+                    {
+                        ret += val;
+                        columnPosition += val.Length;
+                    }
                 }
                 ret += "\n";
             }
