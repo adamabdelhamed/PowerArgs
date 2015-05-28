@@ -10,7 +10,24 @@ namespace HelloWorld.Samples
         public static void Run()
         {
             var app = new ConsoleApp(0, 0, 75, 22);
-            app.Controls.Add(new CpuAndMemoryChart());
+            var chart = new CpuAndMemoryChart();
+            var list = new ListView() { Size = new Size(30, 5) };
+
+            Action syncChartToListAction = () =>
+            {
+                list.ViewModel.Items.Clear();
+                if (chart.ViewModel.FocusedDataSeries != null && chart.ViewModel.FocusedDataPointIndex >= 0 && chart.ViewModel.FocusedDataPointIndex < chart.ViewModel.FocusedDataSeries.DataPoints.Count && chart.ViewModel.FocusedDataSeries.DataPoints.Count > 0)
+                {
+                    list.ViewModel.Items.Add(ContextAssistSearchResult.FromString(chart.ViewModel.FocusedDataSeries.DataPoints[chart.ViewModel.FocusedDataPointIndex].Y + ""));
+                }
+            };
+
+            chart.ViewModel.FocusedDataPointChanged += syncChartToListAction;
+            chart.ViewModel.FocusedSeriesChanged +=  syncChartToListAction;
+            syncChartToListAction();
+
+            app.Controls.Add(chart);
+            app.Controls.Add(list);
             app.Run();
         }
     }

@@ -7,6 +7,8 @@ namespace PowerArgs
 {
     public class ConsoleControl : Rectangular
     {
+        public static ConsoleCharacter TransparantColor = new ConsoleCharacter(' ');
+
         public event Action Focused;
         public event Action Unfocused;
         public event Action Added;
@@ -18,9 +20,9 @@ namespace PowerArgs
         public ConsoleCharacter Background { get; set; }
         public ConsoleCharacter Foreground { get; set; }
 
-        public virtual bool CanFocus { get; set; }
+        public virtual bool CanFocus { get { return Get<bool>(); } set { Set<bool>(value); } }
 
-        public bool HasFocus { get; internal set; }
+        public bool HasFocus { get { return Get<bool>(); } internal set { Set<bool>(value); } }
 
         public ConsoleCharacter FocusForeground { get; set; }
         public ConsoleCharacter FocusBackground { get; set; }
@@ -28,9 +30,19 @@ namespace PowerArgs
         public ConsoleControl()
         {
             CanFocus = true;
+            Background = ConsoleControl.TransparantColor;
+            FocusBackground = ConsoleControl.TransparantColor;
             this.FocusForeground = new ConsoleCharacter('X', ConsoleColor.Cyan);
-            this.FocusBackground = new ConsoleCharacter(' ');
             this.Foreground = new ConsoleCharacter('X', ConsoleColor.White);
+            this.PropertyChanged += ConsoleControl_PropertyChanged;
+        }
+
+        void ConsoleControl_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (Application != null)
+            {
+                this.Application.Paint();
+            }
         }
 
         public void Focus()
@@ -62,6 +74,13 @@ namespace PowerArgs
         internal void Paint(ConsoleBitmap context)
         {
             Rectangle scope = context.GetScope();
+
+            if (Background != ConsoleControl.TransparantColor)
+            {
+                context.Pen = Background;
+                context.FillRect(0, 0, Width, Height);
+            }
+
             try
             {
                 context.Rescope(this.X, this.Y, this.Width, this.Height);
@@ -76,8 +95,7 @@ namespace PowerArgs
 
         internal virtual void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = Foreground;
-            context.FillRect(0, 0, Width, Height);
+ 
         }
 
         public virtual void OnKeyInputReceived(ConsoleKeyInfo info)

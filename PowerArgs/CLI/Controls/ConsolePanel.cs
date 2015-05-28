@@ -1,20 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PowerArgs
 {
     public class ConsolePanel : ConsoleControl
     {
-        public ControlCollection Controls { get; private set; }
-
-        int focusIndex;
+        public ObservableCollection<ConsoleControl> Controls { get; private set; }
 
         public ConsolePanel()
         {
-            Controls = new ControlCollection();
-            Background = new ConsoleCharacter { Value = ' ', BackgroundColor = Console.BackgroundColor, ForegroundColor = Console.ForegroundColor };
+            Controls = new ObservableCollection<ConsoleControl>();
 
             Action<ConsoleControl> addPropagator = (c) => { Controls.FireAdded(c); };
             Action<ConsoleControl> removePropagator = (c) => { Controls.FireRemoved(c); };
@@ -44,21 +38,17 @@ namespace PowerArgs
 
         internal override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen =  Background;
-            context.FillRect(0, 0, Width, Height);
             foreach (var control in Controls)
             {
                 Rectangle scope = context.GetScope();
                 try
                 {
                     context.Rescope(control.X, control.Y, control.Width, control.Height);
-                    context.Pen = control.Foreground;
-                    control.OnPaint(context);
+                    control.Paint(context);
                 }
                 finally
                 {
                     context.Scope(scope);
-                    context.Pen = this.Foreground;
                 }
             }
         }

@@ -11,6 +11,9 @@ namespace PowerArgs
     /// </summary>
     public class LineChartViewModel : ViewModelBase
     {
+        public event Action FocusedSeriesChanged;
+        public event Action FocusedDataPointChanged;
+
         /// <summary>
         /// If explicitly set then the minimum value of the Y axis will be forced to the value.  Otherwise, that value will be determined by the data.
         /// </summary>
@@ -52,19 +55,32 @@ namespace PowerArgs
             DataSeriesCollection = new ObservableCollection<DataSeries>();
             DataSeriesCollection.Added += SeriesAdded;
             DataSeriesCollection.Removed += SeriesRemoved;
+            this.PropertyChanged += LineChartViewModel_PropertyChanged;
+        }
+
+        void LineChartViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "FocusedDataSeriesIndex" && FocusedSeriesChanged != null)
+            {
+                FocusedSeriesChanged();
+            }
+            else if (e.PropertyName == "FocusedDataPointIndex" && FocusedDataPointChanged != null)
+            {
+                FocusedDataPointChanged();
+            }
         }
 
         private void SeriesRemoved(DataSeries series)
         {
             this.FirePropertyChanged("DataSeriesCollection");
-            series.DataPoints.Added -= DataChanged;
+            series.DataPoints.Added -= DataPointAdded;
             ResetFocusedSeries();
         }
 
         private void SeriesAdded(DataSeries series)
         {
             this.FirePropertyChanged("DataSeriesCollection");
-            series.DataPoints.Added += DataChanged;
+            series.DataPoints.Added += DataPointRemoved;
             ResetFocusedSeries();
         }
 
@@ -73,8 +89,35 @@ namespace PowerArgs
             FocusedDataSeriesIndex = DataSeriesCollection.Count == 0 ? -1 : 0;
         }
 
-        private void DataChanged(DataPoint obj)
+        private void DataPointAdded(DataPoint obj)
         {
+            if(FocusedDataSeriesIndex < 0)
+            {
+                FocusedDataSeriesIndex = 0;
+            }
+            
+            if(FocusedDataPointIndex < 0)
+            {
+                FocusedDataPointIndex = 0;
+            }
+
+            this.FirePropertyChanged("DataSeriesCollection");
+        }
+
+        private void DataPointRemoved(DataPoint obj)
+        {
+            if(FocusedDataSeriesIndex >= 0 && FocusedDataPointIndex >= 0 && FocusedDataPointIndex >= FocusedDataSeries.DataPoints.Count)
+            {
+                if(FocusedDataSeries.DataPoints.Count == 0)
+                {
+                    FocusedDataPointIndex = -1;
+                }
+                else
+                {
+                    FocusedDataPointIndex--;
+                }
+            }
+
             this.FirePropertyChanged("DataSeriesCollection");
         }
 

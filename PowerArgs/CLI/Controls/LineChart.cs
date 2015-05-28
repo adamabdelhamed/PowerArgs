@@ -262,7 +262,7 @@ namespace PowerArgs
             {
                 var title = new ConsoleString(series.Title, series.PlotColor, Foreground.BackgroundColor);
 
-                if (ViewModel.FocusedDataPointIndex >= 0 && ViewModel.FocusedDataPointIndex < series.DataPoints.Count && ViewModel.FocusedDataSeries == series)
+                if (HasFocus && ViewModel.FocusedDataPointIndex >= 0 && ViewModel.FocusedDataPointIndex < series.DataPoints.Count && ViewModel.FocusedDataSeries == series)
                 {
                     var xValue = XAxisValueFormatter(series.DataPoints[ViewModel.FocusedDataPointIndex].X);
                     var yValue = YAxisValueFormatter(series.DataPoints[ViewModel.FocusedDataPointIndex].Y);
@@ -299,7 +299,7 @@ namespace PowerArgs
                 for (int i = 0; i < series.DataPoints.Count; i++)
                 {
                     var dataPoint = series.DataPoints[i];
-                    RenderDataPoint(context, series, dataPoint, i == ViewModel.FocusedDataPointIndex && series == ViewModel.FocusedDataSeries);
+                    RenderDataPoint(context, series, dataPoint, i == ViewModel.FocusedDataPointIndex && series == ViewModel.FocusedDataSeries && HasFocus);
                 }
             }
         }

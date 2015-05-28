@@ -9,21 +9,14 @@ namespace PowerArgs
     {
         private class ExitConsoleAppException : Exception { }
 
-        public ConsoleBitmap Bitmap { get; set; }
-        public ConsolePanel LayoutRoot { get; private set; }
-
-        private ConsoleControl focusedControl;
-
-        private int focusIndex;
-        List<ConsoleControl> tabbableControls;
-
-        public bool ExitOnEscapeCharacter { get; set; }
-
         public event Action ApplicationStopped;
 
+        public ConsoleBitmap Bitmap { get; set; }
+        public ConsolePanel LayoutRoot { get; private set; }
+        public bool ExitOnEscapeCharacter { get; set; }
         public bool IsRunning { get; private set; }
 
-        public ControlCollection Controls
+        public ObservableCollection<ConsoleControl> Controls
         {
             get
             {
@@ -47,24 +40,28 @@ namespace PowerArgs
             }
         }
 
+        private int focusIndex;
+        private ConsoleControl focusedControl;
+        private List<ConsoleControl> focusableControls;
+
         public ConsoleApp(int x, int y, int w, int h)
         {
             Bitmap = new ConsoleBitmap(x,y, w, h);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
             LayoutRoot.Application = this;
-            tabbableControls = new List<ConsoleControl>();
+            focusableControls = new List<ConsoleControl>();
             focusIndex = -1;
             ExitOnEscapeCharacter = true;
             LayoutRoot.Controls.Added += (c) =>
             {
                 c.Application = this;
-                if (c.CanFocus) tabbableControls.Add(c);
+                if (c.CanFocus) focusableControls.Add(c);
 
                 if (c is ConsolePanel)
                 {
                     var children = TraverseControlTree(c as ConsolePanel);
-                    tabbableControls.AddRange(children.Where(child => child.CanFocus));
-                    tabbableControls = tabbableControls.Distinct().ToList();
+                    focusableControls.AddRange(children.Where(child => child.CanFocus));
+                    focusableControls = focusableControls.Distinct().ToList();
                     foreach (var child in children) child.Application = this;
                 }
             };
@@ -72,41 +69,25 @@ namespace PowerArgs
             LayoutRoot.Controls.Removed += (c) =>
             {
                 c.Application = null;
-                if (c.CanFocus) tabbableControls.Remove(c);
+                if (c.CanFocus) focusableControls.Remove(c);
 
                 if (c is ConsolePanel)
                 {
                     var children = TraverseControlTree(c as ConsolePanel);
                     foreach (var child in children)
                     {
-                        tabbableControls.Remove(child);
+                        focusableControls.Remove(child);
                         child.Application = null;
                     }
                 }
             };
         }
 
-        private List<ConsoleControl> TraverseControlTree(ConsolePanel toTraverse)
-        {
-            List<ConsoleControl> ret = new List<ConsoleControl>();
-            foreach (var control in toTraverse.Controls)
-            {
-                if (control is ConsolePanel)
-                {
-                    ret.AddRange(TraverseControlTree(control as ConsolePanel));
-                }
-                ret.Add(control);
-
-            }
-            return ret;
-        }
-
         public void Run()
         {
             IsRunning = true;
             MoveFocus();
-            LayoutRoot.Paint(this.Bitmap);
-            Bitmap.Paint();
+            Paint();
 
             try
             {
@@ -114,14 +95,13 @@ namespace PowerArgs
                 {
                     try
                     {
-                        var info = Console.ReadKey(true);
+                        var info = Bitmap.Console.ReadKey(true);
 
                         if (info.Key == ConsoleKey.Escape && ExitOnEscapeCharacter)
                         {
                             break;
                         }
-
-                        if (info.Key == ConsoleKey.Tab)
+                        else if (info.Key == ConsoleKey.Tab)
                         {
                             MoveFocus(info.Modifiers.HasFlag(ConsoleModifiers.Shift) == false);
                         }
@@ -148,18 +128,18 @@ namespace PowerArgs
                     {
                         ApplicationStopped();
                     }
-                    Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
-                    Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
+                    Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
+                    Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
                 }
             }
         }
-
-        
 
         public void Paint()
         {
             lock (Bitmap.SyncLock)
             {
+                Bitmap.Pen = ConsoleControl.TransparantColor;
+                Bitmap.FillRect(0, 0, Width, Height);
                 LayoutRoot.Paint(Bitmap);
             }
             Bitmap.Paint();
@@ -172,7 +152,7 @@ namespace PowerArgs
     
         public void SetFocus(ConsoleControl newFocusControl)
         {
-            var index = tabbableControls.IndexOf(newFocusControl);
+            var index = focusableControls.IndexOf(newFocusControl);
             if (index < 0) throw new InvalidOperationException("The given control is not in the control tree");
 
             if (newFocusControl != focusedControl)
@@ -196,11 +176,26 @@ namespace PowerArgs
             if (forward) focusIndex++;
             else focusIndex--;
 
-            if (focusIndex >= tabbableControls.Count) focusIndex = 0;
-            if (focusIndex < 0) focusIndex = tabbableControls.Count - 1;
+            if (focusIndex >= focusableControls.Count) focusIndex = 0;
+            if (focusIndex < 0) focusIndex = focusableControls.Count - 1;
 
-            if (tabbableControls.Count == 0) return;
-            SetFocus(tabbableControls[focusIndex]);
+            if (focusableControls.Count == 0) return;
+            SetFocus(focusableControls[focusIndex]);
+        }
+
+        private List<ConsoleControl> TraverseControlTree(ConsolePanel toTraverse)
+        {
+            List<ConsoleControl> ret = new List<ConsoleControl>();
+            foreach (var control in toTraverse.Controls)
+            {
+                if (control is ConsolePanel)
+                {
+                    ret.AddRange(TraverseControlTree(control as ConsolePanel));
+                }
+                ret.Add(control);
+
+            }
+            return ret;
         }
     }
 }

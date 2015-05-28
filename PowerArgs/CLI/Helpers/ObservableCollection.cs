@@ -5,8 +5,6 @@ using System.Text;
 
 namespace PowerArgs
 {
-    public class ControlCollection : ObservableCollection<ConsoleControl> { }
-
     /// <summary>
     /// An observable list implementation
     /// </summary>

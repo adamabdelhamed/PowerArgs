@@ -48,6 +48,8 @@
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
     <Compile Include="CLI\Cli.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
+    <Compile Include="CLI\Controls\ListView.cs" />
+    <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
     <Compile Include="CLI\Controls\ConsoleApp.cs" />

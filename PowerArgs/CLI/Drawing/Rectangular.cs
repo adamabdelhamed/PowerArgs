@@ -5,9 +5,9 @@ using System.Text;
 
 namespace PowerArgs
 {
-    public class Rectangular
+    public class Rectangular : ViewModelBase
     {
-        public Rectangle Bounds { get; set; }
+        public Rectangle Bounds { get { return Get<Rectangle>(); } set { Set<Rectangle>(value); } }
         public int Width
         {
             get
