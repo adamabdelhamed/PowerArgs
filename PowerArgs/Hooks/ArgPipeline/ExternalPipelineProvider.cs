@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace PowerArgs.Preview
 {
@@ -84,8 +85,14 @@ namespace PowerArgs.Preview
             }
             catch(TargetInvocationException ex)
             {
-                if (ex.InnerException == null) throw;
-                if (ex.InnerException is ArgException) throw ex.InnerException;
+                if (ex.InnerException == null)
+                {
+                    throw;
+                }
+                else if (ex.InnerException is ArgException)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                }
 
                 result = default(TBaseReq);
                 return false;

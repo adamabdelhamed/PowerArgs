@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace PowerArgs
 {
@@ -552,7 +553,7 @@ namespace PowerArgs
                     {
                         if (ex.InnerException is InvalidArgDefinitionException)
                         {
-                            throw ex.InnerException;
+                            ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                         }
                         else
                         {

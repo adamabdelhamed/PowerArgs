@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace PowerArgs
 {
@@ -542,6 +543,24 @@ namespace PowerArgs
                     else
                     {
                         RevivedValue = ArgRevivers.Revive(ArgumentType, Aliases.First(), commandLineValue);
+                    }
+                }
+                catch(TargetInvocationException ex)
+                {
+                    if (ex.InnerException != null && ex.InnerException is ArgException)
+                    {
+                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    }
+                    else
+                    {
+                        if (ArgumentType.IsEnum)
+                        {
+                            throw new ArgException("'" + commandLineValue + "' is not a valid value for " + Aliases.First() + ". Available values are [" + string.Join(", ", Enum.GetNames(ArgumentType)) + "]", ex);
+                        }
+                        else
+                        {
+                            throw new ArgException(ex.Message, ex);
+                        }
                     }
                 }
                 catch (ArgException)

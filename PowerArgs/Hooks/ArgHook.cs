@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace PowerArgs
 {
@@ -136,7 +137,21 @@ namespace PowerArgs
         {
             if (runningHookId == HookId)
             {
-                HookImpl(context);
+                try
+                {
+                    HookImpl(context);
+                } 
+                catch(Exception ex)
+                {
+                    if (ex.InnerException != null)
+                    {
+                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
             }
         }
     }

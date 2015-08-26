@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace PowerArgs
 {
@@ -12,8 +14,21 @@ namespace PowerArgs
             if (method.GetParameters().Length > 0) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must not take any parameters");
             if (method.ReturnType != null && method.ReturnType != typeof(void)) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must return void");
 
-            method.Invoke(o, new object[0]);
-
+            try
+            {
+                method.Invoke(o, new object[0]);
+            }
+            catch(Exception ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                }
+                else
+                {
+                    throw;
+                }
+            }
             return method;
         }
     }
