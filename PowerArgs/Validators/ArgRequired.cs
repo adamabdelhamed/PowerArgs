@@ -102,6 +102,24 @@ namespace PowerArgs
                     highlighterConfigurator.Configure(cli.Reader.Highlighter);
                 }
 
+                cli.Reader.UnregisterHandler(ConsoleKey.Escape);
+                cli.Reader.RegisterHandler(KeyHandler.FromAction((searchReaderContext) =>
+                {
+                    TabCompletion tabCompletionInfo;
+                    if (ArgHook.HookContext.Current.Definition.IsNonInteractive == false &&
+                        ArgHook.HookContext.Current.Definition.Metadata.TryGetMeta<TabCompletion>(out tabCompletionInfo) 
+                        && tabCompletionInfo.REPL == true)
+                    {
+                        // if this is an interactive REPL then continue the REPL in this case as the user may have changed their mind about taking
+                        // this action - Note there are two places in this file that have this logic
+                        throw new REPLContinueException();
+                    }
+                    else
+                    {
+                        throw new MissingArgException("The argument '" + argument.DefaultAlias + "' is required", new ArgumentNullException(argument.DefaultAlias));
+                    }
+                }, ConsoleKey.Escape));
+
                 arg = cli.PromptForLine("Enter value for " + argument.DefaultAlias);
             }
 
@@ -193,6 +211,10 @@ namespace PowerArgs
             {
                 throw;
             }
+            catch(REPLContinueException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 var targetText = context.CurrentArgument.DefaultAlias + " (" + expressionText + ")";
@@ -221,6 +243,23 @@ namespace PowerArgs
                     highlighterConfigurator.Configure(cli.Reader.Highlighter);
                 }
 
+                cli.Reader.UnregisterHandler(ConsoleKey.Escape);
+                cli.Reader.RegisterHandler(KeyHandler.FromAction((searchReaderContext) =>
+                {
+                    TabCompletion tabCompletionInfo;
+                    if (context.Definition.IsNonInteractive == false && 
+                        context.Definition.Metadata.TryGetMeta<TabCompletion>(out tabCompletionInfo) && 
+                        tabCompletionInfo.REPL == true)
+                    {
+                        // if this is an interactive REPL then continue the REPL in this case as the user may have changed their mind about taking
+                        // this action - Note there are two places in this file that have this logic
+                        throw new REPLContinueException();
+                    }
+                    else
+                    {
+                        throw new MissingArgException("The argument '" + context.CurrentArgument.DefaultAlias + "' is required", new ArgumentNullException(context.CurrentArgument.DefaultAlias));
+                    }
+                }, ConsoleKey.Escape));
 
                 context.ArgumentValue = cli.PromptForLine("Enter value for " + context.CurrentArgument.DefaultAlias);
                 context.CurrentArgument.Populate(context);

@@ -33,7 +33,10 @@ namespace PowerArgs
                 }
                 catch (REPLContinueException)
                 {
-
+                    if(ConsoleProvider.Current.CursorLeft > 0)
+                    {
+                        ConsoleProvider.Current.WriteLine();
+                    }
                 }
             }
             while (t != null && t.REPL);

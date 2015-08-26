@@ -404,6 +404,136 @@ namespace ArgsTests
             Assert.AreNotEqual("Adam", parsed.Address);
         }
 
+        [TabCompletion(REPL = true, Indicator="$")]
+        public class ArgsWithRequiredAndREPL
+        {
+            [ArgRequired(PromptIfMissing = true)]
+            public string SomeArg { get; set; }
+
+            public bool ExpectMainToBeCalled { get; set; }
+
+            public void Main()
+            {
+                if (ExpectMainToBeCalled == false)
+                {
+                    throw new Exception("Main called!");
+                }
+                else
+                {
+                    Console.WriteLine("Main called!");
+                }
+            }
+        }
+
+        public class ArgsWithRequiredAndNoREPL
+        {
+            [ArgRequired(PromptIfMissing = true)]
+            public string SomeArg { get; set; }
+
+            public bool ExpectMainToBeCalled { get; set; }
+
+            public void Main()
+            {
+                if (ExpectMainToBeCalled == false)
+                {
+                    throw new Exception("Main called!");
+                }
+                else
+                {
+                    Console.WriteLine("Main called!");
+                }
+            }
+        }
+
+        [TabCompletion(REPL = true, Indicator = "$")]
+        public class ArgsWithRequiredAndREPLAndConditional
+        {
+            [ArgRequired(PromptIfMissing = true, If = "ExpectMainToBeCalled")]
+            public string SomeArg { get; set; }
+
+            public bool ExpectMainToBeCalled { get; set; }
+
+            public void Main()
+            {
+                if (ExpectMainToBeCalled == false)
+                {
+                    throw new Exception("Main called!");
+                }
+                else
+                {
+                    Console.WriteLine("Main called!");
+                }
+            }
+        }
+
+        public class ArgsWithRequiredAndNoREPLAndConditional
+        {
+            [ArgRequired(PromptIfMissing = true, If = "ExpectMainToBeCalled")]
+            public string SomeArg { get; set; }
+
+            public bool ExpectMainToBeCalled { get; set; }
+
+            public void Main()
+            {
+                if (ExpectMainToBeCalled == false)
+                {
+                    throw new Exception("Main called!");
+                }
+                else
+                {
+                    Console.WriteLine("Main called!");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TestArgRequiredCancelBehaviorWithREPL()
+        {
+            TestConsoleProvider.SimulateConsoleInput("-e{enter}{escape}-s\t thearg -e{enter}quit");
+            var action = Args.InvokeMain<ArgsWithRequiredAndREPL>("$");
+            Assert.AreEqual("thearg", action.Args.SomeArg);
+        }
+
+        [TestMethod]
+        public void TestArgRequiredCancelBehaviorWithNoREPL()
+        {
+            try
+            {
+                TestConsoleProvider.SimulateConsoleInput("{escape}");
+                var action = Args.InvokeMain<ArgsWithRequiredAndREPL>("");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch(MissingArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("somearg"));
+                Console.WriteLine("Yay!");
+            }
+        }
+
+        [TestMethod]
+        public void TestArgRequiredCancelBehaviorWithREPLAndConditional()
+        {
+            TestConsoleProvider.SimulateConsoleInput("-e{enter}{escape}-s\t thearg -e{enter}quit");
+            var action = Args.InvokeMain<ArgsWithRequiredAndREPLAndConditional>("$");
+            Assert.AreEqual("thearg", action.Args.SomeArg);
+        }
+
+        [TestMethod]
+        public void TestArgRequiredCancelBehaviorWithNoREPLAndConditional()
+        {
+            try
+            {
+                TestConsoleProvider.SimulateConsoleInput("{escape}");
+                var action = Args.InvokeMain<ArgsWithRequiredAndNoREPLAndConditional>("-e");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (MissingArgException ex)
+            {
+                Assert.IsTrue(ex.Message.ToLower().Contains("somearg"));
+                Console.WriteLine("Yay!");
+            }
+        }
+
         private string Repeat(string s, int num)
         {
             string ret = "";
