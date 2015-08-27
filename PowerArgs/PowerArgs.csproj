@@ -46,7 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
-    <Compile Include="CLI\Cli.cs" />
+    <Compile Include="CLI\CliHelper.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
     <Compile Include="CLI\Controls\ListView.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />

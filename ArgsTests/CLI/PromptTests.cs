@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
+using PowerArgs.Cli;
 
 namespace ArgsTests.CLI
 {
@@ -24,7 +25,7 @@ namespace ArgsTests.CLI
         {
             ConsoleProvider.Current = new TestConsoleProvider("y{enter}n{enter}notagoodanswer{enter}y");
 
-            var cli = new Cli();
+            var cli = new CliHelper();
             var firstAnswer = cli.IsUserSure("Dude this is dangerous");
             var secondAnswer = cli.IsUserSure("Dude this is dangerous");
             var thirdAnswer = cli.IsUserSure("Dude this is dangerous");

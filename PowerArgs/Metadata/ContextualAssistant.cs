@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli;
+using System;
 
 namespace PowerArgs
 {

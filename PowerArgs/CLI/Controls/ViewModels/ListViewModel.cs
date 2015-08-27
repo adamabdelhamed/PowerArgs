@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     public class ListViewModel : ViewModelBase
     {

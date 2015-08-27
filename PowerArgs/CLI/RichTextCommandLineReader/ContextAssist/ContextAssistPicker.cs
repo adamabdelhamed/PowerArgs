@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// A context assist provider that lets the user select from a fixed set of options

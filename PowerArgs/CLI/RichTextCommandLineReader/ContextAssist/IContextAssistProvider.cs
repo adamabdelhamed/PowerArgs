@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PowerArgs 
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// An interface you can implement to inject custom contextually aware command line helpers.  PowerArgs provides a few out of the box, but

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     public class ConsolePanel : ConsoleControl
     {

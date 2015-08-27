@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     internal class ArrowKeysHandler : IKeyHandler
     {

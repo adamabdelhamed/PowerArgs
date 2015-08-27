@@ -4,6 +4,7 @@ using PowerArgs;
 
 using System.Linq;
 using PowerArgs.Preview;
+using PowerArgs.Cli;
 
 
 namespace ArgsTests

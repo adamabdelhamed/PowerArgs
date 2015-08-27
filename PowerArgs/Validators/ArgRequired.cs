@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -86,7 +87,7 @@ namespace PowerArgs
 
             if (IsConditionallyRequired == false && arg == null && PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
             {
-                var cli = new Cli();
+                var cli = new CliHelper();
 
                 ITabCompletionHandler tabHandler;
                 IHighlighterConfigurator highlighterConfigurator;
@@ -227,7 +228,7 @@ namespace PowerArgs
             if (parent.PromptIfMissing && ArgHook.HookContext.Current.Definition.IsNonInteractive == false)
             {
 
-                var cli = new Cli();
+                var cli = new CliHelper();
 
                 ITabCompletionHandler tabHandler;
                 IHighlighterConfigurator highlighterConfigurator;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// A class that represents a search result that can be selected by the ContextAssistSearch context assist provider.

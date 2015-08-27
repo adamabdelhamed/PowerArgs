@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// An interface that defines the contract for how key presses get handled within the RichTextCommandLineReader context
