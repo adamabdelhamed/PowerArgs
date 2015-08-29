@@ -110,6 +110,15 @@ namespace ArgsTests
             public string B { get; set; }
         }
 
+        public class FailingProgram
+        {
+            [ArgActionMethod]
+            public static void SomeAction()
+            {
+                throw new Exception();
+            }
+        }
+
         [TestMethod]
         public void TestBasicActionBinding()
         {
@@ -244,6 +253,20 @@ namespace ArgsTests
             {
                 Assert.IsInstanceOfType(ex, typeof(MissingArgException));
                 Assert.AreEqual("No action was specified", ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void ActionExceptionPreservesOriginalStackTrace()
+        {
+            try
+            {
+                var args = new string[] { "SomeAction" };
+                Args.InvokeAction<FailingProgram>(args);
+            }
+            catch (Exception ex)
+            {
+                Assert.IsTrue(ex.StackTrace.Contains("SomeAction"), "Stack trace did not contain original stack trace");
             }
         }
     }
