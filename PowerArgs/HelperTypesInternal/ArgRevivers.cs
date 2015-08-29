@@ -172,15 +172,53 @@ namespace PowerArgs
 
                 foreach (var reviver in revivers)
                 {
-                    var r = reviver;
-                    if (ArgRevivers.Revivers.ContainsKey(r.ReturnType) == false)
-                    {
-                        ArgRevivers.Revivers.Add(r.ReturnType, (key, val) =>
-                        {
-                            return r.Invoke(null, new object[] { key, val });
-                        });
-                    }
+                    SetReviver(reviver);
                 }
+            }
+        }
+
+        private static void SetReviver(MethodInfo r)
+        {
+            SetReviver(r.ReturnType, (key, val) =>
+            {
+                return r.Invoke(null, new object[] { key, val });
+            });
+        }
+
+        /// <summary>
+        /// Sets the reviver function for a given type, overriding any existing reviver that may exist.
+        /// </summary>
+        /// <param name="t">The type of object the reviver function can revive</param>
+        /// <param name="reviverFunc">the function that revives a command line string, converting it into a consumable object</param>
+        public static void SetReviver(Type t, Func<string,string, object> reviverFunc)
+        {
+            if (ArgRevivers.Revivers.ContainsKey(t))
+            {
+                ArgRevivers.Revivers.Remove(t);
+            }
+
+            ArgRevivers.Revivers.Add(t, reviverFunc);
+        }
+
+        /// <summary>
+        /// Sets the reviver function for a given type, overriding any existing reviver that may exist.
+        /// </summary>
+        /// <typeparam name="T">The type of object the reviver function can revive</typeparam>
+        /// <param name="reviverFunc">the function that revives a command line string, converting it into a consumable object</param>
+        public static void SetReviver<T>(Func<string, string, T> reviverFunc)
+        {
+            SetReviver(typeof(T), (k, v) => { return reviverFunc(k, v); });
+        }
+
+        internal static Func<string,string,object> GetReviver(Type t)
+        {
+            if (ArgRevivers.Revivers.ContainsKey(t))
+            {
+                return ArgRevivers.Revivers[t];
+            }
+            else
+            {
+                return null;
             }
         }
 
