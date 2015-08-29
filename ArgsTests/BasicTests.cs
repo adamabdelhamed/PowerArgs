@@ -32,7 +32,7 @@ namespace ArgsTests
             Sixteen = 16,
         }
 
-                [UsageAutomation]
+        [UsageAutomation]
         public class EnumArgs
         {
             [DefaultValue(BasicEnum.Option2)]
@@ -250,6 +250,31 @@ namespace ArgsTests
                 var parsed = Args.Parse<ArgsThatNeedManualReviverRegistration>("-a", "someone@somewhere.com");
                 Assert.AreEqual("someone@somewhere.com", parsed.Address.Address);
             }
+        }
+
+        [TestMethod]
+        public void TestOverrideDefaultReviver()
+        {
+            var intReviver = ArgRevivers.GetReviver(typeof(int));
+            try
+            {
+                ArgRevivers.SetReviver<int>((k, v) => { return -1; });
+
+                var def = new CommandLineArgumentsDefinition();
+                def.Arguments.Add(new CommandLineArgument(typeof(int), "theInt"));
+                Args.Parse(def, "-theInt", "100");
+                Assert.AreEqual(-1, def.FindMatchingArgument("theInt").RevivedValue);
+            }
+            finally
+            {
+                ArgRevivers.SetReviver(typeof(int), intReviver);
+            }
+
+            // make sure the old reviver is working again
+            var newDef = new CommandLineArgumentsDefinition();
+            newDef.Arguments.Add(new CommandLineArgument(typeof(int), "theInt"));
+            Args.Parse(newDef, "-theInt", "100");
+            Assert.AreEqual(100, newDef.FindMatchingArgument("theInt").RevivedValue);
         }
 
         [TestMethod]
