@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// An interface that defines the contract for tab completion in the context of a RichTextCommandLineReader.

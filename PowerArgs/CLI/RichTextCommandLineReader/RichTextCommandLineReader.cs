@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// A utility that lets you prompt a console user for input in an interactive way.  It provides hooks for tab completion, syntax highlighting, history management via the up and down arrows, etc.

@@ -67,19 +67,19 @@ namespace PowerArgs {
         ///    &lt;title&gt;{{ExeName!}} documentation&lt;/title&gt;
         ///&lt;/head&gt;
         ///&lt;body&gt;
-        ///&lt;h1 class=&quot;program-specific-content&quot;&gt;{{ExeName!}}&lt;/h1&gt;
-        ///&lt;p class=&quot;program-specific-content&quot;&gt;{{Description!}}&lt;/p&gt;
+        ///    &lt;h1 class=&quot;program-specific-content&quot;&gt;{{ExeName!}}&lt;/h1&gt;
+        ///    &lt;p class=&quot;program-specific-content&quot;&gt;{{Description!}}&lt;/p&gt;
         ///
-        ///&lt;h2&gt;Usage&lt;/h2&gt;
+        ///    &lt;h2&gt;Usage&lt;/h2&gt;
         ///&lt;pre class=&quot;code-sample&quot;&gt;{{UsageSummaryHTMLEncoded!}}&lt;/pre&gt;
         ///
-        ///{{if HasGlobalArguments}}
-        ///	{{if HasActions}}&lt;h2&gt;Global options&lt;/h2&gt;!{{if}}
-        ///	{{ifnot HasActions}}&lt;h2&gt;Options&lt;/h2&gt;!{{ifnot}}
+        ///    {{if HasGlobalArguments}}
+        ///    {{if HasActions}}&lt;h2&gt;Global options&lt;/h2&gt;!{{if}}
+        ///    {{ifnot HasActions}}&lt;h2&gt;Options&lt;/h2&gt;!{{ifnot}}
         ///
-        ///	&lt;table&gt;
-        ///		&lt;tr&gt;
-        ///			&lt;td class=&quot;option-col table-header [rest of string was truncated]&quot;;.
+        ///    &lt;table&gt;
+        ///        &lt;tr&gt;
+        ///       [rest of string was truncated]&quot;;.
         /// </summary>
         public static string DefaultBrowserUsageTemplate {
             get {
@@ -88,23 +88,29 @@ namespace PowerArgs {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {{ifnot HasSpecifiedAction}}
+        ///   Looks up a localized string similar to {{if HasDescription}}
+        ///
+        ///{{ Description !}}
+        ///
+        ///
+        ///!{{if}}
+        ///{{ifnot HasSpecifiedAction}}
         ///Usage - {{UsageSummary Cyan!}}
         ///!{{ifnot}}
         ///{{if HasGlobalArguments}}
-        ///{{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}:
         ///
-        ///{{table Arguments DefaultAlias&gt;Option Description !}}
+        ///{{if HasActions}}Global options!{{if}}{{ifnot HasActions}}Options!{{ifnot}}
+        ///
+        ///{{table Arguments Syntax&gt;Option Description !}}
         ///!{{if}}
         ///{{if HasActions}}
         ///{{if HasSpecifiedAction}}
         ///
+        ///{{SpecifiedAction.DefaultAlias!}} - {{SpecifiedAction.Description!}}
+        ///
         ///Usage - {{ExeName Cyan!}} {{SpecifiedAction.UsageSummary Cyan!}}
         ///
-        ///{{if SpecifiedAction.HasArguments }}
-        ///{{SpecifiedAction.DefaultAlias!}} Options:
-        ///{{table SpecifiedAction.Arguments DefaultAlias&gt;Name Description !}}
-        /// [rest of string was truncated]&quot;;.
+        ///{{if SpecifiedAction.HasAr [rest of string was truncated]&quot;;.
         /// </summary>
         public static string DefaultConsoleUsageTemplate {
             get {

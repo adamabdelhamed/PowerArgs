@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PowerArgs</RootNamespace>
     <AssemblyName>PowerArgs</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -46,10 +46,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
-    <Compile Include="CLI\Cli.cs" />
+    <Compile Include="CLI\CliHelper.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
+    <Compile Include="CLI\Controls\ListView.cs" />
+    <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
+    <Compile Include="CLI\Controls\ConsoleApp.cs" />
+    <Compile Include="CLI\Controls\ConsoleControl.cs" />
+    <Compile Include="CLI\Controls\ConsolePanel.cs" />
+    <Compile Include="CLI\Controls\LineChart.cs" />
+    <Compile Include="CLI\Controls\ViewModels\LineChartViewModel.cs" />
+    <Compile Include="CLI\Drawing\ConsoleBitmap.cs" />
+    <Compile Include="CLI\Drawing\ConsolePixel.cs" />
+    <Compile Include="CLI\Drawing\Point.cs" />
+    <Compile Include="CLI\Drawing\Rectangle.cs" />
+    <Compile Include="CLI\Drawing\Rectangular.cs" />
+    <Compile Include="CLI\Drawing\Size.cs" />
+    <Compile Include="CLI\Helpers\ObservableCollection.cs" />
+    <Compile Include="CLI\Helpers\ViewModelBase.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ConsoleHistoryManager.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistSearch.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\IContextAssistProvider.cs" />

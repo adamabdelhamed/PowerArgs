@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace PowerArgs
 {
@@ -166,6 +167,39 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Returns true if the argument is an enum or a nullable where the value type is an enum
+        /// </summary>
+        public bool IsEnum
+        {
+            get
+            {
+                if (ArgumentType.IsEnum)
+                {
+                    return true;
+                }
+
+                if(ArgumentType.IsGenericType == false)
+                {
+                    return false;
+                }
+
+                if (ArgumentType.GetGenericTypeDefinition() != typeof(Nullable<>))
+                {
+                    return false;
+                }
+
+                var nullableType = ArgumentType.GetGenericArguments().FirstOrDefault();
+                
+                if(nullableType == null)
+                {
+                    return false;
+                }
+
+                return nullableType.IsEnum;
+            }
+        }
+
+        /// <summary>
         /// Specifies whether this argument should be omitted from usage documentation
         /// </summary>
         public bool OmitFromUsage
@@ -237,20 +271,29 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Only works if the ArgumentType is an enum.  Returns a list where each element is a string containing an
+        /// Only works if the ArgumentType is an enum or a nullable where the value type is an enum.  Returns a list where each element is a string containing an
         /// enum value and optionally its description.  Each enum value is represented in the list.
         /// </summary>
         public List<string> EnumValuesAndDescriptions
         {
             get
             {
-                if (ArgumentType.IsEnum == false)
+                if (IsEnum == false)
                 {
                     return new List<string>();
                 }
 
+                var enumType = ArgumentType;
+                
+                if(enumType.IsEnum == false)
+                {
+                    // we must be dealing with a nullable<enum> since IsEnum returned true above
+                    enumType = enumType.GetGenericArguments()[0];
+                }
+
+
                 List<string> ret = new List<string>();
-                foreach (var val in ArgumentType.GetFields().Where(v => v.IsSpecialName == false))
+                foreach (var val in enumType.GetFields().Where(v => v.IsSpecialName == false))
                 {
                     var description = val.HasAttr<ArgDescription>() ? " - " + val.Attr<ArgDescription>().Description : "";
                     var valText = "  " + val.Name;
@@ -500,6 +543,24 @@ namespace PowerArgs
                     else
                     {
                         RevivedValue = ArgRevivers.Revive(ArgumentType, Aliases.First(), commandLineValue);
+                    }
+                }
+                catch(TargetInvocationException ex)
+                {
+                    if (ex.InnerException != null && ex.InnerException is ArgException)
+                    {
+                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    }
+                    else
+                    {
+                        if (ArgumentType.IsEnum)
+                        {
+                            throw new ArgException("'" + commandLineValue + "' is not a valid value for " + Aliases.First() + ". Available values are [" + string.Join(", ", Enum.GetNames(ArgumentType)) + "]", ex);
+                        }
+                        else
+                        {
+                            throw new ArgException(ex.Message, ex);
+                        }
                     }
                 }
                 catch (ArgException)

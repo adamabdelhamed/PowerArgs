@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 namespace PowerArgs
 {
@@ -414,7 +415,7 @@ namespace PowerArgs
             foreach (var argument in Arguments)
             {
                 var property = argument.Source as PropertyInfo;
-                if (property == null) return;
+                if (property == null || argument.RevivedValue == null) continue;
                 property.SetValue(o, argument.RevivedValue, null);
             }
         }
@@ -552,7 +553,7 @@ namespace PowerArgs
                     {
                         if (ex.InnerException is InvalidArgDefinitionException)
                         {
-                            throw ex.InnerException;
+                            ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                         }
                         else
                         {

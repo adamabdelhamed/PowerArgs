@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// A utility that lets you display a progress bar on the console
@@ -131,6 +131,54 @@ namespace PowerArgs
                 Update();
                 cancelled = true;
             }
+        }
+        
+        /// <summary>
+        /// Renders the progress bar and shows an indeterminate progress animation until the Task completes.  This method will not
+        /// start the task so it must be started somewhere else.
+        /// </summary>
+        /// <param name="workTask">the task to wait for.  This method will not start the task so it must be started somewhere else.</param>
+        public void RenderUntilIndeterminate(Task workTask)
+        {
+            Render();
+            indeterminateHighlightIndex = 0;
+            bool cancelled = false;
+            try
+            {
+                var animationTask = Task.Factory.StartNew(() =>
+                {
+                    while (cancelled == false)
+                    {
+                        Update();
+                        indeterminateHighlightIndex++;
+                        if (indeterminateHighlightIndex > Width - 4)
+                        {
+                            indeterminateHighlightIndex = 0;
+                        }
+                        Thread.Sleep(50);
+                    }
+                });
+
+                workTask.Wait();
+            }
+            finally
+            {
+                indeterminateHighlightIndex = -1;
+                Update();
+                cancelled = true;
+            }
+        }
+
+        /// <summary>
+        /// Renders the progress bar and shows an indeterminate progress animation. Simultaneously, the work action is started. The bar will animate
+        /// as long as the work action is running.
+        /// </summary>
+        /// <param name="workTask">the task to wait for</param>
+        public void RenderUntilIndeterminate(Action workAction)
+        {
+            Task workTask = new Task(workAction);
+            workTask.Start();
+            RenderUntilIndeterminate(workTask);
         }
 
         /// <summary>

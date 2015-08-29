@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using PowerArgs.Cli;
 
 namespace ArgsTests.CLI
 {
@@ -15,7 +16,7 @@ namespace ArgsTests.CLI
         public void TestBasicAssistStartOfLine()
         {
             ConsoleProvider.Current = new TestConsoleProvider("{control} {w}{down}{down}{enter}");
-            Cli cli = new Cli();
+            CliHelper cli = new CliHelper();
             var picker = new ContextAssistPicker();
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 1"));
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 2"));
@@ -30,7 +31,7 @@ namespace ArgsTests.CLI
         public void TestEscapingFromPicker()
         {
             ConsoleProvider.Current = new TestConsoleProvider("{control} {w}{down}{down}{escape}");
-            Cli cli = new Cli();
+            CliHelper cli = new CliHelper();
             var picker = new ContextAssistPicker();
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 1"));
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 2"));
@@ -45,7 +46,7 @@ namespace ArgsTests.CLI
         public void TestCyclingDownThroughOptions()
         {
             ConsoleProvider.Current = new TestConsoleProvider("{control} {w}{down}{down}{down}{down}{down}{enter}");
-            Cli cli = new Cli();
+            CliHelper cli = new CliHelper();
             var picker = new ContextAssistPicker();
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 1"));
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 2"));
@@ -60,7 +61,7 @@ namespace ArgsTests.CLI
         public void TestCyclingUpThroughOptions()
         {
             ConsoleProvider.Current = new TestConsoleProvider("{control} {w}{up}{enter}");
-            Cli cli = new Cli();
+            CliHelper cli = new CliHelper();
             var picker = new ContextAssistPicker();
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 1"));
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 2"));
@@ -75,7 +76,7 @@ namespace ArgsTests.CLI
         public void TestBasicAssistEndOfLineAfterASpace()
         {
             ConsoleProvider.Current = new TestConsoleProvider("choice: {control} {w}{down}{down}{enter}");
-            Cli cli = new Cli();
+            CliHelper cli = new CliHelper();
             var picker = new ContextAssistPicker();
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 1"));
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 2"));
@@ -90,7 +91,7 @@ namespace ArgsTests.CLI
         public void TestBasicAssistEndOfLineReplacingCurrentToken()
         {
             ConsoleProvider.Current = new TestConsoleProvider("choice: asdasdasdasdasd{control} {w}{down}{down}{enter}");
-            Cli cli = new Cli();
+            CliHelper cli = new CliHelper();
             var picker = new ContextAssistPicker();
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 1"));
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 2"));
@@ -105,7 +106,7 @@ namespace ArgsTests.CLI
         public void TestBasicAssistMiddleOfLineReplacingCurrentToken()
         {
             ConsoleProvider.Current = new TestConsoleProvider("choice: abc after{left}{left}{left}{left}{left}{left}{control} {w}{down}{down}{enter}");
-            Cli cli = new Cli();
+            CliHelper cli = new CliHelper();
             var picker = new ContextAssistPicker();
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 1"));
             picker.Options.Add(ContextAssistSearchResult.FromString("Option 2"));

@@ -4,8 +4,8 @@
     <id>$id$</id>
     <version>$version$</version>
     <title>$title$</title>
-    <authors>$author$</authors>
-    <owners>$author$</owners>
+    <authors>Adam Abdelhamed</authors>
+    <owners>Adam Abdelhamed</owners>
     <projectUrl>http://github.com/adamabdelhamed/PowerArgs</projectUrl>
     <licenseUrl>https://github.com/adamabdelhamed/PowerArgs/blob/master/LICENSE.txt</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -16,4 +16,4 @@
     <copyright>Copyright 2015 Adam Abdelhamed</copyright>
     <tags>Command Line Argument Parser Pipeline ArgPipeline</tags>
   </metadata>
-</package>
+</package> 

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// A class that provides a framework for building interactive command line interfaces.
     /// </summary>
-    public class Cli
+    public class CliHelper
     {
         /// <summary>
         /// Gets or sets the reader to use when reading input from the console
@@ -16,7 +16,7 @@ namespace PowerArgs
         /// <summary>
         /// Creates a new CLI object.
         /// </summary>
-        public Cli()
+        public CliHelper()
         {
             Reader = new RichTextCommandLineReader() { Console = ConsoleProvider.Current };
         }

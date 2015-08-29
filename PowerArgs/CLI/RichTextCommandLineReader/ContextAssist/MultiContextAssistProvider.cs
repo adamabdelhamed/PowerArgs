@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// A context assist provider that wraps a collection of inner providers.  

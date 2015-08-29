@@ -37,7 +37,7 @@ Alicia Abdelhamed   Two Microsoft Way, Redmond WA 98052   The wife of the author
         [TestMethod]
         public void ConsoleTableTestMultiOptions()
         {
-            Console.BufferWidth = 160;
+            ConsoleProvider.Current.BufferWidth = 160;
             ConsoleTableBuilder builder = new ConsoleTableBuilder();
 
             var columns = new List<ConsoleString>() { new ConsoleString("NAME"), new ConsoleString("ADDRESS"), new ConsoleString("DESCRIPTION") };

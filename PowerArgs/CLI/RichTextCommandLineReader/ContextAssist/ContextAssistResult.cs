@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// Status codes that content assist providers can return
