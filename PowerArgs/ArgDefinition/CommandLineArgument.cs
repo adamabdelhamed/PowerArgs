@@ -482,16 +482,23 @@ namespace PowerArgs
 
         internal void RunArgumentHook(ArgHook.HookContext context, Func<ArgHook, int> orderby, Action<ArgHook> hookAction)
         {
-            context.Property = Source as PropertyInfo;
-            context.CurrentArgument = this;
-
-            foreach (var hook in Hooks.OrderBy(orderby))
+            var oldCurrent = context.CurrentArgument;
+            try
             {
-                hookAction(hook);
-            }
+                context.Property = Source as PropertyInfo;
+                context.CurrentArgument = this;
 
-            context.Property = null;
-            context.CurrentArgument = null;
+                foreach (var hook in Hooks.OrderBy(orderby))
+                {
+                    hookAction(hook);
+                }
+
+                context.Property = null;
+            }
+            finally
+            {
+                context.CurrentArgument = oldCurrent;
+            }
         }
 
 
@@ -624,10 +631,19 @@ namespace PowerArgs
 
         internal static void PopulateArguments(List<CommandLineArgument> arguments, ArgHook.HookContext context)
         {
-            foreach (var argument in arguments)
+            var oldCurrent = context.CurrentArgument;
+            try
             {
-                argument.FindMatchingArgumentInRawParseData(context);
-                argument.Populate(context);
+                foreach (var argument in arguments)
+                {
+                    context.CurrentArgument = argument;
+                    argument.FindMatchingArgumentInRawParseData(context);
+                    argument.Populate(context);
+                }
+            }
+            finally
+            {
+                context.CurrentArgument = oldCurrent;
             }
         }
 

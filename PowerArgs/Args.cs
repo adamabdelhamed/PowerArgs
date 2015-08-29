@@ -608,6 +608,12 @@ namespace PowerArgs
                 throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
             }
 
+            if (context.ParserData.AdditionalExplicitParameters.Count > 0)
+            {
+                throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.AdditionalExplicitParameters.First().Key);
+            }
+
+
             if (definition.ArgumentScaffoldType != null)
             {
                 if (AmbientArgs.ContainsKey(definition.ArgumentScaffoldType))

@@ -381,6 +381,27 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Finds the command line argument that is allowed to be specified in the given position (zero based). You can also
+        /// pass an action name if you know the context of a targeted action.
+        /// </summary>
+        /// <param name="position">the position of the argument</param>
+        /// <param name="action">optionally specify the name of an action which may also have positional arguments defined</param>
+        /// <returns>a matching CommandLineArgument or none if there was no match</returns>
+        public CommandLineArgument FindArgumentByPosition(int position, string action = null)
+        {
+            if (position < 0) throw new ArgumentOutOfRangeException("position must be >= 0");
+
+            var match = (from arg in this.Arguments where arg.Position == position select arg).FirstOrDefault();
+            if (match != null) return match;
+            if (action == null) return null;
+
+            var actionMatch = FindMatchingAction(action);
+            if (actionMatch == null) return null;
+            match = (from arg in actionMatch.Arguments where arg.Position == position select arg).FirstOrDefault();
+            return match;
+        }
+
+        /// <summary>
         /// Gets a basic string representation of the definition.
         /// </summary>
         /// <returns>a basic string representation of the definition</returns>
