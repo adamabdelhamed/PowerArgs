@@ -49,6 +49,52 @@ namespace PowerArgs
             }
         }
 
+
+        /// <summary>
+        /// An optional copyright field
+        /// </summary>
+        public string Copyright
+        {
+            get
+            {
+                return overrides.Get<ArgCopyright, string>("Copyright", Metadata, p => p.Value, null);
+            }
+            set
+            {
+                overrides.Set("Copyright", value);
+            }
+        }
+
+        /// <summary>
+        /// An optional product name field
+        /// </summary>
+        public string ProductName
+        {
+            get
+            {
+                return overrides.Get<ArgProductName, string>("ProductName", Metadata, p => p.Value, null);
+            }
+            set
+            {
+                overrides.Set("ProductName", value);
+            }
+        }
+
+        /// <summary>
+        /// An optional product version field
+        /// </summary>
+        public string ProductVersion
+        {
+            get
+            {
+                return overrides.Get<ArgProductVersion, string>("ProductVersion", Metadata, p => p.Value, null);
+            }
+            set
+            {
+                overrides.Set("ProductVersion", value);
+            }
+        }
+
         /// <summary>
         /// Gets the description from ArgDescriptionMetadata if it exists, or empty string if it does not.
         /// </summary>
@@ -70,6 +116,39 @@ namespace PowerArgs
             get
             {
                 return string.IsNullOrEmpty(Description) == false;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether or not this program has the Copyright field set
+        /// </summary>
+        public bool HasCopyright
+        {
+            get
+            {
+                return string.IsNullOrEmpty(Copyright) == false;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether or not this program has a product name set
+        /// </summary>
+        public bool HasProductName
+        {
+            get
+            {
+                return string.IsNullOrEmpty(ProductName) == false;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether or not this program has a product name set
+        /// </summary>
+        public bool HasProductVersion
+        {
+            get
+            {
+                return string.IsNullOrEmpty(ProductVersion) == false;
             }
         }
 

@@ -151,6 +151,9 @@ namespace ArgsTests
 
         [UsageAutomation]
         [BasicHook]
+        [ArgCopyright("The copyright string")]
+        [ArgProductVersion("The product version")]
+        [ArgProductName("The product name")]
         public class BasicArgs
         {
             public string String { get; set; }
@@ -339,6 +342,20 @@ namespace ArgsTests
             Assert.AreEqual(new Uri("http://www.bing.com"), parsed.Uri);
             Assert.AreEqual(IPAddress.Loopback, parsed.IPAddress);
             Assert.IsTrue(BasicHook.WasRun);
+        }
+
+        [TestMethod]
+        public void TestProductMetadataFields()
+        {
+            var def = new CommandLineArgumentsDefinition(typeof(BasicArgs));
+            Assert.AreEqual("The product name", def.ProductName);
+            Assert.AreEqual("The copyright string", def.Copyright);
+            Assert.AreEqual("The product version", def.ProductVersion);
+
+            var def2 = new CommandLineArgumentsDefinition(typeof(BasicArgsSC));
+            Assert.IsNull(def2.ProductName);
+            Assert.IsNull(def2.Copyright);
+            Assert.IsNull(def2.ProductVersion);
         }
 
         [TestMethod]
