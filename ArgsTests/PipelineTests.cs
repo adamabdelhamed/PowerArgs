@@ -385,6 +385,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        [TestCategory("P2")]
         public void TestHttpPipelinE2EMappedComplex()
         {
             bool invokeFired = false;
@@ -423,6 +424,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        [TestCategory("P2")]
         public void TestHttpPipelineNonPipeableProgram()
         {
             var externalExe = @"..\..\..\ExternalUnitTestPipelineStageExe\bin\debug\ExternalUnitTestPipelineStageExe.exe";
@@ -446,6 +448,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        [TestCategory("P2")]
         public void TestHttpPipelinE2ETwoWayMappedComplex()
         {
             PowerLogger.LogFile = "Console";
@@ -471,6 +474,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        [TestCategory("P2")]
         public void TestHttpPipelineTransport()
         {
             HttpPipelineMessageListener listener = new HttpPipelineMessageListener(5000, TimeSpan.FromSeconds(10));
@@ -523,6 +527,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        [TestCategory("P2")]
         public void TestHttpPipelineTransportTimeout()
         {
             HttpPipelineMessageListener listener = new HttpPipelineMessageListener(5000, TimeSpan.FromSeconds(1));
