@@ -67,19 +67,18 @@ namespace ArgsTests {
         ///    &lt;title&gt;PhotoManager documentation&lt;/title&gt;
         ///&lt;/head&gt;
         ///&lt;body&gt;
-        ///&lt;h1 class=&quot;program-specific-content&quot;&gt;PhotoManager&lt;/h1&gt;
-        ///&lt;p class=&quot;program-specific-content&quot;&gt;A program that lets you manage a collection of photos in Azure storage containers.&lt;/p&gt;
+        ///    &lt;h1 class=&quot;program-specific-content&quot;&gt;PhotoManager&lt;/h1&gt;
+        ///    &lt;p class=&quot;program-specific-content&quot;&gt;A program that lets you manage a collection of photos in Azure storage containers.&lt;/p&gt;
         ///
-        ///&lt;h2&gt;Usage&lt;/h2&gt;
+        ///    &lt;h2&gt;Usage&lt;/h2&gt;
         ///&lt;pre class=&quot;code-sample&quot;&gt;PhotoManager &amp;lt;action&amp;gt; -options&lt;/pre&gt;
         ///
-        ///	&lt;h2&gt;Global options&lt;/h2&gt;
-        ///	
+        ///        &lt;h2&gt;Global options&lt;/h2&gt;
+        ///    
         ///
-        ///	&lt;table&gt;
-        ///		&lt;tr&gt;
-        ///			&lt;td class=&quot;option-col table-header&quot;&gt;OPTION&lt;/td&gt;
-        ///			&lt;td c [rest of string was truncated]&quot;;.
+        ///    &lt;table&gt;
+        ///        &lt;tr&gt;
+        ///            &lt;td class=&quot;option [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string PhotoAlbumManagerExpectedBrowserUsage {
             get {
@@ -88,14 +87,17 @@ namespace ArgsTests {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Usage - PhotoManager &lt;action&gt; -options
-        ///Global options:
+        ///   Looks up a localized string similar to 
+        ///A program that lets you manage a collection of photos in Azure storage containers.
         ///
-        ///Option   Description                                                                            
-        ///Output   How much output to display while performing management operations [Default=&apos;Light&apos;]    
-        ///         Verbose                                                                                
-        ///         Light                                                                                  
-        ///         Quiet                                                [rest of string was truncated]&quot;;.
+        ///Usage - PhotoManager &lt;action&gt; -options
+        ///
+        ///Global options
+        ///
+        ///Option        Description                                                                            
+        ///Output (-O)   How much output to display while performing management operations [Default=&apos;Light&apos;]    
+        ///              Verbose                                                                                
+        ///              Light                                     [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string PhotoAlbumManagerExpectedConsoleUsage {
             get {

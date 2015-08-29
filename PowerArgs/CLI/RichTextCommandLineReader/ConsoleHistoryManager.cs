@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// A class that stores and manages command line history that is used by the up and down arrow keys handler to let users cycle through historical command lines.

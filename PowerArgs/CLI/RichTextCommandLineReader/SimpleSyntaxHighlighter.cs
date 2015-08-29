@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// Context about a token that helps determine if it should be highlighted
@@ -152,7 +152,7 @@ namespace PowerArgs
                     if (shouldBeHighlightedByThisHighlighter)
                     {
                         didWorkOnThisToken = EnsureHighlighted(highlighterContext.CurrentToken, readerContext, tokenHighlighter.HighlightForegroundColor, tokenHighlighter.HighlightBackgroundColor);
-                        if (didWorkOnThisToken) break;
+                        break;
                     }
                 }
 

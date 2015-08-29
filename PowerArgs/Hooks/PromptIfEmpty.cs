@@ -1,4 +1,5 @@
 ﻿
+using PowerArgs.Cli;
 using System;
 using System.Linq;
 namespace PowerArgs
@@ -28,7 +29,7 @@ namespace PowerArgs
         {
             if (context.ArgumentValue == string.Empty)
             {
-                var cli = new Cli();
+                var cli = new CliHelper();
 
                 ITabCompletionHandler tabHandler;
                 IHighlighterConfigurator highlighterConfigurator;

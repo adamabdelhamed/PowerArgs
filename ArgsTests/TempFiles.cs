@@ -12,10 +12,12 @@ namespace ArgsTests
 
         List<string> dirs = new List<string>();
         List<string> files = new List<string>();
+        string cd;
 
         public TempFiles()
         {
-            
+            cd = Environment.CurrentDirectory;
+            Environment.CurrentDirectory = Path.GetTempPath();
         }
 
         public FileStream CreateFile(string file)
@@ -51,6 +53,8 @@ namespace ArgsTests
                     {
                         Directory.Delete(dir, true);
                     }
+
+                    Environment.CurrentDirectory = cd;
                 }
 
                 disposed = true;

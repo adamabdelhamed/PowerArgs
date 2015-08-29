@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -85,7 +86,7 @@ namespace PowerArgs
             try
             {
                 DoSearchInternal(parentContext, null, true);
-                return ContextAssistResult.CreateInsertResult(parentContext, SelectedValue.DisplayText.ToConsoleString());
+                return ContextAssistResult.CreateInsertResult(parentContext, SelectedValue.RichDisplayText);
             }
             catch (OperationCanceledException)
             {
@@ -297,14 +298,12 @@ namespace PowerArgs
 
                 for (int i = 0; i < latestResults.Count; i++)
                 {
-                    ConsoleColor? fg = null;
-                    ConsoleColor? bg = null;
+                    ConsoleString searchResult = latestResults[i].RichDisplayText;
+
                     if (i == selectedIndex)
                     {
-                        fg = ConsoleColor.Yellow;
+                        searchResult = searchResult.HighlightSubstring(0, searchResult.Length, ConsoleColor.Yellow, null);
                     }
-
-                    var searchResult = new ConsoleString(latestResults[i].DisplayText, fg, bg);
 
                     if(searchResult.Length > this.console.BufferWidth - 1)
                     {

@@ -37,6 +37,9 @@ namespace ArgsTests
         {
             [DefaultValue(BasicEnum.Option2)]
             public BasicEnum Option { get; set; }
+
+            [ArgIgnoreCase]
+            public BasicEnum Option2 { get; set; }
         }
 
         public class EnumArgs2
@@ -57,6 +60,7 @@ namespace ArgsTests
             [DefaultValue(BasicEnum.Option2)]
             [ArgIgnoreCase]
             public BasicEnum Option { get; set; }
+
         }
 
         [UsageAutomation]
@@ -732,6 +736,17 @@ namespace ArgsTests
         public void TestConvert8()
         {
             AssertConversion("\"1\" \"\" Foo \"John A Doe\" -foo         bar","1", "", "Foo", "John A Doe", "-foo", "bar");
+        }
+
+        [TestMethod]
+        public void TestInitializeDefaults()
+        {
+            var args = new EnumArgs();
+            Assert.AreNotEqual(BasicEnum.Option2, args.Option);
+            Assert.AreEqual(default(BasicEnum), args.Option2);
+            Args.InitializeDefaults(args);
+            Assert.AreEqual(BasicEnum.Option2, args.Option);
+            Assert.AreEqual(default(BasicEnum), args.Option2);
         }
 
         private void AssertConversion(string commandLine, params string[] expectedResult)

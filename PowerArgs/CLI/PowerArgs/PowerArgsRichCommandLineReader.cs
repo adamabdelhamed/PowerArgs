@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     /// <summary>
     /// A customized version of the RichTextCommandLineReader that configures tab completion, history, and syntax highlighting for a given

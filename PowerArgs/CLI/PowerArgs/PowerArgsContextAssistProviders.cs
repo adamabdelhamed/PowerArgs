@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PowerArgs
+namespace PowerArgs.Cli
 {
     internal class PowerArgsMultiContextAssistProvider : MultiContextAssistProvider
     {

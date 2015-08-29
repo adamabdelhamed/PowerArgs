@@ -29,7 +29,7 @@ namespace PowerArgs
         /// <summary>
         /// Gets the buffer width of the console
         /// </summary>
-        int BufferWidth { get; }
+        int BufferWidth { get; set; }
 
         /// <summary>
         /// Write's the string representation of the given object to the console
