@@ -332,6 +332,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        [TestCategory("P2")]
         public void TestHttpPipelinE2E()
         {
             PowerLogger.LogFile = "Console";
@@ -366,6 +367,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        [TestCategory("P2")]
         public void TestHttpPipelinE2EBadComplex()
         {
             var externalExe = @"..\..\..\ExternalUnitTestPipelineStageExe\bin\debug\ExternalUnitTestPipelineStageExe.exe";
@@ -410,6 +412,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        [TestCategory("P2")]
         public void TestHttpPipelineNonRealProgram()
         {
             try
