@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PowerArgs
 {
@@ -156,7 +157,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="definition">The definition that defines a set of command line arguments and/or actions.</param>
         /// <param name="args">The command line arguments to parse</param>
-        /// <returns></returns>
+        /// <returns>An object containing parser metadata</returns>
         public static ArgAction ParseAction(CommandLineArgumentsDefinition definition, params string[] args)
         {
             ArgAction ret = Execute(() =>
@@ -169,10 +170,21 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Asynchronously parses the given arguments using a command line arguments definition.  
+        /// </summary>
+        /// <param name="definition">The definition that defines a set of command line arguments and/or actions.</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>An object containing parser metadata</returns>
+        public static Task<ArgAction> ParseActionAsync(CommandLineArgumentsDefinition definition, params string[] args)
+        {
+            return Task.Factory.StartNew(() => ParseAction(definition, args));
+        }
+
+        /// <summary>
         /// Parses the args for the given definition and then calls the Main() method defined by the type.
         /// </summary>
-        /// <param name="definition"></param>
-        /// <param name="args"></param>
+        /// <param name="definition">The command line definition to parse</param>
+        /// <param name="args">the command line values</param>
         /// <returns></returns>
         public static ArgAction InvokeMain(CommandLineArgumentsDefinition definition, params string[] args)
         {
@@ -194,11 +206,22 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Asynchronously parses the args for the given definition and then calls the Main() method defined by the type.
+        /// </summary>
+        /// <param name="definition">The command line definition to parse</param>
+        /// <param name="args">the command line values</param>
+        /// <returns></returns>
+        public static Task<ArgAction> InvokeMainAsync(CommandLineArgumentsDefinition definition, params string[] args)
+        {
+            return Task.Factory.StartNew(() => InvokeMain(definition, args));
+        }
+
+        /// <summary>
         /// Parses the given arguments using a command line arguments definition.  Then, invokes the action
         /// that was specified.  
         /// </summary>
         /// <param name="definition">The definition that defines a set of command line arguments and actions.</param>
-        /// <param name="args"></param>
+        /// <param name="args">the command line values</param>
         /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static ArgAction InvokeAction(CommandLineArgumentsDefinition definition, params string[] args)
         {
@@ -218,6 +241,18 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Asynchronously parses the given arguments using a command line arguments definition.  Then, invokes the action
+        /// that was specified. 
+        /// </summary>
+        /// <param name="definition">The definition that defines a set of command line arguments and actions.</param>
+        /// <param name="args">the command line values</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
+        public static Task<ArgAction> InvokeActionAsync(CommandLineArgumentsDefinition definition, params string[] args)
+        {
+            return Task.Factory.StartNew(() => InvokeAction(definition, args));
+        }
+
+        /// <summary>
         /// Creates a new instance of the given type and populates it's properties based on the given arguments.
         /// </summary>
         /// <param name="t">The argument scaffold type</param>
@@ -229,6 +264,17 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Asynchronously creates a new instance of the given type and populates it's properties based on the given arguments.
+        /// </summary>
+        /// <param name="t">The argument scaffold type</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>A new instance of the given type with all of the properties correctly populated</returns>
+        public static Task<object> ParseAsync(Type t, params string[] args)
+        {
+            return Task.Factory.StartNew(() => Parse(t, args));
+        }
+
+        /// <summary>
         /// Creates a new instance of T and populates it's properties based on the given arguments.
         /// </summary>
         /// <typeparam name="T">The argument scaffold type.</typeparam>
@@ -237,6 +283,17 @@ namespace PowerArgs
         public static T Parse<T>(params string[] args) where T : class
         {
             return Parse(typeof(T), args) as T;
+        }
+
+        /// <summary>
+        /// Asynchronously creates a new instance of T and populates it's properties based on the given arguments.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>A new instance of T with all of the properties correctly populated</returns>
+        public static Task<T> ParseAsync<T>(params string[] args) where T : class
+        {
+            return Task.Factory.StartNew(() => Parse<T>(args));
         }
 
         /// <summary>
@@ -253,6 +310,19 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Asynchronously creates a new instance of T and populates it's properties based on the given arguments.
+        /// If T correctly implements the heuristics for Actions (or sub commands) then the complex property
+        /// that represents the options of a sub command are also populated.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static Task<ArgAction<T>> ParseActionAsync<T>(params string[] args)
+        {
+            return Task.Factory.StartNew(() => ParseAction<T>(args));
+        }
+
+        /// <summary>
         /// Creates a new instance of the given type and populates it's properties based on the given arguments.
         /// If the type correctly implements the heuristics for Actions (or sub commands) then the complex property
         /// that represents the options of a sub command are also populated.
@@ -265,7 +335,18 @@ namespace PowerArgs
             return ParseAction(new CommandLineArgumentsDefinition(t), args);
         }
 
-
+        /// <summary>
+        /// Asynchronously creates a new instance of the given type and populates it's properties based on the given arguments.
+        /// If the type correctly implements the heuristics for Actions (or sub commands) then the complex property
+        /// that represents the options of a sub command are also populated.
+        /// </summary>
+        /// <param name="t">The argument scaffold type.</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static Task<ArgAction> ParseActionAsync(Type t, params string[] args)
+        {
+            return Task.Factory.StartNew(() => ParseAction(t, args));
+        }
 
         /// <summary>
         /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
@@ -281,12 +362,34 @@ namespace PowerArgs
         /// <summary>
         /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
         /// </summary>
+        /// <param name="t">The argument scaffold type.</param>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static Task<ArgAction> InvokeMainAsync(Type t, params string[] args)
+        {
+            return Task.Factory.StartNew(() => InvokeMain(t, args));
+        }
+
+        /// <summary>
+        /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
+        /// </summary>
         /// <typeparam name="T">The argument scaffold type.</typeparam>
         /// <param name="args">The command line arguments to parse</param>
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction<T> InvokeMain<T>(params string[] args)
         {
             return Strongify<T>(InvokeMain(new CommandLineArgumentsDefinition(typeof(T)), args));
+        }
+
+        /// <summary>
+        /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.</returns>
+        public static Task<ArgAction<T>> InvokeMainAsync<T>(params string[] args)
+        {
+            return Task.Factory.StartNew(() => InvokeMain<T>(args));
         }
 
         /// <summary>
@@ -303,6 +406,19 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Asynchronously creates a new instance of T and populates it's properties based on the given arguments. T must correctly
+        /// implement the heuristics for Actions (or sub commands) because this method will not only detect the action
+        /// specified on the command line, but will also find and execute the method that implements the action.
+        /// </summary>
+        /// <typeparam name="T">The argument scaffold type that must properly implement at least one action.</typeparam>
+        /// <param name="args">The command line arguments to parse</param>
+        /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
+        public static Task<ArgAction<T>> InvokeActionAsync<T>(params string[] args)
+        {
+            return Task.Factory.StartNew(() => InvokeAction<T>(args));
+        }
+
+        /// <summary>
         /// Parses the given arguments using a command line arguments definition. The values will be populated within
         /// the definition.
         /// </summary>
@@ -311,6 +427,17 @@ namespace PowerArgs
         public static ArgAction Parse(CommandLineArgumentsDefinition definition, params string[] args)
         {
             return ParseAction(definition, args);
+        }
+
+        /// <summary>
+        /// Parses the given arguments using a command line arguments definition. The values will be populated within
+        /// the definition.
+        /// </summary>
+        /// <param name="definition">The definition that defines a set of command line arguments and/or actions.</param>
+        /// <param name="args">The command line arguments to parse</param>
+        public static Task<ArgAction> ParseAsync(CommandLineArgumentsDefinition definition, params string[] args)
+        {
+            return Task.Factory.StartNew(() => Parse(definition, args));
         }
 
         private static T Execute<T>(Func<T> argsProcessingCode) where T : class

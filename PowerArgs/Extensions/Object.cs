@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 
 namespace PowerArgs
 {
@@ -12,11 +13,16 @@ namespace PowerArgs
             if (method == null) throw new InvalidArgDefinitionException("There is no Main() method in type " + o.GetType().Name);
             if (method.IsStatic) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must not be static");
             if (method.GetParameters().Length > 0) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must not take any parameters");
-            if (method.ReturnType != null && method.ReturnType != typeof(void)) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must return void");
+            if (method.ReturnType != null && method.ReturnType != typeof(void) && method.ReturnType != typeof(Task)) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must return void or Task");
 
             try
             {
-                method.Invoke(o, new object[0]);
+                var ret = method.Invoke(o, new object[0]);
+                
+                if(ret is Task)
+                {
+                    (ret as Task).Wait();
+                }
             }
             catch(Exception ex)
             {
