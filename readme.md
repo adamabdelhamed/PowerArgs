@@ -9,224 +9,226 @@ PowerArgs converts command line arguments into .NET objects that are easy to pro
 
 It can also orchestrate the execution of your program. Giving you the following benefits:
 
-    - Consistent and natural user error handling
-	- Invoking the correct code based on an action (e.g. 'git push' vs. 'git pull')
-	- Focus on writing your code
+- Consistent and natural user error handling
+- Invoking the correct code based on an action (e.g. 'git push' vs. 'git pull')
+- Focus on writing your code
 
 Here's a simple example that just uses the parsing capabilities of PowerArgs.  The command line arguments are parsed, but you still have to handle exceptions and ultimately do something with the result.
-    
-    // A class that describes the command line arguments for this program
-    public class MyArgs
-    {
-        // This argument is required and if not specified the user will 
-        // be prompted.
-        [ArgRequired(PromptIfMissing=true)]
-        public string StringArg { get; set; }
 
-        // This argument is not required, but if specified must be >= 0 and <= 60
-        [ArgRange(0,60)]
-        public int IntArg {get;set; }
-    }
+```cs    
+// A class that describes the command line arguments for this program
+public class MyArgs
+{
+    // This argument is required and if not specified the user will 
+    // be prompted.
+    [ArgRequired(PromptIfMissing=true)]
+    public string StringArg { get; set; }
 
-    class Program
+    // This argument is not required, but if specified must be >= 0 and <= 60
+    [ArgRange(0,60)]
+    public int IntArg {get;set; }
+}
+
+class Program
+{
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        try
         {
-            try
-            {
-                var parsed = Args.Parse<MyArgs>(args);
-                Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
-            }
-            catch (ArgException ex)
-            {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ArgUsage.GenerateUsageFromTemplate<MyArgs>());
-            }
+            var parsed = Args.Parse<MyArgs>(args);
+            Console.WriteLine("You entered string '{0}' and int '{1}'", parsed.StringArg, parsed.IntArg);
+        }
+        catch (ArgException ex)
+        {
+            Console.WriteLine(ex.Message);
+            Console.WriteLine(ArgUsage.GenerateUsageFromTemplate<MyArgs>());
         }
     }
+}
+```
 
-Here's the same example that lets PowerArgs do a little more for you.  The application logic is factored out of the Program class and user exceptions are handled automatically.  The way exceptions
-are handled is that any exception deriving from ArgException will be treated as user error.  PowerArgs' built in validation system always throws these type of exceptions when a validation error
-occurs.  PowerArgs will display the message as well as auto-generated usage documentation for your program.  All other exceptions will still bubble up and need to be handled by your code.
-    
-    // A class that describes the command line arguments for this program
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
-	public class MyArgs
+Here's the same example that lets PowerArgs do a little more for you.  The application logic is factored out of the Program class and user exceptions are handled automatically.  The way exceptions are handled is that any exception deriving from ArgException will be treated as user error.  PowerArgs' built in validation system always throws these type of exceptions when a validation error occurs. PowerArgs will display the message as well as auto-generated usage documentation for your program.  All other exceptions will still bubble up and need to be handled by your code.
+
+```cs    
+// A class that describes the command line arguments for this program
+[ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
+public class MyArgs
+{
+    // This argument is required and if not specified the user will 
+    // be prompted.
+    [ArgRequired(PromptIfMissing=true)]
+    public string StringArg { get; set; }
+
+    // This argument is not required, but if specified must be >= 0 and <= 60
+    [ArgRange(0,60)]
+    public int IntArg {get;set; }
+
+	// This non-static Main method will be called and it will be able to access the parsed and populated instance level properties.
+	public void Main()
+	{
+	    Console.WriteLine("You entered string '{0}' and int '{1}'", this.StringArg, this.IntArg);
+	}
+}
+
+class Program
+{
+    static void Main(string[] args)
     {
-        // This argument is required and if not specified the user will 
-        // be prompted.
-        [ArgRequired(PromptIfMissing=true)]
-        public string StringArg { get; set; }
-
-        // This argument is not required, but if specified must be >= 0 and <= 60
-        [ArgRange(0,60)]
-        public int IntArg {get;set; }
-
-		// This non-static Main method will be called and it will be able to access the parsed and populated instance level properties.
-		public void Main()
-		{
-		    Console.WriteLine("You entered string '{0}' and int '{1}'", this.StringArg, this.IntArg);
-		}
+        Args.InvokeMain<MyArgs>(args);
     }
-
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Args.InvokeMain<MyArgs>(args);
-        }
-    }
+}
+```
 
 Then there are more complicated programs that support multiple actions.  For example, the 'git' program that we all use supports several actions such as 'push' and 'pull'.  As a simpler example, let's 
 say you wanted to build a calculator program that has 4 actions; add, subtract, multiply, and divide.  Here's how PowerArgs makes that easy.
 
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
-    public class CalculatorProgram
+```cs
+[ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
+public class CalculatorProgram
+{
+    [HelpHook, ArgShortcut("-?"), ArgDescription("Shows this help")]
+    public bool Help { get; set; }
+
+    [ArgActionMethod, ArgDescription("Adds the two operands")]
+    public void Add(TwoOperandArgs args)
     {
-        [HelpHook, ArgShortcut("-?"), ArgDescription("Shows this help")]
-        public bool Help { get; set; }
-
-        [ArgActionMethod, ArgDescription("Adds the two operands")]
-        public void Add(TwoOperandArgs args)
-        {
-            Console.WriteLine(args.Value1 + args.Value2);
-        }
-
-        [ArgActionMethod, ArgDescription("Subtracts the two operands")]
-        public void Subtract(TwoOperandArgs args)
-        {
-            Console.WriteLine(args.Value1 - args.Value2);
-        }
-
-        [ArgActionMethod, ArgDescription("Multiplies the two operands")]
-        public void Multiply(TwoOperandArgs args)
-        {
-            Console.WriteLine(args.Value1 * args.Value2);
-        }
-
-        [ArgActionMethod, ArgDescription("Divides the two operands")]
-        public void Divide(TwoOperandArgs args)
-        {
-            Console.WriteLine(args.Value1 / args.Value2);
-        }
+        Console.WriteLine(args.Value1 + args.Value2);
     }
 
-    public class TwoOperandArgs
+    [ArgActionMethod, ArgDescription("Subtracts the two operands")]
+    public void Subtract(TwoOperandArgs args)
     {
-        [ArgRequired, ArgDescription("The first operand to process"), ArgPosition(1)]
-        public double Value1 { get; set; }
-        [ArgRequired, ArgDescription("The second operand to process"), ArgPosition(2)]
-        public double Value2 { get; set; }
+        Console.WriteLine(args.Value1 - args.Value2);
     }
 
-	class Program
+    [ArgActionMethod, ArgDescription("Multiplies the two operands")]
+    public void Multiply(TwoOperandArgs args)
     {
-        static void Main(string[] args)
-        {
-            Args.InvokeAction<CalculatorProgram>(args);
-        }
+        Console.WriteLine(args.Value1 * args.Value2);
     }
 
-Again, the Main method in your program class is just one line of code.  PowerArgs will automatically call the right method in the CalculatorProgram class based on the first argument passed
-on the command line.  If the user doesn't specify a valid action then they get a friendly error.  If different actions take different arguments then PowerArgs will handle the validation on
-a per action basis, just as you would expect.
+    [ArgActionMethod, ArgDescription("Divides the two operands")]
+    public void Divide(TwoOperandArgs args)
+    {
+        Console.WriteLine(args.Value1 / args.Value2);
+    }
+}
+
+public class TwoOperandArgs
+{
+    [ArgRequired, ArgDescription("The first operand to process"), ArgPosition(1)]
+    public double Value1 { get; set; }
+    [ArgRequired, ArgDescription("The second operand to process"), ArgPosition(2)]
+    public double Value2 { get; set; }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Args.InvokeAction<CalculatorProgram>(args);
+    }
+}
+```
+
+Again, the Main method in your program class is just one line of code. PowerArgs will automatically call the right method in the CalculatorProgram class based on the first argument passed on the command line.  If the user doesn't specify a valid action then they get a friendly error.  If different actions take different arguments then PowerArgs will handle the validation on a per action basis, just as you would expect.
 
 Here are some valid ways that an end user could call this program:
 
-    Calculator.exe add -Value1 1 -Value2 5 // outputs '6'
-	Calculator.exe multiply /Value1:2 /Value2:5 // outputs '10'
-	Calculator.exe add 1 4 // Outputs '5' - Since the [ArgPosition] attribute is specified on the Value1 and Value1 properties, PowerArgs knows how to map these arguments.
+* `Calculator.exe add -Value1 1 -Value2 5` outputs '6'
+* `Calculator.exe multiply /Value1:2 /Value2:5` outputs '10'
+* `Calculator.exe add 1 4` outputs '5' - Since the [ArgPosition] attribute is specified on the Value1 and Value1 properties, PowerArgs knows how to map these arguments.
 
-If you wanted to, your action method could accept loose parameters in each action method.  I find this is useful for small, simple programs where the input parameters don't need to be
-reused across many actions. 
+If you wanted to, your action method could accept loose parameters in each action method.  I find this is useful for small, simple programs where the input parameters don't need to be reused across many actions. 
 
-	    [ArgActionMethod, ArgDescription("Divides the two operands")]
-        public void Add(
-			[ArgRequired][ArgDescription("The first value to add"), ArgPosition(1)] double value1, 
-			[ArgRequired][ArgDescription("The second value to add"), ArgPosition(2)] double value2)
-        {
-            Console.WriteLine(value1 / value2);
-        }
+```cs
+[ArgActionMethod, ArgDescription("Divides the two operands")]
+public void Add(
+	[ArgRequired][ArgDescription("The first value to add"), ArgPosition(1)] double value1, 
+	[ArgRequired][ArgDescription("The second value to add"), ArgPosition(2)] double value2)
+{
+    Console.WriteLine(value1 / value2);
+}
+```
 
 You can't mix and match though.  An action method needs to be formatted in one of three ways:
 
-  - No parameters - Meaning the action takes no additional arguments except for the action name (i.e. '> myprogram.exe myaction').
-  - A single parameter of a complex type whose own properties describe the action's arguments, validation, and other metadata. The first calculator example used this pattern.
-  - One or more 'loose' parameters that are individually revivable, meaning that one command line parameter maps to one property in your class. The second calculator example 
-    showed a variation of the Add method that uses this pattern.
+- No parameters - Meaning the action takes no additional arguments except for the action name (i.e. '> myprogram.exe myaction').
+- A single parameter of a complex type whose own properties describe the action's arguments, validation, and other metadata. The first calculator example used this pattern.
+- One or more 'loose' parameters that are individually revivable, meaning that one command line parameter maps to one property in your class. The second calculator example showed a variation of the Add method that uses this pattern.
 
 ###Metadata Attributes 
+
 These attributes can be specified on argument properties. PowerArgs uses this metadata to influence how the parser behaves.
- 
-    [ArgPosition(0)]                                    // This argument can be specified by position (no need for -propName)
-    [ArgShortcut("n")]                                  // Let's the user specify -n
-    [ArgDescription("Description of the argument")]
-    [ArgExample("example text", "Example description")]
-	[HelpHook]                                          // Put this on a boolean property and when the user specifies that boolean
-	                                                    // PowerArgs will display the help info and stop processing any additional work.
-														// If the user is in the context of an action (e.g. myprogram myaction -help) then
-														// help is shown for the action in context only.
-    [ArgDefaultValue("SomeDefault")]                    // Specify the default value
-    [ArgIgnore]                                         // Don't populate this property as an arg
-    [StickyArg]                                         // Use the last used value if not specified.  This is preserved across sessions.  Data is
-	                                                    // stored in <User>/AppData/Roaming/PowerArgs by default.
-    [Query(typeof(MyDataSource))]                       // Easily query a data source (See documentation below).
-    [TabCompletion]                                     // Enable tab completion for parameter names (See documentation below)
+
+* `[ArgPosition(0)]` This argument can be specified by position (no need for -propName)
+* `[ArgShortcut("n")]` Lets the user specify -n
+* `[ArgDescription("Description of the argument")]`
+* `[ArgExample("example text", "Example description")]`
+* `[HelpHook]` Put this on a boolean property and when the user specifies that boolean. PowerArgs will display the help info and stop processing any additional work. If the user is in the context of an action (e.g. myprogram myaction -help) then help is shown for the action in context only.
+* `[ArgDefaultValue("SomeDefault")]` Specify the default value
+* `[ArgIgnore]` Don't populate this property as an arg
+* `[StickyArg]` Use the last used value if not specified.  This is preserved across sessions.  Data is stored in <User>/AppData/Roaming/PowerArgs by default.
+* `[Query(typeof(MyDataSource))]` Easily query a data source (see documentation below).
+* `[TabCompletion]` Enable tab completion for parameter names (see documentation below)
     
 ###Validator Attributes
+
 These attributes can be specified on argument properties.  You can create custom validators by implementing classes that derive from ArgValidator.
 
-    [ArgRequired(PromptIfMissing=bool)] // This argument is required.  There is also support for conditionally being required.
-    [ArgExistingFile]                   // The value must match the path to an existing file
-    [ArgExistingDirectory]              // The value must match the path to an existing directory
-    [ArgRange(from, to)]                // The value must be a numeric value in the given range.
-    [ArgRegex("MyRegex")]               // Apply a regular expression validation rule
-    [UsPhoneNumber]                     // A good example of how to create a reuable, custom validator.
+* `[ArgRequired(PromptIfMissing=bool)]` This argument is required.  There is also support for conditionally being required.
+* `[ArgExistingFile]` The value must match the path to an existing file
+* `[ArgExistingDirectory]` The value must match the path to an existing directory
+* `[ArgRange(from, to)]` The value must be a numeric value in the given range.
+* `[ArgRegex("MyRegex")]` Apply a regular expression validation rule
+* `[UsPhoneNumber]` A good example of how to create a reuable, custom validator.
 
 ###Custom Revivers
+
 Revivers are used to convert command line strings into their proper .NET types.  By default, many of the simple types such as int, DateTime, Guid, string, char,  and bool are supported.
 
 If you need to support a different type or want to support custom syntax to populate a complex object then you can create a custom reviver.
 
 This example converts strings in the format "x,y" into a Point object that has properties "X" and "Y".
 
-    public class CustomReviverExample
+```cs
+public class CustomReviverExample
+{
+    // By default, PowerArgs does not know what a 'Point' is.  So it will 
+    // automatically search your assembly for arg revivers that meet the 
+    // following criteria: 
+    //
+    //    - Have an [ArgReviver] attribute
+    //    - Are a public, static method
+    //    - Accepts exactly two string parameters
+    //    - The return value matches the type that is needed
+
+    public Point Point { get; set; }
+
+    // This ArgReviver matches the criteria for a "Point" reviver
+    // so it will be called when PowerArgs finds any Point argument.
+    //
+    // ArgRevivers should throw ArgException with a friendly message
+    // if the string could not be revived due to user error.
+  
+    [ArgReviver]
+    public static Point Revive(string key, string val)
     {
-        // By default, PowerArgs does not know what a 'Point' is.  So it will 
-        // automatically search your assembly for arg revivers that meet the 
-        // following criteria: 
-        //
-        //    - Have an [ArgReviver] attribute
-        //    - Are a public, static method
-        //    - Accepts exactly two string parameters
-        //    - The return value matches the type that is needed
-
-        public Point Point { get; set; }
-
-        // This ArgReviver matches the criteria for a "Point" reviver
-        // so it will be called when PowerArgs finds any Point argument.
-        //
-        // ArgRevivers should throw ArgException with a friendly message
-        // if the string could not be revived due to user error.
-      
-        [ArgReviver]
-        public static Point Revive(string key, string val)
+        var match = Regex.Match(val, @"(\d*),(\d*)");
+        if (match.Success == false)
         {
-            var match = Regex.Match(val, @"(\d*),(\d*)");
-            if (match.Success == false)
-            {
-                throw new ArgException("Not a valid point: " + val);
-            }
-            else
-            {
-                Point ret = new Point();
-                ret.X = int.Parse(match.Groups[1].Value);
-                ret.Y = int.Parse(match.Groups[2].Value);
-                return ret;
-            }
+            throw new ArgException("Not a valid point: " + val);
+        }
+        else
+        {
+            Point ret = new Point();
+            ret.X = int.Parse(match.Groups[1].Value);
+            ret.Y = int.Parse(match.Groups[2].Value);
+            return ret;
         }
     }
-
+}
+```
 
 ###Generate usage documentation from templates (built in or custom)
 
@@ -279,16 +281,19 @@ PS
 
 I'm pretty happy with the templating solution.  In fact, hidden in PowerArgs is a general purpose template rendering engine that I've found useful in other projects for things like code generation.  You can actually bind any string template to any plain old .NET object (dynamic objects not supported).  Here's a basic sample:
 
-    var renderer = new DocumentRenderer();
-    var document = renderer.Render("Hi {{ Name !}}", new { Name = "Adam" });
-    // outputs 'Hi Adam'
-
+```cs
+var renderer = new DocumentRenderer();
+var document = renderer.Render("Hi {{ Name !}}", new { Name = "Adam" });
+// outputs 'Hi Adam'
+```
 
 ###Ambient Args
 
 Access your parsed command line arguments from anywhere in your application.
 
-    MyArgs parsed = Args.GetAmbientArgs<MyArgs>();
+```cs
+MyArgs parsed = Args.GetAmbientArgs<MyArgs>();
+```
     
 This will get the most recent insance of type MyArgs that was parsed on the current thread.  That way, you have access to things like global options without having to pass the result all throughout your code.
 
@@ -299,32 +304,40 @@ Support for secure strings such as passwords where you don't want your users' in
 
 Just add a property of type SecureStringArgument.
 
-    public class TestArgs
-    {
-        public SecureStringArgument Password { get; set; }
-    }
+```cs
+public class TestArgs
+{
+    public SecureStringArgument Password { get; set; }
+}
+```
     
 Then when you parse the args you can access the value in one of two ways.  First there's the secure way.
 
-    TestArgs parsed = Args.Parse<TestArgs>();
-    SecureString secure = parsed.Password.SecureString; // This line causes the user to be prompted
+```cs
+TestArgs parsed = Args.Parse<TestArgs>();
+SecureString secure = parsed.Password.SecureString; // This line causes the user to be prompted
+```
 
 Then there's the less secure way, but at least your users' input won't be visible on the command line.
 
-    TestArgs parsed = Args.Parse<TestArgs>();
-    string notSecure = parsed.Password.ConvertToNonsecureString(); // This line causes the user to be prompted
+```cs
+TestArgs parsed = Args.Parse<TestArgs>();
+string notSecure = parsed.Password.ConvertToNonsecureString(); // This line causes the user to be prompted
+```
 
 ###Tab Completion
 
 Get tab completion for your command line arguments.  Just add the TabCompletion attribute and when your users run the program from the command line with no arguments they will get an enhanced prompt (should turn blue) where they can have tab completion for command line argument names.
 
-    [TabCompletion]
-    public class TestArgs
-    {
-        [ArgRequired]
-        public string SomeParam { get; set; }
-        public int AnotherParam { get; set; }
-    }
+```cs
+[TabCompletion]
+public class TestArgs
+{
+    [ArgRequired]
+    public string SomeParam { get; set; }
+    public int AnotherParam { get; set; }
+}
+```
 
 Sample usage:
 
@@ -332,93 +345,103 @@ Sample usage:
 
 You can even add your own tab completion logic in one of two ways.  First there's the really easy way.  Derive from SimpleTabCompletionSource and provide a list of words you want to be completable.
 
-    public class MyCompletionSource : SimpleTabCompletionSource
+```cs
+public class MyCompletionSource : SimpleTabCompletionSource
+{
+    public MyCompletionSource() : base(MyCompletionSource.GetWords()) {}
+    private static IEnumerable<string> GetWords()
     {
-        public MyCompletionSource() : base(MyCompletionSource.GetWords()) {}
-        private static IEnumerable<string> GetWords()
-        {
-            return new string[] { "SomeLongWordThatYouWantToEnableCompletionFor", "SomeOtherWordToEnableCompletionFor" };
-        }
-    } 
+        return new string[] { "SomeLongWordThatYouWantToEnableCompletionFor", "SomeOtherWordToEnableCompletionFor" };
+    }
+}
+``` 
  
  Then just tell the [TabCompletion] attribute where to find your class.
- 
-    [TabCompletion(typeof(MyCompletionSource))]
-    public class TestArgs
-    {
-        [ArgRequired]
-        public string SomeParam { get; set; }
-        public int AnotherParam { get; set; }
-    }
+
+```cs 
+[TabCompletion(typeof(MyCompletionSource))]
+public class TestArgs
+{
+    [ArgRequired]
+    public string SomeParam { get; set; }
+    public int AnotherParam { get; set; }
+}
+```
  
  There's also the easy, but not really easy way if you want custom tab completion logic.  Let's say you wanted to load your auto completions from a text file.  You would implement ITabCompletionSource.
  
-    public class TextFileTabCompletionSource : ITabCompletionSource
+```cs
+public class TextFileTabCompletionSource : ITabCompletionSource
+{
+    string[] words;
+    public TextFileTabCompletionSource(string file)
     {
-        string[] words;
-        public TextFileTabCompletionSource(string file)
+        words = File.ReadAllLines(file);
+    }
+
+    public bool TryComplete(bool shift, string soFar, out string completion)
+    {
+        var match = from w in words where w.StartsWith(soFar) select w;
+
+        if (match.Count() == 1)
         {
-            words = File.ReadAllLines(file);
+            completion = match.Single();
+            return true;
         }
-
-        public bool TryComplete(bool shift, string soFar, out string completion)
+        else
         {
-            var match = from w in words where w.StartsWith(soFar) select w;
-
-            if (match.Count() == 1)
-            {
-                completion = match.Single();
-                return true;
-            }
-            else
-            {
-                completion = null;
-                return false;
-            }
+            completion = null;
+            return false;
         }
     }
+}
+```
     
 If you expect your users to sometimes use the command line and sometimes run from a script then you can specify an indicator string.  If you do this then only users who specify the indicator as the only argument will get the prompt.
 
-    [TabCompletion("$")]
-    public class TestArgs
-    {
-        [ArgRequired]
-        public string SomeParam { get; set; }
-        public int AnotherParam { get; set; }
-    }
-
+```cs
+[TabCompletion("$")]
+public class TestArgs
+{
+    [ArgRequired]
+    public string SomeParam { get; set; }
+    public int AnotherParam { get; set; }
+}
+```
 
 ###Data Source Queries
 
 Easily query a data source such as an Entity Framework Model (Code First or traditional) using Linq.
 
-    // An example Entity Framework Code First Data Model
-    public class DataSource : DbContext
-    {
-        public DbSet<Customer> Customers{get;set;}
-    }
+```cs
+// An example Entity Framework Code First Data Model
+public class DataSource : DbContext
+{
+    public DbSet<Customer> Customers{get;set;}
+}
 
-    public class TestArgs
-    {
-        public string OrderBy { get; set; }
-        [ArgShortcut("o-")]
-        public string OrderByDescending { get; set; }
-        public string Where { get; set; }
-        public int Skip { get; set; }
-        public int Take { get; set; }
+public class TestArgs
+{
+    public string OrderBy { get; set; }
+    [ArgShortcut("o-")]
+    public string OrderByDescending { get; set; }
+    public string Where { get; set; }
+    public int Skip { get; set; }
+    public int Take { get; set; }
 
-        [Query(typeof(DataSource))]
-        [ArgIgnore]
-        public List<Customer> Customers { get; set; }
-    }   
+    [Query(typeof(DataSource))]
+    [ArgIgnore]
+    public List<Customer> Customers { get; set; }
+}
+```   
  
  That's it!  PowerArgs will make the query for you using the query arguments.  It's all done by naming convention.  
  
  Now just consume the data in your program.
     
-    // Sample command that queries the Customers table for newest 10 customers  
-    // <yourapp> -skip 0 -take 10 -where "item.DateCreated > DateTime.Now - TimeSpan.FromDays(1)" -orderby item.LastName
-    
-    var parsed = Args.Parse<TestArgs>(args);
-    var customers = parsed.Customers;
+```cs
+// Sample command that queries the Customers table for newest 10 customers  
+// <yourapp> -skip 0 -take 10 -where "item.DateCreated > DateTime.Now - TimeSpan.FromDays(1)" -orderby item.LastName
+
+var parsed = Args.Parse<TestArgs>(args);
+var customers = parsed.Customers;
