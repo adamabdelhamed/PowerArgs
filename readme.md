@@ -409,6 +409,10 @@ public class TestArgs
 }
 ```
 
+###The PowerArgs.Cli (undocumented) namespace
+
+The PowerArgs.Cli namespace contains framework components that make it easy to build very interactive command line applications.  This namespace is undocumented since these capabilities are still a work in progress.  When it gets closer to being ready I'll document the classes just like the rest of PowerArgs.
+
 ###Data Source Queries
 
 Easily query a data source such as an Entity Framework Model (Code First or traditional) using Linq.
