@@ -32,6 +32,24 @@ namespace ArgsTests
             Sixteen = 16,
         }
 
+        public enum ByteSizedEnum : byte
+        {
+            Option1,
+            Option2
+        }
+
+        public enum ShortSizedEnum : short
+        {
+            Option1,
+            Option2
+        }
+
+        public enum LongSizedEnum : long
+        {
+            Option1,
+            Option2
+        }
+
         [UsageAutomation]
         public class EnumArgs
         {
@@ -73,6 +91,27 @@ namespace ArgsTests
             {
                 return new MailAddress(value);
             }
+        }
+
+        public class ByteSizedEnumArgs
+        {
+            [DefaultValue(ByteSizedEnum.Option2)]
+            [ArgIgnoreCase]
+            public ByteSizedEnum Option { get; set; }
+        }
+
+        public class ShortSizedEnumArgs
+        {
+            [DefaultValue(ShortSizedEnum.Option2)]
+            [ArgIgnoreCase]
+            public ShortSizedEnum Option { get; set; }
+        }
+
+        public class LongSizedEnumArgs
+        {
+            [DefaultValue(LongSizedEnum.Option2)]
+            [ArgIgnoreCase]
+            public LongSizedEnum Option { get; set; }
         }
 
         public class Point
@@ -435,6 +474,21 @@ namespace ArgsTests
 
             parsed = Args.Parse<EnumArgs>(new string[] { }); // Test the default value
             Assert.AreEqual(BasicEnum.Option2, parsed.Option);
+        }
+
+        [TestMethod]
+        public void TestEnumNonDefaultSize()
+        {
+            var args = new string[] { "-option", "Option1" };
+
+            var parsedByteSize = Args.Parse<ByteSizedEnumArgs>(args);
+            Assert.AreEqual(ByteSizedEnum.Option1, parsedByteSize.Option);
+
+            var parsedShortSize = Args.Parse<ShortSizedEnumArgs>(args);
+            Assert.AreEqual(ShortSizedEnum.Option1, parsedShortSize.Option);
+
+            var parsedLongSize = Args.Parse<LongSizedEnumArgs>(args);
+            Assert.AreEqual(LongSizedEnum.Option1, parsedLongSize.Option);
         }
 
         [TestMethod]
