@@ -3,6 +3,10 @@ using PowerArgs;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
+using System.Collections.Generic;
+using PowerArgs.Cli;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace HelloWorld
 {
@@ -10,6 +14,33 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
+            var promise = new DataItemsPromise();
+            var items = new List<Object>()
+            {
+                new { First = "Adam", Last = "Abdelhamed", Address = "Somewhere in Washington" },
+                promise,      
+            };
+
+            Task.Factory.StartNew(() =>
+            {
+                int i = 0;
+                while (true)
+                {
+                    Thread.Sleep(1000);
+                    promise.TriggerReady();
+                    items.RemoveAt(items.Count - 1);
+                    promise = new DataItemsPromise();
+                    items.Add(new { First = "Person " + i, Last = "LastName", Address = "Address Here" });
+                    items.Add(promise);
+                    i++;
+                }
+            });
+            
+
+            PowerArgs.Cli.Grid.Render(items);
+
+   
+            return;
             var logFile = @"C:\temp\powerargslog.txt";
             File.Delete(logFile);
             PowerLogger.LogFile = logFile;

@@ -18,14 +18,14 @@ namespace PowerArgs.Cli
         /// <summary>
         /// If explicitly set then the minimum value of the Y axis will be forced to the value.  Otherwise, that value will be determined by the data.
         /// </summary>
-        public double? YMinimumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
+        public double? YMinimumOverride { get { return Get<double?>(); } set { Set(value); } }
 
         /// <summary>
         /// If explicitly set then the maximum value of the Y axis will be forced to the value.  Otherwise, that value will be determined by the data.
         /// </summary>
-        public double? YMaximumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
-        public double? XMinimumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
-        public double? XMaximumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }        
+        public double? YMaximumOverride { get { return Get<double?>(); } set { Set(value); } }
+        public double? XMinimumOverride { get { return Get<double?>(); } set { Set(value); } }
+        public double? XMaximumOverride { get { return Get<double?>(); } set { Set(value); } }        
 
         public ObservableCollection<DataSeries> DataSeriesCollection { get; private set; }
 
@@ -48,8 +48,8 @@ namespace PowerArgs.Cli
             }
         }
 
-        public int FocusedDataSeriesIndex { get { return Get<int>(); } set { Set<int>(value); } }
-        public int FocusedDataPointIndex { get { return Get<int>(); } set { Set<int>(value); } }
+        public int FocusedDataSeriesIndex { get { return Get<int>(); } set { Set(value); } }
+        public int FocusedDataPointIndex { get { return Get<int>(); } set { Set(value); } }
 
         public LineChartViewModel()
         {

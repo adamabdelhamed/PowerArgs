@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,8 @@ namespace PowerArgs.Cli
         public ConsolePanel LayoutRoot { get; private set; }
         public bool ExitOnEscapeCharacter { get; set; }
         public bool IsRunning { get; private set; }
+
+        private CliMessagePump messagePump;
 
         public ObservableCollection<ConsoleControl> Controls
         {
@@ -46,6 +49,7 @@ namespace PowerArgs.Cli
 
         public ConsoleApp(int x, int y, int w, int h)
         {
+            messagePump = new CliMessagePump();
             Bitmap = new ConsoleBitmap(x,y, w, h);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
             LayoutRoot.Application = this;
@@ -85,6 +89,7 @@ namespace PowerArgs.Cli
 
         public void Run()
         {
+            messagePump.Start();
             IsRunning = true;
             MoveFocus();
             Paint();
@@ -99,18 +104,25 @@ namespace PowerArgs.Cli
 
                         if (info.Key == ConsoleKey.Escape && ExitOnEscapeCharacter)
                         {
+                            messagePump.Stop();
                             break;
                         }
-                        else if (info.Key == ConsoleKey.Tab)
+                        else
                         {
-                            MoveFocus(info.Modifiers.HasFlag(ConsoleModifiers.Shift) == false);
-                        }
-                        else if (focusedControl != null)
-                        {
-                            focusedControl.OnKeyInputReceived(info);
-                        }
+                            messagePump.QueueAction(() =>
+                            {
+                                if (info.Key == ConsoleKey.Tab)
+                                {
+                                    MoveFocus(info.Modifiers.HasFlag(ConsoleModifiers.Shift) == false);
+                                }
+                                else if (focusedControl != null)
+                                {
+                                    focusedControl.OnKeyInputReceived(info);
+                                }
 
-                        Paint();
+                                Paint();
+                            });
+                        }
                     }
                     catch (ExitConsoleAppException)
                     {
@@ -136,14 +148,15 @@ namespace PowerArgs.Cli
 
         public void Paint()
         {
-            lock (Bitmap.SyncLock)
+            messagePump.QueueAction(() =>
             {
                 Bitmap.Pen = ConsoleControl.TransparantColor;
                 Bitmap.FillRect(0, 0, Width, Height);
                 LayoutRoot.Paint(Bitmap);
-            }
-            Bitmap.Paint();
-        }
+
+                Bitmap.Paint();
+            });
+        }   
 
         public IDisposable GetDisposableLock()
         {

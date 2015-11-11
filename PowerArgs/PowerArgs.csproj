@@ -47,7 +47,9 @@
   <ItemGroup>
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
     <Compile Include="CLI\CliHelper.cs" />
+    <Compile Include="CLI\CliMessagePump.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
+    <Compile Include="CLI\Controls\Grid.cs" />
     <Compile Include="CLI\Controls\ListView.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
