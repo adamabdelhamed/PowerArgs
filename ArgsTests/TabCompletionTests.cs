@@ -568,6 +568,15 @@ namespace ArgsTests
 
         string input;
         int i;
+
+        public bool KeyAvailable
+        {
+            get
+            {
+                return i < input.Length;
+            }
+        }
+
         public TestConsoleProvider(string input = "")
         {
             this.input = input;

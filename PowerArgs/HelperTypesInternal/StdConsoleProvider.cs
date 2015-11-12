@@ -82,6 +82,14 @@ namespace PowerArgs
             set { Console.BufferWidth = value; }
         }
 
+        public bool KeyAvailable
+        {
+            get
+            {
+                return Console.KeyAvailable;
+            }
+        }
+
         /// <summary>
         /// Used for internal implementation, but marked public for testing, please do not use.
         /// </summary>

@@ -2,22 +2,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
     public class ConsoleApp
     {
-        private class ExitConsoleAppException : Exception { }
-
+        public Exception Exception { get; private set; }
         public event Action ApplicationStopped;
-
         public ConsoleBitmap Bitmap { get; set; }
         public ConsolePanel LayoutRoot { get; private set; }
-        public bool ExitOnEscapeCharacter { get; set; }
-        public bool IsRunning { get; private set; }
 
-        private CliMessagePump messagePump;
+
+        public CliMessagePump MessagePump { get; private set; }
+
+        public bool IsRunning
+        {
+            get
+            {
+                return MessagePump.IsRunning;
+            }
+        }
 
         public ObservableCollection<ConsoleControl> Controls
         {
@@ -49,13 +54,13 @@ namespace PowerArgs.Cli
 
         public ConsoleApp(int x, int y, int w, int h)
         {
-            messagePump = new CliMessagePump();
             Bitmap = new ConsoleBitmap(x,y, w, h);
+            MessagePump = new CliMessagePump(Bitmap.Console, KeyPressed);
+            MessagePump.PumpException += OnPumpException;
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
             LayoutRoot.Application = this;
             focusableControls = new List<ConsoleControl>();
             focusIndex = -1;
-            ExitOnEscapeCharacter = true;
             LayoutRoot.Controls.Added += (c) =>
             {
                 c.Application = this;
@@ -87,82 +92,41 @@ namespace PowerArgs.Cli
             };
         }
 
-        public void Run()
+        public Task Run()
         {
-            messagePump.Start();
-            IsRunning = true;
-            MoveFocus();
-            Paint();
-
-            try
+            Task pumpTask = MessagePump.Start();
+            var ret = pumpTask.ContinueWith((t) =>
             {
-                while (IsRunning)
-                {
-                    try
-                    {
-                        var info = Bitmap.Console.ReadKey(true);
+                ExitInternal();
+            });
 
-                        if (info.Key == ConsoleKey.Escape && ExitOnEscapeCharacter)
-                        {
-                            messagePump.Stop();
-                            break;
-                        }
-                        else
-                        {
-                            messagePump.QueueAction(() =>
-                            {
-                                if (info.Key == ConsoleKey.Tab)
-                                {
-                                    MoveFocus(info.Modifiers.HasFlag(ConsoleModifiers.Shift) == false);
-                                }
-                                else if (focusedControl != null)
-                                {
-                                    focusedControl.OnKeyInputReceived(info);
-                                }
-
-                                Paint();
-                            });
-                        }
-                    }
-                    catch (ExitConsoleAppException)
-                    {
-                        break;
-                    }
-                }
-            }
-            finally
+            MessagePump.QueueAction(() =>
             {
-                IsRunning = false;
-                using (var snapshot = Bitmap.CreateSnapshot())
-                {
-                    Bitmap.CreateWiper().Wipe();
-                    if (ApplicationStopped != null)
-                    {
-                        ApplicationStopped();
-                    }
-                    Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
-                    Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
-                }
-            }
+                MoveFocus();
+                Paint();
+            });
+
+            return ret;
+
         }
 
         public void Paint()
         {
-            messagePump.QueueAction(() =>
+            if (MessagePump.QueueRequired)
             {
-                Bitmap.Pen = ConsoleControl.TransparantColor;
-                Bitmap.FillRect(0, 0, Width, Height);
-                LayoutRoot.Paint(Bitmap);
-
-                Bitmap.Paint();
-            });
-        }   
+                MessagePump.QueueAction(() => { PaintInternal(); });
+            }
+            else
+            {
+                PaintInternal();
+            }
+        }
 
         public IDisposable GetDisposableLock()
         {
             return Bitmap.GetDisposableLock();
         }
-    
+
         public void SetFocus(ConsoleControl newFocusControl)
         {
             var index = focusableControls.IndexOf(newFocusControl);
@@ -194,6 +158,53 @@ namespace PowerArgs.Cli
 
             if (focusableControls.Count == 0) return;
             SetFocus(focusableControls[focusIndex]);
+        }
+
+        private void OnPumpException(PumpExceptionArgs obj)
+        {
+            this.Exception = obj.Exception;
+        }
+
+        private async Task KeyPressed(ConsoleKeyInfo info)
+        {
+            if (info.Key == ConsoleKey.Tab)
+            {
+                MoveFocus(info.Modifiers.HasFlag(ConsoleModifiers.Shift) == false);
+            }
+            else if (focusedControl != null)
+            {
+                focusedControl.OnKeyInputReceived(info);
+            }
+
+            Paint();
+        }
+
+        private void ExitInternal()
+        {
+            using (var snapshot = Bitmap.CreateSnapshot())
+            {
+                Bitmap.CreateWiper().Wipe();
+                if (ApplicationStopped != null)
+                {
+                    ApplicationStopped();
+                }
+                Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
+                Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
+            }
+
+            if(Exception != null)
+            {
+                Console.WriteLine(Exception);
+            }
+        }
+
+        private void PaintInternal()
+        {
+            Bitmap.Pen = ConsoleControl.TransparantColor;
+            Bitmap.FillRect(0, 0, Width, Height);
+            LayoutRoot.Paint(Bitmap);
+
+            Bitmap.Paint();
         }
 
         private List<ConsoleControl> TraverseControlTree(ConsolePanel toTraverse)

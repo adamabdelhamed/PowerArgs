@@ -8,6 +8,10 @@ namespace PowerArgs
     public interface IConsoleProvider
     {
         /// <summary>
+        /// Gets whether or not a key is available to be read
+        /// </summary>
+        bool KeyAvailable { get;  }
+        /// <summary>
         /// Gets or sets the foreground color
         /// </summary>
         ConsoleColor ForegroundColor { get; set; }

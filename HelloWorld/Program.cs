@@ -14,6 +14,7 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("My App\n\n*****");
             var promise = new DataItemsPromise();
             var items = new List<Object>()
             {
@@ -21,25 +22,35 @@ namespace HelloWorld
                 promise,      
             };
 
-            Task.Factory.StartNew(() =>
+            var vm = new GridViewModel(items);
+            var grid = new Grid() { ViewModel = vm, Width = ConsoleProvider.Current.BufferWidth, Height = 20};
+            var app = new ConsoleApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 20);
+            app.Controls.Add(grid);
+
+            var appTask = app.Run();
+
+            int i = 0;
+            app.MessagePump.SetInterval(async () =>
             {
-                int i = 0;
-                while (true)
+                var previousPromise = promise;
+                items.RemoveAt(items.Count - 1);
+                items.Add(new { First = "Person " + i, Last = "LastName", Address = "Address Here" });
+                promise = new DataItemsPromise();
+                items.Add(promise);
+
+                previousPromise.TriggerReady();
+                i++;
+               
+                await Task.Factory.StartNew(() =>
                 {
-                    Thread.Sleep(1000);
-                    promise.TriggerReady();
-                    items.RemoveAt(items.Count - 1);
-                    promise = new DataItemsPromise();
-                    items.Add(new { First = "Person " + i, Last = "LastName", Address = "Address Here" });
-                    items.Add(promise);
-                    i++;
-                }
-            });
-            
+                    if(i == 1)
+                    throw new Exception();
+                });
+               
+            }, TimeSpan.FromSeconds(1));
 
-            PowerArgs.Cli.Grid.Render(items);
+            appTask.Wait();
 
-   
             return;
             var logFile = @"C:\temp\powerargslog.txt";
             File.Delete(logFile);
