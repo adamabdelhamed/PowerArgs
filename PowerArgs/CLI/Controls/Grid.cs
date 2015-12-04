@@ -172,8 +172,8 @@ namespace PowerArgs.Cli
             var vm = new GridViewModel(data);
             var grid = new Grid() { ViewModel = vm, Width = ConsoleProvider.Current.BufferWidth, Height = h };
             var app = new ConsoleApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, h);
-            app.Controls.Add(grid);
-            app.Run();
+            app.LayoutRoot.Controls.Add(grid);
+            app.Start();
         }
     }
 

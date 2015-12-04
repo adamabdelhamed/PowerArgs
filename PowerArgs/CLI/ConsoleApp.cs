@@ -6,57 +6,46 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A class representing a console application that uses a message pump to synchronize work on a UI thread
+    /// </summary>
     public class ConsoleApp
     {
-        public Exception Exception { get; private set; }
+        /// <summary>
+        /// An event that fired when the application stops, after the message pump is no longer running
+        /// </summary>
         public event Action ApplicationStopped;
-        public ConsoleBitmap Bitmap { get; set; }
+
+        /// <summary>
+        /// Gets the bitmap that will be painted to the console
+        /// </summary>
+        public ConsoleBitmap Bitmap { get; private set; }
+
+        /// <summary>
+        /// Gets the root panel that contains the controls being used by the app
+        /// </summary>
         public ConsolePanel LayoutRoot { get; private set; }
 
-
+        /// <summary>
+        /// Gets the message pump that is used to synchronize work
+        /// </summary>
         public CliMessagePump MessagePump { get; private set; }
-
-        public bool IsRunning
-        {
-            get
-            {
-                return MessagePump.IsRunning;
-            }
-        }
-
-        public ObservableCollection<ConsoleControl> Controls
-        {
-            get
-            {
-                return LayoutRoot.Controls;
-            }
-        }
-
-        public int Width
-        {
-            get
-            {
-                return LayoutRoot.Width;
-            }
-        }
-
-        public int Height
-        {
-            get
-            {
-                return LayoutRoot.Height;
-            }
-        }
 
         private int focusIndex;
         private ConsoleControl focusedControl;
         private List<ConsoleControl> focusableControls;
 
+        /// <summary>
+        /// Creates a new console app given a set of boundaries
+        /// </summary>
+        /// <param name="x">The left position on the target console to bound this app</param>
+        /// <param name="y">The right position on the target console to bound this app</param>
+        /// <param name="w">The width of the app</param>
+        /// <param name="h">The height of the app</param>
         public ConsoleApp(int x, int y, int w, int h)
         {
             Bitmap = new ConsoleBitmap(x,y, w, h);
             MessagePump = new CliMessagePump(Bitmap.Console, KeyPressed);
-            MessagePump.PumpException += OnPumpException;
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
             LayoutRoot.Application = this;
             focusableControls = new List<ConsoleControl>();
@@ -92,7 +81,11 @@ namespace PowerArgs.Cli
             };
         }
 
-        public Task Run()
+        /// <summary>
+        /// Starts the app, asynchronously.
+        /// </summary>
+        /// <returns>A task that will complete when the app exits</returns>
+        public Task Start()
         {
             Task pumpTask = MessagePump.Start();
             var ret = pumpTask.ContinueWith((t) =>
@@ -100,33 +93,24 @@ namespace PowerArgs.Cli
                 ExitInternal();
             });
 
-            MessagePump.QueueAction(() =>
-            {
-                MoveFocus();
-                Paint();
-            });
+            MessagePump.QueueAction(()=> { MoveFocus(); });
+            Paint();
 
             return ret;
-
         }
 
+        /// <summary>
+        /// Queues up a request to paint the app.  The system will dedupe multiple paint requests when there are multiple in the pump's work queue
+        /// </summary>
         public void Paint()
         {
-            if (MessagePump.QueueRequired)
-            {
-                MessagePump.QueueAction(() => { PaintInternal(); });
-            }
-            else
-            {
-                PaintInternal();
-            }
+            MessagePump.QueueAction(new PaintMessage(PaintInternal));
         }
 
-        public IDisposable GetDisposableLock()
-        {
-            return Bitmap.GetDisposableLock();
-        }
-
+        /// <summary>
+        /// Gives focus to the given control.  The control must be present in the app or else an exception will be thrown.
+        /// </summary>
+        /// <param name="newFocusControl">the control to focus</param>
         public void SetFocus(ConsoleControl newFocusControl)
         {
             var index = focusableControls.IndexOf(newFocusControl);
@@ -145,9 +129,14 @@ namespace PowerArgs.Cli
                 focusIndex = index;
 
                 if (focusedControl != null) focusedControl.FireFocused(true);
+                Paint();
             }
         }
 
+        /// <summary>
+        /// Moves focus to the next or previous control
+        /// </summary>
+        /// <param name="forward">if true, the focus moves to the next control, otherwise focus moves to the previous control</param>
         public void MoveFocus(bool forward = true)
         {
             if (forward) focusIndex++;
@@ -160,12 +149,7 @@ namespace PowerArgs.Cli
             SetFocus(focusableControls[focusIndex]);
         }
 
-        private void OnPumpException(PumpExceptionArgs obj)
-        {
-            this.Exception = obj.Exception;
-        }
-
-        private async Task KeyPressed(ConsoleKeyInfo info)
+        private void KeyPressed(ConsoleKeyInfo info)
         {
             if (info.Key == ConsoleKey.Tab)
             {
@@ -191,19 +175,13 @@ namespace PowerArgs.Cli
                 Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
                 Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             }
-
-            if(Exception != null)
-            {
-                Console.WriteLine(Exception);
-            }
         }
 
         private void PaintInternal()
         {
             Bitmap.Pen = ConsoleControl.TransparantColor;
-            Bitmap.FillRect(0, 0, Width, Height);
+            Bitmap.FillRect(0, 0, LayoutRoot. Width, LayoutRoot.Height);
             LayoutRoot.Paint(Bitmap);
-
             Bitmap.Paint();
         }
 

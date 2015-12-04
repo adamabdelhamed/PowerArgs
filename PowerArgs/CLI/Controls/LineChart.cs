@@ -136,7 +136,7 @@ namespace PowerArgs.Cli
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if(Application != null && Application.IsRunning)
+            if(Application != null && Application.MessagePump.IsRunning)
             {
                 Application.Paint();
             }

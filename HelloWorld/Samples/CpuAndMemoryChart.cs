@@ -27,9 +27,9 @@ namespace HelloWorld.Samples
             chart.ViewModel.FocusedSeriesChanged +=  syncChartToListAction;
             syncChartToListAction();
 
-            app.Controls.Add(chart);
-            app.Controls.Add(list);
-            app.Run();
+            app.LayoutRoot.Controls.Add(chart);
+            app.LayoutRoot.Controls.Add(list);
+            app.Start();
         }
     }
 
@@ -106,35 +106,25 @@ namespace HelloWorld.Samples
 
             while (running)
             {
-                // the disposable lock ensures that the app only repaints one time when the lock is disposed.
-                // without this, the app can repaint twice, once for the new point we add, and once for the
-                // point we remove.  That might not be too bad, but this pattern works well if you're making
-                // many changes in the background and don't want to repaint for each change.  Note that this
-                // doesn't throttle the OnPaint() method of controls, it only throttles the underlying bitmap
-                // from actually rendering itself on the console.
-                using (Application.GetDisposableLock())
+                var now = DateTime.Now;
+
+                var cpuUsed = PerformanceInfo.GetCPUPercentage();
+                var memUsed = Math.Round(100 - (100.0 * PerformanceInfo.GetPhysicalAvailableMemoryInMiB() / PerformanceInfo.GetTotalMemoryInMiB()), 1);
+
+                // slide the window so it always shows the last minute
+                ViewModel.XMaximumOverride = now.Ticks;
+                ViewModel.XMinimumOverride = now.Ticks - TimeSpan.FromMinutes(1).Ticks;
+
+                // add the latest value to the series
+                ViewModel.DataSeriesCollection[0].DataPoints.Add(new DataPoint() { X = now.Ticks, Y = cpuUsed });
+                ViewModel.DataSeriesCollection[1].DataPoints.Add(new DataPoint() { X = now.Ticks, Y = memUsed });
+
+                // Remove the oldest data point if we have a minute worth of data on the chart
+                if (ViewModel.DataSeriesCollection[0].DataPoints.Count > 60)
                 {
-                    var now = DateTime.Now;
-
-                    var cpuUsed = PerformanceInfo.GetCPUPercentage();
-                    var memUsed = Math.Round(100 - (100.0 * PerformanceInfo.GetPhysicalAvailableMemoryInMiB() / PerformanceInfo.GetTotalMemoryInMiB()), 1);
-
-                    // slide the window so it always shows the last minute
-                    ViewModel.XMaximumOverride = now.Ticks;
-                    ViewModel.XMinimumOverride = now.Ticks - TimeSpan.FromMinutes(1).Ticks;
-
-                    // add the latest value to the series
-                    ViewModel.DataSeriesCollection[0].DataPoints.Add(new DataPoint() { X = now.Ticks, Y = cpuUsed });
-                    ViewModel.DataSeriesCollection[1].DataPoints.Add(new DataPoint() { X = now.Ticks, Y = memUsed });
-
-                    // Remove the oldest data point if we have a minute worth of data on the chart
-                    if (ViewModel.DataSeriesCollection[0].DataPoints.Count > 60)
-                    {
-                        ViewModel.DataSeriesCollection[0].DataPoints.RemoveAt(0);
-                        ViewModel.DataSeriesCollection[1].DataPoints.RemoveAt(0);
-                    }
+                    ViewModel.DataSeriesCollection[0].DataPoints.RemoveAt(0);
+                    ViewModel.DataSeriesCollection[1].DataPoints.RemoveAt(0);
                 }
-
                 Thread.Sleep(1000);
             }
         }

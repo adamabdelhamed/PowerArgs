@@ -25,12 +25,12 @@ namespace HelloWorld
             var vm = new GridViewModel(items);
             var grid = new Grid() { ViewModel = vm, Width = ConsoleProvider.Current.BufferWidth, Height = 20};
             var app = new ConsoleApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 20);
-            app.Controls.Add(grid);
+            app.LayoutRoot.Controls.Add(grid);
 
-            var appTask = app.Run();
+            var appTask = app.Start();
 
             int i = 0;
-            app.MessagePump.SetInterval(async () =>
+            app.MessagePump.SetInterval(() =>
             {
                 var previousPromise = promise;
                 items.RemoveAt(items.Count - 1);
@@ -40,12 +40,6 @@ namespace HelloWorld
 
                 previousPromise.TriggerReady();
                 i++;
-               
-                await Task.Factory.StartNew(() =>
-                {
-                    if(i == 1)
-                    throw new Exception();
-                });
                
             }, TimeSpan.FromSeconds(1));
 

@@ -54,7 +54,7 @@
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
-    <Compile Include="CLI\Controls\ConsoleApp.cs" />
+    <Compile Include="CLI\ConsoleApp.cs" />
     <Compile Include="CLI\Controls\ConsoleControl.cs" />
     <Compile Include="CLI\Controls\ConsolePanel.cs" />
     <Compile Include="CLI\Controls\LineChart.cs" />
