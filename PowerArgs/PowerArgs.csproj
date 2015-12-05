@@ -51,7 +51,9 @@
     <Compile Include="CLI\CliProgressBar.cs" />
     <Compile Include="CLI\Controls\Grid.cs" />
     <Compile Include="CLI\Controls\ListView.cs" />
+    <Compile Include="CLI\Controls\ViewModels\GridViewModel.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
+    <Compile Include="CLI\Data\GridDataSource.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
     <Compile Include="CLI\ConsoleApp.cs" />

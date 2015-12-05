@@ -71,6 +71,8 @@
     <Compile Include="BasicTests.cs" />
     <Compile Include="ArgRequiredConditionalTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
+    <Compile Include="CLI\CliUnitTestConsole.cs" />
+    <Compile Include="CLI\GridTests.cs" />
     <Compile Include="CLI\ProgressBarTests.cs" />
     <Compile Include="CLI\PromptTests.cs" />
     <Compile Include="CLI\ContextAssistTests.cs" />
@@ -142,6 +144,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\PhotoAlbumManagerExpectedBrowserUsage.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BasicGridExpectedOutput.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

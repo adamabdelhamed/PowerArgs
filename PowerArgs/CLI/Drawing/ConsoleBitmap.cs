@@ -318,6 +318,22 @@ namespace PowerArgs.Cli
                 pixel.Sync();
             }
         }
+
+        public override string ToString()
+        {
+            var ret = "";
+
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    ret += this.pixels[x][y].Value.HasValue ? this.pixels[x][y].Value.Value.Value : ' ';
+                }
+                ret += Environment.NewLine;
+            }
+
+            return ret;
+        }
     }
 
     public class PaintOnceContext : IDisposable

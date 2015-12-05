@@ -1,9 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorld", "HelloWorld\HelloWorld.csproj", "{9FF5B5D7-B7FC-4F03-B13E-ADC16D4E8350}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1656EC14-33FF-4589-A2F9-E4EAF789DC95} = {1656EC14-33FF-4589-A2F9-E4EAF789DC95}
+		{130C7F85-B0E7-49E3-858A-35213224BE1C} = {130C7F85-B0E7-49E3-858A-35213224BE1C}
+		{35809FAB-7FBD-4663-8409-2D6A312C8265} = {35809FAB-7FBD-4663-8409-2D6A312C8265}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArgs", "PowerArgs\PowerArgs.csproj", "{35809FAB-7FBD-4663-8409-2D6A312C8265}"
 EndProject

@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+
+
     public class Grid : ConsoleControl
     {
-        public GridViewModel ViewModel { get; set; }
-
-        private int viewOffset, focusedIndex;
+        public GridViewModel ViewModel { get; private set; }
 
         public int MaxRowsInView
         {
@@ -20,13 +18,14 @@ namespace PowerArgs.Cli
             }
         }
 
-        private List<object> itemsInView = new List<object>();
+        private int columnViewOffset, selectedRowIndex, selectedColumnIndex;
+        private List<object> itemsInView;
 
-        internal object FocusedItem
+        internal object SelectedItem
         {
             get
             {
-                var visualIndex = focusedIndex - viewOffset;
+                var visualIndex = selectedRowIndex - columnViewOffset;
                 if (visualIndex >= itemsInView.Count)
                 {
                     return null;
@@ -36,12 +35,19 @@ namespace PowerArgs.Cli
             }
         }
 
-
-        public Grid()
+        public Grid(GridViewModel vm = null)
         {
-            viewOffset = 0;
-            focusedIndex = 0;
+            this.ViewModel = vm ?? new GridViewModel();
+            itemsInView = new List<object>();
+            columnViewOffset = 0;
+            selectedRowIndex = 0;
             Background = new ConsoleCharacter(' ', ConsoleColor.Red, ConsoleColor.Red);
+            this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        }
+
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            Application?.Paint();
         }
 
         internal override void OnPaint(ConsoleBitmap context)
@@ -82,16 +88,16 @@ namespace PowerArgs.Cli
                 overflowBehaviors.Add(header.OverflowBehavior);
             }
 
-            int viewIndex = viewOffset;
+            int viewIndex = columnViewOffset;
             bool moreDataComing = false;
             bool isEnd = false;
-            foreach (var item in (itemsInView = ViewModel.DataSource.GetCurrentItems(viewOffset, this.Height - 2)))
+            foreach (var item in (itemsInView = ViewModel.DataSource.GetCurrentItems(columnViewOffset, this.Height - 2)))
             {
                 if(item is DataItemsPromise)
                 {
                     (item as DataItemsPromise).Ready += () =>
                     {
-                        Application.Paint();
+                        Application?.Paint();
                     };
                     moreDataComing = true;
                     break;
@@ -103,17 +109,22 @@ namespace PowerArgs.Cli
                 }
 
                 List<ConsoleString> row = new List<ConsoleString>();
+                int columnIndex = 0;
                 foreach(var col in ViewModel.VisibleColumns)
                 {
                     var value = item?.GetType()?.GetProperty(col.ColumnName.ToString())?.GetValue(item);
                     var displayValue = value == null ? "<null>".ToConsoleString() : value.ToString().ToConsoleString();
 
-                    if(this.HasFocus && viewIndex == this.focusedIndex)
+                    if(this.HasFocus && viewIndex == this.selectedRowIndex)
                     {
-                        displayValue = new ConsoleString(displayValue.ToString(), ConsoleColor.Cyan);
+                        if (this.ViewModel.SelectionMode == GridSelectionMode.Row || (this.ViewModel.SelectionMode == GridSelectionMode.Cell && columnIndex == selectedColumnIndex))
+                        {
+                            displayValue = new ConsoleString(displayValue.ToString(), this.Background.BackgroundColor, ConsoleColor.Cyan);
+                        }
                     }
 
                     row.Add(displayValue);
+                    columnIndex++;
                 }
                 viewIndex++;
                 rows.Add(row);
@@ -124,13 +135,13 @@ namespace PowerArgs.Cli
 
             if(moreDataComing)
             {
-                table +=  "Loading more rows...".ToConsoleString(FocusedItem is DataItemsEnd || FocusedItem is DataItemsPromise ? ConsoleColor.Cyan : ConsoleString.DefaultForegroundColor);
+                table +=  "Loading more rows...".ToConsoleString(SelectedItem is DataItemsEnd || SelectedItem is DataItemsPromise ? ConsoleColor.Cyan : ConsoleString.DefaultForegroundColor);
             }
             else if(isEnd)
             {
-                table += "End of data set".ToConsoleString(FocusedItem is DataItemsEnd || FocusedItem is DataItemsPromise ? ConsoleColor.Cyan : ConsoleString.DefaultForegroundColor);
+                table += "End of data set".ToConsoleString(SelectedItem is DataItemsEnd || SelectedItem is DataItemsPromise ? ConsoleColor.Cyan : ConsoleString.DefaultForegroundColor);
             }
-            context.DrawString(table, 0, 1);
+            context.DrawString(table, 0, 0);
         }
 
         public override void OnKeyInputReceived(ConsoleKeyInfo info)
@@ -139,144 +150,46 @@ namespace PowerArgs.Cli
 
             if(info.Key == ConsoleKey.UpArrow)
             {
-                if(focusedIndex > 0)
+                if(selectedRowIndex > 0)
                 {
-                    focusedIndex--;
+                    selectedRowIndex--;
                 }
 
-                if(focusedIndex < viewOffset)
+                if(selectedRowIndex < columnViewOffset)
                 {
-                    viewOffset--;
+                    columnViewOffset--;
                 }
             }
             else if(info.Key == ConsoleKey.DownArrow)
             {
-                if(FocusedItem is DataItemsPromise || FocusedItem is DataItemsEnd)
+                if(SelectedItem is DataItemsPromise || SelectedItem is DataItemsEnd)
                 {
                     // do nothing
                 }
                 else
                 {
-                    focusedIndex++;
+                    selectedRowIndex++;
                 }
 
-                if(focusedIndex >= viewOffset + MaxRowsInView)
+                if(selectedRowIndex >= columnViewOffset + MaxRowsInView)
                 {
-                    viewOffset++;
+                    columnViewOffset++;
+                }
+            }
+            else if(info.Key == ConsoleKey.LeftArrow)
+            {
+                if(selectedColumnIndex > 0)
+                {
+                    selectedColumnIndex--;
+                }
+            }
+            else if(info.Key == ConsoleKey.RightArrow)
+            {
+                if (selectedColumnIndex < ViewModel.VisibleColumns.Count - 1)
+                {
+                    selectedColumnIndex++;
                 }
             }
         }
-
-        public static void Render(List<object> data, int h = 20)
-        {
-            var vm = new GridViewModel(data);
-            var grid = new Grid() { ViewModel = vm, Width = ConsoleProvider.Current.BufferWidth, Height = h };
-            var app = new ConsoleApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, h);
-            app.LayoutRoot.Controls.Add(grid);
-            app.Start();
-        }
     }
-
-    public class DataItemsPromise
-    {
-        public event Action Ready;
-
-        public void TriggerReady()
-        {
-            if (Ready != null) Ready();
-        }
-    }
-
-    public class DataItemsEnd
-    {
-
-    }
-
-    public class GridViewModel : ViewModelBase
-    {
-        public GridDataSource DataSource { get; private set; }
-        public ObservableCollection<ColumnViewModel> VisibleColumns { get; private set; }
-
-        public ConsoleString RowPrefix { get { return Get<ConsoleString>(); } set { Set(value); } }
-        public int Gutter { get { return Get<int>(); } set { Set(value); } }
-        
-        public GridViewModel()
-        {
-            this.RowPrefix = ConsoleString.Empty;
-            this.Gutter = 3;
-            this.VisibleColumns = new ObservableCollection<ColumnViewModel>();
-        }
-
-        public GridViewModel(GridDataSource dataSource) : this()
-        {
-            this.DataSource = dataSource;
-        }
-
-        public GridViewModel(List<object> items) : this()
-        {
-            var prototype = items.FirstOrDefault();
-            if (prototype == null) throw new InvalidOperationException("Can't infer columns without at least one item");
-
-            foreach (var prop in prototype.GetType().GetProperties())
-            {
-                this.VisibleColumns.Add(new ColumnViewModel(prop.Name.ToConsoleString(ConsoleColor.Yellow)));
-            }
-
-            var dataSource = new InMemoryDataSource();
-            dataSource.Items = items;
-            this.DataSource = dataSource;
-        }
-    }
-
-    public class ColumnViewModel : ViewModelBase
-    {
-        public ConsoleString ColumnName { get; private set; }
-        public ConsoleString ColumnDisplayName { get { return Get<ConsoleString>(); } set { Set(value); } }
-
-        public double WidthPercentage { get { return Get<double>(); } set { Set(value); } }
-
-        internal ColumnOverflowBehavior OverflowBehavior { get; set; }
-
-        public ColumnViewModel(ConsoleString columnName)
-        {
-            this.ColumnName = columnName;
-            this.ColumnDisplayName = columnName;
-            this.OverflowBehavior = new TruncateOverflowBehavior();
-        }
-    }
-
-    public abstract class GridDataSource : ViewModelBase
-    {
-        public abstract List<object> GetCurrentItems(int skip, int take);
-    }
-
-    public abstract class RandomAccessDataSource : GridDataSource
-    {
-        
-    }
-
-    public class LoadMoreDataSource : GridDataSource
-    {
-        public override List<object> GetCurrentItems(int skip, int take)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class InMemoryDataSource : RandomAccessDataSource
-    {
-        public List<object> Items { get; set; }
-
-        public InMemoryDataSource()
-        {
-            Items = new List<object>();
-        }
-
-        public override List<object> GetCurrentItems(int skip, int take)
-        {
-            return Items.Skip(skip).Take(take).ToList();
-        }
-    }
-
-
 }

@@ -23,7 +23,7 @@ namespace HelloWorld
             };
 
             var vm = new GridViewModel(items);
-            var grid = new Grid() { ViewModel = vm, Width = ConsoleProvider.Current.BufferWidth, Height = 20};
+            var grid = new Grid(vm) { Width = ConsoleProvider.Current.BufferWidth, Height = 20};
             var app = new ConsoleApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 20);
             app.LayoutRoot.Controls.Add(grid);
 
