@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using PowerArgs.Cli;
 using System.Threading;
 using System.Threading.Tasks;
+using ArgsTests.Data;
 
 namespace HelloWorld
 {
@@ -15,34 +16,26 @@ namespace HelloWorld
         static void Main(string[] args)
         {
             Console.WriteLine("My App\n\n*****");
-            var promise = new DataItemsPromise();
-            var items = new List<Object>()
-            {
-                new { First = "Adam", Last = "Abdelhamed", Address = "Somewhere in Washington" },
-                promise,      
-            };
-
-            var vm = new GridViewModel(items);
-            var grid = new Grid(vm) { Width = ConsoleProvider.Current.BufferWidth, Height = 20};
             var app = new ConsoleApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 20);
+            var vm = new GridViewModel(new TestLoadMoreDataSource(app.MessagePump,95, TimeSpan.FromSeconds(3)));
+            vm.VisibleColumns.Add(new ColumnViewModel("Id".ToConsoleString(ConsoleColor.Yellow)));
+            vm.VisibleColumns.Add(new ColumnViewModel("Value".ToConsoleString(ConsoleColor.Yellow)));
+            var grid = new Grid(vm) { Width = ConsoleProvider.Current.BufferWidth, Height = 20};
+
+            var label = new Label();
+            label.Foreground = new ConsoleCharacter(' ', ConsoleColor.Green);
+            label.Width = 15;
+            label.Height = 1;
+            label.X = app.LayoutRoot.Width - label.Width;
+            label.Y = 0;
+
             app.LayoutRoot.Controls.Add(grid);
+            app.LayoutRoot.Controls.Add(label);
+
+            label.Bind(vm, nameof(vm.SelectedItem));
 
             var appTask = app.Start();
-
-            int i = 0;
-            app.MessagePump.SetInterval(() =>
-            {
-                var previousPromise = promise;
-                items.RemoveAt(items.Count - 1);
-                items.Add(new { First = "Person " + i, Last = "LastName", Address = "Address Here" });
-                promise = new DataItemsPromise();
-                items.Add(promise);
-
-                previousPromise.TriggerReady();
-                i++;
-               
-            }, TimeSpan.FromSeconds(1));
-
+ 
             appTask.Wait();
 
             return;

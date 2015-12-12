@@ -83,7 +83,7 @@ namespace PowerArgs.Cli
 
             try
             {
-                context.Rescope(this.X, this.Y, this.Width, this.Height);
+                //context.Rescope(this.X, this.Y, this.Width, this.Height);
                 context.Pen = this.Foreground;
                 OnPaint(context);
             }

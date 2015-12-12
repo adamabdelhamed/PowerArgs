@@ -4,23 +4,78 @@ using System.Linq;
 
 namespace PowerArgs.Cli
 {
-    public class GridViewModel : ViewModelBase
+    public class GridViewModel : Rectangular
     {
-        public GridDataSource DataSource { get; set; }
+        public CollectionDataSource DataSource { get { return Get<CollectionDataSource>(); } set { Set(value); } }
         public ObservableCollection<ColumnViewModel> VisibleColumns { get; private set; }
         public GridSelectionMode SelectionMode { get { return Get<GridSelectionMode>(); } set { Set(value); } }
         public ConsoleString RowPrefix { get { return Get<ConsoleString>(); } set { Set(value); } }
         public int Gutter { get { return Get<int>(); } set { Set(value); } }
 
+        public int visibleRowOffset
+        {
+            get;private set;
+        }
+
+        public int NumRowsInView
+        {
+            get
+            {
+                return Height - 2;
+            }
+        }
+
+        private CollectionQuery query;
+
+        internal int selectedColumnIndex;
+        internal CollectionDataView DataView { get { return Get<CollectionDataView>(); }
+        private set
+            {
+                Set(value);
+            }
+        }
+
+        public int SelectedIndex { get { return Get<int>(); } set { Set(value); } }
+
+        public object SelectedItem { get { return Get<object>(); } private set{ Set(value); } }
+
+
         public GridViewModel()
         {
-            this.SelectionMode = GridSelectionMode.Cell;
+            this.SelectionMode = GridSelectionMode.Row;
             this.RowPrefix = ConsoleString.Empty;
             this.Gutter = 3;
             this.VisibleColumns = new ObservableCollection<ColumnViewModel>();
+
+            visibleRowOffset = 0;
+            SelectedIndex = 0;
+            this.PropertyChanged += MyPropertyChangedListener;
+            this.query = new CollectionQuery();
         }
 
-        public GridViewModel(GridDataSource dataSource) : this()
+        
+
+        private void MyPropertyChangedListener(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(DataSource) && e.PropertyName != nameof(Bounds)) return;
+
+            this.query.Take = NumRowsInView;
+            this.query.Skip = 0;
+            DataView = DataSource.GetDataView(query);
+            DataSource.DataChanged += DataSource_DataChanged;
+            SelectedIndex = 0;
+            selectedColumnIndex = 0;
+            SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
+        }
+
+        private void DataSource_DataChanged()
+        {
+            this.query.Skip = visibleRowOffset;
+            DataView = DataSource.GetDataView(query);
+            SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+        }
+
+        public GridViewModel(CollectionDataSource dataSource) : this()
         {
             this.DataSource = dataSource;
         }
@@ -39,6 +94,160 @@ namespace PowerArgs.Cli
             dataSource.Items = items;
             this.DataSource = dataSource;
         }
+
+        public void MoveSelectionUpwards()
+        {
+            if (SelectedIndex > 0)
+            {
+                SelectedIndex--;
+            }
+
+            if (SelectedIndex < visibleRowOffset)
+            {
+                visibleRowOffset--;
+                this.query.Skip = visibleRowOffset;
+                DataView = DataSource.GetDataView(query);
+            }
+
+            if (SelectedIndex - visibleRowOffset < DataView.Items.Count)
+            {
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+        }
+
+        public void PageUp()
+        {
+            if(SelectedIndex > visibleRowOffset)
+            {
+                SelectedIndex = visibleRowOffset;
+            }
+            else
+            {
+                visibleRowOffset -= NumRowsInView - 1;
+                if (visibleRowOffset < 0) visibleRowOffset = 0;
+
+                this.query.Skip = visibleRowOffset;
+                DataView = DataSource.GetDataView(query);
+            }
+
+            if (SelectedIndex - visibleRowOffset < DataView.Items.Count)
+            {
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+        }
+
+        public void PageDown()
+        {
+            if (SelectedIndex != visibleRowOffset+DataView.Items.Count-1)
+            {
+                SelectedIndex = visibleRowOffset+DataView.Items.Count - 1;
+            }
+            else
+            {
+                visibleRowOffset = visibleRowOffset + DataView.Items.Count - 1;
+                SelectedIndex = visibleRowOffset;
+                this.query.Skip = visibleRowOffset;
+                DataView = DataSource.GetDataView(query);
+            }
+
+            if (SelectedIndex - visibleRowOffset < DataView.Items.Count)
+            {
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+            else if (SelectedIndex > 0)
+            {
+                SelectedIndex--;
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+        }
+
+        internal void Home()
+        {
+            visibleRowOffset = 0;
+            SelectedIndex = 0;
+            this.query.Skip = visibleRowOffset;
+            DataView = DataSource.GetDataView(query);
+
+            if (SelectedIndex - visibleRowOffset < DataView.Items.Count)
+            {
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+            else if (SelectedIndex > 0)
+            {
+                SelectedIndex--;
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+        }
+
+        internal void End()
+        {
+            if (SelectedIndex == DataSource.HighestKnownIndex)
+            {
+                PageDown();
+            }
+            else
+            {
+                SelectedIndex = DataSource.HighestKnownIndex;
+                visibleRowOffset = SelectedIndex - NumRowsInView + 1;
+                if (visibleRowOffset < 0) visibleRowOffset = 0;
+                this.query.Skip = visibleRowOffset;
+                DataView = DataSource.GetDataView(query);
+
+                if (SelectedIndex - visibleRowOffset < DataView.Items.Count)
+                {
+                    SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+                }
+                else if (SelectedIndex > 0)
+                {
+                    SelectedIndex--;
+                    SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+                }
+            }
+        }
+
+        public void MoveSelectionDownwards()
+        {
+            if (DataView.IsLastKnownItem(SelectedItem) == false)
+            {
+                SelectedIndex++;
+            }
+
+            if (SelectedIndex >= visibleRowOffset + NumRowsInView)
+            {
+                visibleRowOffset++;
+                this.query.Skip = visibleRowOffset;
+                DataView = DataSource.GetDataView(query);
+            }
+
+            if (SelectedIndex - visibleRowOffset < DataView.Items.Count)
+            {
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+            else if (SelectedIndex > 0)
+            {
+                SelectedIndex--;
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+
+        }
+
+        public void MoveSelectionLeft()
+        {
+            if (selectedColumnIndex > 0)
+            {
+                selectedColumnIndex--;
+            }
+        }
+
+
+
+        public void MoveSelectionRight()
+        {
+            if (selectedColumnIndex < VisibleColumns.Count - 1)
+            {
+                selectedColumnIndex++;
+            }
+        }
     }
 
     public class ColumnViewModel : ViewModelBase
@@ -55,6 +264,11 @@ namespace PowerArgs.Cli
             this.ColumnName = columnName;
             this.ColumnDisplayName = columnName;
             this.OverflowBehavior = new TruncateOverflowBehavior();
+        }
+
+        public ColumnViewModel(string columnName) : this(columnName.ToConsoleString())
+        {
+       
         }
     }
 

@@ -71,7 +71,6 @@ namespace PowerArgs.Cli
             {
                 return default(T);
             }
-
         }
 
         /// <summary>

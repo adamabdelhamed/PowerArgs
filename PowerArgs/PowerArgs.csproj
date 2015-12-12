@@ -50,6 +50,7 @@
     <Compile Include="CLI\CliMessagePump.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
     <Compile Include="CLI\Controls\Grid.cs" />
+    <Compile Include="CLI\Controls\Label.cs" />
     <Compile Include="CLI\Controls\ListView.cs" />
     <Compile Include="CLI\Controls\ViewModels\GridViewModel.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />

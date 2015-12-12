@@ -61,6 +61,10 @@
     <Compile Include="Samples\HelloWorldParse.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ArgsTests\PowerArgsTests.csproj">
+      <Project>{a059ef3c-3ac2-4dc2-9236-9328d3c3408e}</Project>
+      <Name>PowerArgsTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowerArgs\PowerArgs.csproj">
       <Project>{35809FAB-7FBD-4663-8409-2D6A312C8265}</Project>
       <Name>PowerArgs</Name>

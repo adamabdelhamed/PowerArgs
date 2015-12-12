@@ -10,43 +10,39 @@ namespace PowerArgs.Cli
     {
         public GridViewModel ViewModel { get; private set; }
 
-        public int MaxRowsInView
-        {
-            get
-            {
-                return Height - 2;
-            }
-        }
-
-        private int columnViewOffset, selectedRowIndex, selectedColumnIndex;
-        private List<object> itemsInView;
-
-        internal object SelectedItem
-        {
-            get
-            {
-                var visualIndex = selectedRowIndex - columnViewOffset;
-                if (visualIndex >= itemsInView.Count)
-                {
-                    return null;
-                }
-                var ret = itemsInView[visualIndex];
-                return ret;
-            }
-        }
-
         public Grid(GridViewModel vm = null)
         {
             this.ViewModel = vm ?? new GridViewModel();
-            itemsInView = new List<object>();
-            columnViewOffset = 0;
-            selectedRowIndex = 0;
+
             Background = new ConsoleCharacter(' ', ConsoleColor.Red, ConsoleColor.Red);
             this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            this.PropertyChanged += Grid_PropertyChanged;
+        }
+
+        private void Grid_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(ViewModel.Width != this.Width)
+            {
+                ViewModel.Width = this.Width;
+            }
+
+            if(ViewModel.Height != this.Height)
+            {
+                ViewModel.Height = this.Height;
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (this.Width != ViewModel.Width)
+            {
+                this.Width = ViewModel.Width;
+            }
+            if (this.Height != ViewModel.Height)
+            {
+                this.Height = ViewModel.Height;
+            }
+
             Application?.Paint();
         }
 
@@ -55,6 +51,12 @@ namespace PowerArgs.Cli
             if(this.Height < 5)
             {
                 context.DrawString("Grid can't render in a space this small", 0, 0);
+                return;
+            }
+
+            if(ViewModel.VisibleColumns.Count == 0)
+            {
+                context.DrawString("No visible columns specified", 0, 0);
                 return;
             }
 
@@ -88,26 +90,9 @@ namespace PowerArgs.Cli
                 overflowBehaviors.Add(header.OverflowBehavior);
             }
 
-            int viewIndex = columnViewOffset;
-            bool moreDataComing = false;
-            bool isEnd = false;
-            foreach (var item in (itemsInView = ViewModel.DataSource.GetCurrentItems(columnViewOffset, this.Height - 2)))
+            int viewIndex = ViewModel.visibleRowOffset;
+            foreach (var item in ViewModel.DataView.Items)
             {
-                if(item is DataItemsPromise)
-                {
-                    (item as DataItemsPromise).Ready += () =>
-                    {
-                        Application?.Paint();
-                    };
-                    moreDataComing = true;
-                    break;
-                }
-                else if(item is DataItemsEnd)
-                {
-                    isEnd = true;
-                    break;
-                }
-
                 List<ConsoleString> row = new List<ConsoleString>();
                 int columnIndex = 0;
                 foreach(var col in ViewModel.VisibleColumns)
@@ -115,9 +100,9 @@ namespace PowerArgs.Cli
                     var value = item?.GetType()?.GetProperty(col.ColumnName.ToString())?.GetValue(item);
                     var displayValue = value == null ? "<null>".ToConsoleString() : value.ToString().ToConsoleString();
 
-                    if(this.HasFocus && viewIndex == this.selectedRowIndex)
+                    if(this.HasFocus && viewIndex == ViewModel.SelectedIndex)
                     {
-                        if (this.ViewModel.SelectionMode == GridSelectionMode.Row || (this.ViewModel.SelectionMode == GridSelectionMode.Cell && columnIndex == selectedColumnIndex))
+                        if (this.ViewModel.SelectionMode == GridSelectionMode.Row || (this.ViewModel.SelectionMode == GridSelectionMode.Cell && columnIndex == ViewModel.selectedColumnIndex))
                         {
                             displayValue = new ConsoleString(displayValue.ToString(), this.Background.BackgroundColor, ConsoleColor.Cyan);
                         }
@@ -133,13 +118,17 @@ namespace PowerArgs.Cli
             ConsoleTableBuilder builder = new ConsoleTableBuilder();
             ConsoleString table = builder.FormatAsTable(headers, rows, ViewModel.RowPrefix.ToString(), overflowBehaviors, ViewModel.Gutter);
 
-            if(moreDataComing)
+            if(ViewModel.DataView.IsViewComplete == false)
             {
-                table +=  "Loading more rows...".ToConsoleString(SelectedItem is DataItemsEnd || SelectedItem is DataItemsPromise ? ConsoleColor.Cyan : ConsoleString.DefaultForegroundColor);
+                table += "Loading more rows...";
             }
-            else if(isEnd)
+            else if(ViewModel.DataView.IsViewEndOfData)
             {
-                table += "End of data set".ToConsoleString(SelectedItem is DataItemsEnd || SelectedItem is DataItemsPromise ? ConsoleColor.Cyan : ConsoleString.DefaultForegroundColor);
+                table += "End of data set";
+            }
+            else
+            {
+                table += "more data below".ToConsoleString(ConsoleColor.Gray);
             }
             context.DrawString(table, 0, 0);
         }
@@ -150,45 +139,35 @@ namespace PowerArgs.Cli
 
             if(info.Key == ConsoleKey.UpArrow)
             {
-                if(selectedRowIndex > 0)
-                {
-                    selectedRowIndex--;
-                }
-
-                if(selectedRowIndex < columnViewOffset)
-                {
-                    columnViewOffset--;
-                }
+                ViewModel.MoveSelectionUpwards();
             }
             else if(info.Key == ConsoleKey.DownArrow)
             {
-                if(SelectedItem is DataItemsPromise || SelectedItem is DataItemsEnd)
-                {
-                    // do nothing
-                }
-                else
-                {
-                    selectedRowIndex++;
-                }
-
-                if(selectedRowIndex >= columnViewOffset + MaxRowsInView)
-                {
-                    columnViewOffset++;
-                }
+                ViewModel.MoveSelectionDownwards();
             }
             else if(info.Key == ConsoleKey.LeftArrow)
             {
-                if(selectedColumnIndex > 0)
-                {
-                    selectedColumnIndex--;
-                }
+                ViewModel.MoveSelectionLeft();
             }
             else if(info.Key == ConsoleKey.RightArrow)
             {
-                if (selectedColumnIndex < ViewModel.VisibleColumns.Count - 1)
-                {
-                    selectedColumnIndex++;
-                }
+                ViewModel.MoveSelectionRight();
+            }
+            else if(info.Key == ConsoleKey.PageDown)
+            {
+                ViewModel.PageDown();
+            }
+            else if(info.Key == ConsoleKey.PageUp)
+            {
+                ViewModel.PageUp();
+            }
+            else if(info.Key == ConsoleKey.Home)
+            {
+                ViewModel.Home();
+            }
+            else if(info.Key == ConsoleKey.End)
+            {
+                ViewModel.End();
             }
         }
     }
