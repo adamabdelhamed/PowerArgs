@@ -15,34 +15,11 @@ namespace HelloWorld
         static void Main(string[] args)
         {
             Console.WriteLine("My App\n\n*****");
-            var promise = new DataItemsPromise();
-            var items = new List<Object>()
-            {
-                new { First = "Adam", Last = "Abdelhamed", Address = "Somewhere in Washington" },
-                promise,      
-            };
-
-            var vm = new GridViewModel(items);
-            var grid = new Grid(vm) { Width = ConsoleProvider.Current.BufferWidth, Height = 20};
+           
             var app = new ConsoleApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 20);
-            app.LayoutRoot.Controls.Add(grid);
-
+            app.LayoutRoot.Controls.Add(new TextBox() { Width = 40 });
+            app.LayoutRoot.Controls.Add(new TextBox() { Y = 1, Width = 40 });
             var appTask = app.Start();
-
-            int i = 0;
-            app.MessagePump.SetInterval(() =>
-            {
-                var previousPromise = promise;
-                items.RemoveAt(items.Count - 1);
-                items.Add(new { First = "Person " + i, Last = "LastName", Address = "Address Here" });
-                promise = new DataItemsPromise();
-                items.Add(promise);
-
-                previousPromise.TriggerReady();
-                i++;
-               
-            }, TimeSpan.FromSeconds(1));
-
             appTask.Wait();
 
             return;

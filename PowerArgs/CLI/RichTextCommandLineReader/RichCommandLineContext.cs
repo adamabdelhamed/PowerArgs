@@ -10,6 +10,10 @@ namespace PowerArgs.Cli
     public class RichCommandLineContext
     {
         /// <summary>
+        /// For now this is here to support the mode when this context is used within a ConsoleApp.
+        /// </summary>
+        internal bool DisableConsoleRefresh { get; set; }
+        /// <summary>
         /// Gets the console implementation that's being used to read the input
         /// </summary>
         public IConsoleProvider Console { get; internal set; }
@@ -169,6 +173,11 @@ namespace PowerArgs.Cli
         /// <param name="topAdjust">Adjusts the top cursor position by the desired amound.  If you want the cursor to stay where it was then use 0.</param>
         public void RefreshConsole(int leftAdjust, int topAdjust)
         {
+            if(DisableConsoleRefresh)
+            {
+                return;
+            }
+
             int left = this.Console.CursorLeft;
             var top = this.Console.CursorTop;
             this.Console.CursorLeft = this.ConsoleStartLeft;

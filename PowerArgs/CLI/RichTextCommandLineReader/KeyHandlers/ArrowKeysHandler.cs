@@ -59,14 +59,25 @@ namespace PowerArgs.Cli
 
         private void HandleRightArrow(RichCommandLineContext context)
         {
-            if (context.Console.CursorLeft < context.Console.BufferWidth - 1 && context.BufferPosition < context.Buffer.Count)
+            // todo - resolve special handling for the TextBox support
+            if (context.Console.BufferWidth == 0)
             {
-                context.Console.CursorLeft = context.Console.CursorLeft + 1;
+                if (context.Console.CursorLeft < context.Buffer.Count)
+                {
+                    context.Console.CursorLeft += 1;
+                }
             }
-            else if (context.Console.CursorLeft == context.Console.BufferWidth - 1)
+            else
             {
-                context.Console.CursorTop++;
-                context.Console.CursorLeft = 0;
+                if (context.Console.CursorLeft < context.Console.BufferWidth - 1 && context.BufferPosition < context.Buffer.Count)
+                {
+                    context.Console.CursorLeft = context.Console.CursorLeft + 1;
+                }
+                else if (context.Console.CursorLeft == context.Console.BufferWidth - 1)
+                {
+                    context.Console.CursorTop++;
+                    context.Console.CursorLeft = 0;
+                }
             }
 
             context.Intercept = true;

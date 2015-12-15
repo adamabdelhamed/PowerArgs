@@ -116,7 +116,10 @@ namespace PowerArgs.Cli
 
         public void DrawPoint(int x, int y)
         {
-            if(IsInScope(x,y))
+            x = scope.X + x;
+            y = scope.Y + y;
+
+            if (IsInScope(x,y))
             {
                 pixels[x][y].Value = Pen;
             }
