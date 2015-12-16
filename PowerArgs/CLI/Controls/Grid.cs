@@ -131,6 +131,12 @@ namespace PowerArgs.Cli
                 table += "more data below".ToConsoleString(ConsoleColor.Gray);
             }
             context.DrawString(table, 0, 0);
+
+
+            if(ViewModel.FilteringEnabled)
+            {
+                
+            }
         }
 
         public override void OnKeyInputReceived(ConsoleKeyInfo info)

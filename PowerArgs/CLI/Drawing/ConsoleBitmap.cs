@@ -60,6 +60,11 @@ namespace PowerArgs.Cli
             }
         }
 
+        public ConsolePixel GetPixel(int x, int y)
+        {
+            return pixels[x][y];
+        }
+
         public ConsoleSnapshot CreateSnapshot()
         {
             var snapshot = new ConsoleSnapshot(Left, Top, Console);

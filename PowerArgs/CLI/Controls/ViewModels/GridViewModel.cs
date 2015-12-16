@@ -12,6 +12,8 @@ namespace PowerArgs.Cli
         public ConsoleString RowPrefix { get { return Get<ConsoleString>(); } set { Set(value); } }
         public int Gutter { get { return Get<int>(); } set { Set(value); } }
 
+        public bool FilteringEnabled { get { return Get<bool>(); } set { Set(value); } }
+
         public int visibleRowOffset
         {
             get;private set;

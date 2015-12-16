@@ -49,6 +49,7 @@
     <Compile Include="CLI\CliHelper.cs" />
     <Compile Include="CLI\CliMessagePump.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
+    <Compile Include="CLI\Controls\ConsoleProviderControl.cs" />
     <Compile Include="CLI\Controls\Grid.cs" />
     <Compile Include="CLI\Controls\Label.cs" />
     <Compile Include="CLI\Controls\ListView.cs" />

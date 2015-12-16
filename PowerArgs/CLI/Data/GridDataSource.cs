@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    public class FilterableAttribute : Attribute { }
+
     public class CollectionDataView
     {
         public bool IsViewComplete { get; private set; }
@@ -164,7 +166,7 @@ namespace PowerArgs.Cli
 
                 if (cacheState == CachedDataViewState.CompleteHit)
                 {
-                    return new CollectionDataView(items.Skip(query.Skip).Take(query.Take).ToList(), true, HasAllDataBeenLoaded && IsEndOfCache(query.Skip, query.Take), query.Skip);
+                    return CreateFromCache(query, true, HasAllDataBeenLoaded && IsEndOfCache(query.Skip, query.Take));
                 }
                 else if (cacheState == CachedDataViewState.CompleteMiss)
                 {
@@ -172,9 +174,16 @@ namespace PowerArgs.Cli
                 }
                 else
                 {
-                    return new CollectionDataView(items.Skip(query.Skip).Take(query.Take).ToList(), HasAllDataBeenLoaded, HasAllDataBeenLoaded, query.Skip);
+                    return CreateFromCache(query, HasAllDataBeenLoaded, HasAllDataBeenLoaded);
                 }
             }
+        }
+
+        private CollectionDataView CreateFromCache(CollectionQuery query, bool cachedPageIsComplete, bool isEndOfData)
+        {
+            var results = items.Skip(query.Skip).Take(query.Take);
+
+            return new CollectionDataView(results.ToList(),cachedPageIsComplete,isEndOfData, query.Skip);
         }
 
         protected abstract Task<LoadMoreResult> LoadMoreAsync(object continuationToken);
@@ -229,7 +238,62 @@ namespace PowerArgs.Cli
 
         public override CollectionDataView GetDataView(CollectionQuery query)
         {
+            var results = Items.Skip(query.Skip).Take(query.Take);
+
+            if(query.Filter != null)
+            {
+                results = results.Where(item => MatchesFilter(item, query.Filter));
+            }
+
+            foreach (var orderBy in query.SortOrder)
+            {
+                if (results is IOrderedEnumerable<object>)
+                {
+                    if (orderBy.Descending)
+                    {
+                        results = (results as IOrderedEnumerable<object>).ThenByDescending(item => item?.GetType().GetProperty(orderBy.Value).GetValue(item));
+                    }
+                    else
+                    {
+                        results = (results as IOrderedEnumerable<object>).ThenBy(item => item?.GetType().GetProperty(orderBy.Value).GetValue(item));
+                    }
+                }
+                else
+                {
+                    if (orderBy.Descending)
+                    {
+                        results = results.OrderByDescending(item => item?.GetType().GetProperty(orderBy.Value).GetValue(item));
+                    }
+                    else
+                    {
+                        results = results.OrderBy(item => item?.GetType().GetProperty(orderBy.Value).GetValue(item));
+                    }
+                }
+            }
+
             return new CollectionDataView(Items.Skip(query.Skip).Take(query.Take).ToList(), true, query.Skip + query.Take >= Items.Count - 1, query.Skip);
+        }
+
+        private bool MatchesFilter(object item, string filter)
+        {
+            var filterables = item.GetType().GetProperties().Where(prop => prop.HasAttr<FilterableAttribute>());
+
+            if(filterables.Count() == 0)
+            {
+                return item.ToString().IndexOf(filter, StringComparison.InvariantCultureIgnoreCase) >= 0;
+            }
+            else
+            {
+                foreach(var filterable in filterables)
+                {
+                    var propValue = filterable.GetValue(item);
+                    if(propValue != null && propValue.ToString().IndexOf(filter, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
     }
 }
