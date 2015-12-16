@@ -53,6 +53,7 @@
     <Compile Include="CLI\Controls\Grid.cs" />
     <Compile Include="CLI\Controls\Label.cs" />
     <Compile Include="CLI\Controls\ListView.cs" />
+    <Compile Include="CLI\Controls\TextBox.cs" />
     <Compile Include="CLI\Controls\ViewModels\GridViewModel.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
     <Compile Include="CLI\Data\GridDataSource.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\TabKeyHandler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\EnterKeyHandler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\HomeAndEndKeysHandler.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\RichTextEditor.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\RichTextCommandLineReader.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\SimpleSyntaxHighlighter.cs" />
     <Compile Include="Extensions\Array.cs" />

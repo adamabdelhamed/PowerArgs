@@ -17,7 +17,16 @@ namespace PowerArgs.Cli
             else if(context.KeyPressed.Key == ConsoleKey.End)
             {
                 context.Console.CursorTop = context.ConsoleStartTop + (int)(Math.Floor((context.ConsoleStartLeft + context.Buffer.Count) / (double)context.Console.BufferWidth));
-                context.Console.CursorLeft = (context.ConsoleStartLeft + context.Buffer.Count) % context.Console.BufferWidth;
+
+                // todo - resolve special handling for the TextBox support
+                if (context.Console.BufferWidth == 0)
+                {
+                    context.Console.CursorLeft = context.Buffer.Count;
+                }
+                else
+                {
+                    context.Console.CursorLeft = (context.ConsoleStartLeft + context.Buffer.Count) % context.Console.BufferWidth;
+                }
                 context.Intercept = true;
             }
         }
