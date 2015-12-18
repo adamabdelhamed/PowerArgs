@@ -19,6 +19,7 @@ namespace PowerArgs.Cli
         public ConsoleApp Application { get; internal set; }
         public ConsoleCharacter Background { get; set; }
         public ConsoleCharacter Foreground { get; set; }
+        public object Tag { get; set; }
 
         public virtual bool CanFocus { get { return Get<bool>(); } set { Set<bool>(value); } }
 

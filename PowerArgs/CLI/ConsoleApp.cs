@@ -6,11 +6,33 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    // todos before fully supporting the .Cli namespace
+    //
+    // Command bar
+    // Notifications
+    // Implement a proper focus manager with support for stacking focus management contexts (for dialogs)
+    // Pull out view model concepts
+    // Implement ConsoleControl.Visible
+    // Samples for different data sources (e.g. An azure table, a file system)  
+    // Lots of testing
+    // Final code review and documentation
+
     /// <summary>
     /// A class representing a console application that uses a message pump to synchronize work on a UI thread
     /// </summary>
     public class ConsoleApp
     {
+        [ThreadStatic]
+        private static ConsoleApp _current;
+
+        public static ConsoleApp Current
+        {
+            get
+            {
+                return _current;
+            }
+        }
+
         /// <summary>
         /// An event that fired when the application stops, after the message pump is no longer running
         /// </summary>
@@ -69,6 +91,7 @@ namespace PowerArgs.Cli
             LayoutRoot.Controls.Added += (c) =>
             {
                 c.Application = this;
+                // todo - CanFocus is currently a one time setting.  It needs to be changeable.
                 if (c.CanFocus) focusableControls.Add(c);
 
                 if (c is ConsolePanel)
@@ -133,6 +156,16 @@ namespace PowerArgs.Cli
             {
                 MessagePump.QueueAction(() => { MoveFocus(); });
             }
+
+            MessagePump.QueueAction(() => 
+            {
+                if(_current != null)
+                {
+                    throw new NotSupportedException("An application is already running on this thread.");
+                }
+                // ensures that the current app is set on the message pump thread
+                _current = this;
+            });
             Paint();
 
             return ret;

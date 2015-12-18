@@ -13,6 +13,11 @@ namespace HelloWorld.Samples
             [Filterable]
             public string Name { get; set; }
 
+            public string Country
+            {
+                get { return "USA"; }
+            }
+
         }
 
         private Page homePage, statePage;
@@ -27,12 +32,17 @@ namespace HelloWorld.Samples
         {
             homePage = new Page();
 
+            // initialize data
             var statesModel = new GridViewModel(StatePickerAssistant.States.Select(s => new State { Name = s } as object).ToList());
-            
+
+            // initialize controls
             Grid statesGrid = new Grid(statesModel) { Y = 2 };
             Label filterLabel = new Label() { Y = 1, Text  = "Filter:".ToConsoleString(), Width = "Filter:" .Length};
             TextBox filterTextBox = new TextBox() { Y=1, X = filterLabel.Text.Length };
+
+            // connect controls
             statesGrid.FilterTextBox = filterTextBox;
+
             homePage.Controls.Add(filterTextBox);
             homePage.Controls.Add(statesGrid);
             homePage.Controls.Add(filterLabel);
@@ -52,7 +62,13 @@ namespace HelloWorld.Samples
 
             statesGrid.ViewModel.SelectedItemActivated += () =>
             {
-                (statesGrid.Application as ConsolePageApp).PageStack.Navigate("states/"+(statesGrid.ViewModel.SelectedItem as State).Name);
+                Dialog.Show("Are you sure you want tp navigate to ".ToConsoleString() + (statesGrid.ViewModel.SelectedItem as State).Name.ToConsoleString(ConsoleColor.Yellow) + "?", (choice) =>
+                {
+                    if (choice != null && choice.DisplayText == "Yes")
+                    {
+                        (statesGrid.Application as ConsolePageApp).PageStack.Navigate("states/" + (statesGrid.ViewModel.SelectedItem as State).Name);
+                    }
+                }, true, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
             };
         }
 

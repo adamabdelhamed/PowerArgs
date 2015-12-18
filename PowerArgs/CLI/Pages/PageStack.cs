@@ -163,7 +163,8 @@ namespace PowerArgs.Cli
         {
 
             if (route.EndsWith("/")) route = route.Substring(0, route.Length - 1);
-            if (Regex.IsMatch(route, @"^{?[a-zA-Z0-9_]+}?(\/{?[a-zA-Z0-9_]+}?)*$") == false)
+
+            if (Regex.IsMatch(route, @"^{?[a-zA-Z0-9_\*]+}?(\/{?[a-zA-Z0-9_]+}?)*$") == false)
             {
                 throw new FormatException("Routes must be made up of alphanumeric characters or underscores separated by '/' characters.  Segments can be surrounded with {} to represent a variable");
             }
@@ -229,7 +230,23 @@ namespace PowerArgs.Cli
 
                     if(routeSegment.StartsWith("{") && routeSegment.EndsWith("}"))
                     {
-                        variablesCandidate.Add(routeSegment.Substring(1, routeSegment.Length - 2), pathSegment);
+                        var variableName = routeSegment.Substring(1, routeSegment.Length - 2);
+
+                        if (variableName == "*")
+                        {
+                            var restOfPathValue = "";
+                            for(int j = i; j < pathSegments.Length; j++)
+                            {
+                                restOfPathValue += pathSegments[j]+"/";
+                            }
+                            restOfPathValue = restOfPathValue.Substring(0, restOfPathValue.Length - 1);
+                            variablesCandidate.Add(variableName, restOfPathValue);
+                            break;
+                        }
+                        else
+                        {
+                            variablesCandidate.Add(variableName, pathSegment);
+                        }
                     }
                     else if(routeSegment.Equals(pathSegment, StringComparison.InvariantCultureIgnoreCase) == false)
                     {
