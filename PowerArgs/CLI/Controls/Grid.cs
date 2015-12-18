@@ -1,22 +1,65 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace PowerArgs.Cli
 {
-
-
     public class Grid : ConsoleControl
     {
         public GridViewModel ViewModel { get; private set; }
+
+        private ActionDebouncer filterTextDebouncer;
+
+        private TextBox _filterTextBox;
+        public TextBox FilterTextBox
+        {
+            get
+            {
+                return _filterTextBox;
+            }
+            set
+            {
+                if(_filterTextBox != null)
+                {
+                    _filterTextBox.PropertyChanged -= FilterTextValueChanged;
+                    _filterTextBox.KeyInputReceived -= FilterTextEnterPressed;
+                }
+                _filterTextBox = value;
+                _filterTextBox.PropertyChanged += FilterTextValueChanged;
+                _filterTextBox.KeyInputReceived += FilterTextEnterPressed;
+                ViewModel.FilteringEnabled = true;
+            }
+        }
+
+        private void FilterTextEnterPressed(ConsoleKeyInfo obj)
+        {
+            if (obj.Key != ConsoleKey.Enter) return;
+            ViewModel.Activate();
+        }
+
+        private void FilterTextValueChanged(object sender, PropertyChangedEventArgs e)
+        {
+            filterTextDebouncer.Trigger();
+        }
 
         public Grid(GridViewModel vm = null)
         {
             this.ViewModel = vm ?? new GridViewModel();
 
-            Background = new ConsoleCharacter(' ', ConsoleColor.Red, ConsoleColor.Red);
             this.ViewModel.PropertyChanged += ViewModel_PropertyChanged;
             this.PropertyChanged += Grid_PropertyChanged;
+
+            this.filterTextDebouncer = new ActionDebouncer(TimeSpan.FromSeconds(0), () =>
+            {
+                if (Application != null && FilterTextBox != null)
+                {
+                    Application.MessagePump.QueueAction(() =>
+                    {
+                        ViewModel.FilterText = FilterTextBox.Value.ToString();
+                    });
+                }
+            });
         }
 
         private void Grid_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -100,11 +143,11 @@ namespace PowerArgs.Cli
                     var value = item?.GetType()?.GetProperty(col.ColumnName.ToString())?.GetValue(item);
                     var displayValue = value == null ? "<null>".ToConsoleString() : value.ToString().ToConsoleString();
 
-                    if(this.HasFocus && viewIndex == ViewModel.SelectedIndex)
+                    if(viewIndex == ViewModel.SelectedIndex)
                     {
                         if (this.ViewModel.SelectionMode == GridSelectionMode.Row || (this.ViewModel.SelectionMode == GridSelectionMode.Cell && columnIndex == ViewModel.selectedColumnIndex))
                         {
-                            displayValue = new ConsoleString(displayValue.ToString(), this.Background.BackgroundColor, ConsoleColor.Cyan);
+                            displayValue = new ConsoleString(displayValue.ToString(), this.Background.BackgroundColor, HasFocus ? ConsoleColor.Cyan : ConsoleColor.Gray);
                         }
                     }
 
@@ -118,17 +161,22 @@ namespace PowerArgs.Cli
             ConsoleTableBuilder builder = new ConsoleTableBuilder();
             ConsoleString table = builder.FormatAsTable(headers, rows, ViewModel.RowPrefix.ToString(), overflowBehaviors, ViewModel.Gutter);
 
+            if (ViewModel.FilterText != null)
+            {
+                table = table.Highlight(ViewModel.FilterText, ConsoleColor.Black, ConsoleColor.Yellow, StringComparison.InvariantCultureIgnoreCase);
+            }
+
             if(ViewModel.DataView.IsViewComplete == false)
             {
-                table += "Loading more rows...";
+                table += "Loading more rows...".ToConsoleString(ConsoleColor.Yellow);
             }
             else if(ViewModel.DataView.IsViewEndOfData)
             {
-                table += "End of data set";
+                table += "End of data set".ToConsoleString(ConsoleColor.Yellow);
             }
             else
             {
-                table += "more data below".ToConsoleString(ConsoleColor.Gray);
+                table += "more data below".ToConsoleString(ConsoleColor.Yellow);
             }
             context.DrawString(table, 0, 0);
 
@@ -174,6 +222,15 @@ namespace PowerArgs.Cli
             else if(info.Key == ConsoleKey.End)
             {
                 ViewModel.End();
+            }
+            else if(info.Key == ConsoleKey.Enter)
+            {
+                ViewModel.Activate();
+            }
+            else if(ViewModel.FilteringEnabled && RichTextCommandLineReader.IsWriteable(info) && FilterTextBox != null)
+            {
+                FilterTextBox.Value = info.KeyChar.ToString().ToConsoleString();
+                Application.SetFocus(FilterTextBox);
             }
         }
     }

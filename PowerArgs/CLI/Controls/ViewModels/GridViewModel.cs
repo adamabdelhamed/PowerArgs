@@ -6,6 +6,7 @@ namespace PowerArgs.Cli
 {
     public class GridViewModel : Rectangular
     {
+        public event Action SelectedItemActivated;
         public CollectionDataSource DataSource { get { return Get<CollectionDataSource>(); } set { Set(value); } }
         public ObservableCollection<ColumnViewModel> VisibleColumns { get; private set; }
         public GridSelectionMode SelectionMode { get { return Get<GridSelectionMode>(); } set { Set(value); } }
@@ -27,11 +28,33 @@ namespace PowerArgs.Cli
             }
         }
 
+        public string FilterText
+        {
+            get
+            {
+                return query.Filter;
+            }
+            set
+            {
+                query.Filter = value;
+                visibleRowOffset = 0;
+                SelectedIndex = 0;
+                this.query.Skip = visibleRowOffset;
+                DataView = DataSource.GetDataView(query);
+                SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
+            }
+        }
+
         private CollectionQuery query;
 
         internal int selectedColumnIndex;
-        internal CollectionDataView DataView { get { return Get<CollectionDataView>(); }
-        private set
+        internal CollectionDataView DataView
+        {
+            get
+            {
+                return Get<CollectionDataView>();
+            }
+            private set
             {
                 Set(value);
             }
@@ -74,7 +97,7 @@ namespace PowerArgs.Cli
         {
             this.query.Skip = visibleRowOffset;
             DataView = DataSource.GetDataView(query);
-            SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            SelectedItem = DataView.Items.Count == 0 ? null : DataView.Items[SelectedIndex - visibleRowOffset];
         }
 
         public GridViewModel(CollectionDataSource dataSource) : this()
@@ -231,6 +254,14 @@ namespace PowerArgs.Cli
                 SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
             }
 
+        }
+
+        public void Activate()
+        {
+            if(SelectedItem != null && SelectedItemActivated != null)
+            {
+                SelectedItemActivated();
+            }
         }
 
         public void MoveSelectionLeft()

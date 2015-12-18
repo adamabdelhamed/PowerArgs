@@ -49,6 +49,7 @@
     <Compile Include="CLI\CliHelper.cs" />
     <Compile Include="CLI\CliMessagePump.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
+    <Compile Include="CLI\Controls\BreadcrumbBar.cs" />
     <Compile Include="CLI\Controls\ConsoleProviderControl.cs" />
     <Compile Include="CLI\Controls\Grid.cs" />
     <Compile Include="CLI\Controls\Label.cs" />
@@ -57,6 +58,10 @@
     <Compile Include="CLI\Controls\ViewModels\GridViewModel.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
     <Compile Include="CLI\Data\GridDataSource.cs" />
+    <Compile Include="CLI\Helpers\GlobalKeyHandlerStack.cs" />
+    <Compile Include="CLI\Pages\ConsolePageApp.cs" />
+    <Compile Include="CLI\Pages\Page.cs" />
+    <Compile Include="CLI\Pages\PageStack.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
     <Compile Include="CLI\ConsoleApp.cs" />
@@ -91,6 +96,7 @@
     <Compile Include="CLI\RichTextCommandLineReader\RichTextCommandLineReader.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\SimpleSyntaxHighlighter.cs" />
     <Compile Include="Extensions\Array.cs" />
+    <Compile Include="Extensions\Dictionary.cs" />
     <Compile Include="Extensions\IConsoleProvider.cs" />
     <Compile Include="Extensions\IEnumerableOfIArgMetadata.cs" />
     <Compile Include="Extensions\FieldInfo.cs" />
@@ -132,6 +138,7 @@
     <Compile Include="HelperTypesInternal\StdConsoleProvider.cs" />
     <Compile Include="HelperTypesInternal\VirtualPropertyInfo.cs" />
     <Compile Include="HelperTypesInternal\ActionMethodInfo.cs" />
+    <Compile Include="HelperTypesPublic\ActionDebouncer.cs" />
     <Compile Include="HelperTypesPublic\ICanBeAConsoleString.cs" />
     <Compile Include="HelperTypesPublic\ITabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\IUsageTemplateProvider.cs" />

@@ -106,12 +106,19 @@ namespace PowerArgs.Cli
     /// </summary>
     public class CliMessagePump
     {
+        private class StopPumpMessage : PumpMessage
+        {
+            public StopPumpMessage() : base(() => { }, description: "Stops the pump") { }
+        }
+
         /// <summary>
         /// An event that fires when a pump message throws an exception while executing.  Handlers can mark the exception as handled
         /// if they want to keep the pump running.  If no handler is registered or no handler marks the exception as handled then the
         /// pump thread will throw and the process will crash.
         /// </summary>
         public event Action<PumpExceptionArgs> PumpException;
+
+        public event Action WindowResized;
 
         /// <summary>
         /// A boolean that can be checked to see if the pump is currently running
@@ -122,7 +129,7 @@ namespace PowerArgs.Cli
         private IConsoleProvider console;
         private Action<ConsoleKeyInfo> keyInputHandler;
         private int managedCliThreadId;
-
+        private int lastConsoleWidth;
 
         /// <summary>
         /// Creates a new message pump given a console to use for keyboard input
@@ -132,6 +139,7 @@ namespace PowerArgs.Cli
         public CliMessagePump(IConsoleProvider console, Action<ConsoleKeyInfo> keyInputHandler)
         {
             this.console = console;
+            this.lastConsoleWidth = this.console.BufferWidth;
             this.keyInputHandler = keyInputHandler;
         }
 
@@ -143,6 +151,14 @@ namespace PowerArgs.Cli
         {
             var pumpMessage = new PumpMessage(a);
             QueueAction(pumpMessage);
+        }
+
+        public void Stop()
+        {
+            if(IsRunning)
+            {
+                QueueAction(new StopPumpMessage());
+            }
         }
 
         /// <summary>
@@ -225,8 +241,15 @@ namespace PowerArgs.Cli
         private void Pump()
         {
             IsRunning = true;
+            bool stopRequested = false;
             while (true)
             {
+                if(lastConsoleWidth != this.console.BufferWidth && WindowResized != null)
+                {
+                    DebounceResize();
+                    WindowResized();
+                }
+
                 bool idle = true;
                 lock (pumpMessageQueue)
                 {
@@ -234,18 +257,28 @@ namespace PowerArgs.Cli
                     while (pumpMessageQueue.Count > 0)
                     {
                         idle = false;
-                        TryWork(pumpMessageQueue.Dequeue());
+                        var message = pumpMessageQueue.Dequeue();
+                        if (message is StopPumpMessage)
+                        {
+                            stopRequested = true;
+                            break;
+                        }
+                        else
+                        {
+                            TryWork(message);
+                        }
                     }
+                }
+
+                if(stopRequested)
+                {
+                    break;
                 }
 
                 if (this.console.KeyAvailable)
                 {
                     idle = false;
                     var info = this.console.ReadKey(true);
-                    if (info.Key == ConsoleKey.Escape)
-                    {
-                        break;
-                    }
                     QueueAction(() => { this.keyInputHandler(info); });
                 }
                 
@@ -254,6 +287,7 @@ namespace PowerArgs.Cli
                     Thread.Sleep(10);
                 }
             }
+
             IsRunning = false;
         }
 
@@ -277,6 +311,26 @@ namespace PowerArgs.Cli
                 if (handled == false)
                 {
                     throw;
+                }
+            }
+        }
+
+        private void DebounceResize()
+        {
+            console.Clear();
+            bool done = false;
+            ActionDebouncer debouncer = new ActionDebouncer(TimeSpan.FromSeconds(.25), () =>
+            {
+                done = true;
+            });
+
+            debouncer.Trigger();
+            while(done == false)
+            {
+                if(console.BufferWidth != lastConsoleWidth)
+                {
+                    lastConsoleWidth = console.BufferWidth;
+                    debouncer.Trigger();
                 }
             }
         }

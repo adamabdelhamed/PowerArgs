@@ -84,6 +84,7 @@
     <Compile Include="Data\TestLoadMoreDataSource.cs" />
     <Compile Include="MultipleFactoredOutActionsTests.cs" />
     <Compile Include="NewAwesomeTabCompletionTests.cs" />
+    <Compile Include="Pages\PageStackTests.cs" />
     <Compile Include="Templating\DocumentRendererTests.cs" />
     <Compile Include="InheritenceTests.cs" />
     <Compile Include="NullableTests.cs" />

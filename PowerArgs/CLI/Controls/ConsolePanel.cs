@@ -27,7 +27,7 @@ namespace PowerArgs.Cli
             Controls.Removed += (c) =>
             {
                 c.OnRemove(this);
-                c.Application = null;
+                //c.Application = null;
                 if (c is ConsolePanel)
                 {
                     (c as ConsolePanel).Controls.Added -= addPropagator;

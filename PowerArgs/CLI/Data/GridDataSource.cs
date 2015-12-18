@@ -132,13 +132,18 @@ namespace PowerArgs.Cli
             this.items = new List<object>();
         }
 
-  
+        private List<object> GetFilteredItems(string filter)
+        {
+            if (filter == null || filter.Length == 0) return items;
+            var filteredItems = items.Where(i => (i ?? "").ToString().IndexOf(filter, StringComparison.InvariantCultureIgnoreCase) >= 0).ToList();
+            return filteredItems;
+        }
 
         public override CollectionDataView GetDataView(CollectionQuery query)
         {
             lock(items)
             {
-                var cacheState = GetCacheState(query.Skip, query.Take);
+                var cacheState = GetCacheState(query);
 
                 if (cacheState != CachedDataViewState.CompleteHit && isLoading == false && HasAllDataBeenLoaded == false)
                 {
@@ -166,7 +171,7 @@ namespace PowerArgs.Cli
 
                 if (cacheState == CachedDataViewState.CompleteHit)
                 {
-                    return CreateFromCache(query, true, HasAllDataBeenLoaded && IsEndOfCache(query.Skip, query.Take));
+                    return CreateFromCache(query, true, HasAllDataBeenLoaded && IsEndOfCache(query));
                 }
                 else if (cacheState == CachedDataViewState.CompleteMiss)
                 {
@@ -181,21 +186,24 @@ namespace PowerArgs.Cli
 
         private CollectionDataView CreateFromCache(CollectionQuery query, bool cachedPageIsComplete, bool isEndOfData)
         {
-            var results = items.Skip(query.Skip).Take(query.Take);
+            var results = GetFilteredItems(query.Filter).Skip(query.Skip).Take(query.Take);
 
             return new CollectionDataView(results.ToList(),cachedPageIsComplete,isEndOfData, query.Skip);
         }
 
         protected abstract Task<LoadMoreResult> LoadMoreAsync(object continuationToken);
 
-        private CachedDataViewState GetCacheState(int skip, int take)
+        private CachedDataViewState GetCacheState(CollectionQuery query)
         {
-            var lastIndexRequested = skip + take - 1;
-            if(lastIndexRequested < items.Count)
+            var lastIndexRequested = query.Skip + query.Take- 1;
+
+            var filteredItems = GetFilteredItems(query.Filter);
+
+            if(lastIndexRequested < filteredItems.Count)
             {
                 return CachedDataViewState.CompleteHit; 
             }
-            else if(skip < items.Count)
+            else if(query.Skip < filteredItems.Count)
             {
                 return CachedDataViewState.PartialHit;
             }
@@ -205,12 +213,12 @@ namespace PowerArgs.Cli
             }
         }
 
-        private bool IsEndOfCache(int skip, int take)
+        private bool IsEndOfCache(CollectionQuery query)
         {
-            var cacheState = GetCacheState(skip, take);
+            var cacheState = GetCacheState(query);
             if (cacheState == CachedDataViewState.CompleteMiss) return false;
             else if (cacheState == CachedDataViewState.PartialHit) return true;
-            else return skip + take == items.Count;
+            else return query.Skip + query.Take== GetFilteredItems(query.Filter).Count;
         }
     }
 
@@ -238,12 +246,14 @@ namespace PowerArgs.Cli
 
         public override CollectionDataView GetDataView(CollectionQuery query)
         {
-            var results = Items.Skip(query.Skip).Take(query.Take);
+            IEnumerable<object> results = Items;
 
-            if(query.Filter != null)
+            if (query.Filter != null)
             {
                 results = results.Where(item => MatchesFilter(item, query.Filter));
             }
+
+            results = results.Skip(query.Skip).Take(query.Take);
 
             foreach (var orderBy in query.SortOrder)
             {
@@ -271,11 +281,13 @@ namespace PowerArgs.Cli
                 }
             }
 
-            return new CollectionDataView(Items.Skip(query.Skip).Take(query.Take).ToList(), true, query.Skip + query.Take >= Items.Count - 1, query.Skip);
+            return new CollectionDataView(results.ToList(), true, query.Skip + query.Take >= Items.Where(item => MatchesFilter(item, query.Filter)).Count() - 1, query.Skip);
         }
 
         private bool MatchesFilter(object item, string filter)
         {
+            if (filter == null || filter.Length == 0) return true;
+
             var filterables = item.GetType().GetProperties().Where(prop => prop.HasAttr<FilterableAttribute>());
 
             if(filterables.Count() == 0)

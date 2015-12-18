@@ -61,7 +61,7 @@ namespace HelloWorld.Samples
 
     public class StatePickerAssistant : ContextAssistPicker
     {
-        private static List<string> states = new List<string>
+        public static List<string> States = new List<string>
         {
             "Alabama",
             "Alaska", 
@@ -117,7 +117,7 @@ namespace HelloWorld.Samples
 
         public StatePickerAssistant()
         {
-            Options.AddRange(states.Select(s => ContextAssistSearchResult.FromString(s)));
+            Options.AddRange(States.Select(s => ContextAssistSearchResult.FromString(s)));
         }
     }
 }

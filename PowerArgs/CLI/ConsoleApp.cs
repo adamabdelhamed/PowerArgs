@@ -32,8 +32,22 @@ namespace PowerArgs.Cli
         public CliMessagePump MessagePump { get; private set; }
 
         private int focusIndex;
-        private ConsoleControl focusedControl;
+        public ConsoleControl FocusedControl { get; private set; }
         private List<ConsoleControl> focusableControls;
+        public GlobalKeyHandlerStack GlobalKeyHandlers { get; private set; }
+
+        public bool SetFocusOnStart
+        {
+            get; set;
+        }
+
+        public IReadOnlyCollection<ConsoleControl> FocusableControls
+        {
+            get
+            {
+                return focusableControls.AsReadOnly();
+            }
+        }
 
         /// <summary>
         /// Creates a new console app given a set of boundaries
@@ -44,9 +58,11 @@ namespace PowerArgs.Cli
         /// <param name="h">The height of the app</param>
         public ConsoleApp(int x, int y, int w, int h)
         {
+            SetFocusOnStart = true;
             Bitmap = new ConsoleBitmap(x,y, w, h);
             MessagePump = new CliMessagePump(Bitmap.Console, KeyPressed);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
+            GlobalKeyHandlers = new GlobalKeyHandlerStack();
             LayoutRoot.Application = this;
             focusableControls = new List<ConsoleControl>();
             focusIndex = -1;
@@ -66,8 +82,16 @@ namespace PowerArgs.Cli
 
             LayoutRoot.Controls.Removed += (c) =>
             {
+                bool focusChanged = false;
+        
+                focusableControls.Remove(c);
+                if(FocusedControl == c)
+                {
+                    focusChanged = true;
+                    GracefullyUnfocus();
+                }
                 c.Application = null;
-                if (c.CanFocus) focusableControls.Remove(c);
+
 
                 if (c is ConsolePanel)
                 {
@@ -75,10 +99,22 @@ namespace PowerArgs.Cli
                     foreach (var child in children)
                     {
                         focusableControls.Remove(child);
+                        if(FocusedControl == child)
+                        {
+                            focusChanged = true;
+                            GracefullyUnfocus();
+                        }
                         child.Application = null;
                     }
                 }
+
+                if(focusChanged)
+                {
+                    MoveFocus();
+                }
             };
+
+            MessagePump.WindowResized += Paint;
         }
 
         /// <summary>
@@ -93,7 +129,10 @@ namespace PowerArgs.Cli
                 ExitInternal();
             });
 
-            MessagePump.QueueAction(()=> { MoveFocus(); });
+            if (SetFocusOnStart)
+            {
+                MessagePump.QueueAction(() => { MoveFocus(); });
+            }
             Paint();
 
             return ret;
@@ -116,19 +155,18 @@ namespace PowerArgs.Cli
             var index = focusableControls.IndexOf(newFocusControl);
             if (index < 0) throw new InvalidOperationException("The given control is not in the control tree");
 
-            if (newFocusControl != focusedControl)
+            if (newFocusControl != FocusedControl)
             {
-                if (focusedControl != null)
+                if (FocusedControl != null)
                 {
-                    focusedControl.HasFocus = false;
-                    focusedControl.FireFocused(false);
+                    GracefullyUnfocus();
                 }
 
-                focusedControl = newFocusControl;
-                focusedControl.HasFocus = true;
+                FocusedControl = newFocusControl;
+                FocusedControl.HasFocus = true;
                 focusIndex = index;
 
-                if (focusedControl != null) focusedControl.FireFocused(true);
+                if (FocusedControl != null) FocusedControl.FireFocused(true);
                 Paint();
             }
         }
@@ -149,15 +187,31 @@ namespace PowerArgs.Cli
             SetFocus(focusableControls[focusIndex]);
         }
 
+        private void GracefullyUnfocus()
+        {
+            FocusedControl.HasFocus = false;
+            FocusedControl.FireFocused(false);
+            FocusedControl = null;
+        }
+
         private void KeyPressed(ConsoleKeyInfo info)
         {
-            if (info.Key == ConsoleKey.Tab)
+            if(GlobalKeyHandlers.TryHandle(info))
+            {
+                // great, it was handled
+            }
+            else if (info.Key == ConsoleKey.Tab)
             {
                 MoveFocus(info.Modifiers.HasFlag(ConsoleModifiers.Shift) == false);
             }
-            else if (focusedControl != null)
+            else if(info.Key == ConsoleKey.Escape)
             {
-                focusedControl.OnKeyInputReceived(info);
+                MessagePump.Stop();
+                return;
+            }
+            else if (FocusedControl != null)
+            {
+                FocusedControl.OnKeyInputReceived(info);
             }
 
             Paint();

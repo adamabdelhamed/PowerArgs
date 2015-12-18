@@ -32,7 +32,7 @@ namespace ArgsTests.Data
             CliMessagePump pump = new CliMessagePump(ConsoleProvider.Current, (k) => { });
             TestLoadMoreDataSource dataSource = new TestLoadMoreDataSource(pump, expectedNumberOfItems, TimeSpan.FromMilliseconds(50));
 
-            var query = new CollectionQuery(0, 7, "*");
+            var query = new CollectionQuery(0, 7, null);
             List<object> viewedData = new List<object>();
             pump.Start();
             

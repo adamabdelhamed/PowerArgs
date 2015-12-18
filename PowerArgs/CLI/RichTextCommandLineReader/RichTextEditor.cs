@@ -73,6 +73,7 @@ namespace PowerArgs.Cli
                 Context.Buffer.Clear();
                 Context.Buffer.AddRange(value);
                 Context.BufferPosition = 0;
+                FirePropertyChanged(nameof(CurrentValue));
             }
         }
 
@@ -137,6 +138,7 @@ namespace PowerArgs.Cli
 
                 DoSyntaxHighlighting(Context);
             }
+            FireValueChanged();
         }
 
         public void Clear()
@@ -158,8 +160,6 @@ namespace PowerArgs.Cli
             }
 
             CursorPosition++;
-
-            FireValueChanged();
         }
 
         private void DoSyntaxHighlighting(RichCommandLineContext context)

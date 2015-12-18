@@ -174,7 +174,15 @@ namespace PowerArgs
         /// </summary>
         public void Clear()
         {
-            Console.Clear();
+            var bg = Console.BackgroundColor;
+            try
+            {
+                Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
+                Console.Clear();
+            }finally
+            {
+                Console.BackgroundColor = bg;
+            }
         }
 
         /// <summary>

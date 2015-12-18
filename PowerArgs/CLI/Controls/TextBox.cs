@@ -20,6 +20,7 @@ namespace PowerArgs.Cli
             set
             {
                 textState.CurrentValue = value;
+                textState.CursorPosition = value.Length;
             }
         }
 
@@ -32,6 +33,13 @@ namespace PowerArgs.Cli
             CanFocus = true;
             this.Focused += TextBox_Focused;
             this.Unfocused += TextBox_Unfocused;
+            this.textState.PropertyChanged += TextValueChanged;
+        }
+
+        private void TextValueChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(RichTextEditor.CurrentValue)) return;
+            FirePropertyChanged(nameof(Value));
         }
 
         private void TextBox_Focused()
@@ -43,10 +51,12 @@ namespace PowerArgs.Cli
                 blinkState = !blinkState;
                 Application.Paint();
             }, BlinkInterval);
+            Application.GlobalKeyHandlers.Push(ConsoleKey.Backspace, OnKeyInputReceived);
         }
 
         private void TextBox_Unfocused()
         {
+            Application.GlobalKeyHandlers.Pop(ConsoleKey.Backspace);
             Application.MessagePump.ClearInterval(blinkTimerHandle);
             blinkState = false;
         }
@@ -56,6 +66,7 @@ namespace PowerArgs.Cli
             textState.RegisterKeyPress(info);
             blinkState = true;
             blinkTimerHandle.Change(BlinkInterval, BlinkInterval);
+            base.OnKeyInputReceived(info);
         }
 
         internal override void OnPaint(ConsoleBitmap context)

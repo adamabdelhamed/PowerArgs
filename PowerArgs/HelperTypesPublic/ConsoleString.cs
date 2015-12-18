@@ -303,6 +303,10 @@ namespace PowerArgs
         public ConsoleString Highlight(string toFind,ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
             ConsoleString ret = new ConsoleString(this);
+            if(toFind == null || toFind.Length == 0)
+            {
+                return ret;
+            }
 
             int startIndex = 0;
 

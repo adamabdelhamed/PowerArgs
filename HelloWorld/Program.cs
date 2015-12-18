@@ -8,6 +8,7 @@ using PowerArgs.Cli;
 using System.Threading;
 using System.Threading.Tasks;
 using ArgsTests.Data;
+using HelloWorld.Samples;
 
 namespace HelloWorld
 {
@@ -15,12 +16,15 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
+            new StateNavigatorApp().Start().Wait();
+            return;
             Console.WriteLine("My App\n\n*****");
-            var app = new ConsoleApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 20);
-            var vm = new GridViewModel(new TestLoadMoreDataSource(app.MessagePump,95, TimeSpan.FromSeconds(3)));
-            vm.VisibleColumns.Add(new ColumnViewModel("Id".ToConsoleString(ConsoleColor.Yellow)));
-            vm.VisibleColumns.Add(new ColumnViewModel("Value".ToConsoleString(ConsoleColor.Yellow)));
+            var app = new ConsolePageApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 21);
+            var vm = new GridViewModel(new InMemoryDataSource() { Items = HelloWorld.Samples.StatePickerAssistant.States.Select(s => new { State = s }).ToList<object>() });
+            vm.VisibleColumns.Add(new ColumnViewModel("State".ToConsoleString(ConsoleColor.Yellow)));
             var grid = new Grid(vm) { Width = ConsoleProvider.Current.BufferWidth, Height = 20};
+            var filter = new TextBox() { Width=25, Height = 1, Y = app.LayoutRoot.Height-1, Background = new ConsoleCharacter(' ',null, ConsoleColor.DarkBlue)};
+            grid.FilterTextBox = filter;
 
             var label = new Label();
             label.Foreground = new ConsoleCharacter(' ', ConsoleColor.Green);
@@ -31,6 +35,7 @@ namespace HelloWorld
 
             app.LayoutRoot.Controls.Add(grid);
             app.LayoutRoot.Controls.Add(label);
+            app.LayoutRoot.Controls.Add(filter);
 
             label.Bind(vm, nameof(vm.SelectedItem));
 

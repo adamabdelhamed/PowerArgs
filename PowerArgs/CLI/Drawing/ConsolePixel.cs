@@ -37,5 +37,10 @@ namespace PowerArgs.Cli
         {
             this.LastDrawnValue = Value;
         }
+
+        public void Invalidate()
+        {
+            this.LastDrawnValue = null;
+        }
     }
 }

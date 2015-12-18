@@ -25,6 +25,11 @@ namespace PowerArgs.Cli
 
         public ConsoleString Text { get { return Get<ConsoleString>(); } set { Set(value); } }
 
+        public Label()
+        {
+            Height = 1;
+        }
+
         public void Bind(INotifyPropertyChanged observable, string propertyName)
         {
             observable.PropertyChanged += (sender, args) =>

@@ -29,6 +29,8 @@ namespace PowerArgs.Cli
 
         private ConsolePixel[][] pixels;
 
+        private int lastBufferWidth;
+
         public int Top { get; private set; }
         public int Left { get; private set; }
 
@@ -47,6 +49,7 @@ namespace PowerArgs.Cli
             this.Bounds = bounds;
             this.scope = bounds;
             this.Console = ConsoleProvider.Current;
+            this.lastBufferWidth = this.Console.BufferWidth;
             this.Background = bg.HasValue ? bg.Value : new ConsoleCharacter(' ');
             this.Pen = new ConsoleCharacter('*');
             pixels = new ConsolePixel[this.Width][];
@@ -273,6 +276,13 @@ namespace PowerArgs.Cli
                     return;
                 }
 
+                if(lastBufferWidth != this.Console.BufferWidth)
+                {
+                    lastBufferWidth = this.Console.BufferWidth;
+                    Invalidate();
+                    this.Console.Clear();
+                }
+
                 for (int y = scope.Y; y < scope.Y + scope.Height; y++)
                 {
                     for (int x = scope.X; x < scope.X + scope.Width; x++)
@@ -294,32 +304,54 @@ namespace PowerArgs.Cli
             }
         }
 
+        public void Invalidate()
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    var pixel = pixels[x][y];
+                    pixel.Invalidate();
+                }
+            }
+        }
+
         private void DrawPixel(int x, int y, ConsolePixel pixel, ConsoleCharacter value)
         {
             x = Left + x;
             y = Top + y;
 
-            if (Console.CursorLeft != x)
+            if(x >= lastBufferWidth)
             {
-                Console.CursorLeft = x;
+                return;
             }
-
-            if (Console.CursorTop != y)
+            try
             {
-                Console.CursorTop = y;
-            }
+                if (Console.CursorLeft != x)
+                {
+                    Console.CursorLeft = x;
+                }
 
-            if (Console.ForegroundColor != value.ForegroundColor)
+                if (Console.CursorTop != y)
+                {
+                    Console.CursorTop = y;
+                }
+
+                if (Console.ForegroundColor != value.ForegroundColor)
+                {
+                    Console.ForegroundColor = value.ForegroundColor;
+                }
+
+                if (Console.BackgroundColor != value.BackgroundColor)
+                {
+                    Console.BackgroundColor = value.BackgroundColor;
+                }
+
+                Console.Write(value.Value);
+            }catch(ArgumentOutOfRangeException)
             {
-                Console.ForegroundColor = value.ForegroundColor;
-            }
 
-            if (Console.BackgroundColor != value.BackgroundColor)
-            {
-                Console.BackgroundColor = value.BackgroundColor;
             }
-
-            Console.Write(value.Value);
 
             if(pixel != null)
             {
