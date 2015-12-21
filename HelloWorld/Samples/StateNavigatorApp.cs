@@ -46,7 +46,8 @@ namespace HelloWorld.Samples
             homePage.Controls.Add(filterTextBox);
             homePage.Controls.Add(statesGrid);
             homePage.Controls.Add(filterLabel);
-            homePage.Added += () =>
+
+            homePage.Loaded += () =>
             {
                 homePage.Width = homePage.Application.LayoutRoot.Width;
                 homePage.Height = homePage.Application.LayoutRoot.Height;
@@ -65,8 +66,8 @@ namespace HelloWorld.Samples
                 Dialog.Show("Are you sure you want tp navigate to ".ToConsoleString() + (statesGrid.ViewModel.SelectedItem as State).Name.ToConsoleString(ConsoleColor.Yellow) + "?", (choice) =>
                 {
                     if (choice != null && choice.DisplayText == "Yes")
-                    {
-                        (statesGrid.Application as ConsolePageApp).PageStack.Navigate("states/" + (statesGrid.ViewModel.SelectedItem as State).Name);
+                    {   
+                        homePage.PageStack.Navigate("states/" + (statesGrid.ViewModel.SelectedItem as State).Name);
                     }
                 }, true, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
             };
@@ -76,16 +77,12 @@ namespace HelloWorld.Samples
         {
             statePage = new Page();
             var stateLabel = new Label() { Height = 1, Y = 1, Foreground = new ConsoleCharacter(' ', ConsoleColor.Green) };
-
-            statePage.Added += () =>
+            
+            statePage.Loaded += () =>
             {
                 statePage.Width = statePage.Application.LayoutRoot.Width;
                 statePage.Height = statePage.Application.LayoutRoot.Height;
                 stateLabel.Width = statePage.Width;
-            };
-
-            statePage.Loaded += () =>
-            {
                 stateLabel.Text = "You picked ".ToConsoleString(ConsoleColor.Gray)+ statePage.RouteVariables["state"].ToConsoleString(ConsoleColor.Green);
             };
 
