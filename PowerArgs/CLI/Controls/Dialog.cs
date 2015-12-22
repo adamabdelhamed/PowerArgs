@@ -24,10 +24,10 @@ namespace PowerArgs.Cli
             this.Width = content.Width;
             this.Height = content.Height;
             Controls.Add(content);
-            Background = new ConsoleCharacter(' ', ConsoleString.DefaultBackgroundColor, ConsoleString.DefaultBackgroundColor);
+            Background = content.Background;
         }
 
-        public override void OnAdd(ConsoleControl parent)
+        public override void OnAdd()
         {
             Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, (key)=>
             {
@@ -39,16 +39,36 @@ namespace PowerArgs.Cli
             });
         }
 
-        public override void OnRemove(ConsoleControl parent)
+        public override void OnRemove()
         {
             Application.GlobalKeyHandlers.Pop(ConsoleKey.Escape);
+            Application.FocusManager.Pop();
         }
 
         internal override void OnPaint(ConsoleBitmap context)
         {
             base.OnPaint(context);
-            context.Pen = new ConsoleCharacter(' ', null, ConsoleColor.Cyan);
+            context.Pen = new ConsoleCharacter(' ', null, Theme.DefaultTheme.FocusColor);
             context.DrawRect(0, 0, Width, Height);
+        }
+
+        public static void YesOrNo(string message, Action yesCallback, Action noCallback = null)
+        {
+            YesOrNo(message.ToConsoleString(), yesCallback, noCallback);
+        }
+        public static void YesOrNo(ConsoleString message, Action yesCallback, Action noCallback = null)
+        {
+            Show(message, (b) =>
+            {
+                if (b != null && b.Id == "y")
+                {
+                    yesCallback();
+                }
+                else if (noCallback != null)
+                {
+                    noCallback();
+                }
+            }, true, new DialogButton() { Id = "y", DisplayText = "Yes", }, new DialogButton() { Id = "n", DisplayText = "No" });
         }
 
         public static void Show(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, params DialogButton [] buttons)
@@ -104,8 +124,10 @@ namespace PowerArgs.Cli
 
             Layout.CenterVertically(ConsoleApp.Current.LayoutRoot, dialog);
             Layout.CenterHorizontally(ConsoleApp.Current.LayoutRoot, dialog);
+
+            ConsoleApp.Current.FocusManager.Push();
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
-            ConsoleApp.Current.SetFocus(firstButton);
+            ConsoleApp.Current.FocusManager.TryMoveFocus();
             ConsoleApp.Current.Paint();
         }
     }

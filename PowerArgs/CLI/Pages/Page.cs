@@ -13,7 +13,7 @@ namespace PowerArgs.Cli
         public event Action Loaded;
         public event Action Unloaded;
 
-        BreadcrumbBar bar;
+        public BreadcrumbBar BreadcrumbBar {  get; private set; }
         bool _showBreadcrumbBar;
         public bool ShowBreadcrumbBar
         {
@@ -26,22 +26,22 @@ namespace PowerArgs.Cli
                 _showBreadcrumbBar = value;
                 if (Application != null)
                 {
-                    if (value && Controls.Where(c => c == bar).Count() == 1)
+                    if (value && Controls.Where(c => c == BreadcrumbBar).Count() == 1)
                     {
                         // already added
                     }
                     else if (value)
                     {
-                        bar = bar ?? new BreadcrumbBar(PageStack);
-                        bar.Width = Width;
+                        BreadcrumbBar = BreadcrumbBar ?? new BreadcrumbBar(PageStack);
+                        BreadcrumbBar.Width = Width;
                         this.PropertyChanged += (sender, e) =>
                         {
                             if (e.PropertyName == nameof(Bounds))
                             {
-                                bar.Width = Width;
+                                BreadcrumbBar.Width = Width;
                             }
                         };
-                        Controls.Add(bar);
+                        Controls.Add(BreadcrumbBar);
                     }
                 }
             }
@@ -94,7 +94,14 @@ namespace PowerArgs.Cli
             }
             else
             {
-                Application.MessagePump.Stop();
+                Dialog.Show("Are you sure you want to quit?".ToConsoleString(), (choice) =>
+                 {
+                     if(choice != null && choice.DisplayText == "Yes")
+                     {
+                         Application.MessagePump.Stop();
+                     }
+
+                 }, true, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
             }
         }
 

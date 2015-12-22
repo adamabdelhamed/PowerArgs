@@ -112,7 +112,7 @@ namespace PowerArgs.Cli
 
             foreach (var prop in prototype.GetType().GetProperties())
             {
-                this.VisibleColumns.Add(new ColumnViewModel(prop.Name.ToConsoleString(ConsoleColor.Yellow)));
+                this.VisibleColumns.Add(new ColumnViewModel(prop.Name.ToConsoleString(Theme.DefaultTheme.H1Color)));
             }
 
             var dataSource = new InMemoryDataSource();

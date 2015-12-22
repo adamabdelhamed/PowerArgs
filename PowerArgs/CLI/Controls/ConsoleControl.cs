@@ -1,41 +1,82 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A class that represents a visual element within a CLI application
+    /// </summary>
     public class ConsoleControl : Rectangular
     {
-        public static ConsoleCharacter TransparantColor = new ConsoleCharacter(' ');
-
+        /// <summary>
+        /// An event that fires after this control gets focus
+        /// </summary>
         public event Action Focused;
+        /// <summary>
+        /// An event that fires after this control loses focus
+        /// </summary>
         public event Action Unfocused;
+
+        /// <summary>
+        /// An event that fires when this control is added to the visual tree of a ConsoleApp. 
+        /// </summary>
         public event Action Added;
+
+        /// <summary>
+        /// An event that fires when this control is removed from the visual tree of a ConsoleApp.
+        /// </summary>
         public event Action Removed;
 
+        /// <summary>
+        /// An event that fires when a key is pressed while this control has focus and the control has decided not to process
+        /// the key press internally.
+        /// </summary>
         public event Action<ConsoleKeyInfo> KeyInputReceived;
 
+        /// <summary>
+        /// Gets a reference to the application this control is a part of
+        /// </summary>
         public ConsoleApp Application { get; internal set; }
-        public ConsoleCharacter Background { get; set; }
-        public ConsoleCharacter Foreground { get; set; }
-        public object Tag { get; set; }
 
-        public virtual bool CanFocus { get { return Get<bool>(); } set { Set<bool>(value); } }
+        /// <summary>
+        /// Gets a reference to this control's parent in the visual tree.  It will be null if this control is not in the visual tree 
+        /// and also if this control is the root of the visual tree.
+        /// </summary>
+        public ConsoleControl Parent { get; internal set; }
 
-        public bool HasFocus { get { return Get<bool>(); } internal set { Set<bool>(value); } }
+        /// <summary>
+        /// Gets or sets the background color
+        /// </summary>
+        public ConsoleColor Background { get { return Get<ConsoleColor>(); } set { Set(value); } }
 
-        public ConsoleCharacter FocusForeground { get; set; }
-        public ConsoleCharacter FocusBackground { get; set; }
+        /// <summary>
+        /// Gets or sets the foreground color
+        /// </summary>
+        public ConsoleColor Foreground { get { return Get<ConsoleColor>(); } set { Set(value); } }
+
+        public ConsoleColor SelectedUnfocusedColor { get { return Get<ConsoleColor>(); } set { Set(value); } }
+        public bool TransparentBackground { get { return Get<bool>(); } set { Set(value); } }
+        public object Tag { get { return Get<object>(); } set { Set(value); } }
+        public virtual bool IsVisible { get { return Get<bool>(); } set { Set(value); } }
+        public virtual bool CanFocus { get { return Get<bool>(); } set { Set(value); } }
+        public bool HasFocus { get { return Get<bool>(); } internal set { Set(value); } }
+
+
+        public ConsoleCharacter BackgroundCharacter
+        {
+            get
+            {
+                return new ConsoleCharacter(' ', null, Background);
+            }
+        }
 
         public ConsoleControl()
         {
             CanFocus = true;
-            Background = ConsoleControl.TransparantColor;
-            FocusBackground = ConsoleControl.TransparantColor;
-            this.FocusForeground = new ConsoleCharacter('X', ConsoleColor.Cyan);
-            this.Foreground = new ConsoleCharacter('X', ConsoleColor.White);
+            Background = Theme.DefaultTheme.BackgroundColor;
+            this.Foreground = Theme.DefaultTheme.ForegroundColor;
+            this.SelectedUnfocusedColor = Theme.DefaultTheme.SelectedUnfocusedColor;
             this.PropertyChanged += ConsoleControl_PropertyChanged;
+            this.IsVisible = true;
         }
 
         void ConsoleControl_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -46,64 +87,27 @@ namespace PowerArgs.Cli
             }
         }
 
-        public void Focus()
+        public bool TryFocus()
         {
-            if (Application != null) Application.SetFocus(this);
-        }
-
-        public void UnFocus()
-        {
-            if (Application != null) Application.MoveFocus(true);
-        }
-
-        public virtual void OnRemove(ConsoleControl parent)
-        {
-            if(Removed != null)
+            if (Application != null)
             {
-                Removed();
+                return Application.FocusManager.TrySetFocus(this);
+            }
+            else
+            {
+                return false;
             }
         }
 
-        public virtual void OnAdd(ConsoleControl parent)
+        public bool TryUnfocus()
         {
-            if(Added != null)
+            if (Application != null)
             {
-                Added();
+                return Application.FocusManager.TryMoveFocus(true);
             }
-        }
-
-        internal void Paint(ConsoleBitmap context)
-        {
-            Rectangle scope = context.GetScope();
-
-            if (Background != ConsoleControl.TransparantColor)
+            else
             {
-                context.Pen = Background;
-                context.FillRect(0, 0, Width, Height);
-            }
-
-            try
-            {
-                //context.Rescope(this.X, this.Y, this.Width, this.Height);
-                context.Pen = this.Foreground;
-                OnPaint(context);
-            }
-            finally
-            {
-                context.Scope(scope);
-            }
-        }
-
-        internal virtual void OnPaint(ConsoleBitmap context)
-        {
- 
-        }
-
-        public virtual void OnKeyInputReceived(ConsoleKeyInfo info)
-        {
-            if(KeyInputReceived != null)
-            {
-                KeyInputReceived(info);
+                return false;
             }
         }
 
@@ -111,6 +115,63 @@ namespace PowerArgs.Cli
         {
             if (focused && Focused != null) Focused();
             if (!focused && Unfocused != null) Unfocused();
+        }
+
+        internal void AddedInternal()
+        {
+            if (Added != null)
+            {
+                Added();
+            }
+            OnAdd();
+        }
+
+        internal void RemovedInternal()
+        {
+            if (Removed != null)
+            {
+                Removed();
+            }
+            OnRemove();
+        }
+
+        public virtual void OnRemove() { }
+
+        public virtual void OnAdd() { }
+
+        internal void Paint(ConsoleBitmap context)
+        {
+            if(IsVisible == false)
+            {
+                return;
+            }
+
+            if (TransparentBackground == false)
+            {
+                context.Pen = new ConsoleCharacter(' ', null, Background);
+                context.FillRect(0, 0, Width, Height);
+            }
+
+            OnPaint(context);
+        }
+
+        internal virtual void OnPaint(ConsoleBitmap context)
+        {
+ 
+        }
+
+        public void HandleKeyInput(ConsoleKeyInfo info)
+        {
+            OnKeyInputReceived(info);
+            if (KeyInputReceived != null)
+            {
+                KeyInputReceived(info);
+            }
+        }
+
+        public virtual bool OnKeyInputReceived(ConsoleKeyInfo info)
+        {
+            return false;
         }
 
         public override string ToString()

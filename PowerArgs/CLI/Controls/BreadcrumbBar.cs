@@ -6,132 +6,55 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
-    public class BreadcrumbBar : ConsoleControl
+    internal class BreadcrumbElement : Label
+    {
+        public BreadcrumbElement(Action activationHandler)
+        {
+            this.CanFocus = true;
+            this.KeyInputReceived += (key) => { if(key.Key == ConsoleKey.Enter)  activationHandler();  };
+        }
+ 
+    }
+    public class BreadcrumbBar : ConsolePanel
     {
         public PageStack PageStack { get; private set; }
-
-        private int focusedSegmentIndex;
-
+ 
         public BreadcrumbBar(PageStack stack)
         {
             this.PageStack = stack;
-            this.PageStack.PropertyChanged += PageStack_PropertyChanged;
             this.Height = 1;
-            this.CanFocus = true;
-
-            this.Focused += BreadcrumbBar_Focused;
-            this.Unfocused += BreadcrumbBar_Unfocused;
+            this.CanFocus = false;
+            Compose();
         }
 
-
-
-        private void BreadcrumbBar_Focused()
+        internal void Compose()
         {
-            Application.GlobalKeyHandlers.Push(ConsoleKey.Tab, TabOverride);   
-        }
-
-
-
-        private void BreadcrumbBar_Unfocused()
-        {
-            Application.GlobalKeyHandlers.Pop(ConsoleKey.Tab);
-        }
-
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
-        {
-            if (info.Key == ConsoleKey.Enter)
+            this.Controls.Clear();
+ 
+            string builtUpPath = "";
+            foreach(var s in PageStack.GetSegments(PageStack.CurrentPath))
             {
-                var currentSegments = PageStack.GetSegments(PageStack.CurrentPath);
-                if (currentSegments.Length == 0) return;
+                string myPath;
 
-                var newPath = "";
-                for (int i = 0; i <= focusedSegmentIndex; i++)
+                if(builtUpPath == "")
                 {
-                    newPath += currentSegments[i];
-                    if (i < focusedSegmentIndex)
-                    {
-                        newPath += "/";
-                    }
-                }
-                PageStack.TryNavigate(newPath);
-            }
-        }
-
-        private void TabOverride(ConsoleKeyInfo obj)
-        {
-            
-            if(focusedSegmentIndex == PageStack.GetSegments(PageStack.CurrentPath).Length - 1 && obj.Modifiers.HasFlag(ConsoleModifiers.Shift) == false)
-            {
-                if (Application.FocusableControls.Count > 1)
-                {
-                    Application.MoveFocus();
+                    builtUpPath = s;
+                    myPath = s;
                 }
                 else
                 {
-                    focusedSegmentIndex = 0;
+                    this.Controls.Add(new Label() { Text = "->".ToConsoleString(Theme.DefaultTheme.H1Color) });
+                    builtUpPath += "/" + s;
+                    myPath = builtUpPath;
                 }
+
+                var crumb = Add(new BreadcrumbElement(() => { PageStack.TryNavigate(myPath); }) { Text = s.ToConsoleString() });
+    
             }
-            else if(focusedSegmentIndex == 0 && obj.Modifiers.HasFlag(ConsoleModifiers.Shift))
-            {
-                if (Application.FocusableControls.Count > 1)
-                {
-                    Application.MoveFocus(false);
-                }
-                else
-                {
-                    focusedSegmentIndex = PageStack.GetSegments(PageStack.CurrentPath).Length - 1;
-                }
-            }
-            else if(obj.Modifiers.HasFlag(ConsoleModifiers.Shift))
-            {
-                focusedSegmentIndex--;
-            }
-            else
-            {
-                focusedSegmentIndex++;
-            }
+
+            Layout.StackHorizontally(1, this.Controls);
         }
 
-        private void PageStack_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(PageStack.CurrentPath))
-            {
-                Application?.Paint();
-            }
-        }
-
-        internal override void OnPaint(ConsoleBitmap context)
-        {
-            var pages = PageStack.PagesInStack.Reverse().ToList();
-
-            var reversePageIndex = pages.Count - 1;
-            for(int y = Height-1; y >= 0 && reversePageIndex >= 0; y--)
-            {
-                var pageToDrawBreadcrumbFor = pages[reversePageIndex--];
-                var pathString = pageToDrawBreadcrumbFor.Key;
-                var segments = PageStack.GetSegments(pathString);
-
-                var toDraw = ConsoleString.Empty;
-
-                for(int i = 0; i < segments.Length; i++)
-                {
-                    if(HasFocus && focusedSegmentIndex == i)
-                    {
-                        toDraw += segments[i].ToConsoleString(ConsoleColor.Black, ConsoleColor.Cyan);
-                    }
-                    else
-                    {
-                        toDraw+= segments[i].ToConsoleString(ConsoleColor.Gray);
-                    }
-
-                    if(i < segments.Length-1)
-                    {
-                        toDraw += " -> ".ToConsoleString(ConsoleColor.Yellow);
-                    }
-                }
-
-                context.DrawString(toDraw, 0, y);
-            }
-        }
+        
     }
 }

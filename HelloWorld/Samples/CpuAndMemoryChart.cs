@@ -86,11 +86,11 @@ namespace HelloWorld.Samples
             ViewModel.DataSeriesCollection.Add(cpuSeries);        
         }
 
-        public override void OnAdd(ConsoleControl parent)
+        public override void OnAdd()
         {
-            base.OnAdd(parent);
-            if (Width == 0) Width = parent.Width;
-            if (Height == 0) Height = parent.Height;
+            base.OnAdd();
+            if (Width == 0) Width = Parent.Width;
+            if (Height == 0) Height = Parent.Height;
 
             // start monitoring CPU and memory when added
             Task.Factory.StartNew(() => { WatchCPUAndMemory(); });

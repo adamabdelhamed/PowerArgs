@@ -24,6 +24,7 @@ namespace PowerArgs.Cli
         public Button()
         {
             Height = 1;
+            this.Foreground = Theme.DefaultTheme.ButtonColor;
             this.PropertyChanged += Button_PropertyChanged;
             this.Focused += UpdateDrawState;
             this.Unfocused += UpdateDrawState;
@@ -37,7 +38,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
+        public override bool OnKeyInputReceived(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.Enter || info.Key == ConsoleKey.Spacebar)
             {
@@ -45,17 +46,22 @@ namespace PowerArgs.Cli
                 {
                     Activated();
                 }
+                return true;
             }
+            return false;
         }
 
         private void UpdateDrawState()
         {
-            drawState = "[".ToConsoleString(ConsoleColor.Yellow);
+            var anchorColor = Application != null ? Application.Theme.H1Color : Theme.DefaultTheme.H1Color;
+            var focusColor = Application != null ? Application.Theme.FocusColor : Theme.DefaultTheme.FocusColor;
+
+            drawState = "[".ToConsoleString(anchorColor);
             if (Text != null)
             {
-                drawState += Text.ToConsoleString(HasFocus ? ConsoleColor.Cyan : ConsoleColor.White);
+                drawState += Text.ToConsoleString(HasFocus ? focusColor : Foreground);
             }
-            drawState += "]".ToConsoleString(ConsoleColor.Yellow);
+            drawState += "]".ToConsoleString(anchorColor);
             Width = drawState.Length;
         }
 

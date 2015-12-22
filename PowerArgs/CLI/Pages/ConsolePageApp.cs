@@ -29,11 +29,17 @@ namespace PowerArgs.Cli
 
                 LayoutRoot.Controls.Clear();
                 LayoutRoot.Controls.Add(PageStack.CurrentPage);
+                PageStack.CurrentPage.Width = LayoutRoot.Width;
+                PageStack.CurrentPage.Height = LayoutRoot.Height;
                 PageStack.CurrentPage.Load();
-                if (FocusedControl == null)
+
+                if (PageStack.CurrentPage.ShowBreadcrumbBar)
                 {
-                    MoveFocus();
+                    PageStack.CurrentPage.BreadcrumbBar.Compose();
                 }
+
+         //       FocusManager.TryRestoreFocus();
+               
                 Paint();
             }
         }

@@ -1,7 +1,6 @@
 ﻿
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
@@ -10,9 +9,7 @@ namespace PowerArgs.Cli
     //
     // Command bar
     // Notifications
-    // Implement a proper focus manager with support for stacking focus management contexts (for dialogs)
     // Pull out view model concepts
-    // Implement ConsoleControl.Visible
     // Samples for different data sources (e.g. An azure table, a file system)  
     // Lots of testing
     // Final code review and documentation
@@ -25,6 +22,10 @@ namespace PowerArgs.Cli
         [ThreadStatic]
         private static ConsoleApp _current;
 
+        /// <summary>
+        /// Gets a reference to the current app running on this thread.  This will only be populated by the thread
+        /// that is running the message pump (i.e. it will never be your main thread).
+        /// </summary>
         public static ConsoleApp Current
         {
             get
@@ -34,7 +35,8 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
-        /// An event that fired when the application stops, after the message pump is no longer running
+        /// An event that fired when the application stops, after the message pump is no longer running, and the console
+        /// has been cleared of the app's visuals
         /// </summary>
         public event Action ApplicationStopped;
 
@@ -53,23 +55,26 @@ namespace PowerArgs.Cli
         /// </summary>
         public CliMessagePump MessagePump { get; private set; }
 
-        private int focusIndex;
-        public ConsoleControl FocusedControl { get; private set; }
-        private List<ConsoleControl> focusableControls;
+        /// <summary>
+        /// Gets the focus manager used to manage input focus
+        /// </summary>
+        public FocusManager FocusManager { get; private set; }
+
+        /// <summary>
+        /// A collection of global key handlers that you can use to override keyboard input in a way that gets preference
+        /// over the currently focused control.
+        /// </summary>
         public GlobalKeyHandlerStack GlobalKeyHandlers { get; private set; }
 
-        public bool SetFocusOnStart
-        {
-            get; set;
-        }
+        /// <summary>
+        /// Gets or sets the theme
+        /// </summary>
+        public Theme Theme { get; set; }
 
-        public IReadOnlyCollection<ConsoleControl> FocusableControls
-        {
-            get
-            {
-                return focusableControls.AsReadOnly();
-            }
-        }
+        /// <summary>
+        /// Gets or set whether or not to give focus to a control when the app starts.  The default is true.
+        /// </summary>
+        public bool SetFocusOnStart { get; set; }
 
         /// <summary>
         /// Creates a new console app given a set of boundaries
@@ -81,62 +86,17 @@ namespace PowerArgs.Cli
         public ConsoleApp(int x, int y, int w, int h)
         {
             SetFocusOnStart = true;
-            Bitmap = new ConsoleBitmap(x,y, w, h);
+            Theme = new Theme();
+            Bitmap = new ConsoleBitmap(x, y, w, h);
             MessagePump = new CliMessagePump(Bitmap.Console, KeyPressed);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
             GlobalKeyHandlers = new GlobalKeyHandlerStack();
+            FocusManager = new FocusManager();
             LayoutRoot.Application = this;
-            focusableControls = new List<ConsoleControl>();
-            focusIndex = -1;
-            LayoutRoot.Controls.Added += (c) =>
-            {
-                c.Application = this;
-                // todo - CanFocus is currently a one time setting.  It needs to be changeable.
-                if (c.CanFocus) focusableControls.Add(c);
 
-                if (c is ConsolePanel)
-                {
-                    var children = TraverseControlTree(c as ConsolePanel);
-                    focusableControls.AddRange(children.Where(child => child.CanFocus));
-                    focusableControls = focusableControls.Distinct().ToList();
-                    foreach (var child in children) child.Application = this;
-                }
-            };
-
-            LayoutRoot.Controls.Removed += (c) =>
-            {
-                bool focusChanged = false;
-        
-                focusableControls.Remove(c);
-                if(FocusedControl == c)
-                {
-                    focusChanged = true;
-                    GracefullyUnfocus();
-                }
-                c.Application = null;
-
-
-                if (c is ConsolePanel)
-                {
-                    var children = TraverseControlTree(c as ConsolePanel);
-                    foreach (var child in children)
-                    {
-                        focusableControls.Remove(child);
-                        if(FocusedControl == child)
-                        {
-                            focusChanged = true;
-                            GracefullyUnfocus();
-                        }
-                        child.Application = null;
-                    }
-                }
-
-                if(focusChanged)
-                {
-                    MoveFocus();
-                }
-            };
-
+            FocusManager.PropertyChanged += FocusChanged;
+            LayoutRoot.Controls.Added += ControlAddedToVisualTree;
+            LayoutRoot.Controls.Removed += ControlRemovedFromVisualTree;
             MessagePump.WindowResized += Paint;
         }
 
@@ -154,12 +114,12 @@ namespace PowerArgs.Cli
 
             if (SetFocusOnStart)
             {
-                MessagePump.QueueAction(() => { MoveFocus(); });
+                MessagePump.QueueAction(() => { FocusManager.TryMoveFocus(); });
             }
 
-            MessagePump.QueueAction(() => 
+            MessagePump.QueueAction(() =>
             {
-                if(_current != null)
+                if (_current != null)
                 {
                     throw new NotSupportedException("An application is already running on this thread.");
                 }
@@ -179,72 +139,81 @@ namespace PowerArgs.Cli
             MessagePump.QueueAction(new PaintMessage(PaintInternal));
         }
 
-        /// <summary>
-        /// Gives focus to the given control.  The control must be present in the app or else an exception will be thrown.
-        /// </summary>
-        /// <param name="newFocusControl">the control to focus</param>
-        public void SetFocus(ConsoleControl newFocusControl)
+        private void FocusChanged(object sender, PropertyChangedEventArgs e)
         {
-            var index = focusableControls.IndexOf(newFocusControl);
-            if (index < 0) throw new InvalidOperationException("The given control is not in the control tree");
-
-            if (newFocusControl != FocusedControl)
+            if (e.PropertyName == nameof(FocusManager.FocusedControl))
             {
-                if (FocusedControl != null)
-                {
-                    GracefullyUnfocus();
-                }
-
-                FocusedControl = newFocusControl;
-                FocusedControl.HasFocus = true;
-                focusIndex = index;
-
-                if (FocusedControl != null) FocusedControl.FireFocused(true);
                 Paint();
             }
         }
 
-        /// <summary>
-        /// Moves focus to the next or previous control
-        /// </summary>
-        /// <param name="forward">if true, the focus moves to the next control, otherwise focus moves to the previous control</param>
-        public void MoveFocus(bool forward = true)
+        private void ControlAddedToVisualTree(ConsoleControl c)
         {
-            if (forward) focusIndex++;
-            else focusIndex--;
+            c.Application = this;
+            FocusManager.Add(c);
+            c.AddedInternal();
 
-            if (focusIndex >= focusableControls.Count) focusIndex = 0;
-            if (focusIndex < 0) focusIndex = focusableControls.Count - 1;
-
-            if (focusableControls.Count == 0) return;
-            SetFocus(focusableControls[focusIndex]);
+            if (c is ConsolePanel)
+            {
+                foreach(var child in (c as ConsolePanel).Controls)
+                {
+                    ControlAddedToVisualTree(child);
+                }
+            }
         }
 
-        private void GracefullyUnfocus()
+        private void ControlRemovedFromVisualTree(ConsoleControl c)
         {
-            FocusedControl.HasFocus = false;
-            FocusedControl.FireFocused(false);
-            FocusedControl = null;
+            if(ControlRemovedFromVisualTreeRecursive(c))
+            {
+                FocusManager.TryRestoreFocus();
+            }
+        }
+
+        private bool ControlRemovedFromVisualTreeRecursive(ConsoleControl c)
+        {
+            bool focusChanged = false;
+
+            if (c is ConsolePanel)
+            {
+                foreach (var child in (c as ConsolePanel).Controls)
+                {
+                    focusChanged = ControlRemovedFromVisualTreeRecursive(child) || focusChanged;
+                }
+            }
+
+            if (FocusManager.FocusedControl == c)
+            {
+                focusChanged = true;
+                FocusManager.TryRestoreFocus();
+                Paint();
+            }
+
+            FocusManager.Remove(c);
+
+            c.RemovedInternal();
+            c.Application = null;
+            return focusChanged;
         }
 
         private void KeyPressed(ConsoleKeyInfo info)
         {
-            if(GlobalKeyHandlers.TryHandle(info))
+            if (GlobalKeyHandlers.TryHandle(info))
             {
                 // great, it was handled
             }
             else if (info.Key == ConsoleKey.Tab)
             {
-                MoveFocus(info.Modifiers.HasFlag(ConsoleModifiers.Shift) == false);
+                FocusManager.TryMoveFocus(info.Modifiers.HasFlag(ConsoleModifiers.Shift) == false);
             }
-            else if(info.Key == ConsoleKey.Escape)
+            else if (info.Key == ConsoleKey.Escape)
             {
                 MessagePump.Stop();
                 return;
             }
-            else if (FocusedControl != null)
+            else if (FocusManager.FocusedControl != null)
             {
-                FocusedControl.OnKeyInputReceived(info);
+                FocusManager.FocusedControl.HandleKeyInput(info);
             }
 
             Paint();
@@ -266,25 +235,10 @@ namespace PowerArgs.Cli
 
         private void PaintInternal()
         {
-            Bitmap.Pen = ConsoleControl.TransparantColor;
-            Bitmap.FillRect(0, 0, LayoutRoot. Width, LayoutRoot.Height);
+            Bitmap.Pen = new ConsoleCharacter(' ', null, Theme.BackgroundColor);
+            Bitmap.FillRect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
             LayoutRoot.Paint(Bitmap);
             Bitmap.Paint();
-        }
-
-        private List<ConsoleControl> TraverseControlTree(ConsolePanel toTraverse)
-        {
-            List<ConsoleControl> ret = new List<ConsoleControl>();
-            foreach (var control in toTraverse.Controls)
-            {
-                if (control is ConsolePanel)
-                {
-                    ret.AddRange(TraverseControlTree(control as ConsolePanel));
-                }
-                ret.Add(control);
-
-            }
-            return ret;
         }
     }
 }

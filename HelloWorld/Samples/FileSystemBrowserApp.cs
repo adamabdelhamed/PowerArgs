@@ -2,6 +2,7 @@
 using PowerArgs.Cli;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,9 +33,6 @@ namespace HelloWorld.Samples
                     Type = "Directory";
                 }
             }
-
-
-
         }
 
         public class Drive
@@ -42,21 +40,25 @@ namespace HelloWorld.Samples
             public string Letter { get; set; }
         }
 
-        private Page  explorerPage;
-
         public FileSystemBrowserApp()
         {
-            InitExplorerPage();
+ 
         }
 
- 
 
-        private void InitExplorerPage()
+
+        private Page CreateExplorerPage()
         {
-            explorerPage = new Page();
+            var explorerPage = new Page();
+ 
             explorerPage.Loaded += () =>
             {
-                var path = explorerPage.RouteVariables.ContainsKey("*") ?  explorerPage.RouteVariables["*"] : "";
+                var path = explorerPage.RouteVariables.ContainsKey("*") ? explorerPage.RouteVariables["*"] : "";
+
+                if(path.EndsWith(":"))
+                {
+                    path += "/";
+                }
 
                 GridViewModel gridVm;
                 if (path == "")
@@ -66,29 +68,33 @@ namespace HelloWorld.Samples
                 else
                 {
                     List<object> items = new List<object>();
-                    items.AddRange(Directory.GetDirectories(path).Select(d => new FileRecord(d)));
-                    items.AddRange(Directory.GetFiles(path).Select(d => new FileRecord(d)));
+                    try
+                    {
+                        items.AddRange(Directory.GetDirectories(path).Select(d => new FileRecord(d)));
+                        items.AddRange(Directory.GetFiles(path).Select(d => new FileRecord(d)));
+                    }
+                    catch (UnauthorizedAccessException) { }
                     gridVm = new GridViewModel(items);
                 }
 
-                explorerPage.Controls.Clear();
-
                 var grid = new Grid(gridVm);
+                var filter = new TextBox() { Y = 1 };
+
                 grid.Width = explorerPage.Width;
                 grid.Height = explorerPage.Height - 2;
                 grid.Y = 2;
 
-                var filter = new TextBox() { Y=1};
+
                 filter.Width = explorerPage.Width;
                 grid.FilterTextBox = filter;
 
-                
-                    explorerPage.Width = explorerPage.Application.LayoutRoot.Width;
-                    explorerPage.Height = explorerPage.Application.LayoutRoot.Height;
-                    grid.Width = explorerPage.Width;
-                    grid.Height = explorerPage.Height - 2;
-                    filter.Width = explorerPage.Width;
-              
+
+                explorerPage.Width = explorerPage.Application.LayoutRoot.Width;
+                explorerPage.Height = explorerPage.Application.LayoutRoot.Height;
+                grid.Width = explorerPage.Width;
+                grid.Height = explorerPage.Height - 2;
+                filter.Width = explorerPage.Width;
+
 
                 var pathColumn = gridVm.VisibleColumns.Where(c => c.ColumnDisplayName.ToString() == "Path").SingleOrDefault();
                 if (pathColumn != null)
@@ -96,30 +102,59 @@ namespace HelloWorld.Samples
                     gridVm.VisibleColumns.Remove(pathColumn);
                 }
 
-          
+
 
                 gridVm.SelectedItemActivated += () =>
                 {
                     if (gridVm.SelectedItem is Drive)
                     {
-                        explorerPage.PageStack.Navigate((gridVm.SelectedItem as Drive).Letter);
+                        explorerPage.PageStack.Navigate((gridVm.SelectedItem as Drive).Letter.Replace('\\', '/'));
+                    }
+                    else if(Directory.Exists((gridVm.SelectedItem as FileRecord).Path.Replace('\\', '/')))
+                    {
+                        explorerPage.PageStack.Navigate((gridVm.SelectedItem as FileRecord).Path.Replace('\\', '/'));
                     }
                     else
                     {
-                        explorerPage.PageStack.Navigate((gridVm.SelectedItem as FileRecord).Path.Replace('\\','/'));
+                        Process.Start((gridVm.SelectedItem as FileRecord).Path.Replace('\\', '/'));
                     }
                 };
 
-                explorerPage.Controls.Add(grid);
+                grid.KeyInputReceived += (keyInfo) =>
+                {
+                    if(keyInfo.Key == ConsoleKey.Delete && grid.ViewModel.SelectedItem != null)
+                    {
+                        if(grid.ViewModel.SelectedItem is FileRecord)
+                        {
+                            var deletePath = (grid.ViewModel.SelectedItem as FileRecord).Path;
+                            if(File.Exists(deletePath))
+                            {
+                                Dialog.Show("Are you sure you want to delete the file ".ToConsoleString() + Path.GetFileName(deletePath).ToConsoleString(ConsoleColor.Yellow) + "?", (response) =>
+                                {
+                                    if(response != null && response.DisplayText == "Yes")
+                                    {
+                                        File.Delete(deletePath);
+                                        explorerPage.PageStack.Refresh();
+                                    }
+                                }, true, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
+                            }
+                        }
+                    }
+                };
+
                 explorerPage.Controls.Add(filter);
+                explorerPage.Controls.Add(grid);
+                grid.TryFocus();
             };
+            return explorerPage;
         }
+        
 
 
         public Task Start()
         {
-            ConsolePageApp app = new ConsolePageApp(0, 0, ConsoleProvider.Current.BufferWidth, 20);
-            app.PageStack.RegisterDefaultRoute("{*}", () => explorerPage);
+            ConsolePageApp app = new ConsolePageApp(0, 0, ConsoleProvider.Current.BufferWidth, 25);
+            app.PageStack.RegisterDefaultRoute("{*}", CreateExplorerPage);
             app.PageStack.Navigate("");
             return app.Start();
         }

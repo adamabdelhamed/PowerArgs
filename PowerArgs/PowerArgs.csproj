@@ -60,6 +60,7 @@
     <Compile Include="CLI\Controls\ViewModels\GridViewModel.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
     <Compile Include="CLI\Data\GridDataSource.cs" />
+    <Compile Include="CLI\FocusManager.cs" />
     <Compile Include="CLI\Helpers\GlobalKeyHandlerStack.cs" />
     <Compile Include="CLI\Helpers\Layout.cs" />
     <Compile Include="CLI\Pages\ConsolePageApp.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="CLI\RichTextCommandLineReader\RichTextEditor.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\RichTextCommandLineReader.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\SimpleSyntaxHighlighter.cs" />
+    <Compile Include="CLI\Theme.cs" />
     <Compile Include="Extensions\Array.cs" />
     <Compile Include="Extensions\Dictionary.cs" />
     <Compile Include="Extensions\IConsoleProvider.cs" />

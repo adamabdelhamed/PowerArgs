@@ -9,25 +9,24 @@ namespace PowerArgs.Cli
 {
     public class Label : ConsoleControl
     {
-        internal static readonly ConsoleString Null = "<null>".ToConsoleString(ConsoleColor.Gray);
-        public override bool CanFocus
-        {
-            get
-            {
-                return false;
-            }
+        internal static readonly ConsoleString Null = "<null>".ToConsoleString(Theme.DefaultTheme.DisabledColor);
 
-            set
+        public ConsoleString Text { get { return Get<ConsoleString>(); } set
             {
-                base.CanFocus = value;
-            }
-        }
+                Set(value);
+                if(AutoSize)
+                {
+                    Width = value.Length;
+                }
+            } }
 
-        public ConsoleString Text { get { return Get<ConsoleString>(); } set { Set(value); } }
+        public bool AutoSize { get; set; }
 
         public Label()
         {
             Height = 1;
+            this.AutoSize = true;
+            this.CanFocus = false;
         }
 
         public void Bind(INotifyPropertyChanged observable, string propertyName)
@@ -47,7 +46,7 @@ namespace PowerArgs.Cli
                     }
                     else
                     {
-                        Text = val.ToString().ToConsoleString(Foreground.ForegroundColor);
+                        Text = val.ToString().ToConsoleString(Foreground);
                     }
                 }
             };
@@ -61,7 +60,7 @@ namespace PowerArgs.Cli
             }
             else
             {
-                context.DrawString(Text, 0, 0);
+                context.DrawString(HasFocus ? new ConsoleString(Text.ToString(),Application.Theme.FocusContrastColor, Application.Theme.FocusColor) : Text, 0, 0);
             }
         }
     }

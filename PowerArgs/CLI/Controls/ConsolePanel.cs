@@ -9,14 +9,19 @@ namespace PowerArgs.Cli
         public ConsolePanel()
         {
             Controls = new ObservableCollection<ConsoleControl>();
-
+            this.CanFocus = false;
             Action<ConsoleControl> addPropagator = (c) => { Controls.FireAdded(c); };
             Action<ConsoleControl> removePropagator = (c) => { Controls.FireRemoved(c); };
 
             Controls.Added += (c) =>
             {
-                c.Application = this.Application;
-                c.OnAdd(this);
+                // only hook up propogators for direct descendents
+                if(Controls.Contains(c) == false)
+                {
+                    return;
+                }
+
+                c.Parent = this;
                 if (c is ConsolePanel)
                 {
                     (c as ConsolePanel).Controls.Added += addPropagator;
@@ -26,14 +31,19 @@ namespace PowerArgs.Cli
 
             Controls.Removed += (c) =>
             {
-                c.OnRemove(this);
-                //c.Application = null;
                 if (c is ConsolePanel)
                 {
                     (c as ConsolePanel).Controls.Added -= addPropagator;
                     (c as ConsolePanel).Controls.Removed -= removePropagator;
                 }
+                c.Parent = null;
             };
+        }
+
+        public T Add<T>(T c) where T : ConsoleControl
+        {
+            Controls.Add(c);
+            return c;
         }
 
         internal override void OnPaint(ConsoleBitmap context)

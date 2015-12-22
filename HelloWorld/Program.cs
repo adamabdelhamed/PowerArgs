@@ -23,11 +23,11 @@ namespace HelloWorld
             var vm = new GridViewModel(new InMemoryDataSource() { Items = HelloWorld.Samples.StatePickerAssistant.States.Select(s => new { State = s }).ToList<object>() });
             vm.VisibleColumns.Add(new ColumnViewModel("State".ToConsoleString(ConsoleColor.Yellow)));
             var grid = new Grid(vm) { Width = ConsoleProvider.Current.BufferWidth, Height = 20};
-            var filter = new TextBox() { Width=25, Height = 1, Y = app.LayoutRoot.Height-1, Background = new ConsoleCharacter(' ',null, ConsoleColor.DarkBlue)};
+            var filter = new TextBox() { Width=25, Height = 1, Y = app.LayoutRoot.Height-1, Background = ConsoleColor.DarkBlue};
             grid.FilterTextBox = filter;
 
             var label = new Label();
-            label.Foreground = new ConsoleCharacter(' ', ConsoleColor.Green);
+            label.Foreground = ConsoleColor.Green;
             label.Width = 15;
             label.Height = 1;
             label.X = app.LayoutRoot.Width - label.Width;

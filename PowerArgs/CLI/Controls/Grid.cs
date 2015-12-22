@@ -147,7 +147,7 @@ namespace PowerArgs.Cli
                     {
                         if (this.ViewModel.SelectionMode == GridSelectionMode.Row || (this.ViewModel.SelectionMode == GridSelectionMode.Cell && columnIndex == ViewModel.selectedColumnIndex))
                         {
-                            displayValue = new ConsoleString(displayValue.ToString(), this.Background.BackgroundColor, HasFocus ? ConsoleColor.Cyan : ConsoleColor.Gray);
+                            displayValue = new ConsoleString(displayValue.ToString(), this.Background, HasFocus ? Application.Theme.FocusColor : this.SelectedUnfocusedColor);
                         }
                     }
 
@@ -157,26 +157,26 @@ namespace PowerArgs.Cli
                 viewIndex++;
                 rows.Add(row);
             }
-        
+            
             ConsoleTableBuilder builder = new ConsoleTableBuilder();
             ConsoleString table = builder.FormatAsTable(headers, rows, ViewModel.RowPrefix.ToString(), overflowBehaviors, ViewModel.Gutter);
 
             if (ViewModel.FilterText != null)
             {
-                table = table.Highlight(ViewModel.FilterText, ConsoleColor.Black, ConsoleColor.Yellow, StringComparison.InvariantCultureIgnoreCase);
+                table = table.Highlight(ViewModel.FilterText, Application.Theme.HighlightContrastColor, Application.Theme.HighlightColor, StringComparison.InvariantCultureIgnoreCase);
             }
 
             if(ViewModel.DataView.IsViewComplete == false)
             {
-                table += "Loading more rows...".ToConsoleString(ConsoleColor.Yellow);
+                table += "Loading more rows...".ToConsoleString(Application.Theme.H1Color);
             }
             else if(ViewModel.DataView.IsViewEndOfData)
             {
-                table += "End of data set".ToConsoleString(ConsoleColor.Yellow);
+                table += "End of data set".ToConsoleString(Application.Theme.H1Color);
             }
             else
             {
-                table += "more data below".ToConsoleString(ConsoleColor.Yellow);
+                table += "more data below".ToConsoleString(Application.Theme.H1Color);
             }
             context.DrawString(table, 0, 0);
 
@@ -187,10 +187,8 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
+        public override bool OnKeyInputReceived(ConsoleKeyInfo info)
         {
-            base.OnKeyInputReceived(info);
-
             if(info.Key == ConsoleKey.UpArrow)
             {
                 ViewModel.MoveSelectionUpwards();
@@ -230,8 +228,14 @@ namespace PowerArgs.Cli
             else if(ViewModel.FilteringEnabled && RichTextCommandLineReader.IsWriteable(info) && FilterTextBox != null)
             {
                 FilterTextBox.Value = info.KeyChar.ToString().ToConsoleString();
-                Application.SetFocus(FilterTextBox);
+                Application.FocusManager.TrySetFocus(FilterTextBox);
             }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

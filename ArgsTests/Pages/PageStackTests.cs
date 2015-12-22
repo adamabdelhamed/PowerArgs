@@ -71,7 +71,6 @@ namespace ArgsTests.Pages
             ExpectBadRoute("@#@$#%#$");
             ExpectBadRoute("a//b");
             ExpectBadRoute("a/b//");
-            ExpectBadRoute("*");
 
             ExpectGoodRoute("a");
             ExpectGoodRoute("a/b");

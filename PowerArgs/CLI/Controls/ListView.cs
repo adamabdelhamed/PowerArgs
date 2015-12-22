@@ -29,12 +29,12 @@ namespace PowerArgs.Cli
             this.CanFocus = ViewModel.IsSelectionEnabled;
         }
 
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
+        public override bool OnKeyInputReceived(ConsoleKeyInfo info)
         {
             base.OnKeyInputReceived(info);
             if(ViewModel.IsSelectionEnabled == false)
             {
-                return;
+                return false;
             }
 
             if(info.Key == ConsoleKey.Enter && Selected != null)
@@ -49,6 +49,11 @@ namespace PowerArgs.Cli
             {
                 ViewModel.IncrementSelectedIndex(1);
             }
+            else
+            {
+                return false;
+            }
+            return true;
         }
 
         internal override void OnPaint(ConsoleBitmap context)
@@ -58,7 +63,7 @@ namespace PowerArgs.Cli
             int y = 0;
             foreach(var item in ViewModel.Items)
             {
-                var displayString = this.HasFocus && y == ViewModel.SelectedIndex && ViewModel.IsSelectionEnabled ? new ConsoleString(item.DisplayText, this.FocusForeground.ForegroundColor) : item.RichDisplayText;
+                var displayString = this.HasFocus && y == ViewModel.SelectedIndex && ViewModel.IsSelectionEnabled ? new ConsoleString(item.DisplayText, Application.Theme.FocusColor) : item.RichDisplayText;
                 context.DrawString(displayString, 0, y++);
             }
         }

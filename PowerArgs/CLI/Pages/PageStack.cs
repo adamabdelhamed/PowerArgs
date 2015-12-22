@@ -86,8 +86,24 @@ namespace PowerArgs.Cli
             }
         }
 
+        public void Refresh()
+        {
+            string path = CurrentPath;
+            Page page;
+            if (TryResolveRoute(ref path, out page) == false)
+            {
+                throw new KeyNotFoundException("Unable to resolve route for current pageL "+path);
+            }
+            Push(path, page);
+        }
+
         public bool TryNavigate(string path)
         {
+            if(path == CurrentPath)
+            {
+                return false;
+            }
+
             Page page;
             if(TryResolveRoute(ref path, out page) == false)
             {
@@ -217,7 +233,20 @@ namespace PowerArgs.Cli
                 var variablesCandidate = new Dictionary<string, string>();
                 var routeSegments = route.Split('/');
 
-                if(routeSegments.Length != pathSegments.Length)
+                if(pathSegments.Length == routeSegments.Length)
+                {
+                    // the path and route has the same # of segments
+                }
+                else if(routeSegments.Length > pathSegments.Length)
+                {
+                    // path can't match route because the path is too short, skip it
+                    continue;
+                }
+                else if(pathSegments.Length > routeSegments.Length && route.Contains("{*}"))
+                {
+                    // this route supports dynamic routing so it's ok to keep checking if the path is longer than the route
+                }
+                else
                 {
                     continue;
                 }

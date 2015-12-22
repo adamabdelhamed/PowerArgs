@@ -42,14 +42,9 @@ namespace PowerArgs.Cli
 
         public ConsoleProviderControl()
         {
-            this.buffer = new ConsoleBitmap(Bounds, this.Background);
+            this.buffer = new ConsoleBitmap(Bounds, new ConsoleCharacter(' ', null, this.Background));
             this.PropertyChanged += Resizer;
             this.PropertyChanged += BGChangeHandler;
-        }
-
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
-        {
-            
         }
 
         internal override void OnPaint(ConsoleBitmap context)
@@ -80,7 +75,7 @@ namespace PowerArgs.Cli
         private void BGChangeHandler(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName != nameof(Background)) return;
-            buffer.Background = this.Background;
+            buffer.Background = this.BackgroundCharacter;
         }
 
         private void Resizer(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -89,7 +84,7 @@ namespace PowerArgs.Cli
 
             if (Bounds.Equals(buffer.Bounds)) return;
 
-            var newBuffer = new ConsoleBitmap(Bounds, this.Background);
+            var newBuffer = new ConsoleBitmap(Bounds, this.BackgroundCharacter);
 
             for(int x = 0; x < buffer.Width; x++)
             {
@@ -112,7 +107,7 @@ namespace PowerArgs.Cli
 
         public void Clear()
         {
-            buffer = new ConsoleBitmap(Bounds, this.Background);
+            buffer = new ConsoleBitmap(Bounds, this.BackgroundCharacter);
         }
 
        

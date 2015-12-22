@@ -28,8 +28,6 @@ namespace PowerArgs.Cli
         {
             this.textState = new RichTextEditor();
             this.Height = 1;
-            textState.Highlighter = new SimpleSyntaxHighlighter();
-            textState.Highlighter.AddKeyword("adam",ConsoleColor.Green);
             CanFocus = true;
             this.Focused += TextBox_Focused;
             this.Unfocused += TextBox_Unfocused;
@@ -51,7 +49,7 @@ namespace PowerArgs.Cli
                 blinkState = !blinkState;
                 Application.Paint();
             }, BlinkInterval);
-            Application.GlobalKeyHandlers.Push(ConsoleKey.Backspace, OnKeyInputReceived);
+            Application.GlobalKeyHandlers.Push(ConsoleKey.Backspace, (info)=> { OnKeyInputReceived(info); });
         }
 
         private void TextBox_Unfocused()
@@ -61,12 +59,12 @@ namespace PowerArgs.Cli
             blinkState = false;
         }
 
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
+        public override bool OnKeyInputReceived(ConsoleKeyInfo info)
         {
             textState.RegisterKeyPress(info);
             blinkState = true;
             blinkTimerHandle.Change(BlinkInterval, BlinkInterval);
-            base.OnKeyInputReceived(info);
+            return true;
         }
 
         internal override void OnPaint(ConsoleBitmap context)
@@ -77,7 +75,7 @@ namespace PowerArgs.Cli
             if (blinkState)
             {
                 char blinkChar = textState.CursorPosition >= toPaint.Length ? ' ' : toPaint[textState.CursorPosition].Value;
-                context.Pen = new ConsoleCharacter(blinkChar, ConsoleColor.Black, FocusForeground.ForegroundColor);
+                context.Pen = new ConsoleCharacter(blinkChar, Application.Theme.FocusContrastColor, Application.Theme.FocusColor);
                 context.DrawPoint(textState.CursorPosition, 0);
             }
         }
