@@ -119,20 +119,20 @@ namespace PowerArgs.Cli
 
         internal void AddedInternal()
         {
+            OnAdd();
             if (Added != null)
             {
                 Added();
             }
-            OnAdd();
         }
 
         internal void RemovedInternal()
         {
+            OnRemove();
             if (Removed != null)
             {
                 Removed();
             }
-            OnRemove();
         }
 
         public virtual void OnRemove() { }

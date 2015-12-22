@@ -61,6 +61,17 @@ namespace PowerArgs.Cli
                 top += control.Height + margin;
             }
         }
+
+        public static void Fill(ConsoleControl child, ConsolePanel parent)
+        {
+            parent.PropertyChanged += (sender, e) =>
+            {
+                if(e.PropertyName == nameof(ConsoleControl.Bounds))
+                {
+                    child.Bounds = new Rectangle(new Point(0, 0), parent.Size);
+                }
+            };
+        }
     }
 }
 

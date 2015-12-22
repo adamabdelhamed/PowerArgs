@@ -69,7 +69,7 @@ namespace HelloWorld.Samples
 
             statesGrid.ViewModel.SelectedItemActivated += () =>
             {
-                Dialog.YesOrNo("Are you sure you want tp navigate to ".ToConsoleString() + (statesGrid.ViewModel.SelectedItem as State).Name.ToConsoleString(ConsoleColor.Yellow) + "?", () =>
+                Dialog.ConfirmYesOrNo("Are you sure you want tp navigate to ".ToConsoleString() + (statesGrid.ViewModel.SelectedItem as State).Name.ToConsoleString(ConsoleColor.Yellow) + "?", () =>
                 {
                     homePage.PageStack.Navigate("states/" + (statesGrid.ViewModel.SelectedItem as State).Name);
                 });

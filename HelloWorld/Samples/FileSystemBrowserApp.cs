@@ -40,13 +40,6 @@ namespace HelloWorld.Samples
             public string Letter { get; set; }
         }
 
-        public FileSystemBrowserApp()
-        {
- 
-        }
-
-
-
         private Page CreateExplorerPage()
         {
             var explorerPage = new Page();
@@ -77,8 +70,8 @@ namespace HelloWorld.Samples
                     gridVm = new GridViewModel(items);
                 }
 
-                var grid = new Grid(gridVm);
-                var filter = new TextBox() { Y = 1 };
+                var grid = explorerPage.Add(new Grid(gridVm));
+                var filter = explorerPage.Add(new TextBox() { Y = 1 });
 
                 grid.Width = explorerPage.Width;
                 grid.Height = explorerPage.Height - 2;
@@ -142,8 +135,6 @@ namespace HelloWorld.Samples
                     }
                 };
 
-                explorerPage.Controls.Add(filter);
-                explorerPage.Controls.Add(grid);
                 grid.TryFocus();
             };
             return explorerPage;

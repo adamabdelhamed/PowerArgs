@@ -23,19 +23,25 @@ namespace PowerArgs.Cli
                 if(_filterTextBox != null)
                 {
                     _filterTextBox.PropertyChanged -= FilterTextValueChanged;
-                    _filterTextBox.KeyInputReceived -= FilterTextEnterPressed;
+                    _filterTextBox.KeyInputReceived -= FilterTextKeyPressed;
                 }
                 _filterTextBox = value;
                 _filterTextBox.PropertyChanged += FilterTextValueChanged;
-                _filterTextBox.KeyInputReceived += FilterTextEnterPressed;
+                _filterTextBox.KeyInputReceived += FilterTextKeyPressed;
                 ViewModel.FilteringEnabled = true;
             }
         }
 
-        private void FilterTextEnterPressed(ConsoleKeyInfo obj)
+        private void FilterTextKeyPressed(ConsoleKeyInfo obj)
         {
-            if (obj.Key != ConsoleKey.Enter) return;
-            ViewModel.Activate();
+            if (obj.Key == ConsoleKey.Enter)
+            {
+                ViewModel.Activate();
+            }
+            else if(obj.Key == ConsoleKey.DownArrow)
+            {
+                this.TryFocus();
+            }
         }
 
         private void FilterTextValueChanged(object sender, PropertyChangedEventArgs e)

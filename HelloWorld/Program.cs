@@ -16,7 +16,7 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
-            new StateNavigatorApp().Start().Wait();
+            new FileSystemBrowserApp().Start().Wait();
             return;
             Console.WriteLine("My App\n\n*****");
             var app = new ConsolePageApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 21);

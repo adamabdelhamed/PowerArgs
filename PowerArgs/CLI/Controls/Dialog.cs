@@ -52,11 +52,12 @@ namespace PowerArgs.Cli
             context.DrawRect(0, 0, Width, Height);
         }
 
-        public static void YesOrNo(string message, Action yesCallback, Action noCallback = null)
+        public static void ConfirmYesOrNo(string message, Action yesCallback, Action noCallback = null)
         {
-            YesOrNo(message.ToConsoleString(), yesCallback, noCallback);
+            ConfirmYesOrNo(message.ToConsoleString(), yesCallback, noCallback);
         }
-        public static void YesOrNo(ConsoleString message, Action yesCallback, Action noCallback = null)
+
+        public static void ConfirmYesOrNo(ConsoleString message, Action yesCallback, Action noCallback = null)
         {
             Show(message, (b) =>
             {

@@ -29,6 +29,7 @@ namespace PowerArgs.Cli
 
         internal void Compose()
         {
+            bool hadFocus = this.Controls.Where(c => c.HasFocus).Count() > 0;
             this.Controls.Clear();
  
             string builtUpPath = "";
@@ -49,6 +50,11 @@ namespace PowerArgs.Cli
                 }
 
                 var crumb = Add(new BreadcrumbElement(() => { PageStack.TryNavigate(myPath); }) { Text = s.ToConsoleString() });
+
+                if(hadFocus && builtUpPath.Contains("/") == false)
+                {
+                    var worked = crumb.TryFocus();
+                }
     
             }
 

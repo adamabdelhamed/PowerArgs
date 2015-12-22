@@ -131,8 +131,8 @@ namespace PowerArgs.Cli
                     ClearFocus();
                 }
 
+                newFocusControl.HasFocus = true;
                 FocusedControl = newFocusControl;
-                FocusedControl.HasFocus = true;
                 focusStack.Peek().FocusIndex = index;
 
                 if (FocusedControl != null)

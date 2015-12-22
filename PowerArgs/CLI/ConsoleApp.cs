@@ -35,6 +35,16 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// An event that fires when a control is added to the visual tree
+        /// </summary>
+        public event Action<ConsoleControl> ControlAdded;
+
+        /// <summary>
+        /// An event that fires when a control is removed from the visual tree
+        /// </summary>
+        public event Action<ConsoleControl> ControlRemoved;
+
+        /// <summary>
         /// An event that fired when the application stops, after the message pump is no longer running, and the console
         /// has been cleared of the app's visuals
         /// </summary>
@@ -152,6 +162,10 @@ namespace PowerArgs.Cli
             c.Application = this;
             FocusManager.Add(c);
             c.AddedInternal();
+            if(ControlAdded != null)
+            {
+                ControlAdded(c);
+            }
 
             if (c is ConsolePanel)
             {
@@ -164,7 +178,7 @@ namespace PowerArgs.Cli
 
         private void ControlRemovedFromVisualTree(ConsoleControl c)
         {
-            if(ControlRemovedFromVisualTreeRecursive(c))
+            if (ControlRemovedFromVisualTreeRecursive(c))
             {
                 FocusManager.TryRestoreFocus();
             }
@@ -184,15 +198,18 @@ namespace PowerArgs.Cli
 
             if (FocusManager.FocusedControl == c)
             {
+                FocusManager.ClearFocus();
                 focusChanged = true;
-                FocusManager.TryRestoreFocus();
-                Paint();
             }
 
             FocusManager.Remove(c);
 
             c.RemovedInternal();
             c.Application = null;
+            if (ControlRemoved != null)
+            {
+                ControlRemoved(c);
+            }
             return focusChanged;
         }
 

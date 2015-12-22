@@ -78,6 +78,7 @@
     <Compile Include="CLI\ProgressBarTests.cs" />
     <Compile Include="CLI\PromptTests.cs" />
     <Compile Include="CLI\ContextAssistTests.cs" />
+    <Compile Include="CLI\VisualTreeTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />
     <Compile Include="Data\DataSourceTests.cs" />
@@ -152,6 +153,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\BasicGridExpectedOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CLI\Apps\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
