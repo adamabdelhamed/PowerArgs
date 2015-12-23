@@ -159,12 +159,14 @@ namespace PowerArgs.Cli
 
             do
             {
-                CycleFocusIndex(forward);
+                bool wrapped = CycleFocusIndex(forward);
                 var nextControl = focusStack.Peek().Controls[focusStack.Peek().FocusIndex];
                 if(nextControl.CanFocus)
                 {
                     return TrySetFocus(nextControl);
                 }
+
+                if (wrapped && initialPosition < 0) break;
             }
             while (focusStack.Peek().FocusIndex != initialPosition);
 
@@ -187,13 +189,14 @@ namespace PowerArgs.Cli
             bool skipOnce = true;
             do
             {
+                bool wrapped = false;
                 if (skipOnce)
                 {
                     skipOnce = false;
                 }
                 else
                 {
-                    CycleFocusIndex(true);
+                    wrapped = CycleFocusIndex(true);
                 }
 
                 focusStack.Peek().FocusIndex = Math.Min(focusStack.Peek().FocusIndex, focusStack.Peek().Controls.Count - 1);
@@ -202,6 +205,8 @@ namespace PowerArgs.Cli
                 {
                     return TrySetFocus(nextControl);
                 }
+
+                if (wrapped && initialPosition < 0) break;
             }
             while (focusStack.Peek().FocusIndex != initialPosition);
 
@@ -218,7 +223,7 @@ namespace PowerArgs.Cli
             FocusedControl = null;
         }
 
-        private void CycleFocusIndex(bool forward)
+        private bool CycleFocusIndex(bool forward)
         {
             if (forward)
             {
@@ -232,11 +237,15 @@ namespace PowerArgs.Cli
             if (focusStack.Peek().FocusIndex >= focusStack.Peek().Controls.Count)
             {
                 focusStack.Peek().FocusIndex = 0;
+                return true;
             }
             else if (focusStack.Peek().FocusIndex < 0)
             {
                 focusStack.Peek().FocusIndex = focusStack.Peek().Controls.Count - 1;
+                return true;
             }
+
+            return false;
         }
     }
 }

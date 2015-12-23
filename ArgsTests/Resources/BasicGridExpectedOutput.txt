@@ -4,7 +4,7 @@ Id                                            StringValue
 3                                             Some value here                   
 4                                             Some value here                   
 5                                             Some value here                   
-End of data set                                                                 
+End                                                                             
                                                                                 
                                                                                 
                                                                                 

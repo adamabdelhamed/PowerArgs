@@ -49,6 +49,7 @@
     <Compile Include="CLI\CliHelper.cs" />
     <Compile Include="CLI\CliMessagePump.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
+    <Compile Include="CLI\Controls\CommandBar.cs" />
     <Compile Include="CLI\Controls\BreadcrumbBar.cs" />
     <Compile Include="CLI\Controls\ConsoleProviderControl.cs" />
     <Compile Include="CLI\Controls\Dialog.cs" />
@@ -59,11 +60,18 @@
     <Compile Include="CLI\Controls\TextBox.cs" />
     <Compile Include="CLI\Controls\ViewModels\GridViewModel.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
-    <Compile Include="CLI\Data\GridDataSource.cs" />
+    <Compile Include="CLI\Data\Attributes.cs" />
+    <Compile Include="CLI\Data\CollectionDataSource.cs" />
+    <Compile Include="CLI\Data\CollectionDataView.cs" />
+    <Compile Include="CLI\Data\CollectionQuery.cs" />
+    <Compile Include="CLI\Data\LoadMoreDataSource.cs" />
+    <Compile Include="CLI\Data\MemoryDataSource.cs" />
+    <Compile Include="CLI\Data\SortExpression.cs" />
     <Compile Include="CLI\FocusManager.cs" />
     <Compile Include="CLI\Helpers\GlobalKeyHandlerStack.cs" />
     <Compile Include="CLI\Helpers\Layout.cs" />
     <Compile Include="CLI\Pages\ConsolePageApp.cs" />
+    <Compile Include="CLI\Pages\GridPage.cs" />
     <Compile Include="CLI\Pages\Page.cs" />
     <Compile Include="CLI\Pages\PageStack.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />

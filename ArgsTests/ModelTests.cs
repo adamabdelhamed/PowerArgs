@@ -267,6 +267,7 @@ namespace ArgsTests
                 typeof(ExternalOutputPipelineStageProviderAttribute),
                 typeof(ArgPipelineActionStage),
                 typeof(FilterableAttribute),
+                typeof(KeyAttribute),
             };
 
             var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>

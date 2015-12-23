@@ -131,5 +131,54 @@ namespace PowerArgs.Cli
             ConsoleApp.Current.FocusManager.TryMoveFocus();
             ConsoleApp.Current.Paint();
         }
+
+        public static void ShowMessage(string message, Action doneCallback = null)
+        {
+            ShowMessage(message.ToConsoleString(), doneCallback);
+        }
+
+        public static void ShowMessage(ConsoleString message, Action doneCallback = null)
+        {
+            Show(message, (b) => { if (doneCallback != null) doneCallback(); },true, new DialogButton() { DisplayText = "ok" });
+        }
+
+        public static void ShowTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true)
+        {
+            if (ConsoleApp.Current == null)
+            {
+                throw new InvalidOperationException("There is no console app running");
+            }
+
+            ConsolePanel content = new ConsolePanel();
+
+            content.Width = ConsoleApp.Current.LayoutRoot.Width / 2;
+            content.Height = ConsoleApp.Current.LayoutRoot.Height / 2;
+
+            var dialog = new Dialog(content);
+            dialog.AllowEscapeToCancel = allowEscapeToCancel;
+            dialog.Cancelled += () => { if (cancelCallback != null) cancelCallback(); };
+
+     
+
+            Label messageLabel = content.Add(new Label() { Text = message, Width = content.Width - 4, X = 2, Y = 2 });
+            TextBox inputBox = content.Add(new TextBox() { Y = 3, X = 2, Width = content.Width});
+
+            inputBox.KeyInputReceived += (key) =>
+            {
+                if(key.Key == ConsoleKey.Enter)
+                {
+                    resultCallback(inputBox.Value);
+                    ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
+                }
+            };
+
+            Layout.CenterVertically(ConsoleApp.Current.LayoutRoot, dialog);
+            Layout.CenterHorizontally(ConsoleApp.Current.LayoutRoot, dialog);
+
+            ConsoleApp.Current.FocusManager.Push();
+            ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
+            inputBox.TryFocus();
+            ConsoleApp.Current.Paint();
+        }
     }
 }

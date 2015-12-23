@@ -26,7 +26,7 @@ namespace ArgsTests.CLI
         public void TestGridBasic()
         {
             Grid grid = new Grid();
-            InMemoryDataSource data = new InMemoryDataSource();
+            MemoryDataSource data = new MemoryDataSource();
             grid.ViewModel.DataSource = data;
 
             for(int i = 0; i < 5; i++)

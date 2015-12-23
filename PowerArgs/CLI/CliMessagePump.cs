@@ -209,8 +209,12 @@ namespace PowerArgs.Cli
         /// <param name="t">the timer given by SetInterval</param>
         public void ClearInterval(Timer t)
         {
-            t.Change(Timeout.Infinite, Timeout.Infinite);
-            t.Dispose();
+            try
+            {
+                t.Change(Timeout.Infinite, Timeout.Infinite);
+                t.Dispose();
+            }
+            catch (Exception) { }
         }
 
         /// <summary>
@@ -219,8 +223,12 @@ namespace PowerArgs.Cli
         /// <param name="t">The timer given by SetTimeout</param>
         public void ClearTimeout(Timer t)
         {
-            t.Change(Timeout.Infinite, Timeout.Infinite);
-            t.Dispose();
+            try
+            {
+                t.Change(Timeout.Infinite, Timeout.Infinite);
+                t.Dispose();
+            }
+            catch (Exception) { }
         }
 
         /// <summary>

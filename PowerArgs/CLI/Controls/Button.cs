@@ -16,26 +16,14 @@ namespace PowerArgs.Cli
             set
             {
                 Set(value);
+                Width = value == null ? 2 : value.Length + 2;
             }
         }
-
-        private ConsoleString drawState;
 
         public Button()
         {
             Height = 1;
             this.Foreground = Theme.DefaultTheme.ButtonColor;
-            this.PropertyChanged += Button_PropertyChanged;
-            this.Focused += UpdateDrawState;
-            this.Unfocused += UpdateDrawState;
-        }
-
-        private void Button_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if(e.PropertyName == nameof(Text))
-            {
-                UpdateDrawState();
-            }
         }
 
         public override bool OnKeyInputReceived(ConsoleKeyInfo info)
@@ -51,22 +39,36 @@ namespace PowerArgs.Cli
             return false;
         }
 
-        private void UpdateDrawState()
-        {
-            var anchorColor = Application != null ? Application.Theme.H1Color : Theme.DefaultTheme.H1Color;
-            var focusColor = Application != null ? Application.Theme.FocusColor : Theme.DefaultTheme.FocusColor;
-
-            drawState = "[".ToConsoleString(anchorColor);
-            if (Text != null)
-            {
-                drawState += Text.ToConsoleString(HasFocus ? focusColor : Foreground);
-            }
-            drawState += "]".ToConsoleString(anchorColor);
-            Width = drawState.Length;
-        }
-
         internal override void OnPaint(ConsoleBitmap context)
         {
+            var drawState = new ConsoleString();
+
+            drawState = "[".ToConsoleString(Application.Theme.H1Color);
+            if (Text != null)
+            {
+                ConsoleColor fg, bg;
+
+                if(HasFocus)
+                {
+                    fg = Application.Theme.FocusContrastColor;
+                    bg = Application.Theme.FocusColor;
+                }
+                else if(CanFocus)
+                {
+                    fg = Foreground;
+                    bg = Background;
+                }
+                else
+                {
+                    fg = Application.Theme.DisabledColor;
+                    bg = Background;
+                }
+
+                drawState += new ConsoleString(Text, fg, bg);
+            }
+
+            drawState += "]".ToConsoleString(Application.Theme.H1Color);
+            Width = drawState.Length;
             context.DrawString(drawState, 0, 0);
         }
     }

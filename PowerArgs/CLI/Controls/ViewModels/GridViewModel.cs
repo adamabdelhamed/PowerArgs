@@ -12,7 +12,9 @@ namespace PowerArgs.Cli
         public GridSelectionMode SelectionMode { get { return Get<GridSelectionMode>(); } set { Set(value); } }
         public ConsoleString RowPrefix { get { return Get<ConsoleString>(); } set { Set(value); } }
         public int Gutter { get { return Get<int>(); } set { Set(value); } }
-
+        public string NoDataMessage { get { return Get<string>(); } set { Set(value); } }
+        public string EndOfDataMessage { get { return Get<string>(); } set { Set(value); } }
+        public string NoVisibleColumnsMessage { get { return Get<string>(); } set { Set(value); } }
         public bool FilteringEnabled { get { return Get<bool>(); } set { Set(value); } }
 
         public int visibleRowOffset
@@ -40,15 +42,18 @@ namespace PowerArgs.Cli
                 visibleRowOffset = 0;
                 SelectedIndex = 0;
                 this.query.Skip = visibleRowOffset;
-                DataView = DataSource.GetDataView(query);
-                SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
+                if (DataSource != null)
+                {
+                    DataView = DataSource.GetDataView(query);
+                    SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
+                }
             }
         }
 
         private CollectionQuery query;
 
         internal int selectedColumnIndex;
-        internal CollectionDataView DataView
+        public CollectionDataView DataView
         {
             get
             {
@@ -64,6 +69,7 @@ namespace PowerArgs.Cli
 
         public object SelectedItem { get { return Get<object>(); } private set{ Set(value); } }
 
+        public Func<object, string, object> PropertyResolver { get; set; } = (item,col) => item?.GetType()?.GetProperty(col)?.GetValue(item);
 
         public GridViewModel()
         {
@@ -76,21 +82,28 @@ namespace PowerArgs.Cli
             SelectedIndex = 0;
             this.PropertyChanged += MyPropertyChangedListener;
             this.query = new CollectionQuery();
+
+            this.NoDataMessage = "No data";
+            this.EndOfDataMessage = "End";
+            this.NoVisibleColumnsMessage = "No visible columns";
         }
 
-        
+
 
         private void MyPropertyChangedListener(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName != nameof(DataSource) && e.PropertyName != nameof(Bounds)) return;
 
-            this.query.Take = NumRowsInView;
-            this.query.Skip = 0;
-            DataView = DataSource.GetDataView(query);
-            DataSource.DataChanged += DataSource_DataChanged;
-            SelectedIndex = 0;
-            selectedColumnIndex = 0;
-            SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
+            if (DataSource != null)
+            {
+                this.query.Take = NumRowsInView;
+                this.query.Skip = 0;
+                DataView = DataSource.GetDataView(query);
+                DataSource.DataChanged += DataSource_DataChanged;
+                SelectedIndex = 0;
+                selectedColumnIndex = 0;
+                SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
+            }
         }
 
         private void DataSource_DataChanged()
@@ -115,7 +128,7 @@ namespace PowerArgs.Cli
                 this.VisibleColumns.Add(new ColumnViewModel(prop.Name.ToConsoleString(Theme.DefaultTheme.H1Color)));
             }
 
-            var dataSource = new InMemoryDataSource();
+            var dataSource = new MemoryDataSource();
             dataSource.Items = items;
             this.DataSource = dataSource;
         }
@@ -206,13 +219,13 @@ namespace PowerArgs.Cli
 
         internal void End()
         {
-            if (SelectedIndex == DataSource.HighestKnownIndex)
+            if (SelectedIndex == DataSource.GetHighestKnownIndex(query))
             {
                 PageDown();
             }
             else
             {
-                SelectedIndex = DataSource.HighestKnownIndex;
+                SelectedIndex = DataSource.GetHighestKnownIndex(query);
                 visibleRowOffset = SelectedIndex - NumRowsInView + 1;
                 if (visibleRowOffset < 0) visibleRowOffset = 0;
                 this.query.Skip = visibleRowOffset;

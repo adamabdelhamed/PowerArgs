@@ -16,11 +16,11 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
-            new FileSystemBrowserApp().Start().Wait();
+            new AzureTableBrowserApp(0,0,ConsoleProvider.Current.BufferWidth, 20).Start().Wait();
             return;
             Console.WriteLine("My App\n\n*****");
             var app = new ConsolePageApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 21);
-            var vm = new GridViewModel(new InMemoryDataSource() { Items = HelloWorld.Samples.StatePickerAssistant.States.Select(s => new { State = s }).ToList<object>() });
+            var vm = new GridViewModel(new MemoryDataSource() { Items = HelloWorld.Samples.StatePickerAssistant.States.Select(s => new { State = s }).ToList<object>() });
             vm.VisibleColumns.Add(new ColumnViewModel("State".ToConsoleString(ConsoleColor.Yellow)));
             var grid = new Grid(vm) { Width = ConsoleProvider.Current.BufferWidth, Height = 20};
             var filter = new TextBox() { Width=25, Height = 1, Y = app.LayoutRoot.Height-1, Background = ConsoleColor.DarkBlue};

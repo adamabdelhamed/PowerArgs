@@ -42,6 +42,14 @@ namespace PowerArgs.Cli
             {
                 this.TryFocus();
             }
+            else if(obj.Key == ConsoleKey.PageDown)
+            {
+                this.TryFocus();
+            }
+            else if (obj.Key == ConsoleKey.PageUp)
+            {
+                this.TryFocus();
+            }
         }
 
         private void FilterTextValueChanged(object sender, PropertyChangedEventArgs e)
@@ -66,7 +74,17 @@ namespace PowerArgs.Cli
                     });
                 }
             });
+
+            // don't accept focus unless I have at least one item in the data view
+            this.Focused += () => 
+            {
+                if(ViewModel.DataView.Items.Count == 0)
+                {
+                    Application.FocusManager.TryMoveFocus();
+                }
+            };
         }
+
 
         private void Grid_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -105,7 +123,7 @@ namespace PowerArgs.Cli
 
             if(ViewModel.VisibleColumns.Count == 0)
             {
-                context.DrawString("No visible columns specified", 0, 0);
+                context.DrawString(ViewModel.NoVisibleColumnsMessage.ToConsoleString(Application.Theme.H1Color), 0, 0);
                 return;
             }
 
@@ -146,7 +164,7 @@ namespace PowerArgs.Cli
                 int columnIndex = 0;
                 foreach(var col in ViewModel.VisibleColumns)
                 {
-                    var value = item?.GetType()?.GetProperty(col.ColumnName.ToString())?.GetValue(item);
+                    var value = ViewModel.PropertyResolver(item, col.ColumnName.ToString());
                     var displayValue = value == null ? "<null>".ToConsoleString() : value.ToString().ToConsoleString();
 
                     if(viewIndex == ViewModel.SelectedIndex)
@@ -176,9 +194,13 @@ namespace PowerArgs.Cli
             {
                 table += "Loading more rows...".ToConsoleString(Application.Theme.H1Color);
             }
+            else if(ViewModel.DataView.IsViewEndOfData && ViewModel.DataView.Items.Count == 0)
+            {
+                table += ViewModel.NoDataMessage.ToConsoleString(Application.Theme.H1Color);
+            }
             else if(ViewModel.DataView.IsViewEndOfData)
             {
-                table += "End of data set".ToConsoleString(Application.Theme.H1Color);
+                table += ViewModel.EndOfDataMessage.ToConsoleString(Application.Theme.H1Color);
             }
             else
             {

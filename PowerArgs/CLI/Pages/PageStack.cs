@@ -99,11 +99,6 @@ namespace PowerArgs.Cli
 
         public bool TryNavigate(string path)
         {
-            if(path == CurrentPath)
-            {
-                return false;
-            }
-
             Page page;
             if(TryResolveRoute(ref path, out page) == false)
             {
@@ -118,6 +113,11 @@ namespace PowerArgs.Cli
             stack.Push(new KeyValuePair<string, Page>(route, p));
             FirePropertyChanged(nameof(CurrentPage));
             FirePropertyChanged(nameof(CurrentPath));
+        }
+
+        public bool TryRefresh()
+        {
+            return TryNavigate(CurrentPath);
         }
 
         public bool TryBack()

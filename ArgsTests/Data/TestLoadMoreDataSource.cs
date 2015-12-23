@@ -43,7 +43,7 @@ namespace ArgsTests.Data
             }
         }
 
-        protected override Task<LoadMoreResult> LoadMoreAsync(object continuationToken)
+        protected override Task<LoadMoreResult> LoadMoreAsync(CollectionQuery query, object continuationToken)
         {
             return Task.Factory.StartNew(() =>
             {
@@ -53,7 +53,11 @@ namespace ArgsTests.Data
                 List<object> batch = new List<object>();
                 while (batch.Count < LoadBatchSize && index < serverData.Count)
                 {
-                    batch.Add(serverData[index++]);
+                    if (query.Filter == null || serverData[index].Value.IndexOf(query.Filter, StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    {
+                        batch.Add(serverData[index]);
+                    }
+                    index++;
                 }
 
                 foreach (var item in batch)
