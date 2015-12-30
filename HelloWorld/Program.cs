@@ -18,32 +18,6 @@ namespace HelloWorld
         {
             new AzureTableBrowserApp(0,0,ConsoleProvider.Current.BufferWidth, 20).Start().Wait();
             return;
-            Console.WriteLine("My App\n\n*****");
-            var app = new ConsolePageApp(0, ConsoleProvider.Current.CursorTop, ConsoleProvider.Current.BufferWidth, 21);
-            var vm = new GridViewModel(new MemoryDataSource() { Items = HelloWorld.Samples.StatePickerAssistant.States.Select(s => new { State = s }).ToList<object>() });
-            vm.VisibleColumns.Add(new ColumnViewModel("State".ToConsoleString(ConsoleColor.Yellow)));
-            var grid = new Grid(vm) { Width = ConsoleProvider.Current.BufferWidth, Height = 20};
-            var filter = new TextBox() { Width=25, Height = 1, Y = app.LayoutRoot.Height-1, Background = ConsoleColor.DarkBlue};
-            grid.FilterTextBox = filter;
-
-            var label = new Label();
-            label.Foreground = ConsoleColor.Green;
-            label.Width = 15;
-            label.Height = 1;
-            label.X = app.LayoutRoot.Width - label.Width;
-            label.Y = 0;
-
-            app.LayoutRoot.Controls.Add(grid);
-            app.LayoutRoot.Controls.Add(label);
-            app.LayoutRoot.Controls.Add(filter);
-
-            label.Bind(vm, nameof(vm.SelectedItem));
-
-            var appTask = app.Start();
- 
-            appTask.Wait();
-
-            return;
             var logFile = @"C:\temp\powerargslog.txt";
             File.Delete(logFile);
             PowerLogger.LogFile = logFile;

@@ -14,12 +14,12 @@ namespace PowerArgs.Cli
         public CommandBar CommandBar { get; private set; }
         private Label filterLabel;
 
-        public GridPage(GridViewModel data = null)
+        public GridPage()
         {
             CommandBar = Add(new CommandBar() { Y = 1 });
             filterLabel = Add(new Label() { Y = 2, Text = "Filter:".ToConsoleString(), Width = "Filter:".Length });
             FilterTextBox = Add(new TextBox() { Y = 2, X = filterLabel.Text.Length });
-            Grid = Add(new Grid(data) { Y = 3 });
+            Grid = Add(new Grid() { Y = 3 });
             
             Grid.FilterTextBox = FilterTextBox;
         }

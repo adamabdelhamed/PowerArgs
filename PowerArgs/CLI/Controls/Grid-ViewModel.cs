@@ -4,9 +4,14 @@ using System.Linq;
 
 namespace PowerArgs.Cli
 {
-    public class GridViewModel : Rectangular
+    public partial class Grid : ConsoleControl
     {
+        private CollectionQuery query;
+        private int selectedColumnIndex;
+        private int visibleRowOffset;
+
         public event Action SelectedItemActivated;
+
         public CollectionDataSource DataSource { get { return Get<CollectionDataSource>(); } set { Set(value); } }
         public ObservableCollection<ColumnViewModel> VisibleColumns { get; private set; }
         public GridSelectionMode SelectionMode { get { return Get<GridSelectionMode>(); } set { Set(value); } }
@@ -16,109 +21,26 @@ namespace PowerArgs.Cli
         public string EndOfDataMessage { get { return Get<string>(); } set { Set(value); } }
         public string NoVisibleColumnsMessage { get { return Get<string>(); } set { Set(value); } }
         public bool FilteringEnabled { get { return Get<bool>(); } set { Set(value); } }
-
-        public int visibleRowOffset
-        {
-            get;private set;
-        }
-
-        public int NumRowsInView
-        {
-            get
-            {
-                return Height - 2;
-            }
-        }
-
-        public string FilterText
-        {
-            get
-            {
-                return query.Filter;
-            }
-            set
-            {
-                query.Filter = value;
-                visibleRowOffset = 0;
-                SelectedIndex = 0;
-                this.query.Skip = visibleRowOffset;
-                if (DataSource != null)
-                {
-                    DataView = DataSource.GetDataView(query);
-                    SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
-                }
-            }
-        }
-
-        private CollectionQuery query;
-
-        internal int selectedColumnIndex;
-        public CollectionDataView DataView
-        {
-            get
-            {
-                return Get<CollectionDataView>();
-            }
-            private set
-            {
-                Set(value);
-            }
-        }
-
+        public int NumRowsInView { get { return Height - 2; } }
+        public CollectionDataView DataView { get { return Get<CollectionDataView>(); } private set { Set(value); } }
         public int SelectedIndex { get { return Get<int>(); } set { Set(value); } }
-
         public object SelectedItem { get { return Get<object>(); } private set{ Set(value); } }
-
         public Func<object, string, object> PropertyResolver { get; set; } = (item,col) => item?.GetType()?.GetProperty(col)?.GetValue(item);
 
-        public GridViewModel()
+        public string FilterText { get { return query.Filter; } set { SetFilterText(value); } }
+
+        public Grid()
         {
-            this.SelectionMode = GridSelectionMode.Row;
-            this.RowPrefix = ConsoleString.Empty;
-            this.Gutter = 3;
-            this.VisibleColumns = new ObservableCollection<ColumnViewModel>();
-
-            visibleRowOffset = 0;
-            SelectedIndex = 0;
-            this.PropertyChanged += MyPropertyChangedListener;
-            this.query = new CollectionQuery();
-
-            this.NoDataMessage = "No data";
-            this.EndOfDataMessage = "End";
-            this.NoVisibleColumnsMessage = "No visible columns";
+            InitGridView();
+            InitGridViewModel();
         }
 
-
-
-        private void MyPropertyChangedListener(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName != nameof(DataSource) && e.PropertyName != nameof(Bounds)) return;
-
-            if (DataSource != null)
-            {
-                this.query.Take = NumRowsInView;
-                this.query.Skip = 0;
-                DataView = DataSource.GetDataView(query);
-                DataSource.DataChanged += DataSource_DataChanged;
-                SelectedIndex = 0;
-                selectedColumnIndex = 0;
-                SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
-            }
-        }
-
-        private void DataSource_DataChanged()
-        {
-            this.query.Skip = visibleRowOffset;
-            DataView = DataSource.GetDataView(query);
-            SelectedItem = DataView.Items.Count == 0 ? null : DataView.Items[SelectedIndex - visibleRowOffset];
-        }
-
-        public GridViewModel(CollectionDataSource dataSource) : this()
+        public Grid(CollectionDataSource dataSource) : this()
         {
             this.DataSource = dataSource;
         }
 
-        public GridViewModel(List<object> items) : this()
+        public Grid(List<object> items) : this()
         {
             var prototype = items.FirstOrDefault();
             if (prototype == null) throw new InvalidOperationException("Can't infer columns without at least one item");
@@ -133,7 +55,7 @@ namespace PowerArgs.Cli
             this.DataSource = dataSource;
         }
 
-        public void MoveSelectionUpwards()
+        public void Up()
         {
             if (SelectedIndex > 0)
             {
@@ -151,6 +73,32 @@ namespace PowerArgs.Cli
             {
                 SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
             }
+        }
+
+        public void Down()
+        {
+            if (DataView.IsLastKnownItem(SelectedItem) == false)
+            {
+                SelectedIndex++;
+            }
+
+            if (SelectedIndex >= visibleRowOffset + NumRowsInView)
+            {
+                visibleRowOffset++;
+                this.query.Skip = visibleRowOffset;
+                DataView = DataSource.GetDataView(query);
+            }
+
+            if (SelectedIndex - visibleRowOffset < DataView.Items.Count)
+            {
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+            else if (SelectedIndex > 0)
+            {
+                SelectedIndex--;
+                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
+            }
+
         }
 
         public void PageUp()
@@ -199,7 +147,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        internal void Home()
+        public void Home()
         {
             visibleRowOffset = 0;
             SelectedIndex = 0;
@@ -217,7 +165,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        internal void End()
+        public void End()
         {
             if (SelectedIndex == DataSource.GetHighestKnownIndex(query))
             {
@@ -243,30 +191,20 @@ namespace PowerArgs.Cli
             }
         }
 
-        public void MoveSelectionDownwards()
+        public void Left()
         {
-            if (DataView.IsLastKnownItem(SelectedItem) == false)
+            if (selectedColumnIndex > 0)
             {
-                SelectedIndex++;
+                selectedColumnIndex--;
             }
+        }
 
-            if (SelectedIndex >= visibleRowOffset + NumRowsInView)
+        public void Right()
+        {
+            if (selectedColumnIndex < VisibleColumns.Count - 1)
             {
-                visibleRowOffset++;
-                this.query.Skip = visibleRowOffset;
-                DataView = DataSource.GetDataView(query);
+                selectedColumnIndex++;
             }
-
-            if (SelectedIndex - visibleRowOffset < DataView.Items.Count)
-            {
-                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
-            }
-            else if (SelectedIndex > 0)
-            {
-                SelectedIndex--;
-                SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
-            }
-
         }
 
         public void Activate()
@@ -277,22 +215,58 @@ namespace PowerArgs.Cli
             }
         }
 
-        public void MoveSelectionLeft()
+        private void InitGridViewModel()
         {
-            if (selectedColumnIndex > 0)
-            {
-                selectedColumnIndex--;
-            }
+            this.SelectionMode = GridSelectionMode.Row;
+            this.RowPrefix = ConsoleString.Empty;
+            this.Gutter = 3;
+            this.VisibleColumns = new ObservableCollection<ColumnViewModel>();
+
+            visibleRowOffset = 0;
+            SelectedIndex = 0;
+            this.PropertyChanged += DataSourceOrBoundsChangedListener;
+            this.query = new CollectionQuery();
+
+            this.NoDataMessage = "No data";
+            this.EndOfDataMessage = "End";
+            this.NoVisibleColumnsMessage = "No visible columns";
         }
 
 
-
-        public void MoveSelectionRight()
+        private void SetFilterText(string value)
         {
-            if (selectedColumnIndex < VisibleColumns.Count - 1)
+            query.Filter = value;
+            visibleRowOffset = 0;
+            SelectedIndex = 0;
+            this.query.Skip = visibleRowOffset;
+            if (DataSource != null)
             {
-                selectedColumnIndex++;
+                DataView = DataSource.GetDataView(query);
+                SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
             }
+        }
+
+        private void DataSourceOrBoundsChangedListener(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(DataSource) && e.PropertyName != nameof(Bounds)) return;
+
+            if (DataSource != null)
+            {
+                this.query.Take = NumRowsInView;
+                this.query.Skip = 0;
+                DataView = DataSource.GetDataView(query);
+                DataSource.DataChanged += DataSourceDataChangedListener;
+                SelectedIndex = 0;
+                selectedColumnIndex = 0;
+                SelectedItem = DataView.Items.Count > 0 ? DataView.Items[0] : null;
+            }
+        }
+
+        private void DataSourceDataChangedListener()
+        {
+            this.query.Skip = visibleRowOffset;
+            DataView = DataSource.GetDataView(query);
+            SelectedItem = DataView.Items.Count == 0 ? null : DataView.Items[SelectedIndex - visibleRowOffset];
         }
     }
 

@@ -27,15 +27,15 @@ namespace ArgsTests.CLI
         {
             Grid grid = new Grid();
             MemoryDataSource data = new MemoryDataSource();
-            grid.ViewModel.DataSource = data;
+            grid.DataSource = data;
 
             for(int i = 0; i < 5; i++)
             {
                 data.Items.Add(new { Id = i+1, StringValue = "Some value here" });
             }
 
-            grid.ViewModel.VisibleColumns.Add(new ColumnViewModel("Id".ToConsoleString()));
-            grid.ViewModel.VisibleColumns.Add(new ColumnViewModel("StringValue".ToConsoleString()));
+            grid.VisibleColumns.Add(new ColumnViewModel("Id".ToConsoleString()));
+            grid.VisibleColumns.Add(new ColumnViewModel("StringValue".ToConsoleString()));
 
             grid.Width = app.LayoutRoot.Width;
             grid.Height = app.LayoutRoot.Height;

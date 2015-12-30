@@ -19,14 +19,14 @@ namespace HelloWorld.Samples
 
         public ServicesPage()
         {
-            Grid.ViewModel.DataSource = new MemoryDataSource() { Items = new List<object>() { new Service("containers"), new Service("tables"), new Service("queues") } };
-            Grid.ViewModel.VisibleColumns.Add(new ColumnViewModel(nameof(Service.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
-            Grid.ViewModel.SelectedItemActivated += Navigate;
+            Grid.DataSource = new MemoryDataSource() { Items = new List<object>() { new Service("containers"), new Service("tables"), new Service("queues") } };
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(Service.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.SelectedItemActivated += Navigate;
         }
 
         private void Navigate()
         {
-            var route = $"accounts/{RouteVariables["account"]}/{(Grid.ViewModel.SelectedItem as Service).Name}";
+            var route = $"accounts/{RouteVariables["account"]}/{(Grid.SelectedItem as Service).Name}";
             if(PageStack.TryNavigate(route) == false)
             {
                 Dialog.ShowMessage("Not implemented");

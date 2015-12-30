@@ -53,24 +53,23 @@ namespace HelloWorld.Samples
                     path += "/";
                 }
 
-                GridViewModel gridVm;
+                List<object> items;
                 if (path == "")
                 {
-                    gridVm = new GridViewModel(System.Environment.GetLogicalDrives().Select(d => new Drive() { Letter = d } as object).ToList());
+                    items = System.Environment.GetLogicalDrives().Select(d => new Drive() { Letter = d } as object).ToList();
                 }
                 else
                 {
-                    List<object> items = new List<object>();
+                    items = new List<object>();
                     try
                     {
                         items.AddRange(Directory.GetDirectories(path).Select(d => new FileRecord(d)));
                         items.AddRange(Directory.GetFiles(path).Select(d => new FileRecord(d)));
                     }
                     catch (UnauthorizedAccessException) { }
-                    gridVm = new GridViewModel(items);
                 }
 
-                var grid = explorerPage.Add(new Grid(gridVm));
+                var grid = explorerPage.Add(new Grid(items));
                 var filter = explorerPage.Add(new TextBox() { Y = 1 });
 
                 grid.Width = explorerPage.Width;
@@ -89,37 +88,37 @@ namespace HelloWorld.Samples
                 filter.Width = explorerPage.Width;
 
 
-                var pathColumn = gridVm.VisibleColumns.Where(c => c.ColumnDisplayName.ToString() == "Path").SingleOrDefault();
+                var pathColumn = grid.VisibleColumns.Where(c => c.ColumnDisplayName.ToString() == "Path").SingleOrDefault();
                 if (pathColumn != null)
                 {
-                    gridVm.VisibleColumns.Remove(pathColumn);
+                    grid.VisibleColumns.Remove(pathColumn);
                 }
 
 
 
-                gridVm.SelectedItemActivated += () =>
+                grid.SelectedItemActivated += () =>
                 {
-                    if (gridVm.SelectedItem is Drive)
+                    if (grid.SelectedItem is Drive)
                     {
-                        explorerPage.PageStack.Navigate((gridVm.SelectedItem as Drive).Letter.Replace('\\', '/'));
+                        explorerPage.PageStack.Navigate((grid.SelectedItem as Drive).Letter.Replace('\\', '/'));
                     }
-                    else if(Directory.Exists((gridVm.SelectedItem as FileRecord).Path.Replace('\\', '/')))
+                    else if(Directory.Exists((grid.SelectedItem as FileRecord).Path.Replace('\\', '/')))
                     {
-                        explorerPage.PageStack.Navigate((gridVm.SelectedItem as FileRecord).Path.Replace('\\', '/'));
+                        explorerPage.PageStack.Navigate((grid.SelectedItem as FileRecord).Path.Replace('\\', '/'));
                     }
                     else
                     {
-                        Process.Start((gridVm.SelectedItem as FileRecord).Path.Replace('\\', '/'));
+                        Process.Start((grid.SelectedItem as FileRecord).Path.Replace('\\', '/'));
                     }
                 };
 
                 grid.KeyInputReceived += (keyInfo) =>
                 {
-                    if(keyInfo.Key == ConsoleKey.Delete && grid.ViewModel.SelectedItem != null)
+                    if(keyInfo.Key == ConsoleKey.Delete && grid.SelectedItem != null)
                     {
-                        if(grid.ViewModel.SelectedItem is FileRecord)
+                        if(grid.SelectedItem is FileRecord)
                         {
-                            var deletePath = (grid.ViewModel.SelectedItem as FileRecord).Path;
+                            var deletePath = (grid.SelectedItem as FileRecord).Path;
                             if(File.Exists(deletePath))
                             {
                                 Dialog.Show("Are you sure you want to delete the file ".ToConsoleString() + Path.GetFileName(deletePath).ToConsoleString(ConsoleColor.Yellow) + "?", (response) =>

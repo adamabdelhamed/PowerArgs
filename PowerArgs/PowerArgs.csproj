@@ -53,12 +53,12 @@
     <Compile Include="CLI\Controls\BreadcrumbBar.cs" />
     <Compile Include="CLI\Controls\ConsoleProviderControl.cs" />
     <Compile Include="CLI\Controls\Dialog.cs" />
-    <Compile Include="CLI\Controls\Grid.cs" />
+    <Compile Include="CLI\Controls\Grid-View.cs" />
     <Compile Include="CLI\Controls\Button.cs" />
     <Compile Include="CLI\Controls\Label.cs" />
     <Compile Include="CLI\Controls\ListView.cs" />
     <Compile Include="CLI\Controls\TextBox.cs" />
-    <Compile Include="CLI\Controls\ViewModels\GridViewModel.cs" />
+    <Compile Include="CLI\Controls\Grid-ViewModel.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
     <Compile Include="CLI\Data\Attributes.cs" />
     <Compile Include="CLI\Data\CollectionDataSource.cs" />

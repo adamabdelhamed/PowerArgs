@@ -33,7 +33,7 @@ namespace HelloWorld.Samples
             homePage = new Page();
 
             // initialize data
-            var statesData = new GridViewModel(StatePickerAssistant.States.Select(s => new State { Name = s } as object).ToList());
+            var statesData = StatePickerAssistant.States.Select(s => new State { Name = s } as object).ToList();
 
             // initialize controls
             Grid statesGrid = homePage.Add(new Grid(statesData) { Y = 2 });
@@ -67,11 +67,11 @@ namespace HelloWorld.Samples
             };
 
 
-            statesGrid.ViewModel.SelectedItemActivated += () =>
+            statesGrid.SelectedItemActivated += () =>
             {
-                Dialog.ConfirmYesOrNo("Are you sure you want tp navigate to ".ToConsoleString() + (statesGrid.ViewModel.SelectedItem as State).Name.ToConsoleString(ConsoleColor.Yellow) + "?", () =>
+                Dialog.ConfirmYesOrNo("Are you sure you want tp navigate to ".ToConsoleString() + (statesGrid.SelectedItem as State).Name.ToConsoleString(ConsoleColor.Yellow) + "?", () =>
                 {
-                    homePage.PageStack.Navigate("states/" + (statesGrid.ViewModel.SelectedItem as State).Name);
+                    homePage.PageStack.Navigate("states/" + (statesGrid.SelectedItem as State).Name);
                 });
             };
         }

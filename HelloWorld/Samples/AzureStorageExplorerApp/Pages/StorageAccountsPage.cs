@@ -12,27 +12,27 @@ namespace HelloWorld.Samples
 
         public StorageAccountsPage()
         {
-            Grid.ViewModel.DataSource = new MemoryDataSource() { Items = new List<object>(StorageAccountInfo.Load()) };
-            Grid.ViewModel.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.AccountName).ToConsoleString(Theme.DefaultTheme.H1Color)));
-            Grid.ViewModel.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.Key).ToConsoleString(Theme.DefaultTheme.H1Color)));
-            Grid.ViewModel.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.UseHttps).ToConsoleString(Theme.DefaultTheme.H1Color)));
-            Grid.ViewModel.NoDataMessage = "No storage accounts";
+            Grid.DataSource = new MemoryDataSource() { Items = new List<object>(StorageAccountInfo.Load()) };
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.AccountName).ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.Key).ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.UseHttps).ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.NoDataMessage = "No storage accounts";
             Grid.KeyInputReceived += HandleGridDeleteKeyPress;
-            Grid.ViewModel.PropertyChanged += SelectedItemChanged;
+            Grid.PropertyChanged += SelectedItemChanged;
             addButton = CommandBar.Add(new Button() { Text = "Add account" });
             deleteButton = CommandBar.Add(new Button() { Text = "Forget account", CanFocus=false });
 
             addButton.Activated += AddStorageAccount;
             deleteButton.Activated += ForgetSelectedStorageAccount;
 
-            Grid.ViewModel.SelectedItemActivated += NavigateToStorageAccount;
+            Grid.SelectedItemActivated += NavigateToStorageAccount;
         }
 
 
 
         private void HandleGridDeleteKeyPress(ConsoleKeyInfo key)
         {
-            if(key.Key == ConsoleKey.Delete && Grid.ViewModel.SelectedItem != null)
+            if(key.Key == ConsoleKey.Delete && Grid.SelectedItem != null)
             {
                 ForgetSelectedStorageAccount();
             }
@@ -40,26 +40,26 @@ namespace HelloWorld.Samples
 
         private void SelectedItemChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(GridViewModel.SelectedItem))
+            if (e.PropertyName == nameof(Grid.SelectedItem))
             {
-                deleteButton.CanFocus = Grid.ViewModel.SelectedItem != null;
+                deleteButton.CanFocus = Grid.SelectedItem != null;
             }
         }
 
         private void ForgetSelectedStorageAccount()
         {
-            var selectedAccount = Grid.ViewModel.SelectedItem as StorageAccountInfo;
+            var selectedAccount = Grid.SelectedItem as StorageAccountInfo;
             Dialog.ConfirmYesOrNo("Are you sure you want to forget storage account " + selectedAccount.AccountName, () =>
             {
-                (Grid.ViewModel.DataSource as MemoryDataSource).Items.Remove(selectedAccount);
-                StorageAccountInfo.Save((Grid.ViewModel.DataSource as MemoryDataSource).Items);
+                (Grid.DataSource as MemoryDataSource).Items.Remove(selectedAccount);
+                StorageAccountInfo.Save((Grid.DataSource as MemoryDataSource).Items);
                 PageStack.TryRefresh();
             });
         }
 
         private void NavigateToStorageAccount()
         {
-            var accountName = (Grid.ViewModel.SelectedItem as StorageAccountInfo).AccountName;
+            var accountName = (Grid.SelectedItem as StorageAccountInfo).AccountName;
             PageStack.Navigate("accounts/" + accountName);
         }
 
@@ -69,10 +69,10 @@ namespace HelloWorld.Samples
             {
                 Dialog.ShowTextInput("Enter storage account key".ToConsoleString(), (key) =>
                 {
-                    var data = (Grid.ViewModel.DataSource as MemoryDataSource).Items;
+                    var data = (Grid.DataSource as MemoryDataSource).Items;
                     data.Add(new StorageAccountInfo() { AccountName = name.ToString(), Key = key.ToString(), UseHttps = true });
                     StorageAccountInfo.Save(data);
-                    (Grid.ViewModel.DataSource as MemoryDataSource).Invalidate();
+                    (Grid.DataSource as MemoryDataSource).Invalidate();
                 });
             });
         }
