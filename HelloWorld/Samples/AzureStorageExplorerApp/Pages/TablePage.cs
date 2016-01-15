@@ -17,12 +17,11 @@ namespace HelloWorld.Samples
             Grid.NoDataMessage = "No table entities";
             Grid.NoVisibleColumnsMessage = "Loading..."; // override NoVisibleColumnsMessage because we won't know the columns until the data arrives
             Grid.PropertyResolver = ResolveProperty;
-            Grid.PropertyChanged += SelectedItemChanged;
-            Grid.KeyInputReceived += HandleGridDeleteKeyPress;
+            Grid.Subscribe(nameof(Grid.SelectedItem), SelectedTableEntityChanged);
+            Grid.RegisterKeyHandler(ConsoleKey.Delete, BeginDeleteSelectedEntityIfExists);
 
             deleteButton = CommandBar.Add(new Button() { Text = "Delete entity", CanFocus = false });
-
-            deleteButton.Activated += DeleteSelectedEntity;
+            deleteButton.Activated += BeginDeleteSelectedEntityIfExists;
         }
 
         protected override void OnLoad()
@@ -34,10 +33,10 @@ namespace HelloWorld.Samples
             currentStorageAccount = new CloudStorageAccount(new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountInfo.Key), accountInfo.UseHttps);
             table = currentStorageAccount.CreateCloudTableClient().GetTableReference(tableName);
             Grid.DataSource = new TableEntityDataSource(currentStorageAccount.CreateCloudTableClient().GetTableReference(tableName), Application.MessagePump);
-            Grid.DataSource.DataChanged += RespondToDataLoad;
+            Grid.DataSource.DataChanged += OnDataLoad;
         }
 
-        private void RespondToDataLoad()
+        private void OnDataLoad()
         {
             if (Grid.DataView != null && Grid.DataView.Items.Count > 0)
             {
@@ -74,34 +73,56 @@ namespace HelloWorld.Samples
             }
         }
 
-        private void SelectedItemChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void SelectedTableEntityChanged()
         {
-            if (e.PropertyName == nameof(Grid.SelectedItem))
-            {
-                deleteButton.CanFocus = Grid.SelectedItem != null;
-            }
+            deleteButton.CanFocus = Grid.SelectedItem != null;
         }
 
-        private void HandleGridDeleteKeyPress(ConsoleKeyInfo key)
+        private void BeginDeleteSelectedEntityIfExists()
         {
-            if (key.Key == ConsoleKey.Delete && Grid.SelectedItem != null)
+            if(Grid.SelectedItem == null)
             {
-                DeleteSelectedEntity();
+                return;
             }
-        }
 
-        private void DeleteSelectedEntity()
-        {
-            Dialog.ConfirmYesOrNo("Are you sure you want ot delete entity " + (Grid.SelectedItem as ITableEntity).RowKey+ "?", () =>
+            var rowKey = (Grid.SelectedItem as ITableEntity).RowKey;
+
+            Dialog.ConfirmYesOrNo("Are you sure you want to delete entity " + rowKey +"?", () =>
             {
                 var entityToDelete = Grid.SelectedItem as ITableEntity;
+
+                ProgressOperation operation = new ProgressOperation()
+                {
+                    State = OperationState.InProgress,
+                    Message = "Deleting entity ".ToConsoleString()+rowKey.ToConsoleString(Application.Theme.H1Color) +" from table "+table.Name,
+                };
+
+                ProgressOperationManager.Add(operation);
+
                 var t = table.ExecuteAsync(TableOperation.Delete(entityToDelete));
                 t.ContinueWith((tPrime) =>
                 {
-                    if (Application != null)
+                    if (Application == null)
                     {
-                        PageStack.TryRefresh();
+                        return;
                     }
+
+                    Application.MessagePump.QueueAction(() =>
+                    {
+                        if (t.Exception != null)
+                        {
+                            operation.Message = "Failed to delete entity ".ToConsoleString() + rowKey + " from table " + table.Name;
+                            operation.Details = t.Exception.ToString().ToConsoleString();
+                            operation.State = OperationState.Failed;
+                        }
+                        else
+                        {
+                            operation.Message = "Finished deleting entity ".ToConsoleString() + rowKey + " from table " + table.Name;
+                            operation.State = OperationState.Completed;
+                        }
+
+                        PageStack.TryRefresh();
+                    });
                 });                     
             });
         }

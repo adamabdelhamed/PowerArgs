@@ -82,6 +82,12 @@ namespace PowerArgs
             set { Console.BufferWidth = value; }
         }
 
+        public int WindowHeight
+        {
+            get { return Console.WindowHeight; }
+            set { Console.WindowHeight = value; }
+        }
+
         public bool KeyAvailable
         {
             get

@@ -22,9 +22,10 @@ namespace PowerArgs.Cli
             Grid = Add(new Grid() { Y = 3 });
             
             Grid.FilterTextBox = FilterTextBox;
+            this.Subscribe(nameof(Bounds), HandleResize);
         }
 
-        protected override void OnLoad()
+        private void HandleResize()
         {
             Grid.Width = this.Width;
 
@@ -44,6 +45,11 @@ namespace PowerArgs.Cli
             }
             FilterTextBox.Width = this.Width;
             CommandBar.Width = this.Width;
+        }
+
+        protected override void OnLoad()
+        {
+            HandleResize();
             FilterTextBox.TryFocus();
         }
     }

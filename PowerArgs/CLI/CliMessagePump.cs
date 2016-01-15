@@ -36,19 +36,9 @@ namespace PowerArgs.Cli
     public class PumpMessage
     {
         /// <summary>
-        /// The maximum value of the idempotency ids used to dedupe idempotent messages
-        /// </summary>
-        public const int MaxIdempotencyId = 255;
-
-        /// <summary>
         /// A description for this message, used for debugging
         /// </summary>
         public string Description { get; set; }
-
-        /// <summary>
-        /// Gets the idempotency Id of this message which is used to dedupe idempotent messaes
-        /// </summary>
-        public int IdempotencyId { get; private set; }
 
         private Action pumpAction;
 
@@ -56,24 +46,10 @@ namespace PowerArgs.Cli
         /// Creates a pump message with the given action and idempotency id.  
         /// </summary>
         /// <param name="a">The action to execute when this message is dequeued by a message pump</param>
-        /// <param name="idempotencyId">An Id used to dedupe idempotent messages.  Any value less than 0 means that the message will be processed no matter what.  
-        /// If the value is greater than zero then when the message pump queue contains multiple messages with the same value then only the first message in the 
-        /// queue will be processed. For the very special PaintMessage, the system will ensure that message is processed at the end of the messages currently in the queue</param>
-        /// <param name="description">A description of this message that can be used for debugging purposes</param>
-        public PumpMessage(Action a, int idempotencyId = -1, string description = "Not specified")
+       /// <param name="description">A description of this message that can be used for debugging purposes</param>
+        public PumpMessage(Action a, string description = "Not specified")
         {
-            if(idempotencyId > MaxIdempotencyId)
-            {
-                throw new ArgumentOutOfRangeException("idempotencyId must be less than "+MaxIdempotencyId);
-            }
-
-            if(idempotencyId == PaintMessage.IdempotencyId && GetType() != typeof(PaintMessage))
-            {
-                throw new InvalidOperationException("The idempotency id " + idempotencyId + " can only be used by a " + nameof(PaintMessage));
-            }
-
             this.Description = description;
-            this.IdempotencyId = idempotencyId;
             this.pumpAction = a;
         }
 
@@ -95,9 +71,8 @@ namespace PowerArgs.Cli
     /// </summary>
     internal class PaintMessage : PumpMessage
     {
-        public const int IdempotencyId = 1;
         public const string PaintDescription = nameof(PaintMessage);
-        public PaintMessage(Action paintAction) : base(paintAction, IdempotencyId, PaintDescription) { }
+        public PaintMessage(Action paintAction) : base(paintAction, PaintDescription) { }
     }
 
     /// <summary>
@@ -125,11 +100,11 @@ namespace PowerArgs.Cli
         /// </summary>
         public bool IsRunning { get; private set; } = false;
 
-        private Queue<PumpMessage> pumpMessageQueue = new Queue<PumpMessage>();
+        private List<PumpMessage> pumpMessageQueue = new List<PumpMessage>();
         private IConsoleProvider console;
         private Action<ConsoleKeyInfo> keyInputHandler;
         private int managedCliThreadId;
-        private int lastConsoleWidth;
+        private int lastConsoleWidth, lastConsoleHeight;
 
         /// <summary>
         /// Creates a new message pump given a console to use for keyboard input
@@ -140,6 +115,7 @@ namespace PowerArgs.Cli
         {
             this.console = console;
             this.lastConsoleWidth = this.console.BufferWidth;
+            this.lastConsoleHeight = this.console.WindowHeight;
             this.keyInputHandler = keyInputHandler;
         }
 
@@ -169,7 +145,14 @@ namespace PowerArgs.Cli
         {
             lock (pumpMessageQueue)
             {
-                pumpMessageQueue.Enqueue(pumpMessage);
+                pumpMessageQueue.Add(pumpMessage);
+#if PROFILING
+                CliProfiler.Instance.TotalMessagesQueued++;
+                if(pumpMessage is PaintMessage)
+                {
+                    CliProfiler.Instance.PaintMessagesQueued++;
+                }
+#endif
             }
         }
 
@@ -252,33 +235,48 @@ namespace PowerArgs.Cli
             bool stopRequested = false;
             while (true)
             {
-                if(lastConsoleWidth != this.console.BufferWidth && WindowResized != null)
+                if((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight) && WindowResized != null)
                 {
                     DebounceResize();
                     WindowResized();
                 }
 
                 bool idle = true;
+                List<PumpMessage> iterationQueue;
+                PaintMessage iterationPaintMessage = null;
                 lock (pumpMessageQueue)
                 {
-                    DedupeWorkQueue();
-                    while (pumpMessageQueue.Count > 0)
+                    iterationQueue = pumpMessageQueue;
+                    pumpMessageQueue = new List<PumpMessage>();
+                }
+
+                foreach (var message in iterationQueue)
+                {
+                    idle = false;
+                    if (message is StopPumpMessage)
                     {
-                        idle = false;
-                        var message = pumpMessageQueue.Dequeue();
-                        if (message is StopPumpMessage)
-                        {
-                            stopRequested = true;
-                            break;
-                        }
-                        else
-                        {
-                            TryWork(message);
-                        }
+                        stopRequested = true;
+                        break;
+                    }
+                    else if (message is PaintMessage)
+                    {
+                        iterationPaintMessage = message as PaintMessage;
+                    }
+                    else
+                    {
+                        TryWork(message);
                     }
                 }
 
-                if(stopRequested)
+                if(iterationPaintMessage != null)
+                {
+                    TryWork(iterationPaintMessage);
+#if PROFILING
+                    CliProfiler.Instance.PaintMessagesProcessed++;
+#endif
+                }
+
+                if (stopRequested)
                 {
                     break;
                 }
@@ -289,11 +287,17 @@ namespace PowerArgs.Cli
                     var info = this.console.ReadKey(true);
                     QueueAction(() => { this.keyInputHandler(info); });
                 }
-                
-                if(idle)
+
+                if (idle)
                 {
                     Thread.Sleep(10);
                 }
+#if PROFILING
+                else
+                { 
+                    CliProfiler.Instance.TotalNonIdleIterations++;
+                }
+#endif
             }
 
             IsRunning = false;
@@ -321,6 +325,9 @@ namespace PowerArgs.Cli
                     throw;
                 }
             }
+#if PROFILING
+            CliProfiler.Instance.TotalMessagesProcessed++;
+#endif
         }
 
         private void DebounceResize()
@@ -335,54 +342,13 @@ namespace PowerArgs.Cli
             debouncer.Trigger();
             while(done == false)
             {
-                if(console.BufferWidth != lastConsoleWidth)
+                if(console.BufferWidth != lastConsoleWidth || console.WindowHeight != lastConsoleHeight)
                 {
                     lastConsoleWidth = console.BufferWidth;
+                    lastConsoleHeight = console.WindowHeight;
                     debouncer.Trigger();
                 }
             }
-        }
-
-        private void DedupeWorkQueue()
-        {
-            if (pumpMessageQueue.Count < 2)
-            {
-                return;
-            }
-
-            Queue<PumpMessage> newQueue = new Queue<PumpMessage>();
-            bool[] dedupeBuffer = new bool[PumpMessage.MaxIdempotencyId+1];
-            PumpMessage paintMessage = null;
-            while(pumpMessageQueue.Count > 0)
-            {
-                var message = pumpMessageQueue.Dequeue();
-                if(message.IdempotencyId < 0 || dedupeBuffer[message.IdempotencyId] == false)
-                {
-                    if (message is PaintMessage)
-                    {
-                        paintMessage = message;
-                    }
-                    else
-                    {
-                        newQueue.Enqueue(message);
-                    }
-                    if (message.IdempotencyId >= 0)
-                    {
-                        dedupeBuffer[message.IdempotencyId] = true;
-                    }
-                }
-                else
-                {
-                    // yay, we deduped an idempotent message like a paint operation
-                }
-            }
-
-            if(paintMessage != null)
-            {
-                newQueue.Enqueue(paintMessage);
-            }
-
-            pumpMessageQueue = newQueue;
         }
     }
 }

@@ -16,7 +16,11 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
-            new AzureTableBrowserApp(0,0,ConsoleProvider.Current.BufferWidth, 20).Start().Wait();
+
+           new AzureTableBrowserApp().Start().Wait();
+#if PROFILING
+                    CliProfiler.Instance.Dump(@"C:\temp\MessagePumpProfile.txt");
+#endif
             return;
             var logFile = @"C:\temp\powerargslog.txt";
             File.Delete(logFile);

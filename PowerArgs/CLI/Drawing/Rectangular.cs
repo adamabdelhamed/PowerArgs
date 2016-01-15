@@ -7,7 +7,15 @@ namespace PowerArgs.Cli
 {
     public class Rectangular : ViewModelBase
     {
-        public Rectangle Bounds { get { return Get<Rectangle>(); } set { Set(value); } }
+        public Rectangle Bounds
+        {
+            get { return Get<Rectangle>(); }
+            set
+            {
+                Set(value);
+            }
+        }
+
         public int Width
         {
             get

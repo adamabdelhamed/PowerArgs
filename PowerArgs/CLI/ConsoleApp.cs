@@ -70,6 +70,8 @@ namespace PowerArgs.Cli
         /// </summary>
         public FocusManager FocusManager { get; private set; }
 
+        public bool AutoFillOnConsoleResize { get; set; }
+
         /// <summary>
         /// A collection of global key handlers that you can use to override keyboard input in a way that gets preference
         /// over the currently focused control.
@@ -103,11 +105,19 @@ namespace PowerArgs.Cli
             GlobalKeyHandlers = new GlobalKeyHandlerStack();
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
-
+            AutoFillOnConsoleResize = true;
             FocusManager.PropertyChanged += FocusChanged;
             LayoutRoot.Controls.Added += ControlAddedToVisualTree;
             LayoutRoot.Controls.Removed += ControlRemovedFromVisualTree;
-            MessagePump.WindowResized += Paint;
+            MessagePump.WindowResized += HandleDebouncedResize;
+        }
+
+        /// <summary>
+        /// Creates a full screen console app
+        /// </summary>
+        public ConsoleApp() : this(0,0,ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight-1)
+        {
+
         }
 
         /// <summary>
@@ -139,6 +149,17 @@ namespace PowerArgs.Cli
             Paint();
 
             return ret;
+        }
+
+        private void HandleDebouncedResize()
+        {
+            if(AutoFillOnConsoleResize)
+            {
+                Bitmap.Resize(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
+                this.LayoutRoot.Size = new Size(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
+            }
+
+            Paint();
         }
 
         /// <summary>
@@ -252,10 +273,26 @@ namespace PowerArgs.Cli
 
         private void PaintInternal()
         {
+
             Bitmap.Pen = new ConsoleCharacter(' ', null, Theme.BackgroundColor);
             Bitmap.FillRect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
-            LayoutRoot.Paint(Bitmap);
-            Bitmap.Paint();
+#if PROFILING
+            using (new TimeProfiler("LayoutRoot.Paint"))
+            {
+#endif
+                LayoutRoot.Paint(Bitmap);
+#if PROFILING
+            }
+#endif
+
+#if PROFILING
+            using (new TimeProfiler("Bitmap.Paint"))
+            {
+#endif
+                Bitmap.Paint();
+#if PROFILING
+            }
+#endif
         }
     }
 }

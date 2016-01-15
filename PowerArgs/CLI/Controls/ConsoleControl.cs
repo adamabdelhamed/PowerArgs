@@ -87,6 +87,21 @@ namespace PowerArgs.Cli
             }
         }
 
+        public Point CalculateAbsolutePosition()
+        {
+            var x = X;
+            var y = Y;
+
+            while(Parent != null)
+            {
+                x += Parent.X;
+                y += Parent.Y;
+                Parent = Parent.Parent;
+            }
+
+            return new Point(x, y);
+        }
+
         public bool TryFocus()
         {
             if (Application != null)
@@ -109,6 +124,29 @@ namespace PowerArgs.Cli
             {
                 return false;
             }
+        }
+
+        public Action<ConsoleKeyInfo> RegisterKeyHandler(ConsoleKey key, Action<ConsoleKeyInfo> handler)
+        {
+            Action<ConsoleKeyInfo> conditionalHandler = (info) =>
+            {
+                if(info.Key == key)
+                {
+                    handler(info);
+                }
+            };
+            this.KeyInputReceived += conditionalHandler;
+            return conditionalHandler;
+        }
+
+        public Action<ConsoleKeyInfo> RegisterKeyHandler(ConsoleKey key, Action handler)
+        {
+            return RegisterKeyHandler(key, (info) => { handler(); });
+        }
+
+        public void UnregisterKeyHandler(Action<ConsoleKeyInfo> handler)
+        {
+            this.KeyInputReceived -= handler;
         }
 
         internal void FireFocused(bool focused)

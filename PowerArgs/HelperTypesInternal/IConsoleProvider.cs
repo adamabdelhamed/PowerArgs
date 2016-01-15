@@ -31,9 +31,15 @@ namespace PowerArgs
         int CursorTop { get; set; }
 
         /// <summary>
-        /// Gets the buffer width of the console
+        /// Gets or sets the buffer width of the console
         /// </summary>
         int BufferWidth { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the buffer height of the console
+        /// </summary>
+        int WindowHeight { get; set; }
 
         /// <summary>
         /// Write's the string representation of the given object to the console

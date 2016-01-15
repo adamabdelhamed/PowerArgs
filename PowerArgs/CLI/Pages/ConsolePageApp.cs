@@ -11,6 +11,16 @@ namespace PowerArgs.Cli
         public PageStack PageStack { get; private set; }
         public ConsolePageApp(int x, int y, int w, int h) : base(x, y, w, h)
         {
+            InitCommon();
+        }
+
+        public ConsolePageApp() : base()
+        {
+            InitCommon();
+        }
+
+        private void InitCommon()
+        {
             this.PageStack = new PageStack();
             this.PageStack.PropertyChanged += PageStack_PropertyChanged;
             this.SetFocusOnStart = false;

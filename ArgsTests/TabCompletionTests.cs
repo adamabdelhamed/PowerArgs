@@ -597,6 +597,7 @@ namespace ArgsTests
         public int CursorLeft { get; set; }
         public int CursorTop { get; set; }
         public int BufferWidth { get; set; }
+        public int WindowHeight { get; set; }
 
         bool shift = false;
         bool control = false;

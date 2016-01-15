@@ -15,6 +15,8 @@ namespace ArgsTests.CLI
 
         public int BufferWidth { get; set; }
 
+        public int WindowHeight { get; set; }
+
         public int CursorLeft { get; set; }
 
         public int CursorTop { get; set; }

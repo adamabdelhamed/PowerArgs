@@ -63,6 +63,33 @@ namespace PowerArgs.Cli
             }
         }
 
+
+        // todo - is rectangular, but if you try to set width and height there will be inconsistent state
+        public void Resize(int w, int h)
+        {
+            var newPixels = new ConsolePixel[w][];
+            for (int x = 0; x < w; x++)
+            {
+                newPixels[x] = new ConsolePixel[h];
+                for (int y = 0; y < newPixels[x].Length; y++)
+                {
+                    if (IsInBounds(x, y))
+                    {
+                        newPixels[x][y] = pixels[x][y];
+                    }
+                    else
+                    {
+                        newPixels[x][y] = new ConsolePixel() { Value = Background };
+                    }
+                }
+            }
+
+            pixels = newPixels;
+            this.Size = new Size(w, h);
+            this.Scope(Bounds);
+            this.Invalidate();
+        }
+
         public ConsolePixel GetPixel(int x, int y)
         {
             return pixels[x][y];
@@ -122,6 +149,12 @@ namespace PowerArgs.Cli
             return scope.Contains(x, y);
         }
 
+        private bool IsInBounds(int x, int y)
+        {
+            if (x < 0 || x >= Width) return false;
+            if (y < 0 || y >= Height) return false;
+            return true;
+        }
         public void DrawPoint(int x, int y)
         {
             x = scope.X + x;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 namespace PowerArgs.Cli
 {
@@ -14,6 +15,11 @@ namespace PowerArgs.Cli
         public event Action Unloaded;
 
         public BreadcrumbBar BreadcrumbBar {  get; private set; }
+
+        public ProgressOperationsManager ProgressOperationManager { get; private set; }
+
+        private PropertyChangedEventHandler appResizeHandler;
+
         bool _showBreadcrumbBar;
         public bool ShowBreadcrumbBar
         {
@@ -41,7 +47,7 @@ namespace PowerArgs.Cli
                                 BreadcrumbBar.Width = Width;
                             }
                         };
-                        Controls.Add(BreadcrumbBar);
+                        Controls.Insert(0, BreadcrumbBar);
                     }
                 }
             }
@@ -59,10 +65,12 @@ namespace PowerArgs.Cli
         {
             CanFocus = false;
             ShowBreadcrumbBar = true;
+            ProgressOperationManager = ProgressOperationsManager.Default;
         }
 
         internal void Load()
         {
+            appResizeHandler = Application.LayoutRoot.Subscribe(nameof(ConsoleControl.Bounds), HandleResize);
             Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, EscapeKeyHandler);
             Application.GlobalKeyHandlers.Push(ConsoleKey.Backspace, BackspaceHandler);
             if(ShowBreadcrumbBar)
@@ -73,10 +81,9 @@ namespace PowerArgs.Cli
             if (Loaded != null) Loaded();
         }
 
-
-
         internal void Unload()
         {
+            Application.LayoutRoot.Unsubscribe(appResizeHandler);
             Application.GlobalKeyHandlers.Pop(ConsoleKey.Escape);
             Application.GlobalKeyHandlers.Pop(ConsoleKey.Backspace);
             OnUnload();
@@ -108,6 +115,11 @@ namespace PowerArgs.Cli
         private void BackspaceHandler(ConsoleKeyInfo backspace)
         {
             PageStack.TryBack();
+        }
+
+        private void HandleResize()
+        {
+            this.Size = Application.LayoutRoot.Size;
         }
     }
 }

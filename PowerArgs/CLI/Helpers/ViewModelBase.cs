@@ -114,6 +114,24 @@ namespace PowerArgs.Cli
             }
         }
 
+        public PropertyChangedEventHandler Subscribe(string propertyName, Action handler)
+        {
+            PropertyChangedEventHandler ret = (sender, args) =>
+            {
+                if (args.PropertyName == propertyName)
+                {
+                    handler();
+                }
+            };
+            PropertyChanged += ret;
+            return ret;
+        }
+
+        public void Unsubscribe(PropertyChangedEventHandler handler)
+        {
+            this.PropertyChanged -= handler;
+        }
+
         /// <summary>
         /// Fires the PropertyChanged event with the given property name.
         /// </summary>

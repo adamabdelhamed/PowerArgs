@@ -14,13 +14,26 @@ namespace PowerArgs.Cli
 
         internal override void OnPaint(ConsoleBitmap context)
         {
-            if(this.Height < 5)
+#if PROFILING
+            using (new TimeProfiler("Grid.OnPaint"))
+            {
+#endif
+                PaintInternal(context);
+#if PROFILING
+            }
+#endif
+
+        }
+
+        private void PaintInternal(ConsoleBitmap context)
+        {
+            if (this.Height < 5)
             {
                 context.DrawString("Grid can't render in a space this small", 0, 0);
                 return;
             }
 
-            if(VisibleColumns.Count == 0)
+            if (VisibleColumns.Count == 0)
             {
                 context.DrawString(NoVisibleColumnsMessage.ToConsoleString(Application.Theme.H1Color), 0, 0);
                 return;
@@ -31,24 +44,24 @@ namespace PowerArgs.Cli
             List<ColumnOverflowBehavior> overflowBehaviors = new List<ColumnOverflowBehavior>();
 
 
-            if(VisibleColumns.Where(c => c.WidthPercentage != 0).Count() == 0)
+            if (VisibleColumns.Where(c => c.WidthPercentage != 0).Count() == 0)
             {
-                foreach(var col in VisibleColumns)
+                foreach (var col in VisibleColumns)
                 {
                     col.WidthPercentage = 1.0 / VisibleColumns.Count;
                 }
             }
 
-            foreach(var header in VisibleColumns)
+            foreach (var header in VisibleColumns)
             {
                 headers.Add(header.ColumnDisplayName);
                 var colWidth = (int)(header.WidthPercentage * this.Width);
-                
-                if(header.OverflowBehavior is SmartWrapOverflowBehavior)
+
+                if (header.OverflowBehavior is SmartWrapOverflowBehavior)
                 {
-                    (header.OverflowBehavior as SmartWrapOverflowBehavior).MaxWidthBeforeWrapping = colWidth; 
+                    (header.OverflowBehavior as SmartWrapOverflowBehavior).MaxWidthBeforeWrapping = colWidth;
                 }
-                else if(header.OverflowBehavior is TruncateOverflowBehavior)
+                else if (header.OverflowBehavior is TruncateOverflowBehavior)
                 {
                     (header.OverflowBehavior as TruncateOverflowBehavior).ColumnWidth = colWidth;
                 }
@@ -61,12 +74,12 @@ namespace PowerArgs.Cli
             {
                 List<ConsoleString> row = new List<ConsoleString>();
                 int columnIndex = 0;
-                foreach(var col in VisibleColumns)
+                foreach (var col in VisibleColumns)
                 {
                     var value = PropertyResolver(item, col.ColumnName.ToString());
                     var displayValue = value == null ? "<null>".ToConsoleString() : value.ToString().ToConsoleString();
 
-                    if(viewIndex == SelectedIndex)
+                    if (viewIndex == SelectedIndex)
                     {
                         if (this.SelectionMode == GridSelectionMode.Row || (this.SelectionMode == GridSelectionMode.Cell && columnIndex == selectedColumnIndex))
                         {
@@ -80,24 +93,33 @@ namespace PowerArgs.Cli
                 viewIndex++;
                 rows.Add(row);
             }
-            
+
             ConsoleTableBuilder builder = new ConsoleTableBuilder();
-            ConsoleString table = builder.FormatAsTable(headers, rows, RowPrefix.ToString(), overflowBehaviors, Gutter);
+            ConsoleString table;
+#if PROFILING
+            using (new TimeProfiler("Grid.FormatAsTable"))
+            {
+#endif
+                table = builder.FormatAsTable(headers, rows, RowPrefix.ToString(), overflowBehaviors, Gutter);
+#if PROFILING
+            }
+#endif
+            
 
             if (FilterText != null)
             {
                 table = table.Highlight(FilterText, Application.Theme.HighlightContrastColor, Application.Theme.HighlightColor, StringComparison.InvariantCultureIgnoreCase);
             }
 
-            if(DataView.IsViewComplete == false)
+            if (DataView.IsViewComplete == false)
             {
                 table += "Loading more rows...".ToConsoleString(Application.Theme.H1Color);
             }
-            else if(DataView.IsViewEndOfData && DataView.Items.Count == 0)
+            else if (DataView.IsViewEndOfData && DataView.Items.Count == 0)
             {
                 table += NoDataMessage.ToConsoleString(Application.Theme.H1Color);
             }
-            else if(DataView.IsViewEndOfData)
+            else if (DataView.IsViewEndOfData)
             {
                 table += EndOfDataMessage.ToConsoleString(Application.Theme.H1Color);
             }
@@ -108,9 +130,9 @@ namespace PowerArgs.Cli
             context.DrawString(table, 0, 0);
 
 
-            if(FilteringEnabled)
+            if (FilteringEnabled)
             {
-                
+
             }
         }
 

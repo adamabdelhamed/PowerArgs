@@ -25,6 +25,19 @@ namespace PowerArgs.Cli
             }
         }
 
+        public int WindowHeight
+        {
+            get
+            {
+                return this.Height;
+            }
+
+            set
+            {
+                this.Height = value;
+            }
+        }
+
         public int CursorLeft
         {
             get; set;

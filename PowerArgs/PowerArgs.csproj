@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;PROFILING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -57,6 +57,8 @@
     <Compile Include="CLI\Controls\Button.cs" />
     <Compile Include="CLI\Controls\Label.cs" />
     <Compile Include="CLI\Controls\ListView.cs" />
+    <Compile Include="CLI\Controls\ProgressOperationControl.cs" />
+    <Compile Include="CLI\Controls\Spinner.cs" />
     <Compile Include="CLI\Controls\TextBox.cs" />
     <Compile Include="CLI\Controls\Grid-ViewModel.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
@@ -74,6 +76,7 @@
     <Compile Include="CLI\Pages\GridPage.cs" />
     <Compile Include="CLI\Pages\Page.cs" />
     <Compile Include="CLI\Pages\PageStack.cs" />
+    <Compile Include="CLI\Pages\ProgressOperationsManager.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
     <Compile Include="CLI\ConsoleApp.cs" />
@@ -89,6 +92,7 @@
     <Compile Include="CLI\Drawing\Size.cs" />
     <Compile Include="CLI\Helpers\ObservableCollection.cs" />
     <Compile Include="CLI\Helpers\ViewModelBase.cs" />
+    <Compile Include="CLI\Profiling\CliProfiler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ConsoleHistoryManager.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistSearch.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\IContextAssistProvider.cs" />
