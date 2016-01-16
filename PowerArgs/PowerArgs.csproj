@@ -144,6 +144,7 @@
     <Compile Include="Hooks\ArgPipeline\RootPipelineStage.cs" />
     <Compile Include="Hooks\ArgPipeline\PipelineStage.cs" />
     <Compile Include="Hooks\PromptIfEmpty.cs" />
+    <Compile Include="Metadata\AllowUnexpectedArgs.cs" />
     <Compile Include="Metadata\ContextualAssistant.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>

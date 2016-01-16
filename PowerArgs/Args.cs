@@ -23,6 +23,18 @@ namespace PowerArgs
             }
         }
 
+        [ThreadStatic]
+        private static CommandLineArgumentsDefinition _ambientDefinition;
+
+        /// <summary>
+        /// Gets the last definition parsed on the current thread or null if none was parsed.
+        /// </summary>
+        /// <returns>last definition parsed on the current thread or null if none was parsed</returns>
+        public static CommandLineArgumentsDefinition GetAmbientDefinition()
+        {
+            return _ambientDefinition;
+        }
+
         private Args() { }
 
         /// <summary>
@@ -408,6 +420,7 @@ namespace PowerArgs
 
             var context = ArgHook.HookContext.Current;
             context.Definition = definition;
+            _ambientDefinition = definition;
 
             definition.Validate(context);
 
@@ -471,15 +484,24 @@ namespace PowerArgs
                 actionArgs = context.SpecifiedAction.PopulateArguments(context.Args, ref actionParameters);
             }
 
-            if (context.ParserData.ImplicitParameters.Count > 0)
+            if (context.Definition.Metadata.HasMeta<AllowUnexpectedArgs>() == false)
             {
-                throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+                if (context.ParserData.ImplicitParameters.Count > 0)
+                {
+                    throw new UnexpectedArgException("Unexpected unnamed argument: " + context.ParserData.ImplicitParameters.First().Value);
+                }
+
+                if (context.ParserData.ExplicitParameters.Count > 0)
+                {
+                    throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
+                }
+            }
+            else
+            {
+                definition.UnexpectedExplicitArguments = context.ParserData.ExplicitParameters;
+                definition.UnexpectedImplicitArguments = context.ParserData.ImplicitParameters;   
             }
 
-            if (context.ParserData.ExplicitParameters.Count > 0)
-            {
-                throw new UnexpectedArgException("Unexpected named argument: " + context.ParserData.ExplicitParameters.First().Key);
-            }
 
             if (definition.ArgumentScaffoldType != null)
             {

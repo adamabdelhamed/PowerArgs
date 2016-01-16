@@ -48,7 +48,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net40\Newtonsoft.Json.dll</HintPath>
@@ -115,6 +117,7 @@
     <Compile Include="ComposableArgActionsTests.cs" />
     <Compile Include="PipelineTests.cs" />
     <Compile Include="ConsoleInDriverTests.cs" />
+    <Compile Include="AllowUnexpectedArgsTests.cs" />
     <Compile Include="_GLOBAL_SETUP.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
