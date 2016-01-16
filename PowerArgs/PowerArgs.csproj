@@ -179,6 +179,7 @@
     <Compile Include="Metadata\ArgProductVersion.cs" />
     <Compile Include="Metadata\ArgProductName.cs" />
     <Compile Include="Metadata\ArgCopyright.cs" />
+    <Compile Include="Metadata\AllowUnexpectedArgs.cs" />
     <Compile Include="Metadata\ContextualAssistant.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>

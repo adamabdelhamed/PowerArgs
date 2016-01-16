@@ -368,6 +368,18 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Gets any named arguments that were present on the command line, but did not match any arguments defined
+        /// by the definition.  This is only valid if the AllowUnexpectedArgs metadata is present.
+        /// </summary>
+        public Dictionary<string,string> UnexpectedExplicitArguments { get; internal set; }
+
+        /// <summary>
+        /// Gets any positional arguments that were present on the command line, but did not match any arguments defined
+        /// by the definition.  This is only valid if the AllowUnexpectedArgs metadata is present.
+        /// </summary>
+        public Dictionary<int, string> UnexpectedImplicitArguments { get; internal set; }
+
+        /// <summary>
         /// Creates an empty command line arguments definition.
         /// </summary>
         public CommandLineArgumentsDefinition()

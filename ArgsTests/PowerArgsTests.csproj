@@ -149,6 +149,7 @@
     <Compile Include="ComposableArgActionsTests.cs" />
     <Compile Include="PipelineTests.cs" />
     <Compile Include="ConsoleInDriverTests.cs" />
+    <Compile Include="AllowUnexpectedArgsTests.cs" />
     <Compile Include="_GLOBAL_SETUP.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
