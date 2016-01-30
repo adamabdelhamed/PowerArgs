@@ -155,42 +155,14 @@ namespace PowerArgs.Cli
             if (y < 0 || y >= Height) return false;
             return true;
         }
-        public void DrawPoint(int x, int y)
-        {
-            x = scope.X + x;
-            y = scope.Y + y;
 
-            if (IsInScope(x,y))
-            {
-                pixels[x][y].Value = Pen;
-            }
-        }
 
         public void DrawString(string str, int x, int y, bool vert = false)
         {
             DrawString(new ConsoleString(str), x, y, vert);
         }
 
-        public void DrawString(ConsoleString str, int x, int y, bool vert = false)
-        {
-            var xStart = scope.X + x;
-            x = scope.X + x;
-            y = scope.Y + y;
-            foreach (var character in str)
-            {
-                if(character.Value == '\n')
-                {
-                    y++;
-                    x = xStart;
-                }
-                else if (IsInScope(x, y))
-                {
-                    pixels[x][y].Value = character;
-                    if (vert) y++;
-                    else x++;
-                }
-            }
-        }
+
 
         public void FillRect(int x, int y, int w, int h)
         {
@@ -207,6 +179,38 @@ namespace PowerArgs.Cli
             DrawLine(x, y, x + w, y);                       // Top, horizontal line
             DrawLine(x, y + h - 1, x + w, y + h - 1);       // Bottom, horizontal line
 
+        }
+
+        public void DrawString(ConsoleString str, int x, int y, bool vert = false)
+        {
+            var xStart = scope.X + x;
+            x = scope.X + x;
+            y = scope.Y + y;
+            foreach (var character in str)
+            {
+                if (character.Value == '\n')
+                {
+                    y++;
+                    x = xStart;
+                }
+                else if (IsInScope(x, y))
+                {
+                    pixels[x][y].Value = character;
+                    if (vert) y++;
+                    else x++;
+                }
+            }
+        }
+
+        public void DrawPoint(int x, int y)
+        {
+            x = scope.X + x;
+            y = scope.Y + y;
+
+            if (IsInScope(x, y))
+            {
+                pixels[x][y].Value = Pen;
+            }
         }
         public void DrawLine(int x1, int y1, int x2, int y2)
         {

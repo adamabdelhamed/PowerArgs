@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
@@ -21,10 +22,14 @@ namespace PowerArgs.Cli
         /// </summary>
         public event Action Added;
 
+        public event Action BeforeAdded;
+
         /// <summary>
         /// An event that fires when this control is removed from the visual tree of a ConsoleApp.
         /// </summary>
         public event Action Removed;
+
+        public event Action BeforeRemoved; 
 
         /// <summary>
         /// An event that fires when a key is pressed while this control has focus and the control has decided not to process
@@ -41,7 +46,7 @@ namespace PowerArgs.Cli
         /// Gets a reference to this control's parent in the visual tree.  It will be null if this control is not in the visual tree 
         /// and also if this control is the root of the visual tree.
         /// </summary>
-        public ConsoleControl Parent { get; internal set; }
+        public ConsoleControl Parent { get { return Get<ConsoleControl>(); } internal set { Set(value); } }
 
         /// <summary>
         /// Gets or sets the background color
@@ -92,11 +97,28 @@ namespace PowerArgs.Cli
             var x = X;
             var y = Y;
 
-            while(Parent != null)
+            var tempParent = Parent;
+            while(tempParent != null)
             {
-                x += Parent.X;
-                y += Parent.Y;
-                Parent = Parent.Parent;
+                x += tempParent.X;
+                y += tempParent.Y;
+                tempParent = tempParent.Parent;
+            }
+
+            return new Point(x, y);
+        }
+
+        public Point CalculateRelativePosition(ConsoleControl parent)
+        {
+            var x = X;
+            var y = Y;
+
+            var tempParent = Parent;
+            while (tempParent != null && tempParent != parent)
+            {
+                x += tempParent.X;
+                y += tempParent.Y;
+                tempParent = tempParent.Parent;
             }
 
             return new Point(x, y);
@@ -164,6 +186,15 @@ namespace PowerArgs.Cli
             }
         }
 
+        internal void BeforeAddedInternal()
+        {
+            BeforeAdd();
+            if (BeforeAdded != null)
+            {
+                BeforeAdded();
+            }
+        }
+
         internal void RemovedInternal()
         {
             OnRemove();
@@ -173,10 +204,64 @@ namespace PowerArgs.Cli
             }
         }
 
+        internal void BeforeRemovedInternal()
+        {
+            BeforeRemove();
+            if (BeforeRemoved != null)
+            {
+                BeforeRemoved();
+            }
+        }
+
         public virtual void OnRemove() { }
+
+        public virtual void BeforeRemove() { }
 
         public virtual void OnAdd() { }
 
+        public virtual void BeforeAdd() { }
+
+
+        /// <summary>
+        /// Registers an action to be queued for execution on the message pump thread after the given async task
+        /// completes.  The action will not execute if this control is no longer in the visual tree when the async task
+        /// completes.
+        /// </summary>
+        /// <param name="t">The async task that, when completed, triggers the action</param>
+        /// <param name="action">the action to execute after the async task completes, unless this control is not in the visual tree when the task completes</param>
+        public void QueueAsyncActionIfStillInvisualTree(Task t, Action<Task> action)
+        {
+            if (Application == null) throw new NullReferenceException("This control is not in the visual control tree");
+
+            Application.MessagePump.QueueAsyncAction(t, (tp) =>
+            {
+                if (Application != null)
+                {
+                    action(tp);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Registers an action to be queued for execution on the message pump thread after the given async task
+        /// completes.  The action will not execute if this control is no longer in the visual tree when the async task
+        /// completes.
+        /// </summary>
+        /// <typeparam name="TResult">The type of result returned by the async task</typeparam>
+        /// <param name="t">The async task that, when completed, triggers the action</param>
+        /// <param name="action">the action to execute after the async task completes, unless this control is not in the visual tree when the task completes</param>
+        public void QueueAsyncActionIfStillInVisualTree<TResult>(Task<TResult> t, Action<Task<TResult>> action)
+        {
+            if (Application == null) throw new NullReferenceException("This control is not in the visual control tree");
+
+            Application.MessagePump.QueueAsyncAction(t, (tp) =>
+            {
+                if (Application != null)
+                {
+                    action(tp);
+                }
+            });
+        }
         internal void Paint(ConsoleBitmap context)
         {
             if(IsVisible == false)

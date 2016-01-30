@@ -101,6 +101,11 @@ namespace PowerArgs.Cli
 
         }
 
+        public void Refresh()
+        {
+            DataView = DataSource.GetDataView(query);
+        }
+
         public void PageUp()
         {
             if(SelectedIndex > visibleRowOffset)

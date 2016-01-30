@@ -35,6 +35,7 @@ namespace PowerArgs.Cli
     /// </summary>
     public class PumpMessage
     {
+
         /// <summary>
         /// A description for this message, used for debugging
         /// </summary>
@@ -81,6 +82,18 @@ namespace PowerArgs.Cli
     /// </summary>
     public class CliMessagePump
     {
+        internal static TimeSpan MinAsyncArtificialDelay = TimeSpan.FromSeconds(0);
+        internal static TimeSpan MaxAsyncArtificialDelay = TimeSpan.FromSeconds(0);
+        internal static Random artificialDelayRandomizer = new Random();
+
+        internal static bool ShouldArtificiallyDelay
+        {
+            get
+            {
+                return MinAsyncArtificialDelay > TimeSpan.Zero && MaxAsyncArtificialDelay > TimeSpan.Zero;
+            }
+        }
+
         private class StopPumpMessage : PumpMessage
         {
             public StopPumpMessage() : base(() => { }, description: "Stops the pump") { }
@@ -155,6 +168,45 @@ namespace PowerArgs.Cli
 #endif
             }
         }
+
+        List<Timer> asyncActionTimers = new List<Timer>();
+        public void QueueAsyncAction(Task t, Action<Task> action)
+        {
+            t.ContinueWith((tPrime) =>
+            {
+                QueueNowOrArtificiallyDelayed(() => { action(tPrime); });
+            });
+        }
+
+        public void QueueAsyncAction<TResult>(Task<TResult> t, Action<Task<TResult>> action)
+        {
+            t.ContinueWith((tPrime) =>
+            {
+                QueueNowOrArtificiallyDelayed(()=> { action(tPrime); });
+            });
+        }
+
+        private void QueueNowOrArtificiallyDelayed(Action a)
+        {
+            if (ShouldArtificiallyDelay)
+            {
+                var timeRange = MaxAsyncArtificialDelay - MinAsyncArtificialDelay;
+                var randAddition = artificialDelayRandomizer.NextDouble() * timeRange.TotalSeconds;
+                var effectiveDelay = MinAsyncArtificialDelay + TimeSpan.FromSeconds(randAddition);
+                Timer timer = null;
+                timer = SetTimeout(() =>
+                {
+                    a();
+                    asyncActionTimers.Remove(timer);
+                }, effectiveDelay);
+                asyncActionTimers.Add(timer);
+            }
+            else
+            {
+                QueueAction(a);
+            }
+        }
+
 
         /// <summary>
         /// Schedules the given action for periodic processing by the message pump

@@ -73,6 +73,11 @@ namespace PowerArgs.Cli
             this.cachedData = new Dictionary<string, CachedDataSet>();
         }
 
+        public override void ClearCachedData()
+        {
+            cachedData.Clear();
+        }
+
         public override CollectionDataView GetDataView(CollectionQuery query)
         {
             lock(cachedData)
@@ -82,37 +87,33 @@ namespace PowerArgs.Cli
                 if (cacheState != CachedDataViewState.CompleteHit && isLoading == false && HasAllDataBeenLoaded(query) == false)
                 {
                     isLoading = true;
-                    var loadMoreTask = LoadMoreAsync(query, lastContinuationToken);
-                    loadMoreTask.ContinueWith((t) =>
-                    {
-                        pump.QueueAction(() =>
-                        {
-                            if (t.Exception != null) throw new AggregateException(t.Exception);
-                            lock(cachedData)
-                            {
-                                CachedDataSet results;
-                                if (cachedData.TryGetValue(query.CacheKey, out results) == false)
-                                {
-                                    results = new CachedDataSet();
-                                    results.Items.AddRange(t.Result.Items);
-                                    cachedData.Add(query.CacheKey, results);
-                                }
-                                else
-                                {
-                                    results.Items.AddRange(t.Result.Items);
-                                }
+                    pump.QueueAsyncAction(LoadMoreAsync(query, lastContinuationToken), (t) =>
+                     {
+                         if (t.Exception != null) throw new AggregateException(t.Exception);
+                         lock (cachedData)
+                         {
+                             CachedDataSet results;
+                             if (cachedData.TryGetValue(query.CacheKey, out results) == false)
+                             {
+                                 results = new CachedDataSet();
+                                 results.Items.AddRange(t.Result.Items);
+                                 cachedData.Add(query.CacheKey, results);
+                             }
+                             else
+                             {
+                                 results.Items.AddRange(t.Result.Items);
+                             }
 
-                                if (t.Result.ContinuationToken == null)
-                                {
-                                    results.IsComplete = true;
-                                }
-                            }
+                             if (t.Result.ContinuationToken == null)
+                             {
+                                 results.IsComplete = true;
+                             }
+                         }
 
-                            lastContinuationToken = t.Result.ContinuationToken;
-                            isLoading = false;
-                            FireDataChanged();
-                        });
-                    });
+                         lastContinuationToken = t.Result.ContinuationToken;
+                         isLoading = false;
+                         FireDataChanged();
+                     });
                 }
 
                 if (cacheState == CachedDataViewState.CompleteHit)

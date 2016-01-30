@@ -43,7 +43,7 @@ namespace PowerArgs.Cli
         {
             var drawState = new ConsoleString();
 
-            drawState = "[".ToConsoleString(Application.Theme.H1Color);
+            drawState = "[".ToConsoleString(Application.Theme.H1Color, Background = Background);
             if (Text != null)
             {
                 ConsoleColor fg, bg;
@@ -67,7 +67,7 @@ namespace PowerArgs.Cli
                 drawState += new ConsoleString(Text, fg, bg);
             }
 
-            drawState += "]".ToConsoleString(Application.Theme.H1Color);
+            drawState += "]".ToConsoleString(Application.Theme.H1Color, Background);
             Width = drawState.Length;
             context.DrawString(drawState, 0, 0);
         }

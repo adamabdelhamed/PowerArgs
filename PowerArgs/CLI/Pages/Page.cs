@@ -17,6 +17,7 @@ namespace PowerArgs.Cli
         public BreadcrumbBar BreadcrumbBar {  get; private set; }
 
         public ProgressOperationsManager ProgressOperationManager { get; private set; }
+        private Dialog progressOperationManagerDialog;
 
         private PropertyChangedEventHandler appResizeHandler;
 
@@ -53,6 +54,7 @@ namespace PowerArgs.Cli
             }
         }
 
+
         public PageStack PageStack
         {
             get
@@ -66,6 +68,46 @@ namespace PowerArgs.Cli
             CanFocus = false;
             ShowBreadcrumbBar = true;
             ProgressOperationManager = ProgressOperationsManager.Default;
+            Removed += Page_Removed;
+        }
+
+        private void Page_Removed()
+        {
+            if (progressOperationManagerDialog != null && Application.LayoutRoot.Controls.Contains(progressOperationManagerDialog))
+            {
+                HideProgressOperationsDialog();
+            }
+        }
+
+        public void ShowProgressOperationsDialog()
+        {
+            if(PageStack.CurrentPage != this)
+            {
+                throw new InvalidOperationException("Not the current page");
+            }
+
+            if(progressOperationManagerDialog != null && Application.LayoutRoot.Controls.Contains(progressOperationManagerDialog))
+            {
+                return;
+            }
+
+            if (progressOperationManagerDialog == null)
+            {
+                var progressOperationManagerControl = new ProgressOperationManagerControl(this.ProgressOperationManager);
+                progressOperationManagerDialog = new Dialog(progressOperationManagerControl);
+                progressOperationManagerDialog.AllowEscapeToCancel = true;
+            }
+
+            Application.LayoutRoot.Add(progressOperationManagerDialog);
+            
+        }
+
+        public void HideProgressOperationsDialog()
+        {
+            if (progressOperationManagerDialog != null && Controls.Contains(progressOperationManagerDialog))
+            {
+                Application.LayoutRoot.Controls.Remove(progressOperationManagerDialog);
+            }
         }
 
         internal void Load()
@@ -95,13 +137,14 @@ namespace PowerArgs.Cli
 
         private void EscapeKeyHandler(ConsoleKeyInfo escape)
         {
+            var consolePageApp = (Application as ConsolePageApp);
             if (PageStack.GetSegments(PageStack.CurrentPath).Length > 1)
             {
                 PageStack.TryUp();
             }
-            else
+            else if(consolePageApp.AllowEscapeToExit && consolePageApp.PromptBeforeExit)
             {
-                Dialog.Show("Are you sure you want to quit?".ToConsoleString(), (choice) =>
+                Dialog.ShowMessage("Are you sure you want to quit?".ToConsoleString(), (choice) =>
                  {
                      if(choice != null && choice.DisplayText == "Yes")
                      {
@@ -109,6 +152,10 @@ namespace PowerArgs.Cli
                      }
 
                  }, true, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
+            }
+            else if(consolePageApp.AllowEscapeToExit)
+            {
+                Application.MessagePump.Stop();
             }
         }
 

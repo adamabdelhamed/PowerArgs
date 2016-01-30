@@ -107,6 +107,8 @@ namespace PowerArgs.Cli
             LayoutRoot.Application = this;
             AutoFillOnConsoleResize = true;
             FocusManager.PropertyChanged += FocusChanged;
+            LayoutRoot.Controls.BeforeAdded += (c) => { c.Application = this; c.BeforeAddedInternal(); };
+            LayoutRoot.Controls.BeforeRemoved += (c) => { c.BeforeRemovedInternal(); };
             LayoutRoot.Controls.Added += ControlAddedToVisualTree;
             LayoutRoot.Controls.Removed += ControlRemovedFromVisualTree;
             MessagePump.WindowResized += HandleDebouncedResize;
@@ -181,12 +183,6 @@ namespace PowerArgs.Cli
         private void ControlAddedToVisualTree(ConsoleControl c)
         {
             c.Application = this;
-            FocusManager.Add(c);
-            c.AddedInternal();
-            if(ControlAdded != null)
-            {
-                ControlAdded(c);
-            }
 
             if (c is ConsolePanel)
             {
@@ -194,6 +190,14 @@ namespace PowerArgs.Cli
                 {
                     ControlAddedToVisualTree(child);
                 }
+            }
+
+            FocusManager.Add(c);
+            c.AddedInternal();
+
+            if (ControlAdded != null)
+            {
+                ControlAdded(c);
             }
         }
 

@@ -127,6 +127,13 @@ namespace PowerArgs.Cli
             return ret;
         }
 
+        public PropertyChangedEventHandler SubscribeAndSyncNow(string propertyName, Action handler)
+        {
+            handler();
+            return Subscribe(propertyName, handler);
+        }
+
+
         public void Unsubscribe(PropertyChangedEventHandler handler)
         {
             this.PropertyChanged -= handler;

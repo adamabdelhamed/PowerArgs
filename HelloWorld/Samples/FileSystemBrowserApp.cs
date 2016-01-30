@@ -121,7 +121,7 @@ namespace HelloWorld.Samples
                             var deletePath = (grid.SelectedItem as FileRecord).Path;
                             if(File.Exists(deletePath))
                             {
-                                Dialog.Show("Are you sure you want to delete the file ".ToConsoleString() + Path.GetFileName(deletePath).ToConsoleString(ConsoleColor.Yellow) + "?", (response) =>
+                                Dialog.ShowMessage("Are you sure you want to delete the file ".ToConsoleString() + Path.GetFileName(deletePath).ToConsoleString(ConsoleColor.Yellow) + "?", (response) =>
                                 {
                                     if(response != null && response.DisplayText == "Yes")
                                     {

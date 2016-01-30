@@ -8,12 +8,14 @@ namespace PowerArgs.Cli
         public abstract CollectionDataView GetDataView(CollectionQuery query);
         public abstract int GetHighestKnownIndex(CollectionQuery query);
 
-        protected void FireDataChanged()
+        public void FireDataChanged()
         {
             if (DataChanged != null)
             {
                 DataChanged();
             }
         }
+
+        public abstract void ClearCachedData();
     }
 }

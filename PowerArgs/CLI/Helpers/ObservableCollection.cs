@@ -21,6 +21,9 @@ namespace PowerArgs.Cli
         /// </summary>
         public event Action<T> Removed;
 
+        public event Action<T> BeforeAdded;
+        public event Action<T> BeforeRemoved;
+
         List<T> wrapped;
 
         /// <summary>
@@ -40,6 +43,11 @@ namespace PowerArgs.Cli
             if (Added != null) Added(item);
         }
 
+        internal void FireBeforeAdded(T item)
+        {
+            if (BeforeAdded != null) BeforeAdded(item);
+        }
+
         /// <summary>
         /// Fired the Removed event for the given item
         /// </summary>
@@ -47,6 +55,11 @@ namespace PowerArgs.Cli
         internal void FireRemoved(T item)
         {
             if (Removed != null) Removed(item);
+        }
+
+        internal void FireBeforeRemoved(T item)
+        {
+            if (BeforeRemoved != null) BeforeRemoved(item);
         }
 
         /// <summary>
@@ -66,6 +79,7 @@ namespace PowerArgs.Cli
         /// <param name="item">the item to insert</param>
         public void Insert(int index, T item)
         {
+            FireBeforeAdded(item);
             wrapped.Insert(index, item);
             FireAdded(item);
         }
@@ -77,6 +91,7 @@ namespace PowerArgs.Cli
         public void RemoveAt(int index)
         {
             var item = wrapped[index];
+            FireBeforeRemoved(item);
             wrapped.RemoveAt(index);
             FireRemoved(item);
         }
@@ -95,6 +110,9 @@ namespace PowerArgs.Cli
             set
             {
                 var item = wrapped[index];
+
+                FireBeforeRemoved(item);
+                FireBeforeAdded(value);
                 wrapped[index] = value;
 
                 FireRemoved(item);
@@ -108,6 +126,7 @@ namespace PowerArgs.Cli
         /// <param name="item">the item to add</param>
         public void Add(T item)
         {
+            FireBeforeAdded(item);
             wrapped.Add(item);
             FireAdded(item);
         }
@@ -171,8 +190,10 @@ namespace PowerArgs.Cli
         /// <returns>true if an item was removed, false if the item was not found in the list</returns>
         public bool Remove(T item)
         {
-            if (wrapped.Remove(item))
+            if (wrapped.Contains(item))
             {
+                FireBeforeRemoved(item);
+                wrapped.Remove(item);
                 FireRemoved(item);
                 return true;
             }

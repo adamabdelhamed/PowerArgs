@@ -38,7 +38,7 @@ namespace HelloWorld.Samples
 
         private void OnDataLoad()
         {
-            if (Grid.DataView != null && Grid.DataView.Items.Count > 0)
+            if (Application != null && Grid.DataView != null && Grid.DataView.Items.Count > 0)
             {
                 var prototype = Grid.DataView.Items.First() as DynamicTableEntity;
                 Grid.VisibleColumns.Clear();
@@ -62,7 +62,7 @@ namespace HelloWorld.Samples
             var dynamicEntity = (item as DynamicTableEntity);
 
             var prop = dynamicEntity?.GetType()?.GetProperty(propName)?.GetValue(item);
-            
+
             if (prop == null && dynamicEntity.Properties.ContainsKey(propName))
             {
                 return dynamicEntity.Properties[propName].PropertyAsObject;
@@ -80,51 +80,46 @@ namespace HelloWorld.Samples
 
         private void BeginDeleteSelectedEntityIfExists()
         {
-            if(Grid.SelectedItem == null)
+            if (Grid.SelectedItem == null)
             {
                 return;
             }
 
             var rowKey = (Grid.SelectedItem as ITableEntity).RowKey;
 
-            Dialog.ConfirmYesOrNo("Are you sure you want to delete entity " + rowKey +"?", () =>
-            {
-                var entityToDelete = Grid.SelectedItem as ITableEntity;
+            Dialog.ConfirmYesOrNo("Are you sure you want to delete entity ".ToConsoleString() + rowKey.ToConsoleString(ConsoleColor.Yellow) + "?", () =>
+             {
+                 var entityToDelete = Grid.SelectedItem as ITableEntity;
 
-                ProgressOperation operation = new ProgressOperation()
-                {
-                    State = OperationState.InProgress,
-                    Message = "Deleting entity ".ToConsoleString()+rowKey.ToConsoleString(Application.Theme.H1Color) +" from table "+table.Name,
-                };
+                 ProgressOperation operation = new ProgressOperation()
+                 {
+                     State = OperationState.InProgress,
+                     Message = "Deleting entity ".ToConsoleString() + rowKey.ToConsoleString(Application.Theme.H1Color) + " from table " + table.Name,
+                 };
 
-                ProgressOperationManager.Add(operation);
+                 ProgressOperationManager.Operations.Add(operation);
+                 this.ShowProgressOperationsDialog();
 
-                var t = table.ExecuteAsync(TableOperation.Delete(entityToDelete));
-                t.ContinueWith((tPrime) =>
-                {
-                    if (Application == null)
-                    {
-                        return;
-                    }
+                 var applicationRef = Application;
+                 Application.MessagePump.QueueAsyncAction(table.ExecuteAsync(TableOperation.Delete(entityToDelete)), (t) =>
+                 {
+                      if (t.Exception != null)
+                      {
+                          operation.Message = "Failed to delete entity ".ToConsoleString(ConsoleColor.Red) + rowKey.ToConsoleString(applicationRef.Theme.H1Color) + " from table " + table.Name;
+                          operation.Details = t.Exception.ToString().ToConsoleString();
+                          operation.State = OperationState.Failed;
+                      }
+                      else
+                      {
+                          operation.Message = "Finished deleting entity ".ToConsoleString() + rowKey.ToConsoleString(applicationRef.Theme.H1Color) + " from table " + table.Name;
+                          operation.State = OperationState.Completed;
+                      }
 
-                    Application.MessagePump.QueueAction(() =>
-                    {
-                        if (t.Exception != null)
-                        {
-                            operation.Message = "Failed to delete entity ".ToConsoleString() + rowKey + " from table " + table.Name;
-                            operation.Details = t.Exception.ToString().ToConsoleString();
-                            operation.State = OperationState.Failed;
-                        }
-                        else
-                        {
-                            operation.Message = "Finished deleting entity ".ToConsoleString() + rowKey + " from table " + table.Name;
-                            operation.State = OperationState.Completed;
-                        }
-
-                        PageStack.TryRefresh();
-                    });
-                });                     
-            });
+                     Grid.NoVisibleColumnsMessage = "Loading...";
+                     Grid.DataSource.ClearCachedData();
+                     Grid.Refresh();
+                  });
+             });
         }
     }
 }

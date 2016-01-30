@@ -19,24 +19,43 @@ namespace PowerArgs.Cli
 
         public event Action Cancelled;
 
-        private Dialog(ConsoleControl content)
+        private Button closeButton;
+
+        public Dialog(ConsoleControl content)
         {
-            this.Width = content.Width;
-            this.Height = content.Height;
-            Controls.Add(content);
-            Background = content.Background;
+            Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
+            closeButton = Add(new Button() { Text = "Close (ESC)",Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
+            closeButton.Activated += Escape;
+        }
+
+        public override void BeforeAdd()
+        {
+            base.BeforeAdd();
+            Application.FocusManager.Push();
+            Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, (key) =>
+            {
+                Escape();
+            });
         }
 
         public override void OnAdd()
         {
-            Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, (key)=>
+            if(Parent != Application.LayoutRoot)
             {
-                if(AllowEscapeToCancel)
-                {
-                    if (Cancelled != null) Cancelled();
-                    ConsoleApp.Current.LayoutRoot.Controls.Remove(this);
-                }
-            });
+                throw new InvalidOperationException("Dialogs must be added to the LayoutRoot of an application");
+            }
+
+            this.Fill(padding: new Thickness(0, 0, 2, 2));
+            ConsoleApp.Current.FocusManager.TryMoveFocus();
+        }
+
+        private void Escape()
+        {
+            if (AllowEscapeToCancel)
+            {
+                if (Cancelled != null) Cancelled();
+                ConsoleApp.Current.LayoutRoot.Controls.Remove(this);
+            }
         }
 
         public override void OnRemove()
@@ -47,9 +66,10 @@ namespace PowerArgs.Cli
 
         internal override void OnPaint(ConsoleBitmap context)
         {
+            context.Pen = new ConsoleCharacter(' ', null, Theme.DefaultTheme.H1Color);
+            context.DrawLine(0, 0, Width, 0);
+            context.DrawLine(0, Height-1, Width, Height-1);
             base.OnPaint(context);
-            context.Pen = new ConsoleCharacter(' ', null, Theme.DefaultTheme.FocusColor);
-            context.DrawRect(0, 0, Width, Height);
         }
 
         public static void ConfirmYesOrNo(string message, Action yesCallback, Action noCallback = null)
@@ -59,7 +79,7 @@ namespace PowerArgs.Cli
 
         public static void ConfirmYesOrNo(ConsoleString message, Action yesCallback, Action noCallback = null)
         {
-            Show(message, (b) =>
+            ShowMessage(message, (b) =>
             {
                 if (b != null && b.Id == "y")
                 {
@@ -72,65 +92,40 @@ namespace PowerArgs.Cli
             }, true, new DialogButton() { Id = "y", DisplayText = "Yes", }, new DialogButton() { Id = "n", DisplayText = "No" });
         }
 
-        public static void Show(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, params DialogButton [] buttons)
+        public static void ShowMessage(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, params DialogButton [] buttons)
         {
-            if(ConsoleApp.Current == null)
-            {
-                throw new InvalidOperationException("There is no console app running");
-            }
-
             if(buttons.Length == 0)
             {
                 throw new ArgumentException("You need to specify at least one button");
             }
 
-            ConsolePanel content = new ConsolePanel();
-    
-            content.Width = ConsoleApp.Current.LayoutRoot.Width/2;
-            content.Height = ConsoleApp.Current.LayoutRoot.Height/2;
-            var dialog = new Dialog(content);
+            ConsolePanel dialogContent = new ConsolePanel();
+
+            Dialog dialog = new Dialog(dialogContent);
             dialog.AllowEscapeToCancel = allowEscapeToCancel;
             dialog.Cancelled += () => { resultCallback(null); };
 
-            int totalButtonWidth = 0;
+            ScrollablePanel messagePanel = dialogContent.Add(new ScrollablePanel()).Fill(padding: new Thickness(0, 0, 1, 3));
+            Label messageLabel = messagePanel.ScrollableContent.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Text = message }).FillHoriontally(padding: new Thickness(3,3,0,0) );
 
-            int space = 2;
-            foreach(var buttonInfo in buttons)
+            StackPanel buttonPanel = dialogContent.Add(new StackPanel() { Margin = 1, Height = 1, Orientation = Orientation.Horizontal }).FillHoriontally(padding: new Thickness(1,0,0,0)).DockToBottom(padding: 1);
+
+            Button firstButton = null;
+            foreach (var buttonInfo in buttons)
             {
                 var myButtonInfo = buttonInfo;
                 Button b = new Button() { Text = buttonInfo.DisplayText };
                 b.Activated += () => 
                 {
-                    resultCallback(myButtonInfo);
                     ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
+                    resultCallback(myButtonInfo);
                 };
-                content.Controls.Add(b);
-                totalButtonWidth += b.Width+space;
+                buttonPanel.Controls.Add(b);
+                firstButton = firstButton ?? b;
             }
-            totalButtonWidth -= space;
-
-            int left = (content.Width - totalButtonWidth) / 2;
-
-            Button firstButton = null;
-            foreach(var button in content.Controls.Where(c=>c is Button).Select(c => c as Button))
-            {
-                button.X = left;
-                button.Y = content.Height - 3;
-                left += button.Width + space;
-                firstButton = firstButton ?? button;
-            }
-
-            Label messageLabel = new Label() { Text = message, Width = content.Width - 4, X = 2, Y = 2 };
-            content.Controls.Add(messageLabel);
-
-            Layout.CenterVertically(ConsoleApp.Current.LayoutRoot, dialog);
-            Layout.CenterHorizontally(ConsoleApp.Current.LayoutRoot, dialog);
-
-            ConsoleApp.Current.FocusManager.Push();
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
-            ConsoleApp.Current.FocusManager.TryMoveFocus();
-            ConsoleApp.Current.Paint();
         }
+
 
         public static void ShowMessage(string message, Action doneCallback = null)
         {
@@ -139,7 +134,7 @@ namespace PowerArgs.Cli
 
         public static void ShowMessage(ConsoleString message, Action doneCallback = null)
         {
-            Show(message, (b) => { if (doneCallback != null) doneCallback(); },true, new DialogButton() { DisplayText = "ok" });
+            ShowMessage(message, (b) => { if (doneCallback != null) doneCallback(); },true, new DialogButton() { DisplayText = "ok" });
         }
 
         public static void ShowTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true)

@@ -9,6 +9,11 @@ namespace PowerArgs.Cli
     public class ConsolePageApp : ConsoleApp
     {
         public PageStack PageStack { get; private set; }
+
+
+        public bool AllowEscapeToExit { get; set; }
+        public bool PromptBeforeExit { get; set; }
+
         public ConsolePageApp(int x, int y, int w, int h) : base(x, y, w, h)
         {
             InitCommon();
@@ -24,6 +29,8 @@ namespace PowerArgs.Cli
             this.PageStack = new PageStack();
             this.PageStack.PropertyChanged += PageStack_PropertyChanged;
             this.SetFocusOnStart = false;
+            AllowEscapeToExit = true;
+            PromptBeforeExit = true;
         }
 
         private void PageStack_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

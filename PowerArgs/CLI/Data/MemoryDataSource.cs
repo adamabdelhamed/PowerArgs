@@ -32,6 +32,11 @@ namespace PowerArgs.Cli
             FireDataChanged();
         }
 
+        public override void ClearCachedData()
+        {
+            FireDataChanged();
+        }
+
         public override CollectionDataView GetDataView(CollectionQuery query)
         {
             IEnumerable<object> results = Items;

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using PowerArgs.Cli;
 using System.Threading;
 using System.Threading.Tasks;
-using ArgsTests.Data;
 using HelloWorld.Samples;
 
 namespace HelloWorld

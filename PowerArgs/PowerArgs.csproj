@@ -43,6 +43,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
@@ -57,8 +61,12 @@
     <Compile Include="CLI\Controls\Button.cs" />
     <Compile Include="CLI\Controls\Label.cs" />
     <Compile Include="CLI\Controls\ListView.cs" />
+    <Compile Include="CLI\Controls\PixelControl.cs" />
     <Compile Include="CLI\Controls\ProgressOperationControl.cs" />
+    <Compile Include="CLI\Controls\ProgressOperationManagerControl.cs" />
+    <Compile Include="CLI\Controls\ScrollablePanel.cs" />
     <Compile Include="CLI\Controls\Spinner.cs" />
+    <Compile Include="CLI\Controls\StackPanel.cs" />
     <Compile Include="CLI\Controls\TextBox.cs" />
     <Compile Include="CLI\Controls\Grid-ViewModel.cs" />
     <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
@@ -69,7 +77,9 @@
     <Compile Include="CLI\Data\LoadMoreDataSource.cs" />
     <Compile Include="CLI\Data\MemoryDataSource.cs" />
     <Compile Include="CLI\Data\SortExpression.cs" />
+    <Compile Include="CLI\Drawing\Thickness.cs" />
     <Compile Include="CLI\FocusManager.cs" />
+    <Compile Include="CLI\Helpers\Friendlies.cs" />
     <Compile Include="CLI\Helpers\GlobalKeyHandlerStack.cs" />
     <Compile Include="CLI\Helpers\Layout.cs" />
     <Compile Include="CLI\Pages\ConsolePageApp.cs" />

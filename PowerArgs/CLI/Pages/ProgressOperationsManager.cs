@@ -10,26 +10,18 @@ namespace PowerArgs.Cli
     {
         public event Action ProgressOperationsChanged;
 
-        private ObservableCollection<ProgressOperation> operations;
+        public ObservableCollection<ProgressOperation> Operations { get; private set; }
 
         public static readonly ProgressOperationsManager Default = new ProgressOperationsManager();
 
         public ProgressOperationsManager()
         {
-            operations = new ObservableCollection<ProgressOperation>();
-            operations.Added += Operations_Added;
-            operations.Removed += Operations_Removed;
+            Operations = new ObservableCollection<ProgressOperation>();
+            Operations.Added += Operations_Added;
+            Operations.Removed += Operations_Removed;
         }
 
-        public void Add(ProgressOperation operation)
-        {
-            operations.Add(operation);
-        }
-
-        public bool Remove(ProgressOperation operation)
-        {
-            return operations.Remove(operation);
-        }
+        
 
         private void Operations_Added(ProgressOperation trackedOperation)
         {
@@ -74,19 +66,44 @@ namespace PowerArgs.Cli
         public ConsoleString Message { get { return Get<ConsoleString>(); } set { Set(value); } }
         public ConsoleString Details { get { return Get<ConsoleString>(); } set { Set(value); } }
         public double Progress { get { return Get<double>(); } set { Set(value); } }
-        public Action ActivateAction { get; set; }
+
+        public DateTime StartTime { get { return Get<DateTime>(); } set { Set(value); } }
+        public DateTime? EndTime { get { return Get<DateTime>(); } set { Set(value); } }
+        public DateTime LastUpdatedTime { get { return Get<DateTime>(); } set { Set(value); } }
+
+        public ObservableCollection<ProgressOperationAction> Actions { get; private set; }
+
 
         public ProgressOperation()
         {
+            StartTime = DateTime.Now;
+            LastUpdatedTime = StartTime;
             State = OperationState.NotSet;
             Message = "".ToConsoleString();
             Progress = -1;
+            Actions = new ObservableCollection<ProgressOperationAction>();
+            this.PropertyChanged += ProgressOperation_PropertyChanged;
+        }
+
+        private void ProgressOperation_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName != nameof(LastUpdatedTime))
+            {
+                LastUpdatedTime = DateTime.Now;
+            }
+            
+            // if the state is terminal and we've not yet recorded an end time then record it
+            if(e.PropertyName == nameof(State) && EndTime.HasValue == false && (State == OperationState.Completed || State == OperationState.CompletedWithWarnings || State == OperationState.Failed))
+            {
+                EndTime = DateTime.Now;
+            }
         }
     }
 
-    internal class ProgressOperationCommand
+    public class ProgressOperationAction
     {
         public string DisplayName { get; set; }
-        
+
+        public Action Action { get; set; }
     }
 }
