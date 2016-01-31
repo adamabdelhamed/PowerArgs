@@ -28,9 +28,9 @@ namespace PowerArgs.Cli
             closeButton.Activated += Escape;
         }
 
-        public override void BeforeAdd()
+        public override void OnBeforeAddedToVisualTree()
         {
-            base.BeforeAdd();
+            base.OnBeforeAddedToVisualTree();
             Application.FocusManager.Push();
             Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, (key) =>
             {
@@ -38,7 +38,7 @@ namespace PowerArgs.Cli
             });
         }
 
-        public override void OnAdd()
+        public override void OnAddedToVisualTree()
         {
             if(Parent != Application.LayoutRoot)
             {
@@ -58,7 +58,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override void OnRemove()
+        public override void OnRemovedFromVisualTree()
         {
             Application.GlobalKeyHandlers.Pop(ConsoleKey.Escape);
             Application.FocusManager.Pop();

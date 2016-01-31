@@ -1,21 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace PowerArgs.Cli
 {
     /// <summary>
     /// A helper that makes it easy to define an object with observable properties
     /// </summary>
-    public class ViewModelBase : INotifyPropertyChanged
+    public class ObservableObject : Lifetime
     {
-        /// <summary>
-        /// The change event
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        private Dictionary<string, List<PropertyChangedSubscription>> subscribers;
 
         /// <summary>
         /// A handler that a child class can use to be notified before a value changes.
@@ -43,10 +38,11 @@ namespace PowerArgs.Cli
         /// Creates a new bag and optionally sets the notifier object.
         /// </summary>
         /// <param name="sender">The object to be used as the sender for notification events (defaults to this)</param>
-        public ViewModelBase(object sender = null)
+        public ObservableObject(object sender = null)
         {
             NotifierObject = sender ?? this;
             SuppressEqualChanges = true;
+            subscribers = new Dictionary<string, List<PropertyChangedSubscription>>();
         }
 
         /// <summary>
@@ -107,36 +103,69 @@ namespace PowerArgs.Cli
 
             if (SuppressEqualChanges == false || isEqualChange == false)
             {
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(NotifierObject, new PropertyChangedEventArgs(name));
-                }
+                FirePropertyChanged(name);
             }
         }
 
-        public PropertyChangedEventHandler Subscribe(string propertyName, Action handler)
+        public void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager)
         {
-            PropertyChangedEventHandler ret = (sender, args) =>
-            {
-                if (args.PropertyName == propertyName)
-                {
-                    handler();
-                }
-            };
-            PropertyChanged += ret;
-            return ret;
+            var sub = SubscribeUnmanaged(propertyName, handler);
+            lifetimeManager.Manage(sub);
         }
 
-        public PropertyChangedEventHandler SubscribeAndSyncNow(string propertyName, Action handler)
+        public void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager)
         {
             handler();
-            return Subscribe(propertyName, handler);
+            SubscribeForLifetime(propertyName, handler, lifetimeManager);
         }
 
-
-        public void Unsubscribe(PropertyChangedEventHandler handler)
+        public void Subscribe(string propertyName, Action handler)
         {
-            this.PropertyChanged -= handler;
+            SubscribeForLifetime(propertyName, handler, LifetimeManager.AmbientLifetimeManager);
+        }
+
+        public void Synchronize(string propertyName, Action handler)
+        {
+            handler();
+            Subscribe(propertyName, handler);
+        }
+
+        
+
+        public PropertyChangedSubscription SubscribeUnmanaged(string propertyName, Action handler)
+        {
+            var sub = new PropertyChangedSubscription(propertyName, handler, Unsubscribe);
+
+            List<PropertyChangedSubscription> subsForProperty;
+            if(subscribers.TryGetValue(propertyName, out subsForProperty) == false)
+            {
+                subsForProperty = new List<PropertyChangedSubscription>();
+                subscribers.Add(propertyName, subsForProperty);
+            }
+            subsForProperty.Add(sub);
+
+            return sub;
+        }
+
+        private void Unsubscribe(PropertyChangedSubscription sub)
+        {
+            List<PropertyChangedSubscription> subsForProperty;
+            if (subscribers.TryGetValue(sub.PropertyName, out subsForProperty) == false)
+            {
+                throw new KeyNotFoundException("The given subscription was not found");
+            }
+
+            subsForProperty.Remove(sub);
+            if(subsForProperty.Count == 0)
+            {
+                subscribers.Remove(sub.PropertyName);
+            }
+        }
+
+        public PropertyChangedSubscription SynchronizeUnmanaged(string propertyName, Action handler)
+        {
+            handler();
+            return SubscribeUnmanaged(propertyName, handler);
         }
 
         /// <summary>
@@ -145,9 +174,15 @@ namespace PowerArgs.Cli
         /// <param name="propertyName">the name of the property that changed</param>
         protected void FirePropertyChanged(string propertyName)
         {
-            if (PropertyChanged != null)
+            List<PropertyChangedSubscription> filteredSubs;
+            if(subscribers.TryGetValue(propertyName, out filteredSubs) == false && subscribers.TryGetValue("*", out filteredSubs) == false)
             {
-                PropertyChanged(NotifierObject, new PropertyChangedEventArgs(propertyName));
+                return;
+            }
+
+            foreach(var sub in filteredSubs)
+            {
+                sub.ChangeListener();
             }
         }
 

@@ -86,7 +86,6 @@
     <Compile Include="Samples\AzureStorageExplorerApp\Pages\StorageAccountsPage.cs" />
     <Compile Include="Samples\CpuAndMemoryChart.cs" />
     <Compile Include="Samples\FileSystemBrowserApp.cs" />
-    <Compile Include="Samples\StateNavigatorApp.cs" />
     <Compile Include="Samples\HelloWorldConditionalIf.cs" />
     <Compile Include="Samples\Calculator.cs" />
     <Compile Include="Samples\Helpers\PerformanceInfo.cs" />

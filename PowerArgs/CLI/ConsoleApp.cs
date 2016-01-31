@@ -17,7 +17,7 @@ namespace PowerArgs.Cli
     /// <summary>
     /// A class representing a console application that uses a message pump to synchronize work on a UI thread
     /// </summary>
-    public class ConsoleApp
+    public class ConsoleApp : Lifetime
     {
         [ThreadStatic]
         private static ConsoleApp _current;
@@ -106,11 +106,11 @@ namespace PowerArgs.Cli
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
             AutoFillOnConsoleResize = true;
-            FocusManager.PropertyChanged += FocusChanged;
-            LayoutRoot.Controls.BeforeAdded += (c) => { c.Application = this; c.BeforeAddedInternal(); };
-            LayoutRoot.Controls.BeforeRemoved += (c) => { c.BeforeRemovedInternal(); };
-            LayoutRoot.Controls.Added += ControlAddedToVisualTree;
-            LayoutRoot.Controls.Removed += ControlRemovedFromVisualTree;
+            FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), Paint, LifetimeManager);
+            LayoutRoot.Controls.BeforeAdded.SubscribeForLifetime((c) => { c.Application = this; c.BeforeAddedToVisualTreeInternal(); }, LifetimeManager);
+            LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, LifetimeManager);
+            LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, LifetimeManager);
+            LayoutRoot.Controls.Removed.SubscribeForLifetime(ControlRemovedFromVisualTree, LifetimeManager);
             MessagePump.WindowResized += HandleDebouncedResize;
         }
 
@@ -172,28 +172,18 @@ namespace PowerArgs.Cli
             MessagePump.QueueAction(new PaintMessage(PaintInternal));
         }
 
-        private void FocusChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(FocusManager.FocusedControl))
-            {
-                Paint();
-            }
-        }
-
         private void ControlAddedToVisualTree(ConsoleControl c)
         {
             c.Application = this;
 
             if (c is ConsolePanel)
             {
-                foreach(var child in (c as ConsolePanel).Controls)
-                {
-                    ControlAddedToVisualTree(child);
-                }
+                var childPanel = c as ConsolePanel;
+                childPanel.Controls.SynchronizeForLifetime((cp) => { ControlAddedToVisualTree(cp); }, (cp) => { ControlRemovedFromVisualTree(cp); }, () => { }, c.LifetimeManager);
             }
 
             FocusManager.Add(c);
-            c.AddedInternal();
+            c.AddedToVisualTreeInternal();
 
             if (ControlAdded != null)
             {
@@ -229,12 +219,13 @@ namespace PowerArgs.Cli
 
             FocusManager.Remove(c);
 
-            c.RemovedInternal();
+            c.RemovedFromVisualTreeInternal();
             c.Application = null;
             if (ControlRemoved != null)
             {
                 ControlRemoved(c);
             }
+            c.Dispose();
             return focusChanged;
         }
 
@@ -273,6 +264,7 @@ namespace PowerArgs.Cli
                 Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
                 Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             }
+            Dispose();
         }
 
         private void PaintInternal()

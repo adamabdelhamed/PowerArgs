@@ -16,32 +16,21 @@
 
         public StackPanel()
         {
-            Controls.Added += Controls_Added;
-            Controls.Removed += Controls_Removed;
+   
+        }
+
+        public override void OnAddedToVisualTree()
+        {
+            base.OnAddedToVisualTree();
             Subscribe(nameof(Bounds), RedoLayout);
             Subscribe(nameof(Margin), RedoLayout);
+            Controls.Added.Subscribe(Controls_Added);
         }
 
         private void Controls_Added(ConsoleControl obj)
         {
-            obj.PropertyChanged += Obj_PropertyChanged;
-            RedoLayout();
+            obj.SynchronizeForLifetime(nameof(Bounds), RedoLayout, obj.LifetimeManager);
         }
-
-        private void Controls_Removed(ConsoleControl obj)
-        {
-            obj.PropertyChanged -= Obj_PropertyChanged;
-            RedoLayout();
-        }
-
-        private void Obj_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Bounds))
-            {
-                RedoLayout();
-            }
-        }
-
 
         private void RedoLayout()
         {

@@ -43,12 +43,15 @@ namespace PowerArgs.Cli
             CanFocus = true;
             this.Focused += TextBox_Focused;
             this.Unfocused += TextBox_Unfocused;
-            this.textState.PropertyChanged += TextValueChanged;
         }
 
-        private void TextValueChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        public override void OnAddedToVisualTree()
         {
-            if (e.PropertyName != nameof(RichTextEditor.CurrentValue)) return;
+            textState.Subscribe(nameof(textState.CurrentValue), TextValueChanged);
+        }
+
+        private void TextValueChanged()
+        {
             FirePropertyChanged(nameof(Value));
 
             if (backspaceNavigationOptimizationTimerHandle != null)

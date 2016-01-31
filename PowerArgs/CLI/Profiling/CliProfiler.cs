@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
-    public class CliProfiler : ViewModelBase
+    public class CliProfiler : ObservableObject
     {
         private static Lazy<CliProfiler> _instance = new Lazy<CliProfiler>(()=> new CliProfiler());
         private Dictionary<string, List<TimeSpan>> timeSamples;

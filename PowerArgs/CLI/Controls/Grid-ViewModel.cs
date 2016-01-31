@@ -220,6 +220,8 @@ namespace PowerArgs.Cli
             }
         }
 
+        Subscription dataSourceSub;
+        Subscription boundsSub;
         private void InitGridViewModel()
         {
             this.SelectionMode = GridSelectionMode.Row;
@@ -229,7 +231,8 @@ namespace PowerArgs.Cli
 
             visibleRowOffset = 0;
             SelectedIndex = 0;
-            this.PropertyChanged += DataSourceOrBoundsChangedListener;
+            dataSourceSub = SubscribeUnmanaged(nameof(DataSource), DataSourceOrBoundsChangedListener);
+            boundsSub = SubscribeUnmanaged(nameof(Bounds), DataSourceOrBoundsChangedListener);
             this.query = new CollectionQuery();
 
             this.NoDataMessage = "No data";
@@ -251,10 +254,8 @@ namespace PowerArgs.Cli
             }
         }
 
-        private void DataSourceOrBoundsChangedListener(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void DataSourceOrBoundsChangedListener()
         {
-            if (e.PropertyName != nameof(DataSource) && e.PropertyName != nameof(Bounds)) return;
-
             if (DataSource != null)
             {
                 this.query.Take = NumRowsInView;
@@ -275,7 +276,7 @@ namespace PowerArgs.Cli
         }
     }
 
-    public class ColumnViewModel : ViewModelBase
+    public class ColumnViewModel : ObservableObject
     {
         public ConsoleString ColumnName { get; private set; }
         public ConsoleString ColumnDisplayName { get { return Get<ConsoleString>(); } set { Set(value); } }

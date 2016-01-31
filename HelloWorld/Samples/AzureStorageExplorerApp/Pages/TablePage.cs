@@ -17,11 +17,18 @@ namespace HelloWorld.Samples
             Grid.NoDataMessage = "No table entities";
             Grid.NoVisibleColumnsMessage = "Loading..."; // override NoVisibleColumnsMessage because we won't know the columns until the data arrives
             Grid.PropertyResolver = ResolveProperty;
-            Grid.Subscribe(nameof(Grid.SelectedItem), SelectedTableEntityChanged);
+            
             Grid.RegisterKeyHandler(ConsoleKey.Delete, BeginDeleteSelectedEntityIfExists);
 
             deleteButton = CommandBar.Add(new Button() { Text = "Delete entity", CanFocus = false });
+            CommandBar.Add(new NotificationButton(ProgressOperationManager));
             deleteButton.Activated += BeginDeleteSelectedEntityIfExists;
+        }
+
+        public override void OnAddedToVisualTree()
+        {
+            base.OnAddedToVisualTree();
+            Grid.Subscribe(nameof(Grid.SelectedItem), SelectedTableEntityChanged);
         }
 
         protected override void OnLoad()
@@ -98,7 +105,6 @@ namespace HelloWorld.Samples
                  };
 
                  ProgressOperationManager.Operations.Add(operation);
-                 this.ShowProgressOperationsDialog();
 
                  var applicationRef = Application;
                  Application.MessagePump.QueueAsyncAction(table.ExecuteAsync(TableOperation.Delete(entityToDelete)), (t) =>

@@ -28,10 +28,34 @@ namespace PowerArgs.Cli
             }
         }
 
-        public int HorizontalScrollUnits { get { return Get<int>(); } set { Set(value); } }
-        public int VerticalScrollUnits { get { return Get<int>(); } set { Set(value); } }
+        public int HorizontalScrollUnits
+        {
+            get
+            {
+                return Get<int>();
+            }
+            set
+            {
+                if (value < 0) throw new IndexOutOfRangeException("Value must be >= 0");
+                Set(value);
+            }
+        }
+    
+        public int VerticalScrollUnits
+        {
+            get
+            {
+                return Get<int>();
+            }
+            set
+            {
+                if (value < 0) throw new IndexOutOfRangeException("Value must be >= 0");
 
-        private PropertyChangedEventHandler focusListenHandler;
+                Set(value);
+            }
+        }
+
+        private PropertyChangedSubscription focusSubscription;
 
         private Scrollbar verticalScrollbar;
         private Scrollbar horizontalScrollbar;
@@ -40,34 +64,32 @@ namespace PowerArgs.Cli
         {
             ScrollableContent = Add(new ConsolePanel() { IsVisible = false }).Fill();
         
-            verticalScrollbar = Add(new Scrollbar() { Width = 1 }).DockToRight();
-            horizontalScrollbar = Add(new Scrollbar() { Height = 1 }).DockToBottom();
+            verticalScrollbar = Add(new Scrollbar(Orientation.Vertical) { Width = 1 }).DockToRight();
+            horizontalScrollbar = Add(new Scrollbar(Orientation.Horizontal) { Height = 1 }).DockToBottom();
 
-            ScrollableContent.Controls.Added += ScrollableControls_Added;
-            ScrollableContent.Controls.Removed += ScrollableControls_Removed;
-            Subscribe(nameof(HorizontalScrollUnits), UpdateScrollbars);
-            Subscribe(nameof(VerticalScrollUnits), UpdateScrollbars);
+            
+        }
 
+        public override void OnAddedToVisualTree()
+        {
+            base.OnAddedToVisualTree();
+            focusSubscription = Application.FocusManager.SubscribeUnmanaged(nameof(FocusManager.FocusedControl), FocusChanged);
+            Synchronize(nameof(HorizontalScrollUnits), UpdateScrollbars);
+            Synchronize(nameof(VerticalScrollUnits), UpdateScrollbars);
+
+            ScrollableContent.Controls.Synchronize(ScrollableControls_Added, (c)=> { }, () => { });
+        }
+
+        public override void OnRemovedFromVisualTree()
+        {
+            base.OnRemovedFromVisualTree();
+            focusSubscription.Dispose();
         }
 
         private void ScrollableControls_Added(ConsoleControl c)
         {
-            c.PropertyChanged += C_PropertyChanged;
+            c.SubscribeForLifetime(nameof(Bounds), UpdateScrollbars, c.LifetimeManager);
         }
-
-        private void ScrollableControls_Removed(ConsoleControl c)
-        {
-            c.PropertyChanged -= C_PropertyChanged;
-        }
-
-        private void C_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(ConsoleControl.Bounds))
-            {
-                UpdateScrollbars();
-            }
-        }
-
         private void UpdateScrollbars()
         {
             var contentSize = ScrollableContentSize;
@@ -101,17 +123,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override void OnAdd()
-        {
-            base.OnAdd();
-            focusListenHandler = Application.FocusManager.Subscribe(nameof(FocusManager.FocusedControl), FocusChanged);
-        }
 
-        public override void OnRemove()
-        {
-            base.OnRemove();
-            Application.FocusManager.Unsubscribe(focusListenHandler);
-        }
 
         private void FocusChanged()
         {
@@ -202,8 +214,11 @@ namespace PowerArgs.Cli
             }
         }
 
-        public Scrollbar()
+        private Orientation orientation;
+
+        public Scrollbar(Orientation orientation)
         {
+            this.orientation = orientation;
             Background = ConsoleColor.DarkGray;
         }
 
@@ -223,14 +238,54 @@ namespace PowerArgs.Cli
             var scrollableSize = ScrollablePanel.ScrollableContentSize;
             if (info.Key == ConsoleKey.Home)
             {
-                ScrollablePanel.VerticalScrollUnits = 0;
-                ScrollablePanel.HorizontalScrollUnits = 0;
+                if (orientation == Orientation.Vertical)
+                {
+                    ScrollablePanel.VerticalScrollUnits = 0;
+                }
+                else
+                {
+                    ScrollablePanel.HorizontalScrollUnits = 0;
+                }
                 return true;
             }
             else if (info.Key == ConsoleKey.End)
             {
-                ScrollablePanel.VerticalScrollUnits = scrollableSize.Height - ScrollablePanel.Height;
-                ScrollablePanel.HorizontalScrollUnits = scrollableSize.Width - ScrollablePanel.Width;
+                if (orientation == Orientation.Vertical)
+                {
+                    ScrollablePanel.VerticalScrollUnits = scrollableSize.Height - ScrollablePanel.Height;
+                }
+                else
+                {
+                    ScrollablePanel.HorizontalScrollUnits = scrollableSize.Width - ScrollablePanel.Width;
+                }
+                return true;
+            }
+            if (info.Key == ConsoleKey.PageUp)
+            {
+                if (orientation == Orientation.Vertical)
+                {
+                    int upAmount = Math.Min(ScrollablePanel.Height, ScrollablePanel.VerticalScrollUnits);
+                    ScrollablePanel.VerticalScrollUnits -= upAmount;
+                }
+                else
+                {
+                    int leftAmount = Math.Min(ScrollablePanel.Width, ScrollablePanel.HorizontalScrollUnits);
+                    ScrollablePanel.HorizontalScrollUnits -= leftAmount;
+                }
+                return true;
+            }
+            else if (info.Key == ConsoleKey.PageDown)
+            {
+                if (orientation == Orientation.Vertical)
+                {
+                    int downAmount = Math.Min(ScrollablePanel.Height, ScrollablePanel.ScrollableContentSize.Height - ScrollablePanel.VerticalScrollUnits - ScrollablePanel.Height);
+                    ScrollablePanel.VerticalScrollUnits += downAmount;
+                }
+                else
+                {
+                    int rightAmount = Math.Min(ScrollablePanel.Width, ScrollablePanel.ScrollableContentSize.Width - ScrollablePanel.HorizontalScrollUnits - ScrollablePanel.Width);
+                    ScrollablePanel.VerticalScrollUnits += rightAmount;
+                }
                 return true;
             }
             else if (info.Key == ConsoleKey.DownArrow)
@@ -246,6 +301,22 @@ namespace PowerArgs.Cli
                 if(ScrollablePanel.VerticalScrollUnits > 0)
                 {
                     ScrollablePanel.VerticalScrollUnits--;
+                    return true;
+                }
+            }
+            else if (info.Key == ConsoleKey.RightArrow)
+            {
+                if (ScrollablePanel.HorizontalScrollUnits < scrollableSize.Width - ScrollablePanel.Width)
+                {
+                    ScrollablePanel.HorizontalScrollUnits++;
+                    return true;
+                }
+            }
+            else if (info.Key == ConsoleKey.LeftArrow)
+            {
+                if (ScrollablePanel.HorizontalScrollUnits > 0)
+                {
+                    ScrollablePanel.HorizontalScrollUnits--;
                     return true;
                 }
             }

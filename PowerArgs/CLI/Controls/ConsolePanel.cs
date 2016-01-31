@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace PowerArgs.Cli
 {
@@ -6,66 +7,28 @@ namespace PowerArgs.Cli
     {
         public ObservableCollection<ConsoleControl> Controls { get; private set; }
 
+        public IReadOnlyCollection<ConsoleControl> Descendents
+        {
+            get
+            {
+                List<ConsoleControl> descendends = new List<ConsoleControl>();
+                VisitControlTree((d) =>
+                {
+                    descendends.Add(d);
+                    return false;
+                });
+
+                return descendends.AsReadOnly();
+            }
+        }
+
         public ConsolePanel()
         {
             Controls = new ObservableCollection<ConsoleControl>();
+            SynchronizeForLifetime(nameof(Id), () => { Controls.Id = Id; }, LifetimeManager);
+            Controls.Added.SubscribeForLifetime((c) => { c.Parent = this; }, LifetimeManager);
+            Controls.Removed.SubscribeForLifetime((c) => { c.Parent = null; }, LifetimeManager);
             this.CanFocus = false;
-            Action<ConsoleControl> addPropagator = (c) => { Controls.FireAdded(c); };
-            Action<ConsoleControl> removePropagator = (c) => { Controls.FireRemoved(c); };
-
-            Action<ConsoleControl> beforeAddPropagator = (c) => { Controls.FireBeforeAdded(c); };
-            Action<ConsoleControl> beforeRemovePropagator = (c) => { Controls.FireBeforeRemoved(c); };
-
-
-            Controls.BeforeAdded += (c) =>
-             {
-                // only hook up propogators for direct descendents
-                if (Controls.Contains(c) == false)
-                 {
-                     return;
-                 }
-
-                 if (c is ConsolePanel)
-                 {
-                     (c as ConsolePanel).Controls.BeforeAdded += beforeAddPropagator;
-                     (c as ConsolePanel).Controls.BeforeRemoved += beforeRemovePropagator;
-                 }
-             };
-
-            Controls.Added += (c) =>
-            {
-                // only hook up propogators for direct descendents
-                if(Controls.Contains(c) == false)
-                {
-                    return;
-                }
-
-                c.Parent = this;
-                if (c is ConsolePanel)
-                {
-                    (c as ConsolePanel).Controls.Added += addPropagator;
-                    (c as ConsolePanel).Controls.Removed += removePropagator;
-                }
-            };
-
-            Controls.BeforeRemoved += (c) =>
-            {
-                if (c is ConsolePanel)
-                {
-                    (c as ConsolePanel).Controls.BeforeAdded -= beforeAddPropagator;
-                    (c as ConsolePanel).Controls.BeforeRemoved -= beforeRemovePropagator;
-                }
-            };
-
-            Controls.Removed += (c) =>
-            {
-                if (c is ConsolePanel)
-                {
-                    (c as ConsolePanel).Controls.Added -= addPropagator;
-                    (c as ConsolePanel).Controls.Removed -= removePropagator;
-                }
-                c.Parent = null;
-            };
         }
 
         public T Add<T>(T c) where T : ConsoleControl

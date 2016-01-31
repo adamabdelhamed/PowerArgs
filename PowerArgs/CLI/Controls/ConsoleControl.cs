@@ -8,6 +8,7 @@ namespace PowerArgs.Cli
     /// </summary>
     public class ConsoleControl : Rectangular
     {
+        public string Id { get { return Get<string>(); } set { Set(value); } }
         /// <summary>
         /// An event that fires after this control gets focus
         /// </summary>
@@ -22,14 +23,14 @@ namespace PowerArgs.Cli
         /// </summary>
         public event Action Added;
 
-        public event Action BeforeAdded;
+        public event Action BeforeAddedToVisualTree;
 
         /// <summary>
         /// An event that fires when this control is removed from the visual tree of a ConsoleApp.
         /// </summary>
-        public event Action Removed;
+        public event Action RemovedFromVisualTree;
 
-        public event Action BeforeRemoved; 
+        public event Action BeforeRemovedFromVisualTree; 
 
         /// <summary>
         /// An event that fires when a key is pressed while this control has focus and the control has decided not to process
@@ -74,22 +75,20 @@ namespace PowerArgs.Cli
             }
         }
 
+        private bool hasBeenAddedToVisualTree;
+
         public ConsoleControl()
         {
             CanFocus = true;
             Background = Theme.DefaultTheme.BackgroundColor;
             this.Foreground = Theme.DefaultTheme.ForegroundColor;
             this.SelectedUnfocusedColor = Theme.DefaultTheme.SelectedUnfocusedColor;
-            this.PropertyChanged += ConsoleControl_PropertyChanged;
             this.IsVisible = true;
         }
 
-        void ConsoleControl_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        void PropertyChanged()
         {
-            if (Application != null)
-            {
-                this.Application.Paint();
-            }
+            this.Application.Paint();
         }
 
         public Point CalculateAbsolutePosition()
@@ -177,49 +176,57 @@ namespace PowerArgs.Cli
             if (!focused && Unfocused != null) Unfocused();
         }
 
-        internal void AddedInternal()
+        internal void AddedToVisualTreeInternal()
         {
-            OnAdd();
-            if (Added != null)
+            if (hasBeenAddedToVisualTree) throw new ObjectDisposedException(Id, "This control has already been added to a visual tree and cannot be reused.");
+            hasBeenAddedToVisualTree = true;
+            using (new AmbientLifetimeScope(LifetimeManager))
             {
-                Added();
+                OnAddedToVisualTree();
+                if (Added != null)
+                {
+                    Added();
+                }
+
+                Subscribe("*", Application.Paint);
+            }
+            
+        }
+
+        internal void BeforeAddedToVisualTreeInternal()
+        {
+            OnBeforeAddedToVisualTree();
+            if (BeforeAddedToVisualTree != null)
+            {
+                BeforeAddedToVisualTree();
             }
         }
 
-        internal void BeforeAddedInternal()
+        internal void RemovedFromVisualTreeInternal()
         {
-            BeforeAdd();
-            if (BeforeAdded != null)
+            OnRemovedFromVisualTree();
+            if (RemovedFromVisualTree != null)
             {
-                BeforeAdded();
+                RemovedFromVisualTree();
             }
         }
 
-        internal void RemovedInternal()
+        internal void BeforeRemovedFromVisualTreeInternal()
         {
-            OnRemove();
-            if (Removed != null)
+            OnBeforeRemoveFromVisualTree();
+            if (BeforeRemovedFromVisualTree != null)
             {
-                Removed();
+                BeforeRemovedFromVisualTree();
             }
         }
 
-        internal void BeforeRemovedInternal()
-        {
-            BeforeRemove();
-            if (BeforeRemoved != null)
-            {
-                BeforeRemoved();
-            }
-        }
+        public virtual void OnRemovedFromVisualTree() { }
 
-        public virtual void OnRemove() { }
+        public virtual void OnBeforeRemoveFromVisualTree() { }
 
-        public virtual void BeforeRemove() { }
+        public virtual void OnAddedToVisualTree() { }
 
-        public virtual void OnAdd() { }
-
-        public virtual void BeforeAdd() { }
+        public virtual void OnBeforeAddedToVisualTree() { }
 
 
         /// <summary>
@@ -299,7 +306,7 @@ namespace PowerArgs.Cli
 
         public override string ToString()
         {
-            return GetType().Name;
+            return GetType().Name+" ("+Id+")";
         }
     }
 }

@@ -39,13 +39,16 @@ namespace PowerArgs.Cli
             Height = 1;
             this.Mode = LabelRenderMode.SingleLineAutoSize;
             this.CanFocus = false;
+            lines = new List<List<ConsoleCharacter>>();
+        }
+
+        public override void OnAddedToVisualTree()
+        {
             this.Subscribe(nameof(Text), HandleTextChanged);
             this.Subscribe(nameof(Mode), HandleTextChanged);
             this.Subscribe(nameof(MaxHeight), HandleTextChanged);
             this.Subscribe(nameof(MaxWidth), HandleTextChanged);
-
-            this.Subscribe(nameof(Bounds), HandleTextChanged);
-            lines = new List<List<ConsoleCharacter>>();
+            this.Synchronize(nameof(Bounds), HandleTextChanged);
         }
 
         private void HandleTextChanged()

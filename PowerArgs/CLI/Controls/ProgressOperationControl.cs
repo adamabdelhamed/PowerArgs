@@ -16,69 +16,96 @@ namespace PowerArgs.Cli
         private StackPanel actionPanel;
         private Label timeLabel;
         private Spinner spinner;
-
-        public ProgressOperationControl(ProgressOperation operation)
+        private ProgressOperationsManager manager;
+        public ProgressOperationControl(ProgressOperationsManager manager, ProgressOperation operation)
         {
+            this.Tag = operation;
             this.Operation = operation;
+            this.manager = manager;
             this.Height = 2;
             messageAndOperationsPanel = Add(new StackPanel() { Orientation = Orientation.Vertical }).Fill();
 
             messageLabel = messageAndOperationsPanel.Add(new Label() { Mode = LabelRenderMode.ManualSizing }).FillHoriontally();
             messageLabel.CanFocus = true;
-            operation.SubscribeAndSyncNow(nameof(ProgressOperation.Message), () => 
+
+            messageLabel.RegisterKeyHandler(ConsoleKey.Enter, () =>
             {
-                messageLabel.Text = operation.Message;
+                var msg = operation.Message;
+                if(operation.Details != null)
+                {
+                    msg += "\n" + operation.Details;
+                }
+                Dialog.ShowMessage(msg);
+            });
+
+            messageLabel.RegisterKeyHandler(ConsoleKey.Delete, () =>
+            {
+                var app = Application;
+                manager.Operations.Remove(operation);
+                app.FocusManager.TryMoveFocus();
             });
 
             actionPanel = messageAndOperationsPanel.Add(new StackPanel() { Orientation = Orientation.Horizontal, Height = 1, Margin = 2 }).FillHoriontally(messageAndOperationsPanel);
             spinner = actionPanel.Add(new Spinner() { CanFocus=false});
             timeLabel = actionPanel.Add(new Label() { Mode = LabelRenderMode.SingleLineAutoSize, Text = operation.StartTime.ToFriendlyPastTimeStamp().ToConsoleString() });
 
-            operation.SubscribeAndSyncNow(nameof(ProgressOperation.State), () => 
-            {
-                if(operation.State == OperationState.InProgress)
-                {
-                    spinner.IsSpinning = true;
-                }
-                else if(operation.State== OperationState.Completed)
-                {
-                    spinner.IsSpinning = false;
-                    spinner.Value = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Green);
-                }
-                else if (operation.State == OperationState.Failed)
-                {
-                    spinner.IsSpinning = false;
-                    spinner.Value = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Red);
-                }
-                else if (operation.State == OperationState.CompletedWithWarnings)
-                {
-                    spinner.IsSpinning = false;
-                    spinner.Value = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.DarkYellow);
-                }
-                else if (operation.State == OperationState.Queued)
-                {
-                    spinner.IsSpinning = false;
-                    spinner.Value = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Gray);
-                }
-                else if (operation.State == OperationState.NotSet)
-                {
-                    spinner.IsSpinning = false;
-                    spinner.Value = new ConsoleCharacter('?', backgroundColor: ConsoleColor.Gray);
-                }
-            });
-
+            
             spinner.IsSpinning = operation.State == OperationState.InProgress;
 
             foreach (var action in operation.Actions)
             {
                 BindActionToActionPanel(action);
             }
-
-            operation.Actions.Added += Actions_Added;
-            operation.Actions.Removed += Actions_Removed;
         }
 
-  
+        public override void OnAddedToVisualTree()
+        {
+            base.OnAddedToVisualTree();
+
+            Operation.Actions.Added.Subscribe(Actions_Added);
+            Operation.Actions.Removed.Subscribe(Actions_Removed);
+
+            Operation.Synchronize(nameof(ProgressOperation.Message), () =>
+            {
+                messageLabel.Text = Operation.Message;
+            });
+
+            Operation.Synchronize(nameof(ProgressOperation.State), () =>
+            {
+                if (Operation.State == OperationState.InProgress)
+                {
+                    spinner.IsSpinning = true;
+                }
+                else if (Operation.State == OperationState.Completed)
+                {
+                    spinner.IsSpinning = false;
+                    spinner.Value = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Green);
+                }
+                else if (Operation.State == OperationState.Failed)
+                {
+                    spinner.IsSpinning = false;
+                    spinner.Value = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Red);
+                }
+                else if (Operation.State == OperationState.CompletedWithWarnings)
+                {
+                    spinner.IsSpinning = false;
+                    spinner.Value = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.DarkYellow);
+                }
+                else if (Operation.State == OperationState.Queued)
+                {
+                    spinner.IsSpinning = false;
+                    spinner.Value = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Gray);
+                }
+                else if (Operation.State == OperationState.NotSet)
+                {
+                    spinner.IsSpinning = false;
+                    spinner.Value = new ConsoleCharacter('?', backgroundColor: ConsoleColor.Gray);
+                }
+            });
+
+        }
+
+
 
         private void Actions_Added(ProgressOperationAction action)
         {

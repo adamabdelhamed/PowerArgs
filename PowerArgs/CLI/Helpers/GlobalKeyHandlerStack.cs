@@ -20,18 +20,22 @@ namespace PowerArgs.Cli
 
         private Dictionary<ConsoleKey, Stack<Handler>> handlers;
 
+        private Dictionary<ConsoleKey, Stack<Handler>> altHandlers;
+
         public GlobalKeyHandlerStack()
         {
             handlers = new Dictionary<ConsoleKey, Stack<Handler>>();
+            altHandlers = new Dictionary<ConsoleKey, Stack<Handler>>();
         }
 
-        public void Push(ConsoleKey key, Action<ConsoleKeyInfo> handler)
+        public void Push(ConsoleKey key, Action<ConsoleKeyInfo> handler, bool altModifier = false)
         {
+            Dictionary<ConsoleKey, Stack<Handler>> dictionary = altModifier ? altHandlers : handlers;
             Stack<Handler> handlerStack;
-            if(handlers.TryGetValue(key, out handlerStack) == false)
+            if(dictionary.TryGetValue(key, out handlerStack) == false)
             {
                 handlerStack = new Stack<Handler>();
-                handlers.Add(key, handlerStack);
+                dictionary.Add(key, handlerStack);
             }
 
             handlerStack.Push(new Handler(handler));
@@ -39,8 +43,10 @@ namespace PowerArgs.Cli
 
         public bool TryHandle(ConsoleKeyInfo info)
         {
+            Dictionary<ConsoleKey, Stack<Handler>> dictionary = info.Modifiers.HasFlag(ConsoleModifiers.Alt) ? altHandlers : handlers;
+
             Stack<Handler> handlerStack;
-            if (handlers.TryGetValue(info.Key, out handlerStack) == false)
+            if (dictionary.TryGetValue(info.Key, out handlerStack) == false)
             {
                 return false;
             }
@@ -54,9 +60,11 @@ namespace PowerArgs.Cli
             return true;
         }
 
-        public void Pop(ConsoleKey key)
+        public void Pop(ConsoleKey key, bool altModifier = false)
         {
-            Stack<Handler> handlerStack = handlers[key];
+            Dictionary<ConsoleKey, Stack<Handler>> dictionary = altModifier ? altHandlers : handlers;
+
+            Stack<Handler> handlerStack = dictionary[key];
             handlerStack.Pop();
         }
     }

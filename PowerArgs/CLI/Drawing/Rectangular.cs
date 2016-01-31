@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PowerArgs.Cli
 {
-    public class Rectangular : ViewModelBase
+    public class Rectangular : ObservableObject
     {
         public Rectangle Bounds
         {

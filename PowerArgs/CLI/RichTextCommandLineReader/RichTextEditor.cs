@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace PowerArgs.Cli
 {
-    public class RichTextEditor : ViewModelBase
+    public class RichTextEditor : ObservableObject
     {
         private RichCommandLineContext Context { get; set; }
         private Dictionary<ConsoleKey, IKeyHandler> KeyHandlers { get; set; }

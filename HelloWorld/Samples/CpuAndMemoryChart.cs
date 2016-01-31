@@ -12,14 +12,17 @@ namespace HelloWorld.Samples
         {
             var app = new ConsoleApp(0, 0, 75, 22);
             var chart = new CpuAndMemoryChart();
-            var list = new ListView() { Size = new Size(30, 5) };
+            var list = new Grid() { Size = new Size(30, 5) };
+
+            var source = new MemoryDataSource();
+            list.DataSource = source;
 
             Action syncChartToListAction = () =>
             {
-                list.ViewModel.Items.Clear();
+                source.Items.Clear();
                 if (chart.ViewModel.FocusedDataSeries != null && chart.ViewModel.FocusedDataPointIndex >= 0 && chart.ViewModel.FocusedDataPointIndex < chart.ViewModel.FocusedDataSeries.DataPoints.Count && chart.ViewModel.FocusedDataSeries.DataPoints.Count > 0)
                 {
-                    list.ViewModel.Items.Add(ContextAssistSearchResult.FromString(chart.ViewModel.FocusedDataSeries.DataPoints[chart.ViewModel.FocusedDataPointIndex].Y + ""));
+                    source.Items.Add(new { Value = ContextAssistSearchResult.FromString(chart.ViewModel.FocusedDataSeries.DataPoints[chart.ViewModel.FocusedDataPointIndex].Y + "") });
                 }
             };
 
@@ -86,9 +89,9 @@ namespace HelloWorld.Samples
             ViewModel.DataSeriesCollection.Add(cpuSeries);        
         }
 
-        public override void OnAdd()
+        public override void OnAddedToVisualTree()
         {
-            base.OnAdd();
+            base.OnAddedToVisualTree();
             if (Width == 0) Width = Parent.Width;
             if (Height == 0) Height = Parent.Height;
 
@@ -102,7 +105,7 @@ namespace HelloWorld.Samples
 
             // Stop watching CPU and memory when the application stops or this control is removed
             Application.ApplicationStopped += () => { running = false; };
-            this.Removed +=                   () => { running = false; };
+            this.RemovedFromVisualTree +=                   () => { running = false; };
 
             while (running)
             {

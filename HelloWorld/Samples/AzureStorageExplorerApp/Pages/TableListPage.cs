@@ -21,7 +21,6 @@ namespace HelloWorld.Samples
             deleteButton = CommandBar.Add(new Button() { Text = "Delete table", CanFocus = false });
 
             addButton.Activated += AddTable;
-            Grid.PropertyChanged += SelectedItemChanged;
             deleteButton.Activated += DeleteSelectedTable;
             Grid.KeyInputReceived += HandleGridDeleteKeyPress;
             Grid.SelectedItemActivated += NavigateToTable;
@@ -31,6 +30,12 @@ namespace HelloWorld.Samples
         {
             var tableName = (Grid.SelectedItem as CloudTable).Name;
             PageStack.Navigate("accounts/" + currentStorageAccount.Credentials.AccountName + "/tables/" + tableName);
+        }
+
+        public override void OnAddedToVisualTree()
+        {
+            base.OnAddedToVisualTree();
+            Grid.Subscribe(nameof(Grid.SelectedItem), SelectedItemChanged);
         }
 
         protected override void OnLoad()
@@ -84,12 +89,9 @@ namespace HelloWorld.Samples
             });
         }
 
-        private void SelectedItemChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void SelectedItemChanged()
         {
-            if (e.PropertyName == nameof(Grid.SelectedItem))
-            {
-                deleteButton.CanFocus = Grid.SelectedItem != null;
-            }
+            deleteButton.CanFocus = Grid.SelectedItem != null;
         }
     }
 }

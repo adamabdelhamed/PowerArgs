@@ -31,18 +31,18 @@ namespace PowerArgs.Cli
             currentFrameIndex = 0;
         }
 
-        public override void OnAdd()
+        public override void OnAddedToVisualTree()
         {
-            base.OnAdd();
+            base.OnAddedToVisualTree();
             if(IsSpinning)
             {
                 StartSpinTimer();
             }
         }
 
-        public override void OnRemove()
+        public override void OnRemovedFromVisualTree()
         {
-            base.OnRemove();
+            base.OnRemovedFromVisualTree();
             if(IsSpinning)
             {
                 StopSpinTimer();

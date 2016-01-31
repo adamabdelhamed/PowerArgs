@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
-    public class ProgressOperationsManager
+    public class ProgressOperationsManager : ObservableObject
     {
         public event Action ProgressOperationsChanged;
 
@@ -14,33 +14,31 @@ namespace PowerArgs.Cli
 
         public static readonly ProgressOperationsManager Default = new ProgressOperationsManager();
 
+        Subscription addSub;
+        Subscription removeSub;
+
         public ProgressOperationsManager()
         {
             Operations = new ObservableCollection<ProgressOperation>();
-            Operations.Added += Operations_Added;
-            Operations.Removed += Operations_Removed;
+            addSub = Operations.Added.SubscribeUnmanaged(Operations_Added);
+            removeSub = Operations.Removed.SubscribeUnmanaged(Operations_Removed);
         }
 
         
 
         private void Operations_Added(ProgressOperation trackedOperation)
         {
-            trackedOperation.PropertyChanged += TrackedOperation_PropertyChanged;
-            FireProgressOperationChanged();
+            trackedOperation.SynchronizeForLifetime("*", FireProgressOperationsChanged, Operations.GetMembershipLifetime(trackedOperation));
+            FirePropertyChanged(nameof(Operations)); // todo - remove this, but find the subscriber first
         }
 
         private void Operations_Removed(ProgressOperation trackedOperation)
         {
-            trackedOperation.PropertyChanged -= TrackedOperation_PropertyChanged;
-            FireProgressOperationChanged();
+            FireProgressOperationsChanged();
+            FirePropertyChanged(nameof(Operations)); // todo - remove this, but find the subscriber first
         }
 
-        private void TrackedOperation_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            FireProgressOperationChanged();
-        }
-
-        private void FireProgressOperationChanged()
+        private void FireProgressOperationsChanged()
         {
             if (ProgressOperationsChanged != null)
             {
@@ -60,7 +58,7 @@ namespace PowerArgs.Cli
         Failed,
     }
 
-    public class ProgressOperation : ViewModelBase
+    public class ProgressOperation : ObservableObject
     {
         public OperationState State { get { return Get<OperationState>();} set { Set(value); } }
         public ConsoleString Message { get { return Get<ConsoleString>(); } set { Set(value); } }
@@ -73,6 +71,7 @@ namespace PowerArgs.Cli
 
         public ObservableCollection<ProgressOperationAction> Actions { get; private set; }
 
+        Subscription selfSub;
 
         public ProgressOperation()
         {
@@ -82,18 +81,15 @@ namespace PowerArgs.Cli
             Message = "".ToConsoleString();
             Progress = -1;
             Actions = new ObservableCollection<ProgressOperationAction>();
-            this.PropertyChanged += ProgressOperation_PropertyChanged;
+            selfSub = SubscribeUnmanaged(nameof(State), StateChanged);
         }
 
-        private void ProgressOperation_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void StateChanged()
         {
-            if(e.PropertyName != nameof(LastUpdatedTime))
-            {
-                LastUpdatedTime = DateTime.Now;
-            }
-            
+            LastUpdatedTime = DateTime.Now;
+
             // if the state is terminal and we've not yet recorded an end time then record it
-            if(e.PropertyName == nameof(State) && EndTime.HasValue == false && (State == OperationState.Completed || State == OperationState.CompletedWithWarnings || State == OperationState.Failed))
+            if(EndTime.HasValue == false && (State == OperationState.Completed || State == OperationState.CompletedWithWarnings || State == OperationState.Failed))
             {
                 EndTime = DateTime.Now;
             }

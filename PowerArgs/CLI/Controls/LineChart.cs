@@ -130,19 +130,11 @@ namespace PowerArgs.Cli
         public LineChart()
         {
             ViewModel = new LineChartViewModel();
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
             YAxisLeftOffset = 14;
         }
 
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if(Application != null && Application.MessagePump.IsRunning)
-            {
-                Application.Paint();
-            }
-        }
-
-        public override void OnAdd()
+        public override void OnAddedToVisualTree()
         {
             this.Foreground = Parent.Foreground;
             this.Background = Parent.Background;
@@ -152,6 +144,8 @@ namespace PowerArgs.Cli
 
             XAxisValueFormatter = XAxisValueFormatter ?? ((d) => { return new ConsoleString(string.Format("{0:0,0.0}", d), Foreground, Background); });
             YAxisValueFormatter = YAxisValueFormatter ?? ((d) => { return new ConsoleString("" + string.Format("{0:0,0.0}", d), Foreground, Background); });
+
+            ViewModel.Subscribe("*", Application.Paint);
         }
 
         public override bool OnKeyInputReceived(ConsoleKeyInfo info)

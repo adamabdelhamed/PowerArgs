@@ -212,13 +212,13 @@ namespace PowerArgs.Cli
 
         private void SetFilterTextBox(TextBox value)
         {
-            if (_filterTextBox != null)
+            if(_filterTextBox != null)
             {
-                _filterTextBox.PropertyChanged -= FilterTextValueChanged;
-                _filterTextBox.KeyInputReceived -= FilterTextKeyPressed;
+                throw new ArgumentException("Grid is already bound to a text box");
             }
+
             _filterTextBox = value;
-            _filterTextBox.PropertyChanged += FilterTextValueChanged;
+            _filterTextBox.SubscribeForLifetime(nameof(TextBox.Value), FilterTextValueChanged, value.LifetimeManager);
             _filterTextBox.KeyInputReceived += FilterTextKeyPressed;
             FilteringEnabled = true;
         }
@@ -243,7 +243,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        private void FilterTextValueChanged(object sender, PropertyChangedEventArgs e)
+        private void FilterTextValueChanged()
         {
             filterTextDebouncer.Trigger();
         }

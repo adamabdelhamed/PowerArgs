@@ -21,11 +21,13 @@ namespace PowerArgs.Cli
             }
         }
 
+        PropertyChangedSubscription noResizeSubscription;
+
         public PixelControl()
         {
             Width = 1;
             Height = 1;
-            Subscribe(nameof(Bounds), EnsureNoResize);
+            noResizeSubscription = SubscribeUnmanaged(nameof(Bounds), EnsureNoResize);
             Value = new ConsoleCharacter(' ', Foreground, Background);
         }
 

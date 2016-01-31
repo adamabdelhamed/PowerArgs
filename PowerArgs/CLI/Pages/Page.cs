@@ -19,42 +19,8 @@ namespace PowerArgs.Cli
         public ProgressOperationsManager ProgressOperationManager { get; private set; }
         private Dialog progressOperationManagerDialog;
 
-        private PropertyChangedEventHandler appResizeHandler;
-
-        bool _showBreadcrumbBar;
-        public bool ShowBreadcrumbBar
-        {
-            get
-            {
-                return _showBreadcrumbBar;
-            }
-            set
-            {
-                _showBreadcrumbBar = value;
-                if (Application != null)
-                {
-                    if (value && Controls.Where(c => c == BreadcrumbBar).Count() == 1)
-                    {
-                        // already added
-                    }
-                    else if (value)
-                    {
-                        BreadcrumbBar = BreadcrumbBar ?? new BreadcrumbBar(PageStack);
-                        BreadcrumbBar.Width = Width;
-                        this.PropertyChanged += (sender, e) =>
-                        {
-                            if (e.PropertyName == nameof(Bounds))
-                            {
-                                BreadcrumbBar.Width = Width;
-                            }
-                        };
-                        Controls.Insert(0, BreadcrumbBar);
-                    }
-                }
-            }
-        }
-
-
+        private PropertyChangedSubscription appResizeSubscription;
+        
         public PageStack PageStack
         {
             get
@@ -66,10 +32,18 @@ namespace PowerArgs.Cli
         public Page()
         {
             CanFocus = false;
-            ShowBreadcrumbBar = true;
             ProgressOperationManager = ProgressOperationsManager.Default;
-            Removed += Page_Removed;
+            RemovedFromVisualTree += Page_Removed;
+            BreadcrumbBar = Add(new BreadcrumbBar());
         }
+
+        public override void OnAddedToVisualTree()
+        {
+            base.OnAddedToVisualTree();
+            Synchronize(nameof(Bounds), () => { BreadcrumbBar.Width = Width; });
+        }
+    
+
 
         private void Page_Removed()
         {
@@ -81,30 +55,27 @@ namespace PowerArgs.Cli
 
         public void ShowProgressOperationsDialog()
         {
-            if(PageStack.CurrentPage != this)
+            if (PageStack.CurrentPage != this)
             {
                 throw new InvalidOperationException("Not the current page");
             }
 
-            if(progressOperationManagerDialog != null && Application.LayoutRoot.Controls.Contains(progressOperationManagerDialog))
+            if (progressOperationManagerDialog != null && Application.LayoutRoot.Controls.Contains(progressOperationManagerDialog))
             {
                 return;
             }
 
-            if (progressOperationManagerDialog == null)
-            {
-                var progressOperationManagerControl = new ProgressOperationManagerControl(this.ProgressOperationManager);
-                progressOperationManagerDialog = new Dialog(progressOperationManagerControl);
-                progressOperationManagerDialog.AllowEscapeToCancel = true;
-            }
+            var progressOperationManagerControl = new ProgressOperationManagerControl(this.ProgressOperationManager);
+            progressOperationManagerDialog = new Dialog(progressOperationManagerControl);
+            progressOperationManagerDialog.AllowEscapeToCancel = true;
 
             Application.LayoutRoot.Add(progressOperationManagerDialog);
-            
+
         }
 
         public void HideProgressOperationsDialog()
         {
-            if (progressOperationManagerDialog != null && Controls.Contains(progressOperationManagerDialog))
+            if (progressOperationManagerDialog != null && Application.LayoutRoot.Controls.Contains(progressOperationManagerDialog))
             {
                 Application.LayoutRoot.Controls.Remove(progressOperationManagerDialog);
             }
@@ -112,20 +83,19 @@ namespace PowerArgs.Cli
 
         internal void Load()
         {
-            appResizeHandler = Application.LayoutRoot.Subscribe(nameof(ConsoleControl.Bounds), HandleResize);
-            Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, EscapeKeyHandler);
-            Application.GlobalKeyHandlers.Push(ConsoleKey.Backspace, BackspaceHandler);
-            if(ShowBreadcrumbBar)
+            using (new AmbientLifetimeScope(LifetimeManager))
             {
-                ShowBreadcrumbBar = true;
+                appResizeSubscription = Application.LayoutRoot.SubscribeUnmanaged(nameof(ConsoleControl.Bounds), HandleResize);
+                Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, EscapeKeyHandler);
+                Application.GlobalKeyHandlers.Push(ConsoleKey.Backspace, BackspaceHandler);
+                OnLoad();
+                if (Loaded != null) Loaded();
             }
-            OnLoad();
-            if (Loaded != null) Loaded();
         }
 
         internal void Unload()
         {
-            Application.LayoutRoot.Unsubscribe(appResizeHandler);
+            appResizeSubscription.Dispose();
             Application.GlobalKeyHandlers.Pop(ConsoleKey.Escape);
             Application.GlobalKeyHandlers.Pop(ConsoleKey.Backspace);
             OnUnload();

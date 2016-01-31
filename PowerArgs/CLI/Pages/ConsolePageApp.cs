@@ -49,14 +49,6 @@ namespace PowerArgs.Cli
                 PageStack.CurrentPage.Width = LayoutRoot.Width;
                 PageStack.CurrentPage.Height = LayoutRoot.Height;
                 PageStack.CurrentPage.Load();
-
-                if (PageStack.CurrentPage.ShowBreadcrumbBar)
-                {
-                    PageStack.CurrentPage.BreadcrumbBar.Compose();
-                }
-
-         //       FocusManager.TryRestoreFocus();
-               
                 Paint();
             }
         }

@@ -18,14 +18,20 @@ namespace HelloWorld.Samples
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.UseHttps).ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.NoDataMessage = "No storage accounts";
             Grid.KeyInputReceived += HandleGridDeleteKeyPress;
-            Grid.PropertyChanged += SelectedItemChanged;
             addButton = CommandBar.Add(new Button() { Text = "Add account" });
             deleteButton = CommandBar.Add(new Button() { Text = "Forget account", CanFocus=false });
+            CommandBar.Add(new NotificationButton(ProgressOperationManager));
 
             addButton.Activated += AddStorageAccount;
             deleteButton.Activated += ForgetSelectedStorageAccount;
 
             Grid.SelectedItemActivated += NavigateToStorageAccount;
+        }
+
+        public override void OnAddedToVisualTree()
+        {
+            base.OnAddedToVisualTree();
+            Grid.Subscribe(nameof(Grid.SelectedItem), SelectedItemChanged);
         }
 
 
@@ -38,12 +44,9 @@ namespace HelloWorld.Samples
             }
         }
 
-        private void SelectedItemChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void SelectedItemChanged()
         {
-            if (e.PropertyName == nameof(Grid.SelectedItem))
-            {
-                deleteButton.CanFocus = Grid.SelectedItem != null;
-            }
+            deleteButton.CanFocus = Grid.SelectedItem != null;
         }
 
         private void ForgetSelectedStorageAccount()

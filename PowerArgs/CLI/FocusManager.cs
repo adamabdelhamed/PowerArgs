@@ -6,7 +6,7 @@ namespace PowerArgs.Cli
     /// <summary>
     /// A class that manages the focus of a CLI application
     /// </summary>
-    public class FocusManager : ViewModelBase
+    public class FocusManager : ObservableObject
     {
         /// <summary>
         /// Data object used to capture the focus context on the stack
