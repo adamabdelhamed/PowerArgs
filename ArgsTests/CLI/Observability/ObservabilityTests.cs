@@ -7,6 +7,11 @@ namespace ArgsTests.CLI.Observability
     [TestClass]
     public class ObservabilityTests
     {
+        public class SomeOtherObservable : ObservableObject
+        {
+            public string Name { get { return Get<string>(); } set { Set(value); } }
+        }
+
         public class SomeObservable : ObservableObject
         {
             public Event SomeEvent { get; private set; } = new Event();
@@ -14,7 +19,11 @@ namespace ArgsTests.CLI.Observability
 
             public ObservableCollection<string> Strings { get; private set; } = new ObservableCollection<string>();
 
+            public ObservableCollection<SomeOtherObservable> Children{ get; private set; } = new ObservableCollection<SomeOtherObservable>();
+
+
             public string Name { get { return Get<string>(); } set { Set(value); } }
+            public int Number{ get { return Get<int>(); } set { Set(value); } }
         }
 
         [TestMethod]
@@ -93,6 +102,30 @@ namespace ArgsTests.CLI.Observability
 
             observable.Name = "Some new value again";
             Assert.AreEqual(2, triggerCount);
+        }
+
+        [TestMethod]
+        public void SubscribeToAllProperties()
+        {
+            var observable = new SomeObservable();
+            int numChanged = 0;
+
+            using (var lifetime = new Lifetime())
+            {
+                observable.SubscribeForLifetime(ObservableObject.AnyProperty, () => { numChanged++; }, lifetime.LifetimeManager);
+
+                Assert.AreEqual(0, numChanged);
+                observable.Name = "Foo";
+                Assert.AreEqual(1, numChanged);
+                observable.Number = 1;
+                Assert.AreEqual(2, numChanged);
+            }
+
+            Assert.AreEqual(2, numChanged);
+            observable.Name = "Foo2";
+            Assert.AreEqual(2, numChanged);
+            observable.Number = 2;
+            Assert.AreEqual(2, numChanged);
         }
 
         [TestMethod]
@@ -230,6 +263,57 @@ namespace ArgsTests.CLI.Observability
             Assert.AreEqual(3, addCalls);
             Assert.AreEqual(1, removeCalls);
             Assert.AreEqual(3, changedCalls);
+        }
+
+        [TestMethod]
+        public void SubscribeToChildren()
+        {
+            var observable = new SomeObservable();
+            var existinChild = new SomeOtherObservable();
+            observable.Children.Add(existinChild);
+
+            int numChildrenChanged = 0;
+            int numChildrenAdded = 0;
+            int numChildrenRemoved = 0;
+            observable.Children.SynchronizeForLifetime(
+                (c) =>
+                {
+                    c.SynchronizeForLifetime(nameof(SomeOtherObservable.Name), () => 
+                    {
+                        numChildrenChanged++;
+                    }
+                    , observable.Children.GetMembershipLifetime(c));
+                    numChildrenAdded++;
+                }, 
+                (c) =>
+                {
+                    numChildrenRemoved++;
+                }, 
+                () =>
+                {
+                }, observable.LifetimeManager);
+
+            var newItem = new SomeOtherObservable();
+
+            observable.Children.Add(newItem);
+
+            Assert.AreEqual(2, numChildrenChanged);
+            existinChild.Name = "Change";
+            Assert.AreEqual(3, numChildrenChanged);
+
+            newItem.Name = "Second change";
+            Assert.AreEqual(4, numChildrenChanged);
+
+            observable.Children.Remove(existinChild);
+            existinChild.Name = "Ignored change";
+            Assert.AreEqual(4, numChildrenChanged);
+
+            observable.Children.Remove(newItem);
+            newItem.Name = "Ignored change";
+            Assert.AreEqual(4, numChildrenChanged);
+
+            Assert.AreEqual(2, numChildrenAdded);
+            Assert.AreEqual(2, numChildrenRemoved);
         }
     }
 }

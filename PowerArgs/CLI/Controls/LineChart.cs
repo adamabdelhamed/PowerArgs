@@ -145,7 +145,7 @@ namespace PowerArgs.Cli
             XAxisValueFormatter = XAxisValueFormatter ?? ((d) => { return new ConsoleString(string.Format("{0:0,0.0}", d), Foreground, Background); });
             YAxisValueFormatter = YAxisValueFormatter ?? ((d) => { return new ConsoleString("" + string.Format("{0:0,0.0}", d), Foreground, Background); });
 
-            ViewModel.Subscribe("*", Application.Paint);
+            ViewModel.Subscribe(ObservableObject.AnyProperty, Application.Paint);
         }
 
         public override bool OnKeyInputReceived(ConsoleKeyInfo info)

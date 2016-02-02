@@ -78,9 +78,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Samples\AzureStorageExplorerApp\AzureTableBrowserApp.cs" />
     <Compile Include="Samples\AzureStorageExplorerApp\DataSources\TableEntityDataSource.cs" />
+    <Compile Include="Samples\AzureStorageExplorerApp\DataSources\ContainerListDataSource.cs" />
     <Compile Include="Samples\AzureStorageExplorerApp\DataSources\TableListDataSource.cs" />
     <Compile Include="Samples\AzureStorageExplorerApp\Models\StorageAccountInfo.cs" />
     <Compile Include="Samples\AzureStorageExplorerApp\Pages\ServicesPage.cs" />
+    <Compile Include="Samples\AzureStorageExplorerApp\Pages\ContainersPage.cs" />
     <Compile Include="Samples\AzureStorageExplorerApp\Pages\TablePage.cs" />
     <Compile Include="Samples\AzureStorageExplorerApp\Pages\TableListPage.cs" />
     <Compile Include="Samples\AzureStorageExplorerApp\Pages\StorageAccountsPage.cs" />

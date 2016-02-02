@@ -156,7 +156,7 @@ namespace PowerArgs.Cli
      
 
             Label messageLabel = content.Add(new Label() { Text = message, Width = content.Width - 4, X = 2, Y = 2 });
-            TextBox inputBox = content.Add(new TextBox() { Y = 3, X = 2, Width = content.Width});
+            TextBox inputBox = content.Add(new TextBox() { Y = 5, Width = content.Width - 4, Background = ConsoleColor.White}).CenterHorizontally();
 
             inputBox.KeyInputReceived += (key) =>
             {

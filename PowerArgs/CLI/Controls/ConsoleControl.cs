@@ -188,7 +188,7 @@ namespace PowerArgs.Cli
                     Added();
                 }
 
-                Subscribe("*", Application.Paint);
+                Subscribe(ObservableObject.AnyProperty, Application.Paint);
             }
             
         }

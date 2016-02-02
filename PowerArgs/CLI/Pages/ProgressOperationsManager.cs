@@ -28,7 +28,7 @@ namespace PowerArgs.Cli
 
         private void Operations_Added(ProgressOperation trackedOperation)
         {
-            trackedOperation.SynchronizeForLifetime("*", FireProgressOperationsChanged, Operations.GetMembershipLifetime(trackedOperation));
+            trackedOperation.SynchronizeForLifetime(AnyProperty, FireProgressOperationsChanged, Operations.GetMembershipLifetime(trackedOperation));
             FirePropertyChanged(nameof(Operations)); // todo - remove this, but find the subscriber first
         }
 
