@@ -99,6 +99,7 @@
     <Compile Include="ArgRequiredConditionalTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
     <Compile Include="CLI\CliUnitTestConsole.cs" />
+    <Compile Include="CLI\Controls\TextBoxTests.cs" />
     <Compile Include="CLI\GridTests.cs" />
     <Compile Include="CLI\Observability\ObservabilityTests.cs" />
     <Compile Include="CLI\ProgressBarTests.cs" />

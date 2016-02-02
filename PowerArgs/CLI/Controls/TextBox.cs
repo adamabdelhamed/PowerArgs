@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace PowerArgs.Cli
@@ -108,7 +109,21 @@ namespace PowerArgs.Cli
         internal override void OnPaint(ConsoleBitmap context)
         {
             var toPaint = textState.CurrentValue;
-            context.DrawString(textState.CurrentValue, 0, 0);
+            var bgTransformed = new List<ConsoleCharacter>();
+
+            foreach(var c in toPaint)
+            {
+                if(c.BackgroundColor == ConsoleString.DefaultBackgroundColor && Background != ConsoleString.DefaultBackgroundColor)
+                {
+                    bgTransformed.Add(new ConsoleCharacter(c.Value, Foreground, Background));
+                }
+                else
+                {
+                    bgTransformed.Add(c);
+                }
+            }
+
+            context.DrawString(new ConsoleString(bgTransformed), 0, 0);
 
             if (blinkState)
             {

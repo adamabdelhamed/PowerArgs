@@ -155,8 +155,10 @@ namespace PowerArgs.Cli
 
      
 
-            Label messageLabel = content.Add(new Label() { Text = message, Width = content.Width - 4, X = 2, Y = 2 });
-            TextBox inputBox = content.Add(new TextBox() { Y = 5, Width = content.Width - 4, Background = ConsoleColor.White}).CenterHorizontally();
+            Label messageLabel = content.Add(new Label() { Text = message,  X = 2, Y = 2 });
+            TextBox inputBox = content.Add(new TextBox() { Y = 4,Foreground = ConsoleColor.Black, Background = ConsoleColor.White}).CenterHorizontally();
+
+            content.SynchronizeForLifetime(nameof(Bounds), () => { inputBox.Width = content.Width - 4; }, content.LifetimeManager);
 
             inputBox.KeyInputReceived += (key) =>
             {
@@ -170,10 +172,8 @@ namespace PowerArgs.Cli
             Layout.CenterVertically(ConsoleApp.Current.LayoutRoot, dialog);
             Layout.CenterHorizontally(ConsoleApp.Current.LayoutRoot, dialog);
 
-            ConsoleApp.Current.FocusManager.Push();
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
             inputBox.TryFocus();
-            ConsoleApp.Current.Paint();
         }
     }
 }

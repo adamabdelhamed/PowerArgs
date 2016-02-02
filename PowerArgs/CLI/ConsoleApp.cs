@@ -105,7 +105,7 @@ namespace PowerArgs.Cli
             GlobalKeyHandlers = new GlobalKeyHandlerStack();
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
-            AutoFillOnConsoleResize = true;
+            AutoFillOnConsoleResize = false;
             FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), Paint, LifetimeManager);
             LayoutRoot.Controls.BeforeAdded.SubscribeForLifetime((c) => { c.Application = this; c.BeforeAddedToVisualTreeInternal(); }, LifetimeManager);
             LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, LifetimeManager);
@@ -119,7 +119,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public ConsoleApp() : this(0,0,ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight-1)
         {
-
+            this.AutoFillOnConsoleResize = true;
         }
 
         /// <summary>

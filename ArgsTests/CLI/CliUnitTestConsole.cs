@@ -27,8 +27,11 @@ namespace ArgsTests.CLI
 
         public ConsoleBitmap Buffer { get; private set; }
 
-        public CliUnitTestConsole()
+        int w, h;
+        public CliUnitTestConsole(int w = 80, int h = 80)
         {
+            this.w = w;
+            this.h = h;
             Clear();
         }
 
@@ -42,7 +45,7 @@ namespace ArgsTests.CLI
 
         public void Clear()
         {
-            Buffer = new ConsoleBitmap(0, 0, 80, 80);
+            Buffer = new ConsoleBitmap(0, 0, w, h);
             InputQueue = new Queue<ConsoleKeyInfo>();
             this.BufferWidth = Buffer.Width;
             this.CursorLeft = 0;

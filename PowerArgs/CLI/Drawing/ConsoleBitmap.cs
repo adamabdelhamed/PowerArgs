@@ -406,7 +406,10 @@ namespace PowerArgs.Cli
                 {
                     ret += this.pixels[x][y].Value.HasValue ? this.pixels[x][y].Value.Value.Value : ' ';
                 }
-                ret += Environment.NewLine;
+                if (y < Height - 1)
+                {
+                    ret += Environment.NewLine;
+                }
             }
 
             return ret;

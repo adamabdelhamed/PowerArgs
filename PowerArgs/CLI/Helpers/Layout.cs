@@ -86,6 +86,7 @@ namespace PowerArgs.Cli
                 child.X = x;
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
             syncAction();
 
             return child;
