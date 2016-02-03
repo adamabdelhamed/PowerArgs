@@ -84,12 +84,12 @@ namespace PowerArgs.Cli
             base.OnPaint(context);
         }
 
-        public static void ConfirmYesOrNo(string message, Action yesCallback, Action noCallback = null, int maxHeight = 6)
+        public static void ConfirmYesOrNo(string message, Action yesCallback, Action noCallback = null, int maxHeight = 10)
         {
             ConfirmYesOrNo(message.ToConsoleString(), yesCallback, noCallback, maxHeight);
         }
 
-        public static void ConfirmYesOrNo(ConsoleString message, Action yesCallback, Action noCallback = null, int maxHeight = 6)
+        public static void ConfirmYesOrNo(ConsoleString message, Action yesCallback, Action noCallback = null, int maxHeight = 10)
         {
             ShowMessage(message, (b) =>
             {
@@ -140,12 +140,12 @@ namespace PowerArgs.Cli
         }
 
 
-        public static void ShowMessage(string message, Action doneCallback = null, int maxHeight = 6)
+        public static void ShowMessage(string message, Action doneCallback = null, int maxHeight = 12)
         {
             ShowMessage(message.ToConsoleString(), doneCallback, maxHeight);
         }
 
-        public static void ShowMessage(ConsoleString message, Action doneCallback = null, int maxHeight = 6)
+        public static void ShowMessage(ConsoleString message, Action doneCallback = null, int maxHeight = 12)
         {
             ShowMessage(message, (b) => { if (doneCallback != null) doneCallback(); },true,maxHeight, new DialogButton() { DisplayText = "ok" });
         }

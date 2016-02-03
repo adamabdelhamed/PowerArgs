@@ -153,9 +153,13 @@ namespace PowerArgs.Cli
             {
                 return CachedDataViewState.CompleteHit; 
             }
-            else if(query.Skip < cachedItems.Items.Count)
+            else if(query.Skip < cachedItems.Items.Count && cachedItems.IsComplete == false)
             {
                 return CachedDataViewState.PartialHit;
+            }
+            else if(cachedItems.IsComplete)
+            {
+                return CachedDataViewState.CompleteHit;
             }
             else
             {
@@ -175,7 +179,11 @@ namespace PowerArgs.Cli
             var cacheState = GetCacheState(query);
             if (cacheState == CachedDataViewState.CompleteMiss) return false;
             else if (cacheState == CachedDataViewState.PartialHit) return true;
-            else return cachedItems.Items.Count - query.Take == query.Skip;
+            else if (cachedItems.Items.Count < query.Take && cachedItems.IsComplete) return true;
+            else
+            {
+                return cachedItems.Items.Count - query.Take == query.Skip;
+            }
         }
     }
 }

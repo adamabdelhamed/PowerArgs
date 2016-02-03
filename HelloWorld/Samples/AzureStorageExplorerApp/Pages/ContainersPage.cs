@@ -27,28 +27,26 @@ namespace HelloWorld.Samples
         public ContainersPage()
         {
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudBlobContainer.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
-
             Grid.NoDataMessage = "No containers";
 
-            addButton = CommandBar.Add(new Button() { Text = "Add container" });
-            deleteButton = CommandBar.Add(new Button() { Text = "Delete container", CanFocus = false });
+            addButton = CommandBar.Add(new Button() { Text = "Add container", Shortcut = new KeyboardShortcut(ConsoleKey.A, true) });
+            deleteButton = CommandBar.Add(new Button() { Text = "Delete container", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.Delete, false) });
 
             addButton.Activated += AddContainer;
             deleteButton.Activated += DeleteSelectedContainer;
-            Grid.KeyInputReceived += HandleGridDeleteKeyPress;
             Grid.SelectedItemActivated += NavigateToContainer;
-        }
-
-        private void NavigateToContainer()
-        {
-            var containerName = (Grid.SelectedItem as ContainerRecord).Name;
-            PageStack.Navigate("accounts/" + currentStorageAccount.Credentials.AccountName + "/containers/" + containerName);
         }
 
         public override void OnAddedToVisualTree()
         {
             base.OnAddedToVisualTree();
             Grid.Subscribe(nameof(Grid.SelectedItem), SelectedItemChanged);
+        }
+
+        private void NavigateToContainer()
+        {
+            var containerName = (Grid.SelectedItem as ContainerRecord).Name;
+            PageStack.Navigate("accounts/" + currentStorageAccount.Credentials.AccountName + "/containers/" + containerName);
         }
 
         protected override void OnLoad()
@@ -58,14 +56,6 @@ namespace HelloWorld.Samples
             var accountInfo = (from account in StorageAccountInfo.Load() where account.AccountName == accountName select account).FirstOrDefault();
             currentStorageAccount = new CloudStorageAccount(new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountInfo.Key), accountInfo.UseHttps);
             Grid.DataSource = new ContainerListDataSource(currentStorageAccount.CreateCloudBlobClient(), Application.MessagePump);
-        }
-
-        private void HandleGridDeleteKeyPress(ConsoleKeyInfo key)
-        {
-            if (key.Key == ConsoleKey.Delete && Grid.SelectedItem != null)
-            {
-                DeleteSelectedContainer();
-            }
         }
 
         private void AddContainer()

@@ -11,6 +11,7 @@ namespace HelloWorld.Samples
             PageStack.RegisterRoute("accounts/{account}/tables", () => new TablesPage());
             PageStack.RegisterRoute("accounts/{account}/containers", () => new ContainersPage());
             PageStack.RegisterRoute("accounts/{account}/tables/{table}", () => new TablePage());
+            PageStack.RegisterRoute("accounts/{account}/containers/{container}", () => new ContainerPage());
             PageStack.Navigate("accounts");
         }
     }  
