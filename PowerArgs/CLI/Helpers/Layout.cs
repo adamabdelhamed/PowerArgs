@@ -65,8 +65,15 @@ namespace PowerArgs.Cli
         {
             parent = parent ?? child.Parent;
             
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), () =>
+            parent.SynchronizeForLifetime(nameof(ConsoleControl.Bounds), () =>
             {
+                if(child == ConsoleApp.Current.LayoutRoot)
+                {
+
+                }
+
+                if (parent.Height == 0 || child.Height == 0) return;
+
                 var gap = parent.Height - child.Height;
                 var y = gap / 2;
                 child.Y = y;
@@ -81,6 +88,8 @@ namespace PowerArgs.Cli
 
             Action syncAction = () =>
             {
+                if (parent.Width == 0 || child.Width == 0) return;
+
                 var gap = parent.Width - child.Width;
                 var x = gap / 2;
                 child.X = x;
@@ -98,6 +107,8 @@ namespace PowerArgs.Cli
             var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
             Action syncAction = () =>
             {
+                if (parent.Width == 0 || parent.Height== 0) return;
+
                 var newBounds = new Rectangle(new Point(0, 0), parent.Size);
                 newBounds.X += effectivePadding.Left;
                 newBounds.Width -= effectivePadding.Left;
@@ -120,6 +131,8 @@ namespace PowerArgs.Cli
             var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
             Action syncAction = () => 
             {
+                if (parent.Width == 0) return;
+
                 child.Bounds = new Rectangle(effectivePadding.Left, child.Y, parent.Width - (effectivePadding.Right+effectivePadding.Left), child.Height);
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
@@ -141,6 +154,7 @@ namespace PowerArgs.Cli
             parent = parent ?? child.Parent;
             Action syncAction = () =>
             {
+                if (parent.Height == 0) return;
                 child.Y = parent.Height - child.Height - padding;
             };
 
@@ -169,6 +183,8 @@ namespace PowerArgs.Cli
             parent = parent ?? child.Parent;
             Action syncAction = () =>
             {
+                if (parent.Width == 0 || child.Width == 0) return;
+
                 child.X = parent.Width - child.Width - padding;
             };
 

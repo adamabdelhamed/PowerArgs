@@ -66,7 +66,7 @@ namespace PowerArgs.Cli
             }
 
             var progressOperationManagerControl = new ProgressOperationManagerControl(this.ProgressOperationManager);
-            progressOperationManagerDialog = new Dialog(progressOperationManagerControl);
+            progressOperationManagerDialog = new Dialog(progressOperationManagerControl) { MaxHeight = 40 };
             progressOperationManagerDialog.AllowEscapeToCancel = true;
 
             Application.LayoutRoot.Add(progressOperationManagerDialog);
@@ -121,7 +121,7 @@ namespace PowerArgs.Cli
                          Application.MessagePump.Stop();
                      }
 
-                 }, true, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
+                 }, true, 10, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
             }
             else if(consolePageApp.AllowEscapeToExit)
             {

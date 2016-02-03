@@ -7,6 +7,18 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    public class KeyboardShortcut
+    {
+        public ConsoleKey Key { get; set; }
+        public bool Alt { get; set; }
+
+        public KeyboardShortcut(ConsoleKey key, bool alt)
+        {
+            this.Key = key;
+            this.Alt = alt;
+        }
+    }
+
     public class Button : ConsoleControl
     {
         public event Action Activated;
@@ -16,7 +28,19 @@ namespace PowerArgs.Cli
             set
             {
                 Set(value);
-                Width = value == null ? 2 : value.Length + 2;
+            }
+        }
+
+        public KeyboardShortcut Shortcut
+        {
+            get
+            {
+                return Get<KeyboardShortcut>();
+            }
+            set
+            {
+                if (Application != null) throw new InvalidOperationException("Button shortcuts must be configured before adding the button to your application.");
+                Set(value);
             }
         }
 
@@ -24,19 +48,66 @@ namespace PowerArgs.Cli
         {
             Height = 1;
             this.Foreground = Theme.DefaultTheme.ButtonColor;
+            this.SynchronizeForLifetime(nameof(Text), UpdateWidth, this.LifetimeManager);
+            this.SynchronizeForLifetime(nameof(Shortcut), UpdateWidth, this.LifetimeManager);
+        }
+
+        private void UpdateWidth()
+        {
+            int w = Text == null ? 2 : Text.Length + 2;
+
+            if (Shortcut != null && Shortcut.Alt)
+            {
+                w += "ALT+".Length;
+            }
+
+            if (Shortcut != null)
+            {
+                w += Shortcut.Key.ToString().Length + " ()".Length;
+            }
+            Width = w;
+        }
+
+        public override void OnAddedToVisualTree()
+        {
+            base.OnAddedToVisualTree();
+            if (Shortcut != null)
+            {
+                Application.GlobalKeyHandlers.Push(Shortcut.Key, (i) => 
+                {
+                    if (CanFocus)
+                    {
+                        this.Click();
+                    }
+                }, Shortcut.Alt);
+            }
+        }
+
+        public override void OnRemovedFromVisualTree()
+        {
+            base.OnRemovedFromVisualTree();
+            if (Shortcut != null)
+            {
+                Application.GlobalKeyHandlers.Pop(Shortcut.Key, Shortcut.Alt);
+            }
         }
 
         public override bool OnKeyInputReceived(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.Enter || info.Key == ConsoleKey.Spacebar)
             {
-                if(Activated != null)
-                {
-                    Activated();
-                }
+                Click();
                 return true;
             }
             return false;
+        }
+
+        private void Click()
+        {
+            if (Activated != null)
+            {
+                Activated();
+            }
         }
 
         internal override void OnPaint(ConsoleBitmap context)
@@ -65,6 +136,18 @@ namespace PowerArgs.Cli
                 }
 
                 drawState += new ConsoleString(Text, fg, bg);
+
+                if(Shortcut != null)
+                {
+                    if(Shortcut.Alt)
+                    {
+                        drawState += new ConsoleString($" (ALT+{Shortcut.Key})", CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor);
+                    }
+                    else
+                    {
+                        drawState += new ConsoleString($" ({Shortcut.Key})", CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor);
+                    }
+                }
             }
 
             drawState += "]".ToConsoleString(Application.Theme.H1Color, Background);

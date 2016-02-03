@@ -128,7 +128,7 @@ namespace HelloWorld.Samples
                                         File.Delete(deletePath);
                                         explorerPage.PageStack.Refresh();
                                     }
-                                }, true, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
+                                }, true, 12, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
                             }
                         }
                     }

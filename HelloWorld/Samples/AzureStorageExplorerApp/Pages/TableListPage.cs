@@ -18,11 +18,12 @@ namespace HelloWorld.Samples
             Grid.NoDataMessage = "No tables";
             Grid.NoVisibleColumnsMessage = "Loading...";
             addButton = CommandBar.Add(new Button() { Text = "Add table" });
-            deleteButton = CommandBar.Add(new Button() { Text = "Delete table", CanFocus = false });
-
             addButton.Activated += AddTable;
+
+            deleteButton = CommandBar.Add(new Button() { Text = "Delete table", Shortcut = new KeyboardShortcut(ConsoleKey.Delete, false), CanFocus = false });
             deleteButton.Activated += DeleteSelectedTable;
-            Grid.KeyInputReceived += HandleGridDeleteKeyPress;
+
+            
             Grid.SelectedItemActivated += NavigateToTable;
         }
 
@@ -45,14 +46,6 @@ namespace HelloWorld.Samples
             var accountInfo = (from account in StorageAccountInfo.Load() where account.AccountName == accountName select account).FirstOrDefault();
             currentStorageAccount = new CloudStorageAccount(new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountInfo.Key), accountInfo.UseHttps);
             Grid.DataSource = new TableListDataSource(currentStorageAccount.CreateCloudTableClient(), Application.MessagePump);
-        }
-
-        private void HandleGridDeleteKeyPress(ConsoleKeyInfo key)
-        {
-            if (key.Key == ConsoleKey.Delete && Grid.SelectedItem != null)
-            {
-                DeleteSelectedTable();
-            }
         }
 
         private void AddTable()

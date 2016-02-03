@@ -12,6 +12,11 @@ namespace PowerArgs.Cli
             get { return Get<Rectangle>(); }
             set
             {
+                if(value.Width < 0 || value.Height < 0 || value.X < 0 || value.Y < 0)
+                {
+                    throw new ArgumentOutOfRangeException("Bounds values cannot be negative");
+                }
+
                 Set(value);
             }
         }

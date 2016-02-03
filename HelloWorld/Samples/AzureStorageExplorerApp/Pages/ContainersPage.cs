@@ -92,10 +92,10 @@ namespace HelloWorld.Samples
             Dialog.ConfirmYesOrNo("Are you sure you want ot delete container " + (Grid.SelectedItem as ContainerRecord).Name + "?", () =>
             {
                 var container = currentStorageAccount.CreateCloudBlobClient().GetContainerReference((Grid.SelectedItem as ContainerRecord).Name);
-                var t = container.DeleteAsync();
-                t.ContinueWith((tPrime) =>
+                
+                Application.MessagePump.QueueAsyncAction(container.DeleteAsync(), (tp) =>
                 {
-                    if (Application != null)
+                    if (Application != null && PageStack.CurrentPage == this)
                     {
                         PageStack.TryRefresh();
                     }

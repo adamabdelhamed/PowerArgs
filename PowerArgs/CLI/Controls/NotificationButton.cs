@@ -14,6 +14,7 @@ namespace PowerArgs.Cli
             this.manager = manager;
             
             launcher = Add(new Button());
+            launcher.Shortcut = new KeyboardShortcut(ConsoleKey.N, true);
             launcher.Activated += NotificationButton_Activated;
             
             spinner = Add(new Spinner() { IsVisible = false, IsSpinning = false, CanFocus = false, X = 1, Foreground = ConsoleColor.Cyan });
@@ -24,14 +25,12 @@ namespace PowerArgs.Cli
         public override void OnAddedToVisualTree()
         {
             base.OnAddedToVisualTree();
-            Application.GlobalKeyHandlers.Push(ConsoleKey.N, (k) => { (Application as ConsolePageApp).PageStack.CurrentPage.ShowProgressOperationsDialog(); }, altModifier: true);
             launcher.Synchronize(nameof(Bounds), () => { this.Size = launcher.Size; });
         }
 
         public override void OnRemovedFromVisualTree()
         {
             base.OnRemovedFromVisualTree();
-            Application.GlobalKeyHandlers.Pop(ConsoleKey.N, altModifier: true);
         }
 
         private void Manager_ProgressOperationsChanged()
@@ -43,13 +42,13 @@ namespace PowerArgs.Cli
             {
                 spinner.IsSpinning = false;
                 spinner.IsVisible = false;
-                launcher.Text = numberOfOperations + " (ALT+N)";
+                launcher.Text = numberOfOperations+" notifications";
             }
             else
             {
                 spinner.IsVisible = true;
                 spinner.IsSpinning = true;
-                launcher.Text = " "+numberOfOperations+" (ALT+N)";
+                launcher.Text = " "+numberOfOperations+ " notifications";
             }
         }
 

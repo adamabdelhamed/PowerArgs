@@ -15,6 +15,8 @@ namespace PowerArgs.Cli
     // todo - restrict the focus system to include only the dialog buttons so the dialog feels more modal
     public class Dialog : ConsolePanel
     {
+        public int MaxHeight { get; set; } 
+
         public bool AllowEscapeToCancel { get; set; }
 
         public event Action Cancelled;
@@ -45,7 +47,17 @@ namespace PowerArgs.Cli
                 throw new InvalidOperationException("Dialogs must be added to the LayoutRoot of an application");
             }
 
-            this.Fill(padding: new Thickness(0, 0, 2, 2));
+            if (MaxHeight > 0)
+            {
+                this.Height = Math.Min(MaxHeight, Application.LayoutRoot.Height - 2);
+            }
+            else
+            {
+                this.Height = Application.LayoutRoot.Height - 2;
+            }
+
+            this.CenterVertically();
+            this.FillHoriontally();
             ConsoleApp.Current.FocusManager.TryMoveFocus();
         }
 
@@ -72,12 +84,12 @@ namespace PowerArgs.Cli
             base.OnPaint(context);
         }
 
-        public static void ConfirmYesOrNo(string message, Action yesCallback, Action noCallback = null)
+        public static void ConfirmYesOrNo(string message, Action yesCallback, Action noCallback = null, int maxHeight = 6)
         {
-            ConfirmYesOrNo(message.ToConsoleString(), yesCallback, noCallback);
+            ConfirmYesOrNo(message.ToConsoleString(), yesCallback, noCallback, maxHeight);
         }
 
-        public static void ConfirmYesOrNo(ConsoleString message, Action yesCallback, Action noCallback = null)
+        public static void ConfirmYesOrNo(ConsoleString message, Action yesCallback, Action noCallback = null, int maxHeight = 6)
         {
             ShowMessage(message, (b) =>
             {
@@ -89,10 +101,10 @@ namespace PowerArgs.Cli
                 {
                     noCallback();
                 }
-            }, true, new DialogButton() { Id = "y", DisplayText = "Yes", }, new DialogButton() { Id = "n", DisplayText = "No" });
+            }, true, maxHeight, new DialogButton() { Id = "y", DisplayText = "Yes", }, new DialogButton() { Id = "n", DisplayText = "No" });
         }
 
-        public static void ShowMessage(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, params DialogButton [] buttons)
+        public static void ShowMessage(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, int maxHeight = 6, params DialogButton [] buttons)
         {
             if(buttons.Length == 0)
             {
@@ -102,6 +114,7 @@ namespace PowerArgs.Cli
             ConsolePanel dialogContent = new ConsolePanel();
 
             Dialog dialog = new Dialog(dialogContent);
+            dialog.MaxHeight = maxHeight;
             dialog.AllowEscapeToCancel = allowEscapeToCancel;
             dialog.Cancelled += () => { resultCallback(null); };
 
@@ -127,17 +140,17 @@ namespace PowerArgs.Cli
         }
 
 
-        public static void ShowMessage(string message, Action doneCallback = null)
+        public static void ShowMessage(string message, Action doneCallback = null, int maxHeight = 6)
         {
-            ShowMessage(message.ToConsoleString(), doneCallback);
+            ShowMessage(message.ToConsoleString(), doneCallback, maxHeight);
         }
 
-        public static void ShowMessage(ConsoleString message, Action doneCallback = null)
+        public static void ShowMessage(ConsoleString message, Action doneCallback = null, int maxHeight = 6)
         {
-            ShowMessage(message, (b) => { if (doneCallback != null) doneCallback(); },true, new DialogButton() { DisplayText = "ok" });
+            ShowMessage(message, (b) => { if (doneCallback != null) doneCallback(); },true,maxHeight, new DialogButton() { DisplayText = "ok" });
         }
 
-        public static void ShowTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true)
+        public static void ShowTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12)
         {
             if (ConsoleApp.Current == null)
             {
@@ -150,6 +163,7 @@ namespace PowerArgs.Cli
             content.Height = ConsoleApp.Current.LayoutRoot.Height / 2;
 
             var dialog = new Dialog(content);
+            dialog.MaxHeight = maxHeight;
             dialog.AllowEscapeToCancel = allowEscapeToCancel;
             dialog.Cancelled += () => { if (cancelCallback != null) cancelCallback(); };
 
@@ -168,9 +182,6 @@ namespace PowerArgs.Cli
                     ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
                 }
             };
-
-            Layout.CenterVertically(ConsoleApp.Current.LayoutRoot, dialog);
-            Layout.CenterHorizontally(ConsoleApp.Current.LayoutRoot, dialog);
 
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
             inputBox.TryFocus();

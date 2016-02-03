@@ -98,12 +98,17 @@ namespace PowerArgs.Cli
             {
                 verticalScrollbar.Height = 0;
                 verticalScrollbar.CanFocus = false;
+                VerticalScrollUnits = 0; // dangerous because if the observable is ever changed to notify on equal changes then this will cause a stack overflow
             }
             else
             {
                 var verticalPercentageShowing = Height / (double)contentSize.Height;
                 var verticalPercentageScrolled = VerticalScrollUnits / (double)contentSize.Height;
-                verticalScrollbar.Height = (int)Math.Round(Height * verticalPercentageShowing);
+
+
+                var verticalScrollbarHeight = (int)Math.Round(Height * verticalPercentageShowing);
+ 
+                verticalScrollbar.Height = verticalScrollbarHeight;
                 verticalScrollbar.Y = (int)Math.Round(Height * verticalPercentageScrolled);
                 verticalScrollbar.CanFocus = true;
             }
@@ -112,6 +117,7 @@ namespace PowerArgs.Cli
             {
                 horizontalScrollbar.Width = 0;
                 horizontalScrollbar.CanFocus = false;
+                HorizontalScrollUnits = 0; // dangerous because if the observable is ever changed to notify on equal changes then this will cause a stack overflow
             }
             else
             {
