@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
-    internal static class Friendlies
+    public static class Friendlies
     {
         public static string ToFriendlyPastTimeStamp(this DateTime time)
         {
@@ -39,6 +39,29 @@ namespace PowerArgs.Cli
         private static int Round(this double number)
         {
             return (int)Math.Round(number);
+        }
+
+        public static string ToFriendlyFileSize(long bytes)
+        {
+            if(bytes < 1024)
+            {
+                return bytes + " B";
+            }
+            else if(bytes < 1024 * 1024)
+            {
+                var converted = Math.Round(bytes / 1024.0, 1);
+                return converted + " KB";
+            }
+            else if (bytes < 1024 * 1024 * 1024)
+            {
+                var converted = Math.Round(bytes / (1024.0 * 1024.0) , 1);
+                return converted + " MB";
+            }
+            else
+            {
+                var converted = Math.Round(bytes / (1024.0 * 1024.0 * 1024.0), 1);
+                return converted + " GB";
+            }
         }
     }
 }

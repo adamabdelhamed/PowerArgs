@@ -35,6 +35,14 @@ namespace PowerArgs.Cli
 
         private Stack<FocusContext> focusStack;
 
+        public int StackDepth
+        {
+            get
+            {
+                return focusStack.Count;
+            }
+        }
+
         /// <summary>
         /// Gets the currently focused control or null if there is no control with focus yet.
         /// </summary>
@@ -86,6 +94,7 @@ namespace PowerArgs.Cli
         public void Push()
         {
             focusStack.Push(new FocusContext());
+            FirePropertyChanged(nameof(StackDepth));
         }
 
         /// <summary>
@@ -101,6 +110,7 @@ namespace PowerArgs.Cli
 
             var context = focusStack.Pop();
             TryRestoreFocus();
+            FirePropertyChanged(nameof(StackDepth));
         }
 
         /// <summary>

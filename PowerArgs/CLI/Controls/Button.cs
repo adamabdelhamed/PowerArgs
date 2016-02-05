@@ -114,7 +114,7 @@ namespace PowerArgs.Cli
         {
             var drawState = new ConsoleString();
 
-            drawState = "[".ToConsoleString(Application.Theme.H1Color, Background = Background);
+            drawState = "[".ToConsoleString(CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor, Background = Background);
             if (Text != null)
             {
                 ConsoleColor fg, bg;
@@ -150,7 +150,7 @@ namespace PowerArgs.Cli
                 }
             }
 
-            drawState += "]".ToConsoleString(Application.Theme.H1Color, Background);
+            drawState += "]".ToConsoleString(CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor, Background);
             Width = drawState.Length;
             context.DrawString(drawState, 0, 0);
         }

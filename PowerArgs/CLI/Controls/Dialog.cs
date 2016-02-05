@@ -23,6 +23,8 @@ namespace PowerArgs.Cli
 
         private Button closeButton;
 
+        private int myFocusStackDepth;
+
         public Dialog(ConsoleControl content)
         {
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
@@ -34,6 +36,7 @@ namespace PowerArgs.Cli
         {
             base.OnBeforeAddedToVisualTree();
             Application.FocusManager.Push();
+            myFocusStackDepth = Application.FocusManager.StackDepth;
             Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, (key) =>
             {
                 Escape();
@@ -59,6 +62,19 @@ namespace PowerArgs.Cli
             this.CenterVertically();
             this.FillHoriontally();
             ConsoleApp.Current.FocusManager.TryMoveFocus();
+
+            Application.FocusManager.Subscribe(nameof(FocusManager.StackDepth), () =>
+            {
+                if(Application.FocusManager.StackDepth != myFocusStackDepth)
+                {
+                    closeButton.Background = Application.Theme.DisabledColor;
+                }
+                else
+                {
+                    closeButton.Background = Application.Theme.H1Color;
+                }
+            });
+
         }
 
         private void Escape()
@@ -78,7 +94,7 @@ namespace PowerArgs.Cli
 
         internal override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = new ConsoleCharacter(' ', null, Theme.DefaultTheme.H1Color);
+            context.Pen = new ConsoleCharacter(' ', null, myFocusStackDepth == Application.FocusManager.StackDepth ? Theme.DefaultTheme.H1Color : Theme.DefaultTheme.DisabledColor);
             context.DrawLine(0, 0, Width, 0);
             context.DrawLine(0, Height-1, Width, Height-1);
             base.OnPaint(context);

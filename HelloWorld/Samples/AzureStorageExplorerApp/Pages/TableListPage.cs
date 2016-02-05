@@ -25,6 +25,8 @@ namespace HelloWorld.Samples
 
             
             Grid.SelectedItemActivated += NavigateToTable;
+
+            CommandBar.Add(new NotificationButton(ProgressOperationManager));
         }
 
         private void NavigateToTable()

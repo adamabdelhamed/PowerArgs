@@ -35,6 +35,8 @@ namespace HelloWorld.Samples
             addButton.Activated += AddContainer;
             deleteButton.Activated += DeleteSelectedContainer;
             Grid.SelectedItemActivated += NavigateToContainer;
+
+            CommandBar.Add(new NotificationButton(ProgressOperationManager));
         }
 
         public override void OnAddedToVisualTree()

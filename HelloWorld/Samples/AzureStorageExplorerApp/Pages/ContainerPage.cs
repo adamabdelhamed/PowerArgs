@@ -3,6 +3,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using PowerArgs;
 using PowerArgs.Cli;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -10,20 +11,44 @@ namespace HelloWorld.Samples
 {
     public class ContainerPage : GridPage
     {
+        public const string SizeColumn = "Size";
         CloudStorageAccount currentStorageAccount;
         CloudBlobContainer container;
         private Button deleteButton;
         private Button uploadButton;
+        private Button openButton;
+
         public ContainerPage()
         {
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudBlob.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(SizeColumn.ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.NoDataMessage = "No blobs";
 
             uploadButton = CommandBar.Add(new Button() { Text = "Upload blob", Shortcut = new KeyboardShortcut(ConsoleKey.U, true) });
             deleteButton = CommandBar.Add(new Button() { Text = "Delete blob", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.Delete, false) });
+            openButton = CommandBar.Add(new Button() { Text = "Open blob", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.O, true) });
 
             uploadButton.Activated += UploadBlob;
             deleteButton.Activated += DeleteSelectedBlob;
+            openButton.Activated += OpenSelectedBlob;
+
+            Grid.PropertyResolver = (o, prop) =>
+            {
+                if(prop == nameof(CloudBlob.Name))
+                {
+                    return (o as CloudBlob).Name;
+                }
+                else if(prop == SizeColumn)
+                {
+                    return Friendlies.ToFriendlyFileSize((o as CloudBlockBlob).Properties.Length);
+                }
+                else
+                {
+                    throw new NotSupportedException("Property not supported: "+prop);
+                }
+            };
+
+            CommandBar.Add(new NotificationButton(ProgressOperationManager));
         }
 
         public override void OnAddedToVisualTree()
@@ -44,6 +69,50 @@ namespace HelloWorld.Samples
 
             container = client.GetContainerReference(containerName);
             Grid.DataSource = new BlobDataSource(container, Application.MessagePump);
+        }
+
+        private void OpenSelectedBlob()
+        {
+            var blob = Grid.SelectedItem as CloudBlob;
+            var tempFile = System.IO.Path.Combine(System.IO.Path.GetTempPath(), GetFileName(blob));
+
+            var operation = new ProgressOperation()
+            {
+                State = OperationState.InProgress,
+                Message = "Downloading blob ".ToConsoleString()+blob.Uri.ToString().ToConsoleString(ConsoleColor.Cyan)
+            };
+
+            ProgressOperationManager.Operations.Add(operation);
+
+            Application.MessagePump.QueueAsyncAction(blob.DownloadToFileAsync(tempFile, FileMode.OpenOrCreate), (t) =>
+            {
+                if (t.Exception != null)
+                {
+                    operation.State = OperationState.Failed;
+                    operation.Message = "Failed to delete blob ".ToConsoleString() + blob.Uri.ToString().ToConsoleString(ConsoleColor.Cyan);
+                    operation.Details = t.Exception.ToString().ToConsoleString();
+                }
+                else
+                {
+                    operation.State = OperationState.Completed;
+                    operation.Message = "Fiinished downloading blob ".ToConsoleString() + blob.Uri.ToString().ToConsoleString(ConsoleColor.Cyan);
+                    operation.Details = "The downloaded file is located here: ".ToConsoleString() + tempFile.ToConsoleString(ConsoleColor.Cyan);
+                    Process.Start(tempFile);
+                }
+            });
+        }
+
+        private string GetFileName(CloudBlob blob)
+        {
+            if(blob.Name.Contains("/") == false)
+            {
+                return blob.Name;
+            }
+            else
+            {
+                var start = blob.Name.LastIndexOf('/')+1;
+                return blob.Name.Substring(start);
+            }
         }
 
         private void UploadBlob()
@@ -134,6 +203,7 @@ namespace HelloWorld.Samples
         private void SelectedItemChanged()
         {
             deleteButton.CanFocus = Grid.SelectedItem != null;
+            openButton.CanFocus = Grid.SelectedItem != null;
         }
     }
 }
