@@ -79,8 +79,8 @@
     <Compile Include="CLI\FocusManager.cs" />
     <Compile Include="CLI\Helpers\Disposable.cs" />
     <Compile Include="CLI\Helpers\Friendlies.cs" />
-    <Compile Include="CLI\Helpers\GlobalKeyHandlerStack.cs" />
     <Compile Include="CLI\Helpers\Layout.cs" />
+    <Compile Include="CLI\KeyboardInterceptionManager.cs" />
     <Compile Include="CLI\Observability\AmbientLifetimeScope.cs" />
     <Compile Include="CLI\Observability\Event.cs" />
     <Compile Include="CLI\Observability\Lifetime.cs" />

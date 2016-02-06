@@ -86,8 +86,8 @@ namespace PowerArgs.Cli
             using (new AmbientLifetimeScope(LifetimeManager))
             {
                 appResizeSubscription = Application.LayoutRoot.SubscribeUnmanaged(nameof(ConsoleControl.Bounds), HandleResize);
-                Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, EscapeKeyHandler);
-                Application.GlobalKeyHandlers.Push(ConsoleKey.Backspace, BackspaceHandler);
+                Application.FocusManager.GlobalKeyHandlers.Push(ConsoleKey.Escape, null, EscapeKeyHandler);
+                Application.FocusManager.GlobalKeyHandlers.Push(ConsoleKey.Backspace,null, BackspaceHandler);
                 OnLoad();
                 if (Loaded != null) Loaded();
             }
@@ -96,8 +96,6 @@ namespace PowerArgs.Cli
         internal void Unload()
         {
             appResizeSubscription.Dispose();
-            Application.GlobalKeyHandlers.Pop(ConsoleKey.Escape);
-            Application.GlobalKeyHandlers.Pop(ConsoleKey.Backspace);
             OnUnload();
             if (Unloaded != null) Unloaded();
         }

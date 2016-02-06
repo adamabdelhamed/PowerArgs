@@ -18,7 +18,7 @@ namespace HelloWorld.Samples
             Grid.NoVisibleColumnsMessage = "Loading..."; // override NoVisibleColumnsMessage because we won't know the columns until the data arrives
             Grid.PropertyResolver = ResolveProperty;
            
-            deleteButton = CommandBar.Add(new Button() { Text = "Delete entity", Shortcut = new KeyboardShortcut(ConsoleKey.Delete, false), CanFocus = false });
+            deleteButton = CommandBar.Add(new Button() { Text = "Delete entity", Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null), CanFocus = false });
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
             deleteButton.Activated += BeginDeleteSelectedEntityIfExists;
         }

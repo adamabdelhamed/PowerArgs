@@ -10,12 +10,12 @@ namespace PowerArgs.Cli
     public class KeyboardShortcut
     {
         public ConsoleKey Key { get; set; }
-        public bool Alt { get; set; }
+        public ConsoleModifiers? Modifier{ get; set; }
 
-        public KeyboardShortcut(ConsoleKey key, bool alt)
+        public KeyboardShortcut(ConsoleKey key, ConsoleModifiers? modifier = null)
         {
             this.Key = key;
-            this.Alt = alt;
+            this.Modifier = modifier;
         }
     }
 
@@ -56,9 +56,17 @@ namespace PowerArgs.Cli
         {
             int w = Text == null ? 2 : Text.Length + 2;
 
-            if (Shortcut != null && Shortcut.Alt)
+            if (Shortcut != null && Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Alt)
             {
                 w += "ALT+".Length;
+            }
+            else if (Shortcut != null && Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Shift)
+            {
+                w += "SHIFT+".Length;
+            }
+            else if (Shortcut != null && Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Control)
+            {
+                w += "CTL+".Length;
             }
 
             if (Shortcut != null)
@@ -73,23 +81,13 @@ namespace PowerArgs.Cli
             base.OnAddedToVisualTree();
             if (Shortcut != null)
             {
-                Application.GlobalKeyHandlers.Push(Shortcut.Key, (i) => 
-                {
-                    if (CanFocus)
-                    {
-                        this.Click();
-                    }
-                }, Shortcut.Alt);
+                Application.FocusManager.GlobalKeyHandlers.Push(Shortcut.Key, Shortcut.Modifier, Click);
             }
         }
 
         public override void OnRemovedFromVisualTree()
         {
             base.OnRemovedFromVisualTree();
-            if (Shortcut != null)
-            {
-                Application.GlobalKeyHandlers.Pop(Shortcut.Key, Shortcut.Alt);
-            }
         }
 
         public override bool OnKeyInputReceived(ConsoleKeyInfo info)
@@ -139,9 +137,17 @@ namespace PowerArgs.Cli
 
                 if(Shortcut != null)
                 {
-                    if(Shortcut.Alt)
+                    if(Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Alt)
                     {
                         drawState += new ConsoleString($" (ALT+{Shortcut.Key})", CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor);
+                    }
+                    else if (Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Shift)
+                    {
+                        drawState += new ConsoleString($" (SHIFT+{Shortcut.Key})", CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor);
+                    }
+                    else if (Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Control)
+                    {
+                        drawState += new ConsoleString($" (CTL+{Shortcut.Key})", CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor);
                     }
                     else
                     {

@@ -29,8 +29,8 @@ namespace HelloWorld.Samples
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudBlobContainer.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.NoDataMessage = "No containers";
 
-            addButton = CommandBar.Add(new Button() { Text = "Add container", Shortcut = new KeyboardShortcut(ConsoleKey.A, true) });
-            deleteButton = CommandBar.Add(new Button() { Text = "Delete container", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.Delete, false) });
+            addButton = CommandBar.Add(new Button() { Text = "Add container", Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });
+            deleteButton = CommandBar.Add(new Button() { Text = "Delete container", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.Delete) });
 
             addButton.Activated += AddContainer;
             deleteButton.Activated += DeleteSelectedContainer;

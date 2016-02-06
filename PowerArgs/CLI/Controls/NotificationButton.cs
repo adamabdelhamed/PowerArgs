@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 
 namespace PowerArgs.Cli
 {
@@ -8,15 +9,16 @@ namespace PowerArgs.Cli
         Button launcher;
         Spinner spinner;
         ProgressOperationsManager manager;
-
+        ConsoleColor launcherFg;
+        Timer resetTimer;
         public NotificationButton(ProgressOperationsManager manager)
         {
             this.manager = manager;
             
             launcher = Add(new Button());
-            launcher.Shortcut = new KeyboardShortcut(ConsoleKey.N, true);
+            launcher.Shortcut = new KeyboardShortcut(ConsoleKey.N, ConsoleModifiers.Alt);
             launcher.Activated += NotificationButton_Activated;
-            
+            launcherFg = launcher.Foreground;
             spinner = Add(new Spinner() { IsVisible = false, IsSpinning = false, CanFocus = false, X = 1, Foreground = ConsoleColor.Cyan });
             Manager_ProgressOperationsChanged();
             manager.ProgressOperationsChanged += Manager_ProgressOperationsChanged;
@@ -26,6 +28,24 @@ namespace PowerArgs.Cli
         {
             base.OnAddedToVisualTree();
             launcher.Synchronize(nameof(Bounds), () => { this.Size = launcher.Size; });
+            manager.ProgressOperationStatusChanged.Subscribe((op) =>
+            {
+                if(op.State == OperationState.Completed)
+                {
+                    launcher.Foreground = ConsoleColor.Green;
+                    if(resetTimer != null)
+                    {
+                        Application.MessagePump.ClearTimeout(resetTimer);
+                        resetTimer = null;
+                    }
+                    resetTimer = Application.MessagePump.SetTimeout(ResetLaundherFG, TimeSpan.FromSeconds(5));
+                }
+            });
+        }
+
+        private void ResetLaundherFG()
+        {
+            launcher.Foreground = launcherFg;
         }
 
         public override void OnRemovedFromVisualTree()
@@ -42,13 +62,13 @@ namespace PowerArgs.Cli
             {
                 spinner.IsSpinning = false;
                 spinner.IsVisible = false;
-                launcher.Text = numberOfOperations+" notifications";
+                launcher.Text = ""+numberOfOperations+ (numberOfOperations == 1 ? " notification" : " notifications");
             }
             else
             {
                 spinner.IsVisible = true;
                 spinner.IsSpinning = true;
-                launcher.Text = " "+numberOfOperations+ " notifications";
+                launcher.Text = " "+numberOfOperations+ (numberOfOperations == 1 ? " notification" : " notifications");
             }
         }
 

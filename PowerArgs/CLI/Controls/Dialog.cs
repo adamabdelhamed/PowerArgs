@@ -37,10 +37,8 @@ namespace PowerArgs.Cli
             base.OnBeforeAddedToVisualTree();
             Application.FocusManager.Push();
             myFocusStackDepth = Application.FocusManager.StackDepth;
-            Application.GlobalKeyHandlers.Push(ConsoleKey.Escape, (key) =>
-            {
-                Escape();
-            });
+
+            Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, Escape,LifetimeManager );
         }
 
         public override void OnAddedToVisualTree()
@@ -88,7 +86,6 @@ namespace PowerArgs.Cli
 
         public override void OnRemovedFromVisualTree()
         {
-            Application.GlobalKeyHandlers.Pop(ConsoleKey.Escape);
             Application.FocusManager.Pop();
         }
 

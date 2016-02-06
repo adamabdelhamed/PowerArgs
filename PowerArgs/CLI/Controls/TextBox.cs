@@ -68,6 +68,8 @@ namespace PowerArgs.Cli
             }
         }
 
+        Subscription backspacceSub;
+
         private void TextBox_Focused()
         {
             enableBackspaceNavigationOptimization = true;
@@ -78,7 +80,9 @@ namespace PowerArgs.Cli
                 blinkState = !blinkState;
                 Application.Paint();
             }, BlinkInterval);
-            Application.GlobalKeyHandlers.Push(ConsoleKey.Backspace, (info)=> 
+
+
+            backspacceSub = Application.FocusManager.GlobalKeyHandlers.PushUnmanaged(ConsoleKey.Backspace, null, (info)=> 
             {
                 if (enableBackspaceNavigationOptimization == false || Application is ConsolePageApp == false)
                 {
@@ -93,7 +97,7 @@ namespace PowerArgs.Cli
 
         private void TextBox_Unfocused()
         {
-            Application.GlobalKeyHandlers.Pop(ConsoleKey.Backspace);
+            backspacceSub.Dispose();
             Application.MessagePump.ClearInterval(blinkTimerHandle);
             blinkState = false;
         }

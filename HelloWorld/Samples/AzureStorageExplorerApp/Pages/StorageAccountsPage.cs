@@ -18,8 +18,8 @@ namespace HelloWorld.Samples
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.UseHttps).ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.NoDataMessage = "No storage accounts";
             Grid.KeyInputReceived += HandleGridDeleteKeyPress;
-            addButton = CommandBar.Add(new Button() { Text = "Add account", Shortcut = new KeyboardShortcut(ConsoleKey.A, true) });
-            deleteButton = CommandBar.Add(new Button() { Text = "Forget account", CanFocus=false, Shortcut = new KeyboardShortcut(ConsoleKey.F, true) });
+            addButton = CommandBar.Add(new Button() { Text = "Add account", Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });
+            deleteButton = CommandBar.Add(new Button() { Text = "Forget account", CanFocus=false, Shortcut = new KeyboardShortcut(ConsoleKey.F, ConsoleModifiers.Alt) });
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
 
             addButton.Activated += AddStorageAccount;

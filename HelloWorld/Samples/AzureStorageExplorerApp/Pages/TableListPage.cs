@@ -20,7 +20,7 @@ namespace HelloWorld.Samples
             addButton = CommandBar.Add(new Button() { Text = "Add table" });
             addButton.Activated += AddTable;
 
-            deleteButton = CommandBar.Add(new Button() { Text = "Delete table", Shortcut = new KeyboardShortcut(ConsoleKey.Delete, false), CanFocus = false });
+            deleteButton = CommandBar.Add(new Button() { Text = "Delete table", Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null), CanFocus = false });
             deleteButton.Activated += DeleteSelectedTable;
 
             

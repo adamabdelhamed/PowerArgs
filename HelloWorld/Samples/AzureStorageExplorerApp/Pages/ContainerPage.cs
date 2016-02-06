@@ -24,9 +24,9 @@ namespace HelloWorld.Samples
             Grid.VisibleColumns.Add(new ColumnViewModel(SizeColumn.ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.NoDataMessage = "No blobs";
 
-            uploadButton = CommandBar.Add(new Button() { Text = "Upload blob", Shortcut = new KeyboardShortcut(ConsoleKey.U, true) });
-            deleteButton = CommandBar.Add(new Button() { Text = "Delete blob", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.Delete, false) });
-            openButton = CommandBar.Add(new Button() { Text = "Open blob", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.O, true) });
+            uploadButton = CommandBar.Add(new Button() { Text = "Upload blob", Shortcut = new KeyboardShortcut(ConsoleKey.U, ConsoleModifiers.Alt) });
+            deleteButton = CommandBar.Add(new Button() { Text = "Delete blob", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null) });
+            openButton = CommandBar.Add(new Button() { Text = "Open blob", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.O, ConsoleModifiers.Alt) });
 
             uploadButton.Activated += UploadBlob;
             deleteButton.Activated += DeleteSelectedBlob;

@@ -13,6 +13,8 @@ namespace PowerArgs.Cli
         /// </summary>
         private class FocusContext
         {
+            public KeyboardInterceptionManager Interceptors { get; private set; } = new KeyboardInterceptionManager();
+
             /// <summary>
             /// The controls being managed by this context
             /// </summary>
@@ -43,15 +45,28 @@ namespace PowerArgs.Cli
             }
         }
 
+        public KeyboardInterceptionManager GlobalKeyHandlers
+        {
+            get
+            {
+                return focusStack.Peek().Interceptors;
+            }
+        }
+
         /// <summary>
         /// Gets the currently focused control or null if there is no control with focus yet.
         /// </summary>
-        public ConsoleControl FocusedControl { get { return Get<ConsoleControl>(); }
+        public ConsoleControl FocusedControl
+        {
+            get
+            {
+                return Get<ConsoleControl>();
+            }
             private set
             {
                 Set(value);
-            } }
-
+            }
+        }
         /// <summary>
         /// Initializes the focus manager
         /// </summary>

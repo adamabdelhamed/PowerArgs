@@ -73,12 +73,6 @@ namespace PowerArgs.Cli
         public bool AutoFillOnConsoleResize { get; set; }
 
         /// <summary>
-        /// A collection of global key handlers that you can use to override keyboard input in a way that gets preference
-        /// over the currently focused control.
-        /// </summary>
-        public GlobalKeyHandlerStack GlobalKeyHandlers { get; private set; }
-
-        /// <summary>
         /// Gets or sets the theme
         /// </summary>
         public Theme Theme { get; set; }
@@ -102,7 +96,6 @@ namespace PowerArgs.Cli
             Bitmap = new ConsoleBitmap(x, y, w, h);
             MessagePump = new CliMessagePump(Bitmap.Console, KeyPressed);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
-            GlobalKeyHandlers = new GlobalKeyHandlerStack();
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
             AutoFillOnConsoleResize = false;
@@ -231,7 +224,7 @@ namespace PowerArgs.Cli
 
         private void KeyPressed(ConsoleKeyInfo info)
         {
-            if (GlobalKeyHandlers.TryHandle(info))
+            if (FocusManager.GlobalKeyHandlers.TryIntercept(info))
             {
                 // great, it was handled
             }

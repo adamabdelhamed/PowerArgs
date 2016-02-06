@@ -10,6 +10,7 @@ namespace PowerArgs.Cli
     {
         public event Action ProgressOperationsChanged;
 
+        public Event<ProgressOperation> ProgressOperationStatusChanged { get; private set; } = new Event<ProgressOperation>();
         public ObservableCollection<ProgressOperation> Operations { get; private set; }
 
         public static readonly ProgressOperationsManager Default = new ProgressOperationsManager();
@@ -29,6 +30,7 @@ namespace PowerArgs.Cli
         private void Operations_Added(ProgressOperation trackedOperation)
         {
             trackedOperation.SynchronizeForLifetime(AnyProperty, FireProgressOperationsChanged, Operations.GetMembershipLifetime(trackedOperation));
+            trackedOperation.SubscribeForLifetime(nameof(ProgressOperation.State), () => { ProgressOperationStatusChanged.Fire(trackedOperation); }, Operations.GetMembershipLifetime(trackedOperation));
             FirePropertyChanged(nameof(Operations)); // todo - remove this, but find the subscriber first
         }
 
