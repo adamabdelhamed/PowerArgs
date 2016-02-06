@@ -112,9 +112,9 @@ namespace HelloWorld.Samples
                     }
                 };
 
-                grid.KeyInputReceived += (keyInfo) =>
+                grid.RegisterKeyHandler(ConsoleKey.Delete,(keyInfo) =>
                 {
-                    if(keyInfo.Key == ConsoleKey.Delete && grid.SelectedItem != null)
+                    if(grid.SelectedItem != null)
                     {
                         if(grid.SelectedItem is FileRecord)
                         {
@@ -132,7 +132,7 @@ namespace HelloWorld.Samples
                             }
                         }
                     }
-                };
+                });
 
                 grid.TryFocus();
             };

@@ -170,7 +170,7 @@ namespace PowerArgs.Cli
             List<PropertyChangedSubscription> filteredSubs;
             if(subscribers.TryGetValue(propertyName, out filteredSubs))
             {
-                foreach (var sub in filteredSubs)
+                foreach (var sub in filteredSubs.ToArray())
                 {
                     sub.ChangeListener();
                 }
@@ -178,7 +178,7 @@ namespace PowerArgs.Cli
 
             if(subscribers.TryGetValue(AnyProperty, out filteredSubs))
             {
-                foreach (var sub in filteredSubs)
+                foreach (var sub in filteredSubs.ToArray())
                 {
                     sub.ChangeListener();
                 }

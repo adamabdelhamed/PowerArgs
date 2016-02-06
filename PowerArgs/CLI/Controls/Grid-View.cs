@@ -136,7 +136,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override bool OnKeyInputReceived(ConsoleKeyInfo info)
+        public override void OnKeyInputReceived(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.UpArrow)
             {
@@ -179,12 +179,6 @@ namespace PowerArgs.Cli
                 FilterTextBox.Value = info.KeyChar.ToString().ToConsoleString();
                 Application.FocusManager.TrySetFocus(FilterTextBox);
             }
-            else
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private void InitGridView()
@@ -219,7 +213,7 @@ namespace PowerArgs.Cli
 
             _filterTextBox = value;
             _filterTextBox.SubscribeForLifetime(nameof(TextBox.Value), FilterTextValueChanged, value.LifetimeManager);
-            _filterTextBox.KeyInputReceived += FilterTextKeyPressed;
+            _filterTextBox.KeyInputReceived.SubscribeForLifetime(FilterTextKeyPressed, value.LifetimeManager);
             FilteringEnabled = true;
         }
 

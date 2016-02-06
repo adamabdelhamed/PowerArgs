@@ -102,12 +102,11 @@ namespace PowerArgs.Cli
             blinkState = false;
         }
 
-        public override bool OnKeyInputReceived(ConsoleKeyInfo info)
+        public override void OnKeyInputReceived(ConsoleKeyInfo info)
         {
             textState.RegisterKeyPress(info);
             blinkState = true;
             blinkTimerHandle.Change(BlinkInterval, BlinkInterval);
-            return true;
         }
 
         internal override void OnPaint(ConsoleBitmap context)

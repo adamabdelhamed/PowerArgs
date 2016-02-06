@@ -187,14 +187,11 @@ namespace PowerArgs.Cli
 
             content.SynchronizeForLifetime(nameof(Bounds), () => { inputBox.Width = content.Width - 4; }, content.LifetimeManager);
 
-            inputBox.KeyInputReceived += (key) =>
+            inputBox.RegisterKeyHandler(ConsoleKey.Enter, (k) =>
             {
-                if(key.Key == ConsoleKey.Enter)
-                {
-                    resultCallback(inputBox.Value);
-                    ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
-                }
-            };
+                resultCallback(inputBox.Value);
+                ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
+            });
 
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
             inputBox.TryFocus();

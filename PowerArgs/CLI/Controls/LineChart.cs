@@ -148,7 +148,7 @@ namespace PowerArgs.Cli
             ViewModel.Subscribe(ObservableObject.AnyProperty, Application.Paint);
         }
 
-        public override bool OnKeyInputReceived(ConsoleKeyInfo info)
+        public override void OnKeyInputReceived(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.LeftArrow)
             {
@@ -174,12 +174,6 @@ namespace PowerArgs.Cli
             {
                 ViewModel.FocusedDataPointIndex = ViewModel.FocusedDataSeries.DataPoints.Count - 1;
             }
-            else
-            {
-                return false;
-            }
-
-            return true;
         }
 
         internal override void OnPaint(ConsoleBitmap context)

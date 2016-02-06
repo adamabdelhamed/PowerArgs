@@ -28,7 +28,7 @@ namespace PowerArgs.Cli
             messageLabel = messageAndOperationsPanel.Add(new Label() { Mode = LabelRenderMode.ManualSizing }).FillHoriontally();
             messageLabel.CanFocus = true;
 
-            messageLabel.RegisterKeyHandler(ConsoleKey.Enter, () =>
+            messageLabel.RegisterKeyHandler(ConsoleKey.Enter, (k) =>
             {
                 var msg = operation.Message;
                 if(operation.Details != null)
@@ -38,7 +38,7 @@ namespace PowerArgs.Cli
                 Dialog.ShowMessage(msg);
             });
 
-            messageLabel.RegisterKeyHandler(ConsoleKey.Delete, () =>
+            messageLabel.RegisterKeyHandler(ConsoleKey.Delete, (k) =>
             {
                 var app = Application;
                 manager.Operations.Remove(operation);

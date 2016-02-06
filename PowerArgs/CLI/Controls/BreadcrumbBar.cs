@@ -11,7 +11,7 @@ namespace PowerArgs.Cli
         public BreadcrumbElement(Action activationHandler)
         {
             this.CanFocus = true;
-            this.KeyInputReceived += (key) => { if(key.Key == ConsoleKey.Enter)  activationHandler();  };
+            this.RegisterKeyHandler(ConsoleKey.Enter, (key) => { activationHandler(); });
         }
  
     }

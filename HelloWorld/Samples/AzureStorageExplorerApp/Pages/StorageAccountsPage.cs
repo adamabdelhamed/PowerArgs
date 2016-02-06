@@ -17,7 +17,7 @@ namespace HelloWorld.Samples
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.Key).ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.UseHttps).ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.NoDataMessage = "No storage accounts";
-            Grid.KeyInputReceived += HandleGridDeleteKeyPress;
+            Grid.RegisterKeyHandler(ConsoleKey.Delete,  HandleGridDeleteKeyPress);
             addButton = CommandBar.Add(new Button() { Text = "Add account", Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });
             deleteButton = CommandBar.Add(new Button() { Text = "Forget account", CanFocus=false, Shortcut = new KeyboardShortcut(ConsoleKey.F, ConsoleModifiers.Alt) });
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
@@ -38,7 +38,7 @@ namespace HelloWorld.Samples
 
         private void HandleGridDeleteKeyPress(ConsoleKeyInfo key)
         {
-            if(key.Key == ConsoleKey.Delete && Grid.SelectedItem != null)
+            if(Grid.SelectedItem != null)
             {
                 ForgetSelectedStorageAccount();
             }

@@ -68,7 +68,7 @@ namespace PowerArgs.Cli
 
         public void Fire(T item)
         {
-            foreach (var subscriber in subscribers.Keys)
+            foreach (var subscriber in subscribers.Keys.ToArray())
             {
                 subscriber(item);
             }

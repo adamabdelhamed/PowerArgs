@@ -30,13 +30,13 @@ namespace PowerArgs.Cli
         /// </summary>
         public event Action RemovedFromVisualTree;
 
-        public event Action BeforeRemovedFromVisualTree; 
+        public event Action BeforeRemovedFromVisualTree;
 
         /// <summary>
         /// An event that fires when a key is pressed while this control has focus and the control has decided not to process
         /// the key press internally.
         /// </summary>
-        public event Action<ConsoleKeyInfo> KeyInputReceived;
+        public Event<ConsoleKeyInfo> KeyInputReceived { get; private set; } = new Event<ConsoleKeyInfo>();
 
         /// <summary>
         /// Gets a reference to the application this control is a part of
@@ -147,7 +147,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        public Action<ConsoleKeyInfo> RegisterKeyHandler(ConsoleKey key, Action<ConsoleKeyInfo> handler)
+        public Subscription RegisterKeyHandlerUnmanaged(ConsoleKey key, Action<ConsoleKeyInfo> handler)
         {
             Action<ConsoleKeyInfo> conditionalHandler = (info) =>
             {
@@ -156,20 +156,19 @@ namespace PowerArgs.Cli
                     handler(info);
                 }
             };
-            this.KeyInputReceived += conditionalHandler;
-            return conditionalHandler;
+            return this.KeyInputReceived.SubscribeUnmanaged(conditionalHandler);
         }
-
-        public Action<ConsoleKeyInfo> RegisterKeyHandler(ConsoleKey key, Action handler)
+        
+        public void RegisterKeyHandlerForLifetime(ConsoleKey key, Action<ConsoleKeyInfo> handler, LifetimeManager manager)
         {
-            return RegisterKeyHandler(key, (info) => { handler(); });
+            manager.Manage(RegisterKeyHandlerUnmanaged(key, handler));
         }
 
-        public void UnregisterKeyHandler(Action<ConsoleKeyInfo> handler)
+        public void RegisterKeyHandler(ConsoleKey key, Action<ConsoleKeyInfo> handler)
         {
-            this.KeyInputReceived -= handler;
+            LifetimeManager.Manage(RegisterKeyHandlerUnmanaged(key, handler));
         }
-
+        
         internal void FireFocused(bool focused)
         {
             if (focused && Focused != null) Focused();
@@ -293,15 +292,12 @@ namespace PowerArgs.Cli
         public void HandleKeyInput(ConsoleKeyInfo info)
         {
             OnKeyInputReceived(info);
-            if (KeyInputReceived != null)
-            {
-                KeyInputReceived(info);
-            }
+            KeyInputReceived.Fire(info);
         }
 
-        public virtual bool OnKeyInputReceived(ConsoleKeyInfo info)
+        public virtual void OnKeyInputReceived(ConsoleKeyInfo info)
         {
-            return false;
+          
         }
 
         public override string ToString()

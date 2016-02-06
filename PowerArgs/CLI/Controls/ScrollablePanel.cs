@@ -238,7 +238,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override bool OnKeyInputReceived(ConsoleKeyInfo info)
+        public override void OnKeyInputReceived(ConsoleKeyInfo info)
         {
             base.OnKeyInputReceived(info);
             var scrollableSize = ScrollablePanel.ScrollableContentSize;
@@ -252,7 +252,6 @@ namespace PowerArgs.Cli
                 {
                     ScrollablePanel.HorizontalScrollUnits = 0;
                 }
-                return true;
             }
             else if (info.Key == ConsoleKey.End)
             {
@@ -264,7 +263,6 @@ namespace PowerArgs.Cli
                 {
                     ScrollablePanel.HorizontalScrollUnits = scrollableSize.Width - ScrollablePanel.Width;
                 }
-                return true;
             }
             if (info.Key == ConsoleKey.PageUp)
             {
@@ -278,7 +276,6 @@ namespace PowerArgs.Cli
                     int leftAmount = Math.Min(ScrollablePanel.Width, ScrollablePanel.HorizontalScrollUnits);
                     ScrollablePanel.HorizontalScrollUnits -= leftAmount;
                 }
-                return true;
             }
             else if (info.Key == ConsoleKey.PageDown)
             {
@@ -292,14 +289,12 @@ namespace PowerArgs.Cli
                     int rightAmount = Math.Min(ScrollablePanel.Width, ScrollablePanel.ScrollableContentSize.Width - ScrollablePanel.HorizontalScrollUnits - ScrollablePanel.Width);
                     ScrollablePanel.VerticalScrollUnits += rightAmount;
                 }
-                return true;
             }
             else if (info.Key == ConsoleKey.DownArrow)
             {
                 if (ScrollablePanel.VerticalScrollUnits < scrollableSize.Height - ScrollablePanel.Height)
                 {
                     ScrollablePanel.VerticalScrollUnits++;
-                    return true;
                 }
             }
             else if (info.Key == ConsoleKey.UpArrow)
@@ -307,7 +302,6 @@ namespace PowerArgs.Cli
                 if(ScrollablePanel.VerticalScrollUnits > 0)
                 {
                     ScrollablePanel.VerticalScrollUnits--;
-                    return true;
                 }
             }
             else if (info.Key == ConsoleKey.RightArrow)
@@ -315,7 +309,6 @@ namespace PowerArgs.Cli
                 if (ScrollablePanel.HorizontalScrollUnits < scrollableSize.Width - ScrollablePanel.Width)
                 {
                     ScrollablePanel.HorizontalScrollUnits++;
-                    return true;
                 }
             }
             else if (info.Key == ConsoleKey.LeftArrow)
@@ -323,11 +316,8 @@ namespace PowerArgs.Cli
                 if (ScrollablePanel.HorizontalScrollUnits > 0)
                 {
                     ScrollablePanel.HorizontalScrollUnits--;
-                    return true;
                 }
             }
-
-            return false;
         }
     }
 }

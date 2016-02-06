@@ -90,14 +90,12 @@ namespace PowerArgs.Cli
             base.OnRemovedFromVisualTree();
         }
 
-        public override bool OnKeyInputReceived(ConsoleKeyInfo info)
+        public override void OnKeyInputReceived(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.Enter || info.Key == ConsoleKey.Spacebar)
             {
                 Click();
-                return true;
             }
-            return false;
         }
 
         private void Click()
