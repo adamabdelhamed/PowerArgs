@@ -21,7 +21,7 @@ namespace PowerArgs.Cli
 
     public class Button : ConsoleControl
     {
-        public event Action Activated;
+        public Event Activated { get; private set; } = new Event();
         public string Text
         {
             get { return Get<string>(); }
@@ -100,10 +100,7 @@ namespace PowerArgs.Cli
 
         private void Click()
         {
-            if (Activated != null)
-            {
-                Activated();
-            }
+            Activated.Fire();
         }
 
         internal override void OnPaint(ConsoleBitmap context)

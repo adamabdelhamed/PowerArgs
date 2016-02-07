@@ -29,7 +29,7 @@ namespace PowerArgs.Cli
         {
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
             closeButton = Add(new Button() { Text = "Close (ESC)",Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
-            closeButton.Activated += Escape;
+            closeButton.Activated.SubscribeForLifetime(Escape, this.LifetimeManager);
         }
 
         public override void OnBeforeAddedToVisualTree()
@@ -141,11 +141,11 @@ namespace PowerArgs.Cli
             {
                 var myButtonInfo = buttonInfo;
                 Button b = new Button() { Text = buttonInfo.DisplayText };
-                b.Activated += () => 
+                b.Activated.SubscribeForLifetime(() => 
                 {
                     ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
                     resultCallback(myButtonInfo);
-                };
+                }, dialog.LifetimeManager);
                 buttonPanel.Controls.Add(b);
                 firstButton = firstButton ?? b;
             }

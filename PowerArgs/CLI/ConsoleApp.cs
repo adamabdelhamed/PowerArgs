@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 namespace PowerArgs.Cli
 {
     // todos before fully supporting the .Cli namespace
+    // 
     // Theme should be observable and should result in a Paint when changed.  Controls might need to react as well.
-    // Samples for different data sources (e.g. An azure table, a file system)  
-    // Lots of testing
+    // Do another refactoring and functionality pass on data sources and caching.  It't not ready. 
+    // Samples for different data sources (e.g. An azure table, a file system)      // Lots of testing
     // Final code review and documentation
 
     /// <summary>
@@ -101,7 +102,7 @@ namespace PowerArgs.Cli
             LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, LifetimeManager);
             LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, LifetimeManager);
             LayoutRoot.Controls.Removed.SubscribeForLifetime(ControlRemovedFromVisualTree, LifetimeManager);
-            MessagePump.WindowResized += HandleDebouncedResize;
+            MessagePump.WindowResized.SubscribeForLifetime(HandleDebouncedResize, LifetimeManager);
         }
 
         /// <summary>

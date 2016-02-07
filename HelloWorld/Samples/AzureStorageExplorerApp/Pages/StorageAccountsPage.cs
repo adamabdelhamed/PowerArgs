@@ -22,8 +22,8 @@ namespace HelloWorld.Samples
             deleteButton = CommandBar.Add(new Button() { Text = "Forget account", CanFocus=false, Shortcut = new KeyboardShortcut(ConsoleKey.F, ConsoleModifiers.Alt) });
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
 
-            addButton.Activated += AddStorageAccount;
-            deleteButton.Activated += ForgetSelectedStorageAccount;
+            addButton.Activated.SubscribeForLifetime(AddStorageAccount, LifetimeManager);
+            deleteButton.Activated.SubscribeForLifetime(ForgetSelectedStorageAccount, LifetimeManager);
 
             Grid.SelectedItemActivated += NavigateToStorageAccount;
         }

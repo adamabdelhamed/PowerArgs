@@ -20,7 +20,7 @@ namespace HelloWorld.Samples
            
             deleteButton = CommandBar.Add(new Button() { Text = "Delete entity", Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null), CanFocus = false });
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
-            deleteButton.Activated += BeginDeleteSelectedEntityIfExists;
+            deleteButton.Activated.SubscribeForLifetime(BeginDeleteSelectedEntityIfExists, LifetimeManager);
         }
 
         public override void OnAddedToVisualTree()

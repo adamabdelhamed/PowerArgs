@@ -106,7 +106,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public Event<PumpExceptionArgs> PumpException { get; private set; } = new Event<PumpExceptionArgs>();
 
-        public event Action WindowResized;
+        public Event WindowResized { get; private set; } = new Event();
 
         /// <summary>
         /// A boolean that can be checked to see if the pump is currently running
@@ -287,10 +287,10 @@ namespace PowerArgs.Cli
             bool stopRequested = false;
             while (true)
             {
-                if((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight) && WindowResized != null)
+                if((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight))
                 {
                     DebounceResize();
-                    WindowResized();
+                    WindowResized.Fire();
                 }
 
                 bool idle = true;
