@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 namespace PowerArgs.Cli
 {
     // todos before fully supporting the .Cli namespace
-    //
-    // Command bar
-    // Notifications
-    // Pull out view model concepts
+    // Theme should be observable and should result in a Paint when changed.  Controls might need to react as well.
     // Samples for different data sources (e.g. An azure table, a file system)  
     // Lots of testing
     // Final code review and documentation
@@ -37,18 +34,18 @@ namespace PowerArgs.Cli
         /// <summary>
         /// An event that fires when a control is added to the visual tree
         /// </summary>
-        public event Action<ConsoleControl> ControlAdded;
+        public Event<ConsoleControl> ControlAdded { get; private set; } = new Event<ConsoleControl>();
 
         /// <summary>
         /// An event that fires when a control is removed from the visual tree
         /// </summary>
-        public event Action<ConsoleControl> ControlRemoved;
+        public Event<ConsoleControl> ControlRemoved { get; private set; } = new Event<ConsoleControl>();
 
         /// <summary>
         /// An event that fired when the application stops, after the message pump is no longer running, and the console
         /// has been cleared of the app's visuals
         /// </summary>
-        public event Action ApplicationStopped;
+        public Event ApplicationStopped { get; private set; } = new Event();
 
         /// <summary>
         /// Gets the bitmap that will be painted to the console
@@ -178,10 +175,7 @@ namespace PowerArgs.Cli
             FocusManager.Add(c);
             c.AddedToVisualTreeInternal();
 
-            if (ControlAdded != null)
-            {
-                ControlAdded(c);
-            }
+            ControlAdded.Fire(c);
         }
 
         private void ControlRemovedFromVisualTree(ConsoleControl c)
@@ -214,10 +208,7 @@ namespace PowerArgs.Cli
 
             c.RemovedFromVisualTreeInternal();
             c.Application = null;
-            if (ControlRemoved != null)
-            {
-                ControlRemoved(c);
-            }
+            ControlRemoved.Fire(c);
             c.Dispose();
             return focusChanged;
         }
@@ -250,10 +241,7 @@ namespace PowerArgs.Cli
             using (var snapshot = Bitmap.CreateSnapshot())
             {
                 Bitmap.CreateWiper().Wipe();
-                if (ApplicationStopped != null)
-                {
-                    ApplicationStopped();
-                }
+                ApplicationStopped.Fire();
                 Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
                 Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             }

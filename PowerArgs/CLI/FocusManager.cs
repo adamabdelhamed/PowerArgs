@@ -37,6 +37,9 @@ namespace PowerArgs.Cli
 
         private Stack<FocusContext> focusStack;
 
+        /// <summary>
+        /// Gets the number of layers on the stack
+        /// </summary>
         public int StackDepth
         {
             get
@@ -45,6 +48,9 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Gets the keyboard manager that can be used to intercept keystrokes on the current layer
+        /// </summary>
         public KeyboardInterceptionManager GlobalKeyHandlers
         {
             get

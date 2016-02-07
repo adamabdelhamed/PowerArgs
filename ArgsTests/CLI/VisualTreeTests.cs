@@ -16,8 +16,8 @@ namespace ArgsTests.CLI
 
             int addCounter = 0, removeCounter = 0;
 
-            app.ControlAdded += (c) => { addCounter++; };
-            app.ControlRemoved += (c) => { removeCounter++; };
+            app.ControlAdded.SubscribeForLifetime((c) => { addCounter++; }, app.LifetimeManager);
+            app.ControlRemoved.SubscribeForLifetime((c) => { removeCounter++; }, app.LifetimeManager);
             app.LayoutRoot.Id = "LayoutRoot";
             ConsolePanel panel = app.LayoutRoot.Add(new ConsolePanel() { Id = "First panel" });
             // direct child

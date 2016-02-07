@@ -104,7 +104,7 @@ namespace PowerArgs.Cli
         /// if they want to keep the pump running.  If no handler is registered or no handler marks the exception as handled then the
         /// pump thread will throw and the process will crash.
         /// </summary>
-        public event Action<PumpExceptionArgs> PumpException;
+        public Event<PumpExceptionArgs> PumpException { get; private set; } = new Event<PumpExceptionArgs>();
 
         public event Action WindowResized;
 
@@ -363,16 +363,10 @@ namespace PowerArgs.Cli
             }
             catch (Exception ex)
             {
-                bool handled = false;
-
-                if (PumpException != null)
-                {
-                    PumpExceptionArgs exceptionArgs = new PumpExceptionArgs(ex);
-                    PumpException(exceptionArgs);
-                    handled = exceptionArgs.Handled;
-                }
-
-                if (handled == false)
+                PumpExceptionArgs exceptionArgs = new PumpExceptionArgs(ex);
+                PumpException.Fire(exceptionArgs);
+      
+                if (exceptionArgs.Handled == false)
                 {
                     throw;
                 }
