@@ -40,15 +40,12 @@ namespace PowerArgs.Cli
             this.Mode = LabelRenderMode.SingleLineAutoSize;
             this.CanFocus = false;
             lines = new List<List<ConsoleCharacter>>();
-        }
 
-        public override void OnAddedToVisualTree()
-        {
-            this.Subscribe(nameof(Text), HandleTextChanged);
-            this.Subscribe(nameof(Mode), HandleTextChanged);
-            this.Subscribe(nameof(MaxHeight), HandleTextChanged);
-            this.Subscribe(nameof(MaxWidth), HandleTextChanged);
-            this.Synchronize(nameof(Bounds), HandleTextChanged);
+            this.SubscribeForLifetime(nameof(Text), HandleTextChanged, this.LifetimeManager);
+            this.SubscribeForLifetime(nameof(Mode), HandleTextChanged, this.LifetimeManager);
+            this.SubscribeForLifetime(nameof(MaxHeight), HandleTextChanged, this.LifetimeManager);
+            this.SubscribeForLifetime(nameof(MaxWidth), HandleTextChanged, this.LifetimeManager);
+            this.SynchronizeForLifetime(nameof(Bounds), HandleTextChanged, this.LifetimeManager);
         }
 
         private void HandleTextChanged()
@@ -144,7 +141,7 @@ namespace PowerArgs.Cli
             lines.Add(currentLine);
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
             for(int y = 0; y < lines.Count; y++)
             {

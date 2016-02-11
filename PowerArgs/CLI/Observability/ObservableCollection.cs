@@ -65,11 +65,6 @@ namespace PowerArgs.Cli
 
             changedAction();
         }
-
-        public void Synchronize(Action<T> addAction, Action<T> removeAction, Action changedAction)
-        {
-            SynchronizeForLifetime(addAction, removeAction, changedAction, LifetimeManager.AmbientLifetimeManager);
-        }
         
         /// <summary>
         /// Fires the Added event for the given item

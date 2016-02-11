@@ -37,12 +37,7 @@ namespace HelloWorld.Samples
             Grid.SelectedItemActivated += NavigateToContainer;
 
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
-        }
-
-        public override void OnAddedToVisualTree()
-        {
-            base.OnAddedToVisualTree();
-            Grid.Subscribe(nameof(Grid.SelectedItem), SelectedItemChanged);
+            Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedItemChanged, this.LifetimeManager);
         }
 
         private void NavigateToContainer()

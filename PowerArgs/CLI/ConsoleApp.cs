@@ -1,6 +1,5 @@
 ﻿
 using System;
-using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
@@ -9,13 +8,18 @@ namespace PowerArgs.Cli
     // 
     // Theme should be observable and should result in a Paint when changed.  Controls might need to react as well.
     // Do another refactoring and functionality pass on data sources and caching.  It't not ready. 
-    // Samples for different data sources (e.g. An azure table, a file system)      // Lots of testing
+    // Samples for different data sources (e.g. An azure table, a file system)   
+    // Hook up the filter debouncer for the grid.  
+    // Hook up the 'latest response' debouncer for the grid 
+    // Finish converting events and property changed handlers to Events (with a capital E)   
+    // Lots of testing
+    // Get rid of that time profiler experiment
     // Final code review and documentation
 
     /// <summary>
     /// A class representing a console application that uses a message pump to synchronize work on a UI thread
     /// </summary>
-    public class ConsoleApp : Lifetime
+    public class ConsoleApp : ObservableObject
     {
         [ThreadStatic]
         private static ConsoleApp _current;
@@ -68,12 +72,20 @@ namespace PowerArgs.Cli
         /// </summary>
         public FocusManager FocusManager { get; private set; }
 
+        /// <summary>
+        /// If set to true then the app will automatically update its layout to fill the entire window.  If false the app
+        /// will not react to resizing, which means it may clip or wrap in unexpected ways when the window is resized.
+        /// 
+        /// If you use the constructor that takes no parameters then this is set to true and assumes you want to take the
+        /// whole window and respond to window size changes.  If you use the constructor that takes in coordinates and boudnds
+        /// then it is set to false and it is assumed that you only want the app to live within those bounds
+        /// </summary>
         public bool AutoFillOnConsoleResize { get; set; }
 
         /// <summary>
         /// Gets or sets the theme
         /// </summary>
-        public Theme Theme { get; set; }
+        public Theme Theme { get { return Get<Theme>(); } set { Set(value); } }
 
         /// <summary>
         /// Gets or set whether or not to give focus to a control when the app starts.  The default is true.
@@ -106,7 +118,7 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
-        /// Creates a full screen console app
+        /// Creates a full screen console app that will automatically adjust its layout if the window size changes
         /// </summary>
         public ConsoleApp() : this(0,0,ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight-1)
         {

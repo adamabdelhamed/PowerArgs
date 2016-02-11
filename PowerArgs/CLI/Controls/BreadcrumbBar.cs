@@ -11,7 +11,13 @@ namespace PowerArgs.Cli
         public BreadcrumbElement(Action activationHandler)
         {
             this.CanFocus = true;
-            this.RegisterKeyHandler(ConsoleKey.Enter, (key) => { activationHandler(); });
+            this.KeyInputReceived.SubscribeForLifetime((key) => 
+            {
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    activationHandler();
+                }
+            }, this.LifetimeManager);
         }
  
     }
@@ -21,12 +27,7 @@ namespace PowerArgs.Cli
         {
             this.Height = 1;
             this.CanFocus = false;
-        }
-
-        public override void OnAddedToVisualTree()
-        {
-            base.OnAddedToVisualTree();
-            Compose();
+            AddedToVisualTree.SubscribeForLifetime(Compose, this.LifetimeManager);
         }
 
         internal void Compose()
@@ -64,7 +65,7 @@ namespace PowerArgs.Cli
             this.Width = Layout.StackHorizontally(1, this.Controls);
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
             base.OnPaint(context);
         }

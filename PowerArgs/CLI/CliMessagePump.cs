@@ -82,8 +82,8 @@ namespace PowerArgs.Cli
     /// </summary>
     public class CliMessagePump
     {
-        internal static TimeSpan MinAsyncArtificialDelay = TimeSpan.FromSeconds(0);
-        internal static TimeSpan MaxAsyncArtificialDelay = TimeSpan.FromSeconds(0);
+        internal static TimeSpan MinAsyncArtificialDelay = TimeSpan.FromSeconds(2);
+        internal static TimeSpan MaxAsyncArtificialDelay = TimeSpan.FromSeconds(4);
         internal static Random artificialDelayRandomizer = new Random();
 
         internal static bool ShouldArtificiallyDelay

@@ -30,18 +30,19 @@ namespace PowerArgs.Cli
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
             closeButton = Add(new Button() { Text = "Close (ESC)",Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
             closeButton.Activated.SubscribeForLifetime(Escape, this.LifetimeManager);
+            BeforeAddedToVisualTree.SubscribeForLifetime(OnBeforeAddedToVisualTree, this.LifetimeManager);
+            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
+            RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this.LifetimeManager);
         }
 
-        public override void OnBeforeAddedToVisualTree()
+        private void OnBeforeAddedToVisualTree()
         {
-            base.OnBeforeAddedToVisualTree();
             Application.FocusManager.Push();
             myFocusStackDepth = Application.FocusManager.StackDepth;
-
             Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, Escape,LifetimeManager );
         }
 
-        public override void OnAddedToVisualTree()
+        private void OnAddedToVisualTree()
         {
             if(Parent != Application.LayoutRoot)
             {
@@ -61,7 +62,7 @@ namespace PowerArgs.Cli
             this.FillHoriontally();
             ConsoleApp.Current.FocusManager.TryMoveFocus();
 
-            Application.FocusManager.Subscribe(nameof(FocusManager.StackDepth), () =>
+            Application.FocusManager.SubscribeForLifetime(nameof(FocusManager.StackDepth), () =>
             {
                 if(Application.FocusManager.StackDepth != myFocusStackDepth)
                 {
@@ -71,8 +72,13 @@ namespace PowerArgs.Cli
                 {
                     closeButton.Background = Application.Theme.H1Color;
                 }
-            });
+            }, this.LifetimeManager);
 
+        }
+
+        public void OnRemovedFromVisualTree()
+        {
+            Application.FocusManager.Pop();
         }
 
         private void Escape()
@@ -84,12 +90,9 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override void OnRemovedFromVisualTree()
-        {
-            Application.FocusManager.Pop();
-        }
 
-        internal override void OnPaint(ConsoleBitmap context)
+
+        protected override void OnPaint(ConsoleBitmap context)
         {
             context.Pen = new ConsoleCharacter(' ', null, myFocusStackDepth == Application.FocusManager.StackDepth ? Theme.DefaultTheme.H1Color : Theme.DefaultTheme.DisabledColor);
             context.DrawLine(0, 0, Width, 0);
@@ -187,11 +190,14 @@ namespace PowerArgs.Cli
 
             content.SynchronizeForLifetime(nameof(Bounds), () => { inputBox.Width = content.Width - 4; }, content.LifetimeManager);
 
-            inputBox.RegisterKeyHandler(ConsoleKey.Enter, (k) =>
+            inputBox.KeyInputReceived.SubscribeForLifetime((k) =>
             {
-                resultCallback(inputBox.Value);
-                ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
-            });
+                if (k.Key == ConsoleKey.Enter)
+                {
+                    resultCallback(inputBox.Value);
+                    ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
+                }
+            }, inputBox.LifetimeManager);
 
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
             inputBox.TryFocus();

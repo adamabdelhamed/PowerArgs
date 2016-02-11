@@ -67,22 +67,20 @@ namespace PowerArgs.Cli
             verticalScrollbar = Add(new Scrollbar(Orientation.Vertical) { Width = 1 }).DockToRight();
             horizontalScrollbar = Add(new Scrollbar(Orientation.Horizontal) { Height = 1 }).DockToBottom();
 
-            
+            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
+            RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this.LifetimeManager);
         }
 
-        public override void OnAddedToVisualTree()
+        private void OnAddedToVisualTree()
         {
-            base.OnAddedToVisualTree();
             focusSubscription = Application.FocusManager.SubscribeUnmanaged(nameof(FocusManager.FocusedControl), FocusChanged);
-            Synchronize(nameof(HorizontalScrollUnits), UpdateScrollbars);
-            Synchronize(nameof(VerticalScrollUnits), UpdateScrollbars);
-
-            ScrollableContent.Controls.Synchronize(ScrollableControls_Added, (c)=> { }, () => { });
+            SynchronizeForLifetime(nameof(HorizontalScrollUnits), UpdateScrollbars, this.LifetimeManager);
+            SynchronizeForLifetime(nameof(VerticalScrollUnits), UpdateScrollbars, this.LifetimeManager);
+            ScrollableContent.Controls.SynchronizeForLifetime(ScrollableControls_Added, (c)=> { }, () => { }, this.LifetimeManager);
         }
 
-        public override void OnRemovedFromVisualTree()
+        private void OnRemovedFromVisualTree()
         {
-            base.OnRemovedFromVisualTree();
             focusSubscription.Dispose();
         }
 
@@ -173,11 +171,11 @@ namespace PowerArgs.Cli
 
 
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
             var fullSize = ScrollableContentSize;
             ConsoleBitmap fullyPaintedPanel = new ConsoleBitmap(0, 0, fullSize.Width, fullSize.Height);
-            ScrollableContent.OnPaint(fullyPaintedPanel);
+            ScrollableContent.PaintTo(fullyPaintedPanel);
 
             for (int x = 0; x < Width; x++)
             {
@@ -226,9 +224,10 @@ namespace PowerArgs.Cli
         {
             this.orientation = orientation;
             Background = ConsoleColor.DarkGray;
+            KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
             base.OnPaint(context);
             if (HasFocus)
@@ -238,9 +237,8 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
+        private void OnKeyInputReceived(ConsoleKeyInfo info)
         {
-            base.OnKeyInputReceived(info);
             var scrollableSize = ScrollablePanel.ScrollableContentSize;
             if (info.Key == ConsoleKey.Home)
             {

@@ -233,6 +233,7 @@ namespace PowerArgs.Cli
             SelectedIndex = 0;
             dataSourceSub = SubscribeUnmanaged(nameof(DataSource), DataSourceOrBoundsChangedListener);
             boundsSub = SubscribeUnmanaged(nameof(Bounds), DataSourceOrBoundsChangedListener);
+
             this.query = new CollectionQuery();
 
             this.NoDataMessage = "No data";

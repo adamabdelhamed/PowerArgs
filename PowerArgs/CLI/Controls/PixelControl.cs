@@ -39,7 +39,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
             base.OnPaint(context);
             context.Pen = Value;

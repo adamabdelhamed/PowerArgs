@@ -12,7 +12,7 @@ namespace PowerArgs.Cli
 
         public TextBox FilterTextBox { get  { return _filterTextBox; } set {  SetFilterTextBox(value); } }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
 #if PROFILING
             using (new TimeProfiler("Grid.OnPaint"))
@@ -83,7 +83,7 @@ namespace PowerArgs.Cli
                     {
                         if (this.SelectionMode == GridSelectionMode.Row || (this.SelectionMode == GridSelectionMode.Cell && columnIndex == selectedColumnIndex))
                         {
-                            displayValue = new ConsoleString(displayValue.ToString(), this.Background, HasFocus ? Application.Theme.FocusColor : this.SelectedUnfocusedColor);
+                            displayValue = new ConsoleString(displayValue.ToString(), this.Background, HasFocus ? Application.Theme.FocusColor : Application.Theme.SelectedUnfocusedColor);
                         }
                     }
 
@@ -136,7 +136,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
+        private void OnKeyInputReceived(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.UpArrow)
             {
@@ -183,6 +183,8 @@ namespace PowerArgs.Cli
 
         private void InitGridView()
         {
+            this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
+
             this.filterTextDebouncer = new ActionDebouncer(TimeSpan.FromSeconds(0), () =>
             {
                 if (Application != null && FilterTextBox != null)
@@ -195,13 +197,13 @@ namespace PowerArgs.Cli
             });
 
             // don't accept focus unless I have at least one item in the data view
-            this.Focused += () =>
+            this.Focused.SubscribeForLifetime(() =>
             {
                 if (DataView.Items.Count == 0)
                 {
                     Application.FocusManager.TryMoveFocus();
                 }
-            };
+            }, this.LifetimeManager);
         }
 
         private void SetFilterTextBox(TextBox value)

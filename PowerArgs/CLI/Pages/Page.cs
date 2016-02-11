@@ -33,17 +33,10 @@ namespace PowerArgs.Cli
         {
             CanFocus = false;
             ProgressOperationManager = ProgressOperationsManager.Default;
-            RemovedFromVisualTree += Page_Removed;
+            RemovedFromVisualTree.SubscribeForLifetime(Page_Removed, this.LifetimeManager);
             BreadcrumbBar = Add(new BreadcrumbBar());
+            SynchronizeForLifetime(nameof(Bounds), () => { BreadcrumbBar.Width = Width; }, this.LifetimeManager);
         }
-
-        public override void OnAddedToVisualTree()
-        {
-            base.OnAddedToVisualTree();
-            Synchronize(nameof(Bounds), () => { BreadcrumbBar.Width = Width; });
-        }
-    
-
 
         private void Page_Removed()
         {
@@ -83,14 +76,11 @@ namespace PowerArgs.Cli
 
         internal void Load()
         {
-            using (new AmbientLifetimeScope(LifetimeManager))
-            {
-                appResizeSubscription = Application.LayoutRoot.SubscribeUnmanaged(nameof(ConsoleControl.Bounds), HandleResize);
-                Application.FocusManager.GlobalKeyHandlers.Push(ConsoleKey.Escape, null, EscapeKeyHandler);
-                Application.FocusManager.GlobalKeyHandlers.Push(ConsoleKey.Backspace,null, BackspaceHandler);
-                OnLoad();
-                if (Loaded != null) Loaded();
-            }
+            appResizeSubscription = Application.LayoutRoot.SubscribeUnmanaged(nameof(ConsoleControl.Bounds), HandleResize);
+            Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, EscapeKeyHandler, this.LifetimeManager);
+            Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Backspace, null, BackspaceHandler, this.LifetimeManager);
+            OnLoad();
+            if (Loaded != null) Loaded();
         }
 
         internal void Unload()

@@ -8,29 +8,38 @@ namespace PowerArgs.Cli
     /// </summary>
     public class ConsoleControl : Rectangular
     {
+        /// <summary>
+        /// An id that can be used for debugging.  It is not used for anything internally.
+        /// </summary>
         public string Id { get { return Get<string>(); } set { Set(value); } }
         /// <summary>
         /// An event that fires after this control gets focus
         /// </summary>
-        public event Action Focused;
+        public Event Focused { get; private set; } = new Event();
         /// <summary>
         /// An event that fires after this control loses focus
         /// </summary>
-        public event Action Unfocused;
+        public Event Unfocused { get; private set; } = new Event();
 
         /// <summary>
         /// An event that fires when this control is added to the visual tree of a ConsoleApp. 
         /// </summary>
-        public event Action Added;
+        public Event AddedToVisualTree { get; private set; } = new Event();
 
-        public event Action BeforeAddedToVisualTree;
+        /// <summary>
+        /// An event that fires just before this control is added to the visual tree of a ConsoleApp
+        /// </summary>
+        public Event BeforeAddedToVisualTree { get; private set; } = new Event();
 
         /// <summary>
         /// An event that fires when this control is removed from the visual tree of a ConsoleApp.
         /// </summary>
-        public event Action RemovedFromVisualTree;
+        public Event RemovedFromVisualTree { get; private set; } = new Event();
 
-        public event Action BeforeRemovedFromVisualTree;
+        /// <summary>
+        /// An event that fires just before this control is removed from the visual tree of a ConsoleApp
+        /// </summary>
+        public Event BeforeRemovedFromVisualTree { get; private set; } = new Event();
 
         /// <summary>
         /// An event that fires when a key is pressed while this control has focus and the control has decided not to process
@@ -59,70 +68,54 @@ namespace PowerArgs.Cli
         /// </summary>
         public ConsoleColor Foreground { get { return Get<ConsoleColor>(); } set { Set(value); } }
 
-        public ConsoleColor SelectedUnfocusedColor { get { return Get<ConsoleColor>(); } set { Set(value); } }
+        /// <summary>
+        /// Gets or sets whether or not this control should paint its background color or leave it transparent.  By default
+        /// this value is false.
+        /// </summary>
         public bool TransparentBackground { get { return Get<bool>(); } set { Set(value); } }
+
+        /// <summary>
+        /// An arbitrary reference to an object to associate with this control
+        /// </summary>
         public object Tag { get { return Get<object>(); } set { Set(value); } }
+
+        /// <summary>
+        /// Gets or sets whether or not this control is visible.  Invisible controls are still fully functional, except that they
+        /// don't get painted
+        /// </summary>
         public virtual bool IsVisible { get { return Get<bool>(); } set { Set(value); } }
+
+        /// <summary>
+        /// Gets or sets whether or not this control can accept focus.  By default this is set to true, but can
+        /// be overridden by derived classes to be false by default.
+        /// </summary>
         public virtual bool CanFocus { get { return Get<bool>(); } set { Set(value); } }
+
+        /// <summary>
+        /// Gets whether or not this control currently has focus
+        /// </summary>
         public bool HasFocus { get { return Get<bool>(); } internal set { Set(value); } }
 
 
-        public ConsoleCharacter BackgroundCharacter
-        {
-            get
-            {
-                return new ConsoleCharacter(' ', null, Background);
-            }
-        }
-
         private bool hasBeenAddedToVisualTree;
 
+        /// <summary>
+        /// Creates a new ConsoleControl
+        /// </summary>
         public ConsoleControl()
         {
             CanFocus = true;
             Background = Theme.DefaultTheme.BackgroundColor;
             this.Foreground = Theme.DefaultTheme.ForegroundColor;
-            this.SelectedUnfocusedColor = Theme.DefaultTheme.SelectedUnfocusedColor;
             this.IsVisible = true;
+            this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> { Application?.Paint(); }, this.LifetimeManager);
         }
 
-        void PropertyChanged()
-        {
-            this.Application.Paint();
-        }
-
-        public Point CalculateAbsolutePosition()
-        {
-            var x = X;
-            var y = Y;
-
-            var tempParent = Parent;
-            while(tempParent != null)
-            {
-                x += tempParent.X;
-                y += tempParent.Y;
-                tempParent = tempParent.Parent;
-            }
-
-            return new Point(x, y);
-        }
-
-        public Point CalculateRelativePosition(ConsoleControl parent)
-        {
-            var x = X;
-            var y = Y;
-
-            var tempParent = Parent;
-            while (tempParent != null && tempParent != parent)
-            {
-                x += tempParent.X;
-                y += tempParent.Y;
-                tempParent = tempParent.Parent;
-            }
-
-            return new Point(x, y);
-        }
-
+        /// <summary>
+        /// Tries to give this control focus. If the focus is in the visual tree, and is in the current focus layer, 
+        /// and has it's CanFocus property to true then focus should be granted.
+        /// </summary>
+        /// <returns>True if focus was granted, false otherwise.  </returns>
         public bool TryFocus()
         {
             if (Application != null)
@@ -135,6 +128,10 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Tries to unfocus this control.
+        /// </summary>
+        /// <returns>True if focus was cleared and moved.  False otherwise</returns>
         public bool TryUnfocus()
         {
             if (Application != null)
@@ -146,131 +143,63 @@ namespace PowerArgs.Cli
                 return false;
             }
         }
-
-        public Subscription RegisterKeyHandlerUnmanaged(ConsoleKey key, Action<ConsoleKeyInfo> handler)
-        {
-            Action<ConsoleKeyInfo> conditionalHandler = (info) =>
-            {
-                if(info.Key == key)
-                {
-                    handler(info);
-                }
-            };
-            return this.KeyInputReceived.SubscribeUnmanaged(conditionalHandler);
-        }
         
-        public void RegisterKeyHandlerForLifetime(ConsoleKey key, Action<ConsoleKeyInfo> handler, LifetimeManager manager)
+        /// <summary>
+        /// Gets the type and Id of this control
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
         {
-            manager.Manage(RegisterKeyHandlerUnmanaged(key, handler));
+            return GetType().Name+" ("+Id+")";
         }
 
-        public void RegisterKeyHandler(ConsoleKey key, Action<ConsoleKeyInfo> handler)
+        /// <summary>
+        /// You should override this method if you are building a custom control, from scratch, and need to control
+        /// every detail of the painting process.  If possible, prefer to create your custom control by deriving from
+        /// ConsolePanel, which will let you assemble a new control from others.
+        /// </summary>
+        /// <param name="context">The scoped bitmap that you can paint on</param>
+        protected virtual void OnPaint(ConsoleBitmap context)
         {
-            LifetimeManager.Manage(RegisterKeyHandlerUnmanaged(key, handler));
+
         }
-        
+
         internal void FireFocused(bool focused)
         {
-            if (focused && Focused != null) Focused();
-            if (!focused && Unfocused != null) Unfocused();
-        }
-
-        internal void AddedToVisualTreeInternal()
-        {
-            if (hasBeenAddedToVisualTree) throw new ObjectDisposedException(Id, "This control has already been added to a visual tree and cannot be reused.");
-            hasBeenAddedToVisualTree = true;
-            using (new AmbientLifetimeScope(LifetimeManager))
-            {
-                OnAddedToVisualTree();
-                if (Added != null)
-                {
-                    Added();
-                }
-
-                Subscribe(ObservableObject.AnyProperty, Application.Paint);
-            }
-            
+            if (focused) Focused.Fire();
+            else Unfocused.Fire();
         }
 
         internal void BeforeAddedToVisualTreeInternal()
         {
-            OnBeforeAddedToVisualTree();
-            if (BeforeAddedToVisualTree != null)
-            {
-                BeforeAddedToVisualTree();
-            }
+            BeforeAddedToVisualTree.Fire();
         }
 
-        internal void RemovedFromVisualTreeInternal()
+        internal void AddedToVisualTreeInternal()
         {
-            OnRemovedFromVisualTree();
-            if (RemovedFromVisualTree != null)
+            if (hasBeenAddedToVisualTree)
             {
-                RemovedFromVisualTree();
+                throw new ObjectDisposedException(Id, "This control has already been added to a visual tree and cannot be reused.");
             }
+
+            hasBeenAddedToVisualTree = true;
+            AddedToVisualTree.Fire();
+            SubscribeForLifetime(ObservableObject.AnyProperty, Application.Paint, this.LifetimeManager);
         }
 
         internal void BeforeRemovedFromVisualTreeInternal()
         {
-            OnBeforeRemoveFromVisualTree();
-            if (BeforeRemovedFromVisualTree != null)
-            {
-                BeforeRemovedFromVisualTree();
-            }
+            BeforeRemovedFromVisualTree.Fire();
         }
 
-        public virtual void OnRemovedFromVisualTree() { }
-
-        public virtual void OnBeforeRemoveFromVisualTree() { }
-
-        public virtual void OnAddedToVisualTree() { }
-
-        public virtual void OnBeforeAddedToVisualTree() { }
-
-
-        /// <summary>
-        /// Registers an action to be queued for execution on the message pump thread after the given async task
-        /// completes.  The action will not execute if this control is no longer in the visual tree when the async task
-        /// completes.
-        /// </summary>
-        /// <param name="t">The async task that, when completed, triggers the action</param>
-        /// <param name="action">the action to execute after the async task completes, unless this control is not in the visual tree when the task completes</param>
-        public void QueueAsyncActionIfStillInvisualTree(Task t, Action<Task> action)
+        internal void RemovedFromVisualTreeInternal()
         {
-            if (Application == null) throw new NullReferenceException("This control is not in the visual control tree");
-
-            Application.MessagePump.QueueAsyncAction(t, (tp) =>
-            {
-                if (Application != null)
-                {
-                    action(tp);
-                }
-            });
+            RemovedFromVisualTree.Fire();
         }
 
-        /// <summary>
-        /// Registers an action to be queued for execution on the message pump thread after the given async task
-        /// completes.  The action will not execute if this control is no longer in the visual tree when the async task
-        /// completes.
-        /// </summary>
-        /// <typeparam name="TResult">The type of result returned by the async task</typeparam>
-        /// <param name="t">The async task that, when completed, triggers the action</param>
-        /// <param name="action">the action to execute after the async task completes, unless this control is not in the visual tree when the task completes</param>
-        public void QueueAsyncActionIfStillInVisualTree<TResult>(Task<TResult> t, Action<Task<TResult>> action)
-        {
-            if (Application == null) throw new NullReferenceException("This control is not in the visual control tree");
-
-            Application.MessagePump.QueueAsyncAction(t, (tp) =>
-            {
-                if (Application != null)
-                {
-                    action(tp);
-                }
-            });
-        }
         internal void Paint(ConsoleBitmap context)
         {
-            if(IsVisible == false)
+            if (IsVisible == false)
             {
                 return;
             }
@@ -284,25 +213,51 @@ namespace PowerArgs.Cli
             OnPaint(context);
         }
 
-        internal virtual void OnPaint(ConsoleBitmap context)
+        internal void PaintTo(ConsoleBitmap context)
         {
- 
+            OnPaint(context);
         }
 
-        public void HandleKeyInput(ConsoleKeyInfo info)
+        internal void HandleKeyInput(ConsoleKeyInfo info)
         {
-            OnKeyInputReceived(info);
             KeyInputReceived.Fire(info);
         }
 
-        public virtual void OnKeyInputReceived(ConsoleKeyInfo info)
+        internal Point CalculateAbsolutePosition()
         {
-          
+            var x = X;
+            var y = Y;
+
+            var tempParent = Parent;
+            while (tempParent != null)
+            {
+                x += tempParent.X;
+                y += tempParent.Y;
+                tempParent = tempParent.Parent;
+            }
+
+            return new Point(x, y);
         }
 
-        public override string ToString()
+        internal Point CalculateRelativePosition(ConsoleControl parent)
         {
-            return GetType().Name+" ("+Id+")";
+            var x = X;
+            var y = Y;
+
+            var tempParent = Parent;
+            while (tempParent != null && tempParent != parent)
+            {
+                if (tempParent is ScrollablePanel)
+                {
+                    throw new InvalidOperationException("Controls within scrollable panels cannot have their relative positions calculated");
+                }
+
+                x += tempParent.X;
+                y += tempParent.Y;
+                tempParent = tempParent.Parent;
+            }
+
+            return new Point(x, y);
         }
     }
 }

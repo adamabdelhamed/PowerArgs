@@ -49,13 +49,10 @@ namespace HelloWorld.Samples
             };
 
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
-        }
 
-        public override void OnAddedToVisualTree()
-        {
-            base.OnAddedToVisualTree();
-            Grid.Subscribe(nameof(Grid.SelectedItem), SelectedItemChanged);
+            Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedItemChanged, this.LifetimeManager);
         }
+ 
 
         protected override void OnLoad()
         {

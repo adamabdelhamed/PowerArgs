@@ -76,32 +76,16 @@ namespace ArgsTests.CLI.Observability
 
             using (var lifetime = new Lifetime())
             {
-                using (new AmbientLifetimeScope(lifetime.LifetimeManager))
-                {
-                    observable.Subscribe(nameof(SomeObservable.Name), () => { triggerCount++; });
 
-                    Assert.AreEqual(0, triggerCount);
-                    observable.Name = "Some value";
-                    Assert.AreEqual(1, triggerCount);
-                }
+                observable.SubscribeForLifetime(nameof(SomeObservable.Name), () => { triggerCount++; }, lifetime.LifetimeManager);
 
-                try
-                {
-                    observable.Subscribe(nameof(SomeObservable.Name), () =>{ });
-                    Assert.Fail("An exception should have been thrown");
-                }
-                catch(InvalidOperationException ex)
-                {
-                    Assert.IsTrue(ex.Message.Contains(nameof(LifetimeManager)));
-                }
-
-                // this works because even though the ambient lifetime scope is disposed, the lifetime itself is not.
-                observable.Name = "Some new value";
-                Assert.AreEqual(2, triggerCount);
+                Assert.AreEqual(0, triggerCount);
+                observable.Name = "Some value";
+                Assert.AreEqual(1, triggerCount);
             }
 
             observable.Name = "Some new value again";
-            Assert.AreEqual(2, triggerCount);
+            Assert.AreEqual(1, triggerCount);
         }
 
         [TestMethod]
@@ -213,14 +197,13 @@ namespace ArgsTests.CLI.Observability
 
             using (var lifetime = new Lifetime())
             {
-                using (new AmbientLifetimeScope(lifetime.LifetimeManager))
-                {
-                    observable.SomeEvent.Subscribe(() => { triggerCount++; });
 
-                    Assert.AreEqual(0, triggerCount);
-                    observable.SomeEvent.Fire();
-                    Assert.AreEqual(1, triggerCount);
-                }
+                observable.SomeEvent.SubscribeForLifetime(() => { triggerCount++; }, lifetime.LifetimeManager);
+
+                Assert.AreEqual(0, triggerCount);
+                observable.SomeEvent.Fire();
+                Assert.AreEqual(1, triggerCount);
+
 
                 observable.SomeEvent.Fire();
                 Assert.AreEqual(2, triggerCount);

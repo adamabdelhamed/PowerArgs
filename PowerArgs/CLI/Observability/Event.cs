@@ -20,7 +20,7 @@ namespace PowerArgs.Cli
 
         public void Fire()
         {
-            foreach (var subscriber in subscribers.Keys)
+            foreach (var subscriber in subscribers.Keys.ToArray())
             {
                 subscriber();
             }
@@ -48,11 +48,6 @@ namespace PowerArgs.Cli
         public void Unsubscribe(Action handler)
         {
             subscribers[handler].Dispose();
-        }
-
-        public void Subscribe(Action handler)
-        {
-            SubscribeForLifetime(handler, LifetimeManager.AmbientLifetimeManager);
         }
     }
     
@@ -91,11 +86,6 @@ namespace PowerArgs.Cli
         {
             var sub = SubscribeUnmanaged(handler);
             lifetimeManager.Manage(sub);
-        }
-
-        public void Subscribe(Action<T> handler)
-        {
-            SubscribeForLifetime(handler, LifetimeManager.AmbientLifetimeManager);
         }
 
         public void Unsubscribe(Action<T> handler)
