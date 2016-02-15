@@ -152,6 +152,8 @@
     <Compile Include="PipelineTests.cs" />
     <Compile Include="ConsoleInDriverTests.cs" />
     <Compile Include="AllowUnexpectedArgsTests.cs" />
+    <Compile Include="TestStuff\AfterInvokeInterceptor.cs" />
+    <Compile Include="TestStuff\SetupCleanup.cs" />
     <Compile Include="_GLOBAL_SETUP.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />

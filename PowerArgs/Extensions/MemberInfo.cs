@@ -11,7 +11,7 @@ namespace PowerArgs
     /// </summary>
     public static class MemberInfoEx
     {
-        static Dictionary<string, object> cachedAttributes = new Dictionary<string, object>();
+        internal static Dictionary<string, object> cachedAttributes = new Dictionary<string, object>();
 
         /// <summary>
         /// Returns true if the given member has an attribute of the given type (including inherited types).

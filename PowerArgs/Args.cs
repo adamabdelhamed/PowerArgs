@@ -204,7 +204,7 @@ namespace PowerArgs
             {
                 return Execute<ArgAction>(() =>
                 {
-                    Args instance = new Args();
+                    Args instance = new Args();                    
                     var result = instance.ParseInternal(definition, a);
                     if (result.HandledException == null)
                     {
@@ -544,6 +544,8 @@ namespace PowerArgs
         {
             // TODO - Validation should be consistently done against the definition, not against the raw type
             if (definition.ArgumentScaffoldType != null) ValidateArgScaffold(definition.ArgumentScaffoldType);
+
+            definition.Clean();
 
             var context = ArgHook.HookContext.Current;
             context.Definition = definition;

@@ -170,28 +170,7 @@ namespace PowerArgs.Cli
             else Unfocused.Fire();
         }
 
-        internal void AddedToVisualTreeInternal()
-        {
-            if (hasBeenAddedToVisualTree) throw new ObjectDisposedException(Id, "This control has already been added to a visual tree and cannot be reused.");
-            hasBeenAddedToVisualTree = true;
-            using (new AmbientLifetimeScope(LifetimeManager))
-            {
-                OnAddedToVisualTree();
-                if (Added != null)
-                {
-                    Added();
-                }
-
-                Subscribe(ObservableObject.AnyProperty, Application.Paint);
-            }
-            
-        }
-
-        internal void BeforeAddedToVisualTreeInternal()
-        {
-            BeforeAddedToVisualTree.Fire();
-        }
-
+      
         internal void AddedToVisualTreeInternal()
         {
             if (hasBeenAddedToVisualTree)
@@ -203,6 +182,13 @@ namespace PowerArgs.Cli
             AddedToVisualTree.Fire();
             SubscribeForLifetime(ObservableObject.AnyProperty, Application.Paint, this.LifetimeManager);
         }
+
+        internal void BeforeAddedToVisualTreeInternal()
+        {
+            BeforeAddedToVisualTree.Fire();
+        }
+
+ 
 
         internal void BeforeRemovedFromVisualTreeInternal()
         {

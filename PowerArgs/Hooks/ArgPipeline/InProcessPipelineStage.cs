@@ -274,7 +274,7 @@ namespace PowerArgs.Preview
                     }
                 }
 
-                directMappingTarget.RevivedValueOverride = revivedValue;
+                effectiveDefinition.Metadata.Add(new ArgumentOverrideHook(directMappingTarget, revivedValue));
             }
             else
             {
@@ -343,6 +343,23 @@ namespace PowerArgs.Preview
                     return false;
                 }
             }
+        }
+    }
+
+    internal class ArgumentOverrideHook : ArgHook
+    {
+
+        CommandLineArgument arg;
+        object value;
+        public ArgumentOverrideHook(CommandLineArgument arg, object value)
+        {
+            this.arg = arg;
+            this.value = value;
+        }
+
+        public override void BeforePopulateProperties(HookContext context)
+        {
+            arg.RevivedValueOverride = value;
         }
     }
 }
