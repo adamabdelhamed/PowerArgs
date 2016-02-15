@@ -8,10 +8,8 @@ namespace PowerArgs.Cli
     // 
     // Theme should be observable and should result in a Paint when changed.  Controls might need to react as well.
     // Do another refactoring and functionality pass on data sources and caching.  It't not ready. 
-    // Consider removing the ambient lifetime concept.  I thin the convenience might not outweight the potential confusion. 
     // Samples for different data sources (e.g. An azure table, a file system)      // Lots of testing
     // Samples for different data sources (e.g. An azure table, a file system)   
-    // Hook up the filter debouncer for the grid.  
     // Hook up the 'latest response' debouncer for the grid 
     // Finish converting events and property changed handlers to Events (with a capital E)   
     // Lots of testing
