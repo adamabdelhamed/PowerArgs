@@ -3,6 +3,11 @@ using PowerArgs;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
+using System.Collections.Generic;
+using PowerArgs.Cli;
+using System.Threading;
+using System.Threading.Tasks;
+using HelloWorld.Samples;
 
 namespace HelloWorld
 {
@@ -10,6 +15,12 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
+
+           new AzureTableBrowserApp().Start().Wait();
+#if PROFILING
+                    CliProfiler.Instance.Dump(@"C:\temp\MessagePumpProfile.txt");
+#endif
+            return;
             var logFile = @"C:\temp\powerargslog.txt";
             File.Delete(logFile);
             PowerLogger.LogFile = logFile;

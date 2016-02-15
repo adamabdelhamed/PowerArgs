@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;PROFILING</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -43,16 +43,58 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
     <Compile Include="CLI\CliHelper.cs" />
+    <Compile Include="CLI\CliMessagePump.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
-    <Compile Include="CLI\Controls\ListView.cs" />
-    <Compile Include="CLI\Controls\ViewModels\ListViewModel.cs" />
+    <Compile Include="CLI\Controls\CommandBar.cs" />
+    <Compile Include="CLI\Controls\BreadcrumbBar.cs" />
+    <Compile Include="CLI\Controls\Dialog.cs" />
+    <Compile Include="CLI\Controls\Grid-View.cs" />
+    <Compile Include="CLI\Controls\Button.cs" />
+    <Compile Include="CLI\Controls\Label.cs" />
+    <Compile Include="CLI\Controls\NotificationButton.cs" />
+    <Compile Include="CLI\Controls\PixelControl.cs" />
+    <Compile Include="CLI\Controls\ProgressOperationControl.cs" />
+    <Compile Include="CLI\Controls\ProgressOperationManagerControl.cs" />
+    <Compile Include="CLI\Controls\ScrollablePanel.cs" />
+    <Compile Include="CLI\Controls\Spinner.cs" />
+    <Compile Include="CLI\Controls\StackPanel.cs" />
+    <Compile Include="CLI\Controls\TextBox.cs" />
+    <Compile Include="CLI\Controls\Grid-ViewModel.cs" />
+    <Compile Include="CLI\Data\Attributes.cs" />
+    <Compile Include="CLI\Data\CollectionDataSource.cs" />
+    <Compile Include="CLI\Data\CollectionDataView.cs" />
+    <Compile Include="CLI\Data\CollectionQuery.cs" />
+    <Compile Include="CLI\Data\LoadMoreDataSource.cs" />
+    <Compile Include="CLI\Data\MemoryDataSource.cs" />
+    <Compile Include="CLI\Data\SortExpression.cs" />
+    <Compile Include="CLI\Drawing\Thickness.cs" />
+    <Compile Include="CLI\FocusManager.cs" />
+    <Compile Include="CLI\Helpers\Disposable.cs" />
+    <Compile Include="CLI\Helpers\Friendlies.cs" />
+    <Compile Include="CLI\Helpers\Layout.cs" />
+    <Compile Include="CLI\KeyboardInterceptionManager.cs" />
+    <Compile Include="CLI\Observability\AmbientLifetimeScope.cs" />
+    <Compile Include="CLI\Observability\Event.cs" />
+    <Compile Include="CLI\Observability\Lifetime.cs" />
+    <Compile Include="CLI\Observability\LifetimeManager.cs" />
+    <Compile Include="CLI\Observability\PropertyChangedSubscription.cs" />
+    <Compile Include="CLI\Observability\Subscription.cs" />
+    <Compile Include="CLI\Pages\ConsolePageApp.cs" />
+    <Compile Include="CLI\Pages\GridPage.cs" />
+    <Compile Include="CLI\Pages\Page.cs" />
+    <Compile Include="CLI\Pages\PageStack.cs" />
+    <Compile Include="CLI\Pages\ProgressOperationsManager.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
-    <Compile Include="CLI\Controls\ConsoleApp.cs" />
+    <Compile Include="CLI\ConsoleApp.cs" />
     <Compile Include="CLI\Controls\ConsoleControl.cs" />
     <Compile Include="CLI\Controls\ConsolePanel.cs" />
     <Compile Include="CLI\Controls\LineChart.cs" />
@@ -63,8 +105,9 @@
     <Compile Include="CLI\Drawing\Rectangle.cs" />
     <Compile Include="CLI\Drawing\Rectangular.cs" />
     <Compile Include="CLI\Drawing\Size.cs" />
-    <Compile Include="CLI\Helpers\ObservableCollection.cs" />
-    <Compile Include="CLI\Helpers\ViewModelBase.cs" />
+    <Compile Include="CLI\Observability\ObservableCollection.cs" />
+    <Compile Include="CLI\Observability\ObservableObject.cs" />
+    <Compile Include="CLI\Profiling\CliProfiler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ConsoleHistoryManager.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\ContextAssistSearch.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\ContextAssist\IContextAssistProvider.cs" />
@@ -80,9 +123,12 @@
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\TabKeyHandler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\EnterKeyHandler.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\KeyHandlers\HomeAndEndKeysHandler.cs" />
+    <Compile Include="CLI\RichTextCommandLineReader\RichTextEditor.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\RichTextCommandLineReader.cs" />
     <Compile Include="CLI\RichTextCommandLineReader\SimpleSyntaxHighlighter.cs" />
+    <Compile Include="CLI\Theme.cs" />
     <Compile Include="Extensions\Array.cs" />
+    <Compile Include="Extensions\Dictionary.cs" />
     <Compile Include="Extensions\IConsoleProvider.cs" />
     <Compile Include="Extensions\IEnumerableOfIArgMetadata.cs" />
     <Compile Include="Extensions\FieldInfo.cs" />
@@ -124,6 +170,7 @@
     <Compile Include="HelperTypesInternal\StdConsoleProvider.cs" />
     <Compile Include="HelperTypesInternal\VirtualPropertyInfo.cs" />
     <Compile Include="HelperTypesInternal\ActionMethodInfo.cs" />
+    <Compile Include="HelperTypesPublic\ActionDebouncer.cs" />
     <Compile Include="HelperTypesPublic\ICanBeAConsoleString.cs" />
     <Compile Include="HelperTypesPublic\ITabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\IUsageTemplateProvider.cs" />
@@ -144,6 +191,9 @@
     <Compile Include="Hooks\ArgPipeline\RootPipelineStage.cs" />
     <Compile Include="Hooks\ArgPipeline\PipelineStage.cs" />
     <Compile Include="Hooks\PromptIfEmpty.cs" />
+    <Compile Include="Metadata\ArgProductVersion.cs" />
+    <Compile Include="Metadata\ArgProductName.cs" />
+    <Compile Include="Metadata\ArgCopyright.cs" />
     <Compile Include="Metadata\AllowUnexpectedArgs.cs" />
     <Compile Include="Metadata\ContextualAssistant.cs" />
     <Compile Include="Resources.Designer.cs">

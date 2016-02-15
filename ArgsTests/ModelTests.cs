@@ -266,6 +266,8 @@ namespace ArgsTests
                 typeof(ExternalInputPipelineStageProviderAttribute),
                 typeof(ExternalOutputPipelineStageProviderAttribute),
                 typeof(ArgPipelineActionStage),
+                typeof(FilterableAttribute),
+                typeof(KeyAttribute),
             };
 
             var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>
@@ -287,8 +289,8 @@ namespace ArgsTests
             ).ToList();
 
 
-            Assert.AreEqual(0, danglingAttrs.Count);
-            Assert.AreEqual(0, danglingAttrs2.Count);
+            Assert.AreEqual(0, danglingAttrs.Count, string.Join(", ", danglingAttrs.Select(a => a.FullName)));
+            Assert.AreEqual(0, danglingAttrs2.Count, string.Join(", ", danglingAttrs2.Select(a => a.FullName)));
         }
 
         [TestMethod]

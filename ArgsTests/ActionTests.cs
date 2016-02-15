@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace ArgsTests
 {
@@ -24,6 +26,62 @@ namespace ArgsTests
             public static void SomeAction(SomeActionArgs args)
             {
                 InvokeCount++;
+            }
+        }
+
+        [UsageAutomation]
+        public class AsyncActionTestArgs
+        {
+            [ArgRequired]
+            [ArgPosition(0)]
+            public string Action { get; set; }
+
+            public SomeActionArgs SomeActionArgs { get; set; }
+
+
+            public static int InvokeCount { get; set; }
+            public static Task SomeAction(SomeActionArgs args)
+            {
+                return Task.Factory.StartNew(() => 
+                {
+                    Thread.Sleep(200);
+                    InvokeCount++;
+                });
+            }
+        }
+
+        [UsageAutomation]
+        public class AsyncMainTestArgs
+        {
+            public static int InvokeCount { get; set; }
+            public Task Main()
+            {
+                return Task.Factory.StartNew(() =>
+                {
+                    Thread.Sleep(200);
+                    InvokeCount++;
+                });
+            }
+        }
+
+        [UsageAutomation]
+        public class AsyncActionTestArgsNonStatic
+        {
+            [ArgRequired]
+            [ArgPosition(0)]
+            public string Action { get; set; }
+
+            public SomeActionArgs SomeActionArgs { get; set; }
+
+
+            public static int InvokeCount { get; set; }
+            public Task SomeAction(SomeActionArgs args)
+            {
+                return Task.Factory.StartNew(() =>
+                {
+                    Thread.Sleep(200);
+                    InvokeCount++;
+                });
             }
         }
 
@@ -128,6 +186,58 @@ namespace ArgsTests
             Assert.AreEqual("aval", parsed.Args.SomeActionArgs.A);
             Assert.AreEqual("bval", parsed.Args.SomeActionArgs.B);
             Assert.AreEqual(beforeCount + 1, ActionTestArgs.InvokeCount);
+        }
+
+        [TestMethod]
+        public void TestBasicActionBindingAsync()
+        {
+            var args = new string[] { "someaction", "aval", "bval" };
+            var beforeCount = AsyncActionTestArgs.InvokeCount;
+            var parsed = Args.InvokeAction<AsyncActionTestArgs>(args);
+            Assert.AreEqual("aval", parsed.Args.SomeActionArgs.A);
+            Assert.AreEqual("bval", parsed.Args.SomeActionArgs.B);
+            Assert.AreEqual(beforeCount + 1, AsyncActionTestArgs.InvokeCount);
+        }
+
+
+        [TestMethod]
+        public async Task TestBasicActionBindingE2EAsync()
+        {
+            var args = new string[] { "someaction", "aval", "bval" };
+            var beforeCount = AsyncActionTestArgs.InvokeCount;
+            var parsed = await Args.InvokeActionAsync<AsyncActionTestArgs>(args);
+            Assert.AreEqual("aval", parsed.Args.SomeActionArgs.A);
+            Assert.AreEqual("bval", parsed.Args.SomeActionArgs.B);
+            Assert.AreEqual(beforeCount + 1, AsyncActionTestArgs.InvokeCount);
+        }
+
+        [TestMethod]
+        public void TestAsyncMain()
+        {
+            var args = new string[] {  };
+            var beforeCount = AsyncMainTestArgs.InvokeCount;
+            var parsed = Args.InvokeMain<AsyncMainTestArgs>(args);
+            Assert.AreEqual(beforeCount + 1, AsyncMainTestArgs.InvokeCount);
+        }
+
+        [TestMethod]
+        public async Task TestAsyncMainE2E()
+        {
+            var args = new string[] { };
+            var beforeCount = AsyncMainTestArgs.InvokeCount;
+            var parsed = await Args.InvokeMainAsync<AsyncMainTestArgs>(args);
+            Assert.AreEqual(beforeCount + 1, AsyncMainTestArgs.InvokeCount);
+        }
+
+        [TestMethod]
+        public void TestBasicActionBindingAsyncNonStatic()
+        {
+            var args = new string[] { "someaction", "aval", "bval" };
+            var beforeCount = AsyncActionTestArgsNonStatic.InvokeCount;
+            var parsed = Args.InvokeAction<AsyncActionTestArgsNonStatic>(args);
+            Assert.AreEqual("aval", parsed.Args.SomeActionArgs.A);
+            Assert.AreEqual("bval", parsed.Args.SomeActionArgs.B);
+            Assert.AreEqual(beforeCount + 1, AsyncActionTestArgsNonStatic.InvokeCount);
         }
 
         [TestMethod]

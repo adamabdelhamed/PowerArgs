@@ -55,6 +55,38 @@ namespace PowerArgs.Cli
             }
         }
 
+        public int Bottom
+        {
+            get
+            {
+                return Y + Height;
+            }
+        }
+
+        public int Right
+        {
+            get
+            {
+                return X + Width;
+            }
+        }
+
+        public int Top
+        {
+            get
+            {
+                return Y;
+            }
+        }
+
+        public int Left
+        {
+            get
+            {
+                return X;
+            }
+        }
+
         public Rectangle(int x, int y, int w, int h) : this()
         {
             Location = new Point(x, y);
@@ -78,6 +110,37 @@ namespace PowerArgs.Cli
                 return false;
             }
             return true;
+        }
+
+        public bool Contains(Rectangle other)
+        {
+            var insideLeftEdge = other.Left >= Left;
+            var insideRightEdge = other.Right <= Right;
+
+            var insideTopEdge = other.Top >= Top;
+            var insideBottomEdge = other.Bottom <= Bottom;
+
+            return insideLeftEdge && insideRightEdge && insideTopEdge && insideBottomEdge;
+        }
+
+        public bool IsAbove(Rectangle other)
+        {
+            return Top < other.Top;
+        }
+
+        public bool IsBelow(Rectangle other)
+        {
+            return Bottom > other.Bottom;
+        }
+
+        public bool IsLeftOf(Rectangle other)
+        {
+            return Left < other.Left;
+        }
+
+        public bool IsRightOf(Rectangle other)
+        {
+            return Right > other.Right;
         }
     }
 }

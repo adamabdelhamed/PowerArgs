@@ -47,19 +47,44 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Azure.KeyVault.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.1.0.0\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Data.Edm, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Edm.5.6.4\lib\net40\Microsoft.Data.Edm.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Data.OData, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.OData.5.6.4\lib\net40\Microsoft.Data.OData.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Data.Services.Client, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Services.Client.5.6.4\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.WindowsAzure.Storage, Version=6.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WindowsAzure.Storage.6.2.0\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Spatial, Version=5.6.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Spatial.5.6.4\lib\net40\System.Spatial.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -73,13 +98,22 @@
     <Compile Include="BasicTests.cs" />
     <Compile Include="ArgRequiredConditionalTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
+    <Compile Include="CLI\CliUnitTestConsole.cs" />
+    <Compile Include="CLI\Controls\TextBoxTests.cs" />
+    <Compile Include="CLI\GridTests.cs" />
+    <Compile Include="CLI\Observability\ObservabilityTests.cs" />
     <Compile Include="CLI\ProgressBarTests.cs" />
     <Compile Include="CLI\PromptTests.cs" />
     <Compile Include="CLI\ContextAssistTests.cs" />
+    <Compile Include="CLI\VisualTreeTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />
+    <Compile Include="Data\AzureTableDataSource.cs" />
+    <Compile Include="Data\DataSourceTests.cs" />
+    <Compile Include="Data\TestLoadMoreDataSource.cs" />
     <Compile Include="MultipleFactoredOutActionsTests.cs" />
     <Compile Include="NewAwesomeTabCompletionTests.cs" />
+    <Compile Include="Pages\PageStackTests.cs" />
     <Compile Include="Templating\DocumentRendererTests.cs" />
     <Compile Include="InheritenceTests.cs" />
     <Compile Include="NullableTests.cs" />
@@ -118,6 +152,8 @@
     <Compile Include="PipelineTests.cs" />
     <Compile Include="ConsoleInDriverTests.cs" />
     <Compile Include="AllowUnexpectedArgsTests.cs" />
+    <Compile Include="TestStuff\AfterInvokeInterceptor.cs" />
+    <Compile Include="TestStuff\SetupCleanup.cs" />
     <Compile Include="_GLOBAL_SETUP.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
@@ -145,6 +181,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\PhotoAlbumManagerExpectedBrowserUsage.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BasicGridExpectedOutput.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CLI\Apps\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

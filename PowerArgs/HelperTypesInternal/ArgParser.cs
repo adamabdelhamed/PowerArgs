@@ -1,9 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PowerArgs
 {
     internal class ArgParser
     {
+        // todo - This class was originally very dumb.  It parsed the command line arguments without knowledge of the definition.
+        //        However, several special syntaxes that folks were expecting would only be possible if the parser had pretty deep
+        //        knowledge of the program structure.  So now this class takes in the definition and inspects it to handle these
+        //        special cases.  I should finish the job and handle positional elements this way too.  This would remove the need
+        //        for the 'ImplicitParameters' collection in the ParseResult.  On that other hand that would be a breaking change just
+        //        for the sake of cleanup. I need to think it over.
+        //
+        //        Another potential item would be to refactor the parse method here.  It's a mess, but it's a working, heavily tested mess
+        //        so cleaning it up will mean accepting some risk.
+
         internal static ParseResult Parse(CommandLineArgumentsDefinition Definition, string[] commandLineArgs)
         {
             var args = commandLineArgs;
@@ -15,6 +27,7 @@ namespace PowerArgs
             {
                 var token = args[i];
 
+                // this block handles action parameters that must always be the first token
                 if (i == 0 && Definition.Actions.Count > 0 && Definition.FindMatchingAction(token) != null)
                 {
                     result.ImplicitParameters.Add(0, token);
@@ -75,13 +88,74 @@ namespace PowerArgs
                     }
 
                     result.ExplicitParameters.Add(key, value);
+
+                    if(IsArrayOrList(key, Definition, result))
+                    {
+                        while((i+1) < args.Length)
+                        {
+                            var nextToken = args[i+1];
+
+                            if(nextToken.StartsWith("/") || nextToken.StartsWith("-"))
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                result.AddAdditionalParameter(key, nextToken);
+                                i++;
+                            }
+
+                        }
+                    }
+
                     argumentPosition = -1;
                 }
                 else
                 {
                     if (argumentPosition < 0) throw new UnexpectedArgException("Unexpected argument: " + token);
-                    result.ImplicitParameters.Add(argumentPosition, token);
-                    argumentPosition++;
+
+                    var possibleActionContext = result.ImplicitParameters.ContainsKey(0) ? result.ImplicitParameters[0] : null;
+                    var potentialListArgument = Definition.FindArgumentByPosition(argumentPosition, possibleActionContext);
+                    
+                    if (potentialListArgument != null)
+                    {
+                        bool isArrayOrList = potentialListArgument.ArgumentType.IsArray || potentialListArgument.ArgumentType.GetInterfaces().Contains(typeof(IList));
+
+                        if (isArrayOrList)
+                        {
+                            // this block does special handling to allow for space separated collections for positioned parameters
+
+                            result.ExplicitParameters.Add(potentialListArgument.DefaultAlias, token);
+                            argumentPosition = -1; // no more positional arguments are allowed after this
+                            while ((i + 1) < args.Length)
+                            {
+                                var nextToken = args[i + 1];
+
+                                if (nextToken.StartsWith("/") || nextToken.StartsWith("-"))
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    result.AddAdditionalParameter(potentialListArgument.DefaultAlias, nextToken);
+                                    i++;
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            // not an array or list parameter so add to the implicit parameter collection
+                            result.ImplicitParameters.Add(argumentPosition, token);
+                            argumentPosition++;
+                        }
+                    }
+                    else
+                    {
+                        // not an array or list parameter so add to the implicit parameter collection
+                        result.ImplicitParameters.Add(argumentPosition, token);
+                        argumentPosition++;
+                    }
                 }
             }
 
@@ -159,6 +233,37 @@ namespace PowerArgs
             }
 
             return match.ArgumentType == typeof(bool);
+        }
+
+        private static bool IsArrayOrList(string key, CommandLineArgumentsDefinition definition, ParseResult resultContext)
+        {
+            var match = definition.FindMatchingArgument(key, true);
+            if (match == null)
+            {
+                var possibleActionContext = resultContext.ImplicitParameters.ContainsKey(0) ? resultContext.ImplicitParameters[0] : null;
+
+                if (possibleActionContext == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    var actionContext = definition.FindMatchingAction(possibleActionContext, true);
+                    if (actionContext == null)
+                    {
+                        return false;
+                    }
+
+                    match = actionContext.FindMatchingArgument(key, true);
+                    if (match == null)
+                    {
+                        return false;
+                    }
+                }
+
+            }
+
+            return match.ArgumentType.IsArray || match.ArgumentType.GetInterfaces().Contains(typeof(IList));
         }
 
         private static KeyValuePair<string, string> ParseSlashExplicitOption(string a)

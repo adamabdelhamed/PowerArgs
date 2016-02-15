@@ -1,120 +1,266 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A class that represents a visual element within a CLI application
+    /// </summary>
     public class ConsoleControl : Rectangular
     {
-        public static ConsoleCharacter TransparantColor = new ConsoleCharacter(' ');
+        /// <summary>
+        /// An id that can be used for debugging.  It is not used for anything internally.
+        /// </summary>
+        public string Id { get { return Get<string>(); } set { Set(value); } }
+        /// <summary>
+        /// An event that fires after this control gets focus
+        /// </summary>
+        public Event Focused { get; private set; } = new Event();
+        /// <summary>
+        /// An event that fires after this control loses focus
+        /// </summary>
+        public Event Unfocused { get; private set; } = new Event();
 
-        public event Action Focused;
-        public event Action Unfocused;
-        public event Action Added;
-        public event Action Removed;
+        /// <summary>
+        /// An event that fires when this control is added to the visual tree of a ConsoleApp. 
+        /// </summary>
+        public Event AddedToVisualTree { get; private set; } = new Event();
 
-        public event Action<ConsoleKeyInfo> KeyInputReceived;
+        /// <summary>
+        /// An event that fires just before this control is added to the visual tree of a ConsoleApp
+        /// </summary>
+        public Event BeforeAddedToVisualTree { get; private set; } = new Event();
 
+        /// <summary>
+        /// An event that fires when this control is removed from the visual tree of a ConsoleApp.
+        /// </summary>
+        public Event RemovedFromVisualTree { get; private set; } = new Event();
+
+        /// <summary>
+        /// An event that fires just before this control is removed from the visual tree of a ConsoleApp
+        /// </summary>
+        public Event BeforeRemovedFromVisualTree { get; private set; } = new Event();
+
+        /// <summary>
+        /// An event that fires when a key is pressed while this control has focus and the control has decided not to process
+        /// the key press internally.
+        /// </summary>
+        public Event<ConsoleKeyInfo> KeyInputReceived { get; private set; } = new Event<ConsoleKeyInfo>();
+
+        /// <summary>
+        /// Gets a reference to the application this control is a part of
+        /// </summary>
         public ConsoleApp Application { get; internal set; }
-        public ConsoleCharacter Background { get; set; }
-        public ConsoleCharacter Foreground { get; set; }
 
-        public virtual bool CanFocus { get { return Get<bool>(); } set { Set<bool>(value); } }
+        /// <summary>
+        /// Gets a reference to this control's parent in the visual tree.  It will be null if this control is not in the visual tree 
+        /// and also if this control is the root of the visual tree.
+        /// </summary>
+        public ConsoleControl Parent { get { return Get<ConsoleControl>(); } internal set { Set(value); } }
 
-        public bool HasFocus { get { return Get<bool>(); } internal set { Set<bool>(value); } }
+        /// <summary>
+        /// Gets or sets the background color
+        /// </summary>
+        public ConsoleColor Background { get { return Get<ConsoleColor>(); } set { Set(value); } }
 
-        public ConsoleCharacter FocusForeground { get; set; }
-        public ConsoleCharacter FocusBackground { get; set; }
+        /// <summary>
+        /// Gets or sets the foreground color
+        /// </summary>
+        public ConsoleColor Foreground { get { return Get<ConsoleColor>(); } set { Set(value); } }
 
+        /// <summary>
+        /// Gets or sets whether or not this control should paint its background color or leave it transparent.  By default
+        /// this value is false.
+        /// </summary>
+        public bool TransparentBackground { get { return Get<bool>(); } set { Set(value); } }
+
+        /// <summary>
+        /// An arbitrary reference to an object to associate with this control
+        /// </summary>
+        public object Tag { get { return Get<object>(); } set { Set(value); } }
+
+        /// <summary>
+        /// Gets or sets whether or not this control is visible.  Invisible controls are still fully functional, except that they
+        /// don't get painted
+        /// </summary>
+        public virtual bool IsVisible { get { return Get<bool>(); } set { Set(value); } }
+
+        /// <summary>
+        /// Gets or sets whether or not this control can accept focus.  By default this is set to true, but can
+        /// be overridden by derived classes to be false by default.
+        /// </summary>
+        public virtual bool CanFocus { get { return Get<bool>(); } set { Set(value); } }
+
+        /// <summary>
+        /// Gets whether or not this control currently has focus
+        /// </summary>
+        public bool HasFocus { get { return Get<bool>(); } internal set { Set(value); } }
+
+
+        private bool hasBeenAddedToVisualTree;
+
+        /// <summary>
+        /// Creates a new ConsoleControl
+        /// </summary>
         public ConsoleControl()
         {
             CanFocus = true;
-            Background = ConsoleControl.TransparantColor;
-            FocusBackground = ConsoleControl.TransparantColor;
-            this.FocusForeground = new ConsoleCharacter('X', ConsoleColor.Cyan);
-            this.Foreground = new ConsoleCharacter('X', ConsoleColor.White);
-            this.PropertyChanged += ConsoleControl_PropertyChanged;
+            Background = Theme.DefaultTheme.BackgroundColor;
+            this.Foreground = Theme.DefaultTheme.ForegroundColor;
+            this.IsVisible = true;
+            this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> { Application?.Paint(); }, this.LifetimeManager);
         }
 
-        void ConsoleControl_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        /// <summary>
+        /// Tries to give this control focus. If the focus is in the visual tree, and is in the current focus layer, 
+        /// and has it's CanFocus property to true then focus should be granted.
+        /// </summary>
+        /// <returns>True if focus was granted, false otherwise.  </returns>
+        public bool TryFocus()
         {
             if (Application != null)
             {
-                this.Application.Paint();
+                return Application.FocusManager.TrySetFocus(this);
             }
-        }
-
-        public void Focus()
-        {
-            if (Application != null) Application.SetFocus(this);
-        }
-
-        public void UnFocus()
-        {
-            if (Application != null) Application.MoveFocus(true);
-        }
-
-        public virtual void OnRemove(ConsoleControl parent)
-        {
-            if(Removed != null)
+            else
             {
-                Removed();
+                return false;
             }
         }
 
-        public virtual void OnAdd(ConsoleControl parent)
+        /// <summary>
+        /// Tries to unfocus this control.
+        /// </summary>
+        /// <returns>True if focus was cleared and moved.  False otherwise</returns>
+        public bool TryUnfocus()
         {
-            if(Added != null)
+            if (Application != null)
             {
-                Added();
+                return Application.FocusManager.TryMoveFocus(true);
             }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets the type and Id of this control
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return GetType().Name+" ("+Id+")";
+                }
+        
+        /// <summary>
+        /// You should override this method if you are building a custom control, from scratch, and need to control
+        /// every detail of the painting process.  If possible, prefer to create your custom control by deriving from
+        /// ConsolePanel, which will let you assemble a new control from others.
+        /// </summary>
+        /// <param name="context">The scoped bitmap that you can paint on</param>
+        protected virtual void OnPaint(ConsoleBitmap context)
+        {
+
+        }
+        
+        internal void FireFocused(bool focused)
+        {
+            if (focused) Focused.Fire();
+            else Unfocused.Fire();
+        }
+
+      
+        internal void AddedToVisualTreeInternal()
+        {
+            if (hasBeenAddedToVisualTree)
+            {
+                throw new ObjectDisposedException(Id, "This control has already been added to a visual tree and cannot be reused.");
+            }
+
+            hasBeenAddedToVisualTree = true;
+            AddedToVisualTree.Fire();
+            SubscribeForLifetime(ObservableObject.AnyProperty, Application.Paint, this.LifetimeManager);
+        }
+
+        internal void BeforeAddedToVisualTreeInternal()
+        {
+            BeforeAddedToVisualTree.Fire();
+        }
+
+ 
+
+        internal void BeforeRemovedFromVisualTreeInternal()
+        {
+            BeforeRemovedFromVisualTree.Fire();
+        }
+
+        internal void RemovedFromVisualTreeInternal()
+                {
+            RemovedFromVisualTree.Fire();
         }
 
         internal void Paint(ConsoleBitmap context)
         {
-            Rectangle scope = context.GetScope();
-
-            if (Background != ConsoleControl.TransparantColor)
+            if (IsVisible == false)
             {
-                context.Pen = Background;
+                return;
+            }
+
+            if (TransparentBackground == false)
+            {
+                context.Pen = new ConsoleCharacter(' ', null, Background);
                 context.FillRect(0, 0, Width, Height);
             }
 
-            try
-            {
-                context.Rescope(this.X, this.Y, this.Width, this.Height);
-                context.Pen = this.Foreground;
-                OnPaint(context);
+            OnPaint(context);
+        }
+
+        internal void PaintTo(ConsoleBitmap context)
+        {
+            OnPaint(context);
+        }
+
+        internal void HandleKeyInput(ConsoleKeyInfo info)
+        {
+            KeyInputReceived.Fire(info);
+        }
+
+        internal Point CalculateAbsolutePosition()
+        {
+            var x = X;
+            var y = Y;
+
+            var tempParent = Parent;
+            while (tempParent != null)
+        {
+                x += tempParent.X;
+                y += tempParent.Y;
+                tempParent = tempParent.Parent;
             }
-            finally
+          
+            return new Point(x, y);
+        }
+
+        internal Point CalculateRelativePosition(ConsoleControl parent)
+        {
+            var x = X;
+            var y = Y;
+
+            var tempParent = Parent;
+            while (tempParent != null && tempParent != parent)
             {
-                context.Scope(scope);
+                if (tempParent is ScrollablePanel)
+        {
+                    throw new InvalidOperationException("Controls within scrollable panels cannot have their relative positions calculated");
+                }
+
+                x += tempParent.X;
+                y += tempParent.Y;
+                tempParent = tempParent.Parent;
             }
-        }
 
-        internal virtual void OnPaint(ConsoleBitmap context)
-        {
- 
-        }
-
-        public virtual void OnKeyInputReceived(ConsoleKeyInfo info)
-        {
-            if(KeyInputReceived != null)
-            {
-                KeyInputReceived(info);
-            }
-        }
-
-        internal void FireFocused(bool focused)
-        {
-            if (focused && Focused != null) Focused();
-            if (!focused && Unfocused != null) Unfocused();
-        }
-
-        public override string ToString()
-        {
-            return GetType().Name;
+            return new Point(x, y);
         }
     }
 }

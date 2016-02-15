@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 
 namespace PowerArgs
 {
@@ -106,11 +107,19 @@ namespace PowerArgs
             {
                 if (resolved.IsStatic)
                 {
-                    resolved.Invoke(null, parameters);
+                    var ret = resolved.Invoke(null, parameters);
+                    if(ret is Task)
+                    {
+                        (ret as Task).Wait();
+                    }
                 }
                 else
                 {
-                    resolved.Invoke(Value, parameters);
+                    var ret = resolved.Invoke(Value, parameters);
+                    if (ret is Task)
+                    {
+                        (ret as Task).Wait();
+                    }
                 }
             }
             catch (TargetInvocationException ex)

@@ -20,7 +20,7 @@ namespace PowerArgs
             public List<List<ConsoleString>> Rows { get; set; }
             public List<ColumnOverflowBehavior> OverflowBehaviors { get; set; }
             public Dictionary<int, int> ColumnWidths { get; set; }
-            public ConsoleString TableOutput { get; set; }
+            public List<ConsoleCharacter> TableOutput { get; set; }
             public int Gutter { get; set; }
             public List<SmartWrapInterrupt> SmartWrapInterrupts { get; set; }
         }
@@ -61,7 +61,7 @@ namespace PowerArgs
             context.ColumnHeaders = columnHeaders;
             context.Rows = rows ?? new List<List<ConsoleString>>();
             context.OverflowBehaviors = columnOverflowBehaviors ?? CreateDefaultOverflowBehavior(context.ColumnHeaders.Count);
-            context.TableOutput = new ConsoleString();
+            context.TableOutput = new List<ConsoleCharacter>();
             context.SmartWrapInterrupts = new List<SmartWrapInterrupt>();
             context.RowPrefix = new ConsoleString(rowPrefix);
 
@@ -70,7 +70,7 @@ namespace PowerArgs
             AddColumnHeadersToTable(context);
             AddCellsToTable(context);
 
-            return context.TableOutput;
+            return new ConsoleString(context.TableOutput);
         }
 
         /// <summary>
@@ -176,14 +176,14 @@ namespace PowerArgs
         {
             for (int rowIndex = 0; rowIndex < context.Rows.Count; rowIndex++)
             {
-                context.TableOutput += context.RowPrefix;
+                context.TableOutput.AddRange(context.RowPrefix);
 
                 for (int colIndex = 0; colIndex < context.ColumnHeaders.Count; colIndex++)
                 {
                     AddCellToTable(context, rowIndex, colIndex);
                 }
 
-                context.TableOutput += "\n";
+                context.TableOutput.Add(new ConsoleCharacter('\n'));
                 ProcessPendingSmartWrapInterrupts(context);
             }
         }
@@ -229,7 +229,7 @@ namespace PowerArgs
                 throw new NotSupportedException("Unsupported overflow behavior: '" + context.OverflowBehaviors[colIndex].GetType().FullName + "'");
             }
 
-            context.TableOutput += val;
+            context.TableOutput.AddRange(val);
         }
 
         private void ProcessPendingSmartWrapInterrupts(ConsoleTableBuilderContext context)
@@ -238,7 +238,7 @@ namespace PowerArgs
             {
                 context.SmartWrapInterrupts.Sort();
 
-                context.TableOutput += context.RowPrefix;
+                context.TableOutput.AddRange(context.RowPrefix);
                 for (int colIndex = 0; colIndex < context.ColumnHeaders.Count; colIndex++)
                 {
                     var nextInterruptCol = context.SmartWrapInterrupts.Count > 0 ? context.SmartWrapInterrupts[0].Column : -1;
@@ -261,16 +261,16 @@ namespace PowerArgs
 
                         context.SmartWrapInterrupts.RemoveAt(0);
                     }
-                    context.TableOutput += val;
+                    context.TableOutput.AddRange(val);
                 }
 
-                context.TableOutput += "\n";
+                context.TableOutput.Add(new ConsoleCharacter('\n'));
             }
         }
 
         private void AddColumnHeadersToTable(ConsoleTableBuilderContext context)
         {
-            context.TableOutput += context.RowPrefix;
+            context.TableOutput.AddRange(context.RowPrefix);
 
             for (int colIndex = 0; colIndex < context.ColumnHeaders.Count; colIndex++)
             {
@@ -300,10 +300,10 @@ namespace PowerArgs
                     throw new NotSupportedException("Unsupported overflow behavior: '" + context.OverflowBehaviors[colIndex].GetType().FullName + "'");
                 }
 
-                context.TableOutput += val;
+                context.TableOutput.AddRange(val);
             }
 
-            context.TableOutput += "\n";
+            context.TableOutput.Add(new ConsoleCharacter('\n'));
         }
 
         private List<ConsoleString> FormatAsWrappedSegments(SmartWrapOverflowBehavior smartWrap, ConsoleString value)

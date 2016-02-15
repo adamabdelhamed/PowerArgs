@@ -82,6 +82,20 @@ namespace PowerArgs
             set { Console.BufferWidth = value; }
         }
 
+        public int WindowHeight
+        {
+            get { return Console.WindowHeight; }
+            set { Console.WindowHeight = value; }
+        }
+
+        public bool KeyAvailable
+        {
+            get
+            {
+                return Console.KeyAvailable;
+            }
+        }
+
         /// <summary>
         /// Used for internal implementation, but marked public for testing, please do not use.
         /// </summary>
@@ -166,7 +180,15 @@ namespace PowerArgs
         /// </summary>
         public void Clear()
         {
-            Console.Clear();
+            var bg = Console.BackgroundColor;
+            try
+            {
+                Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
+                Console.Clear();
+            }finally
+            {
+                Console.BackgroundColor = bg;
+            }
         }
 
         /// <summary>

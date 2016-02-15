@@ -222,6 +222,16 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Creates a new ConsoleString from a list of ConsoleCharacter objects
+        /// </summary>
+        /// <param name="chars">The value to use to seed this string</param>
+        public ConsoleString(List<ConsoleCharacter> chars)
+        {
+            characters = chars;
+            ContentSet = true;
+        }
+
+        /// <summary>
         /// Create a ConsoleString given an initial text value and optional color info.
         /// </summary>
         /// <param name="value"></param>
@@ -303,6 +313,10 @@ namespace PowerArgs
         public ConsoleString Highlight(string toFind,ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
             ConsoleString ret = new ConsoleString(this);
+            if(toFind == null || toFind.Length == 0)
+            {
+                return ret;
+            }
 
             int startIndex = 0;
 

@@ -29,6 +29,8 @@ namespace PowerArgs.Cli
 
         private ConsolePixel[][] pixels;
 
+        private int lastBufferWidth;
+
         public int Top { get; private set; }
         public int Left { get; private set; }
 
@@ -47,6 +49,7 @@ namespace PowerArgs.Cli
             this.Bounds = bounds;
             this.scope = bounds;
             this.Console = ConsoleProvider.Current;
+            this.lastBufferWidth = this.Console.BufferWidth;
             this.Background = bg.HasValue ? bg.Value : new ConsoleCharacter(' ');
             this.Pen = new ConsoleCharacter('*');
             pixels = new ConsolePixel[this.Width][];
@@ -58,6 +61,38 @@ namespace PowerArgs.Cli
                     pixels[x][y] = new ConsolePixel() { Value = bg };
                 }
             }
+        }
+
+
+        // todo - is rectangular, but if you try to set width and height there will be inconsistent state
+        public void Resize(int w, int h)
+        {
+            var newPixels = new ConsolePixel[w][];
+            for (int x = 0; x < w; x++)
+            {
+                newPixels[x] = new ConsolePixel[h];
+                for (int y = 0; y < newPixels[x].Length; y++)
+                {
+                    if (IsInBounds(x, y))
+                    {
+                        newPixels[x][y] = pixels[x][y];
+                    }
+                    else
+                    {
+                        newPixels[x][y] = new ConsolePixel() { Value = Background };
+                    }
+                }
+            }
+
+            pixels = newPixels;
+            this.Size = new Size(w, h);
+            this.Scope(Bounds);
+            this.Invalidate();
+        }
+
+        public ConsolePixel GetPixel(int x, int y)
+        {
+            return pixels[x][y];
         }
 
         public ConsoleSnapshot CreateSnapshot()
@@ -114,39 +149,20 @@ namespace PowerArgs.Cli
             return scope.Contains(x, y);
         }
 
-        public void DrawPoint(int x, int y)
+        private bool IsInBounds(int x, int y)
         {
-            if(IsInScope(x,y))
-            {
-                pixels[x][y].Value = Pen;
-            }
+            if (x < 0 || x >= Width) return false;
+            if (y < 0 || y >= Height) return false;
+            return true;
         }
+
 
         public void DrawString(string str, int x, int y, bool vert = false)
         {
             DrawString(new ConsoleString(str), x, y, vert);
         }
 
-        public void DrawString(ConsoleString str, int x, int y, bool vert = false)
-        {
-            var xStart = scope.X + x;
-            x = scope.X + x;
-            y = scope.Y + y;
-            foreach (var character in str)
-            {
-                if(character.Value == '\n')
-                {
-                    y++;
-                    x = xStart;
-                }
-                else if (IsInScope(x, y))
-                {
-                    pixels[x][y].Value = character;
-                    if (vert) y++;
-                    else x++;
-                }
-            }
-        }
+
 
         public void FillRect(int x, int y, int w, int h)
         {
@@ -163,6 +179,38 @@ namespace PowerArgs.Cli
             DrawLine(x, y, x + w, y);                       // Top, horizontal line
             DrawLine(x, y + h - 1, x + w, y + h - 1);       // Bottom, horizontal line
 
+        }
+
+        public void DrawString(ConsoleString str, int x, int y, bool vert = false)
+        {
+            var xStart = scope.X + x;
+            x = scope.X + x;
+            y = scope.Y + y;
+            foreach (var character in str)
+            {
+                if (character.Value == '\n')
+                {
+                    y++;
+                    x = xStart;
+                }
+                else if (IsInScope(x, y))
+                {
+                    pixels[x][y].Value = character;
+                    if (vert) y++;
+                    else x++;
+                }
+            }
+        }
+
+        public void DrawPoint(int x, int y)
+        {
+            x = scope.X + x;
+            y = scope.Y + y;
+
+            if (IsInScope(x, y))
+            {
+                pixels[x][y].Value = Pen;
+            }
         }
         public void DrawLine(int x1, int y1, int x2, int y2)
         {
@@ -265,6 +313,13 @@ namespace PowerArgs.Cli
                     return;
                 }
 
+                if(lastBufferWidth != this.Console.BufferWidth)
+                {
+                    lastBufferWidth = this.Console.BufferWidth;
+                    Invalidate();
+                    this.Console.Clear();
+                }
+
                 for (int y = scope.Y; y < scope.Y + scope.Height; y++)
                 {
                     for (int x = scope.X; x < scope.X + scope.Width; x++)
@@ -286,37 +341,78 @@ namespace PowerArgs.Cli
             }
         }
 
+        public void Invalidate()
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    var pixel = pixels[x][y];
+                    pixel.Invalidate();
+                }
+            }
+        }
+
         private void DrawPixel(int x, int y, ConsolePixel pixel, ConsoleCharacter value)
         {
             x = Left + x;
             y = Top + y;
 
-            if (Console.CursorLeft != x)
+            if(x >= lastBufferWidth)
             {
-                Console.CursorLeft = x;
+                return;
             }
-
-            if (Console.CursorTop != y)
+            try
             {
-                Console.CursorTop = y;
-            }
+                if (Console.CursorLeft != x)
+                {
+                    Console.CursorLeft = x;
+                }
 
-            if (Console.ForegroundColor != value.ForegroundColor)
+                if (Console.CursorTop != y)
+                {
+                    Console.CursorTop = y;
+                }
+
+                if (Console.ForegroundColor != value.ForegroundColor)
+                {
+                    Console.ForegroundColor = value.ForegroundColor;
+                }
+
+                if (Console.BackgroundColor != value.BackgroundColor)
+                {
+                    Console.BackgroundColor = value.BackgroundColor;
+                }
+
+                Console.Write(value.Value);
+            }catch(ArgumentOutOfRangeException)
             {
-                Console.ForegroundColor = value.ForegroundColor;
-            }
 
-            if (Console.BackgroundColor != value.BackgroundColor)
-            {
-                Console.BackgroundColor = value.BackgroundColor;
             }
-
-            Console.Write(value.Value);
 
             if(pixel != null)
             {
                 pixel.Sync();
             }
+        }
+
+        public override string ToString()
+        {
+            var ret = "";
+
+            for (int y = 0; y < Height; y++)
+            {
+                for (int x = 0; x < Width; x++)
+                {
+                    ret += this.pixels[x][y].Value.HasValue ? this.pixels[x][y].Value.Value.Value : ' ';
+                }
+                if (y < Height - 1)
+                {
+                    ret += Environment.NewLine;
+                }
+            }
+
+            return ret;
         }
     }
 

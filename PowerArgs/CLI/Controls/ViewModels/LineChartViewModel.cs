@@ -10,7 +10,7 @@ namespace PowerArgs.Cli
     /// <summary>
     /// A view model to be used in conjunction with the LineChart control. 
     /// </summary>
-    public class LineChartViewModel : ViewModelBase
+    public class LineChartViewModel : ObservableObject
     {
         public event Action FocusedSeriesChanged;
         public event Action FocusedDataPointChanged;
@@ -18,14 +18,14 @@ namespace PowerArgs.Cli
         /// <summary>
         /// If explicitly set then the minimum value of the Y axis will be forced to the value.  Otherwise, that value will be determined by the data.
         /// </summary>
-        public double? YMinimumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
+        public double? YMinimumOverride { get { return Get<double?>(); } set { Set(value); } }
 
         /// <summary>
         /// If explicitly set then the maximum value of the Y axis will be forced to the value.  Otherwise, that value will be determined by the data.
         /// </summary>
-        public double? YMaximumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
-        public double? XMinimumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }
-        public double? XMaximumOverride { get { return Get<double?>(); } set { Set<double?>(value); } }        
+        public double? YMaximumOverride { get { return Get<double?>(); } set { Set(value); } }
+        public double? XMinimumOverride { get { return Get<double?>(); } set { Set(value); } }
+        public double? XMaximumOverride { get { return Get<double?>(); } set { Set(value); } }        
 
         public ObservableCollection<DataSeries> DataSeriesCollection { get; private set; }
 
@@ -48,40 +48,31 @@ namespace PowerArgs.Cli
             }
         }
 
-        public int FocusedDataSeriesIndex { get { return Get<int>(); } set { Set<int>(value); } }
-        public int FocusedDataPointIndex { get { return Get<int>(); } set { Set<int>(value); } }
+        public int FocusedDataSeriesIndex { get { return Get<int>(); } set { Set(value); } }
+        public int FocusedDataPointIndex { get { return Get<int>(); } set { Set(value); } }
 
+        Subscription seriesRemovedSubscription;
+        Subscription focusedSeriesSubscription;
+        Subscription focusedDataPointSubscription;
         public LineChartViewModel()
         {
             DataSeriesCollection = new ObservableCollection<DataSeries>();
-            DataSeriesCollection.Added += SeriesAdded;
-            DataSeriesCollection.Removed += SeriesRemoved;
-            this.PropertyChanged += LineChartViewModel_PropertyChanged;
+            DataSeriesCollection.Added.SubscribeUnmanaged(SeriesAdded);
+            seriesRemovedSubscription = DataSeriesCollection.Removed.SubscribeUnmanaged(SeriesRemoved);
+            focusedDataPointSubscription = SubscribeUnmanaged(nameof(FocusedDataSeriesIndex), FocusedSeriesChanged);
+            focusedDataPointSubscription = SubscribeUnmanaged(nameof(FocusedDataPointIndex), FocusedDataPointChanged);
         }
-
-        void LineChartViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if(e.PropertyName == "FocusedDataSeriesIndex" && FocusedSeriesChanged != null)
-            {
-                FocusedSeriesChanged();
-            }
-            else if (e.PropertyName == "FocusedDataPointIndex" && FocusedDataPointChanged != null)
-            {
-                FocusedDataPointChanged();
-            }
-        }
-
         private void SeriesRemoved(DataSeries series)
         {
             this.FirePropertyChanged("DataSeriesCollection");
-            series.DataPoints.Added -= DataPointAdded;
+            series.DataPoints.Added.Unsubscribe(DataPointAdded);
             ResetFocusedSeries();
         }
 
         private void SeriesAdded(DataSeries series)
         {
             this.FirePropertyChanged("DataSeriesCollection");
-            series.DataPoints.Added += DataPointRemoved;
+            series.DataPoints.Added.SubscribeUnmanaged(DataPointRemoved);
             ResetFocusedSeries();
         }
 
@@ -222,7 +213,7 @@ namespace PowerArgs.Cli
         Minimum
     }
 
-    public class Threshold : ViewModelBase
+    public class Threshold : ObservableObject
     {
         public ThresholdType Type { get; set; }
         public double Value { get { return Get<double>(); } set { Set<double>(value); } }
@@ -255,7 +246,7 @@ namespace PowerArgs.Cli
         }
     }
 
-    public class DataSeries : ViewModelBase
+    public class DataSeries : ObservableObject
     {
         public bool ShowAreaUnderEachDataPoint { get { return Get<bool>(); } set { Set<bool>(value); } }
         public Threshold Threshold { get; set; }
@@ -333,7 +324,7 @@ namespace PowerArgs.Cli
 
     }
 
-    public class DataPoint : ViewModelBase
+    public class DataPoint : ObservableObject
     {
         public double X { get; set; }
         public double Y { get; set; }

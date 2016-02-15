@@ -130,32 +130,27 @@ namespace PowerArgs.Cli
         public LineChart()
         {
             ViewModel = new LineChartViewModel();
-            ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+
             YAxisLeftOffset = 14;
+            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
+            KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
         }
 
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void OnAddedToVisualTree()
         {
-            if(Application != null && Application.IsRunning)
-            {
-                Application.Paint();
-            }
+            this.Foreground = Parent.Foreground;
+            this.Background = Parent.Background;
+
+            XAxisValueCompactFormatter = XAxisValueCompactFormatter ?? ((d) => {return new ConsoleString(string.Format("{0:0,0.0}",d),Foreground, Background);});
+            YAxisValueCompactFormatter = YAxisValueCompactFormatter ?? ((d) => { return new ConsoleString("" + string.Format("{0:0,0.0}",d), Foreground, Background); });
+
+            XAxisValueFormatter = XAxisValueFormatter ?? ((d) => { return new ConsoleString(string.Format("{0:0,0.0}", d), Foreground, Background); });
+            YAxisValueFormatter = YAxisValueFormatter ?? ((d) => { return new ConsoleString("" + string.Format("{0:0,0.0}", d), Foreground, Background); });
+
+            ViewModel.SubscribeForLifetime(ObservableObject.AnyProperty, Application.Paint, this.LifetimeManager);
         }
 
-        public override void OnAdd(ConsoleControl parent)
-        {
-            base.OnAdd(parent);
-            this.Foreground = parent.Foreground;
-            this.Background = parent.Background;
-
-            XAxisValueCompactFormatter = XAxisValueCompactFormatter ?? ((d) => {return new ConsoleString(string.Format("{0:0,0.0}",d),Foreground.ForegroundColor, Foreground.BackgroundColor);});
-            YAxisValueCompactFormatter = YAxisValueCompactFormatter ?? ((d) => { return new ConsoleString("" + string.Format("{0:0,0.0}",d), Foreground.ForegroundColor, Foreground.BackgroundColor); });
-
-            XAxisValueFormatter = XAxisValueFormatter ?? ((d) => { return new ConsoleString(string.Format("{0:0,0.0}", d), Foreground.ForegroundColor, Foreground.BackgroundColor); });
-            YAxisValueFormatter = YAxisValueFormatter ?? ((d) => { return new ConsoleString("" + string.Format("{0:0,0.0}", d), Foreground.ForegroundColor, Foreground.BackgroundColor); });
-        }
-
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
+        private void OnKeyInputReceived(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.LeftArrow)
             {
@@ -183,9 +178,8 @@ namespace PowerArgs.Cli
             }
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = Foreground;
             RenderTitle(context);
             RenderXAxis(context);
             RenderYAxis(context);
@@ -204,7 +198,7 @@ namespace PowerArgs.Cli
 
         private void RenderYAxis(ConsoleBitmap context)
         {
-            context.Pen = new ConsoleCharacter(YAxisChar, Foreground.ForegroundColor, Foreground.BackgroundColor);
+            context.Pen = new ConsoleCharacter(YAxisChar, Foreground, Background);
             context.DrawLine(YAxisLeftOffset, YAxisTop, YAxisLeftOffset, XAxisYValue+1);
             RenderYAxisLabels(context);
         }
@@ -243,7 +237,7 @@ namespace PowerArgs.Cli
                     label = label.Substring(0, MaxYAxisLabelLength-1).AppendUsingCurrentFormat("_");
                 }
 
-                label = label.ToDifferentBackground(Foreground.BackgroundColor);
+                label = label.ToDifferentBackground(Background);
 
                 var labelLeft = YAxisLeftOffset - 1 - label.Length;
 
@@ -260,13 +254,13 @@ namespace PowerArgs.Cli
             int yOffset = 0;
             foreach (var series in ViewModel.DataSeriesCollection)
             {
-                var title = new ConsoleString(series.Title, series.PlotColor, Foreground.BackgroundColor);
+                var title = new ConsoleString(series.Title, series.PlotColor, Background);
 
                 if (HasFocus && ViewModel.FocusedDataPointIndex >= 0 && ViewModel.FocusedDataPointIndex < series.DataPoints.Count && ViewModel.FocusedDataSeries == series)
                 {
                     var xValue = XAxisValueFormatter(series.DataPoints[ViewModel.FocusedDataPointIndex].X);
                     var yValue = YAxisValueFormatter(series.DataPoints[ViewModel.FocusedDataPointIndex].Y);
-                    title += new ConsoleString(" ( " + xValue + ", " + yValue + " )", FocusForeground.ForegroundColor);
+                    title += new ConsoleString(" ( " + xValue + ", " + yValue + " )", Application.Theme.FocusColor);
                 }
 
                 if (title.Length > MaxTitleLength)
@@ -282,7 +276,7 @@ namespace PowerArgs.Cli
 
         private void RenderXAxis(ConsoleBitmap context)
         {
-            context.Pen = new ConsoleCharacter(XAxisChar, Foreground.ForegroundColor, Foreground.BackgroundColor);
+            context.Pen = new ConsoleCharacter(XAxisChar, Foreground, Background);
             context.DrawLine(YAxisLeftOffset, XAxisYValue, XAxisRight, XAxisYValue);
             RenderXAxisLabels(context);
         }
@@ -310,7 +304,7 @@ namespace PowerArgs.Cli
 
             var yPixel = ConvertYValueToPixel(series.Threshold.Value);
 
-            context.Pen = new ConsoleCharacter('-', series.Threshold.PlotColor, Foreground.BackgroundColor);
+            context.Pen = new ConsoleCharacter('-', series.Threshold.PlotColor, Background);
             context.DrawLine(XAxisLeft, yPixel, XAxisRight, yPixel);
 
             var title = series.Threshold.Title;
@@ -330,15 +324,15 @@ namespace PowerArgs.Cli
 
             if(focused)
             {
-                context.Pen = new ConsoleCharacter(series.PlotCharacter, FocusForeground.ForegroundColor, FocusForeground.BackgroundColor);
+                context.Pen = new ConsoleCharacter(series.PlotCharacter, Application.Theme.FocusColor, Application.Theme.FocusColor);
             }
             else if(series.Threshold == null || series.Threshold.IsActive(p.Y) == false)
             {
-                context.Pen = new ConsoleCharacter(series.PlotCharacter, series.PlotColor, Foreground.BackgroundColor);
+                context.Pen = new ConsoleCharacter(series.PlotCharacter, series.PlotColor, Background);
             }
             else
             {
-                context.Pen = new ConsoleCharacter(series.PlotCharacter, series.Threshold.ActiveColor, Foreground.BackgroundColor);
+                context.Pen = new ConsoleCharacter(series.PlotCharacter, series.Threshold.ActiveColor, Background);
             }
 
             context.DrawPoint(x, y);

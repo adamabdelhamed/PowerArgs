@@ -49,6 +49,52 @@ namespace PowerArgs
             }
         }
 
+
+        /// <summary>
+        /// An optional copyright field
+        /// </summary>
+        public string Copyright
+        {
+            get
+            {
+                return overrides.Get<ArgCopyright, string>("Copyright", Metadata, p => p.Value, null);
+            }
+            set
+            {
+                overrides.Set("Copyright", value);
+            }
+        }
+
+        /// <summary>
+        /// An optional product name field
+        /// </summary>
+        public string ProductName
+        {
+            get
+            {
+                return overrides.Get<ArgProductName, string>("ProductName", Metadata, p => p.Value, null);
+            }
+            set
+            {
+                overrides.Set("ProductName", value);
+            }
+        }
+
+        /// <summary>
+        /// An optional product version field
+        /// </summary>
+        public string ProductVersion
+        {
+            get
+            {
+                return overrides.Get<ArgProductVersion, string>("ProductVersion", Metadata, p => p.Value, null);
+            }
+            set
+            {
+                overrides.Set("ProductVersion", value);
+            }
+        }
+
         /// <summary>
         /// Gets the description from ArgDescriptionMetadata if it exists, or empty string if it does not.
         /// </summary>
@@ -70,6 +116,39 @@ namespace PowerArgs
             get
             {
                 return string.IsNullOrEmpty(Description) == false;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether or not this program has the Copyright field set
+        /// </summary>
+        public bool HasCopyright
+        {
+            get
+            {
+                return string.IsNullOrEmpty(Copyright) == false;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether or not this program has a product name set
+        /// </summary>
+        public bool HasProductName
+        {
+            get
+            {
+                return string.IsNullOrEmpty(ProductName) == false;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether or not this program has a product name set
+        /// </summary>
+        public bool HasProductVersion
+        {
+            get
+            {
+                return string.IsNullOrEmpty(ProductVersion) == false;
             }
         }
 
@@ -390,6 +469,27 @@ namespace PowerArgs
             }
 
             return match.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Finds the command line argument that is allowed to be specified in the given position (zero based). You can also
+        /// pass an action name if you know the context of a targeted action.
+        /// </summary>
+        /// <param name="position">the position of the argument</param>
+        /// <param name="action">optionally specify the name of an action which may also have positional arguments defined</param>
+        /// <returns>a matching CommandLineArgument or none if there was no match</returns>
+        public CommandLineArgument FindArgumentByPosition(int position, string action = null)
+        {
+            if (position < 0) throw new ArgumentOutOfRangeException("position must be >= 0");
+
+            var match = (from arg in this.Arguments where arg.Position == position select arg).FirstOrDefault();
+            if (match != null) return match;
+            if (action == null) return null;
+
+            var actionMatch = FindMatchingAction(action);
+            if (actionMatch == null) return null;
+            match = (from arg in actionMatch.Arguments where arg.Position == position select arg).FirstOrDefault();
+            return match;
         }
 
         /// <summary>

@@ -349,6 +349,38 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestREPLReset()
+        {
+            SetupCleanup.ClearAttributeCache();
+            var provider = TestConsoleProvider.SimulateConsoleInput("-b{enter}-s a{enter}quit");
+            var def = new CommandLineArgumentsDefinition(typeof(TestArgsWithREPL));
+            var boolArg = def.FindMatchingArgument("b");
+            Assert.IsNotNull(boolArg);
+
+            bool first = true;
+            bool validatedBoth = false;
+            var interceptor = new AfterInvokeInterceptor((context) =>
+            {
+                if (first)
+                {
+                    first = false;
+                    Assert.IsTrue((bool)boolArg.RevivedValue);
+                }
+                else
+                {
+                    Assert.IsNull(boolArg.RevivedValue);
+                    validatedBoth = true;
+                }
+            });
+
+            def.Metadata.Add(interceptor);
+    
+            var finalResult = Args.InvokeMain(def, "$");
+            Assert.IsTrue(validatedBoth);
+            Assert.IsFalse((finalResult.Value as TestArgsWithREPL).BoolParam);
+        }
+
+        [TestMethod]
         public void TestModeledActionREPL()
         {
             int invokeCount = 0;
@@ -568,6 +600,15 @@ namespace ArgsTests
 
         string input;
         int i;
+
+        public bool KeyAvailable
+        {
+            get
+            {
+                return i < input.Length;
+            }
+        }
+
         public TestConsoleProvider(string input = "")
         {
             this.input = input;
@@ -588,6 +629,7 @@ namespace ArgsTests
         public int CursorLeft { get; set; }
         public int CursorTop { get; set; }
         public int BufferWidth { get; set; }
+        public int WindowHeight { get; set; }
 
         bool shift = false;
         bool control = false;

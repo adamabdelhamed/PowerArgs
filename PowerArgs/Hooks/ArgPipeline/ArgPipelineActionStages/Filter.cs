@@ -13,7 +13,8 @@ namespace PowerArgs.Preview
         protected override void OnObjectReceived(object o)
         {
             CommandLineArgumentsDefinition def = new CommandLineArgumentsDefinition(typeof(FilterAction));
-            def.FindMatchingArgument("FilterTarget").RevivedValueOverride = o;
+            var arg = def.FindMatchingArgument("FilterTarget");
+            def.Metadata.Add(new ArgumentOverrideHook(arg, o));
             Args.InvokeMain(def, CmdLineArgs.ToArray());
         }
     }

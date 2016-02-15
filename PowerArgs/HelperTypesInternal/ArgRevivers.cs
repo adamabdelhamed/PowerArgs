@@ -109,37 +109,50 @@ namespace PowerArgs
         /// <returns>A revived object of the desired type</returns>
         public static object Revive(Type t, string name, string value)
         {
-            if (t.IsArray == false && t.GetInterfaces().Contains(typeof(IList)))
+            if (t.IsArray || t.GetInterfaces().Contains(typeof(IList)))
             {
-                var list = (IList)Activator.CreateInstance(t);
-                // TODO - Maybe support custom delimiters via an attribute on the property
-                // TODO - Maybe do a full parse of the value to check for quoted strings
+                var list = t.GetInterfaces().Contains(typeof(IList)) && t.IsArray == false ? (IList)Activator.CreateInstance(t) : new List<object>();
+                var elementType = t.IsArray ? t.GetElementType() : t.GetGenericArguments()[0];
 
-                if (string.IsNullOrWhiteSpace(value) == false)
+                List<string> additionalParams;
+                if(ArgHook.HookContext.Current != null &&
+                   ArgHook.HookContext.Current.CurrentArgument != null &&
+                   ArgHook.HookContext.Current.ParserData.TryGetAndRemoveAdditionalExplicitParameters(ArgHook.HookContext.Current.CurrentArgument, out additionalParams))
                 {
+                    // this block supports the newer syntax where elements can be separated by a space on the command line
+
+                    list.Add(Revive(elementType, name + "_element", value));
+                    foreach(var additionalValue in additionalParams)
+                    {
+                        list.Add(Revive(elementType, name + "_element", additionalValue));
+                    }
+                    ArgHook.HookContext.Current.ParserData.AdditionalExplicitParameters.Remove(name);
+                }
+                else if (string.IsNullOrWhiteSpace(value) == false)
+                {
+                    // this block supports the older syntax where elements must be in a single string delimited by commas
+
                     foreach (var element in value.Split(','))
                     {
-                        list.Add(Revive(t.GetGenericArguments()[0], name + "_element", element));
+                        list.Add(Revive(elementType, name + "_element", element));
                     }
                 }
-                return list;
-            }
-            else if (t.IsArray)
-            {
-                var elements = value.Split(',');
 
-                if (string.IsNullOrWhiteSpace(value) == false)
+
+
+
+                if (t.IsArray)
                 {
-                    Array array = Array.CreateInstance(t.GetElementType(), elements.Length);
+                    var array = Array.CreateInstance(t.GetElementType(), list.Count);
                     for (int i = 0; i < array.Length; i++)
                     {
-                        array.SetValue(Revive(t.GetElementType(), name + "[" + i + "]", elements[i]), i);
+                        array.SetValue(list[i], i);
                     }
                     return array;
                 }
                 else
                 {
-                    return Array.CreateInstance(t.GetElementType(), 0);
+                    return list;
                 }
             }
             else if (Revivers.ContainsKey(t))

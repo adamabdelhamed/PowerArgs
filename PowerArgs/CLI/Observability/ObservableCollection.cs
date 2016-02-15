@@ -11,17 +11,37 @@ namespace PowerArgs.Cli
     /// <typeparam name="T">the type of elements this collection will contain</typeparam>
     public class ObservableCollection<T> : IList<T>
     {
+        public string Id { get; set; } 
+
+        /// <summary>
+        /// Called before an item is added to the list
+        /// </summary>
+        public Event<T> BeforeAdded { get; private set; } = new Event<T>();
+
+        /// <summary>
+        /// Called after an item is removed from the list
+        /// </summary>
+        public Event<T> BeforeRemoved { get; private set; } = new Event<T>();
+
         /// <summary>
         /// Called when an element is added to this list
         /// </summary>
-        public event Action<T> Added;
+        public Event<T> Added { get; private set; } = new Event<T>();
 
         /// <summary>
         /// Called when an element is removed from this list
         /// </summary>
-        public event Action<T> Removed;
+        public Event<T> Removed { get; private set; } = new Event<T>();
 
-        List<T> wrapped;
+        /// <summary>
+        /// Called whenever this list changes.  You may receive one event for multiple changes
+        /// if the changes were atomic (e.g. after calling Clear()).
+        /// </summary>
+        public Event Changed { get; private set; } = new Event();
+
+        private List<T> wrapped;
+
+        Dictionary<T, Lifetime> membershipLifetimes;
 
         /// <summary>
         /// Initialized the collection
@@ -29,15 +49,32 @@ namespace PowerArgs.Cli
         public ObservableCollection()
         {
             wrapped = new List<T>();
+            membershipLifetimes = new Dictionary<T, Lifetime>();
         }
 
+        public void SynchronizeForLifetime(Action<T> addAction, Action<T> removeAction, Action changedAction, LifetimeManager manager)
+        {
+            Added.SubscribeForLifetime(addAction, manager);
+            Removed.SubscribeForLifetime(removeAction, manager);
+            Changed.SubscribeForLifetime(changedAction, manager);
+
+            foreach (var obj in this)
+            {
+                addAction(obj);
+            }
+
+            changedAction();
+        }
+        
         /// <summary>
         /// Fires the Added event for the given item
         /// </summary>
         /// <param name="item">The item that was added</param>
         internal void FireAdded(T item)
         {
-            if (Added != null) Added(item);
+            membershipLifetimes.Add(item, new Lifetime());
+            Added.Fire(item);
+            Changed.Fire();
         }
 
         /// <summary>
@@ -46,7 +83,28 @@ namespace PowerArgs.Cli
         /// <param name="item">The item that was removed</param>
         internal void FireRemoved(T item)
         {
-            if (Removed != null) Removed(item);
+            Removed.Fire(item);
+            Changed.Fire();
+            var itemLifetime = membershipLifetimes[item];
+            membershipLifetimes.Remove(item);
+            itemLifetime.Dispose();
+        }
+
+        public LifetimeManager GetMembershipLifetime(T item)
+        {
+            return membershipLifetimes[item].LifetimeManager;
+        }
+
+        internal void FireBeforeAdded(T item)
+        {
+            BeforeAdded.Fire(item);
+        }
+
+
+
+        internal void FireBeforeRemoved(T item)
+        {
+            BeforeRemoved.Fire(item);
         }
 
         /// <summary>
@@ -66,6 +124,7 @@ namespace PowerArgs.Cli
         /// <param name="item">the item to insert</param>
         public void Insert(int index, T item)
         {
+            FireBeforeAdded(item);
             wrapped.Insert(index, item);
             FireAdded(item);
         }
@@ -77,6 +136,7 @@ namespace PowerArgs.Cli
         public void RemoveAt(int index)
         {
             var item = wrapped[index];
+            FireBeforeRemoved(item);
             wrapped.RemoveAt(index);
             FireRemoved(item);
         }
@@ -95,6 +155,9 @@ namespace PowerArgs.Cli
             set
             {
                 var item = wrapped[index];
+
+                FireBeforeRemoved(item);
+                FireBeforeAdded(value);
                 wrapped[index] = value;
 
                 FireRemoved(item);
@@ -108,6 +171,7 @@ namespace PowerArgs.Cli
         /// <param name="item">the item to add</param>
         public void Add(T item)
         {
+            FireBeforeAdded(item);
             wrapped.Add(item);
             FireAdded(item);
         }
@@ -117,14 +181,19 @@ namespace PowerArgs.Cli
         /// </summary>
         public void Clear()
         {
-            var items = wrapped.ToArray();
-            wrapped.Clear();
-            if (Removed != null)
+            if (Removed.HasSubscriptions)
             {
+                var items = wrapped.ToArray();
+                wrapped.Clear();
+
                 foreach (var item in items)
                 {
-                    Removed(item);
+                    Removed.Fire(item);
                 }
+            }
+            else
+            {
+                wrapped.Clear();
             }
         }
 
@@ -171,8 +240,10 @@ namespace PowerArgs.Cli
         /// <returns>true if an item was removed, false if the item was not found in the list</returns>
         public bool Remove(T item)
         {
-            if (wrapped.Remove(item))
+            if (wrapped.Contains(item))
             {
+                FireBeforeRemoved(item);
+                wrapped.Remove(item);
                 FireRemoved(item);
                 return true;
             }

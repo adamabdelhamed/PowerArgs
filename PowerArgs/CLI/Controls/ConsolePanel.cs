@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace PowerArgs.Cli
 {
@@ -6,37 +7,57 @@ namespace PowerArgs.Cli
     {
         public ObservableCollection<ConsoleControl> Controls { get; private set; }
 
+        public IReadOnlyCollection<ConsoleControl> Descendents
+        {
+            get
+            {
+                List<ConsoleControl> descendends = new List<ConsoleControl>();
+                VisitControlTree((d) =>
+                {
+                    descendends.Add(d);
+                    return false;
+                });
+
+                return descendends.AsReadOnly();
+            }
+        }
+
         public ConsolePanel()
         {
             Controls = new ObservableCollection<ConsoleControl>();
-
-            Action<ConsoleControl> addPropagator = (c) => { Controls.FireAdded(c); };
-            Action<ConsoleControl> removePropagator = (c) => { Controls.FireRemoved(c); };
-
-            Controls.Added += (c) =>
-            {
-                c.Application = this.Application;
-                c.OnAdd(this);
-                if (c is ConsolePanel)
-                {
-                    (c as ConsolePanel).Controls.Added += addPropagator;
-                    (c as ConsolePanel).Controls.Removed += removePropagator;
-                }
-            };
-
-            Controls.Removed += (c) =>
-            {
-                c.OnRemove(this);
-                c.Application = null;
-                if (c is ConsolePanel)
-                {
-                    (c as ConsolePanel).Controls.Added -= addPropagator;
-                    (c as ConsolePanel).Controls.Removed -= removePropagator;
-                }
-            };
+            SynchronizeForLifetime(nameof(Id), () => { Controls.Id = Id; }, LifetimeManager);
+            Controls.Added.SubscribeForLifetime((c) => { c.Parent = this; }, LifetimeManager);
+            Controls.Removed.SubscribeForLifetime((c) => { c.Parent = null; }, LifetimeManager);
+            this.CanFocus = false;
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        public T Add<T>(T c) where T : ConsoleControl
+        {
+            Controls.Add(c);
+            return c;
+        }
+
+        public bool VisitControlTree(Func<ConsoleControl, bool> visitAction, ConsolePanel root = null)
+        {
+            bool shortCircuit = false;
+            root = root ?? this;
+            
+            foreach(var child in root.Controls)
+            {
+                shortCircuit = visitAction(child);
+                if (shortCircuit) return true;
+
+                if(child is ConsolePanel)
+                {
+                    shortCircuit = VisitControlTree(visitAction, child as ConsolePanel);
+                    if (shortCircuit) return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected override void OnPaint(ConsoleBitmap context)
         {
             foreach (var control in Controls)
             {
