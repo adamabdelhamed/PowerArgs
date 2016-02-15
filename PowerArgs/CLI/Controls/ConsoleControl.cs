@@ -12,11 +12,11 @@ namespace PowerArgs.Cli
         /// <summary>
         /// An event that fires after this control gets focus
         /// </summary>
-        public event Action Focused;
+        public Event Focused { get; private set; } = new Event();
         /// <summary>
         /// An event that fires after this control loses focus
         /// </summary>
-        public event Action Unfocused;
+        public Event Unfocused { get; private set; } = new Event();
 
         /// <summary>
         /// An event that fires when this control is added to the visual tree of a ConsoleApp. 
@@ -171,8 +171,8 @@ namespace PowerArgs.Cli
         
         internal void FireFocused(bool focused)
         {
-            if (focused && Focused != null) Focused();
-            if (!focused && Unfocused != null) Unfocused();
+            if (focused) Focused.Fire();
+            else Unfocused.Fire();
         }
 
         internal void AddedToVisualTreeInternal()

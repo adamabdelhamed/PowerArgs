@@ -9,6 +9,7 @@ namespace PowerArgs.Cli
     // 
     // Theme should be observable and should result in a Paint when changed.  Controls might need to react as well.
     // Do another refactoring and functionality pass on data sources and caching.  It't not ready. 
+    // Consider removing the ambient lifetime concept.  I thin the convenience might not outweight the potential confusion. 
     // Samples for different data sources (e.g. An azure table, a file system)      // Lots of testing
     // Final code review and documentation
 

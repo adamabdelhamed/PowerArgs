@@ -22,14 +22,7 @@ namespace PowerArgs.Cli
     public class Button : ConsoleControl
     {
         public Event Activated { get; private set; } = new Event();
-        public string Text
-        {
-            get { return Get<string>(); }
-            set
-            {
-                Set(value);
-            }
-        }
+        public string Text { get { return Get<string>(); } set { Set(value); } }
 
         public KeyboardShortcut Shortcut
         {

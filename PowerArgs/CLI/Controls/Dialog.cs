@@ -19,7 +19,7 @@ namespace PowerArgs.Cli
 
         public bool AllowEscapeToCancel { get; set; }
 
-        public event Action Cancelled;
+        public Event Cancelled { get; private set; } = new Event();
 
         private Button closeButton;
 
@@ -79,7 +79,7 @@ namespace PowerArgs.Cli
         {
             if (AllowEscapeToCancel)
             {
-                if (Cancelled != null) Cancelled();
+                Cancelled.Fire();
                 ConsoleApp.Current.LayoutRoot.Controls.Remove(this);
             }
         }
@@ -129,7 +129,7 @@ namespace PowerArgs.Cli
             Dialog dialog = new Dialog(dialogContent);
             dialog.MaxHeight = maxHeight;
             dialog.AllowEscapeToCancel = allowEscapeToCancel;
-            dialog.Cancelled += () => { resultCallback(null); };
+            dialog.Cancelled.SubscribeForLifetime(() => { resultCallback(null); }, dialog.LifetimeManager);
 
             ScrollablePanel messagePanel = dialogContent.Add(new ScrollablePanel()).Fill(padding: new Thickness(0, 0, 1, 3));
             Label messageLabel = messagePanel.ScrollableContent.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Text = message }).FillHoriontally(padding: new Thickness(3,3,0,0) );
@@ -178,10 +178,8 @@ namespace PowerArgs.Cli
             var dialog = new Dialog(content);
             dialog.MaxHeight = maxHeight;
             dialog.AllowEscapeToCancel = allowEscapeToCancel;
-            dialog.Cancelled += () => { if (cancelCallback != null) cancelCallback(); };
-
-     
-
+            dialog.Cancelled.SubscribeForLifetime(() => { if (cancelCallback != null) cancelCallback(); }, dialog.LifetimeManager);
+            
             Label messageLabel = content.Add(new Label() { Text = message,  X = 2, Y = 2 });
             TextBox inputBox = content.Add(new TextBox() { Y = 4,Foreground = ConsoleColor.Black, Background = ConsoleColor.White}).CenterHorizontally();
 

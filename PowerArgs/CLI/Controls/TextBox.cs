@@ -42,8 +42,8 @@ namespace PowerArgs.Cli
             this.textState = new RichTextEditor();
             this.Height = 1;
             CanFocus = true;
-            this.Focused += TextBox_Focused;
-            this.Unfocused += TextBox_Unfocused;
+            this.Focused.SubscribeForLifetime(TextBox_Focused, this.LifetimeManager);
+            this.Unfocused.SubscribeForLifetime(TextBox_Unfocused, this.LifetimeManager);
         }
 
         public override void OnAddedToVisualTree()

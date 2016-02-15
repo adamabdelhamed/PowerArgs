@@ -195,13 +195,13 @@ namespace PowerArgs.Cli
             });
 
             // don't accept focus unless I have at least one item in the data view
-            this.Focused += () =>
+            this.Focused.SubscribeForLifetime(() =>
             {
                 if (DataView.Items.Count == 0)
                 {
                     Application.FocusManager.TryMoveFocus();
                 }
-            };
+            }, this.LifetimeManager);
         }
 
         private void SetFilterTextBox(TextBox value)
