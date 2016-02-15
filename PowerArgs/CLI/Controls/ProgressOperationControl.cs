@@ -28,23 +28,26 @@ namespace PowerArgs.Cli
             messageLabel = messageAndOperationsPanel.Add(new Label() { Mode = LabelRenderMode.ManualSizing }).FillHoriontally();
             messageLabel.CanFocus = true;
 
-            messageLabel.RegisterKeyHandler(ConsoleKey.Enter, (k) =>
+            messageLabel.KeyInputReceived.SubscribeForLifetime((k) =>
             {
-                var msg = operation.Message;
-                if(operation.Details != null)
+                if (k.Key == ConsoleKey.Enter)
                 {
-                    msg += "\n" + operation.Details;
+                    var msg = operation.Message;
+                    if (operation.Details != null)
+                    {
+                        msg += "\n" + operation.Details;
+                    }
+                    Dialog.ShowMessage(msg);
                 }
-                Dialog.ShowMessage(msg);
-            });
+                else if(k.Key == ConsoleKey.Delete)
+                {
+                    var app = Application;
+                    manager.Operations.Remove(operation);
+                    app.FocusManager.TryMoveFocus();
+                }
+            }, this.LifetimeManager);
 
-            messageLabel.RegisterKeyHandler(ConsoleKey.Delete, (k) =>
-            {
-                var app = Application;
-                manager.Operations.Remove(operation);
-                app.FocusManager.TryMoveFocus();
-            });
-
+     
             actionPanel = messageAndOperationsPanel.Add(new StackPanel() { Orientation = Orientation.Horizontal, Height = 1, Margin = 2 }).FillHoriontally(messageAndOperationsPanel);
             spinner = actionPanel.Add(new Spinner() { CanFocus=false});
             timeLabel = actionPanel.Add(new Label() { Mode = LabelRenderMode.SingleLineAutoSize, Text = operation.StartTime.ToFriendlyPastTimeStamp().ToConsoleString() });
@@ -56,21 +59,21 @@ namespace PowerArgs.Cli
             {
                 BindActionToActionPanel(action);
             }
+
+            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
         }
 
-        public override void OnAddedToVisualTree()
+        private void OnAddedToVisualTree()
         {
-            base.OnAddedToVisualTree();
+            Operation.Actions.Added.SubscribeForLifetime(Actions_Added, this.LifetimeManager);
+            Operation.Actions.Removed.SubscribeForLifetime(Actions_Removed, this.LifetimeManager);
 
-            Operation.Actions.Added.Subscribe(Actions_Added);
-            Operation.Actions.Removed.Subscribe(Actions_Removed);
-
-            Operation.Synchronize(nameof(ProgressOperation.Message), () =>
+            Operation.SynchronizeForLifetime(nameof(ProgressOperation.Message), () =>
             {
                 messageLabel.Text = Operation.Message;
-            });
+            }, this.LifetimeManager);
 
-            Operation.Synchronize(nameof(ProgressOperation.State), () =>
+            Operation.SynchronizeForLifetime(nameof(ProgressOperation.State), () =>
             {
                 if (Operation.State == OperationState.InProgress)
                 {
@@ -101,7 +104,7 @@ namespace PowerArgs.Cli
                     spinner.IsSpinning = false;
                     spinner.Value = new ConsoleCharacter('?', backgroundColor: ConsoleColor.Gray);
                 }
-            });
+            }, this.LifetimeManager);
 
         }
 
@@ -136,7 +139,7 @@ namespace PowerArgs.Cli
             actionPanel.Controls.Remove(toRemove);
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
             base.OnPaint(context);
         }

@@ -44,11 +44,8 @@ namespace PowerArgs.Cli
             CanFocus = true;
             this.Focused.SubscribeForLifetime(TextBox_Focused, this.LifetimeManager);
             this.Unfocused.SubscribeForLifetime(TextBox_Unfocused, this.LifetimeManager);
-        }
-
-        public override void OnAddedToVisualTree()
-        {
-            textState.Subscribe(nameof(textState.CurrentValue), TextValueChanged);
+            textState.SubscribeForLifetime(nameof(textState.CurrentValue), TextValueChanged, this.LifetimeManager);
+            KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
         }
 
         private void TextValueChanged()
@@ -102,14 +99,14 @@ namespace PowerArgs.Cli
             blinkState = false;
         }
 
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
+        private void OnKeyInputReceived(ConsoleKeyInfo info)
         {
             textState.RegisterKeyPress(info);
             blinkState = true;
             blinkTimerHandle.Change(BlinkInterval, BlinkInterval);
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
             var toPaint = textState.CurrentValue;
             var bgTransformed = new List<ConsoleCharacter>();

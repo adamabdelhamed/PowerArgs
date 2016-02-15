@@ -7,12 +7,7 @@ namespace PowerArgs.Cli
         public CommandBar()
         {
             this.Height = 1;
-        }
-
-        public override void OnAddedToVisualTree()
-        {
-            base.OnAddedToVisualTree();
-            this.Controls.Synchronize(Commands_Added, Commands_Removed, ()=> { });
+            this.Controls.SynchronizeForLifetime(Commands_Added, Commands_Removed, () => { }, this.LifetimeManager);
         }
 
         private void Commands_Added(ConsoleControl c)

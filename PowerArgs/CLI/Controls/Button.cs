@@ -43,6 +43,8 @@ namespace PowerArgs.Cli
             this.Foreground = Theme.DefaultTheme.ButtonColor;
             this.SynchronizeForLifetime(nameof(Text), UpdateWidth, this.LifetimeManager);
             this.SynchronizeForLifetime(nameof(Shortcut), UpdateWidth, this.LifetimeManager);
+            this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
+            this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
         }
 
         private void UpdateWidth()
@@ -69,21 +71,16 @@ namespace PowerArgs.Cli
             Width = w;
         }
 
-        public override void OnAddedToVisualTree()
+        public void OnAddedToVisualTree()
         {
-            base.OnAddedToVisualTree();
             if (Shortcut != null)
             {
-                Application.FocusManager.GlobalKeyHandlers.Push(Shortcut.Key, Shortcut.Modifier, Click);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(Shortcut.Key, Shortcut.Modifier, Click, this.LifetimeManager);
             }
         }
 
-        public override void OnRemovedFromVisualTree()
-        {
-            base.OnRemovedFromVisualTree();
-        }
 
-        public override void OnKeyInputReceived(ConsoleKeyInfo info)
+        private void OnKeyInputReceived(ConsoleKeyInfo info)
         {
             if(info.Key == ConsoleKey.Enter || info.Key == ConsoleKey.Spacebar)
             {
@@ -96,7 +93,7 @@ namespace PowerArgs.Cli
             Activated.Fire();
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
             var drawState = new ConsoleString();
 

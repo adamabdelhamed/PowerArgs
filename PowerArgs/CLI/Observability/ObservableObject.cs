@@ -113,17 +113,6 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
-        /// Subscribes to be notified when the given property changes.  The subscription expires when
-        /// the ambient lifetime manager's lifetime ends.
-        /// </summary>
-        /// <param name="propertyName">The name of the property to subscribe to or ObservableObject.AnyProperty if you want to be notified of any property change.</param>
-        /// <param name="handler">The action to call for notifications</param>
-        public void Subscribe(string propertyName, Action handler)
-        {
-            SubscribeForLifetime(propertyName, handler, LifetimeManager.AmbientLifetimeManager);
-        }
-
-        /// <summary>
         /// Subscribes to be notified when the given property changes and also fires an initial notification immediately.
         /// </summary>
         /// <param name="propertyName">The name of the property to subscribe to or ObservableObject.AnyProperty if you want to be notified of any property change.</param>
@@ -148,18 +137,6 @@ namespace PowerArgs.Cli
             var sub = SynchronizeUnmanaged(propertyName, handler);
             lifetimeManager.Manage(sub);
         }
-
-        /// <summary>
-        /// Subscribes to be notified when the given property changes and also fires an initial notification.  The subscription expires when
-        /// the ambient lifetime manager's lifetime ends.
-        /// </summary>
-        /// <param name="propertyName">The name of the property to subscribe to or ObservableObject.AnyProperty if you want to be notified of any property change.</param>
-        /// <param name="handler">The action to call for notifications</param>
-        public void Synchronize(string propertyName, Action handler)
-        {
-            SynchronizeForLifetime(propertyName, handler, LifetimeManager.AmbientLifetimeManager);
-        }
-
        
         /// <summary>
         /// Fires the PropertyChanged event with the given property name.

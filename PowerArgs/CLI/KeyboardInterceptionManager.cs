@@ -84,12 +84,6 @@ namespace PowerArgs.Cli
            manager.Manage(PushUnmanaged(key, modifier, handler));
         }
 
-        public void Push(ConsoleKey key, ConsoleModifiers? modifier, Action<ConsoleKeyInfo> handler)
-        {
-            PushForLifetime(key, modifier, handler, LifetimeManager.AmbientLifetimeManager);
-        }
-
-
         public Subscription PushUnmanaged(ConsoleKey key, ConsoleModifiers? modifier, Action handler)
         {
             return PushUnmanaged(key, modifier, (k) => { handler(); });
@@ -98,11 +92,6 @@ namespace PowerArgs.Cli
         public void PushForLifetime(ConsoleKey key, ConsoleModifiers? modifier, Action handler, LifetimeManager manager)
         {
             PushForLifetime(key, modifier, (k) => { handler(); }, manager);
-        }
-
-        public void Push(ConsoleKey key, ConsoleModifiers? modifier, Action handler)
-        {
-            Push(key, modifier, (k) => { handler(); });
         }
     }
 }

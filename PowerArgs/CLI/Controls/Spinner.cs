@@ -29,20 +29,20 @@ namespace PowerArgs.Cli
         public Spinner()
         {
             currentFrameIndex = 0;
+            this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
+            this.RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this.LifetimeManager);
         }
 
-        public override void OnAddedToVisualTree()
+        private void OnAddedToVisualTree()
         {
-            base.OnAddedToVisualTree();
             if(IsSpinning)
             {
                 StartSpinTimer();
             }
         }
 
-        public override void OnRemovedFromVisualTree()
+        private void OnRemovedFromVisualTree()
         {
-            base.OnRemovedFromVisualTree();
             if(IsSpinning)
             {
                 StopSpinTimer();

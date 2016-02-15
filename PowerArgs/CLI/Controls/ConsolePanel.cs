@@ -57,7 +57,7 @@ namespace PowerArgs.Cli
             return false;
         }
 
-        internal override void OnPaint(ConsoleBitmap context)
+        protected override void OnPaint(ConsoleBitmap context)
         {
             foreach (var control in Controls)
             {

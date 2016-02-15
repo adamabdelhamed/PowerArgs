@@ -22,13 +22,13 @@ namespace PowerArgs.Cli
             spinner = Add(new Spinner() { IsVisible = false, IsSpinning = false, CanFocus = false, X = 1, Foreground = ConsoleColor.Cyan });
             Manager_ProgressOperationsChanged();
             manager.ProgressOperationsChanged += Manager_ProgressOperationsChanged;
+            this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
         }
 
-        public override void OnAddedToVisualTree()
+        private void OnAddedToVisualTree()
         {
-            base.OnAddedToVisualTree();
-            launcher.Synchronize(nameof(Bounds), () => { this.Size = launcher.Size; });
-            manager.ProgressOperationStatusChanged.Subscribe((op) =>
+            launcher.SynchronizeForLifetime(nameof(Bounds), () => { this.Size = launcher.Size; }, this.LifetimeManager);
+            manager.ProgressOperationStatusChanged.SubscribeForLifetime((op) =>
             {
                 if(op.State == OperationState.Completed)
                 {
@@ -40,17 +40,12 @@ namespace PowerArgs.Cli
                     }
                     resetTimer = Application.MessagePump.SetTimeout(ResetLaundherFG, TimeSpan.FromSeconds(5));
                 }
-            });
+            }, this.LifetimeManager);
         }
 
         private void ResetLaundherFG()
         {
             launcher.Foreground = launcherFg;
-        }
-
-        public override void OnRemovedFromVisualTree()
-        {
-            base.OnRemovedFromVisualTree();
         }
 
         private void Manager_ProgressOperationsChanged()

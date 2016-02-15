@@ -27,6 +27,7 @@ namespace HelloWorld.Samples
             Grid.SelectedItemActivated += NavigateToTable;
 
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
+            Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedItemChanged, this.LifetimeManager);
         }
 
         private void NavigateToTable()
@@ -35,11 +36,7 @@ namespace HelloWorld.Samples
             PageStack.Navigate("accounts/" + currentStorageAccount.Credentials.AccountName + "/tables/" + tableName);
         }
 
-        public override void OnAddedToVisualTree()
-        {
-            base.OnAddedToVisualTree();
-            Grid.Subscribe(nameof(Grid.SelectedItem), SelectedItemChanged);
-        }
+ 
 
         protected override void OnLoad()
         {

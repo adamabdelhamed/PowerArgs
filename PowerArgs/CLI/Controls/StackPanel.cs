@@ -16,15 +16,9 @@
 
         public StackPanel()
         {
-   
-        }
-
-        public override void OnAddedToVisualTree()
-        {
-            base.OnAddedToVisualTree();
-            Subscribe(nameof(Bounds), RedoLayout);
-            Subscribe(nameof(Margin), RedoLayout);
-            Controls.Added.Subscribe(Controls_Added);
+            SubscribeForLifetime(nameof(Bounds), RedoLayout, this.LifetimeManager);
+            SubscribeForLifetime(nameof(Margin), RedoLayout, this.LifetimeManager);
+            Controls.Added.SubscribeForLifetime(Controls_Added, this.LifetimeManager);
         }
 
         private void Controls_Added(ConsoleControl obj)
