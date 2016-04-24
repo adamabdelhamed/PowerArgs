@@ -223,7 +223,7 @@ namespace PowerArgs
             {
                 if (positionArg.IsRequired)
                 {
-                    ret += lt + positionArg.DefaultAlias + lt+" ";
+                    ret += lt + positionArg.DefaultAlias + gt +" ";
                 }
                 else
                 {
