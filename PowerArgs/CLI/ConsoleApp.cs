@@ -258,6 +258,7 @@ namespace PowerArgs.Cli
                 Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
                 Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             }
+            _current = null;
             Dispose();
         }
 

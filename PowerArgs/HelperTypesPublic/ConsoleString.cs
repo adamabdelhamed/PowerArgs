@@ -737,6 +737,177 @@ namespace PowerArgs
             return this;
         }
 
+        /// <summary>
+        /// Changes the foreground of this string to black, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToBlack(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.Black, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to dark blue, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToDarkBlue(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.DarkBlue, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to dark green, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToDarkGreen(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.DarkGreen, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to dark cyan, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToDarkCyan(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.DarkCyan, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to dark red, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToDarkRed(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.DarkRed, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to dark magenta, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToDarkMagenta(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.DarkMagenta, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to dark yellow, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToDarkYellow(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.DarkYellow, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to gray, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToGray(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.Gray, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to dark gray, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToDarkGray(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.DarkGray, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to blue, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToBlue(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.Blue, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to green, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToGreen(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.Green, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to cyan, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToCyan(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.Cyan, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to red, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToRed(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.Red, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to magenta, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToMagenta(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.Magenta, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to yellow, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToYellow(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.Yellow, bg);
+        }
+
+        /// <summary>
+        /// Changes the foreground of this string to white, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
+        /// <returns>a new ConsoleString with the desired color changes</returns>
+        public ConsoleString ToWhite(ConsoleColor? bg = null)
+        {
+            return To(ConsoleColor.White, bg);
+        }
+
+        private ConsoleString To(ConsoleColor color, ConsoleColor? bg = null)
+        {
+            List<ConsoleCharacter> chars = new List<ConsoleCharacter>();
+            foreach (var c in this)
+            {
+                chars.Add(new ConsoleCharacter(c.Value, color, bg.HasValue ? bg.Value : c.BackgroundColor));
+            }
+
+            return new ConsoleString(chars);
+        }
+
         private ConsoleString ImmutableAppend(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
         {
             ConsoleString str = new ConsoleString(this);

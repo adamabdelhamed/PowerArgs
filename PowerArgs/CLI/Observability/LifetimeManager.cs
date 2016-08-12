@@ -1,24 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
-   public class LifetimeManager
-    { 
-         
-        internal List<IDisposable> ManagedItems { get; private set; }
+    public class LifetimeManager
+    {
+        private List<IDisposable> _managedItems;
+
+        internal IReadOnlyCollection<IDisposable> ManagedItems
+        {
+            get
+            {
+                return _managedItems.AsReadOnly();
+            }
+        }
 
         public LifetimeManager()
         {
-            ManagedItems = new List<IDisposable>();
+            _managedItems = new List<IDisposable>();
         }
 
         public void Manage(IDisposable item)
         {
-            ManagedItems.Add(item);
+            _managedItems.Add(item);
         }
     }
 }

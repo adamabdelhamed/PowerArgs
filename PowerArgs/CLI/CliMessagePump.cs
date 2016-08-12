@@ -82,18 +82,6 @@ namespace PowerArgs.Cli
     /// </summary>
     public class CliMessagePump
     {
-        internal static TimeSpan MinAsyncArtificialDelay = TimeSpan.FromSeconds(2);
-        internal static TimeSpan MaxAsyncArtificialDelay = TimeSpan.FromSeconds(4);
-        internal static Random artificialDelayRandomizer = new Random();
-
-        internal static bool ShouldArtificiallyDelay
-        {
-            get
-            {
-                return MinAsyncArtificialDelay > TimeSpan.Zero && MaxAsyncArtificialDelay > TimeSpan.Zero;
-            }
-        }
-
         private class StopPumpMessage : PumpMessage
         {
             public StopPumpMessage() : base(() => { }, description: "Stops the pump") { }
@@ -174,7 +162,7 @@ namespace PowerArgs.Cli
         {
             t.ContinueWith((tPrime) =>
             {
-                QueueNowOrArtificiallyDelayed(() => { action(tPrime); });
+                QueueAction(() => { action(tPrime); });
             });
         }
 
@@ -182,30 +170,11 @@ namespace PowerArgs.Cli
         {
             t.ContinueWith((tPrime) =>
             {
-                QueueNowOrArtificiallyDelayed(()=> { action(tPrime); });
+                QueueAction(()=> { action(tPrime); });
             });
         }
 
-        private void QueueNowOrArtificiallyDelayed(Action a)
-        {
-            if (ShouldArtificiallyDelay)
-            {
-                var timeRange = MaxAsyncArtificialDelay - MinAsyncArtificialDelay;
-                var randAddition = artificialDelayRandomizer.NextDouble() * timeRange.TotalSeconds;
-                var effectiveDelay = MinAsyncArtificialDelay + TimeSpan.FromSeconds(randAddition);
-                Timer timer = null;
-                timer = SetTimeout(() =>
-                {
-                    a();
-                    asyncActionTimers.Remove(timer);
-                }, effectiveDelay);
-                asyncActionTimers.Add(timer);
-            }
-            else
-            {
-                QueueAction(a);
-            }
-        }
+ 
 
 
         /// <summary>
@@ -287,7 +256,7 @@ namespace PowerArgs.Cli
             bool stopRequested = false;
             while (true)
             {
-                if((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight))
+                if ((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight))
                 {
                     DebounceResize();
                     WindowResized.Fire();

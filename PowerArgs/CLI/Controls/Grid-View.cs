@@ -77,7 +77,7 @@ namespace PowerArgs.Cli
                 foreach (var col in VisibleColumns)
                 {
                     var value = PropertyResolver(item, col.ColumnName.ToString());
-                    var displayValue = value == null ? "<null>".ToConsoleString() : value.ToString().ToConsoleString();
+                    var displayValue = value == null ? "<null>".ToConsoleString() : (value is ConsoleString ? (ConsoleString)value : value.ToString().ToConsoleString());
 
                     if (viewIndex == SelectedIndex)
                     {
