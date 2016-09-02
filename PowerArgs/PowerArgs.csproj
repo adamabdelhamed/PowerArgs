@@ -81,7 +81,6 @@
     <Compile Include="CLI\Helpers\Friendlies.cs" />
     <Compile Include="CLI\Helpers\Layout.cs" />
     <Compile Include="CLI\KeyboardInterceptionManager.cs" />
-    <Compile Include="CLI\Observability\AmbientLifetimeScope.cs" />
     <Compile Include="CLI\Observability\Event.cs" />
     <Compile Include="CLI\Observability\Lifetime.cs" />
     <Compile Include="CLI\Observability\LifetimeManager.cs" />
@@ -175,6 +174,7 @@
     <Compile Include="HelperTypesPublic\ITabCompletionSource.cs" />
     <Compile Include="HelperTypesPublic\IUsageTemplateProvider.cs" />
     <Compile Include="HelperTypesPublic\ParseResult.cs" />
+    <Compile Include="HelperTypesInternal\AsyncTimeline.cs" />
     <Compile Include="Hooks\ArgPipeline\ArgPipeline.cs" />
     <Compile Include="Hooks\ArgPipeline\ArgPipelineActionStages\Collapse.cs" />
     <Compile Include="Hooks\ArgPipeline\ArgPipelineActionStages\Expand.cs" />

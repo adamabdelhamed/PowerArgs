@@ -122,7 +122,7 @@ namespace PowerArgs.Cli
                 }
                 else if (cacheState == CachedDataViewState.CompleteMiss)
                 {
-                    return new CollectionDataView(new List<object>(), false, HasAllDataBeenLoaded(query), query.Skip);
+                    return new CollectionDataView(new List<object>(), HasAllDataBeenLoaded(query), HasAllDataBeenLoaded(query), query.Skip);
                 }
                 else
                 {
@@ -179,10 +179,9 @@ namespace PowerArgs.Cli
             var cacheState = GetCacheState(query);
             if (cacheState == CachedDataViewState.CompleteMiss) return false;
             else if (cacheState == CachedDataViewState.PartialHit) return true;
-            else if (cachedItems.Items.Count < query.Take && cachedItems.IsComplete) return true;
             else
             {
-                return cachedItems.Items.Count - query.Take == query.Skip;
+                return query.Skip + query.Take >= cachedItems.Items.Count;
             }
         }
     }

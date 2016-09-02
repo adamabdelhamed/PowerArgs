@@ -13,6 +13,14 @@ namespace PowerArgs.Cli
 
         private Timer blinkTimerHandle;
 
+        public RichTextEditor RichTextEditor
+        {
+            get
+            {
+                return textState;
+            }
+        }
+
         // these next two properties are used to implement a UX optimization that allows the
         // backspace key to be used either as text input (since this is a text box) or as a back gesture
         // in the built in navigation system.  Basically if the text box is empty we will assume the user wants
@@ -41,6 +49,7 @@ namespace PowerArgs.Cli
         {
             this.textState = new RichTextEditor();
             this.Height = 1;
+            this.Width = 15;
             CanFocus = true;
             this.Focused.SubscribeForLifetime(TextBox_Focused, this.LifetimeManager);
             this.Unfocused.SubscribeForLifetime(TextBox_Unfocused, this.LifetimeManager);

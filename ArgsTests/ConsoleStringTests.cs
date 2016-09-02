@@ -318,6 +318,23 @@ namespace ArgsTests
             Assert.AreEqual(null, nulla + nullS);
         }
 
+        [TestMethod]
+        public void TestConsoleStringHelpers()
+        {
+            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            {
+                var method = typeof(StringEx).GetMethod("To" + color, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                Assert.AreEqual(new ConsoleString("Hello", color, color), method.Invoke(null,new object[] { "Hello", color }));
+            }
+
+            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            {
+                ConsoleString baseString = new ConsoleString("Hello", null, null);
+                var method = typeof(ConsoleString).GetMethod("To" + color);
+                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color), method.Invoke(baseString, new object[] { color }));
+            }
+        }
+
 
         private static void ValidateStringCharacteristics(string expected, ConsoleString actual)
         {

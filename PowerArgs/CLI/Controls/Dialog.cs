@@ -168,6 +168,11 @@ namespace PowerArgs.Cli
 
         public static void ShowTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12)
         {
+            ShowRichTextInput(message, resultCallback, cancelCallback, allowEscapeToCancel, maxHeight, null);
+        }
+
+        public static void ShowRichTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12, TextBox inputBox = null)
+        {
             if (ConsoleApp.Current == null)
             {
                 throw new InvalidOperationException("There is no console app running");
@@ -184,7 +189,13 @@ namespace PowerArgs.Cli
             dialog.Cancelled.SubscribeForLifetime(() => { if (cancelCallback != null) cancelCallback(); }, dialog.LifetimeManager);
             
             Label messageLabel = content.Add(new Label() { Text = message,  X = 2, Y = 2 });
-            TextBox inputBox = content.Add(new TextBox() { Y = 4,Foreground = ConsoleColor.Black, Background = ConsoleColor.White}).CenterHorizontally();
+            if (inputBox == null)
+            {
+                inputBox = new TextBox() { Foreground = ConsoleColor.Black, Background = ConsoleColor.White };
+            }
+
+            content.Add(inputBox).CenterHorizontally();
+            inputBox.Y = 4;
 
             content.SynchronizeForLifetime(nameof(Bounds), () => { inputBox.Width = content.Width - 4; }, content.LifetimeManager);
 

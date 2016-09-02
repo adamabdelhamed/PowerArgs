@@ -93,5 +93,4 @@ namespace PowerArgs.Cli
             subscribers[handler].Dispose();
         }
     }
- 
 }
