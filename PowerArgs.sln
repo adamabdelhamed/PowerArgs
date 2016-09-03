@@ -5,8 +5,6 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorld", "HelloWorld\HelloWorld.csproj", "{9FF5B5D7-B7FC-4F03-B13E-ADC16D4E8350}"
 	ProjectSection(ProjectDependencies) = postProject
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95} = {1656EC14-33FF-4589-A2F9-E4EAF789DC95}
-		{130C7F85-B0E7-49E3-858A-35213224BE1C} = {130C7F85-B0E7-49E3-858A-35213224BE1C}
 		{35809FAB-7FBD-4663-8409-2D6A312C8265} = {35809FAB-7FBD-4663-8409-2D6A312C8265}
 	EndProjectSection
 EndProject
@@ -24,10 +22,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoxygenPublisher", "DoxygenPublisher\DoxygenPublisher.csproj", "{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalUnitTestPipelineStageExe", "ExternalUnitTestPipelineStageExe\ExternalUnitTestPipelineStageExe.csproj", "{130C7F85-B0E7-49E3-858A-35213224BE1C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArgs.HttpExternalPipelineProvider", "PowerArgs.HttpExternalPipelineProvider\PowerArgs.HttpExternalPipelineProvider.csproj", "{1656EC14-33FF-4589-A2F9-E4EAF789DC95}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{75F86EA7-B846-46BC-B584-EFDF11A425E8}"
 	ProjectSection(SolutionItems) = preProject
@@ -86,26 +80,6 @@ Global
 		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|x86.ActiveCfg = Release|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{130C7F85-B0E7-49E3-858A-35213224BE1C}.Release|x86.ActiveCfg = Release|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{1656EC14-33FF-4589-A2F9-E4EAF789DC95}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

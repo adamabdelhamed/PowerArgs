@@ -8,7 +8,7 @@ Steps to release PowerArgs to Nuget
         - Update the version in the documentation link
 4  - Build and run all tests
 5  - IF SURFACE AREA CHANGED - Run DoxygenPublisher PublishDoxygenDocs (Skipped last time)
-6  - IF NOT PREVIEW, configure the project to be fully signed using the private key. Sign PowerArgs, PowerArgsTests, and PowerArgs.HttpExternalPipelineProvider.
+6  - IF NOT PREVIEW, configure the project to be fully signed using the private key. Sign PowerArgs, and PowerArgsTests.
         - Swap out the internalsVisibleTo attribute in AssemblyInfo.cs so that the build works.
 7  - Build
 8  - Run nuget pack -sym PowerArgs.csproj -Prop Platform=AnyCPU

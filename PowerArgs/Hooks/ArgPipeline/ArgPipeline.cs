@@ -101,19 +101,7 @@ namespace PowerArgs.Preview
         /// <param name="context">The processing context</param>
         public override void BeforeParse(ArgHook.HookContext context)
         {
-            ExternalPipelineInputStage externalStage;
-            if(ExternalPipelineProvider.TryLoadInputStage(context.Definition, context.CmdLineArgs, out externalStage) && externalStage.IsProgramLaunchedByExternalPipeline)
-            {
-                externalStage.CommandLineDefinitionFactory = this.commandLineDeinitionFactory;
-                while (externalStage.IsDrained == false)
-                {
-                    Thread.Sleep(10);
-                }
-                PowerLogger.LogLine("Input stage drained");
-                context.CancelAllProcessing();
-                return;
-            }
-            else if(context.CmdLineArgs.Contains(PowerArgsPipeIndicator))
+            if(context.CmdLineArgs.Contains(PowerArgsPipeIndicator))
             {
                 ValidatePipeline(context);
                 List<List<string>> stageCommandLines = new List<List<string>>();

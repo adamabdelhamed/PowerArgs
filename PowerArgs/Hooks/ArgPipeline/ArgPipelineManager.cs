@@ -78,9 +78,9 @@ namespace PowerArgs.Preview
             {
                 next = new InProcessPipelineStage(context.Definition, commandLine);
             }
-            else if (ExternalPipelineProvider.TryLoadOutputStage(commandLine, out next) == false)
+            else
             {
-                throw new UnexpectedArgException("The pipeline action '"+string.Join(" ", commandLine)+"' is not valid.  If you want to support piping between processes, learn how to here (TODO URL)");
+                throw new UnexpectedArgException("The pipeline action '"+string.Join(" ", commandLine)+"' is not valid.");
             }
 
             next.CommandLineDefinitionFactory = factory;

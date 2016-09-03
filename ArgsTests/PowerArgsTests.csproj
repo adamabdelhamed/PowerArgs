@@ -162,10 +162,6 @@
     <Compile Include="VideoEncoderTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PowerArgs.HttpExternalPipelineProvider\PowerArgs.HttpExternalPipelineProvider.csproj">
-      <Project>{1656ec14-33ff-4589-a2f9-e4eaf789dc95}</Project>
-      <Name>PowerArgs.HttpExternalPipelineProvider</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PowerArgs\PowerArgs.csproj">
       <Project>{35809FAB-7FBD-4663-8409-2D6A312C8265}</Project>
       <Name>PowerArgs</Name>

@@ -263,8 +263,6 @@ namespace ArgsTests
                 typeof(ArgReviverAttribute),
                 typeof(DynamicExpressionProviderAttribute),
                 typeof(ArgActions),
-                typeof(ExternalInputPipelineStageProviderAttribute),
-                typeof(ExternalOutputPipelineStageProviderAttribute),
                 typeof(ArgPipelineActionStage),
                 typeof(FilterableAttribute),
                 typeof(KeyAttribute),

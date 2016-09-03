@@ -7,25 +7,6 @@ using System.Threading;
 namespace PowerArgs.Preview
 {
     /// <summary>
-    /// An abstract class that represents a pipeline stage that can be launched from another PowerArgs enabled application.
-    /// </summary>
-    public abstract class ExternalPipelineInputStage : PipelineStage
-    {
-        /// <summary>
-        /// Gets whether or not this stage has verified that this process has been launched by another application and that the pipeline should
-        /// be connected
-        /// </summary>
-        public abstract bool IsProgramLaunchedByExternalPipeline { get; protected set; }
-
-        /// <summary>
-        /// Creates an instance of the stage given a base definition and a command line
-        /// </summary>
-        /// <param name="baseDefinition">The base definition that declares which actions are supported by this program</param>
-        /// <param name="commandLine">The command line arguments</param>
-        public ExternalPipelineInputStage(CommandLineArgumentsDefinition baseDefinition, string[] commandLine) : base(commandLine) { }
-    }
-
-    /// <summary>
     /// An abstract class that represents a stage in a processing pipeline
     /// </summary>
     public abstract class PipelineStage
