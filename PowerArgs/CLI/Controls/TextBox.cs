@@ -63,14 +63,14 @@ namespace PowerArgs.Cli
 
             if (backspaceNavigationOptimizationTimerHandle != null)
             {
-                Application.MessagePump.ClearTimeout(backspaceNavigationOptimizationTimerHandle);
+                Application.ClearTimeout(backspaceNavigationOptimizationTimerHandle);
             }
 
             enableBackspaceNavigationOptimization = false;
 
             if (Application is ConsolePageApp && (Value == null || Value.Length == 0))
             {
-                backspaceNavigationOptimizationTimerHandle = Application.MessagePump.SetTimeout(()=> { enableBackspaceNavigationOptimization = true; }, TimeSpan.FromSeconds(1));
+                backspaceNavigationOptimizationTimerHandle = Application.SetTimeout(()=> { enableBackspaceNavigationOptimization = true; }, TimeSpan.FromSeconds(1));
             }
         }
 
@@ -80,7 +80,7 @@ namespace PowerArgs.Cli
         {
             enableBackspaceNavigationOptimization = true;
             blinkState = true;
-            blinkTimerHandle = Application.MessagePump.SetInterval(() =>
+            blinkTimerHandle = Application.SetInterval(() =>
             {
                 if (HasFocus == false) return;
                 blinkState = !blinkState;
@@ -104,7 +104,7 @@ namespace PowerArgs.Cli
         private void TextBox_Unfocused()
         {
             backspacceSub.Dispose();
-            Application.MessagePump.ClearInterval(blinkTimerHandle);
+            Application.ClearInterval(blinkTimerHandle);
             blinkState = false;
         }
 

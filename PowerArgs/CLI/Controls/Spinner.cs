@@ -51,12 +51,12 @@ namespace PowerArgs.Cli
 
         private void StartSpinTimer()
         {
-            spinTimerHandle = Application.MessagePump.SetInterval(AdvanceFrame, spinTimeInterval);
+            spinTimerHandle = Application.SetInterval(AdvanceFrame, spinTimeInterval);
         }
 
         private void StopSpinTimer()
         {
-            Application.MessagePump.ClearInterval(spinTimerHandle);
+            Application.ClearInterval(spinTimerHandle);
             spinTimerHandle = null;
         }
 

@@ -268,6 +268,9 @@ namespace ArgsTests
                 typeof(ArgPipelineActionStage),
                 typeof(FilterableAttribute),
                 typeof(KeyAttribute),
+                typeof(MarkupPropertyAttribute),
+                typeof(MarkupExtensionAttribute),
+                typeof(MarkupIgnoreAttribute),
             };
 
             var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>

@@ -189,7 +189,7 @@ namespace PowerArgs.Cli
             {
                 if (Application != null && FilterTextBox != null)
                 {
-                    Application.MessagePump.QueueAction(() =>
+                    Application.QueueAction(() =>
                     {
                         FilterText = FilterTextBox.Value.ToString();
                     });

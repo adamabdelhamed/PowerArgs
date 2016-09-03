@@ -104,7 +104,7 @@ namespace HelloWorld.Samples
             var running = true;
 
             // Stop watching CPU and memory when the application stops or this control is removed
-            Application.ApplicationStopped.SubscribeForLifetime(() => { running = false; }, Application.LifetimeManager);
+            Application.Stopped.SubscribeForLifetime(() => { running = false; }, Application.LifetimeManager);
             this.RemovedFromVisualTree.SubscribeForLifetime(() => { running = false; }, this.LifetimeManager);
 
             while (running)

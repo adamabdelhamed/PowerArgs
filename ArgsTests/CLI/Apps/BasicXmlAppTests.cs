@@ -1,0 +1,71 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerArgs.Cli;
+using PowerArgs;
+using System.Threading;
+using System.Diagnostics;
+
+namespace ArgsTests.CLI.Apps
+{
+    [TestClass]
+    public class BasicXmlAppTests
+    {
+        [TestMethod]
+        [Timeout(30000)]
+        public void TestBasicFormSubmit()
+        {
+            var testCli = new CliUnitTestConsole(80,4);
+            testCli.Enqueue("Adam");
+            testCli.Enqueue(ConsoleKey.Tab);
+            testCli.Enqueue(ConsoleKey.Enter);
+            ConsoleProvider.Current = testCli;
+
+            var viewModel = new BasicXmlAppViewModel();
+            var app = ConsoleApp.FromMvVm(Resources.BasicXmlApp, viewModel);
+            app.Stopping.SubscribeForLifetime(() => 
+            {
+                Console.WriteLine(testCli.Buffer.ToString());
+            }, app.LifetimeManager);
+
+            var task = app.Start();
+            task.Wait();
+            Assert.AreEqual(new ConsoleString("Adam"), viewModel.Name);
+        }
+
+        [TestMethod]
+        [Timeout(1000)]
+        public void TestConsoleWipesOnStopped()
+        {
+            var testCli = new CliUnitTestConsole(80, 4);
+            testCli.Enqueue("Adam");
+            testCli.Enqueue(ConsoleKey.Tab);
+            testCli.Enqueue(ConsoleKey.Enter);
+            ConsoleProvider.Current = testCli;
+
+            var viewModel = new BasicXmlAppViewModel();
+            var app = ConsoleApp.FromMvVm(Resources.BasicXmlApp, viewModel);
+
+            bool appDrewProperly = false;
+            bool appWipedAfterStoppedEvent = false;
+            bool appWipedAfterTask = false;
+
+            app.Stopping.SubscribeForLifetime(() =>
+            {
+                appDrewProperly = testCli.Buffer.ToString().Trim().Length > 0;
+            }, app.LifetimeManager);
+
+            app.Stopped.SubscribeForLifetime(() =>
+            {
+                appWipedAfterStoppedEvent = testCli.Buffer.ToString().Trim().Length == 0;
+            }, app.LifetimeManager);
+
+            var task = app.Start();
+            task.Wait();
+            appWipedAfterTask = testCli.Buffer.ToString().Trim().Length == 0;
+
+            Assert.IsTrue(appDrewProperly);
+            Assert.IsTrue(appWipedAfterStoppedEvent);
+            Assert.IsTrue(appWipedAfterTask);
+        }
+    }
+}

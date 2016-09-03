@@ -16,14 +16,22 @@ namespace PowerArgs.Cli
         {
             this.Key = key;
             this.Modifier = modifier;
+            if(modifier == ConsoleModifiers.Control)
+            {
+                throw new InvalidOperationException("Control is not supported as a keyboard shortcut modifier");
+            }
         }
     }
 
+    [MarkupIgnoreAttribute("Shortcut-Modifier")]
     public class Button : ConsoleControl
     {
+        private bool shortcutRegistered;
+
         public Event Activated { get; private set; } = new Event();
         public string Text { get { return Get<string>(); } set { Set(value); } }
 
+        [MarkupProperty(typeof(KeyboardShortcutProcessor))]
         public KeyboardShortcut Shortcut
         {
             get
@@ -32,8 +40,9 @@ namespace PowerArgs.Cli
             }
             set
             {
-                if (Application != null) throw new InvalidOperationException("Button shortcuts must be configured before adding the button to your application.");
+                if (Shortcut != null) throw new InvalidOperationException("Button shortcuts can only be set once.");
                 Set(value);
+                RegisterShortcutIfPossibleAndNotAlreadyDone();
             }
         }
 
@@ -73,12 +82,17 @@ namespace PowerArgs.Cli
 
         public void OnAddedToVisualTree()
         {
-            if (Shortcut != null)
+            RegisterShortcutIfPossibleAndNotAlreadyDone();
+        }
+
+        private void RegisterShortcutIfPossibleAndNotAlreadyDone()
+        {
+            if (Shortcut != null && shortcutRegistered == false)
             {
+                shortcutRegistered = true;
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(Shortcut.Key, Shortcut.Modifier, Click, this.LifetimeManager);
             }
         }
-
 
         private void OnKeyInputReceived(ConsoleKeyInfo info)
         {

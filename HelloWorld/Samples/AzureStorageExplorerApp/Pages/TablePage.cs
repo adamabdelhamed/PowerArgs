@@ -32,7 +32,7 @@ namespace HelloWorld.Samples
             var accountInfo = (from account in StorageAccountInfo.Load() where account.AccountName == accountName select account).FirstOrDefault();
             currentStorageAccount = new CloudStorageAccount(new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountInfo.Key), accountInfo.UseHttps);
             table = currentStorageAccount.CreateCloudTableClient().GetTableReference(tableName);
-            Grid.DataSource = new TableEntityDataSource(currentStorageAccount.CreateCloudTableClient().GetTableReference(tableName), Application.MessagePump);
+            Grid.DataSource = new TableEntityDataSource(currentStorageAccount.CreateCloudTableClient().GetTableReference(tableName), Application);
             Grid.DataSource.DataChanged += OnDataLoad;
         }
 
@@ -100,7 +100,7 @@ namespace HelloWorld.Samples
                  ProgressOperationManager.Operations.Add(operation);
 
                  var applicationRef = Application;
-                 Application.MessagePump.QueueAsyncAction(table.ExecuteAsync(TableOperation.Delete(entityToDelete)), (t) =>
+                 Application.QueueAsyncAction(table.ExecuteAsync(TableOperation.Delete(entityToDelete)), (t) =>
                  {
                       if (t.Exception != null)
                       {

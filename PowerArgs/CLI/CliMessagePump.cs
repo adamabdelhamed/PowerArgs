@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -80,7 +79,7 @@ namespace PowerArgs.Cli
     /// A class that is used to manage a CLI thread in a similar way that other platforms synchronize work
     /// on a UI thread
     /// </summary>
-    public class CliMessagePump
+    public class CliMessagePump : ObservableObject
     {
         private class StopPumpMessage : PumpMessage
         {
@@ -103,7 +102,6 @@ namespace PowerArgs.Cli
 
         private List<PumpMessage> pumpMessageQueue = new List<PumpMessage>();
         private IConsoleProvider console;
-        private Action<ConsoleKeyInfo> keyInputHandler;
         private int managedCliThreadId;
         private int lastConsoleWidth, lastConsoleHeight;
 
@@ -112,13 +110,18 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="console">the console to use for keyboard input</param>
         /// <param name="keyInputHandler">a key event handler to use to process keyboard input</param>
-        public CliMessagePump(IConsoleProvider console, Action<ConsoleKeyInfo> keyInputHandler)
+        public CliMessagePump(IConsoleProvider console)
         {
             this.console = console;
             this.lastConsoleWidth = this.console.BufferWidth;
             this.lastConsoleHeight = this.console.WindowHeight;
-            this.keyInputHandler = keyInputHandler;
         }
+
+        /// <summary>
+        /// Handles key input for the message pump
+        /// </summary>
+        /// <param name="info"></param>
+        protected virtual void HandleKeyInput(ConsoleKeyInfo info) { }
 
         /// <summary>
         /// Queues the given action for processing on the pump thread
@@ -128,14 +131,6 @@ namespace PowerArgs.Cli
         {
             var pumpMessage = new PumpMessage(a);
             QueueAction(pumpMessage);
-        }
-
-        public void Stop()
-        {
-            if(IsRunning)
-            {
-                QueueAction(new StopPumpMessage());
-            }
         }
 
         /// <summary>
@@ -157,7 +152,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        List<Timer> asyncActionTimers = new List<Timer>();
+        private List<Timer> asyncActionTimers = new List<Timer>();
         public void QueueAsyncAction(Task t, Action<Task> action)
         {
             t.ContinueWith((tPrime) =>
@@ -173,9 +168,6 @@ namespace PowerArgs.Cli
                 QueueAction(()=> { action(tPrime); });
             });
         }
-
- 
-
 
         /// <summary>
         /// Schedules the given action for periodic processing by the message pump
@@ -239,20 +231,23 @@ namespace PowerArgs.Cli
         /// Starts the message pump which will begin processing messages
         /// </summary>
         /// <returns>A task that will complete when the message pump starts</returns>
-        internal Task Start()
+        public virtual Task Start()
         {
+            IsRunning = true;
             var pumpTask = Task.Factory.StartNew(Pump);
-            while (IsRunning == false)
-            {
-                Thread.Sleep(10);
-            }
             return pumpTask;
         }
 
+        public void Stop()
+        {
+            if (IsRunning)
+            {
+                QueueAction(new StopPumpMessage());
+            }
+        }
 
         private void Pump()
         {
-            IsRunning = true;
             bool stopRequested = false;
             while (true)
             {
@@ -299,19 +294,22 @@ namespace PowerArgs.Cli
 
                 if (stopRequested)
                 {
-                    break;
+                   break;
                 }
 
                 if (this.console.KeyAvailable)
                 {
                     idle = false;
                     var info = this.console.ReadKey(true);
-                    QueueAction(() => { this.keyInputHandler(info); });
+                    QueueAction(() => 
+                    {
+                        HandleKeyInput(info);
+                    });
                 }
 
                 if (idle)
                 {
-                    Thread.Sleep(10);
+                   Thread.Sleep(10);
                 }
 #if PROFILING
                 else

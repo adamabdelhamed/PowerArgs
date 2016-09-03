@@ -19,7 +19,7 @@ namespace PowerArgs.Cli
     /// <summary>
     /// A class representing a console application that uses a message pump to synchronize work on a UI thread
     /// </summary>
-    public class ConsoleApp : ObservableObject
+    public class ConsoleApp : CliMessagePump
     {
         [ThreadStatic]
         private static ConsoleApp _current;
@@ -37,6 +37,16 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// An event that fires when the application is about to stop, before the console is wiped
+        /// </summary>
+        public Event Stopping { get; private set; } = new Event();
+
+        /// <summary>
+        /// An event that fires after the message pump is completely stopped and the console is wiped
+        /// </summary>
+        public Event Stopped { get; private set; } = new Event();
+
+        /// <summary>
         /// An event that fires when a control is added to the visual tree
         /// </summary>
         public Event<ConsoleControl> ControlAdded { get; private set; } = new Event<ConsoleControl>();
@@ -47,12 +57,6 @@ namespace PowerArgs.Cli
         public Event<ConsoleControl> ControlRemoved { get; private set; } = new Event<ConsoleControl>();
 
         /// <summary>
-        /// An event that fired when the application stops, after the message pump is no longer running, and the console
-        /// has been cleared of the app's visuals
-        /// </summary>
-        public Event ApplicationStopped { get; private set; } = new Event();
-
-        /// <summary>
         /// Gets the bitmap that will be painted to the console
         /// </summary>
         public ConsoleBitmap Bitmap { get; private set; }
@@ -61,11 +65,6 @@ namespace PowerArgs.Cli
         /// Gets the root panel that contains the controls being used by the app
         /// </summary>
         public ConsolePanel LayoutRoot { get; private set; }
-
-        /// <summary>
-        /// Gets the message pump that is used to synchronize work
-        /// </summary>
-        public CliMessagePump MessagePump { get; private set; }
 
         /// <summary>
         /// Gets the focus manager used to manage input focus
@@ -99,12 +98,11 @@ namespace PowerArgs.Cli
         /// <param name="y">The right position on the target console to bound this app</param>
         /// <param name="w">The width of the app</param>
         /// <param name="h">The height of the app</param>
-        public ConsoleApp(int x, int y, int w, int h)
+        public ConsoleApp(int x, int y, int w, int h) : base(ConsoleProvider.Current)
         {
             SetFocusOnStart = true;
             Theme = new Theme();
             Bitmap = new ConsoleBitmap(x, y, w, h);
-            MessagePump = new CliMessagePump(Bitmap.Console, KeyPressed);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
@@ -114,7 +112,19 @@ namespace PowerArgs.Cli
             LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, LifetimeManager);
             LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, LifetimeManager);
             LayoutRoot.Controls.Removed.SubscribeForLifetime(ControlRemovedFromVisualTree, LifetimeManager);
-            MessagePump.WindowResized.SubscribeForLifetime(HandleDebouncedResize, LifetimeManager);
+            WindowResized.SubscribeForLifetime(HandleDebouncedResize, LifetimeManager);
+        }
+
+        /// <summary>
+        /// Creates a ConsoleApp from markup and a view model
+        /// </summary>
+        /// <param name="markup">The xml markup that defines the app's view</param>
+        /// <param name="viewModel">The view model object that defines the code behind the view</param>
+        /// <returns>An app where the view has been bound to the view model</returns>
+        public static ConsoleApp FromMvVm(string markup, object viewModel)
+        {
+            var ret = MarkupParser.Parse(markup, viewModel);
+            return ret;
         }
 
         /// <summary>
@@ -129,20 +139,9 @@ namespace PowerArgs.Cli
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>
-        public Task Start()
+        public override Task Start()
         {
-            Task pumpTask = MessagePump.Start();
-            var ret = pumpTask.ContinueWith((t) =>
-            {
-                ExitInternal();
-            });
-
-            if (SetFocusOnStart)
-            {
-                MessagePump.QueueAction(() => { FocusManager.TryMoveFocus(); });
-            }
-
-            MessagePump.QueueAction(() =>
+            QueueAction(() =>
             {
                 if (_current != null)
                 {
@@ -151,9 +150,25 @@ namespace PowerArgs.Cli
                 // ensures that the current app is set on the message pump thread
                 _current = this;
             });
+
+            if (SetFocusOnStart)
+            {
+                QueueAction(() => 
+                {
+                    FocusManager.TryMoveFocus();
+                });
+            }
+
             Paint();
 
-            return ret;
+            Task pumpTask = base.Start();
+
+            var cleanupTask = pumpTask.ContinueWith((t) =>
+            {
+                 ExitInternal();
+            });
+
+            return cleanupTask;
         }
 
         private void HandleDebouncedResize()
@@ -172,7 +187,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public void Paint()
         {
-            MessagePump.QueueAction(new PaintMessage(PaintInternal));
+            QueueAction(new PaintMessage(PaintInternal));
         }
 
         private void ControlAddedToVisualTree(ConsoleControl c)
@@ -226,7 +241,11 @@ namespace PowerArgs.Cli
             return focusChanged;
         }
 
-        private void KeyPressed(ConsoleKeyInfo info)
+        /// <summary>
+        /// Handles key input for the application
+        /// </summary>
+        /// <param name="info">The key that was pressed</param>
+        protected override void HandleKeyInput(ConsoleKeyInfo info)
         {
             if (FocusManager.GlobalKeyHandlers.TryIntercept(info))
             {
@@ -238,27 +257,31 @@ namespace PowerArgs.Cli
             }
             else if (info.Key == ConsoleKey.Escape)
             {
-                MessagePump.Stop();
+                Stop();
                 return;
             }
             else if (FocusManager.FocusedControl != null)
             {
                 FocusManager.FocusedControl.HandleKeyInput(info);
             }
-
+            else
+            {
+                // not handled
+            }
             Paint();
         }
 
         private void ExitInternal()
         {
+            Stopping.Fire();
             using (var snapshot = Bitmap.CreateSnapshot())
             {
                 Bitmap.CreateWiper().Wipe();
-                ApplicationStopped.Fire();
                 Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
                 Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             }
             _current = null;
+            Stopped.Fire();
             Dispose();
         }
 

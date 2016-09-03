@@ -27,11 +27,10 @@ namespace ArgsTests.CLI
 
         public ConsoleBitmap Buffer { get; private set; }
 
-        int w, h;
         public CliUnitTestConsole(int w = 80, int h = 80)
         {
-            this.w = w;
-            this.h = h;
+            this.BufferWidth = w;
+            this.WindowHeight = h;
             Clear();
         }
 
@@ -43,9 +42,22 @@ namespace ArgsTests.CLI
             }
         }
 
+        public void Enqueue(string input)
+        {
+            foreach(var c in input)
+            {
+                InputQueue.Enqueue(new ConsoleKeyInfo(c, ConsoleKey.NoName, false, false, false));
+            }
+        }
+
+        public void Enqueue(ConsoleKey key)
+        {
+            InputQueue.Enqueue(new ConsoleKeyInfo('\u0000', key, false, false, false));
+        }
+
         public void Clear()
         {
-            Buffer = new ConsoleBitmap(0, 0, w, h);
+            Buffer = new ConsoleBitmap(0, 0, this.BufferWidth, this.WindowHeight);
             InputQueue = new Queue<ConsoleKeyInfo>();
             this.BufferWidth = Buffer.Width;
             this.CursorLeft = 0;
@@ -64,7 +76,8 @@ namespace ArgsTests.CLI
                 Thread.Sleep(10);
             }
 
-            return InputQueue.Dequeue();
+            var read = InputQueue.Dequeue();
+            return read;
         }
 
         public ConsoleKeyInfo ReadKey(bool intercept)
@@ -99,6 +112,10 @@ namespace ArgsTests.CLI
             {
                 CursorLeft = 0;
                 CursorTop++;
+            }
+            else
+            {
+                CursorLeft++;
             }
         }
 

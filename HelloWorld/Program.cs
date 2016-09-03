@@ -8,6 +8,7 @@ using PowerArgs.Cli;
 using System.Threading;
 using System.Threading.Tasks;
 using HelloWorld.Samples;
+using ArgsTests;
 
 namespace HelloWorld
 {
@@ -15,8 +16,13 @@ namespace HelloWorld
     {
         static void Main(string[] args)
         {
+            var viewModel = new BasicXmlAppViewModel();
+            var app = ConsoleApp.FromMvVm(ArgsTests.Resources.BasicXmlApp, viewModel);
+            app.Start().Wait();
+            Console.WriteLine(viewModel.Name);
+            return;
 
-           new AzureTableBrowserApp().Start().Wait();
+            new AzureTableBrowserApp().Start().Wait();
 #if PROFILING
                     CliProfiler.Instance.Dump(@"C:\temp\MessagePumpProfile.txt");
 #endif

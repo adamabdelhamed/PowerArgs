@@ -106,14 +106,14 @@ namespace PowerArgs.Cli
                  {
                      if(choice != null && choice.DisplayText == "Yes")
                      {
-                         Application.MessagePump.Stop();
+                         Application.Stop();
                      }
 
                  }, true, 10, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
             }
             else if(consolePageApp.AllowEscapeToExit)
             {
-                Application.MessagePump.Stop();
+                Application.Stop();
             }
         }
 

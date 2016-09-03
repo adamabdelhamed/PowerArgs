@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PROFILING</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -47,6 +47,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArgDefinition\ICommandLineArgumentsDefinitionFactory.cs" />
@@ -81,6 +82,11 @@
     <Compile Include="CLI\Helpers\Friendlies.cs" />
     <Compile Include="CLI\Helpers\Layout.cs" />
     <Compile Include="CLI\KeyboardInterceptionManager.cs" />
+    <Compile Include="CLI\Markup\KeyboardShortcutProcessor.cs" />
+    <Compile Include="CLI\Markup\FillMarkupProcessor.cs" />
+    <Compile Include="CLI\Markup\MarkupAttribute.cs" />
+    <Compile Include="CLI\Markup\Xml.cs" />
+    <Compile Include="CLI\Markup\MarkupParser.cs" />
     <Compile Include="CLI\Observability\Event.cs" />
     <Compile Include="CLI\Observability\Lifetime.cs" />
     <Compile Include="CLI\Observability\LifetimeManager.cs" />

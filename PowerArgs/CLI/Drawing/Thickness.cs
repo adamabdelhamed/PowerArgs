@@ -19,5 +19,17 @@ namespace PowerArgs.Cli
             this.Top = t;
             this.Bottom = b;
         }
+
+        public static Thickness Parse(string s)
+        {
+            var split = s.Split(',');
+
+            int l = split.Length > 0 ? int.Parse(split[0]) : 0;
+            int r = split.Length > 1 ? int.Parse(split[1]) : 0;
+            int t = split.Length > 2 ? int.Parse(split[2]) : 0;
+            int b = split.Length > 3 ? int.Parse(split[3]) : 0;
+
+            return new Thickness(1, r, t, b);
+        }
     }
 }

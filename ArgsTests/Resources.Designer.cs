@@ -22,7 +22,7 @@ namespace ArgsTests {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace ArgsTests {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ArgsTests.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace ArgsTests {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -67,11 +67,26 @@ namespace ArgsTests {
         ///3                                             Some value here                   
         ///4                                             Some value here                   
         ///5                                             Some value here                   
-        ///                     [rest of string was truncated]&quot;;.
+        ///End                  [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string BasicGridExpectedOutput {
+        public static string BasicGridExpectedOutput {
             get {
                 return ResourceManager.GetString("BasicGridExpectedOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;App&gt;
+        ///  &lt;StackPanel Fill=&quot;Both&quot; Orientation=&quot;Vertical&quot;&gt;
+        ///    &lt;Label Text=&quot;Name&quot; Fill=&quot;Horizontal&quot; /&gt;
+        ///    &lt;TextBox Value=&quot;{Name}&quot; Width=&quot;40&quot; Background=&quot;Gray&quot; Foreground=&quot;Black&quot; /&gt;
+        ///	  &lt;Button Activated=&quot;SubmitClicked&quot; Text=&quot;Submit&quot;/&gt;
+        ///  &lt;/StackPanel&gt;
+        ///&lt;/App&gt;.
+        /// </summary>
+        public static string BasicXmlApp {
+            get {
+                return ResourceManager.GetString("BasicXmlApp", resourceCulture);
             }
         }
         
@@ -95,7 +110,7 @@ namespace ArgsTests {
         ///        &lt;tr&gt;
         ///            &lt;td class=&quot;option [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string PhotoAlbumManagerExpectedBrowserUsage {
+        public static string PhotoAlbumManagerExpectedBrowserUsage {
             get {
                 return ResourceManager.GetString("PhotoAlbumManagerExpectedBrowserUsage", resourceCulture);
             }
@@ -112,7 +127,7 @@ namespace ArgsTests {
         ///               Verbose                                                                                
         ///               Light                                                   [rest of string was truncated]&quot;;.
         /// </summary>
-        internal static string PhotoAlbumManagerExpectedConsoleUsage {
+        public static string PhotoAlbumManagerExpectedConsoleUsage {
             get {
                 return ResourceManager.GetString("PhotoAlbumManagerExpectedConsoleUsage", resourceCulture);
             }

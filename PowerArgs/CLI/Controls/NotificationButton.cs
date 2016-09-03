@@ -35,10 +35,10 @@ namespace PowerArgs.Cli
                     launcher.Foreground = ConsoleColor.Green;
                     if(resetTimer != null)
                     {
-                        Application.MessagePump.ClearTimeout(resetTimer);
+                        Application.ClearTimeout(resetTimer);
                         resetTimer = null;
                     }
-                    resetTimer = Application.MessagePump.SetTimeout(ResetLaundherFG, TimeSpan.FromSeconds(5));
+                    resetTimer = Application.SetTimeout(ResetLaundherFG, TimeSpan.FromSeconds(5));
                 }
             }, this.LifetimeManager);
         }

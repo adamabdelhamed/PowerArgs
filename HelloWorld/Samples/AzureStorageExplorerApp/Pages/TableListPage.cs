@@ -44,7 +44,7 @@ namespace HelloWorld.Samples
             var accountName = RouteVariables["account"];
             var accountInfo = (from account in StorageAccountInfo.Load() where account.AccountName == accountName select account).FirstOrDefault();
             currentStorageAccount = new CloudStorageAccount(new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountInfo.Key), accountInfo.UseHttps);
-            Grid.DataSource = new TableListDataSource(currentStorageAccount.CreateCloudTableClient(), Application.MessagePump);
+            Grid.DataSource = new TableListDataSource(currentStorageAccount.CreateCloudTableClient(), Application);
         }
 
         private void AddTable()

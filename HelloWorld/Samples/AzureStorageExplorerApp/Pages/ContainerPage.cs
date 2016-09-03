@@ -65,7 +65,7 @@ namespace HelloWorld.Samples
             var client = currentStorageAccount.CreateCloudBlobClient();
 
             container = client.GetContainerReference(containerName);
-            Grid.DataSource = new BlobDataSource(container, Application.MessagePump);
+            Grid.DataSource = new BlobDataSource(container, Application);
         }
 
         private void OpenSelectedBlob()
@@ -81,7 +81,7 @@ namespace HelloWorld.Samples
 
             ProgressOperationManager.Operations.Add(operation);
 
-            Application.MessagePump.QueueAsyncAction(blob.DownloadToFileAsync(tempFile, FileMode.OpenOrCreate), (t) =>
+            Application.QueueAsyncAction(blob.DownloadToFileAsync(tempFile, FileMode.OpenOrCreate), (t) =>
             {
                 if (t.Exception != null)
                 {
@@ -135,7 +135,7 @@ namespace HelloWorld.Samples
                     {
                         var blobPath = System.IO.Path.Combine(pre.ToString(), System.IO.Path.GetFileName(f.ToString()));
                         var blob = container.GetBlockBlobReference(blobPath);
-                        Application.MessagePump.QueueAsyncAction(blob.UploadFromFileAsync(f.ToString(), FileMode.Open), (t) =>
+                        Application.QueueAsyncAction(blob.UploadFromFileAsync(f.ToString(), FileMode.Open), (t) =>
                         {
                             if(t.Exception != null)
                             {
@@ -174,7 +174,7 @@ namespace HelloWorld.Samples
                     State = OperationState.InProgress
                 };
 
-                Application.MessagePump.QueueAsyncAction((Grid.SelectedItem as CloudBlob).DeleteAsync(), (tp) =>
+                Application.QueueAsyncAction((Grid.SelectedItem as CloudBlob).DeleteAsync(), (tp) =>
                 {
                     if(tp.Exception != null)
                     {

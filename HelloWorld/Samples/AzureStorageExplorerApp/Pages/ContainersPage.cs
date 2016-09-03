@@ -52,7 +52,7 @@ namespace HelloWorld.Samples
             var accountName = RouteVariables["account"];
             var accountInfo = (from account in StorageAccountInfo.Load() where account.AccountName == accountName select account).FirstOrDefault();
             currentStorageAccount = new CloudStorageAccount(new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(accountName, accountInfo.Key), accountInfo.UseHttps);
-            Grid.DataSource = new ContainerListDataSource(currentStorageAccount.CreateCloudBlobClient(), Application.MessagePump);
+            Grid.DataSource = new ContainerListDataSource(currentStorageAccount.CreateCloudBlobClient(), Application);
         }
 
         private void AddContainer()
@@ -63,7 +63,7 @@ namespace HelloWorld.Samples
                 {
                     var t = currentStorageAccount.CreateCloudBlobClient().GetContainerReference(name.ToString()).CreateAsync();
 
-                    Application.MessagePump.QueueAsyncAction(t, (tp) =>
+                    Application.QueueAsyncAction(t, (tp) =>
                     {
                         if (Application != null)
                         {
@@ -80,7 +80,7 @@ namespace HelloWorld.Samples
             {
                 var container = currentStorageAccount.CreateCloudBlobClient().GetContainerReference((Grid.SelectedItem as ContainerRecord).Name);
                 
-                Application.MessagePump.QueueAsyncAction(container.DeleteAsync(), (tp) =>
+                Application.QueueAsyncAction(container.DeleteAsync(), (tp) =>
                 {
                     if (Application != null && PageStack.CurrentPage == this)
                     {
