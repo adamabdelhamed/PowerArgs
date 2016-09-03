@@ -63,7 +63,7 @@ namespace ArgsTests
                 var actualChar = actual[i];
                 if (expectedChar != actualChar)
                 {
-                    Assert.Fail("Character on line " + line + " and col " + col + " did not match.  Expected '" + expectedChar + ", actual '" + actualChar + "'\n\nExpected:\n"+expected+"\n\nActual:\n"+actual);
+                    Assert.Fail("Character on line " + line + " and col " + col + " did not match.  Expected '" + expectedChar + "', actual '" + actualChar + "'\n\nExpected:\n"+expected+"\n\nActual:\n"+actual);
                 }
 
                 verified++;

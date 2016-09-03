@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -78,7 +79,17 @@ namespace PowerArgs
         /// </summary>
         public int BufferWidth
         {
-            get { return Console.BufferWidth; }
+            get
+            {
+                try
+                {
+                    return Console.BufferWidth;
+                }
+                catch (IOException)
+                {
+                    return 80;
+                }
+            }
             set { Console.BufferWidth = value; }
         }
 

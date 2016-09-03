@@ -23,7 +23,7 @@ namespace HelloWorld.Samples
         [ArgumentAwareTabCompletion(typeof(MetalTabCompletionSource))]
         [ArgDescription("An optional string arg")]
         public string StringArg { get; set; }
-        [ArgDescription("An optional int arg")]
+        [ArgDescription("An optional int arg dddddddddddddddddddddddddddddddddddddddddddddddddddd d  d dddddddddddddddddddddd dddddddddddddddddddddd d ddddddddddddddddddddddddddddddddddd")]
         public int?    IntArg    { get; set; }
         [ArgDescription("An optional switch arg")]
         public bool   SwitchArg { get; set; }

@@ -3,11 +3,11 @@ A program that lets you manage a collection of photos in Azure storage container
 
 Usage - PhotoManager <action> -options
 
-GlobalOption   Description                                                                            
-Output (-O)    How much output to display while performing management operations [Default='Light']    
-               Verbose                                                                                
-               Light                                                                                  
-               Quiet                                                                                  
+GlobalOption   Description
+Output (-O)    How much output to display while performing management operations [Default='Light'] 
+               Verbose
+               Light
+               Quiet
 
 Actions
 

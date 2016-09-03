@@ -9,7 +9,7 @@ Usage - {{UsageSummary Cyan!}}
 !{{ifnot}}
 {{if HasGlobalArguments}}
 
-{{table Arguments Syntax>GlobalOption Description !}}
+{{table Arguments Syntax>GlobalOption Description+ !}}
 !{{if}}
 {{if HasActions}}
 {{if HasSpecifiedAction}}
