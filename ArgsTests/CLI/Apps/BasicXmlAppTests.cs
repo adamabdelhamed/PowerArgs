@@ -28,7 +28,7 @@ namespace ArgsTests.CLI.Apps
 
             var task = app.Start();
 
-            app.SetTimeout(() =>
+            var timer = app.SetTimeout(() =>
             {
                 Assert.IsTrue(app.FocusManager.FocusedControl is TextBox);
                 testCli.Input.Enqueue("Adam");
@@ -74,10 +74,12 @@ namespace ArgsTests.CLI.Apps
             , app.LifetimeManager);
 
             var task = app.Start();
-            Thread.Sleep(100);
-            testCli.Input.Enqueue("Adam");
-            testCli.Input.Enqueue(ConsoleKey.Tab);
-            testCli.Input.Enqueue(ConsoleKey.Enter);
+            var timer = app.SetTimeout(() =>
+            {
+                testCli.Input.Enqueue("Adam");
+                testCli.Input.Enqueue(ConsoleKey.Tab);
+                testCli.Input.Enqueue(ConsoleKey.Enter);
+            }, TimeSpan.FromMilliseconds(1));
 
             task.Wait();
             appWipedAfterTask = testCli.Buffer.ToString().Trim().Length == 0;
