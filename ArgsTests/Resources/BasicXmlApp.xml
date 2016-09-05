@@ -3,5 +3,6 @@
     <Label Text="Name" Fill="Horizontal" />
     <TextBox Value="{Name}" Width="40" Background="Gray" Foreground="Black" />
 	  <Button Activated="SubmitClicked" Shortcut="Enter" Text="Submit"/>
+    <Spinner IsSpinning="true"></Spinner>
   </StackPanel>
 </App>
