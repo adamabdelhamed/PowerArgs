@@ -6,6 +6,8 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
+
 namespace ArgsTests
 {
     public class UsageAutomation : Attribute {}
@@ -79,25 +81,26 @@ namespace ArgsTests
         public void TestAllUsageOutputsDontThrowExceptionsOrContainUnprocessedReplacements()
         {
             int verifyCount = 0;
-            foreach (var type in Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttributes(typeof(UsageAutomation), true).Length > 0))
-            {
-                ArgUsage.GetStyledUsage(type, "testusage.exe");
-                var consoleOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultConsoleUsageTemplate);
-                var browserOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultBrowserUsageTemplate);
+            var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttributes(typeof(UsageAutomation), true).Length > 0);
+            System.Threading.Tasks.Parallel.ForEach(types, (type) =>
+             {
+                 ArgUsage.GetStyledUsage(type, "testusage.exe");
+                 var consoleOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultConsoleUsageTemplate);
+                 var browserOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultBrowserUsageTemplate);
 
-                Assert.IsFalse(consoleOutput.Contains("{{"));
-                Assert.IsFalse(consoleOutput.Contains("}}"));
+                 Assert.IsFalse(consoleOutput.Contains("{{"));
+                 Assert.IsFalse(consoleOutput.Contains("}}"));
 
-                Assert.IsFalse(browserOutput.Contains("{{"));
-                Assert.IsFalse(browserOutput.Contains("}}"));
-                verifyCount++;
+                 Assert.IsFalse(browserOutput.Contains("{{"));
+                 Assert.IsFalse(browserOutput.Contains("}}"));
+                 Interlocked.Increment(ref verifyCount);
 
-                Console.WriteLine("*************************************");
-                Console.WriteLine("* " + type.Name);
-                Console.WriteLine("*************************************\n");
-                Console.WriteLine(consoleOutput);
-                Console.WriteLine("*************************************\n");
-            }
+                 Console.WriteLine("*************************************");
+                 Console.WriteLine("* " + type.Name);
+                 Console.WriteLine("*************************************\n");
+                 Console.WriteLine(consoleOutput);
+                 Console.WriteLine("*************************************\n");
+             });
             Console.WriteLine("Verified usage output for "+verifyCount+" types");
         }
 

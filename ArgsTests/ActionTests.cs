@@ -44,7 +44,6 @@ namespace ArgsTests
             {
                 return Task.Factory.StartNew(() => 
                 {
-                    Thread.Sleep(200);
                     InvokeCount++;
                 });
             }
@@ -58,7 +57,6 @@ namespace ArgsTests
             {
                 return Task.Factory.StartNew(() =>
                 {
-                    Thread.Sleep(200);
                     InvokeCount++;
                 });
             }
@@ -79,7 +77,6 @@ namespace ArgsTests
             {
                 return Task.Factory.StartNew(() =>
                 {
-                    Thread.Sleep(200);
                     InvokeCount++;
                 });
             }

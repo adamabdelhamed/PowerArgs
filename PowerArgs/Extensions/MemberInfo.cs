@@ -60,27 +60,31 @@ namespace PowerArgs
         {
             string cacheKey = (info is Type ? ((Type)info).FullName : info.DeclaringType.FullName + "." + info.Name) + "<" + typeof(T).FullName + ">";
 
-            if (cachedAttributes.ContainsKey(cacheKey))
+            lock(cachedAttributes)
             {
-                var cachedValue = cachedAttributes[cacheKey] as List<T>;
-                if (cachedValue != null) return cachedValue;
-            }
+                if (cachedAttributes.ContainsKey(cacheKey))
+                {
+                    var cachedValue = cachedAttributes[cacheKey] as List<T>;
+                    if (cachedValue != null) return cachedValue;
+                }
 
-            var freshValue = (from attr in info.GetCustomAttributes(true) where attr.GetType() == typeof(T) || 
-                                  attr.GetType().IsSubclassOf(typeof(T)) ||
-                                  attr.GetType().GetInterfaces().Contains(typeof(T))
-                              select (T)attr).ToList();
+                var freshValue = (from attr in info.GetCustomAttributes(true)
+                                 where attr.GetType() == typeof(T) ||
+attr.GetType().IsSubclassOf(typeof(T)) ||
+attr.GetType().GetInterfaces().Contains(typeof(T))
+                                  select (T)attr).ToList();
 
-            if (cachedAttributes.ContainsKey(cacheKey))
-            {
-                cachedAttributes[cacheKey] = freshValue;
-            }
-            else
-            {
-                cachedAttributes.Add(cacheKey, freshValue);
-            }
+                if (cachedAttributes.ContainsKey(cacheKey))
+                {
+                    cachedAttributes[cacheKey] = freshValue;
+                }
+                else
+                {
+                    cachedAttributes.Add(cacheKey, freshValue);
+                }
 
-            return freshValue;
+                return freshValue;
+            }
         }
     }
 }
