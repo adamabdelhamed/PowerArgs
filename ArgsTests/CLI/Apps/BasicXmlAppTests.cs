@@ -15,22 +15,27 @@ namespace ArgsTests.CLI.Apps
         public void TestBasicFormSubmit()
         {
             var testCli = new CliUnitTestConsole(80,4);
-
             ConsoleProvider.Current = testCli;
 
             var viewModel = new BasicXmlAppViewModel();
             var app = ConsoleApp.FromMvVm(Resources.BasicXmlApp, viewModel);
             app.Stopping.SubscribeForLifetime(() => 
             {
+                Console.WriteLine("STOPPING");
                 Console.WriteLine(testCli.Buffer.ToString());
+                Console.WriteLine("STOPPING");
             }, app.LifetimeManager);
 
             var task = app.Start();
 
-            Thread.Sleep(100);
-            testCli.Input.Enqueue("Adam");
-            testCli.Input.Enqueue(ConsoleKey.Tab);
-            testCli.Input.Enqueue(ConsoleKey.Enter);
+            app.SetTimeout(() =>
+            {
+                Assert.IsTrue(app.FocusManager.FocusedControl is TextBox);
+                testCli.Input.Enqueue("Adam");
+                testCli.Input.Enqueue(ConsoleKey.Tab);
+                testCli.Input.Enqueue(ConsoleKey.Enter);
+
+            }, TimeSpan.FromMilliseconds(1));
 
             task.Wait();
             Assert.AreEqual(new ConsoleString("Adam"), viewModel.Name);
