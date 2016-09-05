@@ -157,7 +157,6 @@
     <Compile Include="TemplatedUsageTests.cs" />
     <Compile Include="ConsoleTableBuilderTests.cs" />
     <Compile Include="ComposableArgActionsTests.cs" />
-    <Compile Include="PipelineTests.cs" />
     <Compile Include="ConsoleInDriverTests.cs" />
     <Compile Include="AllowUnexpectedArgsTests.cs" />
     <Compile Include="TestStuff\AfterInvokeInterceptor.cs" />

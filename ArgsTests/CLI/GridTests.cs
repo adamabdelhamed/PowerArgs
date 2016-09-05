@@ -56,7 +56,7 @@ namespace ArgsTests.CLI
             doneTask.Wait();
 
             // verify that the console state matches our expected state
-            Assert.AreEqual(Resources.BasicGridExpectedOutput, consoleState);
+            Assert.AreEqual(Resources.BasicGridExpectedOutput.Replace("\r\n", "\n").Replace("\r","\n"), consoleState.Replace("\r\n", "\n").Replace("\r", "\n"));
         }
     }
 }

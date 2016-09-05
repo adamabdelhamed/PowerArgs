@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 
 using System.Linq;
-using PowerArgs.Preview;
 using PowerArgs.Cli;
 
 
@@ -263,7 +262,6 @@ namespace ArgsTests
                 typeof(ArgReviverAttribute),
                 typeof(DynamicExpressionProviderAttribute),
                 typeof(ArgActions),
-                typeof(ArgPipelineActionStage),
                 typeof(FilterableAttribute),
                 typeof(KeyAttribute),
                 typeof(MarkupPropertyAttribute),
