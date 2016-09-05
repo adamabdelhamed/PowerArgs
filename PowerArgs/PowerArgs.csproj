@@ -82,6 +82,7 @@
     <Compile Include="CLI\Helpers\Friendlies.cs" />
     <Compile Include="CLI\Helpers\Layout.cs" />
     <Compile Include="CLI\KeyboardInterceptionManager.cs" />
+    <Compile Include="CLI\Markup\DockMarkupProcessor.cs" />
     <Compile Include="CLI\Markup\KeyboardShortcutProcessor.cs" />
     <Compile Include="CLI\Markup\FillMarkupProcessor.cs" />
     <Compile Include="CLI\Markup\MarkupAttribute.cs" />

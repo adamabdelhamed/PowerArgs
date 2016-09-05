@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PowerArgs.Cli
+﻿namespace PowerArgs.Cli
 {
     public class FillMarkupProcessor : IMarkupProcessor
     {
@@ -20,8 +14,7 @@ namespace PowerArgs.Cli
             }
             else if (textValue == "Vertical")
             {
-                // todo - this should accept a padding
-                context.CurrentControl.FillVertically();
+                context.CurrentControl.FillVertically(padding: padding);
             }
             else if (textValue == "Both")
             {

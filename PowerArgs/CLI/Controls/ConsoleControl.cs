@@ -7,6 +7,7 @@ namespace PowerArgs.Cli
     /// A class that represents a visual element within a CLI application
     /// </summary>
     [MarkupExtension("Fill", typeof(FillMarkupProcessor)), MarkupIgnoreAttribute("Fill-Padding")]
+    [MarkupExtension("Dock", typeof(DockMarkupProcessor)), MarkupIgnoreAttribute("Dock-Padding")]
     public class ConsoleControl : Rectangular
     {
         /// <summary>

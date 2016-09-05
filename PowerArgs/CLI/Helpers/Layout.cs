@@ -140,10 +140,14 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T FillVertically<T>(this T child, ConsoleControl parent = null) where T : ConsoleControl
+        public static T FillVertically<T>(this T child, ConsoleControl parent = null, Thickness? padding = null) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
-            Action syncAction = () => { child.Bounds = new Rectangle(child.X, 0, child.Width, parent.Height); };
+            var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
+            Action syncAction = () => 
+            {
+                child.Bounds = new Rectangle(child.X, effectivePadding.Top, child.Width, parent.Height - (effectivePadding.Top + effectivePadding.Bottom));
+            };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
             syncAction();
             return child;
