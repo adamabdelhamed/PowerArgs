@@ -35,7 +35,6 @@ namespace HelloWorld
 
             // Samples.SearchSample.Run();
             // Samples.ProgressBarSample.Run();
-            // Samples.Piping._Main(args);
             // Samples.CalculatorProgramSample._Main(args); // a simple 4 function calculator
             // Samples.HelloWorldParse._Main(args);       //  The simplest way to use the parser.  All this sample does is parse the arguments and send them back to your program.
             // Samples.HelloWorldInvoke._Main(args);      //  A simple way to have the parser parse your arguments and then call a new Main method that you build.

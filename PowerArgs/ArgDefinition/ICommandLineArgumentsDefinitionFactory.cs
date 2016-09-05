@@ -27,7 +27,7 @@ namespace PowerArgs
     {
         public CommandLineArgumentsDefinition MakeDefinition(CommandLineArgumentsDefinition other)
         {
-            if (other.ArgumentScaffoldType == null) throw new NotSupportedException("Your command line arguments definition was not created from a scaffold type. You created it manually using the default constructor of CommandLineArgumentsDefinition().  If you want to use ArgPipeline you must implement ICommandLineDefinitionFactory and pass your custom type to the ArgPipelineAttribute's CommandLineDefinitionFactory property");
+            if (other.ArgumentScaffoldType == null) throw new NotSupportedException("Your command line arguments definition was not created from a scaffold type. You created it manually using the default constructor of CommandLineArgumentsDefinition().");
             return new CommandLineArgumentsDefinition(other.ArgumentScaffoldType);
         }
 

@@ -52,20 +52,32 @@ namespace ArgsTests.CLI.Apps
             app.Stopping.SubscribeForLifetime(() =>
             {
                 appDrewProperly = testCli.Buffer.ToString().Trim().Length > 0;
+
+                Console.WriteLine("STOPPING");
+                Console.WriteLine(testCli.Buffer.ToString());
+                Console.WriteLine("STOPPING");
             }, app.LifetimeManager);
 
             app.Stopped.SubscribeForLifetime(() =>
             {
                 appWipedAfterStoppedEvent = testCli.Buffer.ToString().Trim().Length == 0;
-            }, app.LifetimeManager);
+                Console.WriteLine("STOPPED");
+                Console.WriteLine(testCli.Buffer.ToString());
+                Console.WriteLine("STOPPED");
+            }
+            , app.LifetimeManager);
 
             var task = app.Start();
             task.Wait();
             appWipedAfterTask = testCli.Buffer.ToString().Trim().Length == 0;
 
-            Assert.IsTrue(appDrewProperly);
-            Assert.IsTrue(appWipedAfterStoppedEvent);
-            Assert.IsTrue(appWipedAfterTask);
+            Console.WriteLine("END");
+            Console.WriteLine(testCli.Buffer.ToString());
+            Console.WriteLine("END");
+
+            Assert.IsTrue(appDrewProperly, "Assert app drew properly");
+            Assert.IsTrue(appWipedAfterStoppedEvent, "Assert app wiped properly during event");
+            Assert.IsTrue(appWipedAfterTask, "Assert app wiped properly afer task");
         }
     }
 }
