@@ -18,11 +18,11 @@ namespace ArgsTests.CLI.Controls
             app.LayoutRoot.Add(new TextBox()).Fill();
             var task = app.Start();
 
-            testCli.InputQueue.Enqueue(new ConsoleKeyInfo('a', ConsoleKey.A, false, false, false));
+            testCli.Input.Enqueue(new ConsoleKeyInfo('a', ConsoleKey.A, false, false, false));
 
             Thread.Sleep(1000);
             var result = testCli.Buffer.ToString();
-            testCli.InputQueue.Enqueue(new ConsoleKeyInfo('*', ConsoleKey.Escape, false, false, false));
+            testCli.Input.Enqueue(new ConsoleKeyInfo('*', ConsoleKey.Escape, false, false, false));
             task.Wait();
 
 

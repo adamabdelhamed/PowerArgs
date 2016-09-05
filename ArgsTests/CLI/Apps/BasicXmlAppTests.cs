@@ -15,9 +15,7 @@ namespace ArgsTests.CLI.Apps
         public void TestBasicFormSubmit()
         {
             var testCli = new CliUnitTestConsole(80,4);
-            testCli.Enqueue("Adam");
-            testCli.Enqueue(ConsoleKey.Tab);
-            testCli.Enqueue(ConsoleKey.Enter);
+
             ConsoleProvider.Current = testCli;
 
             var viewModel = new BasicXmlAppViewModel();
@@ -28,6 +26,12 @@ namespace ArgsTests.CLI.Apps
             }, app.LifetimeManager);
 
             var task = app.Start();
+
+            Thread.Sleep(100);
+            testCli.Input.Enqueue("Adam");
+            testCli.Input.Enqueue(ConsoleKey.Tab);
+            testCli.Input.Enqueue(ConsoleKey.Enter);
+
             task.Wait();
             Assert.AreEqual(new ConsoleString("Adam"), viewModel.Name);
         }
@@ -37,9 +41,6 @@ namespace ArgsTests.CLI.Apps
         public void TestConsoleWipesOnStopped()
         {
             var testCli = new CliUnitTestConsole(80, 4);
-            testCli.Enqueue("Adam");
-            testCli.Enqueue(ConsoleKey.Tab);
-            testCli.Enqueue(ConsoleKey.Enter);
             ConsoleProvider.Current = testCli;
 
             var viewModel = new BasicXmlAppViewModel();
@@ -68,6 +69,11 @@ namespace ArgsTests.CLI.Apps
             , app.LifetimeManager);
 
             var task = app.Start();
+            Thread.Sleep(100);
+            testCli.Input.Enqueue("Adam");
+            testCli.Input.Enqueue(ConsoleKey.Tab);
+            testCli.Input.Enqueue(ConsoleKey.Enter);
+
             task.Wait();
             appWipedAfterTask = testCli.Buffer.ToString().Trim().Length == 0;
 

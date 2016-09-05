@@ -50,7 +50,7 @@ namespace ArgsTests.CLI
             var consoleState = console.Buffer.ToString();
 
             // exit the app by simulating an escape key press
-            console.InputQueue.Enqueue(new ConsoleKeyInfo(' ', ConsoleKey.Escape,false,  false, false));
+            console.Input.Enqueue(new ConsoleKeyInfo(' ', ConsoleKey.Escape,false,  false, false));
 
             // wait for the app to exit normally
             doneTask.Wait();

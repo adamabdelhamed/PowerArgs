@@ -94,7 +94,7 @@ namespace ArgsTests.Data
                 }
 
                 Assert.AreEqual(expectedNumberOfItems, viewedData.Count);
-                console.InputQueue.Enqueue(new ConsoleKeyInfo(' ', ConsoleKey.Escape, false, false, false));
+                console.Input.Enqueue(new ConsoleKeyInfo(' ', ConsoleKey.Escape, false, false, false));
             } finally
             {
                 pump.Stop();

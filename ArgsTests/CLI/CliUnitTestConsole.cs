@@ -23,14 +23,14 @@ namespace ArgsTests.CLI
 
         public ConsoleColor ForegroundColor { get; set; }
 
-        public Queue<ConsoleKeyInfo> InputQueue { get; private set; }
-
+        public CliKeyboardInputQueue Input { get; private set; }
         public ConsoleBitmap Buffer { get; private set; }
 
         public CliUnitTestConsole(int w = 80, int h = 80)
         {
             this.BufferWidth = w;
             this.WindowHeight = h;
+            Input = new CliKeyboardInputQueue();
             Clear();
         }
 
@@ -38,27 +38,13 @@ namespace ArgsTests.CLI
         {
             get
             {
-                return InputQueue.Count > 0;
+                return Input.KeyAvailable;
             }
         }
-
-        public void Enqueue(string input)
-        {
-            foreach(var c in input)
-            {
-                InputQueue.Enqueue(new ConsoleKeyInfo(c, ConsoleKey.NoName, false, false, false));
-            }
-        }
-
-        public void Enqueue(ConsoleKey key)
-        {
-            InputQueue.Enqueue(new ConsoleKeyInfo('\u0000', key, false, false, false));
-        }
-
+        
         public void Clear()
         {
             Buffer = new ConsoleBitmap(0, 0, this.BufferWidth, this.WindowHeight);
-            InputQueue = new Queue<ConsoleKeyInfo>();
             this.BufferWidth = Buffer.Width;
             this.CursorLeft = 0;
             this.CursorTop = 0;
@@ -71,12 +57,7 @@ namespace ArgsTests.CLI
 
         public ConsoleKeyInfo ReadKey()
         {
-            while (KeyAvailable == false)
-            {
-                Thread.Sleep(10);
-            }
-
-            var read = InputQueue.Dequeue();
+            var read = Input.ReadKey();
             return read;
         }
 
