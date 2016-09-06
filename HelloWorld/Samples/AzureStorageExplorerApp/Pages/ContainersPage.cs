@@ -32,8 +32,8 @@ namespace HelloWorld.Samples
             addButton = CommandBar.Add(new Button() { Text = "Add container", Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });
             deleteButton = CommandBar.Add(new Button() { Text = "Delete container", CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.Delete) });
 
-            addButton.Activated.SubscribeForLifetime(AddContainer, LifetimeManager);
-            deleteButton.Activated.SubscribeForLifetime(DeleteSelectedContainer, LifetimeManager);
+            addButton.Pressed.SubscribeForLifetime(AddContainer, LifetimeManager);
+            deleteButton.Pressed.SubscribeForLifetime(DeleteSelectedContainer, LifetimeManager);
             Grid.SelectedItemActivated += NavigateToContainer;
 
             CommandBar.Add(new NotificationButton(ProgressOperationManager));

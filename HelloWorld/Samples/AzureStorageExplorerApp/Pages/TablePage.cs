@@ -20,7 +20,7 @@ namespace HelloWorld.Samples
            
             deleteButton = CommandBar.Add(new Button() { Text = "Delete entity", Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null), CanFocus = false });
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
-            deleteButton.Activated.SubscribeForLifetime(BeginDeleteSelectedEntityIfExists, LifetimeManager);
+            deleteButton.Pressed.SubscribeForLifetime(BeginDeleteSelectedEntityIfExists, LifetimeManager);
             Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedTableEntityChanged, this.LifetimeManager);
         }
 

@@ -125,7 +125,7 @@ namespace PowerArgs.Cli
         private void BindActionToActionPanel(ProgressOperationAction action)
         {
             var button = actionPanel.Add(new Button() { Text = action.DisplayName, Tag = action });
-            button.Activated.SubscribeForLifetime(action.Action, button.LifetimeManager);
+            button.Pressed.SubscribeForLifetime(action.Action, button.LifetimeManager);
         }
 
         private void UnbindActionToActionPanel(ProgressOperationAction action)

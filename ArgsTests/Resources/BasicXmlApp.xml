@@ -1,7 +1,10 @@
 ﻿<App>
-  <StackPanel Fill="Both" Orientation="Vertical">
-    <Label Text="Name" Fill="Horizontal" />
-    <TextBox Value="{Name}" Width="40" Background="Gray" Foreground="Black" />
+  <StackPanel AutoSize="true" Orientation="Vertical">
+    <StackPanel AutoSize="true" Orientation="Horizontal" Fill="Horizontal">
+      <Spinner Foreground="Green" IsSpinning="true"></Spinner>
+      <Label Text="Name" Fill="Horizontal" />
+    </StackPanel>
+    <TextBox Value="{Name}" Background="Gray" Foreground="Black" />
+    <Button Pressed="SubmitClicked" Shortcut="Enter" Text="Submit"/>
   </StackPanel>
-  <Button Dock="Bottom" Activated="SubmitClicked" Shortcut="Enter" Text="Submit"/>
 </App>

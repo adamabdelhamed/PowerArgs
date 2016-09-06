@@ -1,13 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A control that renders a single pixel
+    /// </summary>
     public class PixelControl : ConsoleControl
     {
+        /// <summary>
+        /// Gets or sets the character value to be displayed
+        /// </summary>
         public ConsoleCharacter Value
         {
             get
@@ -21,13 +23,14 @@ namespace PowerArgs.Cli
             }
         }
 
-        PropertyChangedSubscription noResizeSubscription;
-
+        /// <summary>
+        /// Creates a new pixel control
+        /// </summary>
         public PixelControl()
         {
             Width = 1;
             Height = 1;
-            noResizeSubscription = SubscribeUnmanaged(nameof(Bounds), EnsureNoResize);
+            SubscribeForLifetime(nameof(Bounds), EnsureNoResize, this.LifetimeManager);
             Value = new ConsoleCharacter(' ', Foreground, Background);
         }
 

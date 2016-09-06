@@ -4,6 +4,9 @@ using System.Threading;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A control that lets the user provide text input
+    /// </summary>
     public class TextBox : ConsoleControl
     {
         private static readonly TimeSpan BlinkInterval = TimeSpan.FromMilliseconds(500);
@@ -13,6 +16,9 @@ namespace PowerArgs.Cli
 
         private Timer blinkTimerHandle;
 
+        /// <summary>
+        /// Gets the editor object that controls the rich text capabilities of the text box
+        /// </summary>
         public RichTextEditor RichTextEditor
         {
             get
@@ -32,6 +38,10 @@ namespace PowerArgs.Cli
         // 
         private bool enableBackspaceNavigationOptimization;
         private Timer backspaceNavigationOptimizationTimerHandle;
+
+        /// <summary>
+        /// Gets or sets the value in the text box
+        /// </summary>
         public ConsoleString Value
         {
             get
@@ -45,6 +55,9 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Creates a new text box
+        /// </summary>
         public TextBox()
         {
             this.textState = new RichTextEditor();
@@ -115,6 +128,10 @@ namespace PowerArgs.Cli
             blinkTimerHandle.Change(BlinkInterval, BlinkInterval);
         }
 
+        /// <summary>
+        /// paints the text box
+        /// </summary>
+        /// <param name="context"></param>
         protected override void OnPaint(ConsoleBitmap context)
         {
             var toPaint = textState.CurrentValue;

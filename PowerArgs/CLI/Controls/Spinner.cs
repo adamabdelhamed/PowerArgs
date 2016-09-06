@@ -3,6 +3,10 @@ using System.Threading;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A control that animates (or spins). It can be used to let the user know that the system
+    /// is working when they are required to wait
+    /// </summary>
     public class Spinner : PixelControl
     {
         private static readonly TimeSpan spinTimeInterval = TimeSpan.FromMilliseconds(80);
@@ -11,6 +15,9 @@ namespace PowerArgs.Cli
         private Timer spinTimerHandle;
         private int currentFrameIndex;
 
+        /// <summary>
+        /// Gets or sets the flag that indicates that the spinner should be spinning
+        /// </summary>
         public bool IsSpinning {
             get { return Get<bool>(); }
             set
@@ -26,11 +33,16 @@ namespace PowerArgs.Cli
                 }
             }
         }
+
+        /// <summary>
+        /// Creates a new spinner
+        /// </summary>
         public Spinner()
         {
             currentFrameIndex = 0;
             this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
             this.RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this.LifetimeManager);
+            this.CanFocus = false;
         }
 
         private void OnAddedToVisualTree()

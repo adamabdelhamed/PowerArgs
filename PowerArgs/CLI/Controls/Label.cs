@@ -7,19 +7,45 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// Determines how a label renders
+    /// </summary>
     public enum LabelRenderMode
     {
+        /// <summary>
+        /// Render the text on a single line and auto size the width based on the text
+        /// </summary>
         SingleLineAutoSize,
+        /// <summary>
+        /// Render on multiple lines, breaking spaces and punctuation near the control's width.  Good for paragraph text.
+        /// </summary>
         MultiLineSmartWrap,
+        /// <summary>
+        /// Manually size the label, truncation can occur
+        /// </summary>
         ManualSizing,
     }
 
+    /// <summary>
+    /// A control that displays text
+    /// </summary>
     public class Label : ConsoleControl
     {
         internal static readonly ConsoleString Null = "<null>".ToConsoleString(Theme.DefaultTheme.DisabledColor);
 
+        /// <summary>
+        /// Gets or sets the text displayed on the label
+        /// </summary>
         public ConsoleString Text { get { return Get<ConsoleString>(); } set { Set(value); } }
+
+        /// <summary>
+        /// Gets or sets the max width.  This is only used in the single line auto size mode.
+        /// </summary>
         public int? MaxWidth{ get { return Get<int?>(); } set { Set(value); } }
+
+        /// <summary>
+        /// Gets or sets the max height.  This is only used in the multi line smart wrap mode.
+        /// </summary>
         public int? MaxHeight { get { return Get<int?>(); } set { Set(value); } }
         private ConsoleString CleanText
         {
@@ -30,10 +56,16 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Gets or sets the render mode
+        /// </summary>
         public LabelRenderMode Mode { get { return Get<LabelRenderMode>(); } set { Set(value); } }
 
         private List<List<ConsoleCharacter>> lines;
-
+        
+        /// <summary>
+        /// Creates a new label
+        /// </summary>
         public Label()
         {
             Height = 1;

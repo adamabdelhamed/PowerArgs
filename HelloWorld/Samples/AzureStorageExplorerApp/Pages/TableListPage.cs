@@ -18,10 +18,10 @@ namespace HelloWorld.Samples
             Grid.NoDataMessage = "No tables";
             Grid.NoVisibleColumnsMessage = "Loading...";
             addButton = CommandBar.Add(new Button() { Text = "Add table" });
-            addButton.Activated.SubscribeForLifetime(AddTable, LifetimeManager);
+            addButton.Pressed.SubscribeForLifetime(AddTable, LifetimeManager);
 
             deleteButton = CommandBar.Add(new Button() { Text = "Delete table", Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null), CanFocus = false });
-            deleteButton.Activated.SubscribeForLifetime(DeleteSelectedTable, LifetimeManager);
+            deleteButton.Pressed.SubscribeForLifetime(DeleteSelectedTable, LifetimeManager);
 
             
             Grid.SelectedItemActivated += NavigateToTable;

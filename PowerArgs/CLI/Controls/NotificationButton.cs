@@ -17,7 +17,7 @@ namespace PowerArgs.Cli
             
             launcher = Add(new Button());
             launcher.Shortcut = new KeyboardShortcut(ConsoleKey.N, ConsoleModifiers.Alt);
-            launcher.Activated.SubscribeForLifetime(NotificationButton_Activated, LifetimeManager);
+            launcher.Pressed.SubscribeForLifetime(NotificationButton_Activated, LifetimeManager);
             launcherFg = launcher.Foreground;
             spinner = Add(new Spinner() { IsVisible = false, IsSpinning = false, CanFocus = false, X = 1, Foreground = ConsoleColor.Cyan });
             Manager_ProgressOperationsChanged();

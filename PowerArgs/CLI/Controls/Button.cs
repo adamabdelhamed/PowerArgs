@@ -7,11 +7,28 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A class that represents a keyboard shortcut that can be activate a control that does not have focus
+    /// </summary>
     public class KeyboardShortcut
     {
+        /// <summary>
+        /// The shortcut key
+        /// </summary>
         public ConsoleKey Key { get; set; }
+
+        /// <summary>
+        /// A key modifier (e.g. shift, alt) that, when present, must be pressed in order for the shortcut key to trigger.  Note that control is not
+        /// supported because it doesn't play well in a console
+        /// </summary>
         public ConsoleModifiers? Modifier{ get; set; }
 
+        /// <summary>
+        /// Creates a new shortut
+        /// </summary>
+        /// <param name="key">the shortcut key</param>
+        /// <param name="modifier">A key modifier (e.g. shift, alt) that, when present, must be pressed in order for the shortcut key to trigger.  Note that control is not
+        /// supported because it doesn't play well in a console</param>
         public KeyboardShortcut(ConsoleKey key, ConsoleModifiers? modifier = null)
         {
             this.Key = key;
@@ -23,14 +40,27 @@ namespace PowerArgs.Cli
         }
     }
 
+    /// <summary>
+    /// A button control that can be 'pressed' by the user
+    /// </summary>
     [MarkupIgnoreAttribute("Shortcut-Modifier")]
     public class Button : ConsoleControl
     {
         private bool shortcutRegistered;
 
-        public Event Activated { get; private set; } = new Event();
+        /// <summary>
+        /// An event that fires when the button is clicked
+        /// </summary>
+        public Event Pressed { get; private set; } = new Event();
+
+        /// <summary>
+        /// Gets or sets the text that is displayed on the button
+        /// </summary>
         public string Text { get { return Get<string>(); } set { Set(value); } }
 
+        /// <summary>
+        /// Gets or sets the keyboard shortcut info for this button.
+        /// </summary>
         [MarkupProperty(typeof(KeyboardShortcutProcessor))]
         public KeyboardShortcut Shortcut
         {
@@ -46,6 +76,9 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Creates a new button control
+        /// </summary>
         public Button()
         {
             Height = 1;
@@ -80,6 +113,9 @@ namespace PowerArgs.Cli
             Width = w;
         }
 
+        /// <summary>
+        /// Called when the button is added to an app
+        /// </summary>
         public void OnAddedToVisualTree()
         {
             RegisterShortcutIfPossibleAndNotAlreadyDone();
@@ -104,9 +140,13 @@ namespace PowerArgs.Cli
 
         private void Click()
         {
-            Activated.Fire();
+            Pressed.Fire();
         }
 
+        /// <summary>
+        /// paints the button
+        /// </summary>
+        /// <param name="context">drawing context</param>
         protected override void OnPaint(ConsoleBitmap context)
         {
             var drawState = new ConsoleString();

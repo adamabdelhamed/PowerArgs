@@ -29,7 +29,7 @@ namespace PowerArgs.Cli
         {
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
             closeButton = Add(new Button() { Text = "Close (ESC)",Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
-            closeButton.Activated.SubscribeForLifetime(Escape, this.LifetimeManager);
+            closeButton.Pressed.SubscribeForLifetime(Escape, this.LifetimeManager);
             BeforeAddedToVisualTree.SubscribeForLifetime(OnBeforeAddedToVisualTree, this.LifetimeManager);
             AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
             RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this.LifetimeManager);
@@ -144,7 +144,7 @@ namespace PowerArgs.Cli
             {
                 var myButtonInfo = buttonInfo;
                 Button b = new Button() { Text = buttonInfo.DisplayText };
-                b.Activated.SubscribeForLifetime(() => 
+                b.Pressed.SubscribeForLifetime(() => 
                 {
                     ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
                     resultCallback(myButtonInfo);
