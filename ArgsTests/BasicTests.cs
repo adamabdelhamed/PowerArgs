@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Globalization;
-using System.Text;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using System.Text.RegularExpressions;
 using System.Net.Mail;
 using System.Net;
+using ArgsTests.TestStuff;
 
 namespace ArgsTests
 {
@@ -239,7 +240,7 @@ namespace ArgsTests
             // A little bit of reflection magic to ensure that no other test has registered this reviver
             var reviverType = (from a in typeof(Args).Assembly.GetTypes() where a.Name == "ArgRevivers" select a).Single();
             var prop = reviverType.GetProperty("Revivers", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            var reviverDictionary = prop.GetValue(null,null) as Dictionary<Type, Func<string, string, object>>;
+            var reviverDictionary = prop.GetValue(null, null) as Dictionary<Type, Func<string, string, object>>;
             reviverDictionary.Remove(typeof(MailAddress));
 
             try
@@ -255,6 +256,31 @@ namespace ArgsTests
             }
         }
 
+        [TestMethod]
+        public void TestReviverRegistraionForAllAssemblies()
+        {
+            ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = "true";
+            var expected = DateTime.Today;
+            var results = Args.Parse<TestArgsClass>("-d", DateTime.Today.AddDays(-1).ToShortDateString()).Date;
+            Assert.AreEqual(expected, results);
+        }
+        [TestMethod]
+        public void TestReviverRegistraionNotForAllAssembliesWhenOptionIsFalse()
+        {
+            ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = "false";
+            var expected = DateTime.Today.AddDays(-1);
+            var results = Args.Parse<TestArgsClass>("-d", DateTime.Today.AddDays(-1).ToShortDateString()).Date;
+            Assert.AreEqual(expected, results);
+        }
+
+        [TestMethod]
+        public void TestReviverRegistraionNotForAllAssembliesWhenOptionIsNotProvided()
+        {
+            var expected = DateTime.Today.AddDays(-1);
+            var results = Args.Parse<TestArgsClass>("-d", DateTime.Today.AddDays(-1).ToShortDateString()).Date;
+            Assert.AreEqual(expected, results);
+        }
+        
         [TestMethod]
         public void TestOverrideDefaultReviver()
         {
@@ -288,7 +314,7 @@ namespace ArgsTests
             DateTime d = DateTime.Today;
             System.Threading.Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
 
-            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue+"", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com", "-ipaddress", IPAddress.Loopback.ToString() };
+            var args = new string[] { "-String", "stringValue", "-i", "34", "-d", "33.33", "-b", "-byte", "255", "-g", g.ToString(), "-t", d.ToString(), "-l", long.MaxValue + "", "-li", "100,200,300", "-bytes", "10,20,30", "-uri", "http://www.bing.com", "-ipaddress", IPAddress.Loopback.ToString() };
             BasicArgs parsed = Args.Parse<BasicArgs>(args);
             Assert.AreEqual("stringValue", parsed.String);
             Assert.AreEqual(34, parsed.Int);
@@ -595,7 +621,7 @@ namespace ArgsTests
                 Assert.Fail("An exception should have been thrown");
             }
             catch (Exception ex)
-            {                
+            {
                 Assert.IsInstanceOfType(ex, typeof(UnexpectedArgException));
                 Assert.AreEqual("Unexpected named argument: extraArg", ex.Message);
             }
@@ -699,7 +725,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestBasicUsageWithPositioning()
         {
-            var basicUsage = ArgUsage.GetUsage<PositionedArgs>( "basic");
+            var basicUsage = ArgUsage.GetUsage<PositionedArgs>("basic");
             ArgUsage.GetStyledUsage<PositionedArgs>("basic").Write();
             Console.WriteLine(basicUsage);
         }
@@ -707,7 +733,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestBasicUsageWithNoExeNameThrows()
         {
-            try 
+            try
             {
                 var basicUsage = ArgUsage.GetUsage<BasicArgs>();
             }
@@ -771,13 +797,13 @@ namespace ArgsTests
         [TestMethod]
         public void TestConvert7()
         {
-            AssertConversion("Foo \"John A Doe\" -foo bar","Foo", "John A Doe", "-foo", "bar");
+            AssertConversion("Foo \"John A Doe\" -foo bar", "Foo", "John A Doe", "-foo", "bar");
         }
 
         [TestMethod]
         public void TestConvert8()
         {
-            AssertConversion("\"1\" \"\" Foo \"John A Doe\" -foo         bar","1", "", "Foo", "John A Doe", "-foo", "bar");
+            AssertConversion("\"1\" \"\" Foo \"John A Doe\" -foo         bar", "1", "", "Foo", "John A Doe", "-foo", "bar");
         }
 
         [TestMethod]

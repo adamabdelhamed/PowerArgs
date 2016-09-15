@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Reflection;
 using System.Linq;
@@ -36,7 +37,10 @@ namespace PowerArgs
             return _ambientDefinition;
         }
 
-        private Args() { }
+        private Args()
+        {
+            SearchAssemblyForRevivers();
+        }
 
         /// <summary>
         /// PowerArgs will manually search the assembly you provide for any custom type revivers.  If you don't specify an
@@ -45,8 +49,19 @@ namespace PowerArgs
         /// <param name="a">The assembly to search or null if you want PowerArgs to search the assembly that's calling into this function.</param>
         public static void SearchAssemblyForRevivers(Assembly a = null)
         {
-            a = a ?? Assembly.GetCallingAssembly();
-            ArgRevivers.SearchAssemblyForRevivers(a);
+            var searchAllAssemblies = ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"];
+            if (!string.IsNullOrWhiteSpace(searchAllAssemblies) && searchAllAssemblies.ToLower().Equals("true"))
+            {
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    ArgRevivers.SearchAssemblyForRevivers(assembly);
+                }
+            }
+            else
+            {
+                a = a ?? Assembly.GetCallingAssembly();
+                ArgRevivers.SearchAssemblyForRevivers(a);
+            }
         }
 
         /// <summary>
@@ -125,10 +140,8 @@ namespace PowerArgs
             {
                 return ret;
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -140,7 +153,7 @@ namespace PowerArgs
         {
             if(o == null)
             {
-                throw new ArgumentNullException("o cannot be null");
+                throw new ArgumentNullException(nameof(o), @"cannot be null");
             }
 
             var def = new CommandLineArgumentsDefinition(o.GetType());
@@ -460,7 +473,7 @@ namespace PowerArgs
             {
                 return argsProcessingCode();
             }
-            catch (ArgCancelProcessingException ex)
+            catch (ArgCancelProcessingException)
             {
                 return CreateEmptyResult<T>(ArgHook.HookContext.Current, cancelled: true);
             }

@@ -67,18 +67,16 @@ namespace PowerArgs
 
                 return Enum.ToObject(t, ret);
             }
-            else
+
+            try
             {
-                try
-                {
-                    return Enum.ToObject(t, ParseEnumValue(t, value, ignoreCase));
-                }
-                catch (Exception ex)
-                {
-                    Trace.TraceError(ex.ToString());
-                    if (value == string.Empty) value = "<empty>";
-                    throw new ValidationArgException(value + " is not a valid value for type " + t.Name + ", options are " + string.Join(", ", Enum.GetNames(t)));
-                }
+                return Enum.ToObject(t, ParseEnumValue(t, value, ignoreCase));
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+                if (value == string.Empty) value = "<empty>";
+                throw new ValidationArgException(value + " is not a valid value for type " + t.Name + ", options are " + string.Join(", ", Enum.GetNames(t)));
             }
         }
 
@@ -115,14 +113,14 @@ namespace PowerArgs
                 var elementType = t.IsArray ? t.GetElementType() : t.GetGenericArguments()[0];
 
                 List<string> additionalParams;
-                if(ArgHook.HookContext.Current != null &&
+                if (ArgHook.HookContext.Current != null &&
                    ArgHook.HookContext.Current.CurrentArgument != null &&
                    ArgHook.HookContext.Current.ParserData.TryGetAndRemoveAdditionalExplicitParameters(ArgHook.HookContext.Current.CurrentArgument, out additionalParams))
                 {
                     // this block supports the newer syntax where elements can be separated by a space on the command line
 
                     list.Add(Revive(elementType, name + "_element", value));
-                    foreach(var additionalValue in additionalParams)
+                    foreach (var additionalValue in additionalParams)
                     {
                         list.Add(Revive(elementType, name + "_element", additionalValue));
                     }
@@ -139,36 +137,33 @@ namespace PowerArgs
                 }
 
 
-
-
-                if (t.IsArray)
-                {
-                    var array = Array.CreateInstance(t.GetElementType(), list.Count);
-                    for (int i = 0; i < array.Length; i++)
-                    {
-                        array.SetValue(list[i], i);
-                    }
-                    return array;
-                }
-                else
+                if (!t.IsArray)
                 {
                     return list;
                 }
+
+                var array = Array.CreateInstance(t.GetElementType(), list.Count);
+                for (int i = 0; i < array.Length; i++)
+                {
+                    array.SetValue(list[i], i);
+                }
+
+                return array;
             }
-            else if (Revivers.ContainsKey(t))
+
+            if (Revivers.ContainsKey(t))
             {
                 return Revivers[t].Invoke(name, value);
             }
-            else if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string)))
+
+            if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string)))
             {
                 return System.ComponentModel.TypeDescriptor.GetConverter(t).ConvertFromString(value);
             }
-            else
-            {
-                // Intentionally not an InvalidArgDefinitionException.  Other internal code should call 
-                // CanRevive and this block should never be executed.
-                throw new ArgumentException("Cannot revive type " + t.FullName + ". Callers should be calling CanRevive before calling Revive()");
-            }
+            
+            // Intentionally not an InvalidArgDefinitionException.  Other internal code should call 
+            // CanRevive and this block should never be executed.
+            throw new ArgumentException("Cannot revive type " + t.FullName + ". Callers should be calling CanRevive before calling Revive()");
         }
 
         internal static void SearchAssemblyForRevivers(Assembly a)
@@ -203,7 +198,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="t">The type of object the reviver function can revive</param>
         /// <param name="reviverFunc">the function that revives a command line string, converting it into a consumable object</param>
-        public static void SetReviver(Type t, Func<string,string, object> reviverFunc)
+        public static void SetReviver(Type t, Func<string, string, object> reviverFunc)
         {
             if (ArgRevivers.Revivers.ContainsKey(t))
             {
@@ -223,7 +218,7 @@ namespace PowerArgs
             SetReviver(typeof(T), (k, v) => { return reviverFunc(k, v); });
         }
 
-        internal static Func<string,string,object> GetReviver(Type t)
+        internal static Func<string, string, object> GetReviver(Type t)
         {
             if (ArgRevivers.Revivers.ContainsKey(t))
             {
@@ -309,9 +304,9 @@ namespace PowerArgs
 
             revivers.Add(typeof(IPAddress), (prop, val) =>
             {
-				System.Net.IPAddress ret;
-				if (System.Net.IPAddress.TryParse(val, out ret) == false) throw new FormatException("value must be a valid IP address: " + val);
-				return ret;
+                System.Net.IPAddress ret;
+                if (System.Net.IPAddress.TryParse(val, out ret) == false) throw new FormatException("value must be a valid IP address: " + val);
+                return ret;
             });
         }
     }

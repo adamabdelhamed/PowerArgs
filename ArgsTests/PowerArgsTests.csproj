@@ -76,6 +76,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -167,6 +168,10 @@
     <Compile Include="VideoEncoderTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PowerArgsTests.Support\PowerArgsTests.Support.csproj">
+      <Project>{aeb84c14-75f5-4254-9fa6-859bffb2f12a}</Project>
+      <Name>PowerArgsTests.Support</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PowerArgs\PowerArgs.csproj">
       <Project>{35809FAB-7FBD-4663-8409-2D6A312C8265}</Project>
       <Name>PowerArgs</Name>
