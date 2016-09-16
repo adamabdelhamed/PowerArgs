@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using PowerArgs;
 
 namespace PowerArgsTests.Support.TestReviver
@@ -8,7 +9,19 @@ namespace PowerArgsTests.Support.TestReviver
         [ArgReviver]
         public static DateTime ReviveDate(string key, string val)
         {
-            return DateTime.Today;
+            DateTime date;
+            if (DateTime.TryParse(val, out date))
+            {
+                return date;
+            }
+
+            string[] format = { "yyyy/MM/dd", "MM/dd/yyyy", "yyyyMMdd" };
+            if (DateTime.TryParseExact(val, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out date))
+            {
+                return date;
+            }
+
+            throw new ArgException(string.Format("Value: {0} can not be parsed as DateTime", val));
         }
     }
 }

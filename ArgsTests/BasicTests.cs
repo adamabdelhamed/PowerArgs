@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Net.Mail;
 using System.Net;
 using ArgsTests.TestStuff;
+using PowerArgsTests.Support.TestReviver;
 
 namespace ArgsTests
 {
@@ -81,6 +82,7 @@ namespace ArgsTests
             public int X { get; set; }
             public int Y { get; set; }
         }
+
         [UsageAutomation]
         [ArgExample("sometool -point 100,50", "Creates a new point with x = 100 and y = 50")]
         public class PointArgs
@@ -165,6 +167,7 @@ namespace ArgsTests
             public Guid Guid { get; set; }
             public DateTime Time { get; set; }
             public long Long { get; set; }
+
             [ArgShortcut(null)]
             public byte Byte { get; set; }
 
@@ -193,6 +196,7 @@ namespace ArgsTests
             public Guid Guid { get; set; }
             public DateTime Time { get; set; }
             public long Long { get; set; }
+
             [ArgShortcut(null)]
             public byte Byte { get; set; }
 
@@ -238,8 +242,11 @@ namespace ArgsTests
         public void TestManualReviverRegistration()
         {
             // A little bit of reflection magic to ensure that no other test has registered this reviver
-            var reviverType = (from a in typeof(Args).Assembly.GetTypes() where a.Name == "ArgRevivers" select a).Single();
-            var prop = reviverType.GetProperty("Revivers", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = "false";
+            var reviverType =
+                (from a in typeof(Args).Assembly.GetTypes() where a.Name == "ArgRevivers" select a).Single();
+            var prop = reviverType.GetProperty("Revivers",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             var reviverDictionary = prop.GetValue(null, null) as Dictionary<Type, Func<string, string, object>>;
             reviverDictionary.Remove(typeof(MailAddress));
 
@@ -254,33 +261,59 @@ namespace ArgsTests
                 var parsed = Args.Parse<ArgsThatNeedManualReviverRegistration>("-a", "someone@somewhere.com");
                 Assert.AreEqual("someone@somewhere.com", parsed.Address.Address);
             }
+            finally
+            {
+                ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = string.Empty;
+            }
         }
 
         [TestMethod]
         public void TestReviverRegistraionForAllAssemblies()
         {
-            ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = "true";
+            ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = "anything other than false";
             var expected = DateTime.Today;
-            var results = Args.Parse<TestArgsClass>("-d", DateTime.Today.AddDays(-1).ToShortDateString()).Date;
+            var results = Args.Parse<TestArgsClass>("-d", DateTime.Today.ToString("yyyyMMdd")).Date;
             Assert.AreEqual(expected, results);
+
+            ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = string.Empty;
         }
+
         [TestMethod]
         public void TestReviverRegistraionNotForAllAssembliesWhenOptionIsFalse()
         {
-            ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = "false";
-            var expected = DateTime.Today.AddDays(-1);
-            var results = Args.Parse<TestArgsClass>("-d", DateTime.Today.AddDays(-1).ToShortDateString()).Date;
-            Assert.AreEqual(expected, results);
+            try
+            {
+                //making sure the test reviver was not installed from previous tests
+                ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = "false";
+                var reviverType =
+                (from a in typeof(Args).Assembly.GetTypes() where a.Name == "ArgRevivers" select a).Single();
+                var prop = reviverType.GetProperty("Revivers",
+                    System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+                var reviverDictionary = prop.GetValue(null, null) as Dictionary<Type, Func<string, string, object>>;
+                reviverDictionary.Remove(typeof(DateTime));
+
+                var shoulThrowException = Args.Parse<TestArgsClass>("-d", DateTime.Today.ToString("yyyyMMdd"));
+            }
+            catch (ArgException exception)
+            {
+                Assert.IsNotNull(exception);
+            }
+            finally
+            {
+                ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = string.Empty;
+            }
         }
 
         [TestMethod]
         public void TestReviverRegistraionNotForAllAssembliesWhenOptionIsNotProvided()
         {
-            var expected = DateTime.Today.AddDays(-1);
-            var results = Args.Parse<TestArgsClass>("-d", DateTime.Today.AddDays(-1).ToShortDateString()).Date;
+            ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = string.Empty;
+
+            var expected = DateTime.Today;
+            var results = Args.Parse<TestArgsClass>("-d", DateTime.Today.ToString("yyyyMMdd")).Date;
             Assert.AreEqual(expected, results);
         }
-        
+
         [TestMethod]
         public void TestOverrideDefaultReviver()
         {

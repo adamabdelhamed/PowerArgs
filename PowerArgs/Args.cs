@@ -49,18 +49,19 @@ namespace PowerArgs
         /// <param name="a">The assembly to search or null if you want PowerArgs to search the assembly that's calling into this function.</param>
         public static void SearchAssemblyForRevivers(Assembly a = null)
         {
+            //[workabyte]option to disable search of all assemblies for users who are looking for specific performance increase. not much of a hit to search all
             var searchAllAssemblies = ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"];
-            if (!string.IsNullOrWhiteSpace(searchAllAssemblies) && searchAllAssemblies.ToLower().Equals("true"))
+            if (!string.IsNullOrWhiteSpace(searchAllAssemblies) && searchAllAssemblies.ToLower().Equals("false"))
+            {
+                a = a ?? Assembly.GetCallingAssembly();
+                ArgRevivers.SearchAssemblyForRevivers(a);
+            }
+            else
             {
                 foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
                     ArgRevivers.SearchAssemblyForRevivers(assembly);
                 }
-            }
-            else
-            {
-                a = a ?? Assembly.GetCallingAssembly();
-                ArgRevivers.SearchAssemblyForRevivers(a);
             }
         }
 
@@ -76,7 +77,7 @@ namespace PowerArgs
             string currentArg = string.Empty;
             bool insideDoubleQuotes = false;
 
-            for(int i = 0; i < commandLine.Length;i++)
+            for (int i = 0; i < commandLine.Length; i++)
             {
                 var c = commandLine[i];
 
@@ -151,7 +152,7 @@ namespace PowerArgs
         /// <param name="o">the object to initialize</param>
         public static void InitializeDefaults(object o)
         {
-            if(o == null)
+            if (o == null)
             {
                 throw new ArgumentNullException(nameof(o), @"cannot be null");
             }
@@ -161,12 +162,12 @@ namespace PowerArgs
             context.Definition = def;
             context.Args = o;
 
-            foreach(var arg in def.Arguments)
+            foreach (var arg in def.Arguments)
             {
                 context.ArgumentValue = null;
                 context.CurrentArgument = arg;
                 context.RevivedProperty = null;
-                if(arg.HasDefaultValue == false)
+                if (arg.HasDefaultValue == false)
                 {
                     continue;
                 }
@@ -217,7 +218,7 @@ namespace PowerArgs
             {
                 return Execute<ArgAction>(() =>
                 {
-                    Args instance = new Args();                    
+                    Args instance = new Args();
                     var result = instance.ParseInternal(definition, a);
                     if (result.HandledException == null)
                     {
@@ -575,11 +576,11 @@ namespace PowerArgs
             var actionToken = context.CmdLineArgs.FirstOrDefault();
             var actionQuery = context.Definition.Actions.Where(a => a.IsMatch(actionToken));
 
-            if(actionQuery.Count() == 1)
+            if (actionQuery.Count() == 1)
             {
                 context.SpecifiedAction = actionQuery.First();
             }
-            else if(actionQuery.Count() > 1)
+            else if (actionQuery.Count() > 1)
             {
                 throw new InvalidArgDefinitionException("There are multiple actions that match argument '" + actionToken + "'");
             }
@@ -621,7 +622,7 @@ namespace PowerArgs
 
             context.RunAfterPopulateProperties();
 
-            if(context.SpecifiedAction != null)
+            if (context.SpecifiedAction != null)
             {
                 actionArgs = context.SpecifiedAction.PopulateArguments(context.Args, ref actionParameters);
             }
@@ -646,7 +647,7 @@ namespace PowerArgs
             else
             {
                 definition.UnexpectedExplicitArguments = context.ParserData.ExplicitParameters;
-                definition.UnexpectedImplicitArguments = context.ParserData.ImplicitParameters;   
+                definition.UnexpectedImplicitArguments = context.ParserData.ImplicitParameters;
             }
 
 
@@ -695,7 +696,7 @@ namespace PowerArgs
 
             if (parentType != null)
             {
-                if(parentType.HasAttr<ArgIgnoreCase>() ^ t.HasAttr<ArgIgnoreCase>())
+                if (parentType.HasAttr<ArgIgnoreCase>() ^ t.HasAttr<ArgIgnoreCase>())
                 {
                     throw new InvalidArgDefinitionException("If you specify the " + typeof(ArgIgnoreCase).Name + " attribute on your base type then you must also specify it on each action type.");
                 }
@@ -705,7 +706,7 @@ namespace PowerArgs
                 }
             }
 
-            if (t.Attrs<ArgIgnoreCase>().Count > 1) throw new InvalidArgDefinitionException("An attribute that is or derives from " + typeof(ArgIgnoreCase).Name+" was specified on your type more than once");
+            if (t.Attrs<ArgIgnoreCase>().Count > 1) throw new InvalidArgDefinitionException("An attribute that is or derives from " + typeof(ArgIgnoreCase).Name + " was specified on your type more than once");
 
 
             var actionProp = ArgAction.GetActionProperty(t);
@@ -746,7 +747,7 @@ namespace PowerArgs
                 {
                     if (CommandLineAction.IsActionImplementation(prop))
                     {
-                        ArgAction.ResolveMethod(t,prop);
+                        ArgAction.ResolveMethod(t, prop);
                         ValidateArgScaffold(prop.PropertyType, shortcuts.ToArray().ToList(), t);
                     }
                 }
@@ -754,7 +755,7 @@ namespace PowerArgs
 
             foreach (var actionMethod in t.GetActionMethods())
             {
-                if(actionMethod.GetParameters().Length == 0)continue;
+                if (actionMethod.GetParameters().Length == 0) continue;
 
                 ValidateArgScaffold(actionMethod.GetParameters()[0].ParameterType, shortcuts.ToArray().ToList(), t);
             }
