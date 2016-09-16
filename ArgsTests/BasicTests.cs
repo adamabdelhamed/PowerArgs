@@ -293,6 +293,7 @@ namespace ArgsTests
                 reviverDictionary.Remove(typeof(DateTime));
 
                 var shoulThrowException = Args.Parse<TestArgsClass>("-d", DateTime.Today.ToString("yyyyMMdd"));
+                Assert.Fail("should have thrown error");
             }
             catch (ArgException exception)
             {
