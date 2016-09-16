@@ -21,7 +21,7 @@ namespace PowerArgsTests.Support.TestReviver
                 return date;
             }
 
-            throw new ArgException(string.Format("Value: {0} can not be parsed as DateTime", val));
+            throw new ArgException(string.Format("Value: {0} can not be parsed as DateTime", val), new FormatException(string.Format("Value: {0} can not be parsed as DateTime", val)));
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
@@ -32,7 +33,7 @@ namespace ArgsTests
 
         public class ConflictingShortcutPolicyArgsNoShortcutWithShortcut
         {
-            [ArgShortcut(ArgShortcutPolicy.NoShortcut),ArgShortcut("-f")]
+            [ArgShortcut(ArgShortcutPolicy.NoShortcut), ArgShortcut("-f")]
             public string Foo { get; set; }
         }
 
@@ -204,21 +205,30 @@ namespace ArgsTests
         [TestMethod]
         public void TestBadDateTime()
         {
+            //[workabyte] introduction of test date time reviver is causing this to break so i am pulling it out before the test runs 
+            ConfigurationManager.AppSettings["PowerArgs-SearchAllAssemblies"] = "false";
+            var reviverType =
+            (from a in typeof(Args).Assembly.GetTypes() where a.Name == "ArgRevivers" select a).Single();
+            var prop = reviverType.GetProperty("Revivers",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            var reviverDictionary = prop.GetValue(null, null) as Dictionary<Type, Func<string, string, object>>;
+            reviverDictionary.Remove(typeof(DateTime));
+
             TestBadValues("-t", "sdfdsfsdf");
         }
 
 
         public void TestBadValues(string shortcut, string variation)
         {
-            var args = new string[] 
-            { 
-                "-s", "stringValue", 
-                "-i", "34", 
-                "-d", "33.33", 
-                "-b", 
-                "-by", "255", 
-                "-g", Guid.NewGuid().ToString(), 
-                "-t", DateTime.Today.ToString(), 
+            var args = new string[]
+            {
+                "-s", "stringValue",
+                "-i", "34",
+                "-d", "33.33",
+                "-b",
+                "-by", "255",
+                "-g", Guid.NewGuid().ToString(),
+                "-t", DateTime.Today.ToString(),
                 "-l", long.MaxValue + "",
                 "-u", "http://www.bing.com"
             };
