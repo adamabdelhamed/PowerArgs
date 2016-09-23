@@ -211,6 +211,17 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Returns true if all characters have the default foreground and background color
+        /// </summary>
+        public bool IsUnstyled
+        {
+            get
+            {
+                return this.Where(c => c.ForegroundColor != DefaultForegroundColor || c.BackgroundColor != DefaultBackgroundColor).Count() == 0;
+            }
+        }
+
+        /// <summary>
         /// Creates a new ConsoleString from a collection of ConsoleCharacter objects
         /// </summary>
         /// <param name="chars">The value to use to seed this string</param>

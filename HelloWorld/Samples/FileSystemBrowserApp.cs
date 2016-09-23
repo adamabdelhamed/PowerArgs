@@ -123,12 +123,12 @@ namespace HelloWorld.Samples
                             {
                                 Dialog.ShowMessage("Are you sure you want to delete the file ".ToConsoleString() + Path.GetFileName(deletePath).ToConsoleString(ConsoleColor.Yellow) + "?", (response) =>
                                 {
-                                    if(response != null && response.DisplayText == "Yes")
+                                    if(response != null && response.DisplayText.StringValue == "Yes")
                                     {
                                         File.Delete(deletePath);
                                         explorerPage.PageStack.Refresh();
                                     }
-                                }, true, 12, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
+                                }, true, 12, new DialogButton() { DisplayText = "Yes".ToConsoleString() }, new DialogButton() { DisplayText = "No".ToConsoleString() });
                             }
                         }
                     }

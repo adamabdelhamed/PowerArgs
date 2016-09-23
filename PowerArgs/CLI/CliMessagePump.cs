@@ -152,6 +152,20 @@ namespace PowerArgs.Cli
             }
         }
 
+        protected void QueueActionInFront(Action a)
+        {
+            var pumpMessage = new PumpMessage(a);
+            QueueActionInFront(pumpMessage);
+        }
+
+        protected void QueueActionInFront(PumpMessage pumpMessage)
+        {
+            lock (pumpMessageQueue)
+            {
+                pumpMessageQueue.Insert(0, pumpMessage);
+            }
+        }
+
         private List<Timer> asyncActionTimers = new List<Timer>();
         public void QueueAsyncAction(Task t, Action<Task> action)
         {

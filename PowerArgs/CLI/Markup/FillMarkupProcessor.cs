@@ -1,6 +1,6 @@
 ﻿namespace PowerArgs.Cli
 {
-    public class FillMarkupProcessor : IMarkupProcessor
+    internal class FillMarkupProcessor : IMarkupProcessor
     {
         public void Process(ParserContext context)
         {

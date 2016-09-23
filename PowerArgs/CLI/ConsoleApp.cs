@@ -141,7 +141,7 @@ namespace PowerArgs.Cli
         /// <returns>A task that will complete when the app exits</returns>
         public override Task Start()
         {
-            QueueAction(() =>
+            QueueActionInFront(() =>
             {
                 if (_current != null)
                 {

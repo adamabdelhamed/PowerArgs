@@ -8,7 +8,7 @@ namespace PowerArgs.Cli
 {
     public class DialogButton
     {
-        public string DisplayText { get; set; }
+        public ConsoleString DisplayText { get; set; }
         public string Id { get; set; }
     }
 
@@ -28,7 +28,7 @@ namespace PowerArgs.Cli
         public Dialog(ConsoleControl content)
         {
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
-            closeButton = Add(new Button() { Text = "Close (ESC)",Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
+            closeButton = Add(new Button() { Text = "Close (ESC)".ToConsoleString(),Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
             closeButton.Pressed.SubscribeForLifetime(Escape, this.LifetimeManager);
             BeforeAddedToVisualTree.SubscribeForLifetime(OnBeforeAddedToVisualTree, this.LifetimeManager);
             AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
@@ -117,7 +117,7 @@ namespace PowerArgs.Cli
                 {
                     noCallback();
                 }
-            }, true, maxHeight, new DialogButton() { Id = "y", DisplayText = "Yes", }, new DialogButton() { Id = "n", DisplayText = "No" });
+            }, true, maxHeight, new DialogButton() { Id = "y", DisplayText = "Yes".ToConsoleString(), }, new DialogButton() { Id = "n", DisplayText = "No".ToConsoleString() });
         }
 
         public static void ShowMessage(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, int maxHeight = 6, params DialogButton [] buttons)
@@ -163,7 +163,7 @@ namespace PowerArgs.Cli
 
         public static void ShowMessage(ConsoleString message, Action doneCallback = null, int maxHeight = 12)
         {
-            ShowMessage(message, (b) => { if (doneCallback != null) doneCallback(); },true,maxHeight, new DialogButton() { DisplayText = "ok" });
+            ShowMessage(message, (b) => { if (doneCallback != null) doneCallback(); },true,maxHeight, new DialogButton() { DisplayText = "ok".ToConsoleString() });
         }
 
         public static void ShowTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12)

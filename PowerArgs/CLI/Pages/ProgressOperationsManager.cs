@@ -100,7 +100,7 @@ namespace PowerArgs.Cli
 
     public class ProgressOperationAction
     {
-        public string DisplayName { get; set; }
+        public ConsoleString DisplayName { get; set; }
 
         public Action Action { get; set; }
     }

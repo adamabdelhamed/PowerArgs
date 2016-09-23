@@ -230,7 +230,8 @@ namespace PowerArgs.Cli
                     wrapped = CycleFocusIndex(true);
                 }
 
-                focusStack.Peek().FocusIndex = Math.Min(focusStack.Peek().FocusIndex, focusStack.Peek().Controls.Count - 1);
+                var newFocusIndex = Math.Max(0, Math.Min(focusStack.Peek().FocusIndex, focusStack.Peek().Controls.Count - 1));
+                focusStack.Peek().FocusIndex = newFocusIndex;
                 var nextControl = focusStack.Peek().Controls[focusStack.Peek().FocusIndex];
                 if (nextControl.CanFocus)
                 {

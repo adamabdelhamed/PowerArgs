@@ -60,6 +60,7 @@
     <Compile Include="CLI\Controls\Grid-View.cs" />
     <Compile Include="CLI\Controls\Button.cs" />
     <Compile Include="CLI\Controls\Label.cs" />
+    <Compile Include="CLI\Controls\MatrixPanel.cs" />
     <Compile Include="CLI\Controls\NotificationButton.cs" />
     <Compile Include="CLI\Controls\PixelControl.cs" />
     <Compile Include="CLI\Controls\ProgressOperationControl.cs" />

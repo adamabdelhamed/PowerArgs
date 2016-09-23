@@ -14,11 +14,11 @@ namespace PowerArgs
         /// <summary>
         /// Indicates the start of an index navigation for objects like arrays, lists, and dictionaries.  '['
         /// </summary>
-        IndexerOpen,       
+        IndexerOpen,
         /// <summary>
         /// Indicates the end of an index navigation for objects like arrays, lists, and dictionaries. ']'
         /// </summary>
-        IndexerClose,     
+        IndexerClose,
         /// <summary>
         /// Indicates a property navigation for an object.
         /// </summary>
@@ -26,15 +26,15 @@ namespace PowerArgs
         /// <summary>
         /// Indicates a property identifier
         /// </summary>
-        Identifier,            
+        Identifier,
         /// <summary>
         /// Indicates whitespace
         /// </summary>
-        Whitespace,       
+        Whitespace,
         /// <summary>
         /// Indicates a string literal inside of double quotes
         /// </summary>
-        StringLiteral,    
+        StringLiteral,
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ namespace PowerArgs
             {
                 ret.TokenType = ObjectPathTokenType.StringLiteral;
             }
-            else if(string.IsNullOrWhiteSpace(ret.Value))
+            else if (string.IsNullOrWhiteSpace(ret.Value))
             {
                 ret.TokenType = ObjectPathTokenType.Whitespace;
             }
@@ -140,80 +140,64 @@ namespace PowerArgs
             {
                 var currentToken = reader.Advance(skipWhitespace: true);
 
-                if (lastTokenWasNavigation == true && currentToken.TokenType == ObjectPathTokenType.IndexerOpen)
+                if (lastTokenWasNavigation == true && currentToken.TokenType != ObjectPathTokenType.Identifier)
                 {
-                    throw new FormatException("Expected property, got '['" + " at " + currentToken.Position);
+                    throw new FormatException("Expected property, got '"+currentToken.Value+"'" + " at " + currentToken.Position);
                 }
 
                 lastTokenWasNavigation = false;
 
-                if(pathElements.Count == 0 && currentToken.TokenType == ObjectPathTokenType.NavigationElement)
-                {
-                    throw new FormatException("Expected property or index, got '" + currentToken.Value + "'" + " at " + currentToken.Position);
-                }
-
-                if (currentToken.TokenType == ObjectPathTokenType.IndexerClose ||
-                    currentToken.TokenType == ObjectPathTokenType.StringLiteral)
-                {
-                    throw new FormatException("Expected property or index, got '" + currentToken.Value + "'" + " at " + currentToken.Position);
-                }
-
                 if (currentToken.TokenType == ObjectPathTokenType.IndexerOpen)
                 {
                     // read index value
-                    if (reader.TryAdvance(out currentToken,skipWhitespace: true) == false) throw new FormatException("Expected index value, got end of string");
-
-                    if (currentToken.TokenType == ObjectPathTokenType.Identifier || currentToken.TokenType == ObjectPathTokenType.StringLiteral)
+                    if (reader.TryAdvance(out currentToken, skipWhitespace: true) == false)
                     {
-                        string indexValueText = currentToken.Value;
-
-                        if(currentToken.TokenType == ObjectPathTokenType.StringLiteral)
-                        {
-                            indexValueText = indexValueText.Substring(1, indexValueText.Length - 2);
-                        }
-
-                        object indexValue;
-                        int indexValueInt;
-                        if (int.TryParse(indexValueText, out indexValueInt) == false)
-                        {
-                            indexValue = indexValueText;
-                        }
-                        else
-                        {
-                            indexValue = indexValueInt;
-                        }
-
-                        // read index close
-                        if (reader.TryAdvance(out currentToken, skipWhitespace: true) == false) throw new FormatException("Expected ']', got end of string");
-                        if (currentToken.TokenType != ObjectPathTokenType.IndexerClose) throw new FormatException("Expected ']', got '" + currentToken.Value + "' at " + currentToken.Position);
-
-                        IndexerPathElement el = new IndexerPathElement(indexValue);
-                        pathElements.Add(el);
-
-                        if (reader.TryAdvance(out currentToken, skipWhitespace: true))
-                        {
-                            if (currentToken.TokenType != ObjectPathTokenType.NavigationElement) throw new FormatException("Expected '.', got '" + currentToken.Value + "' at " + currentToken.Position);
-                            if (reader.CanAdvance(skipWhitespace: true) == false) throw new FormatException("Expected property, got end of string");
-                            lastTokenWasNavigation = true;
-                        }
+                        throw new FormatException("Expected index value, got end of string");
                     }
-                    else
+
+                    if (currentToken.TokenType != ObjectPathTokenType.Identifier && currentToken.TokenType != ObjectPathTokenType.StringLiteral)
                     {
                         throw new ArgumentException("Unexpected token '" + currentToken.Value + "' at " + currentToken.Position);
                     }
+
+                    string indexValueText = currentToken.Value;
+
+                    if (currentToken.TokenType == ObjectPathTokenType.StringLiteral)
+                    {
+                        indexValueText = indexValueText.Substring(1, indexValueText.Length - 2);
+                    }
+
+                    object indexValue;
+                    int indexValueInt;
+                    if (int.TryParse(indexValueText, out indexValueInt) == false)
+                    {
+                        indexValue = indexValueText;
+                    }
+                    else
+                    {
+                        indexValue = indexValueInt;
+                    }
+
+                    // read index close
+                    if (reader.TryAdvance(out currentToken, skipWhitespace: true) == false) throw new FormatException("Expected ']', got end of string");
+                    if (currentToken.TokenType != ObjectPathTokenType.IndexerClose) throw new FormatException("Expected ']', got '" + currentToken.Value + "' at " + currentToken.Position);
+
+                    IndexerPathElement el = new IndexerPathElement(indexValue);
+                    pathElements.Add(el);
+
                 }
-                else if(currentToken.TokenType == ObjectPathTokenType.Identifier)
+                else if (currentToken.TokenType == ObjectPathTokenType.Identifier)
                 {
                     PropertyPathElement el = new PropertyPathElement(currentToken.Value);
                     pathElements.Add(el);
                 }
                 else if(currentToken.TokenType == ObjectPathTokenType.NavigationElement)
                 {
-                    // do nothing
+                        lastTokenWasNavigation = true;
                 }
                 else
                 {
-                    throw new ArgumentException("Unexpected token '" + currentToken.Value + "' at " + currentToken.Position);
+                    throw new ArgumentException("Expected property name or indexer, got '" + currentToken.Value + "' at " + currentToken.Position);
                 }
             }
 
@@ -230,23 +214,30 @@ namespace PowerArgs
             return EvaluateAndTrace(root).Last();
         }
 
+        public class TraceNode
+        {
+            public object Value { get; set; }
+            public MemberInfo MemberInfo { get; set; }
+        }
+
+
         /// <summary>
         /// Evaluates the expression, returning the object that corresponds to each element in the path.
         /// </summary>
         /// <param name="root">the object to evaluate against</param>
         /// <returns>A list of object where each object corresponds to an element in the path</returns>
-        public List<object> EvaluateAndTrace(object root)
+        public List<TraceNode> EvaluateAndTraceInfo(object root)
         {
             if (root == null) throw new ArgumentNullException("root cannot be null");
 
             string rootPath = "root";
             string currentPath = rootPath;
 
-            List<object> ret = new List<object>();
+            List<TraceNode> ret = new List<TraceNode>();
 
             var currentObject = root;
 
-            ret.Add(currentObject);
+            ret.Add(new TraceNode() { Value = root, MemberInfo = null });
             foreach (var pathElement in Elements)
             {
                 rootPath += pathElement.ToString();
@@ -260,16 +251,16 @@ namespace PowerArgs
                     var propEl = pathElement as PropertyPathElement;
                     var propInfo = currentObject.GetType().GetProperty(propEl.PropertyName);
 
-                    if(propInfo == null) throw new InvalidOperationException("Type "+currentObject.GetType().Name+" does not have a property called "+propEl.PropertyName);
+                    if (propInfo == null) throw new InvalidOperationException("Type " + currentObject.GetType().Name + " does not have a property called " + propEl.PropertyName);
 
                     currentObject = propInfo.GetValue(currentObject, null);
-                    ret.Add(currentObject);
+                    ret.Add(new TraceNode() { Value = currentObject, MemberInfo = propInfo });
                 }
                 else if (pathElement is IndexerPathElement)
                 {
                     var collectionEl = pathElement as IndexerPathElement;
 
-                    if(currentObject.GetType().IsArray)
+                    if (currentObject.GetType().IsArray)
                     {
                         object[] arr = ((IEnumerable)currentObject).Cast<object>().ToArray();
                         currentObject = arr[(int)collectionEl.Index];
@@ -288,7 +279,7 @@ namespace PowerArgs
                         }
                         currentObject = indexerProperty.GetValue(currentObject, new object[] { collectionEl.Index });
                     }
-                    ret.Add(currentObject);
+                    ret.Add(new TraceNode() { Value = currentObject, MemberInfo = null });
                 }
                 else
                 {
@@ -298,12 +289,23 @@ namespace PowerArgs
 
             return ret;
         }
+
+        /// <summary>
+        /// Evaluates the expression, returning the object that corresponds to each element in the path.
+        /// </summary>
+        /// <param name="root">the object to evaluate against</param>
+        /// <returns>A list of object where each object corresponds to an element in the path</returns>
+        public List<object> EvaluateAndTrace(object root)
+        {
+            return EvaluateAndTraceInfo(root).Select(node => node.Value).ToList();
+        }
     }
 
-    /// <summary>
-    /// An object that represents a path element
-    /// </summary>
-    public interface IObjectPathElement { }
+
+/// <summary>
+/// An object that represents a path element
+/// </summary>
+public interface IObjectPathElement { }
 
     /// <summary>
     /// A path element that represents an object's property
