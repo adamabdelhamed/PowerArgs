@@ -330,7 +330,7 @@ namespace PowerArgs
                 return null;
             }
 
-            var ret = Activator.CreateInstance(actionArgsType);
+            var ret = ObjectFactory.CreateInstance(actionArgsType);
             foreach (var argument in Arguments)
             {
                 var argumentProperty = argument.Source as PropertyInfo;

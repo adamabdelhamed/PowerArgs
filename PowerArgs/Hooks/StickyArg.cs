@@ -163,7 +163,7 @@ namespace PowerArgs
                     throw new InvalidArgDefinitionException("The given type does not implement '" + typeof(IStickyArgPersistenceProvider).Name + "'");
                 }
 
-                _persistenceProvider = (IStickyArgPersistenceProvider)Activator.CreateInstance(persistenceProviderType);
+                _persistenceProvider = (IStickyArgPersistenceProvider)ObjectFactory.CreateInstance(persistenceProviderType);
                 return _persistenceProvider;
             }
         }

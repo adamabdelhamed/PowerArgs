@@ -139,7 +139,7 @@ namespace PowerArgs
         /// <param name="context">The context used to detect the query parameters.</param>
         public override void AfterPopulateProperties(HookContext context)
         {
-            var dataSource = Activator.CreateInstance(DataSourceType);
+            var dataSource = ObjectFactory.CreateInstance(DataSourceType);
             //TODO P0 - I should not need to read from an obsolete property
             var dataSourceCollectionProperty = DataSourceType.GetProperty(context.Property.Name);
             IEnumerable dataSourceCollection = (IEnumerable)dataSourceCollectionProperty.GetValue(dataSource, null);

@@ -111,7 +111,7 @@ namespace PowerArgs
         {
             if (t.IsArray || t.GetInterfaces().Contains(typeof(IList)))
             {
-                var list = t.GetInterfaces().Contains(typeof(IList)) && t.IsArray == false ? (IList)Activator.CreateInstance(t) : new List<object>();
+                var list = t.GetInterfaces().Contains(typeof(IList)) && t.IsArray == false ? (IList)ObjectFactory.CreateInstance(t) : new List<object>();
                 var elementType = t.IsArray ? t.GetElementType() : t.GetGenericArguments()[0];
 
                 List<string> additionalParams;

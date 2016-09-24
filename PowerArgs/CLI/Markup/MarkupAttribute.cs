@@ -20,7 +20,7 @@ namespace PowerArgs.Cli
         /// <param name="processorType">The processor type that must implement IMarkupProcessor</param>
         public MarkupPropertyAttribute(Type processorType)
         {
-            this.Processor = (IMarkupProcessor)Activator.CreateInstance(processorType);
+            this.Processor = (IMarkupProcessor)ObjectFactory.CreateInstance(processorType);
         }
     }
 
@@ -68,7 +68,7 @@ namespace PowerArgs.Cli
         public MarkupExtensionAttribute(string attributeName, Type processorType)
         {
             this.AttributeName = attributeName;
-            this.Processor = (IMarkupProcessor)Activator.CreateInstance(processorType);
+            this.Processor = (IMarkupProcessor)ObjectFactory.CreateInstance(processorType);
         }
     }
 

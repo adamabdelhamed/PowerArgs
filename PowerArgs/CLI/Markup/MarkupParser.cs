@@ -225,7 +225,7 @@ namespace PowerArgs.Cli
             var controlTypeName = context.CurrentElement.Name;
             var controlFullTypeName = $"PowerArgs.Cli.{controlTypeName}";
             var controlType = typeof(Args).Assembly.GetType(controlFullTypeName);
-            var control = (ConsoleControl)Activator.CreateInstance(controlType);
+            var control = (ConsoleControl)ObjectFactory.CreateInstance(controlType);
             return control;
         }
 

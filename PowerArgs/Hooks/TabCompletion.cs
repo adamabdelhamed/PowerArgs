@@ -35,7 +35,7 @@ namespace PowerArgs
             ITabCompletionSource ret;
             if(this.CompletionSourceType.GetInterfaces().Contains(typeof(ISmartTabCompletionSource)))
             {
-                var source = Activator.CreateInstance(CompletionSourceType) as ISmartTabCompletionSource;
+                var source = ObjectFactory.CreateInstance(CompletionSourceType) as ISmartTabCompletionSource;
                 return new ArgumentAwareWrapperSmartTabCompletionSource(definition, argument, source);
             }
             else if (this.CompletionSourceType.IsSubclassOf(typeof(ArgumentAwareTabCompletionSource)))
@@ -44,7 +44,7 @@ namespace PowerArgs
             }
             else if (this.CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)))
             {
-                var toWrap = (ITabCompletionSource)Activator.CreateInstance(this.CompletionSourceType);
+                var toWrap = (ITabCompletionSource)ObjectFactory.CreateInstance(this.CompletionSourceType);
                 ret = new ArgumentAwareWrapperTabCompletionSource(definition, argument, toWrap);
             }
             else

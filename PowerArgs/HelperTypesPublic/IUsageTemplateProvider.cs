@@ -14,7 +14,7 @@ namespace PowerArgs
                 throw new InvalidArgDefinitionException("The UsageTemplateProviderType "+usageTemplateProviderType.FullName+" does not implement " + typeof(IUsageTemplateProvider).Name);
             }
 
-            var provider = Activator.CreateInstance(usageTemplateProviderType) as IUsageTemplateProvider;
+            var provider = ObjectFactory.CreateInstance(usageTemplateProviderType) as IUsageTemplateProvider;
             string template = provider.GetTemplate();
             var usage = ArgUsage.GenerateUsageFromTemplate(definition, template);
             return usage;

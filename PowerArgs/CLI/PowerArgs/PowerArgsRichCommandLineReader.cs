@@ -176,7 +176,7 @@ namespace PowerArgs.Cli
 
             if (definition.Metadata.HasMeta<TabCompletion>() && definition.Metadata.Meta<TabCompletion>().CompletionSourceType != null && definition.Metadata.Meta<TabCompletion>().CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)))
             {
-                completionSources.Add((ITabCompletionSource)Activator.CreateInstance(definition.Metadata.Meta<TabCompletion>().CompletionSourceType));
+                completionSources.Add((ITabCompletionSource)ObjectFactory.CreateInstance(definition.Metadata.Meta<TabCompletion>().CompletionSourceType));
             }
 
             foreach (var argument in definition.AllGlobalAndActionArguments)
@@ -200,7 +200,7 @@ namespace PowerArgs.Cli
 
             if (definition.Metadata.HasMeta<TabCompletion>() && definition.Metadata.Meta<TabCompletion>().CompletionSourceType != null && definition.Metadata.Meta<TabCompletion>().CompletionSourceType.GetInterfaces().Contains(typeof(ISmartTabCompletionSource)))
             {
-                completionSources.Add((ISmartTabCompletionSource)Activator.CreateInstance(definition.Metadata.Meta<TabCompletion>().CompletionSourceType));
+                completionSources.Add((ISmartTabCompletionSource)ObjectFactory.CreateInstance(definition.Metadata.Meta<TabCompletion>().CompletionSourceType));
             }
 
             foreach (var argument in definition.AllGlobalAndActionArguments)
