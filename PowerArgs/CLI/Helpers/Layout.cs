@@ -67,11 +67,6 @@ namespace PowerArgs.Cli
             
             parent.SynchronizeForLifetime(nameof(ConsoleControl.Bounds), () =>
             {
-                if(child == ConsoleApp.Current.LayoutRoot)
-                {
-
-                }
-
                 if (parent.Height == 0 || child.Height == 0) return;
 
                 var gap = parent.Height - child.Height;

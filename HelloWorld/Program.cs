@@ -1,9 +1,6 @@
-﻿using ArgsTests;
-using PowerArgs.Cli;
-using PowerArgs;
+﻿using PowerArgs.Cli;
+using PowerArgs.Cli.Physics;
 using System;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace HelloWorld
 {
@@ -12,6 +9,52 @@ namespace HelloWorld
         [STAThread]
         static void Main(string[] args)
         {
+            var app = new ConsoleApp();
+            var realmPanel = app.LayoutRoot.Add(new RealmPanel() { Width=32,Height=9}).CenterHorizontally().CenterVertically();
+            Random r = new Random();
+            app.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Spacebar, null, () =>
+            {
+                realmPanel.RenderLoop.QueueAction(() =>
+                {
+                    Thing t = new Thing(9f, .01f, .5f, 1f);
+                    RealmHelpers.PlaceInEmptyLocation(realmPanel.RenderLoop.Realm, t);
+                    var speedTracker = new SpeedTracker(t);
+                    speedTracker.HitDetectionTypes.Add(typeof(Thing));
+                    var gravity = new Gravity(speedTracker);
+                    var forwardForce = new Force(speedTracker, r.Next(20, 20), r.Next(210, 330));
+                    realmPanel.RenderLoop.Realm.Add(t);
+                });
+            }, app.LifetimeManager);
+
+            var appTask = app.Start();
+
+            app.QueueAction(() =>
+            {
+                realmPanel.RenderLoop.Start();
+            });
+
+            appTask.Wait();
+            return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             // Samples.SearchSample.Run();
             // Samples.ProgressBarSample.Run();
             // Samples.CalculatorProgramSample._Main(args); // a simple 4 function calculator

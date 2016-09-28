@@ -40,6 +40,30 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Advances the reader and asserts that there is a value and that it matches the expected value.  If the assertion
+        /// fails then a FormatException is thrown.
+        /// </summary>
+        /// <param name="skipWhiteSpace">determines if whitespace tokens are skipped</param>
+        /// <param name="expectedValue">the token value to expect</param>
+        /// <param name="comparison">how to compare the strings</param>
+        /// <returns>the token which matches the expected value</returns>
+        public T Expect(string expectedValue, bool skipWhiteSpace = false, StringComparison comparison = StringComparison.Ordinal)
+        {
+            T ret;
+            if(TryAdvance(out ret, skipWhiteSpace) == false)
+            {
+                throw new FormatException($"Expected '{expectedValue}', got end of string");
+            }
+
+            if(ret.Value.Equals(expectedValue, comparison) == false)
+            {
+                throw new FormatException($"Expected '{expectedValue}', got '{ret.Value}' @ {ret.Position}");
+            }
+
+            return ret;
+        }
+
+        /// <summary>
         /// Gets the next token in the list without actually advancing the reader
         /// </summary>
         /// <param name="skipWhitespace">If true, the reader will skip past whitespace tokens when reading</param>
