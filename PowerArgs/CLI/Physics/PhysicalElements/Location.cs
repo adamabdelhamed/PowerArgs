@@ -31,7 +31,7 @@ namespace PowerArgs.Cli.Physics
             return string.Format("{0},{1}", X, Y);
         }
 
-        internal float CalculateAngleTo(Location otherLocation)
+        public float CalculateAngleTo(Location otherLocation)
         {
             float dx = otherLocation.X - X;
             float dy = otherLocation.Y - Y;

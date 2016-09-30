@@ -111,11 +111,13 @@ namespace PowerArgs.Cli.Physics
 
         public void Remove(Interaction i)
         {
-            _interactions.Remove(i);
-            InteractionRemoved.Fire(i);
-            i.Removed.Fire();
-            i.Realm = null;
-            i.Dispose();
+            if (_interactions.Remove(i))
+            {
+                InteractionRemoved.Fire(i);
+                i.Removed.Fire();
+                i.Realm = null;
+                i.Dispose();
+            }
         }
 
         public void Add(Thing t)

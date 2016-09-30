@@ -11,10 +11,10 @@ namespace PowerArgs.Cli.Physics
     {
         public RenderLoop RenderLoop { get; private set; } 
 
-        public RealmPanel()
+        public RealmPanel(int w, int h)
         {
             this.Background = ConsoleColor.Gray;
-            this.RenderLoop = new RenderLoop();
+            this.RenderLoop = new RenderLoop(w, h);
             RenderLoop.MaxFPS = 30;
             RenderLoop.Render = UpdateView;
         }
@@ -36,10 +36,10 @@ namespace PowerArgs.Cli.Physics
             {
                 foreach (Thing t in RenderLoop.Realm.Added)
                 {
-                    var renderer = RenderLoop.Binder.Bind(t);
-                    RenderLoop.Renderers.Add(t, renderer);
                     Application.QueueAction(() =>
                     {
+                        var renderer = RenderLoop.Binder.Bind(t);
+                        RenderLoop.Renderers.Add(t, renderer);
                         this.Controls.Add(renderer);
                         SizeAndLocate(renderer);
                     });

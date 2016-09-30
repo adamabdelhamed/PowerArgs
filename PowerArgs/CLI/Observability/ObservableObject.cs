@@ -4,10 +4,20 @@ using System.Runtime.CompilerServices;
 
 namespace PowerArgs.Cli
 {
+    public interface IObservableObject
+    {
+        bool SuppressEqualChanges { get; set; }
+        PropertyChangedSubscription SubscribeUnmanaged(string propertyName, Action handler);
+        void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager);
+        PropertyChangedSubscription SynchronizeUnmanaged(string propertyName, Action handler);
+        void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager);
+
+    }
+
     /// <summary>
     /// A class that makes it easy to define an object with observable properties
     /// </summary>
-    public class ObservableObject : Lifetime
+    public class ObservableObject : Lifetime, IObservableObject
     {
         /// <summary>
         /// Subscribe or synchronize using this key to receive notifications when any property changes

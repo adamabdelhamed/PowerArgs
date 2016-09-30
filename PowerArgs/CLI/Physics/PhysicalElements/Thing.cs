@@ -2,8 +2,18 @@
 
 namespace PowerArgs.Cli.Physics
 {
-    public class Thing : Lifetime
+    public class Thing : Lifetime, IObservableObject
     {
+        private ObservableObject observable = new ObservableObject();
+
+        protected ObservableObject Observable
+        {
+            get
+            {
+                return observable;
+            }
+        }
+
         public Event Added { get; private set; } = new Event();
         public Event Removed { get; private set; } = new Event();
         public Event Updated { get; private set; } = new Event();
@@ -47,9 +57,23 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        public bool SuppressEqualChanges
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public Thing()
         {
             Governor = new RateGovernor();
+            Bounds = new Rectangle(0,0,0,0);
         }
         public Thing(Rectangle bounds) : this()
         {
@@ -66,6 +90,26 @@ namespace PowerArgs.Cli.Physics
 
         public virtual void Behave(Realm r)
         {
+        }
+
+        public PropertyChangedSubscription SubscribeUnmanaged(string propertyName, Action handler)
+        {
+            return observable.SubscribeUnmanaged(propertyName, handler);
+        }
+
+        public void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager)
+        {
+            observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
+        }
+
+        public PropertyChangedSubscription SynchronizeUnmanaged(string propertyName, Action handler)
+        {
+            return observable.SynchronizeUnmanaged(propertyName, handler);
+        }
+
+        public void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager)
+        {
+            observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
         }
     }
 }

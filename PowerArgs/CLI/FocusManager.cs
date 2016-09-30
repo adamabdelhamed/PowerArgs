@@ -188,6 +188,7 @@ namespace PowerArgs.Cli
 
             int initialPosition = focusStack.Peek().FocusIndex;
 
+            DateTime start = DateTime.Now;
             do
             {
                 bool wrapped = CycleFocusIndex(forward);
@@ -199,7 +200,7 @@ namespace PowerArgs.Cli
 
                 if (wrapped && initialPosition < 0) break;
             }
-            while (focusStack.Peek().FocusIndex != initialPosition);
+            while (focusStack.Peek().FocusIndex != initialPosition && DateTime.Now - start < TimeSpan.FromSeconds(.2));
 
             return false;
         }

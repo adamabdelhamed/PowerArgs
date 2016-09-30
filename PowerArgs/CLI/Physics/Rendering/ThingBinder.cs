@@ -35,20 +35,24 @@ namespace PowerArgs.Cli.Physics
 
             ThingRenderer ret = Activator.CreateInstance(binding) as ThingRenderer;
             ret.Thing = t;
+            ret.OnBind();
             return ret;
         }
 
         private Dictionary<Type, Type> LoadBindings()
         {
             Dictionary<Type, Type> ret = new Dictionary<Type, Type>();
-            Assembly rendererAssembly = typeof(ThingRenderer).GetTypeInfo().Assembly;
-
             List<Type> rendererTypes = new List<Type>();
 
-            foreach (Type t in from type in rendererAssembly.ExportedTypes where type.GetTypeInfo().IsSubclassOf(typeof(ThingRenderer)) select type)
+            foreach (var rendererAssembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (t.GetTypeInfo().GetCustomAttributes(typeof(ThingBindingAttribute), true).Count() != 1) continue;
-                rendererTypes.Add(t);
+
+
+                foreach (Type t in from type in rendererAssembly.ExportedTypes where type.GetTypeInfo().IsSubclassOf(typeof(ThingRenderer)) select type)
+                {
+                    if (t.GetTypeInfo().GetCustomAttributes(typeof(ThingBindingAttribute), true).Count() != 1) continue;
+                    rendererTypes.Add(t);
+                }
             }
 
             foreach (var thingAssembly in AppDomain.CurrentDomain.GetAssemblies())

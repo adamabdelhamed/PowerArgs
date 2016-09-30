@@ -10,7 +10,7 @@ namespace HelloWorld
         static void Main(string[] args)
         {
             var app = new ConsoleApp();
-            var realmPanel = app.LayoutRoot.Add(new RealmPanel() { Width=32,Height=9}).CenterHorizontally().CenterVertically();
+            var realmPanel = app.LayoutRoot.Add(new RealmPanel(32,9) { Width=32,Height=9}).CenterHorizontally().CenterVertically();
             Random r = new Random();
             app.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Spacebar, null, () =>
             {

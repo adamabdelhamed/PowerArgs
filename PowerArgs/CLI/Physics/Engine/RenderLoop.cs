@@ -6,6 +6,25 @@ namespace PowerArgs.Cli.Physics
 {
     public class RenderLoop
     {
+        [ThreadStatic]
+        private static RenderLoop _current;
+
+        public static RenderLoop Current
+        {
+            get
+            {
+                return _current;
+            }
+            set
+            {
+                if(Current != null)
+                {
+                    throw new InvalidOperationException("There is already a render loop on this thread");
+                }
+                _current = value;
+            }
+        }
+
         private bool paused;
         private DateTime last = DateTime.MinValue;
 
@@ -74,6 +93,7 @@ namespace PowerArgs.Cli.Physics
 
             new Task(() =>
             {
+                Current = this;
                 try
                 {
                     while (!paused)

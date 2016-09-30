@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorld", "HelloWorld\HelloWorld.csproj", "{9FF5B5D7-B7FC-4F03-B13E-ADC16D4E8350}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{75F86E
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleZombies", "ConsoleZombies\ConsoleZombies.csproj", "{5F58106E-A3E9-4E52-B085-075268CA8B63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -80,6 +82,18 @@ Global
 		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{973A992A-128C-41FF-9BA9-DA0C90F4DA7A}.Release|x86.ActiveCfg = Release|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Debug|x86.Build.0 = Debug|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Release|x86.ActiveCfg = Release|Any CPU
+		{5F58106E-A3E9-4E52-B085-075268CA8B63}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
