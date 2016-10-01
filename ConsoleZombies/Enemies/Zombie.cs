@@ -10,14 +10,34 @@ namespace ConsoleZombies
 {
     public class Zombie : Thing
     {
+        private Seeker _seeker;
+        public SpeedTracker SpeedTracker { get; private set; }
+        public bool IsActive
+        {
+            get
+            {
+                return _seeker != null;
+            }
+            set
+            {
+                if (value == false && _seeker == null) return;
+                else if (value == false) Realm.Remove(_seeker);
+                else if (_seeker != null) return;
+                else _seeker = new Seeker(this, MainCharacter.Current, SpeedTracker,2);
+            }
+        }
+
         public Zombie()
         {
+            this.SpeedTracker = new SpeedTracker(this);
+            this.SpeedTracker.HitDetectionTypes.Add(typeof(Wall));
+            this.SpeedTracker.Bounciness = 0;
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(0, 0, 1, 1);
         }
 
         public override void InitializeThing(Realm r)
         {
-            new Seeker(this, MainCharacter.Current, 1);
+
         }
     }
 
@@ -34,13 +54,13 @@ namespace ConsoleZombies
         {
             if (HasFocus)
             {
-                context.Pen = new PowerArgs.ConsoleCharacter('Z', GameTheme.DefaultTheme.FocusColor, ConsoleColor.Gray);
+                context.Pen = new PowerArgs.ConsoleCharacter('Z', GameTheme.DefaultTheme.FocusColor, ConsoleColor.DarkGray);
             }
             else
             {
-                context.Pen = new PowerArgs.ConsoleCharacter('Z', ConsoleColor.DarkRed, ConsoleColor.Gray);
+                context.Pen = new PowerArgs.ConsoleCharacter('Z', ConsoleColor.DarkRed, ConsoleColor.DarkGray);
             }
-            context.DrawPoint(0, 0);
+            context.FillRect(0, 0,Width,Height);
         }
     }
 }

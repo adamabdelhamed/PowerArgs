@@ -44,6 +44,11 @@ namespace ConsoleZombies
     [ThingBinding(typeof(Bullet))]
     public class BulletRenderer : ThingRenderer
     {
+        public BulletRenderer()
+        {
+            TransparentBackground = true;
+        }
+
         protected override void OnPaint(ConsoleBitmap context)
         {
             context.Pen = new PowerArgs.ConsoleCharacter('*', ConsoleColor.Red, ConsoleColor.Gray);

@@ -41,6 +41,22 @@ namespace ConsoleZombies
             }
         }
 
+        public Path(List<PathElement> elements)
+        {
+            PathElement last = null;
+            foreach (var element in elements)
+            {
+                element.Path = this;
+                element.Last = last;
+                if (last != null)
+                {
+                    last.Next = element;
+                }
+                Add(element);
+                last = element;
+            }
+        }
+
         public Path(params Location[] points) : this(points.ToList()) { }
     }
 
@@ -64,7 +80,7 @@ namespace ConsoleZombies
 
         public override void OnBind()
         {
-            (Thing as PathElement).SubscribeForLifetime(nameof(PathElement.IsHighlighted), () =>
+            (Thing as PathElement).SynchronizeForLifetime(nameof(PathElement.IsHighlighted), () =>
              {
                  bool highlighted = (Thing as PathElement).IsHighlighted;
 
@@ -75,6 +91,14 @@ namespace ConsoleZombies
                          this.Background = highlighted ? ConsoleColor.Cyan : ConsoleColor.Black;
                          this.TransparentBackground = highlighted == false;
                      });
+                 }
+                 else
+                 {
+                     AddedToVisualTree.SubscribeForLifetime(() =>
+                     {
+                         this.Background = highlighted ? ConsoleColor.Cyan : ConsoleColor.Black;
+                         this.TransparentBackground = highlighted == false;
+                     }, this.LifetimeManager);
                  }
              }, this.LifetimeManager);
         }

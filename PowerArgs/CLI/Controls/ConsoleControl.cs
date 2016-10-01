@@ -14,6 +14,9 @@ namespace PowerArgs.Cli
         /// An id that can be used for debugging.  It is not used for anything internally.
         /// </summary>
         public string Id { get { return Get<string>(); } set { Set(value); } }
+
+        public int ZIndex { get; set; }
+
         /// <summary>
         /// An event that fires after this control gets focus
         /// </summary>

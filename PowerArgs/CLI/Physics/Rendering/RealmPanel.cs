@@ -9,14 +9,39 @@ namespace PowerArgs.Cli.Physics
 {
     public class RealmPanel : ConsolePanel
     {
-        public RenderLoop RenderLoop { get; private set; } 
+        public RenderLoop RenderLoop { get; private set; }
+
+        public Size PixelSize
+        {
+            get
+            {
+                return new Physics.Size()
+                {
+                    H = (1.0f / this.Height) * RenderLoop.Realm.Bounds.H,
+                    W = (1.0f / this.Width) * RenderLoop.Realm.Bounds.W,
+                };
+            }
+        }
 
         public RealmPanel(int w, int h)
         {
             this.Background = ConsoleColor.Gray;
             this.RenderLoop = new RenderLoop(w, h);
+            this.Size = new Cli.Size(w, h);
             RenderLoop.MaxFPS = 30;
             RenderLoop.Render = UpdateView;
+            this.SubscribeForLifetime(nameof(Bounds), HandleResize, this.LifetimeManager);
+        }
+
+        private void HandleResize()
+        {
+            lock (RenderLoop.RenderLoopSync)
+            {
+                foreach (var renderer in RenderLoop.Renderers)
+                {
+                    SizeAndLocate(renderer.Value);
+                }
+            }
         }
 
         public void UpdateView()

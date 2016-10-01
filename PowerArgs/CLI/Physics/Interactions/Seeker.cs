@@ -4,44 +4,40 @@ namespace PowerArgs.Cli.Physics
 {
     public class Seeker : ThingInteraction
     {
-        public Thing SeekTarget { get; set; }
-        public float Speed { get; set; }
-
-        public Seeker() { }
-
-        public Seeker(Thing seeker, Thing seekTarget, float speed) : base(seeker)
+        public Thing Seekee { get; private set; }
+        public SpeedTracker SeekerSpeed { get; private set; }
+        private Force currentForce;
+        private float accelleration;
+        public Seeker(Thing seeker, Thing seekee, SpeedTracker seekerSpeed, float accelleration) : base(seeker)
         {
-            this.SeekTarget = seekTarget;
-            this.Speed = speed;
+            this.Seekee = seekee;
+            this.SeekerSpeed = seekerSpeed;
+            this.accelleration = accelleration;
+            Governor.Rate = TimeSpan.FromSeconds(.1);
+            Seekee.Removed.SubscribeForLifetime(() => { Realm.Remove(this); }, this.LifetimeManager);
         }
 
         public override void Initialize(Realm realm)
         {
-            base.Initialize(realm);
+            currentForce = new Force(SeekerSpeed, accelleration, MyThing.Bounds.Location.CalculateAngleTo(Seekee.Bounds.Location));
         }
 
         public override void Behave(Realm realm)
         {
-            base.Behave(realm);
-
-            if (CheckSeekComplete(realm)) return;
-            if (LastBehavior == TimeSpan.Zero) LastBehavior = realm.ElapsedTime;
-            float dt = (float)(realm.ElapsedTime.TotalSeconds - LastBehavior.TotalSeconds);
-            float distance = dt * Speed;
-            MyThing.Bounds.Location = RealmHelpers.MoveTowards(MyThing.Bounds.Location, SeekTarget.Bounds.Location, distance);
-            RealmHelpers.MoveThingSafeBy(realm, MyThing, 0, 0);
-            realm.Update(MyThing);
-            CheckSeekComplete(realm);
+            new Force(SeekerSpeed, 1, Offset(currentForce.Angle));
+            currentForce = new Force(SeekerSpeed, accelleration, MyThing.Bounds.Location.CalculateAngleTo(Seekee.Bounds.Location));
         }
 
-        private bool CheckSeekComplete(Realm realm)
+        private float Offset(float angle)
         {
-            if (MyThing.Bounds.Hits(SeekTarget.Bounds))
+            if(angle < 180)
             {
-                realm.Remove(this);
-                return true;
+                return angle + 180;
             }
-            return false;
+            else
+            {
+                return angle - 180;
+            }
         }
     }
 }
