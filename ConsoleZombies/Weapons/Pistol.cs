@@ -6,11 +6,10 @@ namespace ConsoleZombies
     {
         public override void Fire()
         {
-            if(MainCharacter.Current.Target == null)
+            if (MainCharacter.Current.Target == null)
             {
-                throw new InvalidOperationException("No target");
+                return;
             }
-
             MainCharacter.Current.Realm.Add(new Bullet(MainCharacter.Current.Target.Bounds.Location));
         }
     }

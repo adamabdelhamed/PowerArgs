@@ -11,10 +11,11 @@ namespace ConsoleZombies
 {
     public class LevelDefinition : List<ThingDefinition>
     {
-        public static string LevelBuilderLevelsPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ConsoleZombies","LevelBuilder","Levels");
-        public float Width { get; set; }
-        public float Height { get; set; }
+        public static readonly int Width = 60;
+        public static readonly int Height = 20;
 
+        public static string LevelBuilderLevelsPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ConsoleZombies","LevelBuilder","Levels");
+        
         public void Save(string levelName)
         {
             var fileName = System.IO.Path.Combine(LevelBuilderLevelsPath, levelName + ".json");
@@ -46,35 +47,19 @@ namespace ConsoleZombies
 
         public void Populate(Realm realm, bool builderMode)
         {
-            Dictionary<string, List<PathElement>> pathElements = new Dictionary<string, List<PathElement>>();
-
             foreach (var thingDef in this)
             {
                 var thingType = Assembly.GetExecutingAssembly().GetType(thingDef.ThingType);
-                var thing = Activator.CreateInstance(thingType) as Thing;
+                var thing = Activator.CreateInstance(thingType) as PowerArgs.Cli.Physics.Thing;
                 thing.Bounds = new PowerArgs.Cli.Physics.Rectangle(thingDef.InitialBounds.X, thingDef.InitialBounds.Y, thingDef.InitialBounds.W, thingDef.InitialBounds.H);
 
-                if(thing is PathElement)
-                {
-                    if(pathElements.ContainsKey(thingDef.InitialData["PathId"]) == false)
-                    {
-                        pathElements.Add(thingDef.InitialData["PathId"], new List<PathElement>());
-                    }
-
-                    pathElements[thingDef.InitialData["PathId"]].Add(thing as PathElement);
-                }
-
+                
                 if(thing is MainCharacter)
                 {
                     (thing as MainCharacter).IsInLevelBuilder = builderMode;
                 }
 
                 realm.Add(thing);
-            }
-
-            foreach(var pathId in pathElements.Keys)
-            {
-                new Path(pathElements[pathId]);
             }
         }
     }

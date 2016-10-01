@@ -178,6 +178,29 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
+        public static Route CalculateLineOfSight(Realm r, Thing from, Location to, float increment)
+        {
+            Route ret = new Route();
+            Rectangle current = from.Bounds.Clone();
+            while (current.Location.CalculateDistanceTo(to) > increment)
+            {
+                current = new Rectangle(MoveTowards(current.Location, to, increment), from.Bounds.Size);
+                ret.Steps.Add(current.Location);
+
+                var obstacles = GetThingsThatTouch(r, new Thing(current));
+
+                foreach(var obstacle in obstacles)
+                {
+                    if(ret.Obstacles.Contains(obstacle) == false)
+                    {
+                        ret.Obstacles.Add(obstacle);
+                    }
+                }
+            }
+
+            return ret;
+        }
+
         public static bool DoesThingTouchA<T>(Thing target, Realm r, float dx = 0, float dy = 0) where T : Thing
         {
             Rectangle testArea = new Rectangle(target.Bounds.Location.X + dx, target.Bounds.Location.Y + dy, target.Bounds.Size.W, target.Bounds.Size.H);

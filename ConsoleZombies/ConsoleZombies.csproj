@@ -49,9 +49,9 @@
   <ItemGroup>
     <Compile Include="Character\Inventory.cs" />
     <Compile Include="Character\MainCharacter.cs" />
+    <Compile Include="Character\Targeting.cs" />
     <Compile Include="Enemies\Zombie.cs" />
     <Compile Include="GameTheme.cs" />
-    <Compile Include="Interactions\PathTraveler.cs" />
     <Compile Include="Levels\Cursor.cs" />
     <Compile Include="Levels\LevelBuilder.cs" />
     <Compile Include="Levels\LevelDefinition.cs" />
@@ -59,10 +59,13 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StaticObjects\Item.cs" />
-    <Compile Include="StaticObjects\Path.cs" />
     <Compile Include="StaticObjects\Wall.cs" />
+    <Compile Include="Weapons\Explosive.cs" />
     <Compile Include="Weapons\Bullet.cs" />
+    <Compile Include="Weapons\MineDropper.cs" />
     <Compile Include="Weapons\Pistol.cs" />
+    <Compile Include="Weapons\RemoteMine.cs" />
+    <Compile Include="Weapons\TimedMine.cs" />
     <Compile Include="Weapons\Weapon.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -75,7 +78,9 @@
       <Name>PowerArgs</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Interactions\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

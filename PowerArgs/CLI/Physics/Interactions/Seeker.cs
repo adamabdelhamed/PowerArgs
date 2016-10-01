@@ -4,6 +4,7 @@ namespace PowerArgs.Cli.Physics
 {
     public class Seeker : ThingInteraction
     {
+        public bool IsSeeking { get; set; }
         public Thing Seekee { get; private set; }
         public SpeedTracker SeekerSpeed { get; private set; }
         private Force currentForce;
@@ -19,25 +20,41 @@ namespace PowerArgs.Cli.Physics
 
         public override void Initialize(Realm realm)
         {
-            currentForce = new Force(SeekerSpeed, accelleration, MyThing.Bounds.Location.CalculateAngleTo(Seekee.Bounds.Location));
+            if (IsSeeking)
+            {
+                currentForce = new Force(SeekerSpeed, accelleration, MyThing.Bounds.Location.CalculateAngleTo(Seekee.Bounds.Location));
+            }
         }
 
         public override void Behave(Realm realm)
         {
-            new Force(SeekerSpeed, 1, Offset(currentForce.Angle));
-            currentForce = new Force(SeekerSpeed, accelleration, MyThing.Bounds.Location.CalculateAngleTo(Seekee.Bounds.Location));
+            if (currentForce != null)
+            {
+                new Force(SeekerSpeed, 1, Offset(currentForce.Angle));
+                currentForce = null;
+            }
+
+            if (IsSeeking)
+            {
+                currentForce = new Force(SeekerSpeed, accelleration, MyThing.Bounds.Location.CalculateAngleTo(Seekee.Bounds.Location));
+            }
         }
 
         private float Offset(float angle)
         {
+            float ret;
             if(angle < 180)
             {
-                return angle + 180;
+                ret = angle + 180;
             }
             else
             {
-                return angle - 180;
+                ret = angle - 180;
             }
+
+            if (ret == 360) ret = 0;
+
+            return ret;
         }
     }
 }

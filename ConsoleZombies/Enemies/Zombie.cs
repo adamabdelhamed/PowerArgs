@@ -10,6 +10,10 @@ namespace ConsoleZombies
 {
     public class Zombie : Thing
     {
+        public float HealthPoints { get; set; }
+
+        public bool IsBeingTargeted { get; private set; }
+
         private Seeker _seeker;
         public SpeedTracker SpeedTracker { get; private set; }
         public bool IsActive
@@ -23,7 +27,7 @@ namespace ConsoleZombies
                 if (value == false && _seeker == null) return;
                 else if (value == false) Realm.Remove(_seeker);
                 else if (_seeker != null) return;
-                else _seeker = new Seeker(this, MainCharacter.Current, SpeedTracker,2);
+                else _seeker = new Seeker(this, MainCharacter.Current, SpeedTracker, 1.25f) { IsSeeking = false };
             }
         }
 
@@ -33,10 +37,30 @@ namespace ConsoleZombies
             this.SpeedTracker.HitDetectionTypes.Add(typeof(Wall));
             this.SpeedTracker.Bounciness = 0;
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(0, 0, 1, 1);
+            this.HealthPoints = 2;
         }
 
         public override void InitializeThing(Realm r)
         {
+
+        }
+
+        public override void Behave(Realm r)
+        {
+            IsBeingTargeted = MainCharacter.Current != null && MainCharacter.Current.Target == this;
+
+            if (IsActive == false) return;
+
+            var routeToMainCharacter = RealmHelpers.CalculateLineOfSight(r, this, MainCharacter.Current.Bounds.Location, 1);
+
+            if(routeToMainCharacter.Obstacles.Where(o => o is Wall).Count() == 0)
+            {
+                _seeker.IsSeeking = true;
+            }
+            else
+            {
+                _seeker.IsSeeking = false;
+            }
 
         }
     }
@@ -44,15 +68,17 @@ namespace ConsoleZombies
     [ThingBinding(typeof(Zombie))]
     public class ZombieRenderer : ThingRenderer
     {
+        public bool IsHighlighted { get; private set; }
+
         public ZombieRenderer()
         {
             this.TransparentBackground = true;
-            CanFocus = true;
+            CanFocus = false;
         }
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            if (HasFocus)
+            if ((Thing as Zombie).IsBeingTargeted)
             {
                 context.Pen = new PowerArgs.ConsoleCharacter('Z', GameTheme.DefaultTheme.FocusColor, ConsoleColor.DarkGray);
             }

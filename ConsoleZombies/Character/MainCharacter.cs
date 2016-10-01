@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleZombies
 {
-    public class MainCharacter : Thing
+    public class MainCharacter : PowerArgs.Cli.Physics.Thing
     {
         [ThreadStatic]
         private static MainCharacter _instance;
@@ -31,15 +31,20 @@ namespace ConsoleZombies
             }
         }
 
-        public Thing Target { get; set; }
+        public SpeedTracker Speed { get; private set; }
 
-        public PathElement MoveTarget { get; set; }
-        public bool MoveReverse { get; set; }
+        public Targeting Targeting { get; private set; }
+
+        public Thing Target { get; set; }
 
         public Inventory Inventory { get; private set; } = new Inventory();
 
         public MainCharacter()
         {
+            Speed = new SpeedTracker(this);
+            Targeting = new Targeting(this);
+            Speed.Bounciness = 0;
+            Speed.HitDetectionTypes.Add(typeof(Wall));
             Added.SubscribeForLifetime(OnAdded, this.LifetimeManager);
             Removed.SubscribeForLifetime(OnRemoved, this.LifetimeManager);
        }
@@ -52,6 +57,10 @@ namespace ConsoleZombies
         private void OnRemoved()
         {
             Current = null;
+        }
+
+        public override void Behave(Realm r)
+        {
         }
     }
 
@@ -70,6 +79,7 @@ namespace ConsoleZombies
         {
             this.TransparentBackground = true;
             this.AddedToVisualTree.SubscribeForLifetime(Added, this.LifetimeManager);
+            ZIndex = 2000;
         }
 
         protected override void OnPaint(ConsoleBitmap context)
@@ -83,83 +93,117 @@ namespace ConsoleZombies
         {
             if (MainCharacter.IsInLevelBuilder == false)
             {
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Spacebar, null, SpacebarPressed, this.LifetimeManager);
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.RightArrow, null, RightArrowPressed, this.LifetimeManager);
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, EnterPressed, this.LifetimeManager);
-                Application.FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), FocusChanged, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.D, null, FireGun, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.F, null, FireGun, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.R, null, DropRemoteMine, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.T, null, DropTimedMine, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Spacebar, null, ToggleSlowMo, this.LifetimeManager);
+
+
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.RightArrow, null, MoveRight, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.LeftArrow, null, MoveLeft, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.UpArrow, null, MoveUp, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.DownArrow, null, MoveDown, this.LifetimeManager);
             }
         }
 
-        private void FocusChanged()
-        {
-            if(Application.FocusManager.FocusedControl is ThingRenderer == false)
-            {
-                RenderLoop.QueueAction(()=> { MainCharacter.Target = null; });
-                return;
-            }
-            else
-            {
-                var thing = (Application.FocusManager.FocusedControl as ThingRenderer).Thing;
-                if(thing is Zombie)
-                {
-                    RenderLoop.QueueAction(() => { MainCharacter.Target = thing; });
-                }
-                else
-                {
-                    RenderLoop.QueueAction(() => { MainCharacter.Target = null; });
-                }
-            }
-        }
-
-        private void SpacebarPressed(ConsoleKeyInfo spacebar)
+        private void ToggleSlowMo(ConsoleKeyInfo key)
         {
             RenderLoop.QueueAction(() =>
             {
-                if (MainCharacter.Inventory.CurrentWeapon != null && MainCharacter.Target != null)
+                RenderLoop.SpeedFactor = RenderLoop.SpeedFactor == 1 ? .15f : 1f;
+            });
+        }
+        private void MoveDown(ConsoleKeyInfo obj)
+        {
+            RenderLoop.QueueAction(() => 
+            {
+                if(MainCharacter.Speed.SpeedY > Math.Abs(MainCharacter.Speed.SpeedX))
                 {
-                    MainCharacter.Inventory.CurrentWeapon.Fire();
+                    MainCharacter.Speed.SpeedY = 0;
+                    MainCharacter.Speed.SpeedX = 0;
+                }
+                else
+                {
+                    MainCharacter.Speed.SpeedY = 7;
+                    MainCharacter.Speed.SpeedX = 0;
                 }
             });
         }
 
-        private void EnterPressed(ConsoleKeyInfo enter)
+        private void MoveUp(ConsoleKeyInfo obj)
         {
             RenderLoop.QueueAction(() =>
             {
-                if(MainCharacter.MoveTarget != null)
+                if (MainCharacter.Speed.SpeedY < 0 && Math.Abs(MainCharacter.Speed.SpeedY) > Math.Abs(MainCharacter.Speed.SpeedX))
                 {
-                    new PathTraveler(MainCharacter, MainCharacter.MoveTarget, MainCharacter.MoveReverse);
+                    MainCharacter.Speed.SpeedY = 0;
+                    MainCharacter.Speed.SpeedX = 0;
+                }
+                else
+                {
+                    MainCharacter.Speed.SpeedY = -7;
+                    MainCharacter.Speed.SpeedX = 0;
                 }
             });
         }
 
-        private void RightArrowPressed(ConsoleKeyInfo rightArrow)
+        private void MoveLeft(ConsoleKeyInfo obj)
         {
             RenderLoop.QueueAction(() =>
             {
-                var path = RenderLoop.Realm.Things.Where(t => t is PathElement).Select(t => t as PathElement)
-                    .Where(p => p.Path.Where(innerP => RealmHelpers.GetThingsThatTouch(RenderLoop.Realm, MainCharacter).Contains(innerP)).Count() == 0)
-                                     
-                    .OrderBy(p => MainCharacter.Bounds.Location.CalculateDistanceTo(p.Bounds.Location)).First().Path;
-
-                var startDistance = MainCharacter.Bounds.Location.CalculateDistanceTo(path.First().Bounds.Location);
-                var endDistance = MainCharacter.Bounds.Location.CalculateDistanceTo(path.Last().Bounds.Location);
-                if (startDistance < endDistance)
+                if (MainCharacter.Speed.SpeedX < 0 && Math.Abs(MainCharacter.Speed.SpeedX) > Math.Abs(MainCharacter.Speed.SpeedY))
                 {
-                    path.Last().IsHighlighted = true;
-                    path.First().IsHighlighted = false;
-                    MainCharacter.MoveReverse = false;
-            
+                    MainCharacter.Speed.SpeedX = 0;
+                    MainCharacter.Speed.SpeedY = 0;
                 }
                 else
                 {
-                    path.Last().IsHighlighted = false;
-                    path.First().IsHighlighted = true;
-                    MainCharacter.MoveReverse = true;
+                    MainCharacter.Speed.SpeedX = -7;
+                    MainCharacter.Speed.SpeedY = 0;
                 }
+            });
+        }
 
-                MainCharacter.MoveTarget = path.OrderBy(p => MainCharacter.Bounds.Location.CalculateDistanceTo(p.Bounds.Location)).First();
+        private void MoveRight(ConsoleKeyInfo obj)
+        {
+            RenderLoop.QueueAction(() =>
+            {
+                if (MainCharacter.Speed.SpeedX > Math.Abs(MainCharacter.Speed.SpeedY))
+                {
+                    MainCharacter.Speed.SpeedX = 0;
+                    MainCharacter.Speed.SpeedY = 0;
+                }
+                else
+                {
+                    MainCharacter.Speed.SpeedX = 7;
+                    MainCharacter.Speed.SpeedY = 0;
+                }
+            });
+        }
+        
 
+        private void FireGun(ConsoleKeyInfo spacebar)
+        {
+            RenderLoop.QueueAction(() =>
+            {
+                MainCharacter.Inventory.Gun.Fire();
+            });
+        }
+
+        private void DropRemoteMine(ConsoleKeyInfo key)
+        {
+            RenderLoop.QueueAction(() =>
+            {
+                MainCharacter.Inventory.RemoteMineDropper.Fire();
+            });
+        }
+
+        private void DropTimedMine(ConsoleKeyInfo key)
+        {
+            RenderLoop.QueueAction(() =>
+            {
+                MainCharacter.Inventory.TimedMineDropper.Fire();
             });
         }
     }

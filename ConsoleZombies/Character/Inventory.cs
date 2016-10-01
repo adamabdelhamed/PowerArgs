@@ -11,12 +11,15 @@ namespace ConsoleZombies
     {
         public ObservableCollection<Item> Items { get; private set; } = new ObservableCollection<Item>();
 
-        public Weapon CurrentWeapon { get; private set; }
+        public Weapon Gun { get; private set; }
+        public Weapon RemoteMineDropper { get; private set; }
+        public Weapon TimedMineDropper { get; private set; }
 
         public Inventory()
         {
-            Items.Add(new Pistol());
-            CurrentWeapon = Items.First() as Weapon;
+            Gun = new Pistol();
+            RemoteMineDropper = new RemoteMineDropper();
+            TimedMineDropper = new TimedMineDropper();
         }
     }
 }

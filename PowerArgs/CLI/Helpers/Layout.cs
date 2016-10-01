@@ -71,7 +71,7 @@ namespace PowerArgs.Cli
 
                 var gap = parent.Height - child.Height;
                 var y = gap / 2;
-                child.Y = y;
+                child.Y = Math.Max(0, y);
             }, parent.LifetimeManager);
 
             return child;
@@ -87,7 +87,7 @@ namespace PowerArgs.Cli
 
                 var gap = parent.Width - child.Width;
                 var x = gap / 2;
-                child.X = x;
+                child.X = Math.Max(0,x);
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
             child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);

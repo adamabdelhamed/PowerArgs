@@ -15,6 +15,11 @@ namespace PowerArgs.Cli.Physics
             this.MyThing = target;
             RenderLoop.Current.QueueAction(() =>
             {
+                if(target.IsExpired)
+                {
+                    return;
+                }
+
                 if (target.Realm != null)
                 {
                     target.Realm.Add(this);

@@ -13,10 +13,23 @@ namespace PowerArgs.Cli.Physics
         public float W { get { return Size.W; } }
         public float H { get { return Size.H; } }
 
+        public Rectangle() { }
+
         public Rectangle(float x, float y, float w, float h)
         {
             this.Location = new Location() { X = x, Y = y };
             this.Size = new Size() { W = w, H = h };
+        }
+
+        public Rectangle(Location l, Size s)
+        {
+            this.Location = l;
+            this.Size = s;
+        }
+
+        public Rectangle Clone()
+        {
+            return new Rectangle(Location.X, Location.Y, Size.W, Size.H);
         }
 
         public void MoveTo(Location newLocation)

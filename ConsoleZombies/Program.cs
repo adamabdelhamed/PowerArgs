@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleZombies
 {
-    [TabCompletion]
+    [TabCompletion(HistoryToSave =100)][ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
     class Program
     {
         static void Main(string[] args)

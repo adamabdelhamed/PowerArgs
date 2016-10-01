@@ -122,7 +122,7 @@ namespace PowerArgs.Cli.Physics
                     if (ExceptionOccurred == null) throw;
                     else if (ExceptionOccurred(ex) == false)
                     {
-                        throw;
+                        return;
                     }
                 }
             }).Start();

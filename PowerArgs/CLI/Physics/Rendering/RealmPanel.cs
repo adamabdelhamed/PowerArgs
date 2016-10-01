@@ -27,6 +27,14 @@ namespace PowerArgs.Cli.Physics
         {
             this.Background = ConsoleColor.Gray;
             this.RenderLoop = new RenderLoop(w, h);
+            this.RenderLoop.ExceptionOccurred += (ex) => 
+            {
+                Application.QueueAction(() => 
+                {
+                    throw new Exception("There was an unhandled Physics exception", ex);
+                });
+                return false;
+            };
             this.Size = new Cli.Size(w, h);
             RenderLoop.MaxFPS = 30;
             RenderLoop.Render = UpdateView;

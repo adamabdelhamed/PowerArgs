@@ -71,7 +71,11 @@ namespace PowerArgs.Cli.Physics
                 throw new Exception();
             }
 
-            return (float)(increment + radians * 180 / Math.PI);
+            var ret = (float)(increment + radians * 180 / Math.PI);
+
+            if (ret == 360) ret = 0;
+
+            return ret;
         }
     }
 }

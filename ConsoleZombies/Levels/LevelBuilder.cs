@@ -7,21 +7,13 @@ using System.Reflection;
 
 namespace ConsoleZombies
 {
-    public class PathBuilderSession : Lifetime
-    {
-        public string PathId { get; set; }
-        public int NextIndex { get; set; }
-    }
-
     public class LevelBuilder
     {
-        public LevelDefinition LevelDefinition { get; set; } = new LevelDefinition() { Width = 80, Height = 20 };
+        public LevelDefinition LevelDefinition { get; set; } = new LevelDefinition();
 
         public Cursor Cursor { get; private set; } = new Cursor();
 
         private RealmPanel RealmPanel { get; set; }
-
-        private PathBuilderSession PathBuilderLifetime { get; set; }
 
         public void Run()
         {
@@ -30,7 +22,7 @@ namespace ConsoleZombies
             var topPanel = app.LayoutRoot.Add(new ConsolePanel() { Background = System.ConsoleColor.Black }).Fill(padding: new Thickness(0, 0, 0, 6));
             var botPanel = app.LayoutRoot.Add(new ConsolePanel() { Height = 6, Background = System.ConsoleColor.DarkRed }).DockToBottom().FillHoriontally();
 
-            RealmPanel = topPanel.Add(new RealmPanel((int)LevelDefinition.Width, (int)LevelDefinition.Height)).FillAndPreserveAspectRatio();
+            RealmPanel = topPanel.Add(new RealmPanel((int)LevelDefinition.Width, (int)LevelDefinition.Height) { Width = LevelDefinition.Width, Height = LevelDefinition.Height/2}).CenterHorizontally().CenterVertically();
             app.QueueAction(() =>
             {
                 RealmPanel.RenderLoop.Start();
@@ -125,45 +117,6 @@ namespace ConsoleZombies
                 RealmPanel.RenderLoop.Realm.Add(zombie);
             });
 
-            BrokerKeyAction(ConsoleKey.N, () =>
-            {
-                if (PathBuilderLifetime != null)
-                {
-                    PathBuilderLifetime.Dispose();
-                }
-
-                PathBuilderLifetime = new PathBuilderSession() { PathId = Guid.NewGuid().ToString(), NextIndex = 0 };
-
-                LevelDefinition.Add(new ThingDefinition()
-                {
-                    ThingType = typeof(PathElement).FullName,
-                    InitialBounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H),
-                    InitialData = { { "PathId", PathBuilderLifetime.PathId }, { "Index", (PathBuilderLifetime.NextIndex++) + "" } }
-                });
-
-                var pathElement = new PathElement() { Bounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H) };
-                RealmPanel.RenderLoop.Realm.Add(pathElement);
-                pathElement.IsHighlighted = true;
-            });
-
-            BrokerKeyAction(ConsoleKey.P, () =>
-            {
-                if (PathBuilderLifetime == null)
-                {
-                    PathBuilderLifetime = new PathBuilderSession() { PathId = Guid.NewGuid().ToString(),NextIndex = 0 };
-                }
-
-                LevelDefinition.Add(new ThingDefinition()
-                {
-                    ThingType = typeof(PathElement).FullName,
-                    InitialBounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H),
-                    InitialData = { { "PathId", PathBuilderLifetime.PathId }, { "Index", (PathBuilderLifetime.NextIndex++)+"" } }
-                });
-
-                var pathElement = new PathElement() { Bounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H) };
-                RealmPanel.RenderLoop.Realm.Add(pathElement);
-                pathElement.IsHighlighted = true;
-            });
 
             BrokerKeyAction(ConsoleKey.W, () =>
             {

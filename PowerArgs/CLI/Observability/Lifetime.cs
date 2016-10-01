@@ -5,6 +5,15 @@ namespace PowerArgs.Cli
     public class Lifetime : Disposable
     {
         private LifetimeManager _manager;
+
+        public bool IsExpired
+        {
+            get
+            {
+                return _manager == null;
+            }
+        }
+
         public LifetimeManager LifetimeManager
         {
             get

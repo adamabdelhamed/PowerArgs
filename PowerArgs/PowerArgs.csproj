@@ -119,6 +119,7 @@
     <Compile Include="CLI\Physics\Rendering\ThingBinder.cs" />
     <Compile Include="CLI\Physics\Interactions\OneTimeInteraction.cs" />
     <Compile Include="CLI\Physics\Utilities\RealmHelpers.cs" />
+    <Compile Include="CLI\Physics\Utilities\Route.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsContextAssistProviders.cs" />
     <Compile Include="CLI\PowerArgs\PowerArgsRichCommandLineReader.cs" />
     <Compile Include="CLI\ConsoleApp.cs" />
