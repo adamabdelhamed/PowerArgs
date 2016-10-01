@@ -8,7 +8,7 @@ using PowerArgs.Cli;
 
 namespace ConsoleZombies
 {
-    public class Bullet : PowerArgs.Cli.Physics.Thing
+    public class Bullet : Thing
     {
 
         public float Range { get; set; } = -1;

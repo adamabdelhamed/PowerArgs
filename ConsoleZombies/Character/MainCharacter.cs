@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ConsoleZombies
 {
-    public class MainCharacter : PowerArgs.Cli.Physics.Thing
+    public class MainCharacter : Thing
     {
         [ThreadStatic]
         private static MainCharacter _instance;
@@ -59,9 +59,6 @@ namespace ConsoleZombies
             Current = null;
         }
 
-        public override void Behave(Realm r)
-        {
-        }
     }
 
     [ThingBinding(typeof(MainCharacter))]
