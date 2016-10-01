@@ -8,9 +8,14 @@ using PowerArgs.Cli;
 
 namespace ConsoleZombies
 {
-    public class Wall : Thing
+    public class Wall : Thing, IDestructible
     {
+        public float HealthPoints { get; set; }
 
+        public Wall()
+        {
+            HealthPoints = 20;
+        }
     }
 
     [ThingBinding(typeof(Wall))]

@@ -6,11 +6,13 @@ namespace ConsoleZombies
     {
         public override void Fire()
         {
-            if (MainCharacter.Current.Target == null)
-            {
-                return;
-            }
-            MainCharacter.Current.Realm.Add(new Bullet(MainCharacter.Current.Target.Bounds.Location));
+            var angle = MainCharacter.Current.Target != null ?
+                MainCharacter.Current.Bounds.Location.CalculateAngleTo(MainCharacter.Current.Target.Bounds.Location) :
+                MainCharacter.Current.Speed.Angle;
+
+            var bullet = new Bullet(MainCharacter.Current.Bounds.Location,angle);
+            bullet.Speed.HitDetectionTypes.Remove(typeof(MainCharacter));
+            MainCharacter.Current.Realm.Add(bullet);
         }
     }
 }

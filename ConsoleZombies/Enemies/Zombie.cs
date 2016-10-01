@@ -8,7 +8,7 @@ using PowerArgs.Cli;
 
 namespace ConsoleZombies
 {
-    public class Zombie : Thing
+    public class Zombie : Thing, IDestructible
     {
         public float HealthPoints { get; set; }
 
@@ -27,7 +27,10 @@ namespace ConsoleZombies
                 if (value == false && _seeker == null) return;
                 else if (value == false) Realm.Remove(_seeker);
                 else if (_seeker != null) return;
-                else _seeker = new Seeker(this, MainCharacter.Current, SpeedTracker, 1.25f) { IsSeeking = false };
+                else
+                {
+                    _seeker = new Seeker(this, MainCharacter.Current, SpeedTracker, 1.25f) { IsSeeking = false };
+                }
             }
         }
 
@@ -35,9 +38,19 @@ namespace ConsoleZombies
         {
             this.SpeedTracker = new SpeedTracker(this);
             this.SpeedTracker.HitDetectionTypes.Add(typeof(Wall));
+            this.SpeedTracker.HitDetectionTypes.Add(typeof(MainCharacter));
+            this.SpeedTracker.ImpactOccurred += SpeedTracker_ImpactOccurred;
             this.SpeedTracker.Bounciness = 0;
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(0, 0, 1, 1);
             this.HealthPoints = 2;
+        }
+
+        private void SpeedTracker_ImpactOccurred(float angle, PowerArgs.Cli.Physics.Rectangle bounds, Thing thingHit)
+        {
+            if(thingHit == MainCharacter.Current)
+            {
+                MainCharacter.Current.EatenByZombie.Fire();
+            }
         }
 
         public override void InitializeThing(Realm r)
@@ -47,7 +60,9 @@ namespace ConsoleZombies
 
         public override void Behave(Realm r)
         {
-            IsBeingTargeted = MainCharacter.Current != null && MainCharacter.Current.Target == this;
+            if (MainCharacter.Current == null) return;
+
+            IsBeingTargeted = MainCharacter.Current.Target == this;
 
             if (IsActive == false) return;
 

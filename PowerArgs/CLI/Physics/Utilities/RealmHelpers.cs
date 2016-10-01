@@ -25,6 +25,23 @@ namespace PowerArgs.Cli.Physics
 
         static Random random = new Random();
 
+        public static float GetOppositeAngle(float angle)
+        {
+            float ret;
+            if (angle < 180)
+            {
+                ret = angle + 180;
+            }
+            else
+            {
+                ret = angle - 180;
+            }
+
+            if (ret == 360) ret = 0;
+
+            return ret;
+        }
+
         public static bool IsOneOfThese(Thing t, List<Type> these)
         {
             Type thingType = t.GetType();

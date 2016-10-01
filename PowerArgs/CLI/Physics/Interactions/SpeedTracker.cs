@@ -57,6 +57,8 @@ namespace PowerArgs.Cli.Physics
         public float ImpactFriction { get; set; } // Should be set between 0 and 1
         public List<Type> HitDetectionTypes { get; set; }
 
+        public float Angle { get; private set; }
+
         bool haveMovedSinceLastHitDetection;
         public float Speed
         {
@@ -86,7 +88,7 @@ namespace PowerArgs.Cli.Physics
             float dy = SpeedY * dt;
 
             var hitPrediction = RealmHelpers.PredictHit(realm, MyThing, HitDetectionTypes, dx, dy);
-
+            
             if (hitPrediction.Type != RealmHelpers.HitType.None)
             {
                 float angle = MyThing.Bounds.Location.CalculateAngleTo(hitPrediction.BoundsOfItemBeingHit.Location);
@@ -115,8 +117,10 @@ namespace PowerArgs.Cli.Physics
             }
             else
             {
+                var oldLocation = MyThing.Bounds.Location;
                 if (RealmHelpers.MoveThingSafeBy(realm, MyThing, dx, dy))
                 {
+                    this.Angle = oldLocation.CalculateAngleTo(MyThing.Bounds.Location);
                     haveMovedSinceLastHitDetection = true;
                 }
             }

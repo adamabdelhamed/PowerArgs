@@ -36,6 +36,18 @@ namespace ConsoleZombies
                 {
                     zombie.IsActive = true;
                 }
+
+                if(MainCharacter.Current != null)
+                {
+                    MainCharacter.Current.EatenByZombie.SubscribeForLifetime(() =>
+                    {
+                        realmPanel.RenderLoop.Stop();
+                        app.QueueAction(() =>
+                        {
+                            Dialog.ShowMessage("Game over :(",()=> { app.Stop(); });
+                        });
+                    },realmPanel.LifetimeManager);
+                }
             });
 
             var appTask = app.Start();

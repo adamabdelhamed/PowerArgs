@@ -30,7 +30,7 @@ namespace PowerArgs.Cli.Physics
         {
             if (currentForce != null)
             {
-                new Force(SeekerSpeed, 1, Offset(currentForce.Angle));
+                new Force(SeekerSpeed, 1, RealmHelpers.GetOppositeAngle(currentForce.Angle));
                 currentForce = null;
             }
 
@@ -40,21 +40,6 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        private float Offset(float angle)
-        {
-            float ret;
-            if(angle < 180)
-            {
-                ret = angle + 180;
-            }
-            else
-            {
-                ret = angle - 180;
-            }
-
-            if (ret == 360) ret = 0;
-
-            return ret;
-        }
+        
     }
 }

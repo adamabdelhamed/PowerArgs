@@ -25,7 +25,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        private bool paused;
+        private bool stopRequested;
         private DateTime last = DateTime.MinValue;
 
         private Queue<Interaction> interactionQueue = new Queue<Interaction>();
@@ -39,7 +39,7 @@ namespace PowerArgs.Cli.Physics
         public ThingBinder Binder { get; set; }
         public bool RenderEveryFrame { get; set; }
 
-        public TimeSpan _minTimeBetweenRenderIterations;
+        public TimeSpan _minTimeBetweenRenderIterations;       
         public int MaxFPS
         {
             get
@@ -62,15 +62,15 @@ namespace PowerArgs.Cli.Physics
             SpeedFactor = 1;
         }
 
-        public void Pause()
+        public void Stop()
         {
-            paused = true;
+            QueueAction(() => { stopRequested = true; });
         }
 
         public void Resume()
         {
             last = DateTime.MinValue;
-            paused = false;
+            stopRequested = false;
             Start();
         }
 
@@ -87,16 +87,17 @@ namespace PowerArgs.Cli.Physics
             QueueInteraction(new OneTimeInteraction(a));
         }
 
-        public void Start()
+        public Task Start()
         {
             if (Render == null) throw new InvalidOperationException("You need to set RealmChangedAction");
 
-            new Task(() =>
+            return Task.Factory.StartNew(() =>
             {
+                stopRequested = false;
                 Current = this;
                 try
                 {
-                    while (!paused)
+                    while (!stopRequested)
                     {
                         lock(interactionQueue)
                         {
@@ -125,7 +126,7 @@ namespace PowerArgs.Cli.Physics
                         return;
                     }
                 }
-            }).Start();
+            });
         }
 
         private void Tick()

@@ -89,9 +89,9 @@ namespace PowerArgs.Cli.Physics
 
                 foreach (Thing t in RenderLoop.Realm.Removed)
                 {
-                    var renderer = RenderLoop.Renderers[t];
                     Application.QueueAction(() =>
                     {
+                        var renderer = RenderLoop.Renderers[t];
                         RenderLoop.Renderers.Remove(t);
                         Controls.Remove(renderer);
                     });

@@ -15,16 +15,26 @@ namespace ConsoleZombies
         public float HealthPoints { get; set; }
         public float angle { get; private set; }
 
-        private SpeedTracker speed;
+        public SpeedTracker Speed { get; private set; }
         private Location startLocation;
-        public Bullet(Location target)
+
+        public Bullet()
+        {
+            Speed = new SpeedTracker(this);
+            Speed.HitDetectionTypes.Add(typeof(Wall));
+            Speed.HitDetectionTypes.Add(typeof(Zombie));
+            Speed.HitDetectionTypes.Add(typeof(MainCharacter));
+            Speed.ImpactOccurred += Speed_ImpactOccurred;
+        }
+
+        public Bullet(Location target) : this()
         {
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(MainCharacter.Current.Bounds.Location.X, MainCharacter.Current.Bounds.Location.Y, 1, 1);
             this.angle = this.Bounds.Location.CalculateAngleTo(target);
             this.HealthPoints = 1;
         }
 
-        public Bullet(Location startLocation, float angle)
+        public Bullet(Location startLocation, float angle) : this()
         {
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(startLocation.X, startLocation.Y, 1, 1);
             this.angle = angle;
@@ -33,13 +43,9 @@ namespace ConsoleZombies
 
         public override void InitializeThing(Realm r)
         {
-            speed = new SpeedTracker(this);
-            speed.HitDetectionTypes.Add(typeof(Wall));
-            speed.HitDetectionTypes.Add(typeof(Zombie));
-            speed.ImpactOccurred += Speed_ImpactOccurred;
             startLocation = this.Bounds.Location;
             // todo - replace with bullet speed from config
-            new Force(speed, 20, angle);
+            new Force(Speed, 20, angle);
 
         }
 
@@ -49,20 +55,29 @@ namespace ConsoleZombies
             {
                 r.Remove(this);
             }
+            else if(Speed.Speed < 5)
+            {
+                r.Remove(this);
+            }
         }
 
         private void Speed_ImpactOccurred(float angle, PowerArgs.Cli.Physics.Rectangle bounds, PowerArgs.Cli.Physics.Thing thingHit)
         {
-            if (thingHit is Zombie)
+            if (thingHit is IDestructible)
             {
-                var zombie = thingHit as Zombie;
+                var destructible = thingHit as IDestructible;
 
-                zombie.HealthPoints -= this.HealthPoints;
-                if (zombie.HealthPoints <= 0)
+                destructible.HealthPoints -= this.HealthPoints;
+                if (destructible.HealthPoints <= 0)
                 {
-                    Realm.Remove(zombie);
+                    if(thingHit is MainCharacter)
+                    {
+                        MainCharacter.Current.EatenByZombie.Fire();
+                    }
+                    Realm.Remove(thingHit);
                 }
             }
+
             Realm.Remove(this);
         }
     }

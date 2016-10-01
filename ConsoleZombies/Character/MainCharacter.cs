@@ -8,10 +8,12 @@ using System.Threading.Tasks;
 
 namespace ConsoleZombies
 {
-    public class MainCharacter : Thing
+    public class MainCharacter : Thing, IDestructible
     {
         [ThreadStatic]
         private static MainCharacter _instance;
+
+        public Event EatenByZombie { get; private set; } = new Event();
 
         public bool IsInLevelBuilder { get; set; }
 
@@ -23,7 +25,7 @@ namespace ConsoleZombies
             }
             private set
             {
-                if(_instance != null)
+                if(_instance != null && value != null)
                 {
                     throw new InvalidOperationException("There is already a main character in the game");
                 }
@@ -38,6 +40,8 @@ namespace ConsoleZombies
         public Thing Target { get; set; }
 
         public Inventory Inventory { get; private set; } = new Inventory();
+
+        public float HealthPoints { get; set; }
 
         public MainCharacter()
         {
@@ -94,6 +98,8 @@ namespace ConsoleZombies
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.F, null, FireGun, this.LifetimeManager);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.R, null, DropRemoteMine, this.LifetimeManager);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.T, null, DropTimedMine, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.G, null, ThrowGrenade, this.LifetimeManager);
+
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Spacebar, null, ToggleSlowMo, this.LifetimeManager);
 
 
@@ -102,6 +108,14 @@ namespace ConsoleZombies
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.UpArrow, null, MoveUp, this.LifetimeManager);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.DownArrow, null, MoveDown, this.LifetimeManager);
             }
+        }
+
+        private void ThrowGrenade(ConsoleKeyInfo obj)
+        {
+            RenderLoop.QueueAction(() =>
+            {
+                MainCharacter.Inventory.GrenadeThrower.Fire();
+            });
         }
 
         private void ToggleSlowMo(ConsoleKeyInfo key)

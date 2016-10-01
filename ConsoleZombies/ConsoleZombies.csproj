@@ -58,6 +58,7 @@
     <Compile Include="PrototypeLevel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StaticObjects\IDestructible.cs" />
     <Compile Include="StaticObjects\Item.cs" />
     <Compile Include="StaticObjects\Wall.cs" />
     <Compile Include="Weapons\Explosive.cs" />
