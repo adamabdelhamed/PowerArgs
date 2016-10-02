@@ -9,11 +9,8 @@ namespace ConsoleZombies
 {
     public class Door : Wall
     {
-        private Rectangle closedBounds;
+        public Rectangle ClosedBounds { get; private set; }
         public Location OpenLocation { get; private set; }
-
-        public DoorThreshold Threshold { get; private set; }
-
         public bool IsOpen
         {
             get
@@ -28,6 +25,7 @@ namespace ConsoleZombies
                 }
                 else if(value)
                 {
+                    SoundEffects.Instance.PlaySound("opendoor");
                     this.Bounds.MoveTo(OpenLocation);
                 }
                 else if(value == false && IsOpen == false)
@@ -36,7 +34,8 @@ namespace ConsoleZombies
                 }
                 else if(value == false)
                 {
-                    this.Bounds.MoveTo(closedBounds.Location);
+                    SoundEffects.Instance.PlaySound("closedoor");
+                    this.Bounds.MoveTo(ClosedBounds.Location);
                 }
             }
         }
@@ -53,50 +52,23 @@ namespace ConsoleZombies
 
         public void Initialize(Rectangle closedBounds, Location openLocation)
         {
-            if(this.closedBounds != null)
+            if(this.ClosedBounds != null)
             {
                 throw new InvalidOperationException("Already initialized");
             }
 
             this.Bounds = closedBounds.Clone();
-            this.closedBounds = closedBounds.Clone();
+            this.ClosedBounds = closedBounds.Clone();
             this.OpenLocation = openLocation;
-            this.Threshold = new DoorThreshold(this) { Bounds = this.closedBounds.Clone() };
-            this.Added.SubscribeForLifetime(() =>
-            {
-                Realm.Add(Threshold);
-            }, this.LifetimeManager);
-            this.Removed.SubscribeForLifetime(() =>
-            {
-                Realm.Remove(Threshold);
-            }, this.LifetimeManager);
         }
     }
-
-    public class DoorThreshold : Thing
-    {
-        public Door Door { get; private set; }
-        public DoorThreshold(Door door)
-        {
-            this.Door = door;
-        }
-    }
-
+    
     [ThingBinding(typeof(Door))]
     public class DoorRenderer : ThingRenderer
     {
         public DoorRenderer()
         {
             Background = ConsoleColor.Cyan;
-        }
-    }
-
-    [ThingBinding(typeof(DoorThreshold))]
-    public class DoorThresholdRenderer : ThingRenderer
-    {
-        public DoorThresholdRenderer()
-        {
-            TransparentBackground = true;
         }
     }
 }

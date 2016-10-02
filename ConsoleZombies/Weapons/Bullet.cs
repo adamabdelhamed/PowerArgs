@@ -18,6 +18,8 @@ namespace ConsoleZombies
         public SpeedTracker Speed { get; private set; }
         private Location startLocation;
 
+        public bool PlaySoundOnImpact { get; set; }
+
         public Bullet()
         {
             Speed = new SpeedTracker(this);
@@ -67,6 +69,10 @@ namespace ConsoleZombies
         {
             if (thingHit is IDestructible)
             {
+                if (PlaySoundOnImpact)
+                {
+                    SoundEffects.Instance.PlaySound("bulletHit");
+                }
                 var destructible = thingHit as IDestructible;
 
                 destructible.HealthPoints -= this.HealthPoints;

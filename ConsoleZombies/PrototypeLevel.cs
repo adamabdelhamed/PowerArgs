@@ -32,7 +32,8 @@ namespace ConsoleZombies
             realmPanel.RenderLoop.QueueAction(() =>
             {
                 def.Populate(realmPanel.RenderLoop.Realm, false);
-
+                SoundEffects.Instance.SoundThread.Start();
+                SoundEffects.Instance.PlaySound("music");
                 foreach(var zombie in realmPanel.RenderLoop.Realm.Things.Where(t => t is Zombie).Select(z => z as Zombie))
                 {
                     zombie.IsActive = true;
@@ -45,7 +46,9 @@ namespace ConsoleZombies
                         realmPanel.RenderLoop.Stop();
                         app.QueueAction(() =>
                         {
-                            Dialog.ShowMessage("Game over :(",()=> { app.Stop(); });
+                            SoundEffects.Instance.PlaySound("playerdead");
+                            
+                            Dialog.ShowMessage("Game over :(",()=> { app.Stop(); SoundEffects.Instance.SoundThread.Stop(); });
                         });
                     },realmPanel.LifetimeManager);
                 }

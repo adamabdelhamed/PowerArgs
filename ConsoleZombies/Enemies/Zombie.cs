@@ -38,6 +38,7 @@ namespace ConsoleZombies
         {
             this.SpeedTracker = new SpeedTracker(this);
             this.SpeedTracker.HitDetectionTypes.Add(typeof(Wall));
+            this.SpeedTracker.HitDetectionTypes.Add(typeof(Door));
             this.SpeedTracker.HitDetectionTypes.Add(typeof(MainCharacter));
             this.SpeedTracker.ImpactOccurred += SpeedTracker_ImpactOccurred;
             this.SpeedTracker.Bounciness = 0;
@@ -68,9 +69,13 @@ namespace ConsoleZombies
 
             var routeToMainCharacter = RealmHelpers.CalculateLineOfSight(r, this, MainCharacter.Current.Bounds.Location, 1);
 
-            if(routeToMainCharacter.Obstacles.Where(o => o is Wall).Count() == 0)
+            if(routeToMainCharacter.Obstacles.Where(o => o is Wall).Count() == 0 && this.Bounds.Location.CalculateDistanceTo(MainCharacter.Current.Bounds.Location) < 6)
             {
-                _seeker.IsSeeking = true;
+                if (_seeker.IsSeeking == false)
+                {
+                    SoundEffects.Instance.PlaySound("zombiealert");
+                    _seeker.IsSeeking = true;
+                }
             }
             else
             {

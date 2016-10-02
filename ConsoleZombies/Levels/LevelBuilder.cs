@@ -24,7 +24,10 @@ namespace ConsoleZombies
             var topPanel = app.LayoutRoot.Add(new ConsolePanel() { Background = System.ConsoleColor.Black }).Fill(padding: new Thickness(0, 0, 0, 6));
             var botPanel = app.LayoutRoot.Add(new ConsolePanel() { Height = 6, Background = System.ConsoleColor.DarkRed }).DockToBottom().FillHoriontally();
 
-            RealmPanel = topPanel.Add(new RealmPanel((int)LevelDefinition.Width, (int)LevelDefinition.Height) { Width = LevelDefinition.Width, Height = LevelDefinition.Height}).CenterHorizontally().CenterVertically();
+            var borderPanel = topPanel.Add(new ConsolePanel() { Background = ConsoleColor.DarkGray, Width = LevelDefinition.Width + 2, Height = LevelDefinition.Height + 2 }).CenterHorizontally().CenterVertically();
+            RealmPanel = borderPanel.Add(new RealmPanel(LevelDefinition.Width, LevelDefinition.Height)).Fill(padding: new Thickness(1, 1, 1, 1));
+
+
             app.QueueAction(() =>
             {
                 RealmPanel.RenderLoop.Start();

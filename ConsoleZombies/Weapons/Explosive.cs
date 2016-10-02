@@ -22,6 +22,7 @@ namespace ConsoleZombies
         {
             if (this.Realm == null) return;
 
+            SoundEffects.Instance.PlaySound("boom");
             for (float angle = 0; angle < 360; angle += angleIcrement)
             {
                 Bullet shrapnel = new Bullet(this.Bounds.Location, angle) { HealthPoints=HealthPointsPerShrapnel,  Range = range };

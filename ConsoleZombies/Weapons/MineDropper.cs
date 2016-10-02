@@ -34,6 +34,7 @@ namespace ConsoleZombies
     {
         public override void Fire()
         {
+            SoundEffects.Instance.PlaySound("thump");
             var rpg = new TimedMine(TimeSpan.FromSeconds(2), MainCharacter.Current.Bounds.Clone(), 5, 4) { HealthPointsPerShrapnel = 5 };
 
             var rpgSpeed = new SpeedTracker(rpg);
@@ -53,8 +54,9 @@ namespace ConsoleZombies
                         }
                         thingHit.Realm.Remove(thingHit);
                     }
-                    rpg.Explode();
                 }
+
+                rpg.Explode();
             };
             var angle = MainCharacter.Current.Target != null ?
                 MainCharacter.Current.Bounds.Location.CalculateAngleTo(MainCharacter.Current.Target.Bounds.Location) :

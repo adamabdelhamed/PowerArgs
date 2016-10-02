@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli.Physics
 {
-    public class RenderLoop
+    public class RenderLoop : IObservableObject
     {
+        private ObservableObject observable = new ObservableObject();
+
         [ThreadStatic]
         private static RenderLoop _current;
 
@@ -33,7 +35,7 @@ namespace PowerArgs.Cli.Physics
         public event Func<Exception, bool> ExceptionOccurred;
         public object RenderLoopSync { get; private set; }
         public Realm Realm { get; set; }
-        public float SpeedFactor { get; set; }
+        public float SpeedFactor { get { return observable.Get<float>(); } set { observable.Set(value); } }
         public Action Render { get; set; }
         public Dictionary<Thing, ThingRenderer> Renderers { get; private set; }
         public ThingBinder Binder { get; set; }
@@ -50,6 +52,19 @@ namespace PowerArgs.Cli.Physics
             set
             {
                 _minTimeBetweenRenderIterations = TimeSpan.FromSeconds(1.0f / value);
+            }
+        }
+
+        public bool SuppressEqualChanges
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -148,6 +163,26 @@ namespace PowerArgs.Cli.Physics
             {
                 Realm.Tick();
             }
+        }
+
+        public PropertyChangedSubscription SubscribeUnmanaged(string propertyName, Action handler)
+        {
+            return observable.SubscribeUnmanaged(propertyName, handler);
+        }
+
+        public void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager)
+        {
+            observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
+        }
+
+        public PropertyChangedSubscription SynchronizeUnmanaged(string propertyName, Action handler)
+        {
+            return observable.SynchronizeUnmanaged(propertyName, handler);
+        }
+
+        public void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager)
+        {
+            observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
         }
     }
 }

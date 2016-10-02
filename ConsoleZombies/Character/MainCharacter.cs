@@ -57,28 +57,10 @@ namespace ConsoleZombies
             Targeting = new Targeting(this);
             Speed.Bounciness = 0;
             Speed.HitDetectionTypes.Add(typeof(Wall));
-            Speed.HitDetectionTypes.Add(typeof(DoorThreshold));
-            Speed.ImpactOccurred += Speed_ImpactOccurred;
             Added.SubscribeForLifetime(OnAdded, this.LifetimeManager);
             Removed.SubscribeForLifetime(OnRemoved, this.LifetimeManager);
        }
 
-        private void Speed_ImpactOccurred(float angle, PowerArgs.Cli.Physics.Rectangle bounds, Thing thingHit)
-        {
-            if(thingHit is DoorThreshold)
-            {
-                var threshold = thingHit as DoorThreshold;
-                if(threshold.Door.IsOpen == true)
-                {
-                    Speed.SpeedX = 0;
-                    Speed.SpeedY = 0;
-                    threshold.Door.IsOpen = false;
-                    this.Bounds.MoveTo(threshold.Door.OpenLocation);
-                    Realm.Update(threshold.Door);
-                    Realm.Update(this);
-                }
-            }
-        }
 
         public void OnAdded()
         {
@@ -127,7 +109,7 @@ namespace ConsoleZombies
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.T, null, DropTimedMine, this.LifetimeManager);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.G, null, LaunchRPG, this.LifetimeManager);
 
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, TryOpenDoor, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, TryOpenOrCloseDoor, this.LifetimeManager);
 
 
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Spacebar, null, ToggleSlowMo, this.LifetimeManager);
@@ -168,20 +150,30 @@ namespace ConsoleZombies
             });
         }
 
-        private void TryOpenDoor(ConsoleKeyInfo obj)
+        private void TryOpenOrCloseDoor(ConsoleKeyInfo obj)
         {
             RenderLoop.QueueAction(() =>
             {
-                var doorToOpen = (Door)MainCharacter.Realm.Things
-                    .Where(t => t is Door &&
-                                (t as Door).IsOpen == false &&
-                                MainCharacter.Bounds.Location.CalculateDistanceTo(t.Bounds.Location) <= 2)
-                    .FirstOrDefault();
+                var door = (Door)MainCharacter.Realm.Things
+                    .Where(t => t is Door).OrderBy(d => MainCharacter.Bounds.Location.CalculateDistanceTo(d.Bounds.Location)).FirstOrDefault();
 
-                if(doorToOpen != null)
+                if(door != null && MainCharacter.Bounds.Location.CalculateDistanceTo(door.Bounds.Location) <= 2.5)
                 {
-                    doorToOpen.IsOpen = true;
-                    MainCharacter.Realm.Update(doorToOpen);
+                    door.IsOpen = !door.IsOpen;
+
+                    if (RealmHelpers.GetThingsITouch(MainCharacter.Realm, MainCharacter, new List<Type>() { typeof(Door) }).Contains(door))
+                    {
+                        if (door.IsOpen)
+                        {
+                            MainCharacter.Bounds.MoveTo(door.ClosedBounds.Location);
+                        }
+                        else
+                        {
+                            MainCharacter.Bounds.MoveTo(door.OpenLocation);
+                        }
+                    }
+
+                    MainCharacter.Realm.Update(door);
                     MainCharacter.Realm.Update(MainCharacter);
                 }
             });
@@ -308,6 +300,7 @@ namespace ConsoleZombies
             RenderLoop.QueueAction(() =>
             {
                 MainCharacter.Inventory.Gun.Fire();
+                SoundEffects.Instance.PlaySound("pistol");
             });
         }
 
