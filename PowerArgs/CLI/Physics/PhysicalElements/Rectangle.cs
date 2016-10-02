@@ -32,6 +32,17 @@ namespace PowerArgs.Cli.Physics
             return new Rectangle(Location.X, Location.Y, Size.W, Size.H);
         }
 
+        public void Pad(float amount)
+        {
+            Location = new Location(Location.X + amount, Location.Y + amount);
+            Size = new Size() { W = Size.W - (2 * amount), H = Size.H - (2 * amount) };
+        }
+
+        public void PadLocation(float amount)
+        {
+            Location = new Location(Location.X + amount, Location.Y + amount);
+        }
+
         public void MoveTo(Location newLocation)
         {
             this.Location = newLocation;

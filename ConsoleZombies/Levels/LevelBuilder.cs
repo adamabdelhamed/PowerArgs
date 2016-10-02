@@ -15,6 +15,8 @@ namespace ConsoleZombies
 
         private RealmPanel RealmPanel { get; set; }
 
+        private PowerArgs.Cli.Physics.Rectangle doorDropRectangle;
+
         public void Run()
         {
             var app = new ConsoleApp();
@@ -22,7 +24,7 @@ namespace ConsoleZombies
             var topPanel = app.LayoutRoot.Add(new ConsolePanel() { Background = System.ConsoleColor.Black }).Fill(padding: new Thickness(0, 0, 0, 6));
             var botPanel = app.LayoutRoot.Add(new ConsolePanel() { Height = 6, Background = System.ConsoleColor.DarkRed }).DockToBottom().FillHoriontally();
 
-            RealmPanel = topPanel.Add(new RealmPanel((int)LevelDefinition.Width, (int)LevelDefinition.Height) { Width = LevelDefinition.Width, Height = LevelDefinition.Height/2}).CenterHorizontally().CenterVertically();
+            RealmPanel = topPanel.Add(new RealmPanel((int)LevelDefinition.Width, (int)LevelDefinition.Height) { Width = LevelDefinition.Width, Height = LevelDefinition.Height}).CenterHorizontally().CenterVertically();
             app.QueueAction(() =>
             {
                 RealmPanel.RenderLoop.Start();
@@ -107,14 +109,51 @@ namespace ConsoleZombies
         {
             BrokerKeyAction(ConsoleKey.Z, () => 
             {
+                var paddedBounds = Cursor.Bounds.Clone();
+                paddedBounds.Pad(.1f);
+
                 LevelDefinition.Add(new ThingDefinition()
                 {
                     ThingType = typeof(Zombie).FullName,
-                    InitialBounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left,Cursor.Top,Cursor.Bounds.W,Cursor.Bounds.H),
+                    InitialBounds = paddedBounds.Clone(),
                 });
 
-                var zombie = new Zombie() { Bounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H) };
+                var zombie = new Zombie() { Bounds = paddedBounds.Clone() };
                 RealmPanel.RenderLoop.Realm.Add(zombie);
+            });
+
+            BrokerKeyAction(ConsoleKey.D, () =>
+            {
+                if(doorDropRectangle == null)
+                {
+                    doorDropRectangle = Cursor.Bounds.Clone();
+                    doorDropRectangle.Pad(.1f);
+                }
+                else
+                {
+                    var paddedBounds = Cursor.Bounds.Clone();
+                    paddedBounds.Pad(.1f);
+
+                    LevelDefinition.Add(new ThingDefinition()
+                    {
+                        ThingType = typeof(Door).FullName,
+                        InitialBounds = doorDropRectangle,
+                        InitialData =
+                        {
+                            { "ClosedX", doorDropRectangle.X+"" },
+                            { "ClosedY", doorDropRectangle.Y + "" },
+                            { "W", doorDropRectangle.W + "" },
+                            { "H", doorDropRectangle.H + "" },
+                            { "OpenX", paddedBounds.X+"" },
+                            { "OpenY", paddedBounds.Y+"" },
+                        }
+                    });
+
+                    var door = new Door(doorDropRectangle, Cursor.Bounds.Clone().Location);
+                    RealmPanel.RenderLoop.Realm.Add(door);
+                    doorDropRectangle = null;
+                }
+
             });
 
 
@@ -126,23 +165,26 @@ namespace ConsoleZombies
                     InitialBounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H),
                 });
 
-                var wall = new Wall() { Bounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H) };
+                var wall = new Wall() { Bounds = Cursor.Bounds.Clone() };
                 RealmPanel.RenderLoop.Realm.Add(wall);
             });
 
             BrokerKeyAction(ConsoleKey.M, () =>
             {
-                if(LevelDefinition.Where(item => item.ThingType == typeof(MainCharacter).FullName).Count() > 0)
+                var paddedBounds = Cursor.Bounds.Clone();
+                paddedBounds.Pad(.1f);
+
+                if (LevelDefinition.Where(item => item.ThingType == typeof(MainCharacter).FullName).Count() > 0)
                 {
                     return;
                 }
                 LevelDefinition.Add(new ThingDefinition()
                 {
                     ThingType = typeof(MainCharacter).FullName,
-                    InitialBounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H),
+                    InitialBounds = paddedBounds.Clone(),
                 });
 
-                var character = new MainCharacter() { IsInLevelBuilder = true, Bounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H) };
+                var character = new MainCharacter() { IsInLevelBuilder = true, Bounds = paddedBounds.Clone() };
                 RealmPanel.RenderLoop.Realm.Add(character);
             });
         }

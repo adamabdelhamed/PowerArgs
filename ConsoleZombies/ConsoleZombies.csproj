@@ -52,12 +52,14 @@
     <Compile Include="Character\Targeting.cs" />
     <Compile Include="Enemies\Zombie.cs" />
     <Compile Include="GameTheme.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="Levels\Cursor.cs" />
     <Compile Include="Levels\LevelBuilder.cs" />
     <Compile Include="Levels\LevelDefinition.cs" />
     <Compile Include="PrototypeLevel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StaticObjects\Door.cs" />
     <Compile Include="StaticObjects\IDestructible.cs" />
     <Compile Include="StaticObjects\Item.cs" />
     <Compile Include="StaticObjects\Wall.cs" />

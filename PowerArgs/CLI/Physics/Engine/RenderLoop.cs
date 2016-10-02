@@ -55,7 +55,7 @@ namespace PowerArgs.Cli.Physics
 
         public RenderLoop(float w = 19.2f, float h = 10.8f)
         {
-            Realm = new Realm(0, 0, w, h);
+            Realm = new Realm(0, 0, w, h) { RenderLoop = this};
             Binder = new ThingBinder();
             RenderLoopSync = new object();
             Renderers = new Dictionary<Thing, ThingRenderer>();

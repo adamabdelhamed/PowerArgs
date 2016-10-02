@@ -12,7 +12,7 @@ namespace ConsoleZombies
     public class LevelDefinition : List<ThingDefinition>
     {
         public static readonly int Width = 60;
-        public static readonly int Height = 20;
+        public static readonly int Height = 10;
 
         public static string LevelBuilderLevelsPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ConsoleZombies","LevelBuilder","Levels");
         
@@ -58,6 +58,23 @@ namespace ConsoleZombies
                 {
                     (thing as MainCharacter).IsInLevelBuilder = builderMode;
                 }
+                else if(thing is Door)
+                {
+                    var closedRect = new Rectangle(
+                        float.Parse(thingDef.InitialData["ClosedX"]),
+                        float.Parse(thingDef.InitialData["ClosedY"]),
+                        float.Parse(thingDef.InitialData["W"]),
+                        float.Parse(thingDef.InitialData["H"]));
+
+                    var openLocation = new Location(
+                        float.Parse(thingDef.InitialData["OpenX"]),
+                        float.Parse(thingDef.InitialData["OpenY"]));
+
+                    (thing as Door).Initialize(closedRect, openLocation);
+                    (thing as Door).IsOpen = true;
+                }
+
+
 
                 realm.Add(thing);
             }

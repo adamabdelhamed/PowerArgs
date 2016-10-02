@@ -25,7 +25,6 @@ namespace PowerArgs.Cli.Physics
 
         public RealmPanel(int w, int h)
         {
-            this.Background = ConsoleColor.Gray;
             this.RenderLoop = new RenderLoop(w, h);
             this.RenderLoop.ExceptionOccurred += (ex) => 
             {

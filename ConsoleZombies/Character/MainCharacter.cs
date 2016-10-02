@@ -33,9 +33,17 @@ namespace ConsoleZombies
             }
         }
 
+        public void EndFreeAim()
+        {
+           Realm.Remove(FreeAimCursor);
+           FreeAimCursor = null;
+        }
+
         public SpeedTracker Speed { get; private set; }
 
         public Targeting Targeting { get; private set; }
+
+        public Cursor FreeAimCursor { get; set; }
 
         public Thing Target { get; set; }
 
@@ -49,9 +57,28 @@ namespace ConsoleZombies
             Targeting = new Targeting(this);
             Speed.Bounciness = 0;
             Speed.HitDetectionTypes.Add(typeof(Wall));
+            Speed.HitDetectionTypes.Add(typeof(DoorThreshold));
+            Speed.ImpactOccurred += Speed_ImpactOccurred;
             Added.SubscribeForLifetime(OnAdded, this.LifetimeManager);
             Removed.SubscribeForLifetime(OnRemoved, this.LifetimeManager);
        }
+
+        private void Speed_ImpactOccurred(float angle, PowerArgs.Cli.Physics.Rectangle bounds, Thing thingHit)
+        {
+            if(thingHit is DoorThreshold)
+            {
+                var threshold = thingHit as DoorThreshold;
+                if(threshold.Door.IsOpen == true)
+                {
+                    Speed.SpeedX = 0;
+                    Speed.SpeedY = 0;
+                    threshold.Door.IsOpen = false;
+                    this.Bounds.MoveTo(threshold.Door.OpenLocation);
+                    Realm.Update(threshold.Door);
+                    Realm.Update(this);
+                }
+            }
+        }
 
         public void OnAdded()
         {
@@ -86,7 +113,7 @@ namespace ConsoleZombies
         protected override void OnPaint(ConsoleBitmap context)
         {
             base.OnPaint(context);
-            context.Pen = new PowerArgs.ConsoleCharacter('X', ConsoleColor.Green, ConsoleColor.DarkGray);
+            context.Pen = new PowerArgs.ConsoleCharacter('X', ConsoleColor.Green);
             context.FillRect(0, 0,Width,Height);
         }
 
@@ -98,9 +125,14 @@ namespace ConsoleZombies
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.F, null, FireGun, this.LifetimeManager);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.R, null, DropRemoteMine, this.LifetimeManager);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.T, null, DropTimedMine, this.LifetimeManager);
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.G, null, ThrowGrenade, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.G, null, LaunchRPG, this.LifetimeManager);
+
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, TryOpenDoor, this.LifetimeManager);
+
 
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Spacebar, null, ToggleSlowMo, this.LifetimeManager);
+
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.A, null, FreeAim, this.LifetimeManager);
 
 
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.RightArrow, null, MoveRight, this.LifetimeManager);
@@ -110,11 +142,46 @@ namespace ConsoleZombies
             }
         }
 
-        private void ThrowGrenade(ConsoleKeyInfo obj)
+        private void FreeAim(ConsoleKeyInfo obj)
         {
             RenderLoop.QueueAction(() =>
             {
-                MainCharacter.Inventory.GrenadeThrower.Fire();
+                var cursor = MainCharacter.FreeAimCursor;
+                if(cursor == null)
+                {
+                    MainCharacter.FreeAimCursor = new Cursor() { Bounds = MainCharacter.Bounds.Clone() };
+                    MainCharacter.Realm.Add(MainCharacter.FreeAimCursor);
+                }
+                else
+                {
+                    MainCharacter.EndFreeAim();
+                }
+            });
+        }
+
+        private void TryOpenDoor(ConsoleKeyInfo obj)
+        {
+            RenderLoop.QueueAction(() =>
+            {
+                var doorToOpen = (Door)MainCharacter.Realm.Things
+                    .Where(t => t is Door &&
+                                (t as Door).IsOpen == false &&
+                                MainCharacter.Bounds.Location.CalculateDistanceTo(t.Bounds.Location) <= 2)
+                    .FirstOrDefault();
+
+                if(doorToOpen != null)
+                {
+                    doorToOpen.IsOpen = true;
+                    MainCharacter.Realm.Update(doorToOpen);
+                    MainCharacter.Realm.Update(MainCharacter);
+                }
+            });
+        }
+        private void LaunchRPG(ConsoleKeyInfo obj)
+        {
+            RenderLoop.QueueAction(() =>
+            {
+                MainCharacter.Inventory.RPGLauncher.Fire();
             });
         }
 
@@ -129,15 +196,24 @@ namespace ConsoleZombies
         {
             RenderLoop.QueueAction(() => 
             {
+                if(MainCharacter.FreeAimCursor != null)
+                {
+                    RealmHelpers.MoveThingSafeBy(RenderLoop.Realm, MainCharacter.FreeAimCursor, 0, 1);
+                    return;
+                }
+
                 if(MainCharacter.Speed.SpeedY > Math.Abs(MainCharacter.Speed.SpeedX))
                 {
                     MainCharacter.Speed.SpeedY = 0;
                     MainCharacter.Speed.SpeedX = 0;
+                    MainCharacter.RoundToNearestPixel();
+
                 }
                 else
                 {
                     MainCharacter.Speed.SpeedY = 7;
                     MainCharacter.Speed.SpeedX = 0;
+                    MainCharacter.RoundToNearestPixel();
                 }
             });
         }
@@ -146,15 +222,23 @@ namespace ConsoleZombies
         {
             RenderLoop.QueueAction(() =>
             {
+                if (MainCharacter.FreeAimCursor != null)
+                {
+                    RealmHelpers.MoveThingSafeBy(RenderLoop.Realm, MainCharacter.FreeAimCursor, 0, -1);
+                    return;
+                }
+
                 if (MainCharacter.Speed.SpeedY < 0 && Math.Abs(MainCharacter.Speed.SpeedY) > Math.Abs(MainCharacter.Speed.SpeedX))
                 {
                     MainCharacter.Speed.SpeedY = 0;
                     MainCharacter.Speed.SpeedX = 0;
+                    MainCharacter.RoundToNearestPixel();
                 }
                 else
                 {
                     MainCharacter.Speed.SpeedY = -7;
                     MainCharacter.Speed.SpeedX = 0;
+                    MainCharacter.RoundToNearestPixel();
                 }
             });
         }
@@ -163,15 +247,23 @@ namespace ConsoleZombies
         {
             RenderLoop.QueueAction(() =>
             {
+                if (MainCharacter.FreeAimCursor != null)
+                {
+                    RealmHelpers.MoveThingSafeBy(RenderLoop.Realm, MainCharacter.FreeAimCursor, -1, 0);
+                    return;
+                }
+
                 if (MainCharacter.Speed.SpeedX < 0 && Math.Abs(MainCharacter.Speed.SpeedX) > Math.Abs(MainCharacter.Speed.SpeedY))
                 {
                     MainCharacter.Speed.SpeedX = 0;
                     MainCharacter.Speed.SpeedY = 0;
+                    MainCharacter.RoundToNearestPixel();
                 }
                 else
                 {
                     MainCharacter.Speed.SpeedX = -7;
                     MainCharacter.Speed.SpeedY = 0;
+                    MainCharacter.RoundToNearestPixel();
                 }
             });
         }
@@ -180,15 +272,23 @@ namespace ConsoleZombies
         {
             RenderLoop.QueueAction(() =>
             {
+                if (MainCharacter.FreeAimCursor != null)
+                {
+                    RealmHelpers.MoveThingSafeBy(RenderLoop.Realm, MainCharacter.FreeAimCursor, 1, 0);
+                    return;
+                }
+
                 if (MainCharacter.Speed.SpeedX > Math.Abs(MainCharacter.Speed.SpeedY))
                 {
                     MainCharacter.Speed.SpeedX = 0;
                     MainCharacter.Speed.SpeedY = 0;
+                    MainCharacter.RoundToNearestPixel();
                 }
                 else
                 {
                     MainCharacter.Speed.SpeedX = 7;
                     MainCharacter.Speed.SpeedY = 0;
+                    MainCharacter.RoundToNearestPixel();
                 }
             });
         }

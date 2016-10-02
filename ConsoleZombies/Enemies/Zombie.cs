@@ -99,7 +99,7 @@ namespace ConsoleZombies
             }
             else
             {
-                context.Pen = new PowerArgs.ConsoleCharacter('Z', ConsoleColor.DarkRed, ConsoleColor.DarkGray);
+                context.Pen = new PowerArgs.ConsoleCharacter('Z', ConsoleColor.DarkRed);
             }
             context.FillRect(0, 0,Width,Height);
         }

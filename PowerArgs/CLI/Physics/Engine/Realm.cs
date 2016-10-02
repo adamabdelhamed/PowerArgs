@@ -48,6 +48,8 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        public RenderLoop RenderLoop { get; set; }
+
         private Realm()
         {
             _things = new List<Thing>();

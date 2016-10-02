@@ -17,7 +17,7 @@ namespace ConsoleZombies
         public CursorRenderer()
         {
             Background = ConsoleColor.Cyan;
-            ZIndex = 1000;
+            ZIndex = 10000;
         }
     }
 }

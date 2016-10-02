@@ -15,7 +15,8 @@ namespace ConsoleZombies
         {
             Exception ex = null;
             var app = new ConsoleApp();
-            var realmPanel = app.LayoutRoot.Add(new RealmPanel(LevelDefinition.Width, LevelDefinition.Height) { Width = LevelDefinition.Width, Height = LevelDefinition.Height/2 }).CenterHorizontally().CenterVertically();
+            var borderPanel = app.LayoutRoot.Add(new ConsolePanel() { Background= ConsoleColor.DarkGray, Width = LevelDefinition.Width+2, Height = LevelDefinition.Height+2 }).CenterHorizontally().CenterVertically();
+            var realmPanel = borderPanel.Add(new RealmPanel(LevelDefinition.Width, LevelDefinition.Height)).Fill(padding:new Thickness(1, 1, 1, 1));
 
             app.PumpException.SubscribeForLifetime((args) =>
             {

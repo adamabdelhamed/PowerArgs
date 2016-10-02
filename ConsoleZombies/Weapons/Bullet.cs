@@ -30,6 +30,7 @@ namespace ConsoleZombies
         public Bullet(Location target) : this()
         {
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(MainCharacter.Current.Bounds.Location.X, MainCharacter.Current.Bounds.Location.Y, 1, 1);
+            this.Bounds.Pad(.25f);
             this.angle = this.Bounds.Location.CalculateAngleTo(target);
             this.HealthPoints = 1;
         }
@@ -37,6 +38,7 @@ namespace ConsoleZombies
         public Bullet(Location startLocation, float angle) : this()
         {
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(startLocation.X, startLocation.Y, 1, 1);
+            this.Bounds.Pad(.25f);
             this.angle = angle;
             this.HealthPoints = 1;
         }
@@ -92,7 +94,7 @@ namespace ConsoleZombies
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = new PowerArgs.ConsoleCharacter('*', ConsoleColor.Red, ConsoleColor.Gray);
+            context.Pen = new PowerArgs.ConsoleCharacter('*', ConsoleColor.Red);
             context.DrawPoint(0, 0);
         }
     }
