@@ -150,7 +150,16 @@ namespace ConsoleZombies
                 if(cursor == null)
                 {
                     MainCharacter.FreeAimCursor = new Cursor() { Bounds = MainCharacter.Bounds.Clone() };
+
+                    if(MainCharacter.Target != null && MainCharacter.IsExpired == false)
+                    {
+                        MainCharacter.FreeAimCursor.Bounds.MoveTo(MainCharacter.Target.Bounds.Location);
+                        MainCharacter.FreeAimCursor.RoundToNearestPixel();
+                    }
+
                     MainCharacter.Realm.Add(MainCharacter.FreeAimCursor);
+                    MainCharacter.Speed.SpeedX = 0;
+                    MainCharacter.Speed.SpeedY = 0;
                 }
                 else
                 {
