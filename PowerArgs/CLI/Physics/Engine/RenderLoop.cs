@@ -59,12 +59,12 @@ namespace PowerArgs.Cli.Physics
         {
             get
             {
-                throw new NotImplementedException();
+                return observable.SuppressEqualChanges;
             }
 
             set
             {
-                throw new NotImplementedException();
+                observable.SuppressEqualChanges = true;
             }
         }
 

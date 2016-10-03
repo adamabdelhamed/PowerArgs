@@ -9,6 +9,9 @@ namespace PowerArgs.Cli.Physics
         public SpeedTracker SeekerSpeed { get; private set; }
         private Force currentForce;
         private float accelleration;
+
+        public bool RemoveWhenReached { get; set; }
+
         public Seeker(Thing seeker, Thing seekee, SpeedTracker seekerSpeed, float accelleration) : base(seeker)
         {
             this.Seekee = seekee;
@@ -34,7 +37,15 @@ namespace PowerArgs.Cli.Physics
                 currentForce = null;
             }
 
-            if (IsSeeking)
+            if (IsSeeking && MyThing.Bounds.Location.CalculateDistanceTo(Seekee.Bounds.Location) < 1)
+            {
+                MyThing.Bounds.MoveTo(Seekee.Bounds.Location);
+                if(RemoveWhenReached)
+                {
+                    Realm.Remove(this);
+                }
+            }
+            else if (IsSeeking)
             {
                 currentForce = new Force(SeekerSpeed, accelleration, MyThing.Bounds.Location.CalculateAngleTo(Seekee.Bounds.Location));
             }

@@ -48,7 +48,7 @@ namespace ConsoleZombies
 
         private void SpeedTracker_ImpactOccurred(float angle, PowerArgs.Cli.Physics.Rectangle bounds, Thing thingHit)
         {
-            if(thingHit == MainCharacter.Current)
+            if(MainCharacter.Current != null && thingHit == MainCharacter.Current)
             {
                 MainCharacter.Current.EatenByZombie.Fire();
             }
@@ -94,17 +94,18 @@ namespace ConsoleZombies
         {
             this.TransparentBackground = true;
             CanFocus = false;
+            ZIndex = 10;
         }
 
         protected override void OnPaint(ConsoleBitmap context)
         {
             if ((Thing as Zombie).IsBeingTargeted)
             {
-                context.Pen = new PowerArgs.ConsoleCharacter('Z', GameTheme.DefaultTheme.FocusColor, ConsoleColor.DarkGray);
+                context.Pen = new PowerArgs.ConsoleCharacter('Z', (Thing as Zombie).HealthPoints < 2 ? ConsoleColor.Gray : ConsoleColor.DarkRed, ConsoleColor.Cyan);
             }
             else
             {
-                context.Pen = new PowerArgs.ConsoleCharacter('Z', ConsoleColor.DarkRed);
+                context.Pen = new PowerArgs.ConsoleCharacter('Z', (Thing as Zombie).HealthPoints < 2 ? ConsoleColor.Gray : ConsoleColor.DarkRed);
             }
             context.FillRect(0, 0,Width,Height);
         }

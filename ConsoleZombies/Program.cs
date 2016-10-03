@@ -35,6 +35,11 @@ namespace ConsoleZombies
                 throw new ArgException("No level called " + levelFile);
             }
 
+            var splash = System.IO.Path.Combine(LevelDefinition.LevelBuilderLevelsPath, "Splash" + ".json");
+            if (System.IO.File.Exists(splash))
+            {
+                SplashScreen.Run(LevelDefinition.Load(splash));
+            }
             PrototypeLevel.Run(LevelDefinition.Load(levelFile));
         }
 

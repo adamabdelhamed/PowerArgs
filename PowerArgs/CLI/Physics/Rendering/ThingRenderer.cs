@@ -20,7 +20,6 @@ namespace PowerArgs.Cli.Physics
 
         public ThingRenderer()
         {
-            Background = ConsoleColor.DarkGreen;
             this.CanFocus = false;
         }
 

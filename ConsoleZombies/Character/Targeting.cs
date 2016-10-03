@@ -33,15 +33,17 @@ namespace ConsoleZombies
 
                 if(route.Obstacles.Where(o => o is Wall).Count() == 0)
                 {
+                    if(MainCharacter.Target != null && MainCharacter.Target != zombie && MainCharacter.Target.IsExpired == false)
+                    {
+                        Realm.Update(MainCharacter.Target);
+                    }
                     MainCharacter.Target = zombie;
-                    break;
+                    Realm.Update(zombie);
+                    return;
                 }
             }
 
-            if(MainCharacter.Target != null && MainCharacter.Target.IsExpired)
-            {
-                MainCharacter.Target = null;
-            }
+            MainCharacter.Target = null;
         }
     }
 }
