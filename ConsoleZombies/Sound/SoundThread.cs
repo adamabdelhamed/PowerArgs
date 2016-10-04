@@ -86,12 +86,19 @@ namespace ConsoleZombies
         {
             players = LoadSounds();
 
-            Window hiddenWindow = new Window();
+            Window hiddenWindow = new Window()
+            {
+                Width = 0,
+                Height = 0,
+                WindowStyle = WindowStyle.None,
+                ShowInTaskbar = false,
+                ShowActivated = false
+            };
             hiddenWindow.Visibility = Visibility.Hidden;
             hiddenWindow.Loaded += (s, o) =>
             {
                 DispatcherTimer t = new DispatcherTimer();
-                t.Interval = TimeSpan.FromMilliseconds(5);
+                t.Interval = TimeSpan.FromMilliseconds(1);
                 t.Tick += (s1, o1) =>
                 {
                     Queue<Action> toRun = new Queue<Action>();
@@ -111,7 +118,7 @@ namespace ConsoleZombies
                 t.Start();
             };
             hiddenWindow.Show();
-
+            hiddenWindow.Visibility = Visibility.Hidden;
             try
             {
                 Dispatcher.Run();
