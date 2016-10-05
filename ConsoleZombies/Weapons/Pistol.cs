@@ -4,7 +4,7 @@ namespace ConsoleZombies
 {
     public class Pistol : Weapon
     {
-        public override void Fire()
+        public override void FireInternal()
         {
             var angle = MainCharacter.Current.Target != null ?
                 MainCharacter.Current.Bounds.Location.CalculateAngleTo(MainCharacter.Current.Target.Bounds.Location) :

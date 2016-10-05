@@ -26,7 +26,7 @@ namespace ConsoleZombies
             Speed.HitDetectionTypes.Add(typeof(Wall));
             Speed.HitDetectionTypes.Add(typeof(Zombie));
             Speed.HitDetectionTypes.Add(typeof(MainCharacter));
-            Speed.ImpactOccurred += Speed_ImpactOccurred;
+            Speed.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.LifetimeManager);
         }
 
         public Bullet(Location target) : this()
@@ -65,24 +65,24 @@ namespace ConsoleZombies
             }
         }
 
-        private void Speed_ImpactOccurred(float angle, PowerArgs.Cli.Physics.Rectangle bounds, PowerArgs.Cli.Physics.Thing thingHit)
+        private void Speed_ImpactOccurred(Impact impact)
         {
-            if (thingHit is IDestructible)
+            if (impact.ThingHit is IDestructible)
             {
                 if (PlaySoundOnImpact)
                 {
                     SoundEffects.Instance.PlaySound("bulletHit");
                 }
-                var destructible = thingHit as IDestructible;
+                var destructible = impact.ThingHit as IDestructible;
 
                 destructible.HealthPoints -= this.HealthPoints;
                 if (destructible.HealthPoints <= 0)
                 {
-                    if(thingHit is MainCharacter)
+                    if(impact.ThingHit is MainCharacter)
                     {
                         MainCharacter.Current.EatenByZombie.Fire();
                     }
-                    Realm.Remove(thingHit);
+                    Realm.Remove(impact.ThingHit);
                 }
             }
 

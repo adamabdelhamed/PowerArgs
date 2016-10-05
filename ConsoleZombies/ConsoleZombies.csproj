@@ -50,6 +50,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Items\PistolAmmo.cs" />
     <Compile Include="SplashScreen.cs" />
     <Compile Include="Sound\SoundEffects.cs" />
     <Compile Include="Character\Inventory.cs" />

@@ -6,7 +6,7 @@ namespace ConsoleZombies
     public class RemoteMineDropper : Weapon
     {
         RemoteMine activeMine;
-        public override void Fire()
+        public override void FireInternal()
         {
             if (activeMine != null)
             {
@@ -23,7 +23,7 @@ namespace ConsoleZombies
 
     public class TimedMineDropper : Weapon
     {
-        public override void Fire()
+        public override void FireInternal()
         {
             var mine = new TimedMine(TimeSpan.FromSeconds(2), MainCharacter.Current.Bounds.Clone(), 5, 4) { HealthPointsPerShrapnel = 5 };
             MainCharacter.Current.Realm.Add(mine);
@@ -32,7 +32,7 @@ namespace ConsoleZombies
 
     public class RPGLauncher : Weapon
     {
-        public override void Fire()
+        public override void FireInternal()
         {
             SoundEffects.Instance.PlaySound("thump");
             var rpg = new TimedMine(TimeSpan.FromSeconds(2), MainCharacter.Current.Bounds.Clone(), 5, 4) { HealthPointsPerShrapnel = 5 };
@@ -40,24 +40,24 @@ namespace ConsoleZombies
             var rpgSpeed = new SpeedTracker(rpg);
             rpgSpeed.HitDetectionTypes.Add(typeof(Wall));
             rpgSpeed.HitDetectionTypes.Add(typeof(Zombie));
-            rpgSpeed.ImpactOccurred += (float a, Rectangle bounds, Thing thingHit) =>
+            rpgSpeed.ImpactOccurred.SubscribeForLifetime((impact)=>
             {
-                if(thingHit is IDestructible)
+                if(impact.ThingHit is IDestructible)
                 {
-                    var destructible = thingHit as IDestructible;
+                    var destructible = impact.ThingHit as IDestructible;
                     destructible.HealthPoints -= 5*rpg.HealthPointsPerShrapnel;
                     if (destructible.HealthPoints <= 0)
                     {
-                        if (thingHit is MainCharacter)
+                        if (impact.ThingHit is MainCharacter)
                         {
                             MainCharacter.Current.EatenByZombie.Fire();
                         }
-                        thingHit.Realm.Remove(thingHit);
+                        impact.ThingHit.Realm.Remove(impact.ThingHit);
                     }
                 }
 
                 rpg.Explode();
-            };
+            },rpg.LifetimeManager);
             var angle = MainCharacter.Current.Target != null ?
                 MainCharacter.Current.Bounds.Location.CalculateAngleTo(MainCharacter.Current.Target.Bounds.Location) :
                 MainCharacter.Current.Speed.Angle;

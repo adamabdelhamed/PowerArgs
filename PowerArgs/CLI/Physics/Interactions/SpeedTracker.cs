@@ -6,10 +6,16 @@ using System.Diagnostics;
 
 namespace PowerArgs.Cli.Physics
 {
+    public class Impact
+    {
+        public float Angle { get; set; }
+        public Rectangle Bounds { get; set; }
+        public Thing ThingHit { get; set; }
+    }
+
     public class SpeedTracker : ThingInteraction
     {
-        public delegate void ImpactDelegate(float angle, Rectangle bounds, Thing thingHit);
-        public event ImpactDelegate ImpactOccurred;
+        public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
 
 
 #if DEBUG
@@ -94,7 +100,12 @@ namespace PowerArgs.Cli.Physics
                 float angle = MyThing.Bounds.Location.CalculateAngleTo(hitPrediction.BoundsOfItemBeingHit.Location);
                 if (ImpactOccurred != null && haveMovedSinceLastHitDetection)
                 {
-                    ImpactOccurred(angle, hitPrediction.BoundsOfItemBeingHit, hitPrediction.ThingHit);
+                    ImpactOccurred.Fire(new Impact()
+                    {
+                        Angle = angle,
+                        Bounds = hitPrediction.BoundsOfItemBeingHit,
+                        ThingHit = hitPrediction.ThingHit
+                    });
                 }
                 haveMovedSinceLastHitDetection = false;
                 Rectangle testArea = new Rectangle(MyThing.Left + dx, MyThing.Top + dy, MyThing.Bounds.Size.W, MyThing.Bounds.Size.H);

@@ -73,7 +73,11 @@ namespace ConsoleZombies
                     (thing as Door).Initialize(closedRect, openLocation);
                     (thing as Door).IsOpen = true;
                 }
-
+                else if(thing is PistolAmmoItem)
+                {
+                    int amount = int.Parse(thingDef.InitialData["Amount"]);
+                    (thing as PistolAmmoItem).Amount = amount;
+                }
 
 
                 realm.Add(thing);

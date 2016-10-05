@@ -7,8 +7,24 @@ using System.Threading.Tasks;
 
 namespace ConsoleZombies
 {
-    public abstract class Weapon : Item
+    public abstract class Weapon : InventoryItem
     {
-        public abstract void Fire();
+        public int AmmoAmount { get; set; }
+
+        public bool TryFire()
+        {
+            if(AmmoAmount > 0)
+            {
+                FireInternal();
+                AmmoAmount--;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public abstract void FireInternal();
     }
 }

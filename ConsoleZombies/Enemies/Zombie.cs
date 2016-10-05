@@ -40,15 +40,15 @@ namespace ConsoleZombies
             this.SpeedTracker.HitDetectionTypes.Add(typeof(Wall));
             this.SpeedTracker.HitDetectionTypes.Add(typeof(Door));
             this.SpeedTracker.HitDetectionTypes.Add(typeof(MainCharacter));
-            this.SpeedTracker.ImpactOccurred += SpeedTracker_ImpactOccurred;
+            this.SpeedTracker.ImpactOccurred.SubscribeForLifetime(SpeedTracker_ImpactOccurred, this.LifetimeManager);
             this.SpeedTracker.Bounciness = 0;
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(0, 0, 1, 1);
             this.HealthPoints = 2;
         }
 
-        private void SpeedTracker_ImpactOccurred(float angle, PowerArgs.Cli.Physics.Rectangle bounds, Thing thingHit)
+        private void SpeedTracker_ImpactOccurred(Impact impact)
         {
-            if(MainCharacter.Current != null && thingHit == MainCharacter.Current)
+            if(MainCharacter.Current != null && impact.ThingHit == MainCharacter.Current)
             {
                 MainCharacter.Current.EatenByZombie.Fire();
             }

@@ -9,5 +9,11 @@ namespace ConsoleZombies
 {
     public abstract class Item : Thing
     {
+        public abstract InventoryItem Convert();
+    }
+
+    public class InventoryItem
+    {
+        public virtual void IncorporateInto(Inventory inventory) { }
     }
 }

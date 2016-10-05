@@ -125,6 +125,22 @@ namespace ConsoleZombies
                 RealmPanel.RenderLoop.Realm.Add(zombie);
             });
 
+            BrokerKeyAction(ConsoleKey.A, () =>
+            {
+                var paddedBounds = Cursor.Bounds.Clone();
+                paddedBounds.Pad(.1f);
+                int amount = 10;
+                LevelDefinition.Add(new ThingDefinition()
+                {
+                    ThingType = typeof(PistolAmmoItem).FullName,
+                    InitialBounds = paddedBounds.Clone(),
+                    InitialData = { { "Amount", ""+amount } }
+                });
+
+                var ammo = new PistolAmmoItem() { Amount = amount, Bounds = paddedBounds.Clone() };
+                RealmPanel.RenderLoop.Realm.Add(ammo);
+            });
+
             BrokerKeyAction(ConsoleKey.D, () =>
             {
                 if(doorDropRectangle == null)

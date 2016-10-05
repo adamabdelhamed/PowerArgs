@@ -57,10 +57,22 @@ namespace ConsoleZombies
             Targeting = new Targeting(this);
             Speed.Bounciness = 0;
             Speed.HitDetectionTypes.Add(typeof(Wall));
+            Speed.HitDetectionTypes.Add(typeof(Item));
+            Speed.ImpactOccurred.SubscribeForLifetime(ImpactOccurred, this.LifetimeManager);
+
             Added.SubscribeForLifetime(OnAdded, this.LifetimeManager);
             Removed.SubscribeForLifetime(OnRemoved, this.LifetimeManager);
        }
 
+        private void ImpactOccurred(Impact impact)
+        {
+            if(impact.ThingHit is Item)
+            {
+                var inventoryItem = (impact.ThingHit as Item).Convert();
+                Realm.Remove(impact.ThingHit);
+                Inventory.Add(inventoryItem);
+            }
+        }
 
         public void OnAdded()
         {
@@ -182,7 +194,7 @@ namespace ConsoleZombies
         {
             RenderLoop.QueueAction(() =>
             {
-                MainCharacter.Inventory.RPGLauncher.Fire();
+                MainCharacter.Inventory.RPGLauncher.TryFire();
             });
         }
 
@@ -299,7 +311,7 @@ namespace ConsoleZombies
         {
             RenderLoop.QueueAction(() =>
             {
-                MainCharacter.Inventory.Gun.Fire();
+                MainCharacter.Inventory.Gun.TryFire();
                 SoundEffects.Instance.PlaySound("pistol");
             });
         }
@@ -308,7 +320,7 @@ namespace ConsoleZombies
         {
             RenderLoop.QueueAction(() =>
             {
-                MainCharacter.Inventory.RemoteMineDropper.Fire();
+                MainCharacter.Inventory.RemoteMineDropper.TryFire();
             });
         }
 
@@ -316,7 +328,7 @@ namespace ConsoleZombies
         {
             RenderLoop.QueueAction(() =>
             {
-                MainCharacter.Inventory.TimedMineDropper.Fire();
+                MainCharacter.Inventory.TimedMineDropper.TryFire();
             });
         }
     }
