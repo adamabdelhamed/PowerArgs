@@ -83,19 +83,19 @@ namespace PowerArgs.Cli.Physics
             ImpactFriction = .95f;
         }
 
-        public override void Behave(Realm realm)
+        public override void Behave(Scene scene)
         {
-            base.Behave(realm);
+            base.Behave(scene);
 
-            float dt = (float)(realm.ElapsedTime.TotalSeconds - LastBehavior.TotalSeconds);
+            float dt = (float)(scene.ElapsedTime.TotalSeconds - LastBehavior.TotalSeconds);
             if (dt == 0) return;
 
             float dx = SpeedX * dt;
             float dy = SpeedY * dt;
 
-            var hitPrediction = RealmHelpers.PredictHit(realm, MyThing, HitDetectionTypes, dx, dy);
+            var hitPrediction = SceneHelpers.PredictHit(scene, MyThing, HitDetectionTypes, dx, dy);
             
-            if (hitPrediction.Type != RealmHelpers.HitType.None)
+            if (hitPrediction.Type != SceneHelpers.HitType.None)
             {
                 float angle = MyThing.Bounds.Location.CalculateAngleTo(hitPrediction.BoundsOfItemBeingHit.Location);
                 if (ImpactOccurred != null && haveMovedSinceLastHitDetection)
@@ -129,7 +129,7 @@ namespace PowerArgs.Cli.Physics
             else
             {
                 var oldLocation = MyThing.Bounds.Location;
-                if (RealmHelpers.MoveThingSafeBy(realm, MyThing, dx, dy))
+                if (SceneHelpers.MoveThingSafeBy(scene, MyThing, dx, dy))
                 {
                     this.Angle = oldLocation.CalculateAngleTo(MyThing.Bounds.Location);
                     haveMovedSinceLastHitDetection = true;

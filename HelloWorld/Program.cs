@@ -10,19 +10,19 @@ namespace HelloWorld
         static void Main(string[] args)
         {
             var app = new ConsoleApp();
-            var realmPanel = app.LayoutRoot.Add(new RealmPanel(32,9) { Width=32,Height=9}).CenterHorizontally().CenterVertically();
+            var scenePanel = app.LayoutRoot.Add(new ScenePanel(32,9) { Width=32,Height=9}).CenterHorizontally().CenterVertically();
             Random r = new Random();
             app.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Spacebar, null, () =>
             {
-                realmPanel.RenderLoop.QueueAction(() =>
+                scenePanel.Scene.QueueAction(() =>
                 {
                     Thing t = new Thing(9f, .01f, .5f, 1f);
-                    RealmHelpers.PlaceInEmptyLocation(realmPanel.RenderLoop.Realm, t);
+                    SceneHelpers.PlaceInEmptyLocation(scenePanel.Scene, t);
                     var speedTracker = new SpeedTracker(t);
                     speedTracker.HitDetectionTypes.Add(typeof(Thing));
                     var gravity = new Gravity(speedTracker);
                     var forwardForce = new Force(speedTracker, r.Next(20, 20), r.Next(210, 330));
-                    realmPanel.RenderLoop.Realm.Add(t);
+                    scenePanel.Scene.Add(t);
                 });
             }, app.LifetimeManager);
 
@@ -30,7 +30,7 @@ namespace HelloWorld
 
             app.QueueAction(() =>
             {
-                realmPanel.RenderLoop.Start();
+                scenePanel.Scene.Start();
             });
 
             appTask.Wait();

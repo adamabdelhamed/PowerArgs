@@ -166,6 +166,10 @@ namespace PowerArgs.Cli
             var cleanupTask = pumpTask.ContinueWith((t) =>
             {
                  ExitInternal();
+                if (t.IsFaulted)
+                {
+                    throw t.Exception;
+                }
             }, TaskContinuationOptions.ExecuteSynchronously);
 
             return cleanupTask;

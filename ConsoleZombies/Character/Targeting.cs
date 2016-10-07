@@ -1,9 +1,6 @@
 ﻿using PowerArgs.Cli.Physics;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleZombies
 {
@@ -22,23 +19,23 @@ namespace ConsoleZombies
             Governor.Rate = TimeSpan.FromSeconds(.25);
         }
 
-        public override void Behave(Realm realm)
+        public override void Behave(Scene scene)
         {
-            var zombies = Realm.Things.Where(t => t is Zombie).Select(t => t as Zombie)
+            var zombies = Scene.Things.Where(t => t is Zombie).Select(t => t as Zombie)
                 .OrderBy(z => MainCharacter.Bounds.Location.CalculateDistanceTo(z.Bounds.Location));
 
             foreach(var zombie in zombies)
             {
-                var route = RealmHelpers.CalculateLineOfSight(realm, MainCharacter, zombie.Bounds.Location, 1);
+                var route = SceneHelpers.CalculateLineOfSight(scene, MainCharacter, zombie.Bounds.Location, 1);
 
                 if(route.Obstacles.Where(o => o is Wall).Count() == 0)
                 {
                     if(MainCharacter.Target != null && MainCharacter.Target != zombie && MainCharacter.Target.IsExpired == false)
                     {
-                        Realm.Update(MainCharacter.Target);
+                        Scene.Update(MainCharacter.Target);
                     }
                     MainCharacter.Target = zombie;
-                    Realm.Update(zombie);
+                    Scene.Update(zombie);
                     return;
                 }
             }

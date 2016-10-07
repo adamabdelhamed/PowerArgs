@@ -1,21 +1,18 @@
-﻿using PowerArgs.Cli.Physics;
+﻿using PowerArgs.Cli;
+using PowerArgs.Cli.Physics;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PowerArgs.Cli;
 
 namespace ConsoleZombies
 {
     public class Zombie : Thing, IDestructible
     {
         public float HealthPoints { get; set; }
-
         public bool IsBeingTargeted { get; private set; }
+        public SpeedTracker SpeedTracker { get; private set; }
 
         private Seeker _seeker;
-        public SpeedTracker SpeedTracker { get; private set; }
+    
         public bool IsActive
         {
             get
@@ -25,7 +22,7 @@ namespace ConsoleZombies
             set
             {
                 if (value == false && _seeker == null) return;
-                else if (value == false) Realm.Remove(_seeker);
+                else if (value == false) Scene.Remove(_seeker);
                 else if (_seeker != null) return;
                 else
                 {
@@ -40,13 +37,13 @@ namespace ConsoleZombies
             this.SpeedTracker.HitDetectionTypes.Add(typeof(Wall));
             this.SpeedTracker.HitDetectionTypes.Add(typeof(Door));
             this.SpeedTracker.HitDetectionTypes.Add(typeof(MainCharacter));
-            this.SpeedTracker.ImpactOccurred.SubscribeForLifetime(SpeedTracker_ImpactOccurred, this.LifetimeManager);
+            this.SpeedTracker.ImpactOccurred.SubscribeForLifetime(ImpactOccurred, this.LifetimeManager);
             this.SpeedTracker.Bounciness = 0;
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(0, 0, 1, 1);
             this.HealthPoints = 2;
         }
 
-        private void SpeedTracker_ImpactOccurred(Impact impact)
+        private void ImpactOccurred(Impact impact)
         {
             if(MainCharacter.Current != null && impact.ThingHit == MainCharacter.Current)
             {
@@ -54,20 +51,14 @@ namespace ConsoleZombies
             }
         }
 
-        public override void InitializeThing(Realm r)
-        {
-
-        }
-
-        public override void Behave(Realm r)
+        public override void Behave(Scene r)
         {
             if (MainCharacter.Current == null) return;
+            if (IsActive == false) return;
 
             IsBeingTargeted = MainCharacter.Current.Target == this;
 
-            if (IsActive == false) return;
-
-            var routeToMainCharacter = RealmHelpers.CalculateLineOfSight(r, this, MainCharacter.Current.Bounds.Location, 1);
+            var routeToMainCharacter = SceneHelpers.CalculateLineOfSight(r, this, MainCharacter.Current.Bounds.Location, 1);
 
             if(routeToMainCharacter.Obstacles.Where(o => o is Wall).Count() == 0 && this.Bounds.Location.CalculateDistanceTo(MainCharacter.Current.Bounds.Location) < 6)
             {
@@ -81,7 +72,6 @@ namespace ConsoleZombies
             {
                 _seeker.IsSeeking = false;
             }
-
         }
     }
 

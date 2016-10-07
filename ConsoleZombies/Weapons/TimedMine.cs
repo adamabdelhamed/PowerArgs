@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PowerArgs.Cli.Physics;
+﻿using PowerArgs.Cli.Physics;
+using System;
 
 namespace ConsoleZombies
 {
@@ -16,13 +12,13 @@ namespace ConsoleZombies
             this.timeToDetinate = timeToDetinate;
         }
 
-        public override void InitializeThing(Realm r)
+        public override void InitializeThing(Scene r)
         {
             base.InitializeThing(r);
             this.startTime = r.ElapsedTime;
         }
 
-        public override void Behave(Realm r)
+        public override void Behave(Scene r)
         {
             base.Behave(r);
             if(r.ElapsedTime - startTime >= timeToDetinate)

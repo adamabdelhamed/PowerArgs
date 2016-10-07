@@ -17,23 +17,23 @@ namespace ConsoleZombies
         private Dictionary<string, MediaPlayer> players;
         private Queue<Action> soundQueue;
         private Thread theThread;
-        private RenderLoop renderLoop;
+        private Scene scene;
         private object sync;
 
         private string soundsDir;
 
-        public RenderLoop RenderLoop
+        public Scene Scene
         {
             get
             {
-                return renderLoop;
+                return scene;
             }
         }
 
-        public SoundThread(RenderLoop renderLoop, string soundsDir = @"C:\sfx")
+        public SoundThread(Scene scene, string soundsDir = @"C:\sfx")
         {
             this.soundsDir = soundsDir;
-            this.renderLoop = renderLoop;
+            this.scene = scene;
             sync = new object();
             soundQueue = new Queue<Action>();
             CurrentlyPlayingSounds = new List<SoundPlaybackLifetime>();
@@ -97,6 +97,7 @@ namespace ConsoleZombies
             hiddenWindow.Visibility = Visibility.Hidden;
             hiddenWindow.Loaded += (s, o) =>
             {
+                Thread.CurrentThread.IsBackground = true;
                 DispatcherTimer t = new DispatcherTimer();
                 t.Interval = TimeSpan.FromMilliseconds(1);
                 t.Tick += (s1, o1) =>

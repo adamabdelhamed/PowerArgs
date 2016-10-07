@@ -13,7 +13,7 @@ namespace ConsoleZombies
 
         public Cursor Cursor { get; private set; } = new Cursor();
 
-        private RealmPanel RealmPanel { get; set; }
+        private ScenePanel ScenePanel { get; set; }
 
         private PowerArgs.Cli.Physics.Rectangle doorDropRectangle;
 
@@ -25,21 +25,31 @@ namespace ConsoleZombies
             var botPanel = app.LayoutRoot.Add(new ConsolePanel() { Height = 6, Background = System.ConsoleColor.DarkRed }).DockToBottom().FillHoriontally();
 
             var borderPanel = topPanel.Add(new ConsolePanel() { Background = ConsoleColor.DarkGray, Width = LevelDefinition.Width + 2, Height = LevelDefinition.Height + 2 }).CenterHorizontally().CenterVertically();
-            RealmPanel = borderPanel.Add(new RealmPanel(LevelDefinition.Width, LevelDefinition.Height)).Fill(padding: new Thickness(1, 1, 1, 1));
+            ScenePanel = borderPanel.Add(new ScenePanel(LevelDefinition.Width, LevelDefinition.Height)).Fill(padding: new Thickness(1, 1, 1, 1));
 
+            var sceneFPSLabel = app.LayoutRoot.Add(new Label() { Text = "".ToConsoleString() }).FillHoriontally();
+            var renderFPSLabel = app.LayoutRoot.Add(new Label() { Y = 1, Text = "".ToConsoleString() }).FillHoriontally();
+            var paintFPSLabel = app.LayoutRoot.Add(new Label() { Y = 2, Text = "".ToConsoleString() }).FillHoriontally();
+
+            app.LifetimeManager.Manage(app.SetInterval(() =>
+            {
+                sceneFPSLabel.Text = $"{ScenePanel.Scene.FPS} scene frames per second".ToCyan();
+                renderFPSLabel.Text = $"{app.FPS} render frames per second".ToCyan();
+                paintFPSLabel.Text = $"{app.PPS} paint frames per second".ToCyan();
+            }, TimeSpan.FromSeconds(1)));
 
             app.QueueAction(() =>
             {
-                RealmPanel.RenderLoop.Start();
+                ScenePanel.Scene.Start();
                 SetupCursorKeyInput();
                 SetupDropKeyInput();
                 SetupSaveKeyInput();
             });
 
-            RealmPanel.RenderLoop.QueueAction(() =>
+            ScenePanel.Scene.QueueAction(() =>
             {
-                Cursor.Bounds.Resize(RealmPanel.PixelSize);
-                RealmPanel.RenderLoop.Realm.Add(Cursor);
+                Cursor.Bounds.Resize(ScenePanel.PixelSize);
+                ScenePanel.Scene.Add(Cursor);
             });
 
             var appTask = app.Start();
@@ -75,37 +85,37 @@ namespace ConsoleZombies
                         var level = LevelDefinition.Load(levelFile);
                         this.LevelDefinition = level;
 
-                        RealmPanel.RenderLoop.QueueAction(() =>
+                        ScenePanel.Scene.QueueAction(() =>
                         {
-                            foreach (var thing in RealmPanel.RenderLoop.Realm.Things.ToArray())
+                            foreach (var thing in ScenePanel.Scene.Things.ToArray())
                             {
                                 if(thing is Cursor)
                                 {
                                     continue;
                                 }
-                                RealmPanel.RenderLoop.Realm.Remove(thing);
+                                ScenePanel.Scene.Remove(thing);
                             }
 
-                            foreach (var interaction in RealmPanel.RenderLoop.Realm.Interactions.ToArray())
+                            foreach (var interaction in ScenePanel.Scene.Interactions.ToArray())
                             {
-                                RealmPanel.RenderLoop.Realm.Remove(interaction);
+                                ScenePanel.Scene.Remove(interaction);
                             }
 
-                            level.Populate(RealmPanel.RenderLoop.Realm, true);
+                            level.Populate(ScenePanel.Scene, true);
                         });
 
 
-                    }, buttons: options.ToArray(), maxHeight: RealmPanel.Application.LayoutRoot.Height);
+                    }, buttons: options.ToArray(), maxHeight: ScenePanel.Application.LayoutRoot.Height);
                 }
             }, ConsoleApp.Current.LifetimeManager);
         }
 
         private void SetupCursorKeyInput()
         {
-            BrokerKeyAction(ConsoleKey.UpArrow, () => { RealmHelpers.MoveThingSafeBy(RealmPanel.RenderLoop.Realm, Cursor, 0, -RealmPanel.PixelSize.H); });
-            BrokerKeyAction(ConsoleKey.DownArrow, () => { RealmHelpers.MoveThingSafeBy(RealmPanel.RenderLoop.Realm, Cursor, 0, RealmPanel.PixelSize.H); });
-            BrokerKeyAction(ConsoleKey.LeftArrow, () => { RealmHelpers.MoveThingSafeBy(RealmPanel.RenderLoop.Realm, Cursor, -RealmPanel.PixelSize.W, 0); });
-            BrokerKeyAction(ConsoleKey.RightArrow, () => { RealmHelpers.MoveThingSafeBy(RealmPanel.RenderLoop.Realm, Cursor, RealmPanel.PixelSize.W, 0); });
+            BrokerKeyAction(ConsoleKey.UpArrow, () => { SceneHelpers.MoveThingSafeBy(ScenePanel.Scene, Cursor, 0, -ScenePanel.PixelSize.H); });
+            BrokerKeyAction(ConsoleKey.DownArrow, () => { SceneHelpers.MoveThingSafeBy(ScenePanel.Scene, Cursor, 0, ScenePanel.PixelSize.H); });
+            BrokerKeyAction(ConsoleKey.LeftArrow, () => { SceneHelpers.MoveThingSafeBy(ScenePanel.Scene, Cursor, -ScenePanel.PixelSize.W, 0); });
+            BrokerKeyAction(ConsoleKey.RightArrow, () => { SceneHelpers.MoveThingSafeBy(ScenePanel.Scene, Cursor, ScenePanel.PixelSize.W, 0); });
         }
 
         private void SetupDropKeyInput()
@@ -122,59 +132,47 @@ namespace ConsoleZombies
                 });
 
                 var zombie = new Zombie() { Bounds = paddedBounds.Clone() };
-                RealmPanel.RenderLoop.Realm.Add(zombie);
+                ScenePanel.Scene.Add(zombie);
             });
 
-            BrokerKeyAction(ConsoleKey.A, () =>
+            ConsoleApp.Current.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.A, null, () =>
             {
-                var paddedBounds = Cursor.Bounds.Clone();
-                paddedBounds.Pad(.1f);
-                int amount = 10;
-                LevelDefinition.Add(new ThingDefinition()
-                {
-                    ThingType = typeof(PistolAmmoItem).FullName,
-                    InitialBounds = paddedBounds.Clone(),
-                    InitialData = { { "Amount", ""+amount } }
-                });
+                Dialog.ShowMessage("Choose Ammo Type".ToConsoleString(), (choice) =>
+                 {
+                     ScenePanel.Scene.QueueAction(() =>
+                     {
+                         var paddedBounds = Cursor.Bounds.Clone();
+                         paddedBounds.Pad(.1f);
+                         int amount = 10;
+                         LevelDefinition.Add(new ThingDefinition()
+                         {
+                             ThingType = choice.Id,
+                             InitialBounds = paddedBounds.Clone(),
+                             InitialData = { { "Amount", "" + amount } }
+                         });
 
-                var ammo = new PistolAmmoItem() { Amount = amount, Bounds = paddedBounds.Clone() };
-                RealmPanel.RenderLoop.Realm.Add(ammo);
+                         var ammoType = Assembly.GetExecutingAssembly().GetType(choice.Id);
+                         var ammo = Activator.CreateInstance(ammoType) as Ammo;
+                         ammo.Amount = amount;
+                         ammo.Bounds = paddedBounds.Clone();
+                         ScenePanel.Scene.Add(ammo);
+                     });
+                 }, buttons: new DialogButton[] 
+                 {
+                     new DialogButton() { DisplayText = "Pistol".ToConsoleString(), Id =  typeof(PistolAmmo).FullName },
+                     new DialogButton() { DisplayText = "RPG".ToConsoleString(), Id =  typeof(RPGAmmo).FullName }
+                 });
+            }, ConsoleApp.Current.LifetimeManager);
+
+            BrokerKeyAction(ConsoleKey.D, () =>
+            {
+                DropDoor(false);
             });
 
             BrokerKeyAction(ConsoleKey.D, () =>
             {
-                if(doorDropRectangle == null)
-                {
-                    doorDropRectangle = Cursor.Bounds.Clone();
-                    doorDropRectangle.Pad(.1f);
-                }
-                else
-                {
-                    var paddedBounds = Cursor.Bounds.Clone();
-                    paddedBounds.Pad(.1f);
-
-                    LevelDefinition.Add(new ThingDefinition()
-                    {
-                        ThingType = typeof(Door).FullName,
-                        InitialBounds = doorDropRectangle,
-                        InitialData =
-                        {
-                            { "ClosedX", doorDropRectangle.X+"" },
-                            { "ClosedY", doorDropRectangle.Y + "" },
-                            { "W", doorDropRectangle.W + "" },
-                            { "H", doorDropRectangle.H + "" },
-                            { "OpenX", paddedBounds.X+"" },
-                            { "OpenY", paddedBounds.Y+"" },
-                        }
-                    });
-
-                    var door = new Door(doorDropRectangle, Cursor.Bounds.Clone().Location);
-                    RealmPanel.RenderLoop.Realm.Add(door);
-                    doorDropRectangle = null;
-                }
-
-            });
-
+                DropDoor(true);
+            }, ConsoleModifiers.Shift);
 
             BrokerKeyAction(ConsoleKey.W, () =>
             {
@@ -185,7 +183,41 @@ namespace ConsoleZombies
                 });
 
                 var wall = new Wall() { Bounds = Cursor.Bounds.Clone() };
-                RealmPanel.RenderLoop.Realm.Add(wall);
+                ScenePanel.Scene.Add(wall);
+            });
+
+            ConsoleApp.Current.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.P, null, (key) =>
+            {
+                Dialog.ShowTextInput("Provide portal Id".ToYellow(), (id) =>
+                 {
+                     ScenePanel.Scene.QueueAction(() =>
+                     {
+                         LevelDefinition.Add(new ThingDefinition()
+                         {
+                             ThingType = typeof(Portal).FullName,
+                             InitialBounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H),
+                             InitialData = new System.Collections.Generic.Dictionary<string, string>()
+                             {
+                                 { "DestinationId", id.ToString() }
+                             }
+                         });
+
+                         var portal = new Portal() { Bounds = Cursor.Bounds.Clone() };
+                         ScenePanel.Scene.Add(portal);
+                     });
+                 });
+            }, ConsoleApp.Current.LifetimeManager);
+
+            BrokerKeyAction(ConsoleKey.C, () =>
+            {
+                LevelDefinition.Add(new ThingDefinition()
+                {
+                    ThingType = typeof(Cieling).FullName,
+                    InitialBounds = new PowerArgs.Cli.Physics.Rectangle(Cursor.Left, Cursor.Top, Cursor.Bounds.W, Cursor.Bounds.H),
+                });
+
+                var cieling = new Cieling() { Bounds = Cursor.Bounds.Clone() };
+                ScenePanel.Scene.Add(cieling);
             });
 
             BrokerKeyAction(ConsoleKey.M, () =>
@@ -204,15 +236,50 @@ namespace ConsoleZombies
                 });
 
                 var character = new MainCharacter() { IsInLevelBuilder = true, Bounds = paddedBounds.Clone() };
-                RealmPanel.RenderLoop.Realm.Add(character);
+                ScenePanel.Scene.Add(character);
             });
         }
 
-        private void BrokerKeyAction(ConsoleKey key, Action a)
+        private void DropDoor(bool open)
         {
-            ConsoleApp.Current.FocusManager.GlobalKeyHandlers.PushForLifetime(key, null, () =>
+            if (doorDropRectangle == null)
             {
-                RealmPanel.RenderLoop.QueueAction(() =>
+                doorDropRectangle = Cursor.Bounds.Clone();
+                doorDropRectangle.Pad(.1f);
+            }
+            else
+            {
+                var paddedBounds = Cursor.Bounds.Clone();
+                paddedBounds.Pad(.1f);
+
+                LevelDefinition.Add(new ThingDefinition()
+                {
+                    ThingType = typeof(Door).FullName,
+                    InitialBounds = doorDropRectangle,
+                    InitialData =
+                        {
+                            { "ClosedX", doorDropRectangle.X+"" },
+                            { "ClosedY", doorDropRectangle.Y + "" },
+                            { "W", doorDropRectangle.W + "" },
+                            { "H", doorDropRectangle.H + "" },
+                            { "OpenX", paddedBounds.X+"" },
+                            { "OpenY", paddedBounds.Y+"" },
+                            { "IsOpen", open+""   }
+                        }
+                });
+
+                var door = new Door(doorDropRectangle, Cursor.Bounds.Clone().Location);
+                door.IsOpen = open;
+                ScenePanel.Scene.Add(door);
+                doorDropRectangle = null;
+            }
+        }
+
+        private void BrokerKeyAction(ConsoleKey key, Action a, ConsoleModifiers? modifiers = null)
+        {
+            ConsoleApp.Current.FocusManager.GlobalKeyHandlers.PushForLifetime(key, modifiers, () =>
+            {
+                ScenePanel.Scene.QueueAction(() =>
                 {
                     a();
                 });

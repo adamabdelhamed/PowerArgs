@@ -8,11 +8,11 @@ namespace PowerArgs.Cli.Physics
 {
     public class ThingRenderer: ConsoleControl
     {
-        public RenderLoop RenderLoop
+        public Scene Scene
         {
             get
             {
-                return (Parent as RealmPanel)?.RenderLoop;
+                return (Parent as ScenePanel)?.Scene;
             }
         }
 
@@ -24,5 +24,6 @@ namespace PowerArgs.Cli.Physics
         }
 
         public virtual void OnBind() { }
+        public virtual void OnRender() { }
     }
 }

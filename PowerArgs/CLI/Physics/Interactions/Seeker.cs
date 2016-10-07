@@ -18,10 +18,10 @@ namespace PowerArgs.Cli.Physics
             this.SeekerSpeed = seekerSpeed;
             this.accelleration = accelleration;
             Governor.Rate = TimeSpan.FromSeconds(.1);
-            Seekee.Removed.SubscribeForLifetime(() => { Realm.Remove(this); }, this.LifetimeManager);
+            Seekee.Removed.SubscribeForLifetime(() => { Scene.Remove(this); }, this.LifetimeManager);
         }
 
-        public override void Initialize(Realm realm)
+        public override void Initialize(Scene scene)
         {
             if (IsSeeking)
             {
@@ -29,11 +29,11 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public override void Behave(Realm realm)
+        public override void Behave(Scene scene)
         {
             if (currentForce != null)
             {
-                new Force(SeekerSpeed, 1, RealmHelpers.GetOppositeAngle(currentForce.Angle));
+                new Force(SeekerSpeed, 1, SceneHelpers.GetOppositeAngle(currentForce.Angle));
                 currentForce = null;
             }
 
@@ -42,7 +42,7 @@ namespace PowerArgs.Cli.Physics
                 MyThing.Bounds.MoveTo(Seekee.Bounds.Location);
                 if(RemoveWhenReached)
                 {
-                    Realm.Remove(this);
+                    Scene.Remove(this);
                 }
             }
             else if (IsSeeking)

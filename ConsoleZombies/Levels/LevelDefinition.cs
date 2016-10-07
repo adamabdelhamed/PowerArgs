@@ -11,8 +11,8 @@ namespace ConsoleZombies
 {
     public class LevelDefinition : List<ThingDefinition>
     {
-        public static readonly int Width = 60;
-        public static readonly int Height = 10;
+        public static readonly int Width = 78;
+        public static readonly int Height = 20;
 
         public static string LevelBuilderLevelsPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"ConsoleZombies","LevelBuilder","Levels");
         
@@ -40,13 +40,19 @@ namespace ConsoleZombies
 
         public static LevelDefinition Load(string file)
         {
+            if(System.IO.File.Exists(file) == false)
+            {
+                file = System.IO.Path.Combine(LevelBuilderLevelsPath, file + ".json");
+            }
+
             var defContents = System.IO.File.ReadAllText(file);
             var def = JsonConvert.DeserializeObject<LevelDefinition>(defContents);
             return def;
         }
 
-        public void Populate(Realm realm, bool builderMode)
+        public void Populate(Scene scene, bool builderMode)
         {
+            List<Door> doors = new List<Door>();
             foreach (var thingDef in this)
             {
                 var thingType = Assembly.GetExecutingAssembly().GetType(thingDef.ThingType);
@@ -60,6 +66,7 @@ namespace ConsoleZombies
                 }
                 else if(thing is Door)
                 {
+                    doors.Add(thing as Door);
                     var closedRect = new Rectangle(
                         float.Parse(thingDef.InitialData["ClosedX"]),
                         float.Parse(thingDef.InitialData["ClosedY"]),
@@ -71,17 +78,23 @@ namespace ConsoleZombies
                         float.Parse(thingDef.InitialData["OpenY"]));
 
                     (thing as Door).Initialize(closedRect, openLocation);
-                    (thing as Door).IsOpen = true;
+                    (thing as Door).IsOpen = thingDef.InitialData.ContainsKey("IsOpen") && thingDef.InitialData["IsOpen"].ToLower() == "true";
                 }
-                else if(thing is PistolAmmoItem)
+                else if(thing is Ammo)
                 {
                     int amount = int.Parse(thingDef.InitialData["Amount"]);
-                    (thing as PistolAmmoItem).Amount = amount;
+                    (thing as Ammo).Amount = amount;
+                }
+                else if(thing is Portal)
+                {
+                    (thing as Portal).DestinationId = thingDef.InitialData["DestinationId"];
                 }
 
 
-                realm.Add(thing);
+                scene.Add(thing);
             }
+
+            doors.ForEach(d => d.IsOpen = d.IsOpen);
         }
     }
 

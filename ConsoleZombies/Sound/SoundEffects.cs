@@ -18,11 +18,11 @@ namespace ConsoleZombies
 
         private SoundEffects()
         {
-            if(RenderLoop.Current == null)
+            if(Scene.Current == null)
             {
                 throw new InvalidOperationException("No render loop on current thread");
             }
-            SoundThread = new SoundThread(RenderLoop.Current);
+            SoundThread = new SoundThread(Scene.Current);
         }
 
   

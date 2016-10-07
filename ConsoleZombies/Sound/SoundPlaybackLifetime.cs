@@ -20,11 +20,11 @@ namespace ConsoleZombies
             player.Play();
 
 
-            soundThread.RenderLoop.SubscribeForLifetime(nameof(RenderLoop.SpeedFactor), () =>
+            soundThread.Scene.SubscribeForLifetime(nameof(Scene.SpeedFactor), () =>
             {
                 soundThread.EnqueueSoundThreadAction(() =>
                 {
-                    player.SpeedRatio = soundThread.RenderLoop.SpeedFactor == 1 ? 1 : .4;
+                    player.SpeedRatio = soundThread.Scene.SpeedFactor == 1 ? 1 : .4;
                 });
 
             }, this.LifetimeManager);

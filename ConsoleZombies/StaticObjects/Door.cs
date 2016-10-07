@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleZombies
 {
@@ -21,21 +19,23 @@ namespace ConsoleZombies
             {
                 if(value && IsOpen)
                 {
-                    return;
+                    FindCieling().ForEach(c => c.IsVisible = false);
                 }
                 else if(value)
                 {
                     SoundEffects.Instance.PlaySound("opendoor");
                     this.Bounds.MoveTo(OpenLocation);
+                    FindCieling().ForEach(c => c.IsVisible = false);
                 }
                 else if(value == false && IsOpen == false)
                 {
-                    return;
+                    FindCieling().ForEach(c => c.IsVisible = true);
                 }
                 else if(value == false)
                 {
                     SoundEffects.Instance.PlaySound("closedoor");
                     this.Bounds.MoveTo(ClosedBounds.Location);
+                    FindCieling().ForEach(c => c.IsVisible = true);
                 }
             }
         }
@@ -47,7 +47,36 @@ namespace ConsoleZombies
 
         public Door()
         {
+            Removed.SubscribeForLifetime(() => FindCieling().ForEach(c => Scene.Remove(c)), this.LifetimeManager);
+        }
 
+        public List<Cieling> FindCieling()
+        {
+            List<Cieling> ret = new List<Cieling>();
+            if(Scene == null)
+            {
+                return ret;
+            }
+            foreach(var cieling in Scene.Things.Where(t => t is Cieling).Select(t => t as Cieling).OrderBy(c => c.Bounds.Location.CalculateDistanceTo(this.Bounds.Location)))
+            {
+                if(cieling.Bounds.Location.CalculateDistanceTo(this.Bounds.Location) <= 1.25)
+                {
+                    ret.Add(cieling);
+                }
+                else
+                {
+                    foreach(var alreadyAdded in ret.ToArray())
+                    {
+                        if (cieling.Bounds.Location.CalculateDistanceTo(alreadyAdded.Bounds.Location) <= 1)
+                        {
+                            ret.Add(cieling);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return ret;
         }
 
         public void Initialize(Rectangle closedBounds, Location openLocation)
@@ -60,6 +89,7 @@ namespace ConsoleZombies
             this.Bounds = closedBounds.Clone();
             this.ClosedBounds = closedBounds.Clone();
             this.OpenLocation = openLocation;
+            this.IsOpen = false;
         }
     }
     

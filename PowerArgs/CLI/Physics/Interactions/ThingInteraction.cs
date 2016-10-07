@@ -13,29 +13,29 @@ namespace PowerArgs.Cli.Physics
         public ThingInteraction(Thing target)
         {
             this.MyThing = target;
-            RenderLoop.Current.QueueAction(() =>
+            Scene.Current.QueueAction(() =>
             {
                 if(target.IsExpired)
                 {
                     return;
                 }
 
-                if (target.Realm != null)
+                if (target.Scene != null)
                 {
-                    target.Realm.Add(this);
+                    target.Scene.Add(this);
                 }
                 else
                 {
                     target.Added.SubscribeForLifetime(() =>
                     {
-                        target.Realm.Add(this);
+                        target.Scene.Add(this);
                     }, target.LifetimeManager);
                 }
 
 
                 MyThing.Removed.SubscribeForLifetime(() =>
                 {
-                    target.Realm.Remove(this);
+                    target.Scene.Remove(this);
                 }, target.LifetimeManager);
             });
         }

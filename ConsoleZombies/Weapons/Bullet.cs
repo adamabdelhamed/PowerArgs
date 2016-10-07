@@ -1,24 +1,18 @@
-﻿using PowerArgs.Cli.Physics;
+﻿using PowerArgs.Cli;
+using PowerArgs.Cli.Physics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PowerArgs.Cli;
 
 namespace ConsoleZombies
 {
     public class Bullet : Thing
     {
-
         public float Range { get; set; } = -1;
         public float HealthPoints { get; set; }
         public float angle { get; private set; }
-
         public SpeedTracker Speed { get; private set; }
-        private Location startLocation;
-
         public bool PlaySoundOnImpact { get; set; }
+
+        private Location startLocation;
 
         public Bullet()
         {
@@ -45,7 +39,7 @@ namespace ConsoleZombies
             this.HealthPoints = 1;
         }
 
-        public override void InitializeThing(Realm r)
+        public override void InitializeThing(Scene r)
         {
             startLocation = this.Bounds.Location;
             // todo - replace with bullet speed from config
@@ -53,7 +47,7 @@ namespace ConsoleZombies
 
         }
 
-        public override void Behave(Realm r)
+        public override void Behave(Scene r)
         {
             if(Range > 0 && this.Bounds.Location.CalculateDistanceTo(startLocation) > Range)
             {
@@ -82,11 +76,11 @@ namespace ConsoleZombies
                     {
                         MainCharacter.Current.EatenByZombie.Fire();
                     }
-                    Realm.Remove(impact.ThingHit);
+                    Scene.Remove(impact.ThingHit);
                 }
             }
 
-            Realm.Remove(this);
+            Scene.Remove(this);
         }
     }
 

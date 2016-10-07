@@ -20,7 +20,7 @@ namespace ConsoleZombies
 
         public void Explode()
         {
-            if (this.Realm == null) return;
+            if (this.Scene == null) return;
 
             SoundEffects.Instance.PlaySound("boom");
             for (float angle = 0; angle < 360; angle += angleIcrement)
@@ -33,10 +33,10 @@ namespace ConsoleZombies
                 } 
 
                 Bullet shrapnel = new Bullet(this.Bounds.Location, angle) { HealthPoints=HealthPointsPerShrapnel,  Range = effectiveRange };
-                Realm.Add(shrapnel);
+                Scene.Add(shrapnel);
             }
 
-            Realm.Remove(this);
+            Scene.Remove(this);
         }
     }
 

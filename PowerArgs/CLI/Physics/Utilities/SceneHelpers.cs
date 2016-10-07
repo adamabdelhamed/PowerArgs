@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Reflection;
 namespace PowerArgs.Cli.Physics
 {
-    public static class RealmHelpers
+    public static class SceneHelpers
     {
         public enum HitType
         {
@@ -55,7 +55,7 @@ namespace PowerArgs.Cli.Physics
             return false;
         }
 
-        public static List<Thing> GetThingsThatTouch(Realm r, Thing target)
+        public static List<Thing> GetThingsThatTouch(Scene r, Thing target)
         {
             List<Thing> ret = new List<Thing>();
             Thing t;
@@ -70,7 +70,7 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static void PlaceInEmptyLocation(Realm r, Thing toPlace)
+        public static void PlaceInEmptyLocation(Scene r, Thing toPlace)
         {
             float minX = r.Bounds.Location.X;
             float maxX = r.Bounds.Location.X + r.Bounds.Size.W - 3 * toPlace.Bounds.Size.W;
@@ -87,7 +87,7 @@ namespace PowerArgs.Cli.Physics
 
 
                 toPlace.Bounds.MoveTo(new Location(x, y));
-                if (RealmHelpers.GetThingsITouch(r, toPlace, new List<Type>() { typeof(Thing) }).Count() == 0)
+                if (SceneHelpers.GetThingsITouch(r, toPlace, new List<Type>() { typeof(Thing) }).Count() == 0)
                 {
                     r.Update(toPlace);
                     break;
@@ -95,7 +95,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public static HitPrediction PredictHit(Realm r, Thing Target, List<Type> hitDetectionTypes, float dx, float dy)
+        public static HitPrediction PredictHit(Scene r, Thing Target, List<Type> hitDetectionTypes, float dx, float dy)
         {
             HitPrediction prediction = new HitPrediction();
 
@@ -154,7 +154,7 @@ namespace PowerArgs.Cli.Physics
             return prediction;
         }
 
-        public static bool MoveThingSafeBy(Realm r, Thing t, float x, float y, bool suppressChangeEvent = false)
+        public static bool MoveThingSafeBy(Scene r, Thing t, float x, float y, bool suppressChangeEvent = false)
         {
             Location orig = t.Bounds.Location;
             t.Bounds.MoveBy(x, y);
@@ -195,7 +195,7 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static Route CalculateLineOfSight(Realm r, Thing from, Location to, float increment)
+        public static Route CalculateLineOfSight(Scene r, Thing from, Location to, float increment)
         {
             Route ret = new Route();
             Rectangle current = from.Bounds.Clone();
@@ -218,7 +218,7 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static bool DoesThingTouchA<T>(Thing target, Realm r, float dx = 0, float dy = 0) where T : Thing
+        public static bool DoesThingTouchA<T>(Thing target, Scene r, float dx = 0, float dy = 0) where T : Thing
         {
             Rectangle testArea = new Rectangle(target.Bounds.Location.X + dx, target.Bounds.Location.Y + dy, target.Bounds.Size.W, target.Bounds.Size.H);
             var touching = GetThingsThatTouch(r, new Thing(testArea));
@@ -226,12 +226,12 @@ namespace PowerArgs.Cli.Physics
             return filtered.Count() > 0;
         }
 
-        public static bool DoesThingTouchAny(Realm r, Thing target, List<Type> thingsToNotHit, float dx = 0, float dy = 0)
+        public static bool DoesThingTouchAny(Scene r, Thing target, List<Type> thingsToNotHit, float dx = 0, float dy = 0)
         {
             return GetThingsITouch(r, target, thingsToNotHit, dx, dy).Count() > 0;
         }
 
-        public static IEnumerable<Thing> GetThingsITouch(Realm r, Thing target, List<Type> types, float dx = 0, float dy = 0)
+        public static IEnumerable<Thing> GetThingsITouch(Scene r, Thing target, List<Type> types, float dx = 0, float dy = 0)
         {
             Rectangle testArea = new Rectangle(target.Left + dx, target.Top + dy, target.Bounds.Size.W, target.Bounds.Size.H);
             var matchingThings = from t in r.Things

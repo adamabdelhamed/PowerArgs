@@ -38,9 +38,11 @@ namespace ConsoleZombies
             var splash = System.IO.Path.Combine(LevelDefinition.LevelBuilderLevelsPath, "Splash" + ".json");
             if (System.IO.File.Exists(splash))
             {
-                SplashScreen.Run(LevelDefinition.Load(splash));
+        //        SplashScreen.Run(LevelDefinition.Load(splash));
             }
-            PrototypeLevel.Run(LevelDefinition.Load(levelFile));
+            var game = new GameApp();
+            game.Load(LevelDefinition.Load(levelFile));
+            game.Start().Wait();
         }
 
         [ArgActionMethod]

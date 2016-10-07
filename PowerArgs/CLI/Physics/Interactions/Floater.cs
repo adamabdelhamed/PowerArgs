@@ -18,9 +18,9 @@ namespace PowerArgs.Cli.Physics
             this.tracker = tracker;
         }
 
-        public override void Behave(Realm realm)
+        public override void Behave(Scene scene)
         {
-            base.Behave(realm);
+            base.Behave(scene);
 
             float dX = ((float)(rand.NextDouble())) * MaxFloat;
             float dY = ((float)(rand.NextDouble())) * MaxFloat;

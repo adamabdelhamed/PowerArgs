@@ -19,16 +19,16 @@ namespace PowerArgs.Cli.Physics
             this.Duration = duration.HasValue ? duration.Value : TimeSpan.Zero;
         }
 
-        public override void Initialize(Realm realm)
+        public override void Initialize(Scene scene)
         {
-            base.Initialize(realm);
+            base.Initialize(scene);
             if (Duration < TimeSpan.Zero)
             {
                 this.IsPermanentForce = true;
             }
             else
             {
-                this.EndTime = realm.ElapsedTime + Duration;
+                this.EndTime = scene.ElapsedTime + Duration;
             }
 
             if (Duration == TimeSpan.Zero)
@@ -37,19 +37,19 @@ namespace PowerArgs.Cli.Physics
                 CalculateSpeedDeltas(Accelleration, out dx, out dy);
                 tracker.SpeedX += dx;
                 tracker.SpeedY += dy;
-                realm.Remove(this);
+                scene.Remove(this);
             }
         }
 
-        public override void Behave(Realm realm)
+        public override void Behave(Scene scene)
         {
-            if (!IsPermanentForce && realm.ElapsedTime >= EndTime)
+            if (!IsPermanentForce && scene.ElapsedTime >= EndTime)
             {
-                realm.Remove(this);
+                scene.Remove(this);
                 return;
             }
 
-            float dt = (float)(realm.ElapsedTime.TotalSeconds - LastBehavior.TotalSeconds);
+            float dt = (float)(scene.ElapsedTime.TotalSeconds - LastBehavior.TotalSeconds);
             float dSpeed = (Accelleration * dt);
             float dx, dy;
 

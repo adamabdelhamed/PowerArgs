@@ -18,11 +18,6 @@ namespace PowerArgs.Cli
             }
         }
 
-        public void SubscribeForLifetime(object onAdded, LifetimeManager lifetimeManager)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Fire()
         {
             foreach (var subscriber in subscribers.Keys.ToArray())
@@ -41,11 +36,6 @@ namespace PowerArgs.Cli
             var sub = new Subscription(() => { subscribers.Remove(handler); });
             subscribers.Add(handler, sub);
             return sub;
-        }
-
-        public void SubscribeForLifetime(Event removed, LifetimeManager lifetimeManager)
-        {
-            throw new NotImplementedException();
         }
 
         public void SubscribeForLifetime(Action handler, LifetimeManager lifetimeManager)

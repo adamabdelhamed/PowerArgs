@@ -18,7 +18,8 @@ namespace ConsoleZombies
 
             var bullet = new Bullet(MainCharacter.Current.Bounds.Location, angle) { PlaySoundOnImpact = true };
             bullet.Speed.HitDetectionTypes.Remove(typeof(MainCharacter));
-            MainCharacter.Current.Realm.Add(bullet);
+            MainCharacter.Current.Scene.Add(bullet);
+            SoundEffects.Instance.PlaySound("pistol");
         }
     }
 }

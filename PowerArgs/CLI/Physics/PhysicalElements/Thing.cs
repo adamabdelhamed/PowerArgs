@@ -20,7 +20,7 @@ namespace PowerArgs.Cli.Physics
 
         public long Id { get; internal set; }
         public Rectangle Bounds { get; set; }
-        public Realm Realm { get; internal set; }
+        public Scene Scene { get; internal set; }
 
         public RateGovernor Governor { get; private set; }
         public TimeSpan LastBehavior { get; internal set; }
@@ -84,11 +84,11 @@ namespace PowerArgs.Cli.Physics
         {
         }
 
-        public virtual void InitializeThing(Realm r)
+        public virtual void InitializeThing(Scene r)
         {
         }
 
-        public virtual void Behave(Realm r)
+        public virtual void Behave(Scene r)
         {
         }
 

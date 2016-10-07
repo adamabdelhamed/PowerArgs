@@ -105,6 +105,31 @@ namespace PowerArgs.Cli
         private int managedCliThreadId;
         private int lastConsoleWidth, lastConsoleHeight;
 
+
+        private FrameRateMeter frameRateMeter;
+        /// <summary>
+        /// Gets the current frame rate for the app
+        /// </summary>
+        public int FPS
+        {
+            get
+            {
+                return frameRateMeter != null ? frameRateMeter.CurrentFPS : 0;
+            }
+        }
+
+        private FrameRateMeter paintRateMeter;
+        /// <summary>
+        /// Gets the current paint rate for the app
+        /// </summary>
+        public int PPS
+        {
+            get
+            {
+                return paintRateMeter != null ? paintRateMeter.CurrentFPS : 0;
+            }
+        }
+
         /// <summary>
         /// Creates a new message pump given a console to use for keyboard input
         /// </summary>
@@ -263,6 +288,8 @@ namespace PowerArgs.Cli
         private void Pump()
         {
             bool stopRequested = false;
+            frameRateMeter = new FrameRateMeter();
+            paintRateMeter = new FrameRateMeter();
             while (true)
             {
                 if ((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight))
@@ -301,6 +328,7 @@ namespace PowerArgs.Cli
                 if(iterationPaintMessage != null)
                 {
                     TryWork(iterationPaintMessage);
+                    paintRateMeter.Increment();
 #if PROFILING
                     CliProfiler.Instance.PaintMessagesProcessed++;
 #endif
@@ -321,9 +349,10 @@ namespace PowerArgs.Cli
                     });
                 }
 
+                frameRateMeter.Increment();
                 if (idle)
                 {
-                   Thread.Sleep(10);
+                   Thread.Sleep(0);
                 }
 #if PROFILING
                 else

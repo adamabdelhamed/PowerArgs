@@ -79,6 +79,7 @@ namespace PowerArgs.Cli
             return sub;
         }
 
+
         public void PushForLifetime(ConsoleKey key, ConsoleModifiers? modifier, Action<ConsoleKeyInfo> handler, LifetimeManager manager)
         {
            manager.Manage(PushUnmanaged(key, modifier, handler));

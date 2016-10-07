@@ -16,7 +16,7 @@ namespace ConsoleZombies
             else
             {
                 activeMine = new RemoteMine(MainCharacter.Current.Bounds.Clone(), 5, 4) {  HealthPointsPerShrapnel = 5};
-                MainCharacter.Current.Realm.Add(activeMine);
+                MainCharacter.Current.Scene.Add(activeMine);
             }
         }
     }
@@ -26,7 +26,7 @@ namespace ConsoleZombies
         public override void FireInternal()
         {
             var mine = new TimedMine(TimeSpan.FromSeconds(2), MainCharacter.Current.Bounds.Clone(), 5, 4) { HealthPointsPerShrapnel = 5 };
-            MainCharacter.Current.Realm.Add(mine);
+            MainCharacter.Current.Scene.Add(mine);
         }
     }
 
@@ -52,7 +52,7 @@ namespace ConsoleZombies
                         {
                             MainCharacter.Current.EatenByZombie.Fire();
                         }
-                        impact.ThingHit.Realm.Remove(impact.ThingHit);
+                        impact.ThingHit.Scene.Remove(impact.ThingHit);
                     }
                 }
 
@@ -68,8 +68,8 @@ namespace ConsoleZombies
             }
 
             new Force(rpgSpeed, 30, angle);
-            new Force(rpgSpeed,15, RealmHelpers.GetOppositeAngle(angle), TimeSpan.FromSeconds(1));
-            MainCharacter.Current.Realm.Add(rpg);
+            new Force(rpgSpeed,15, SceneHelpers.GetOppositeAngle(angle), TimeSpan.FromSeconds(1));
+            MainCharacter.Current.Scene.Add(rpg);
         }
     }
 }

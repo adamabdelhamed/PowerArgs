@@ -10,10 +10,10 @@ namespace PowerArgs.Cli.Physics
             this.action = action;
         }
 
-        public override void Initialize(Realm realm)
+        public override void Initialize(Scene scene)
         {
             action.Invoke();
-            realm.Remove(this);
+            scene.Remove(this);
         }
     }
 }
