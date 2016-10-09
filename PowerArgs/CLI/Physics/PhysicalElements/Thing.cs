@@ -4,7 +4,7 @@ namespace PowerArgs.Cli.Physics
 {
     public class Thing : Lifetime, IObservableObject
     {
-        private ObservableObject observable = new ObservableObject();
+        protected ObservableObject observable = new ObservableObject();
 
         protected ObservableObject Observable
         {

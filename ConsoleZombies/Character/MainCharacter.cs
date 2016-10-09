@@ -6,6 +6,12 @@ using System.Linq;
 
 namespace ConsoleZombies
 {
+    public enum AimMode
+    {
+        Auto,
+        Manual
+    }
+
     public class MainCharacter : Thing, IDestructible
     {
         [ThreadStatic]
@@ -26,12 +32,20 @@ namespace ConsoleZombies
             }
         }
 
+        public AimMode AimMode
+        {
+            get
+            {
+                return FreeAimCursor != null ? AimMode.Manual : AimMode.Auto;
+            }
+        }
+
         public SpeedTracker Speed { get; private set; }
         public Targeting Targeting { get; private set; }
         public Cursor FreeAimCursor { get; set; }
         public Thing Target { get; set; }
         public Inventory Inventory { get; set; } = new Inventory();
-        public float HealthPoints { get; set; }
+        public float HealthPoints { get { return observable.Get<float>(); } set { observable.Set(value); } }
         public Event EatenByZombie { get; private set; } = new Event();
         public bool IsInLevelBuilder { get; set; }
 
@@ -43,6 +57,7 @@ namespace ConsoleZombies
             Speed = new SpeedTracker(this);
             Targeting = new Targeting(this);
             Speed.Bounciness = 0;
+            this.HealthPoints = 100;
             Speed.HitDetectionTypes.Add(typeof(Wall));
 
             Added.SubscribeForLifetime(OnAdded, this.LifetimeManager);
@@ -65,6 +80,7 @@ namespace ConsoleZombies
                 Scene.Add(FreeAimCursor);
                 Speed.SpeedX = 0;
                 Speed.SpeedY = 0;
+                observable.FirePropertyChanged(nameof(AimMode));
             }
             else
             {
@@ -76,6 +92,8 @@ namespace ConsoleZombies
         {
             Scene.Remove(FreeAimCursor);
             FreeAimCursor = null;
+
+            observable.FirePropertyChanged(nameof(AimMode));
         }
 
 

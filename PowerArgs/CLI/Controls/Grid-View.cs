@@ -12,6 +12,8 @@ namespace PowerArgs.Cli
 
         public TextBox FilterTextBox { get  { return _filterTextBox; } set {  SetFilterTextBox(value); } }
 
+        public bool ShowEndIfComplete { get; set; } = true;
+
         protected override void OnPaint(ConsoleBitmap context)
         {
 #if PROFILING
@@ -63,7 +65,7 @@ namespace PowerArgs.Cli
                 }
                 else if (header.OverflowBehavior is TruncateOverflowBehavior)
                 {
-                    (header.OverflowBehavior as TruncateOverflowBehavior).ColumnWidth = colWidth;
+                    (header.OverflowBehavior as TruncateOverflowBehavior).ColumnWidth = (header.OverflowBehavior as TruncateOverflowBehavior).ColumnWidth == 0 ? colWidth : (header.OverflowBehavior as TruncateOverflowBehavior).ColumnWidth;
                 }
 
                 overflowBehaviors.Add(header.OverflowBehavior);
@@ -79,7 +81,7 @@ namespace PowerArgs.Cli
                     var value = PropertyResolver(item, col.ColumnName.ToString());
                     var displayValue = value == null ? "<null>".ToConsoleString() : (value is ConsoleString ? (ConsoleString)value : value.ToString().ToConsoleString());
 
-                    if (viewIndex == SelectedIndex)
+                    if (viewIndex == SelectedIndex && this.CanFocus)
                     {
                         if (this.SelectionMode == GridSelectionMode.Row || (this.SelectionMode == GridSelectionMode.Cell && columnIndex == selectedColumnIndex))
                         {
@@ -121,7 +123,10 @@ namespace PowerArgs.Cli
             }
             else if (DataView.IsViewEndOfData)
             {
-                table += EndOfDataMessage.ToConsoleString(Application.Theme.H1Color);
+                if (ShowEndIfComplete)
+                {
+                    table += EndOfDataMessage.ToConsoleString(Application.Theme.H1Color);
+                }
             }
             else
             {

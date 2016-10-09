@@ -7,12 +7,22 @@ namespace ConsoleZombies
 {
     public class GameApp : ConsoleApp
     {
-        GameInputManager inputManager;
+        public GameInputManager inputManager;
+        private HeadsUpDisplay headsUpDisplay;
         private ScenePanel scenePanel;
         public GameApp()
         {
+            this.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, () =>
+            {
+                Dialog.ConfirmYesOrNo("Are you sure you want to quit?", () =>
+                {
+                    Stop();
+                });
+            }, this.LifetimeManager);
+
             var borderPanel = LayoutRoot.Add(new ConsolePanel() { Background = ConsoleColor.DarkGray, Width = LevelDefinition.Width + 2, Height = LevelDefinition.Height + 2 }).CenterHorizontally().CenterVertically();
             scenePanel = borderPanel.Add(new ScenePanel(LevelDefinition.Width, LevelDefinition.Height)).Fill(padding: new Thickness(1, 1, 1, 1));
+            headsUpDisplay = LayoutRoot.Add(new HeadsUpDisplay(this, scenePanel.Scene) { Width = LevelDefinition.Width }).DockToBottom().CenterHorizontally();
             LayoutRoot.Add(new FramerateControl(scenePanel.Scene));
             QueueAction(() => { scenePanel.Scene.Start(); });
             inputManager = new GameInputManager(scenePanel.Scene, this);
@@ -48,6 +58,7 @@ namespace ConsoleZombies
 
                 if(MainCharacter.Current != null)
                 {
+                    headsUpDisplay.ViewModel.MainCharacter = MainCharacter.Current;
                     if (toKeep != null)
                     {
                         MainCharacter.Current.Inventory = toKeep;

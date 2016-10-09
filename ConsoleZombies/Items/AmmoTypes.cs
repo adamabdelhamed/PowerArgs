@@ -9,7 +9,14 @@ namespace ConsoleZombies
 
         public override void IncorporateInto(Inventory inventory)
         {
-            inventory.Gun.AmmoAmount += Amount;
+            Pistol pistol;
+            if (inventory.TryGet<Pistol>(out pistol) == false)
+            {
+                pistol = new Pistol() { AmmoAmount = 0 };
+                inventory.AvailableWeapons.Add(pistol);
+            }
+
+            pistol.AmmoAmount += Amount;
         }
     }
 
@@ -19,7 +26,14 @@ namespace ConsoleZombies
 
         public override void IncorporateInto(Inventory inventory)
         {
-            inventory.RPGLauncher.AmmoAmount += Amount;
+            RPGLauncher launcher;
+            if (inventory.TryGet<RPGLauncher>(out launcher) == false)
+            {
+                launcher = new RPGLauncher() { AmmoAmount = 0 };
+                inventory.AvailableWeapons.Add(launcher);
+            }
+
+            launcher.AmmoAmount += Amount;
         }
     }
 }

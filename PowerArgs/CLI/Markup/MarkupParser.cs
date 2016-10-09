@@ -49,54 +49,56 @@ namespace PowerArgs.Cli
         }
     }
 
+    public class ViewModelBinding
+    {
+        private object latestValue;
+
+        public ViewModelBinding(ConsoleControl control, PropertyInfo controlProperty, ObservableObject viewModel, string observablePath)
+        {
+            var exp = ObjectPathExpression.Parse(observablePath);
+            var trace = exp.EvaluateAndTraceInfo(viewModel);
+            var observableObject = trace[trace.Count - 2].Value as ObservableObject;
+
+            var viewModelObservableProperty = trace.Last()?.MemberInfo as PropertyInfo;
+
+            if (observableObject == null)
+            {
+                throw new InvalidOperationException($"ViewModel property '{viewModel.GetType().FullName}.{observablePath}' is not observable");
+            }
+
+            if (viewModelObservableProperty == null)
+            {
+                throw new InvalidOperationException($"Cannot resolve ViewModel property '{viewModel.GetType().FullName}.{observablePath}'");
+            }
+
+            if (viewModelObservableProperty.PropertyType != controlProperty.PropertyType &&
+                viewModelObservableProperty.PropertyType.IsSubclassOf(controlProperty.PropertyType) == false &&
+                viewModelObservableProperty.PropertyType.GetInterfaces().Contains(controlProperty.PropertyType) == false)
+            {
+                throw new InvalidOperationException($"ViewModel type '{viewModel.GetType().FullName} property {observablePath}' of type {viewModelObservableProperty.PropertyType.FullName} is not compatible with control property '{controlProperty.DeclaringType.FullName}.{controlProperty.Name}' of type {controlProperty.PropertyType.FullName} ");
+            }
+
+            observableObject.SynchronizeForLifetime(observablePath, () =>
+            {
+                var newValue = viewModelObservableProperty.GetValue(observableObject);
+                if (newValue == latestValue) return;
+                latestValue = newValue;
+                controlProperty.SetValue(control, newValue);
+            }, control.LifetimeManager);
+
+            control.SubscribeForLifetime(controlProperty.Name, () =>
+            {
+                var newValue = controlProperty.GetValue(control);
+                if (newValue == latestValue) return;
+                latestValue = newValue;
+                viewModelObservableProperty.SetValue(observableObject, newValue);
+            }, control.LifetimeManager);
+        }
+    }
+
     internal class MarkupParser
     {
-        private class ViewModelBinding
-        {
-            private object latestValue;
-
-            public ViewModelBinding(ConsoleControl control, PropertyInfo controlProperty, ObservableObject viewModel, string observablePath)
-            {
-                var exp = ObjectPathExpression.Parse(observablePath);
-                var trace = exp.EvaluateAndTraceInfo(viewModel);
-                var observableObject = trace[trace.Count - 2].Value as ObservableObject;
-
-                var viewModelObservableProperty = trace.Last()?.MemberInfo as PropertyInfo;
-
-                if(observableObject == null)
-                {
-                    throw new InvalidOperationException($"ViewModel property '{viewModel.GetType().FullName}.{observablePath}' is not observable");
-                }
-
-                if(viewModelObservableProperty == null)
-                {
-                    throw new InvalidOperationException($"Cannot resolve ViewModel property '{viewModel.GetType().FullName}.{observablePath}'");
-                }
-
-                if (viewModelObservableProperty.PropertyType != controlProperty.PropertyType &&
-                    viewModelObservableProperty.PropertyType.IsSubclassOf(controlProperty.PropertyType) == false &&
-                    viewModelObservableProperty.PropertyType.GetInterfaces().Contains(controlProperty.PropertyType) == false)
-                {
-                    throw new InvalidOperationException($"ViewModel type '{viewModel.GetType().FullName} property {observablePath}' of type {viewModelObservableProperty.PropertyType.FullName} is not compatible with control property '{controlProperty.DeclaringType.FullName}.{controlProperty.Name}' of type {controlProperty.PropertyType.FullName} ");
-                }
-
-                observableObject.SynchronizeForLifetime(observablePath, () =>
-                {
-                    var newValue = viewModelObservableProperty.GetValue(observableObject);
-                    if (newValue == latestValue) return;
-                    latestValue = newValue;
-                    controlProperty.SetValue(control, newValue);
-                }, control.LifetimeManager);
-
-                control.SubscribeForLifetime(controlProperty.Name, () =>
-                {
-                    var newValue = controlProperty.GetValue(control);
-                    if (newValue == latestValue) return;
-                    latestValue = newValue;
-                    viewModelObservableProperty.SetValue(observableObject, newValue);
-                }, control.LifetimeManager);
-            }
-        }
+        
         
         public static ConsoleApp Parse(string markup, object viewModel = null)
         {

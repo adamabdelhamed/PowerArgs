@@ -1,8 +1,10 @@
-﻿namespace ConsoleZombies
+﻿using PowerArgs.Cli;
+
+namespace ConsoleZombies
 {
-    public abstract class Weapon
+    public abstract class Weapon : ObservableObject
     {
-        public int AmmoAmount { get; set; }
+        public int AmmoAmount { get { return Get<int>(); } set { Set(value); } }
 
         public void TryFire()
         {

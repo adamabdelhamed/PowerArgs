@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Character\GameInputManager.cs" />
     <Compile Include="CustomControls\FramerateControl.cs" />
+    <Compile Include="CustomControls\HeadsUpDisplay.cs" />
     <Compile Include="Items\AmmoTypes.cs" />
     <Compile Include="Items\Ammo.cs" />
     <Compile Include="SplashScreen.cs" />

@@ -1,17 +1,29 @@
-﻿namespace ConsoleZombies
+﻿using PowerArgs.Cli;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace ConsoleZombies
 {
-    public class Inventory
+    public class Inventory : ObservableObject
     {
-        public Weapon Gun { get; private set; }
-        public Weapon RemoteMineDropper { get; private set; }
-        public Weapon TimedMineDropper { get; private set; }
-        public Weapon RPGLauncher { get; private set; }
+        public List<Weapon> AvailableWeapons { get; private set; }
+
+        public Weapon PrimaryWeapon { get { return Get<Weapon>(); } private set { Set(value); } }
+        public Weapon ExplosiveWeapon { get { return Get<Weapon>(); } private set { Set(value); } }
+
         public Inventory()
         {
-            Gun = new Pistol() { AmmoAmount = 20 };
-            RemoteMineDropper = new RemoteMineDropper() { AmmoAmount = 2 } ;
-            TimedMineDropper = new TimedMineDropper() { AmmoAmount = 2 };
-            RPGLauncher = new RPGLauncher() { AmmoAmount = 2 };
+            AvailableWeapons = new List<Weapon>();
+            PrimaryWeapon = new Pistol() { AmmoAmount = 20 };
+            ExplosiveWeapon = new RPGLauncher() { AmmoAmount = 2 } ;
+            AvailableWeapons.Add(PrimaryWeapon);
+            AvailableWeapons.Add(ExplosiveWeapon);
+        }
+
+        public bool TryGet<T>(out T weapon) where T : Weapon
+        {
+            weapon = (T)AvailableWeapons.Where(w => w is T).SingleOrDefault();
+            return weapon != null;
         }
     }
 }

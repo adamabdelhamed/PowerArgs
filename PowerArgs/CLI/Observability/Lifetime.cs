@@ -35,6 +35,19 @@ namespace PowerArgs.Cli
             LifetimeManager = new LifetimeManager();
         }
 
+        public Lifetime CreateChildLifetime()
+        {
+            var ret = new Lifetime();
+            LifetimeManager.Manage(new Subscription(()=>
+            {
+                if(ret.IsExpired == false)
+                {
+                    ret.Dispose();
+                }
+            }));
+            return ret;
+        }
+
         protected override void DisposeManagedResources()
         {
             foreach (var item in LifetimeManager.ManagedItems)

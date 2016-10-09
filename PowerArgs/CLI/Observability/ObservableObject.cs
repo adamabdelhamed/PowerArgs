@@ -147,12 +147,25 @@ namespace PowerArgs.Cli
             var sub = SynchronizeUnmanaged(propertyName, handler);
             lifetimeManager.Manage(sub);
         }
+
+        public Lifetime GetPropertyValueLifetime(string propertyName)
+        {
+            Lifetime ret = new Lifetime();
+            IDisposable sub = null;
+            sub = SubscribeUnmanaged(propertyName, () =>
+            {
+                sub.Dispose();
+                ret.Dispose();
+            });
+
+            return ret;
+        }
        
         /// <summary>
         /// Fires the PropertyChanged event with the given property name.
         /// </summary>
         /// <param name="propertyName">the name of the property that changed</param>
-        protected void FirePropertyChanged(string propertyName)
+        public void FirePropertyChanged(string propertyName)
         {
             List<PropertyChangedSubscription> filteredSubs;
             if(subscribers.TryGetValue(propertyName, out filteredSubs))

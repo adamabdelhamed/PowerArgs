@@ -15,9 +15,9 @@ namespace PowerArgs.Cli.Physics
             {
                 return _current;
             }
-            set
+            private set
             {
-                if (Current != null)
+                if (Current != null && value != null)
                 {
                     throw new InvalidOperationException("There is already a scene on this thread");
                 }
@@ -31,6 +31,7 @@ namespace PowerArgs.Cli.Physics
         private long NextId;
         private TimeSpan _minTimeBetweenRenderIterations;
         private bool stopRequested;
+        private bool isRunning;
         private DateTime last = DateTime.MinValue;
         private TimeSpan tickRate;
         private Queue<Interaction> interactionQueue;
@@ -39,6 +40,8 @@ namespace PowerArgs.Cli.Physics
         // Events
         public Event<Exception> ExceptionOccurred { get; private set; } = new Event<Exception>();
         public Event<Thing> ThingRemoved { get; private set; } = new Event<Thing>();
+
+  
         public Event<Thing> ThingAdded { get; private set; } = new Event<Thing>();
         public Event<Thing> ThingUpdated { get; private set; } = new Event<Thing>();
         public Event<Interaction> InteractionAdded { get; private set; } = new Event<Interaction>();
@@ -161,6 +164,19 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        public void TogglePause()
+        {
+            if(isRunning)
+            {
+                Stop();
+            }
+            else
+            {
+                Start();
+            }
+        }
+
+
         public Task Start()
         {
             if (RenderImpl == null) throw new InvalidOperationException($"You need to set the {nameof(RenderImpl)} property");
@@ -170,6 +186,7 @@ namespace PowerArgs.Cli.Physics
 
             return Task.Factory.StartNew(() =>
             {
+                isRunning = true;
                 stopRequested = false;
                 Current = this;
                 frameRateMeter = new FrameRateMeter();
@@ -207,6 +224,11 @@ namespace PowerArgs.Cli.Physics
                     {
                         throw;
                     }
+                }
+                finally
+                {
+                    isRunning = false;
+                    Current = null;
                 }
             });
         }

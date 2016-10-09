@@ -8,10 +8,42 @@ namespace PowerArgs.Cli
 {
     public class KeyboardInterceptionManager
     {
-        private Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> nakedHandlers = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
-        private Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> altHandlers = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
-        private Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> shiftHandlers = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
-        private Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> controlHandlers = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
+        private class HandlerContext
+        {
+            public Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> NakedHandlers {  get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
+            public Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> AltHandlers { get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
+            public Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> ShiftHandlers { get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
+            public Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> ControlHandlers { get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
+        }
+
+        private Stack<HandlerContext> handlerStack;
+
+        public KeyboardInterceptionManager()
+        {
+            handlerStack = new Stack<HandlerContext>();
+            handlerStack.Push(new HandlerContext());
+        }
+
+        public Lifetime Push()
+        {
+            PushInternal();
+            var ret = new Lifetime();
+            ret.LifetimeManager.Manage(new Subscription(() =>
+            {
+                PopInternal();
+            }));
+            return ret;
+        }
+
+        private void PushInternal()
+        {
+            handlerStack.Push(new HandlerContext());
+        }
+
+        private void PopInternal()
+        {
+            handlerStack.Pop();
+        }
 
         public bool TryIntercept(ConsoleKeyInfo keyInfo)
         {
@@ -22,27 +54,27 @@ namespace PowerArgs.Cli
 
             int handlerCount = 0;
 
-            if(noModifier && nakedHandlers.ContainsKey(keyInfo.Key))
+            if(noModifier && handlerStack.Peek().NakedHandlers.ContainsKey(keyInfo.Key))
             {
-                nakedHandlers[keyInfo.Key].Peek().Invoke(keyInfo);
+                handlerStack.Peek().NakedHandlers[keyInfo.Key].Peek().Invoke(keyInfo);
                 handlerCount++;
             }
 
-            if(alt && altHandlers.ContainsKey(keyInfo.Key))
+            if(alt && handlerStack.Peek().AltHandlers.ContainsKey(keyInfo.Key))
             {
-                altHandlers[keyInfo.Key].Peek().Invoke(keyInfo);
+                handlerStack.Peek().AltHandlers[keyInfo.Key].Peek().Invoke(keyInfo);
                 handlerCount++;
             }
 
-            if (shift && shiftHandlers.ContainsKey(keyInfo.Key))
+            if (shift && handlerStack.Peek().ShiftHandlers.ContainsKey(keyInfo.Key))
             {
-                shiftHandlers[keyInfo.Key].Peek().Invoke(keyInfo);
+                handlerStack.Peek().ShiftHandlers[keyInfo.Key].Peek().Invoke(keyInfo);
                 handlerCount++;
             }
 
-            if (control && controlHandlers.ContainsKey(keyInfo.Key))
+            if (control && handlerStack.Peek().ControlHandlers.ContainsKey(keyInfo.Key))
             {
-                controlHandlers[keyInfo.Key].Peek().Invoke(keyInfo);
+                handlerStack.Peek().ControlHandlers[keyInfo.Key].Peek().Invoke(keyInfo);
                 handlerCount++;
             }
 
@@ -54,10 +86,10 @@ namespace PowerArgs.Cli
         {
             Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> target;
 
-            if (modifier.HasValue == false) target = nakedHandlers;
-            else if (modifier.Value.HasFlag(ConsoleModifiers.Alt)) target = altHandlers;
-            else if (modifier.Value.HasFlag(ConsoleModifiers.Shift)) target = shiftHandlers;
-            else if (modifier.Value.HasFlag(ConsoleModifiers.Control)) target = controlHandlers;
+            if (modifier.HasValue == false) target = handlerStack.Peek().NakedHandlers;
+            else if (modifier.Value.HasFlag(ConsoleModifiers.Alt)) target = handlerStack.Peek().AltHandlers;
+            else if (modifier.Value.HasFlag(ConsoleModifiers.Shift)) target = handlerStack.Peek().ShiftHandlers;
+            else if (modifier.Value.HasFlag(ConsoleModifiers.Control)) target = handlerStack.Peek().ControlHandlers;
             else throw new ArgumentException("Unsupported modifier: "+modifier.Value);
 
             Stack<Action<ConsoleKeyInfo>> targetStack;
