@@ -26,6 +26,7 @@ namespace ArgsTests.Data
         }
 
         [TestMethod]
+        [Timeout(3000)]
         public void LoadMoreBasic()
         {
             int expectedNumberOfItems = 95;

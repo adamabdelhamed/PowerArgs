@@ -1,114 +1,11 @@
-﻿using PowerArgs.Cli;
-using PowerArgs;
+﻿using PowerArgs;
+using PowerArgs.Cli;
+using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PowerArgs.Cli.Physics;
 
 namespace ConsoleZombies
 {
-    public class HeadsUpDisplayViewModel : ObservableObject
-    {
-        public ConsoleApp Application { get; set; }
-
-        public MainCharacter MainCharacter
-        {
-            get
-            {
-                return Get<MainCharacter>();
-            }
-            set
-            {
-                Set(value);
-                value.SynchronizeForLifetime(nameof(value.HealthPoints), ()=> 
-                {
-                    Application.QueueAction(() => 
-                    {
-                        this.HPValue = value.HealthPoints;
-                    });
-                }, value.LifetimeManager);
-
-                value.SynchronizeForLifetime(nameof(value.AimMode), () =>
-                 {
-                     Application.QueueAction(() =>
-                     {
-                         this.AimMode = new ConsoleString(value.AimMode.ToString(), value.AimMode == ConsoleZombies.AimMode.Auto ? ConsoleColor.White : ConsoleColor.Cyan);
-                     });
-                 }, value.LifetimeManager);
-
-                value.Inventory.SynchronizeForLifetime(nameof(value.Inventory.PrimaryWeapon), () =>
-                {
-                    Application.QueueAction(() =>
-                    {
-                        this.PrimaryWeaponName = value.Inventory.PrimaryWeapon.GetType().Name.ToWhite();
-                    });
-
-                    value.Inventory.PrimaryWeapon.SynchronizeForLifetime(nameof(value.Inventory.PrimaryWeapon.AmmoAmount), () =>
-                    {
-                        Application.QueueAction(() =>
-                        {
-                            this.PrimaryWeaponAmount = value.Inventory.PrimaryWeapon.AmmoAmount;
-                        });
-                    }, value.Inventory.GetPropertyValueLifetime(nameof(value.Inventory.PrimaryWeapon)).LifetimeManager);
-
-                  
-                }, value.LifetimeManager);
-
-                value.Inventory.SynchronizeForLifetime(nameof(value.Inventory.ExplosiveWeapon), () =>
-                {
-                    Application.QueueAction(() =>
-                    {
-                        this.ExplosiveWeaponName = value.Inventory.ExplosiveWeapon.GetType().Name.ToWhite();
-                    });
-
-                    value.Inventory.ExplosiveWeapon.SynchronizeForLifetime(nameof(value.Inventory.ExplosiveWeapon.AmmoAmount), () =>
-                    {
-                        Application.QueueAction(() =>
-                        {
-                            this.ExplosiveAmmount = value.Inventory.ExplosiveWeapon.AmmoAmount;
-                        });
-                    }, value.Inventory.GetPropertyValueLifetime(nameof(value.Inventory.ExplosiveWeapon)).LifetimeManager);
-
-
-                }, value.LifetimeManager);
-            }
-        }
-
-        public ConsoleString HPDisplayValue{ get { return FormatHPValue(HPValue); } }
-
-        public float HPValue { get { return Get<float>(); } set { Set(value); FirePropertyChanged(nameof(HPDisplayValue)); } }
-        public ConsoleString PrimaryWeaponName { get { return Get<ConsoleString>(); } set { Set(value);} }
-
-        public ConsoleString ExplosiveWeaponName { get { return Get<ConsoleString>(); } set { Set(value);} }
-
-        public int PrimaryWeaponAmount { get { return Get<int>(); } set { Set(value); } }
-
-        public int ExplosiveAmmount { get { return Get<int>(); } set { Set(value); } }
-
-        public ConsoleString AimMode { get { return Get<ConsoleString>(); } set { Set(value); } }
-
-
-        private ConsoleString FormatHPValue(float hp)
-        {
-            hp = (int)Math.Ceiling(hp);
-
-            if (hp >= 60)
-            {
-                return (hp + "").ToGreen();
-            }
-            else if (hp >= 30)
-            {
-                return (hp + "").ToYellow();
-            }
-            else
-            {
-                return (hp + "").ToRed();
-            }
-        }
-    }
-
     public class WeaponRow
     {
         public ConsoleString Weapon { get; set; }
@@ -118,16 +15,11 @@ namespace ConsoleZombies
 
     public class HeadsUpDisplay : ConsolePanel
     {
-        public HeadsUpDisplayViewModel ViewModel { get; private set; }
-
         public Scene GameScene { get; private set; }
         private GameApp gameApp;
         public HeadsUpDisplay(GameApp app, Scene gameScene)
         {
             this.gameApp = app;
-            this.ViewModel = new HeadsUpDisplayViewModel() { Application = app};
-            AddedToVisualTree.SubscribeForLifetime(() => { this.ViewModel.Application = this.Application; }, this.LifetimeManager);
-
             this.GameScene = gameScene;
             this.Height = 7;
 
@@ -144,8 +36,8 @@ namespace ConsoleZombies
             var hpLabel = leftPanel.Add(new Label() { Text = "HP".ToGray() }).FillHoriontally();
             var hpValue = leftPanel.Add(new Label() { Text = ConsoleString.Empty }).FillHoriontally();
             var spacer = leftPanel.Add(new Label() { Text = ConsoleString.Empty });
-            var aimLabel = leftPanel.Add(new Label() { Text = "AIM [A]".ToGray() }).FillHoriontally();
-            var aimValue = leftPanel.Add(new Label() { Text = "Auto".ToWhite() }).FillHoriontally();
+            var aimLabel = leftPanel.Add(new Label() { Text = "".ToGray() }).FillHoriontally();
+            var aimValue = leftPanel.Add(new Label() { Text = "".ToWhite() }).FillHoriontally();
 
             middleGrid.VisibleColumns[0].ColumnDisplayName = new ConsoleString(middleGrid.VisibleColumns[0].ColumnDisplayName.ToString(), ConsoleColor.Gray);
             middleGrid.VisibleColumns[1].ColumnDisplayName = new ConsoleString(middleGrid.VisibleColumns[1].ColumnDisplayName.ToString(), ConsoleColor.Gray);
@@ -154,45 +46,83 @@ namespace ConsoleZombies
             middleGrid.VisibleColumns[0].OverflowBehavior = new TruncateOverflowBehavior() { TruncationText = "", ColumnWidth = 15 };
             middleGrid.VisibleColumns[1].OverflowBehavior = new TruncateOverflowBehavior() { TruncationText = "", ColumnWidth = 10 };
             middleGrid.VisibleColumns[2].OverflowBehavior = new TruncateOverflowBehavior() { TruncationText = "", ColumnWidth = 10};
-            var menuLabel = bottomPanel.Add(new Label() { Text = "Menu [M]".ToYellow() });
-            var pauseLabel = bottomPanel.Add(new Label() { Text = "Pause [P]".ToYellow() });
+            var menuLabel = bottomPanel.Add(new Label() { Text = "".ToYellow() });
+            var pauseLabel = bottomPanel.Add(new Label() { Text = "".ToYellow() });
             var quitLabel = bottomPanel.Add(new Label() { Text = "Quit [ESC]".ToYellow() });
 
             var messageLabel = rightPanel.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Background = ConsoleColor.White, Text = "Here is a message that can be a few words long".ToBlack(bg: ConsoleColor.White)}).Fill(padding: new Thickness(1, 1, 1, 1));
 
-            new ViewModelBinding(hpValue, hpValue.GetType().GetProperty(nameof(hpValue.Text)), ViewModel, nameof(ViewModel.HPDisplayValue));
-
-            ViewModel.SynchronizeForLifetime(nameof(ViewModel.PrimaryWeaponName), () =>
+            app.SubscribeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.HealthPoints), () =>
             {
-                var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
-                row.Weapon = ViewModel.PrimaryWeaponName;
-            }, this.LifetimeManager);
-
-            ViewModel.SynchronizeForLifetime(nameof(ViewModel.PrimaryWeaponAmount), () =>
-            {
-                var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
-                row.Amount = FormatAmmoAmmount(ViewModel.PrimaryWeaponAmount);
+                var hp = app.MainCharacter?.HealthPoints;
+                hpValue.Text = hp.HasValue ? FormatHPValue(hp.Value) : "unknown".ToRed();
             }, this.LifetimeManager);
 
 
-            ViewModel.SynchronizeForLifetime(nameof(ViewModel.ExplosiveWeaponName), () =>
+            app.SynchronizeProxiedForLifetime(app, nameof(app.InputManager) + "." + nameof(GameInputManager.KeyMap) + "." + nameof(KeyMap.MenuKey), () =>
             {
-                var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
-                row.Weapon = ViewModel.ExplosiveWeaponName;
+                menuLabel.Text = $"Menu [{app.InputManager.KeyMap.MenuKey}]".ToYellow();
             }, this.LifetimeManager);
 
-            ViewModel.SynchronizeForLifetime(nameof(ViewModel.ExplosiveAmmount), () =>
+            app.SynchronizeProxiedForLifetime(app, nameof(app.InputManager) + "." + nameof(GameInputManager.KeyMap) + "." + nameof(KeyMap.TogglePauseKey), () =>
             {
-                var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
-                row.Amount = FormatAmmoAmmount(ViewModel.ExplosiveAmmount);
+                pauseLabel.Text = $"Pause [{app.InputManager.KeyMap.TogglePauseKey}]".ToYellow();
             }, this.LifetimeManager);
 
-            ViewModel.SynchronizeForLifetime(nameof(ViewModel.AimMode), () =>
-             {
-                 aimValue.Text = ViewModel.AimMode;
+
+            this.gameApp.InputManager.KeyMap.SynchronizeForLifetime(nameof(ObservableObject.AnyProperty), () =>
+            {
+                 var primaryWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
+                 primaryWeaponRow.Trigger = $"[{this.gameApp.InputManager.KeyMap.PrimaryWeaponKey},{this.gameApp.InputManager.KeyMap.PrimaryWeaponAlternateKey}]".ToWhite();
+
+                 var explosiveWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
+                 explosiveWeaponRow.Trigger = $"[{this.gameApp.InputManager.KeyMap.ExplosiveWeaponKey}]".ToWhite();
+
              }, this.LifetimeManager);
 
-            BindToScene();
+            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter)+"."+nameof(MainCharacter.Inventory)+"."+nameof(Inventory.PrimaryWeapon), () =>
+            {
+                var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
+                var weaponName = app.MainCharacter?.Inventory?.PrimaryWeapon?.GetType().Name;
+                row.Weapon = weaponName != null ? weaponName.ToWhite() : "none".ToRed();
+            }, this.LifetimeManager);
+
+            app.SynchronizeProxiedForLifetime(app, 
+                nameof(app.MainCharacter) + "." + 
+                nameof(MainCharacter.Inventory) + "." + 
+                nameof(Inventory.PrimaryWeapon) + "." +
+                nameof(Weapon.AmmoAmount), () =>
+            {
+                var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
+                var ammo = app.MainCharacter?.Inventory?.PrimaryWeapon?.AmmoAmount;
+                row.Amount = ammo.HasValue ? FormatAmmoAmmount(ammo.Value): "empty".ToRed();
+            }, this.LifetimeManager);
+
+            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(Inventory.ExplosiveWeapon), () =>
+            {
+                var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
+                var weaponName = app.MainCharacter?.Inventory?.ExplosiveWeapon?.GetType().Name;
+                row.Weapon = weaponName != null ? weaponName.ToWhite() : "none".ToRed();
+            }, this.LifetimeManager);
+
+            app.SynchronizeProxiedForLifetime(app,
+                nameof(app.MainCharacter) + "." +
+                nameof(MainCharacter.Inventory) + "." +
+                nameof(Inventory.ExplosiveWeapon) + "." +
+                nameof(Weapon.AmmoAmount), () =>
+                {
+                    var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
+                    var ammo = app.MainCharacter?.Inventory?.ExplosiveWeapon?.AmmoAmount;
+                    row.Amount = ammo.HasValue ? FormatAmmoAmmount(ammo.Value) : "empty".ToRed();
+                }, this.LifetimeManager);
+
+
+
+            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.AimMode), () =>
+            {
+                var aimMode = app.MainCharacter?.AimMode;
+                aimLabel.Text = aimMode.HasValue ? aimMode.Value.ToString().ToWhite() : "".ToConsoleString();
+            }, this.LifetimeManager);
         }
 
         private ConsoleString FormatAmmoAmmount(int amount)
@@ -211,9 +141,22 @@ namespace ConsoleZombies
             }
         }
 
-        private void BindToScene()
+        private ConsoleString FormatHPValue(float hp)
         {
- 
+            hp = (int)Math.Ceiling(hp);
+
+            if (hp >= 60)
+            {
+                return (hp + "").ToGreen();
+            }
+            else if (hp >= 30)
+            {
+                return (hp + "").ToYellow();
+            }
+            else
+            {
+                return (hp + "").ToRed();
+            }
         }
     }
 }

@@ -113,7 +113,14 @@ namespace PowerArgs.Cli
             Background = Theme.DefaultTheme.BackgroundColor;
             this.Foreground = Theme.DefaultTheme.ForegroundColor;
             this.IsVisible = true;
-            this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> { Application?.Paint(); }, this.LifetimeManager);
+            this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> 
+            {
+                if (Application != null && Application.IsRunning)
+                {
+                    ConsoleApp.AssertAppThread(Application);
+                    Application.Paint();
+                }
+            }, this.LifetimeManager);
         }
 
         /// <summary>

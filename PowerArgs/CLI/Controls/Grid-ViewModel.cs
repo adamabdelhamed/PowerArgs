@@ -220,8 +220,8 @@ namespace PowerArgs.Cli
             }
         }
 
-        Subscription dataSourceSub;
-        Subscription boundsSub;
+        IDisposable dataSourceSub;
+        IDisposable boundsSub;
         private void InitGridViewModel()
         {
             this.SelectionMode = GridSelectionMode.Row;

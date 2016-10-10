@@ -4,7 +4,7 @@ namespace PowerArgs.Cli.Physics
 {
     public class Thing : Lifetime, IObservableObject
     {
-        protected ObservableObject observable = new ObservableObject();
+        protected ObservableObject observable;
 
         protected ObservableObject Observable
         {
@@ -72,6 +72,7 @@ namespace PowerArgs.Cli.Physics
 
         public Thing()
         {
+            observable = new ObservableObject(this);
             Governor = new RateGovernor();
             Bounds = new Rectangle(0,0,0,0);
         }
@@ -92,7 +93,7 @@ namespace PowerArgs.Cli.Physics
         {
         }
 
-        public PropertyChangedSubscription SubscribeUnmanaged(string propertyName, Action handler)
+        public IDisposable SubscribeUnmanaged(string propertyName, Action handler)
         {
             return observable.SubscribeUnmanaged(propertyName, handler);
         }
@@ -102,7 +103,7 @@ namespace PowerArgs.Cli.Physics
             observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
         }
 
-        public PropertyChangedSubscription SynchronizeUnmanaged(string propertyName, Action handler)
+        public IDisposable SynchronizeUnmanaged(string propertyName, Action handler)
         {
             return observable.SynchronizeUnmanaged(propertyName, handler);
         }

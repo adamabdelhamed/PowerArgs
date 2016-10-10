@@ -14,6 +14,10 @@ namespace ConsoleZombies
             {
                 pistol = new Pistol() { AmmoAmount = 0 };
                 inventory.AvailableWeapons.Add(pistol);
+                if(inventory.PrimaryWeapon == null)
+                {
+                    inventory.PrimaryWeapon = pistol;
+                }
             }
 
             pistol.AmmoAmount += Amount;
@@ -31,6 +35,7 @@ namespace ConsoleZombies
             {
                 launcher = new RPGLauncher() { AmmoAmount = 0 };
                 inventory.AvailableWeapons.Add(launcher);
+                if (inventory.ExplosiveWeapon == null) inventory.ExplosiveWeapon = launcher;
             }
 
             launcher.AmmoAmount += Amount;

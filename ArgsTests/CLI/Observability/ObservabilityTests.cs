@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs.Cli;
+using System.Collections.Generic;
 
 namespace ArgsTests.CLI.Observability
 {
@@ -297,6 +298,51 @@ namespace ArgsTests.CLI.Observability
 
             Assert.AreEqual(2, numChildrenAdded);
             Assert.AreEqual(2, numChildrenRemoved);
+        }
+
+        [TestMethod]
+        public void TestDeepObservable()
+        {
+            var account = new ObservableAccount();
+            int fireCount = 0;
+
+            List<Object> expected = new List<object>()
+            {
+                null,
+                null,
+                "Adam",
+                "Joe",
+                "Mike",
+                "Paul",
+                "Rob"
+            };
+
+            int expectedFireCount = expected.Count;
+
+            Action listener = () =>
+            {
+                Assert.AreEqual(expected[0], account?.Customer?.BasicInfo?.Name);
+                expected.RemoveAt(0);
+                fireCount++;
+            };
+            using (account.SubscribeUnmanaged($"{nameof(ObservableAccount.Customer)}.{nameof(ObservableCustomer.BasicInfo)}.{nameof(BasicInfo.Name)}",listener))
+            {
+                account.Customer = new ObservableCustomer();
+                account.Customer.BasicInfo = new BasicInfo();
+                account.Customer.BasicInfo.Name = "Adam";
+
+                var newCustomer = new ObservableCustomer() { BasicInfo = new BasicInfo() { Name = "Joe" } };
+                account.Customer = newCustomer;
+                account.Customer.BasicInfo.Name = "Mike";
+
+                account.Customer.BasicInfo = new BasicInfo() { Name = "Paul" };
+                account.Customer.BasicInfo.Name = "Rob";
+            }
+
+            // should not fire because subscription should have been disposed
+            account.Customer = new ObservableCustomer();
+
+            Assert.AreEqual(expectedFireCount, fireCount);
         }
     }
 }

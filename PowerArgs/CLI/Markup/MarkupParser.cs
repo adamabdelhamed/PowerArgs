@@ -53,8 +53,32 @@ namespace PowerArgs.Cli
     {
         private object latestValue;
 
-        public ViewModelBinding(ConsoleControl control, PropertyInfo controlProperty, ObservableObject viewModel, string observablePath)
+        private Func<object, object> mapper;
+        private Func<object, object> reverseMapper;
+
+        public ViewModelBinding(ConsoleControl control, string propertyName, ObservableObject viewModel, string observablePath) : this(control, control.GetType().GetProperty(propertyName),viewModel, observablePath)
         {
+
+        }
+        
+
+        public static ViewModelBinding OneWayBind<TControlPropertyType, TDataPropertyType>(ConsoleControl control, string propertyName, ObservableObject viewModel, string observablePath, Func<TDataPropertyType,TControlPropertyType> map)
+        {
+            ViewModelBinding ret = new ViewModelBinding(control, control.GetType().GetProperty(propertyName), viewModel, observablePath, (v) =>
+            {
+                return map((TDataPropertyType)v);
+            }, null);
+            return ret;
+        }
+
+        public ViewModelBinding(ConsoleControl control, PropertyInfo controlProperty, ObservableObject viewModel, string observablePath) : this(control, controlProperty, viewModel, observablePath, null, null)
+        {
+
+        }
+        public ViewModelBinding(ConsoleControl control, PropertyInfo controlProperty, ObservableObject viewModel, string observablePath, Func<object,object> mapper, Func<object,object> reverseMapper)
+        {
+            this.mapper = mapper;
+            this.reverseMapper = reverseMapper;
             var exp = ObjectPathExpression.Parse(observablePath);
             var trace = exp.EvaluateAndTraceInfo(viewModel);
             var observableObject = trace[trace.Count - 2].Value as ObservableObject;
@@ -71,11 +95,14 @@ namespace PowerArgs.Cli
                 throw new InvalidOperationException($"Cannot resolve ViewModel property '{viewModel.GetType().FullName}.{observablePath}'");
             }
 
-            if (viewModelObservableProperty.PropertyType != controlProperty.PropertyType &&
-                viewModelObservableProperty.PropertyType.IsSubclassOf(controlProperty.PropertyType) == false &&
-                viewModelObservableProperty.PropertyType.GetInterfaces().Contains(controlProperty.PropertyType) == false)
+            if (mapper != null && reverseMapper != null)
             {
-                throw new InvalidOperationException($"ViewModel type '{viewModel.GetType().FullName} property {observablePath}' of type {viewModelObservableProperty.PropertyType.FullName} is not compatible with control property '{controlProperty.DeclaringType.FullName}.{controlProperty.Name}' of type {controlProperty.PropertyType.FullName} ");
+                if (viewModelObservableProperty.PropertyType != controlProperty.PropertyType &&
+                    viewModelObservableProperty.PropertyType.IsSubclassOf(controlProperty.PropertyType) == false &&
+                    viewModelObservableProperty.PropertyType.GetInterfaces().Contains(controlProperty.PropertyType) == false)
+                {
+                    throw new InvalidOperationException($"ViewModel type '{viewModel.GetType().FullName} property {observablePath}' of type {viewModelObservableProperty.PropertyType.FullName} is not compatible with control property '{controlProperty.DeclaringType.FullName}.{controlProperty.Name}' of type {controlProperty.PropertyType.FullName} ");
+                }
             }
 
             observableObject.SynchronizeForLifetime(observablePath, () =>
@@ -83,7 +110,7 @@ namespace PowerArgs.Cli
                 var newValue = viewModelObservableProperty.GetValue(observableObject);
                 if (newValue == latestValue) return;
                 latestValue = newValue;
-                controlProperty.SetValue(control, newValue);
+                controlProperty.SetValue(control, mapper != null ? mapper(newValue) : newValue);
             }, control.LifetimeManager);
 
             control.SubscribeForLifetime(controlProperty.Name, () =>
@@ -91,7 +118,7 @@ namespace PowerArgs.Cli
                 var newValue = controlProperty.GetValue(control);
                 if (newValue == latestValue) return;
                 latestValue = newValue;
-                viewModelObservableProperty.SetValue(observableObject, newValue);
+            viewModelObservableProperty.SetValue(observableObject, reverseMapper != null ? reverseMapper(newValue) : newValue);
             }, control.LifetimeManager);
         }
     }

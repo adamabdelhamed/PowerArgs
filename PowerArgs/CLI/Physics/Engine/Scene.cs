@@ -25,6 +25,18 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        public static void AssertSceneThread(Scene expectedScene = null)
+        {
+            if(Current == null)
+            {
+                throw new InvalidOperationException("There is no Scene running on this thread");
+            }
+            else if(expectedScene != null && Current != expectedScene)
+            {
+                throw new InvalidOperationException("The Scene on this thread is different from the expected Scene");
+            }
+        }
+
         // privates
         private List<Thing> _things;
         private List<Interaction> _interactions;
@@ -40,7 +52,8 @@ namespace PowerArgs.Cli.Physics
         // Events
         public Event<Exception> ExceptionOccurred { get; private set; } = new Event<Exception>();
         public Event<Thing> ThingRemoved { get; private set; } = new Event<Thing>();
-
+        public Event Started { get; private set; } = new Event();
+        public Event Stopped { get; private set; } = new Event();
   
         public Event<Thing> ThingAdded { get; private set; } = new Event<Thing>();
         public Event<Thing> ThingUpdated { get; private set; } = new Event<Thing>();
@@ -136,7 +149,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public PropertyChangedSubscription SubscribeUnmanaged(string propertyName, Action handler)
+        public IDisposable SubscribeUnmanaged(string propertyName, Action handler)
         {
             return observable.SubscribeUnmanaged(propertyName, handler);
         }
@@ -146,7 +159,7 @@ namespace PowerArgs.Cli.Physics
             observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
         }
 
-        public PropertyChangedSubscription SynchronizeUnmanaged(string propertyName, Action handler)
+        public IDisposable SynchronizeUnmanaged(string propertyName, Action handler)
         {
             return observable.SynchronizeUnmanaged(propertyName, handler);
         }
@@ -192,6 +205,7 @@ namespace PowerArgs.Cli.Physics
                 frameRateMeter = new FrameRateMeter();
                 try
                 {
+                    Started.Fire();
                     while (!stopRequested)
                     {
                         lock (interactionQueue)
@@ -228,6 +242,21 @@ namespace PowerArgs.Cli.Physics
                 finally
                 {
                     isRunning = false;
+                    try
+                    {
+                        Stopped.Fire();
+                    }
+                    catch (Exception ex)
+                    {
+                        if (ExceptionOccurred.HasSubscriptions)
+                        {
+                            ExceptionOccurred.Fire(ex);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                     Current = null;
                 }
             });

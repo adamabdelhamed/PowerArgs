@@ -122,7 +122,8 @@ namespace PowerArgs.Cli
 
         public static void ShowMessage(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, int maxHeight = 6, params DialogButton [] buttons)
         {
-            if(buttons.Length == 0)
+            ConsoleApp.AssertAppThread();
+            if (buttons.Length == 0)
             {
                 throw new ArgumentException("You need to specify at least one button");
             }
@@ -173,6 +174,7 @@ namespace PowerArgs.Cli
 
         public static void ShowRichTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12, TextBox inputBox = null)
         {
+            ConsoleApp.AssertAppThread();
             if (ConsoleApp.Current == null)
             {
                 throw new InvalidOperationException("There is no console app running");

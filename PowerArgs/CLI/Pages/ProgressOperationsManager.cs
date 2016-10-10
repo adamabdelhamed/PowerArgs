@@ -73,7 +73,7 @@ namespace PowerArgs.Cli
 
         public ObservableCollection<ProgressOperationAction> Actions { get; private set; }
 
-        Subscription selfSub;
+        IDisposable selfSub;
 
         public ProgressOperation()
         {

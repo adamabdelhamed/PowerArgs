@@ -36,6 +36,18 @@ namespace PowerArgs.Cli
             }
         }
 
+        public static void AssertAppThread(ConsoleApp expectedApp = null)
+        {
+            if (Current == null)
+            {
+                throw new InvalidOperationException("There is no ConsoleApp running on this thread");
+            }
+            else if (expectedApp != null && Current != expectedApp)
+            {
+                throw new InvalidOperationException("The ConsoleApp on this thread is different from the one expected");
+            }
+        }
+
         /// <summary>
         /// An event that fires when the application is about to stop, before the console is wiped
         /// </summary>

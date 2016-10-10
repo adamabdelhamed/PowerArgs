@@ -14,21 +14,26 @@ namespace ConsoleZombies
 
     public class MainCharacter : Thing, IDestructible
     {
-        [ThreadStatic]
-        private static MainCharacter _instance;
+        private static Dictionary<Scene, MainCharacter> mainCharacters = new Dictionary<Scene, MainCharacter>();
         public static MainCharacter Current
         {
             get
             {
-                return _instance;
+                if (Scene.Current == null) return null;
+                else if (mainCharacters.ContainsKey(Scene.Current) == false) return null;
+                return mainCharacters[Scene.Current];
             }
             private set
             {
-                if(_instance != null && value != null)
+                Scene.AssertSceneThread();
+                if(mainCharacters.ContainsKey(Scene.Current))
                 {
-                    throw new InvalidOperationException("There is already a main character in the game");
+                    mainCharacters[Scene.Current] = value;
                 }
-                _instance = value;
+                else
+                {
+                    mainCharacters.Add(Scene.Current, value);
+                }
             }
         }
 
@@ -44,7 +49,7 @@ namespace ConsoleZombies
         public Targeting Targeting { get; private set; }
         public Cursor FreeAimCursor { get; set; }
         public Thing Target { get; set; }
-        public Inventory Inventory { get; set; } = new Inventory();
+        public Inventory Inventory { get { return observable.Get<Inventory>();  } set { observable.Set(value); } } 
         public float HealthPoints { get { return observable.Get<float>(); } set { observable.Set(value); } }
         public Event EatenByZombie { get; private set; } = new Event();
         public bool IsInLevelBuilder { get; set; }
@@ -54,6 +59,7 @@ namespace ConsoleZombies
 
         public MainCharacter()
         {
+            Inventory = new Inventory();
             Speed = new SpeedTracker(this);
             Targeting = new Targeting(this);
             Speed.Bounciness = 0;
@@ -64,7 +70,7 @@ namespace ConsoleZombies
             Removed.SubscribeForLifetime(OnRemoved, this.LifetimeManager);
        }
 
-        public void StartFreeAim()
+        public void ToggleFreeAim()
         {
             var cursor = FreeAimCursor;
             if (cursor == null)

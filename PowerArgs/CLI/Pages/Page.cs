@@ -22,7 +22,7 @@ namespace PowerArgs.Cli
         public ProgressOperationsManager ProgressOperationManager { get; private set; }
         private Dialog progressOperationManagerDialog;
 
-        private PropertyChangedSubscription appResizeSubscription;
+        private IDisposable appResizeSubscription;
         
         public PageStack PageStack
         {

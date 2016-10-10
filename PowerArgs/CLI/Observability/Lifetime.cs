@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace PowerArgs.Cli
 {
+    
     public class Lifetime : Disposable
     {
         private LifetimeManager _manager;
@@ -33,6 +35,27 @@ namespace PowerArgs.Cli
         public Lifetime()
         {
             LifetimeManager = new LifetimeManager();
+        }
+
+        public static Lifetime EarliestOf(params Lifetime[] others)
+        {
+            return EarliestOf((IEnumerable<Lifetime>)others);
+        }
+
+        public static Lifetime EarliestOf(IEnumerable<Lifetime> others)
+        {
+            Lifetime ret = new Lifetime();
+            foreach (var other in others)
+            {
+                other.LifetimeManager.Manage(new Subscription(() =>
+                {
+                    if(ret.IsExpired == false)
+                    {
+                        ret.Dispose();
+                    }
+                }));
+            }
+            return ret;
         }
 
         public Lifetime CreateChildLifetime()

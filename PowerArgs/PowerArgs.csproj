@@ -93,6 +93,7 @@
     <Compile Include="CLI\Observability\Lifetime.cs" />
     <Compile Include="CLI\Observability\LifetimeManager.cs" />
     <Compile Include="CLI\Observability\PropertyChangedSubscription.cs" />
+    <Compile Include="CLI\Observability\ProxiedObservable.cs" />
     <Compile Include="CLI\Observability\Subscription.cs" />
     <Compile Include="CLI\Pages\ConsolePageApp.cs" />
     <Compile Include="CLI\Pages\GridPage.cs" />

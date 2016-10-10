@@ -4,7 +4,10 @@ namespace ConsoleZombies
 {
     public abstract class Weapon : ObservableObject
     {
-        public int AmmoAmount { get { return Get<int>(); } set { Set(value); } }
+        public int AmmoAmount { get { return Get<int>(); } set
+            {
+                Set(value);
+            } }
 
         public void TryFire()
         {
