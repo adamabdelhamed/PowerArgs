@@ -1,6 +1,5 @@
 ﻿using PowerArgs;
 using PowerArgs.Cli;
-using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 
@@ -15,12 +14,10 @@ namespace ConsoleZombies
 
     public class HeadsUpDisplay : ConsolePanel
     {
-        public Scene GameScene { get; private set; }
         private GameApp gameApp;
-        public HeadsUpDisplay(GameApp app, Scene gameScene)
+        public HeadsUpDisplay(GameApp app)
         {
             this.gameApp = app;
-            this.GameScene = gameScene;
             this.Height = 7;
 
             var topPanel = Add(new StackPanel() { Orientation = Orientation.Horizontal, Height = 6 }).FillHoriontally();
@@ -36,7 +33,7 @@ namespace ConsoleZombies
             var hpLabel = leftPanel.Add(new Label() { Text = "HP".ToGray() }).FillHoriontally();
             var hpValue = leftPanel.Add(new Label() { Text = ConsoleString.Empty }).FillHoriontally();
             var spacer = leftPanel.Add(new Label() { Text = ConsoleString.Empty });
-            var aimLabel = leftPanel.Add(new Label() { Text = "".ToGray() }).FillHoriontally();
+            var aimLabel = leftPanel.Add(new Label() { Text = "AIM".ToGray() }).FillHoriontally();
             var aimValue = leftPanel.Add(new Label() { Text = "".ToWhite() }).FillHoriontally();
 
             middleGrid.VisibleColumns[0].ColumnDisplayName = new ConsoleString(middleGrid.VisibleColumns[0].ColumnDisplayName.ToString(), ConsoleColor.Gray);
@@ -69,16 +66,17 @@ namespace ConsoleZombies
                 pauseLabel.Text = $"Pause [{app.InputManager.KeyMap.TogglePauseKey}]".ToYellow();
             }, this.LifetimeManager);
 
-
-            this.gameApp.InputManager.KeyMap.SynchronizeForLifetime(nameof(ObservableObject.AnyProperty), () =>
+            app.SynchronizeProxiedForLifetime(app, nameof(app.InputManager) + "." + nameof(GameInputManager.KeyMap) + "." + ObservableObject.AnyProperty, () =>
             {
-                 var primaryWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
-                 primaryWeaponRow.Trigger = $"[{this.gameApp.InputManager.KeyMap.PrimaryWeaponKey},{this.gameApp.InputManager.KeyMap.PrimaryWeaponAlternateKey}]".ToWhite();
+                var primaryWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
+                primaryWeaponRow.Trigger = $"[{this.gameApp.InputManager.KeyMap.PrimaryWeaponKey},{this.gameApp.InputManager.KeyMap.PrimaryWeaponAlternateKey}]".ToWhite();
 
-                 var explosiveWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
-                 explosiveWeaponRow.Trigger = $"[{this.gameApp.InputManager.KeyMap.ExplosiveWeaponKey}]".ToWhite();
+                var explosiveWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
+                explosiveWeaponRow.Trigger = $"[{this.gameApp.InputManager.KeyMap.ExplosiveWeaponKey}]".ToWhite();
 
-             }, this.LifetimeManager);
+
+                aimLabel.Text = $"Aim[{this.gameApp.InputManager.KeyMap.AimToggleKey}]".ToGray();
+            }, this.LifetimeManager);
 
             app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter)+"."+nameof(MainCharacter.Inventory)+"."+nameof(Inventory.PrimaryWeapon), () =>
             {
@@ -121,7 +119,7 @@ namespace ConsoleZombies
             app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.AimMode), () =>
             {
                 var aimMode = app.MainCharacter?.AimMode;
-                aimLabel.Text = aimMode.HasValue ? aimMode.Value.ToString().ToWhite() : "".ToConsoleString();
+                aimValue.Text = aimMode.HasValue ? aimMode.Value.ToString().ToConsoleString(aimMode.Value == AimMode.Auto ? ConsoleColor.White : ConsoleColor.Cyan) : "".ToConsoleString();
             }, this.LifetimeManager);
         }
 

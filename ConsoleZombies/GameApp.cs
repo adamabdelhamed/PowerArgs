@@ -14,6 +14,14 @@ namespace ConsoleZombies
 
         public MainCharacter MainCharacter { get { return Get<MainCharacter>(); } set { Set(value); } }
 
+        public Scene GameScene
+        {
+            get
+            {
+                return scenePanel.Scene;
+            }
+        }
+
         public GameApp()
         {
 
@@ -35,7 +43,7 @@ namespace ConsoleZombies
             var borderPanel = LayoutRoot.Add(new ConsolePanel() { Background = ConsoleColor.DarkGray, Width = LevelDefinition.Width + 2, Height = LevelDefinition.Height + 2 }).CenterHorizontally().CenterVertically();
             scenePanel = borderPanel.Add(new ScenePanel(LevelDefinition.Width, LevelDefinition.Height)).Fill(padding: new Thickness(1, 1, 1, 1));
             InputManager = new GameInputManager(scenePanel.Scene, this);
-            headsUpDisplay = LayoutRoot.Add(new HeadsUpDisplay(this, scenePanel.Scene) { Width = LevelDefinition.Width }).DockToBottom().CenterHorizontally();
+            headsUpDisplay = LayoutRoot.Add(new HeadsUpDisplay(this) { Width = LevelDefinition.Width }).DockToBottom().CenterHorizontally();
             LayoutRoot.Add(new FramerateControl(scenePanel.Scene));
             QueueAction(() => { scenePanel.Scene.Start(); });
 

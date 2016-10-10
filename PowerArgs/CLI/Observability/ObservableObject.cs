@@ -143,10 +143,19 @@ namespace PowerArgs.Cli
 
                 currentPath.Add(propertyElement);
 
-                var eval = new ObjectPathExpression(currentPath).EvaluateAndTraceInfo(observableRoot).Last();
-                if (i != pathExpression.Elements.Count - 1 && (eval.MemberInfo as PropertyInfo).PropertyType.GetInterfaces().Contains(typeof(IObservableObject)) == false)
+                ObjectPathExpression.TraceNode eval;
+
+                if (i == pathExpression.Elements.Count - 1 && propertyElement.PropertyName == ObservableObject.AnyProperty)
                 {
-                    throw new NotSupportedException($"element {eval.MemberInfo.Name} is not observable");
+                    eval = new ObjectPathExpression.TraceNode() { Value = null };
+                }
+                else
+                {
+                    eval = new ObjectPathExpression(currentPath).EvaluateAndTraceInfo(observableRoot).Last();
+                    if (i != pathExpression.Elements.Count - 1 && (eval.MemberInfo as PropertyInfo).PropertyType.GetInterfaces().Contains(typeof(IObservableObject)) == false)
+                    {
+                        throw new NotSupportedException($"element {eval.MemberInfo.Name} is not observable");
+                    }
                 }
 
                 currentObservable.SubscribeForLifetime(propertyElement.PropertyName, () =>
