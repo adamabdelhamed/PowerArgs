@@ -17,6 +17,13 @@ namespace ConsoleZombies
 
         private PowerArgs.Cli.Physics.Rectangle doorDropRectangle;
 
+        public string LevelId { get; private set; }
+
+        public LevelBuilder(string levelId = null)
+        {
+            this.LevelId = levelId;
+        }
+
         public void Run()
         {
             var app = new ConsoleApp();
@@ -52,6 +59,11 @@ namespace ConsoleZombies
                 ScenePanel.Scene.Add(Cursor);
             });
 
+            if(this.LevelId != null)
+            {
+                LoadLevel(this.LevelId);
+            }
+
             var appTask = app.Start();
             appTask.Wait();
             return;
@@ -64,7 +76,7 @@ namespace ConsoleZombies
                 Dialog.ShowRichTextInput("Name this level".ToYellow(), (result) =>
                  {
                      LevelDefinition.Save(result.ToString());
-                 });
+                 }, initialValue: LevelId?.ToConsoleString());
 
             }, ConsoleApp.Current.LifetimeManager);
 
@@ -82,32 +94,36 @@ namespace ConsoleZombies
                     {
                         var levelFile = button.Id;
 
-                        var level = LevelDefinition.Load(levelFile);
-                        this.LevelDefinition = level;
-
-                        ScenePanel.Scene.QueueAction(() =>
-                        {
-                            foreach (var thing in ScenePanel.Scene.Things.ToArray())
-                            {
-                                if(thing is Cursor)
-                                {
-                                    continue;
-                                }
-                                ScenePanel.Scene.Remove(thing);
-                            }
-
-                            foreach (var interaction in ScenePanel.Scene.Interactions.ToArray())
-                            {
-                                ScenePanel.Scene.Remove(interaction);
-                            }
-
-                            level.Populate(ScenePanel.Scene, true);
-                        });
-
+                        LoadLevel(levelFile);
 
                     }, buttons: options.ToArray(), maxHeight: ScenePanel.Application.LayoutRoot.Height);
                 }
             }, ConsoleApp.Current.LifetimeManager);
+        }
+
+        private void LoadLevel(string levelFile)
+        {
+            var level = LevelDefinition.Load(levelFile);
+            this.LevelDefinition = level;
+
+            ScenePanel.Scene.QueueAction(() =>
+            {
+                foreach (var thing in ScenePanel.Scene.Things.ToArray())
+                {
+                    if (thing is Cursor)
+                    {
+                        continue;
+                    }
+                    ScenePanel.Scene.Remove(thing);
+                }
+
+                foreach (var interaction in ScenePanel.Scene.Interactions.ToArray())
+                {
+                    ScenePanel.Scene.Remove(interaction);
+                }
+
+                level.Populate(ScenePanel.Scene, true);
+            });
         }
 
         private void SetupCursorKeyInput()
@@ -133,6 +149,24 @@ namespace ConsoleZombies
 
                 var zombie = new Zombie() { Bounds = paddedBounds.Clone() };
                 ScenePanel.Scene.Add(zombie);
+            });
+
+            BrokerKeyAction(ConsoleKey.Delete, () =>
+            {
+                var paddedBounds = Cursor.Bounds.Clone();
+
+                var levelDefThingsToDelete = LevelDefinition.Where(t => t.InitialBounds.Hits(paddedBounds)).ToList();
+                foreach(var element in levelDefThingsToDelete)
+                {
+                    LevelDefinition.Remove(element);
+                }
+
+                var previewThingsToDelete = ScenePanel.Scene.Things.Where(t => t is Cursor == false && t.Bounds.Hits(paddedBounds)).ToList();
+
+                foreach (var element in previewThingsToDelete)
+                {
+                    ScenePanel.Scene.Remove(element);
+                }
             });
 
             ConsoleApp.Current.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.A, null, () =>

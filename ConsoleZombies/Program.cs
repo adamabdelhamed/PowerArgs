@@ -1,6 +1,7 @@
 ﻿using PowerArgs;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,15 +13,20 @@ namespace ConsoleZombies
     {
         static void Main(string[] args)
         {
+            if(args.Length == 1 && args[0].EndsWith(".czl"))
+            {
+    
+                args = new string[] { "build", args[0] };
+            }
             Args.InvokeAction<Program>(args);
         }
 
         [ArgActionMethod]
         public void Play([ArgumentAwareTabCompletion(typeof(LevelCompletionType))]string levelFile)
         {
-            if(levelFile.EndsWith(".json") == false)
+            if(levelFile.EndsWith(".czl") == false)
             {
-                var guessedFile = System.IO.Path.Combine(LevelDefinition.LevelBuilderLevelsPath,levelFile+".json");
+                var guessedFile = System.IO.Path.Combine(LevelDefinition.LevelBuilderLevelsPath,levelFile+".czl");
                 if(System.IO.File.Exists(guessedFile) == false)
                 {
                     throw new ArgException("No level called "+levelFile);
@@ -35,20 +41,15 @@ namespace ConsoleZombies
                 throw new ArgException("No level called " + levelFile);
             }
 
-            var splash = System.IO.Path.Combine(LevelDefinition.LevelBuilderLevelsPath, "Splash" + ".json");
-            if (System.IO.File.Exists(splash))
-            {
-        //        SplashScreen.Run(LevelDefinition.Load(splash));
-            }
             var game = new GameApp();
             game.Load(LevelDefinition.Load(levelFile));
             game.Start().Wait();
         }
 
         [ArgActionMethod]
-        public void Build()
+        public void Build(string levelId)
         {
-            new LevelBuilder().Run();
+            new LevelBuilder(levelId).Run();
         }
     }
 

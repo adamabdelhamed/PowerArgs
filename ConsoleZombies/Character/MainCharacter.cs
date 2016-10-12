@@ -119,7 +119,7 @@ namespace ConsoleZombies
             }
             else
             {
-                Speed.SpeedX = -7;
+                Speed.SpeedX = -12;
                 Speed.SpeedY = 0;
                 this.RoundToNearestPixel();
             }
@@ -187,7 +187,7 @@ namespace ConsoleZombies
             }
             else
             {
-                Speed.SpeedX = 7;
+                Speed.SpeedX = 12;
                 Speed.SpeedY = 0;
                 this.RoundToNearestPixel();
             }

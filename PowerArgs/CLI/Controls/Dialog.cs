@@ -172,7 +172,7 @@ namespace PowerArgs.Cli
             ShowRichTextInput(message, resultCallback, cancelCallback, allowEscapeToCancel, maxHeight, null);
         }
 
-        public static void ShowRichTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12, TextBox inputBox = null)
+        public static void ShowRichTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12, TextBox inputBox = null, ConsoleString initialValue = null)
         {
             ConsoleApp.AssertAppThread();
             if (ConsoleApp.Current == null)
@@ -194,6 +194,11 @@ namespace PowerArgs.Cli
             if (inputBox == null)
             {
                 inputBox = new TextBox() { Foreground = ConsoleColor.Black, Background = ConsoleColor.White };
+            }
+
+            if(initialValue != null)
+            {
+                inputBox.Value = initialValue;
             }
 
             content.Add(inputBox).CenterHorizontally();
