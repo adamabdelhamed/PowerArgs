@@ -177,6 +177,65 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        /// <summary>
+        /// Schedules the given action for periodic processing by the message pump
+        /// </summary>
+        /// <param name="a">The action to schedule for periodic processing</param>
+        /// <param name="interval">the execution interval for the action</param>
+        /// <returns>A timer that can be passed to ClearInterval if you want to cancel the work</returns>
+        public Timer SetInterval(Action a, TimeSpan interval)
+        {
+            var ret = new Timer((o) =>
+            {
+                QueueAction(a);
+            }, null, (int)interval.TotalMilliseconds, (int)interval.TotalMilliseconds);
+            return ret;
+        }
+
+        /// <summary>
+        /// Schedules the given action for a one time execution after the given period elapses
+        /// </summary>
+        /// <param name="a">The action to schedule</param>
+        /// <param name="period">the period of time to wait before executing the action</param>
+        /// <returns></returns>
+        public Timer SetTimeout(Action a, TimeSpan period)
+        {
+            var ret = new Timer((o) =>
+            {
+                QueueAction(a);
+            }, null, (int)period.TotalMilliseconds, Timeout.Infinite);
+            return ret;
+        }
+
+        /// <summary>
+        /// Cancels the scheduled execution of a periodic action given the timer that was provided by SetInterval.  The timer will be disposed.
+        /// </summary>
+        /// <param name="t">the timer given by SetInterval</param>
+        public void ClearInterval(Timer t)
+        {
+            try
+            {
+                t.Change(Timeout.Infinite, Timeout.Infinite);
+                t.Dispose();
+            }
+            catch (Exception) { }
+        }
+
+        /// <summary>
+        /// Cancels the scheduled execution of a one time action given the timer that was provided by SetTimeout.  The timer will be disposed.
+        /// </summary>
+        /// <param name="t">The timer given by SetTimeout</param>
+        public void ClearTimeout(Timer t)
+        {
+            try
+            {
+                t.Change(Timeout.Infinite, Timeout.Infinite);
+                t.Dispose();
+            }
+            catch (Exception) { }
+        }
+
+
         public void TogglePause()
         {
             if(isRunning)
@@ -190,21 +249,24 @@ namespace PowerArgs.Cli.Physics
         }
 
 
-        public Task Start()
+        public Promise Start()
         {
             if (RenderImpl == null) throw new InvalidOperationException($"You need to set the {nameof(RenderImpl)} property");
 
             stopRequested = false;
             last = DateTime.MinValue;
 
-            return Task.Factory.StartNew(() =>
+            var deferred = Deferred.Create();
+
+            Thread t = new Thread(() =>
             {
-                isRunning = true;
-                stopRequested = false;
-                Current = this;
-                frameRateMeter = new FrameRateMeter();
                 try
                 {
+                    isRunning = true;
+                    stopRequested = false;
+                    Current = this;
+                    frameRateMeter = new FrameRateMeter();
+            
                     Started.Fire();
                     while (!stopRequested)
                     {
@@ -234,10 +296,8 @@ namespace PowerArgs.Cli.Physics
                     {
                         ExceptionOccurred.Fire(ex);
                     }
-                    else
-                    {
-                        throw;
-                    }
+
+                    deferred.Reject(ex);
                 }
                 finally
                 {
@@ -245,6 +305,10 @@ namespace PowerArgs.Cli.Physics
                     try
                     {
                         Stopped.Fire();
+                        if(deferred.IsFulFilled == false)
+                        {
+                            deferred.Resolve();
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -252,14 +316,20 @@ namespace PowerArgs.Cli.Physics
                         {
                             ExceptionOccurred.Fire(ex);
                         }
-                        else
+
+                        if (deferred.IsFulFilled == false)
                         {
-                            throw;
+                            deferred.Reject(ex);
                         }
                     }
                     Current = null;
                 }
             });
+
+            t.Priority = ThreadPriority.AboveNormal;
+            t.IsBackground = true;
+            t.Start();
+            return deferred.Promise;
         }
 
         public void Stop()

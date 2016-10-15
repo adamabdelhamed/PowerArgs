@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
@@ -151,7 +152,7 @@ namespace PowerArgs.Cli
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>
-        public override Task Start()
+        public override Promise Start()
         {
             QueueActionInFront(() =>
             {
@@ -173,18 +174,11 @@ namespace PowerArgs.Cli
 
             Paint();
 
-            Task pumpTask = base.Start();
-
-            var cleanupTask = pumpTask.ContinueWith((t) =>
+            return base.Start().Then(ExitInternal).Fail((ex) =>
             {
-                 ExitInternal();
-                if (t.IsFaulted)
-                {
-                    throw t.Exception;
-                }
-            }, TaskContinuationOptions.ExecuteSynchronously);
-
-            return cleanupTask;
+                ExitInternal();
+                throw ex;
+            });
         }
 
         private void HandleDebouncedResize()

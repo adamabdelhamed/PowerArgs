@@ -43,7 +43,7 @@ namespace ConsoleZombies
         {
             startLocation = this.Bounds.Location;
             // todo - replace with bullet speed from config
-            new Force(Speed, 20, angle);
+            new Force(Speed, 40, angle);
 
         }
 

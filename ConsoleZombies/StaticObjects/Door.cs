@@ -40,24 +40,28 @@ namespace ConsoleZombies
             }
         }
 
-        public Door(Rectangle closedBounds, Location openLocation) 
+        public Door(Rectangle closedBounds, Location openLocation)  : this()
         {
             Initialize(closedBounds, openLocation);
         }
 
         public Door()
         {
+            Added.SubscribeForLifetime(() => 
+            {
+                this.IsOpen = this.IsOpen;
+            }, this.LifetimeManager);
             Removed.SubscribeForLifetime(() => FindCieling().ForEach(c => Scene.Remove(c)), this.LifetimeManager);
         }
 
-        public List<Cieling> FindCieling()
+        public List<Ceiling> FindCieling()
         {
-            List<Cieling> ret = new List<Cieling>();
+            List<Ceiling> ret = new List<Ceiling>();
             if(Scene == null)
             {
                 return ret;
             }
-            foreach(var cieling in Scene.Things.Where(t => t is Cieling).Select(t => t as Cieling).OrderBy(c => c.Bounds.Location.CalculateDistanceTo(this.Bounds.Location)))
+            foreach(var cieling in Scene.Things.Where(t => t is Ceiling).Select(t => t as Ceiling).OrderBy(c => c.Bounds.Location.CalculateDistanceTo(this.Bounds.Location)))
             {
                 if(cieling.Bounds.Location.CalculateDistanceTo(this.Bounds.Location) <= 1.25)
                 {

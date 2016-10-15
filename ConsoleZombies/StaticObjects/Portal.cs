@@ -11,7 +11,7 @@ namespace ConsoleZombies
 
         public Portal()
         {
-            this.Governor.Rate = TimeSpan.FromSeconds(.2);
+
         }
 
         public override void Behave(Scene r)

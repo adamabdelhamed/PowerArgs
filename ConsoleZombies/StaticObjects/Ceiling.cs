@@ -3,7 +3,7 @@ using System;
 
 namespace ConsoleZombies
 {
-    public class Cieling : Thing
+    public class Ceiling : Thing
     {
         private bool _isVisible;
         public bool IsVisible
@@ -23,7 +23,7 @@ namespace ConsoleZombies
         }
     }
 
-    [ThingBinding(typeof(Cieling))]
+    [ThingBinding(typeof(Ceiling))]
     public class CielingRenderer : ThingRenderer
     {
         public CielingRenderer()
@@ -34,7 +34,7 @@ namespace ConsoleZombies
 
         public override void OnRender()
         {
-            this.IsVisible = (Thing as Cieling).IsVisible;
+            this.IsVisible = (Thing as Ceiling).IsVisible;
         }
     }
 }

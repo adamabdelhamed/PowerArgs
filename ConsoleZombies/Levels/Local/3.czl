@@ -1,58 +1,573 @@
-[
-  {
-    "ThingType": "ConsoleZombies.MainCharacter",
-    "InitialBounds": {
-      "Location": {
-        "X": 1.1,
-        "Y": 1.1
+{
+  "$type": "ConsoleZombies.LevelDefinition, ConsoleZombies",
+  "Things": {
+    "$type": "System.Collections.Generic.List`1[[ConsoleZombies.ISerializableThing, ConsoleZombies]], mscorlib",
+    "$values": [
+      {
+        "$type": "ConsoleZombies.SerializedMainCharacter, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 69.1,
+            "Y": 17.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 69.1,
+          "Y": 17.1,
+          "W": 0.8,
+          "H": 0.8
+        }
       },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 64.1,
+            "Y": 17.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 64.1,
+          "Y": 17.1,
+          "W": 0.8,
+          "H": 0.8
+        }
       },
-      "X": 1.1,
-      "Y": 1.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 2.1,
-        "Y": 6.1
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 64.1,
+            "Y": 16.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 64.1,
+          "Y": 16.1,
+          "W": 0.8,
+          "H": 0.8
+        }
       },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 64.1,
+            "Y": 15.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 64.1,
+          "Y": 15.1,
+          "W": 0.8,
+          "H": 0.8
+        }
       },
-      "X": 2.1,
-      "Y": 6.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Portal",
-    "InitialBounds": {
-      "Location": {
-        "X": 2.0,
-        "Y": 17.0
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 64.1,
+            "Y": 14.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 64.1,
+          "Y": 14.1,
+          "W": 0.8,
+          "H": 0.8
+        }
       },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 65.1,
+            "Y": 14.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 65.1,
+          "Y": 14.1,
+          "W": 0.8,
+          "H": 0.8
+        }
       },
-      "X": 2.0,
-      "Y": 17.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {
-      "DestinationId": "4"
-    }
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 66.1,
+            "Y": 14.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 66.1,
+          "Y": 14.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 67.1,
+            "Y": 14.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 67.1,
+          "Y": 14.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 68.1,
+            "Y": 14.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 68.1,
+          "Y": 14.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 69.1,
+            "Y": 14.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 69.1,
+          "Y": 14.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 70.1,
+            "Y": 14.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 70.1,
+          "Y": 14.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 62.1,
+            "Y": 17.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 62.1,
+          "Y": 17.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 62.1,
+            "Y": 16.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 62.1,
+          "Y": 16.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 62.1,
+            "Y": 15.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 62.1,
+          "Y": 15.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 62.1,
+            "Y": 14.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 62.1,
+          "Y": 14.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 62.1,
+            "Y": 13.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 62.1,
+          "Y": 13.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 62.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 62.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 63.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 63.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 64.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 64.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 65.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 65.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 66.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 66.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 67.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 67.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 68.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 68.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 69.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 69.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 70.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 70.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedPortal, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 4.0,
+            "Y": 17.0
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 1.0,
+            "H": 1.0
+          },
+          "X": 4.0,
+          "Y": 17.0,
+          "W": 1.0,
+          "H": 1.0
+        },
+        "DestinationId": "4"
+      },
+      {
+        "$type": "ConsoleZombies.SerializedAmmo, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 13.1,
+            "Y": 17.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 13.1,
+          "Y": 17.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "AmmoType": "ConsoleZombies.RPGAmmo",
+        "Amount": 10
+      },
+      {
+        "$type": "ConsoleZombies.SerializedAmmo, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 18.1,
+            "Y": 17.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 18.1,
+          "Y": 17.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "AmmoType": "ConsoleZombies.PistolAmmo",
+        "Amount": 10
+      }
+    ]
   }
-]
+}

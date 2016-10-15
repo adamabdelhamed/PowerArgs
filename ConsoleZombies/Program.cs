@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ConsoleZombies
@@ -15,7 +16,7 @@ namespace ConsoleZombies
         {
             if(args.Length == 1 && args[0].EndsWith(".czl"))
             {
-    
+                //Debugger.Launch();
                 args = new string[] { "build", args[0] };
             }
             Args.InvokeAction<Program>(args);
@@ -49,7 +50,7 @@ namespace ConsoleZombies
         [ArgActionMethod]
         public void Build(string levelId)
         {
-            new LevelBuilder(levelId).Run();
+            new LevelBuilder() { LevelId = levelId }.Start().Wait();
         }
     }
 

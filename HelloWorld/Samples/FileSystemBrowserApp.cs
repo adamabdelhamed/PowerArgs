@@ -141,7 +141,7 @@ namespace HelloWorld.Samples
         
 
 
-        public Task Start()
+        public Promise Start()
         {
             ConsolePageApp app = new ConsolePageApp(0, 0, ConsoleProvider.Current.BufferWidth, 25);
             app.PageStack.RegisterDefaultRoute("{*}", CreateExplorerPage);

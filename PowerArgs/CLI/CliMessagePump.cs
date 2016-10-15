@@ -104,7 +104,7 @@ namespace PowerArgs.Cli
         private IConsoleProvider console;
         private int managedCliThreadId;
         private int lastConsoleWidth, lastConsoleHeight;
-
+        private Deferred runDeferred;
 
         private FrameRateMeter frameRateMeter;
         /// <summary>
@@ -270,11 +270,19 @@ namespace PowerArgs.Cli
         /// Starts the message pump which will begin processing messages
         /// </summary>
         /// <returns>A task that will complete when the message pump starts</returns>
-        public virtual Task Start()
+        public virtual Promise Start()
         {
+            if(runDeferred != null)
+            {
+                throw new InvalidOperationException("Already running");
+            }
             IsRunning = true;
-            var pumpTask = Task.Factory.StartNew(Pump);
-            return pumpTask;
+            runDeferred = Deferred.Create();
+            var pumpThread = new Thread(Pump);
+            pumpThread.Priority = ThreadPriority.AboveNormal;
+            pumpThread.IsBackground = true;
+            pumpThread.Start();
+            return runDeferred.Promise;
         }
 
         public void Stop()
@@ -287,82 +295,93 @@ namespace PowerArgs.Cli
 
         private void Pump()
         {
-            bool stopRequested = false;
-            frameRateMeter = new FrameRateMeter();
-            paintRateMeter = new FrameRateMeter();
-            while (true)
+            try
             {
-                if ((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight))
+                bool stopRequested = false;
+                frameRateMeter = new FrameRateMeter();
+                paintRateMeter = new FrameRateMeter();
+                while (true)
                 {
-                    DebounceResize();
-                    WindowResized.Fire();
-                }
-
-                bool idle = true;
-                List<PumpMessage> iterationQueue;
-                PaintMessage iterationPaintMessage = null;
-                lock (pumpMessageQueue)
-                {
-                    iterationQueue = pumpMessageQueue;
-                    pumpMessageQueue = new List<PumpMessage>();
-                }
-
-                foreach (var message in iterationQueue)
-                {
-                    idle = false;
-                    if (message is StopPumpMessage)
+                    if ((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight))
                     {
-                        stopRequested = true;
-                        break;
+                        DebounceResize();
+                        WindowResized.Fire();
                     }
-                    else if (message is PaintMessage)
-                    {
-                        iterationPaintMessage = message as PaintMessage;
-                    }
-                    else
-                    {
-                        TryWork(message);
-                    }
-                }
 
-                if(iterationPaintMessage != null)
-                {
-                    TryWork(iterationPaintMessage);
-                    paintRateMeter.Increment();
+                    bool idle = true;
+                    List<PumpMessage> iterationQueue;
+                    PaintMessage iterationPaintMessage = null;
+                    lock (pumpMessageQueue)
+                    {
+                        iterationQueue = pumpMessageQueue;
+                        pumpMessageQueue = new List<PumpMessage>();
+                    }
+
+                    foreach (var message in iterationQueue)
+                    {
+                        idle = false;
+                        if (message is StopPumpMessage)
+                        {
+                            stopRequested = true;
+                            break;
+                        }
+                        else if (message is PaintMessage)
+                        {
+                            iterationPaintMessage = message as PaintMessage;
+                        }
+                        else
+                        {
+                            TryWork(message);
+                        }
+                    }
+
+                    if (iterationPaintMessage != null)
+                    {
+                        TryWork(iterationPaintMessage);
+                        paintRateMeter.Increment();
 #if PROFILING
                     CliProfiler.Instance.PaintMessagesProcessed++;
 #endif
-                }
+                    }
 
-                if (stopRequested)
-                {
-                   break;
-                }
-
-                if (this.console.KeyAvailable)
-                {
-                    idle = false;
-                    var info = this.console.ReadKey(true);
-                    QueueAction(() => 
+                    if (stopRequested)
                     {
-                        HandleKeyInput(info);
-                    });
-                }
+                        break;
+                    }
 
-                frameRateMeter.Increment();
-                if (idle)
-                {
-                   Thread.Sleep(0);
-                }
+                    if (this.console.KeyAvailable)
+                    {
+                        idle = false;
+                        var info = this.console.ReadKey(true);
+                        QueueAction(() =>
+                        {
+                            HandleKeyInput(info);
+                        });
+                    }
+
+                    frameRateMeter.Increment();
+                    if (idle)
+                    {
+                        Thread.Sleep(0);
+                    }
 #if PROFILING
                 else
                 { 
                     CliProfiler.Instance.TotalNonIdleIterations++;
                 }
 #endif
+                }
+                runDeferred.Resolve();
             }
-
-            IsRunning = false;
+            catch(Exception ex)
+            {
+                runDeferred.Reject(ex);
+            }
+            finally
+            {
+                IsRunning = false;
+                runDeferred = null;
+            }
         }
 
         private void TryWork(PumpMessage work)

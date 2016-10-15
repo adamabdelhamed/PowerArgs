@@ -3,6 +3,7 @@ using System;
 
 namespace ConsoleZombies
 {
+    [AmmoInfo("Pistol")]
     public class PistolAmmo : Ammo
     {
         public override ConsoleCharacter Symbol { get { return new ConsoleCharacter('*', ConsoleColor.DarkGray); } }
@@ -24,6 +25,7 @@ namespace ConsoleZombies
         }
     }
 
+    [AmmoInfo("RPG - Rocket propelled grenade")]
     public class RPGAmmo : Ammo
     {
         public override ConsoleCharacter Symbol { get { return new ConsoleCharacter('G', ConsoleColor.DarkGray); } }

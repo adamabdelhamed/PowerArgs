@@ -71,7 +71,7 @@ namespace ConsoleZombies
                 }
 
                 scenePanel.Scene.Clear();
-                def.Populate(scenePanel.Scene, false);
+                def.Hydrate(scenePanel.Scene, false);
                 SoundEffects.Instance.SoundThread.Start();
                 SoundEffects.Instance.PlaySound("music");
                 foreach(var zombie in scenePanel.Scene.Things.Where(t => t is Zombie).Select(z => z as Zombie))

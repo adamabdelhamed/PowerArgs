@@ -206,6 +206,8 @@
     <Compile Include="HelperTypesPublic\IUsageTemplateProvider.cs" />
     <Compile Include="HelperTypesPublic\ParseResult.cs" />
     <Compile Include="HelperTypesInternal\AsyncTimeline.cs" />
+    <Compile Include="HelperTypesPublic\Promise.cs" />
+    <Compile Include="HelperTypesPublic\UndoRedoStack.cs" />
     <Compile Include="Hooks\PromptIfEmpty.cs" />
     <Compile Include="Metadata\ArgProductVersion.cs" />
     <Compile Include="Metadata\ArgProductName.cs" />

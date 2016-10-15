@@ -1,608 +1,249 @@
-[
-  {
-    "ThingType": "ConsoleZombies.MainCharacter",
-    "InitialBounds": {
-      "Location": {
-        "X": 1.1,
-        "Y": 2.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 1.1,
-      "Y": 2.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Portal",
-    "InitialBounds": {
-      "Location": {
-        "X": 1.0,
-        "Y": 7.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 1.0,
-      "Y": 7.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {
-      "DestinationId": "5"
-    }
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 1.0,
-        "Y": 5.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 1.0,
-      "Y": 5.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 2.0,
-        "Y": 5.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 2.0,
-      "Y": 5.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 0.0,
-        "Y": 5.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 0.0,
-      "Y": 5.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 3.0,
-        "Y": 5.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 3.0,
-      "Y": 5.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 4.0,
-        "Y": 5.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 4.0,
-      "Y": 5.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 5.0,
-        "Y": 5.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 5.0,
-      "Y": 5.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 6.0,
-        "Y": 5.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 6.0,
-      "Y": 5.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 7.0,
-        "Y": 5.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 7.0,
-      "Y": 5.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 7.0,
-        "Y": 6.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 7.0,
-      "Y": 6.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 7.0,
-        "Y": 7.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 7.0,
-      "Y": 7.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 7.0,
-        "Y": 8.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 7.0,
-      "Y": 8.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 7.0,
-        "Y": 9.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 7.0,
-      "Y": 9.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 7.0,
-        "Y": 10.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 7.0,
-      "Y": 10.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 7.0,
-        "Y": 11.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 7.0,
-      "Y": 11.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 6.0,
-        "Y": 11.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 6.0,
-      "Y": 11.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 5.0,
-        "Y": 11.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 5.0,
-      "Y": 11.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Door",
-    "InitialBounds": {
-      "Location": {
-        "X": 4.1,
-        "Y": 11.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 4.1,
-      "Y": 11.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {
-      "ClosedX": "4.1",
-      "ClosedY": "11.1",
-      "W": "0.8",
-      "H": "0.8",
-      "OpenX": "5.1",
-      "OpenY": "10.1",
-      "IsOpen": "False"
-    }
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 3.0,
-        "Y": 11.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 3.0,
-      "Y": 11.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 2.0,
-        "Y": 11.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 2.0,
-      "Y": 11.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 1.0,
-        "Y": 11.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 1.0,
-      "Y": 11.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Wall",
-    "InitialBounds": {
-      "Location": {
-        "X": 0.0,
-        "Y": 11.0
-      },
-      "Size": {
-        "W": 1.0,
-        "H": 1.0
-      },
-      "X": 0.0,
-      "Y": 11.0,
-      "W": 1.0,
-      "H": 1.0
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 1.1,
-        "Y": 13.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 1.1,
-      "Y": 13.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 3.1,
-        "Y": 13.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 3.1,
-      "Y": 13.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 5.1,
-        "Y": 13.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 5.1,
-      "Y": 13.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 5.1,
-        "Y": 15.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 5.1,
-      "Y": 15.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 3.1,
-        "Y": 15.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 3.1,
-      "Y": 15.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 1.1,
-        "Y": 15.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 1.1,
-      "Y": 15.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 1.1,
-        "Y": 17.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 1.1,
-      "Y": 17.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 3.1,
-        "Y": 17.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 3.1,
-      "Y": 17.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.Zombie",
-    "InitialBounds": {
-      "Location": {
-        "X": 5.1,
-        "Y": 17.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 5.1,
-      "Y": 17.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {}
-  },
-  {
-    "ThingType": "ConsoleZombies.PistolAmmo",
-    "InitialBounds": {
-      "Location": {
-        "X": 5.1,
-        "Y": 1.1
-      },
-      "Size": {
-        "W": 0.8,
-        "H": 0.8
-      },
-      "X": 5.1,
-      "Y": 1.1,
-      "W": 0.8,
-      "H": 0.8
-    },
-    "InitialData": {
-      "Amount": "10"
-    }
+{
+  "$type": "ConsoleZombies.LevelDefinition, ConsoleZombies",
+  "Things": {
+    "$type": "System.Collections.Generic.List`1[[ConsoleZombies.ISerializableThing, ConsoleZombies]], mscorlib",
+    "$values": [
+      {
+        "$type": "ConsoleZombies.SerializedMainCharacter, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 1.1,
+            "Y": 1.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 1.1,
+          "Y": 1.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedPortal, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 1.0,
+            "Y": 18.0
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 1.0,
+            "H": 1.0
+          },
+          "X": 1.0,
+          "Y": 18.0,
+          "W": 1.0,
+          "H": 1.0
+        },
+        "DestinationId": "5"
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 0.1,
+            "Y": 16.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 0.1,
+          "Y": 16.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 2.1,
+            "Y": 16.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 2.1,
+          "Y": 16.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 1.1,
+            "Y": 16.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 1.1,
+          "Y": 16.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 3.1,
+            "Y": 16.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 3.1,
+          "Y": 16.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 4.1,
+            "Y": 16.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 4.1,
+          "Y": 16.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 4.1,
+            "Y": 17.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 4.1,
+          "Y": 17.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 4.1,
+            "Y": 18.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 4.1,
+          "Y": 18.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 4.1,
+            "Y": 19.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 4.1,
+          "Y": 19.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 6.1,
+            "Y": 11.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 6.1,
+          "Y": 11.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      },
+      {
+        "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 9.1,
+            "Y": 11.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 9.1,
+          "Y": 11.1,
+          "W": 0.8,
+          "H": 0.8
+        }
+      }
+    ]
   }
-]
+}

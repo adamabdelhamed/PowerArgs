@@ -12,6 +12,8 @@ namespace PowerArgs.Cli
         public string Id { get; set; }
     }
 
+    public class DialogOption : DialogButton { }
+
     // todo - restrict the focus system to include only the dialog buttons so the dialog feels more modal
     public class Dialog : ConsolePanel
     {
@@ -156,6 +158,31 @@ namespace PowerArgs.Cli
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
         }
 
+
+        public static void Pick(ConsoleString message, IEnumerable<DialogOption> options, Action<DialogOption> resultCallback, bool allowEscapeToCancel = true, int maxHeight = 12)
+        {
+            ConsoleApp.AssertAppThread();
+
+            ConsolePanel dialogContent = new StackPanel() { };
+
+            Dialog dialog = new Dialog(dialogContent);
+            dialog.MaxHeight = maxHeight;
+            dialog.AllowEscapeToCancel = allowEscapeToCancel;
+
+            Label messageLabel = dialogContent.Add(new Label() { Mode = LabelRenderMode.SingleLineAutoSize, Text = message }).FillHoriontally(padding: new Thickness(3, 3, 1, 0));
+
+            Grid optionsGrid = dialogContent.Add(new Grid(options.Select(o => o as object).ToList())).Fill(padding: new Thickness(0, 0, 2, 0));
+            optionsGrid.VisibleColumns.Remove(optionsGrid.VisibleColumns.Where(v => v.ColumnName.ToString() == nameof(DialogOption.Id)).Single());
+            optionsGrid.VisibleColumns[0].WidthPercentage = 1;
+            (optionsGrid.VisibleColumns[0].OverflowBehavior as TruncateOverflowBehavior).ColumnWidth = 0;
+            optionsGrid.SelectedItemActivated += ()=>
+            {
+                resultCallback(optionsGrid.SelectedItem as DialogOption);
+                ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
+            };
+
+            ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
+        }
 
         public static void ShowMessage(string message, Action doneCallback = null, int maxHeight = 12)
         {
