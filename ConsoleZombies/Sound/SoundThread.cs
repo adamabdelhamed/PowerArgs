@@ -10,12 +10,23 @@ using System.Windows.Threading;
 
 namespace ConsoleZombies
 {
+    public class SoundAction
+    {
+        public Action ToRun { get; set; }
+    }
+
+    public class StopSoundThreadAction : SoundAction
+    {
+
+    }
+    
+
     public class SoundThread : Lifetime
     {
         public List<SoundPlaybackLifetime> CurrentlyPlayingSounds { get; private set; }
 
         private Dictionary<string, MediaPlayer> players;
-        private Queue<Action> soundQueue;
+        private Queue<SoundAction> soundQueue;
         private Thread theThread;
         private Scene scene;
         private object sync;
@@ -35,7 +46,7 @@ namespace ConsoleZombies
             this.soundsDir = soundsDir;
             this.scene = scene;
             sync = new object();
-            soundQueue = new Queue<Action>();
+            soundQueue = new Queue<SoundAction>();
             CurrentlyPlayingSounds = new List<SoundPlaybackLifetime>();
         }
 
@@ -57,8 +68,10 @@ namespace ConsoleZombies
             lock (sync)
             {
                 if (theThread == null) return;
-
-                theThread.Abort();
+                lock(soundQueue)
+                {
+                    soundQueue.Enqueue(new StopSoundThreadAction());
+                }
                 theThread = null;
             }
         }
@@ -78,7 +91,7 @@ namespace ConsoleZombies
         {
             lock (soundQueue)
             {
-                soundQueue.Enqueue(soundPlayingAction);
+                soundQueue.Enqueue(new SoundAction() { ToRun = soundPlayingAction });
             }
         }
 
@@ -102,7 +115,7 @@ namespace ConsoleZombies
                 t.Interval = TimeSpan.FromMilliseconds(1);
                 t.Tick += (s1, o1) =>
                 {
-                    Queue<Action> toRun = new Queue<Action>();
+                    Queue<SoundAction> toRun = new Queue<SoundAction>();
                     lock (soundQueue)
                     {
                         while (soundQueue.Count > 0)
@@ -113,18 +126,24 @@ namespace ConsoleZombies
 
                     while (toRun.Count > 0)
                     {
-                        toRun.Dequeue().Invoke();
+                        var next = toRun.Dequeue();
+                        if (next is StopSoundThreadAction)
+                        {
+                            t.Stop();
+                            CurrentlyPlayingSounds.ForEach(sound => sound.Player.Stop());
+                            hiddenWindow.Close();
+                        }
+                        else
+                        {
+                            next.ToRun.Invoke();
+                        }
                     }
                 };
                 t.Start();
             };
             hiddenWindow.Show();
             hiddenWindow.Visibility = Visibility.Hidden;
-            try
-            {
-                Dispatcher.Run();
-            }
-            catch (ThreadAbortException) { }
+            Dispatcher.Run();
         }
 
         private Dictionary<string, MediaPlayer> LoadSounds()

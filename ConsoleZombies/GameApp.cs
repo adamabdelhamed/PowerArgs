@@ -47,8 +47,15 @@ namespace ConsoleZombies
             LayoutRoot.Add(new FramerateControl(scenePanel.Scene));
             QueueAction(() => { scenePanel.Scene.Start(); });
 
+            GameScene.Started.SubscribeForLifetime(() =>
+            {
+                SoundEffects.Instance.SoundThread.Start();
+                SoundEffects.Instance.PlaySound("music");
+            }, this.LifetimeManager);
+
             scenePanel.Scene.Stopped.SubscribeForLifetime(() =>
             {
+                SoundEffects.Instance.SoundThread.Stop();
                 if (this.IsRunning && implicitPause == false)
                 {
                     QueueAction(() =>
@@ -72,14 +79,8 @@ namespace ConsoleZombies
 
                 scenePanel.Scene.Clear();
                 def.Hydrate(scenePanel.Scene, false);
-                SoundEffects.Instance.SoundThread.Start();
-                SoundEffects.Instance.PlaySound("music");
-                foreach(var zombie in scenePanel.Scene.Things.Where(t => t is Zombie).Select(z => z as Zombie))
-                {
-                    zombie.IsActive = true;
-                }
 
-                foreach(var portal in scenePanel.Scene.Things.Where(p => p is Portal).Select(p => p as Portal))
+                foreach (var portal in scenePanel.Scene.Things.Where(p => p is Portal).Select(p => p as Portal))
                 {
                     var localPortal = portal;
                     localPortal.PortalEntered.SubscribeForLifetime(()=>
@@ -104,7 +105,10 @@ namespace ConsoleZombies
                         {
                             SoundEffects.Instance.PlaySound("playerdead");
                             
-                            Dialog.ShowMessage("Game over :(",()=> { Stop(); SoundEffects.Instance.SoundThread.Stop(); });
+                            Dialog.ShowMessage("Game over :(",()=> 
+                            {
+                                Stop();
+                            });
                         });
                     },scenePanel.LifetimeManager);
                 }

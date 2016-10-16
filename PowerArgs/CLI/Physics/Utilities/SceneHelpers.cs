@@ -195,13 +195,13 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static Route CalculateLineOfSight(Scene r, Thing from, Location to, float increment)
+        public static Route CalculateLineOfSight(Scene r, Rectangle fromBounds, Location to, float increment)
         {
             Route ret = new Route();
-            Rectangle current = from.Bounds.Clone();
+            Rectangle current = fromBounds.Clone();
             while (current.Location.CalculateDistanceTo(to) > increment)
             {
-                current = new Rectangle(MoveTowards(current.Location, to, increment), from.Bounds.Size);
+                current = new Rectangle(MoveTowards(current.Location, to, increment), fromBounds.Size);
                 ret.Steps.Add(current.Location);
 
                 var obstacles = GetThingsThatTouch(r, new Thing(current));

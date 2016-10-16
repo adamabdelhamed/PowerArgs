@@ -20,13 +20,14 @@ namespace ConsoleZombies
             Speed.HitDetectionTypes.Add(typeof(Wall));
             Speed.HitDetectionTypes.Add(typeof(Zombie));
             Speed.HitDetectionTypes.Add(typeof(MainCharacter));
+            Speed.Governor.Rate = TimeSpan.FromSeconds(0);
             Speed.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.LifetimeManager);
         }
 
         public Bullet(Location target) : this()
         {
             this.Bounds = new PowerArgs.Cli.Physics.Rectangle(MainCharacter.Current.Bounds.Location.X, MainCharacter.Current.Bounds.Location.Y, 1, 1);
-            this.Bounds.Pad(.25f);
+            this.Bounds.Pad(.1f);
             this.angle = this.Bounds.Location.CalculateAngleTo(target);
             this.HealthPoints = 1;
         }
@@ -43,7 +44,7 @@ namespace ConsoleZombies
         {
             startLocation = this.Bounds.Location;
             // todo - replace with bullet speed from config
-            new Force(Speed, 40, angle);
+            new Force(Speed, 35, angle);
 
         }
 

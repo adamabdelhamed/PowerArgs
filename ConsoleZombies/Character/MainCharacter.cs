@@ -61,7 +61,24 @@ namespace ConsoleZombies
         {
             Inventory = new Inventory();
             Speed = new SpeedTracker(this);
-            Targeting = new Targeting(this);
+            Targeting = new Targeting(()=> this.Bounds,t => t is Zombie);
+            Added.SubscribeForLifetime(() => { Scene.Add(Targeting); }, this.LifetimeManager);
+            Removed.SubscribeForLifetime(() => { Scene.Remove(Targeting); }, this.LifetimeManager);
+            Targeting.TargetChanged.SubscribeForLifetime((target) =>
+            {
+                if(this.Target != null && this.Target.IsExpired == false)
+                {
+                    Scene.Update(this.Target);
+                }
+
+                this.Target = target;
+
+                if (this.Target != null && this.Target.IsExpired == false)
+                {
+                    Scene.Update(this.Target);
+                }
+            }, this.LifetimeManager);
+
             Speed.Bounciness = 0;
             this.HealthPoints = 100;
             Speed.HitDetectionTypes.Add(typeof(Wall));
@@ -193,30 +210,14 @@ namespace ConsoleZombies
             }
         }
 
-        public void TryOpenCloseDoor()
+        public void TryInteract()
         {
-            var door = (Door)Scene.Things
-                   .Where(t => t is Door).OrderBy(d => Bounds.Location.CalculateDistanceTo(d.Bounds.Location)).FirstOrDefault();
+            var interactable = (IInteractable)Scene.Things
+                   .Where(t => t is IInteractable && 
+                            Bounds.Location.CalculateDistanceTo(t.Bounds.Location) <= 2.5)
+                   .OrderBy(d => Bounds.Location.CalculateDistanceTo(d.Bounds.Location)).FirstOrDefault();
 
-            if (door != null && Bounds.Location.CalculateDistanceTo(door.Bounds.Location) <= 2.5)
-            {
-                door.IsOpen = !door.IsOpen;
-
-                if (SceneHelpers.GetThingsITouch(Scene, this, new List<Type>() { typeof(Door) }).Contains(door))
-                {
-                    if (door.IsOpen)
-                    {
-                        Bounds.MoveTo(door.ClosedBounds.Location);
-                    }
-                    else
-                    {
-                        Bounds.MoveTo(door.OpenLocation);
-                    }
-                }
-
-                Scene.Update(door);
-                Scene.Update(this);
-            }
+            interactable?.Interact(this);
         }
 
         private void OnAdded()

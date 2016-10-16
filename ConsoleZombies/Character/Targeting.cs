@@ -1,46 +1,40 @@
-﻿using PowerArgs.Cli.Physics;
+﻿using PowerArgs.Cli;
+using PowerArgs.Cli.Physics;
 using System;
 using System.Linq;
 
 namespace ConsoleZombies
 {
-    public class Targeting : ThingInteraction
+    public class Targeting : Interaction
     {
-        public MainCharacter MainCharacter
-        {
-            get
-            {
-                return MyThing as MainCharacter;
-            }
-        }
+        private Func<PowerArgs.Cli.Physics.Rectangle> sourceEval;
+        private Func<Thing, bool> targetFilter;
 
-        public Targeting(MainCharacter character) : base(character)
+        public Event<Thing> TargetChanged { get; private set; } = new Event<Thing>();
+
+        public Targeting(Func<PowerArgs.Cli.Physics.Rectangle> sourceEval, Func<Thing,bool> targetFilter) 
         {
-            Governor.Rate = TimeSpan.FromSeconds(.25);
+            this.sourceEval = sourceEval;
+            this.targetFilter = targetFilter;
         }
 
         public override void Behave(Scene scene)
         {
-            var zombies = Scene.Things.Where(t => t is Zombie).Select(t => t as Zombie)
-                .OrderBy(z => MainCharacter.Bounds.Location.CalculateDistanceTo(z.Bounds.Location));
+            var targets = Scene.Things.Where(t => targetFilter(t))
+                .OrderBy(z => sourceEval().Location.CalculateDistanceTo(z.Bounds.Location));
 
-            foreach(var zombie in zombies)
+            foreach(var target in targets)
             {
-                var route = SceneHelpers.CalculateLineOfSight(scene, MainCharacter, zombie.Bounds.Location, 1);
+                var route = SceneHelpers.CalculateLineOfSight(scene, sourceEval(), target.Bounds.Location, 1);
 
                 if(route.Obstacles.Where(o => o is Wall).Count() == 0)
                 {
-                    if(MainCharacter.Target != null && MainCharacter.Target != zombie && MainCharacter.Target.IsExpired == false)
-                    {
-                        Scene.Update(MainCharacter.Target);
-                    }
-                    MainCharacter.Target = zombie;
-                    Scene.Update(zombie);
+                    TargetChanged.Fire(target);
                     return;
                 }
             }
 
-            MainCharacter.Target = null;
+            TargetChanged.Fire(null);
         }
     }
 }

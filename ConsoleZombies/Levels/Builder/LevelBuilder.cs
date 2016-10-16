@@ -139,6 +139,7 @@ namespace ConsoleZombies
         {
             BrokerToScene(ConsoleKey.W, () => { UndoStack.Do(new DropWallAction() { Context = this }); });
             BrokerToScene(ConsoleKey.C, () => { UndoStack.Do(new DropAutoCeilingAction() { Context = this }); });
+            BrokerToScene(ConsoleKey.T, () => { UndoStack.Do(new DropTurretAction() { Context = this }); });
 
             BrokerToScene(ConsoleKey.M, () => { UndoStack.Do(new DropMainCharacterAction() { Context = this }); });
 

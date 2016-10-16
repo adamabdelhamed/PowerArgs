@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace ConsoleZombies
 {
-    public class Door : Wall
+    public class Door : Wall, IInteractable
     {
         public Rectangle ClosedBounds { get; private set; }
         public Location OpenLocation { get; private set; }
@@ -71,7 +71,7 @@ namespace ConsoleZombies
                 {
                     foreach(var alreadyAdded in ret.ToArray())
                     {
-                        if (cieling.Bounds.Location.CalculateDistanceTo(alreadyAdded.Bounds.Location) <= 1)
+                        if (cieling.Bounds.Location.CalculateDistanceTo(alreadyAdded.Bounds.Location) <= 1.25)
                         {
                             ret.Add(cieling);
                             break;
@@ -94,6 +94,26 @@ namespace ConsoleZombies
             this.ClosedBounds = closedBounds.Clone();
             this.OpenLocation = openLocation;
             this.IsOpen = false;
+        }
+
+        public void Interact(MainCharacter character)
+        {
+            IsOpen = !IsOpen;
+
+            if (SceneHelpers.GetThingsITouch(Scene, character, new List<Type>() { typeof(Door) }).Contains(this))
+            {
+                if (IsOpen)
+                {
+                    character.Bounds.MoveTo(this.ClosedBounds.Location);
+                }
+                else
+                {
+                    character.Bounds.MoveTo(this.OpenLocation);
+                }
+            }
+
+            Scene.Update(this);
+            Scene.Update(character);
         }
     }
     

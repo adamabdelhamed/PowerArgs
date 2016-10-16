@@ -7,12 +7,12 @@ namespace ConsoleZombies
 {
     public class SoundPlaybackLifetime : Lifetime
     {
-        private MediaPlayer player;
+        public MediaPlayer Player { get; private set; }
         private bool loop;
         private SoundThread soundThread;
         public SoundPlaybackLifetime(MediaPlayer player, bool loop, SoundThread soundThread)
         {
-            this.player = player;
+            this.Player = player;
             this.loop = loop;
             this.soundThread = soundThread;
 
@@ -32,7 +32,7 @@ namespace ConsoleZombies
 
         private void Player_MediaEnded(object sender, EventArgs e)
         {
-            lock (player)
+            lock (Player)
             {
                 if (IsExpired)
                 {
@@ -41,8 +41,8 @@ namespace ConsoleZombies
 
                 if (loop)
                 {
-                    player.Position = TimeSpan.Zero;
-                    player.Play();
+                    Player.Position = TimeSpan.Zero;
+                    Player.Play();
                 }
                 else
                 {
@@ -54,11 +54,12 @@ namespace ConsoleZombies
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            lock (player)
+            lock (Player)
             {
                 soundThread.EnqueueSoundThreadAction(() =>
                 {
-                    player.Stop();
+                    Player.Stop();
+                 
                     lock (soundThread.CurrentlyPlayingSounds)
                     {
                         soundThread.CurrentlyPlayingSounds.Remove(this);

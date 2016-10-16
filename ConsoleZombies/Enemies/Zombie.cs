@@ -12,6 +12,7 @@ namespace ConsoleZombies
         public SpeedTracker SpeedTracker { get; private set; }
 
         private Seeker _seeker;
+        private Roamer _roamer;
     
         public bool IsActive
         {
@@ -21,12 +22,24 @@ namespace ConsoleZombies
             }
             set
             {
-                if (value == false && _seeker == null) return;
-                else if (value == false) Scene.Remove(_seeker);
-                else if (_seeker != null) return;
+                if (value == false && _seeker == null)
+                {
+                    return;
+                }
+                else if (value == false)
+                {
+                    Scene.Remove(_seeker);
+                    Scene.Remove(_roamer);
+                }
+                else if (_seeker != null)
+                {
+                    return;
+                }
                 else
                 {
                     _seeker = new Seeker(this, MainCharacter.Current, SpeedTracker, 1.25f) { IsSeeking = false };
+                    _roamer = new Roamer(this, SpeedTracker, .2f) { IsRoaming = false };
+                    _roamer.Governor.Rate = TimeSpan.FromSeconds(2);
                 }
             }
         }
@@ -58,7 +71,7 @@ namespace ConsoleZombies
 
             IsBeingTargeted = MainCharacter.Current.Target == this;
 
-            var routeToMainCharacter = SceneHelpers.CalculateLineOfSight(r, this, MainCharacter.Current.Bounds.Location, 1);
+            var routeToMainCharacter = SceneHelpers.CalculateLineOfSight(r,this.Bounds, MainCharacter.Current.Bounds.Location, 1);
 
             if(routeToMainCharacter.Obstacles.Where(o => o is Wall).Count() == 0 && this.Bounds.Location.CalculateDistanceTo(MainCharacter.Current.Bounds.Location) < 6)
             {
@@ -66,11 +79,13 @@ namespace ConsoleZombies
                 {
                     SoundEffects.Instance.PlaySound("zombiealert");
                     _seeker.IsSeeking = true;
+                    _roamer.IsRoaming = false;
                 }
             }
             else
             {
                 _seeker.IsSeeking = false;
+                _roamer.IsRoaming = true;
             }
         }
     }

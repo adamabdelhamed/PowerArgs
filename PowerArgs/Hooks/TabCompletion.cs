@@ -176,7 +176,7 @@ namespace PowerArgs
                 this.REPL = false;
                 return;
             }
-            
+
             if (REPL && ShowREPLWelcome)
             {
                 ConsoleString.Empty.WriteLine();
@@ -192,18 +192,15 @@ namespace PowerArgs
             }
             else
             {
-
-                // This is a little hacky, but I could not find a better way to make the tab completion start on the same lime
-                // as the command line input
-                try
+                var lastLine = StdConsoleProvider.ReadALineOfConsoleOutput(Console.CursorTop - 1);
+                if (lastLine != null)
                 {
-                    var lastLine = StdConsoleProvider.ReadALineOfConsoleOutput(Console.CursorTop - 1);
                     Console.CursorTop--;
                     Console.WriteLine(lastLine);
                     Console.CursorTop--;
                     Console.CursorLeft = lastLine.Length + 1;
                 }
-                catch (Exception)
+                else
                 {
                     Console.WriteLine();
                     Console.Write(Indicator + "> ");

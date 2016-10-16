@@ -15,6 +15,8 @@ namespace ConsoleZombies
     public class HeadsUpDisplay : ConsolePanel
     {
         private GameApp gameApp;
+        private Label messageLabel;
+        private ConsolePanel messagePanel;
         public HeadsUpDisplay(GameApp app)
         {
             this.gameApp = app;
@@ -27,7 +29,7 @@ namespace ConsoleZombies
                 new WeaponRow { Weapon = "".ToWhite(), Trigger= "".ToWhite(), Amount="".ToWhite() },
                 new WeaponRow { Weapon = "".ToWhite(), Trigger= "".ToWhite(), Amount="".ToWhite() },
             }) { Gutter=0, ShowEndIfComplete=false, CanFocus=false, Width = 35 }).FillVertically();
-            var rightPanel = topPanel.Add(new ConsolePanel() { IsVisible=false, Width = 31, Background = ConsoleColor.White }).FillVertically(padding: new Thickness(0,0,1,1));
+            messagePanel = topPanel.Add(new ConsolePanel() { IsVisible=false, Width = 31, Background = ConsoleColor.White }).FillVertically(padding: new Thickness(0,0,1,1));
             var bottomPanel = Add(new StackPanel() { Orientation = Orientation.Horizontal, Margin=2, Height = 1 }).FillHoriontally().DockToBottom();
 
             var hpLabel = leftPanel.Add(new Label() { Text = "HP".ToGray() }).FillHoriontally();
@@ -47,7 +49,7 @@ namespace ConsoleZombies
             var pauseLabel = bottomPanel.Add(new Label() { Text = "".ToYellow() });
             var quitLabel = bottomPanel.Add(new Label() { Text = "Quit [ESC]".ToYellow() });
 
-            var messageLabel = rightPanel.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Background = ConsoleColor.White, Text = "Here is a message that can be a few words long".ToBlack(bg: ConsoleColor.White)}).Fill(padding: new Thickness(1, 1, 1, 1));
+            messageLabel = messagePanel.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Background = ConsoleColor.White, Text = "".ToBlack(bg: ConsoleColor.White)}).Fill(padding: new Thickness(1, 1, 1, 1));
 
             app.SubscribeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.HealthPoints), () =>
             {
@@ -83,6 +85,10 @@ namespace ConsoleZombies
                 var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
                 var weaponName = app.MainCharacter?.Inventory?.PrimaryWeapon?.GetType().Name;
                 row.Weapon = weaponName != null ? weaponName.ToWhite() : "none".ToRed();
+                if (weaponName != null)
+                {
+                    ShowMessage("Equipped ".ToBlack() + weaponName.ToDarkBlue(), TimeSpan.FromSeconds(4));
+                }
             }, this.LifetimeManager);
 
             app.SynchronizeProxiedForLifetime(app, 
@@ -101,6 +107,10 @@ namespace ConsoleZombies
                 var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
                 var weaponName = app.MainCharacter?.Inventory?.ExplosiveWeapon?.GetType().Name;
                 row.Weapon = weaponName != null ? weaponName.ToWhite() : "none".ToRed();
+                if (weaponName != null)
+                {
+                    ShowMessage("Equipped ".ToBlack() + weaponName.ToDarkBlue(), TimeSpan.FromSeconds(4));
+                }
             }, this.LifetimeManager);
 
             app.SynchronizeProxiedForLifetime(app,
@@ -121,6 +131,22 @@ namespace ConsoleZombies
                 var aimMode = app.MainCharacter?.AimMode;
                 aimValue.Text = aimMode.HasValue ? aimMode.Value.ToString().ToConsoleString(aimMode.Value == AimMode.Auto ? ConsoleColor.White : ConsoleColor.Cyan) : "".ToConsoleString();
             }, this.LifetimeManager);
+        }
+
+        public void ShowMessage(ConsoleString message, TimeSpan? time = null)
+        {
+            message = message.ToDifferentBackground(ConsoleColor.White);
+            messageLabel.Text = message;
+            messagePanel.IsVisible = true;
+            if(time.HasValue)
+            {
+                messageLabel.GetPropertyValueLifetime(nameof(Label.Text)).LifetimeManager
+                    .Manage(Application.SetTimeout(() =>
+                {
+                    messageLabel.Text = ConsoleString.Empty;
+                    messagePanel.IsVisible = false;
+                }, time.Value));
+            }
         }
 
         private ConsoleString FormatAmmoAmmount(int amount)

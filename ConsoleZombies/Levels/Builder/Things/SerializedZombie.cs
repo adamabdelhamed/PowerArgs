@@ -12,6 +12,10 @@ namespace ConsoleZombies
         public void Rehydrate(bool IsInLevelBuilderMode)
         {
             HydratedThing = new Zombie() { Bounds = Bounds };
+            if(IsInLevelBuilderMode == false)
+            {
+                (HydratedThing as Zombie).IsActive = true;
+            }
         }
     }
 

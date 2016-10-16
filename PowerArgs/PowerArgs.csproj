@@ -104,6 +104,7 @@
     <Compile Include="CLI\Physics\Interactions\Floater.cs" />
     <Compile Include="CLI\Physics\Interactions\Force.cs" />
     <Compile Include="CLI\Physics\Interactions\Gravity.cs" />
+    <Compile Include="CLI\Physics\Interactions\Roamer.cs" />
     <Compile Include="CLI\Physics\Interactions\Seeker.cs" />
     <Compile Include="CLI\Physics\Interactions\SpeedTracker.cs" />
     <Compile Include="CLI\Physics\Interactions\ThingInteraction.cs" />

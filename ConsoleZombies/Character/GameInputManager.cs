@@ -23,7 +23,7 @@ namespace ConsoleZombies
 
         public ConsoleKey TogglePauseKey { get { return Get<ConsoleKey>(); } set { Set(value); } }
         public ConsoleKey MenuKey { get { return Get<ConsoleKey>(); } set { Set(value); } }
-        public ConsoleKey OpenDoorKey { get { return Get<ConsoleKey>(); } set { Set(value); } } 
+        public ConsoleKey InteractKey { get { return Get<ConsoleKey>(); } set { Set(value); } } 
 
         public KeyMap()
         {
@@ -37,7 +37,7 @@ namespace ConsoleZombies
             this.MoveRightKey = ConsoleKey.RightArrow;
 
             this.AimToggleKey = ConsoleKey.A;
-            this.OpenDoorKey = ConsoleKey.Enter;
+            this.InteractKey = ConsoleKey.Enter;
 
             this.MenuKey = ConsoleKey.M;
             this.TogglePauseKey = ConsoleKey.P;
@@ -90,10 +90,10 @@ namespace ConsoleZombies
             // fire weapons
             keyboardMap.Add(map.PrimaryWeaponKey,()=> { MainCharacter.Current?.Inventory?.PrimaryWeapon?.TryFire(); });
             keyboardMap.Add(map.PrimaryWeaponAlternateKey, () => { MainCharacter.Current?.Inventory?.PrimaryWeapon?.TryFire(); });
-            keyboardMap.Add(map.ExplosiveWeaponKey, () => { MainCharacter.Current.Inventory.ExplosiveWeapon.TryFire(); });
+            keyboardMap.Add(map.ExplosiveWeaponKey, () => { MainCharacter.Current?.Inventory?.ExplosiveWeapon?.TryFire(); });
 
             // doors
-            keyboardMap.Add(map.OpenDoorKey, () => { MainCharacter.Current.TryOpenCloseDoor(); });
+            keyboardMap.Add(map.InteractKey, () => { MainCharacter.Current.TryInteract(); });
 
             UpdateKeyboardMappings();
         }
