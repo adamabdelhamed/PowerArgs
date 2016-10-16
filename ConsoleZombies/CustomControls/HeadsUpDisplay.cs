@@ -71,7 +71,7 @@ namespace ConsoleZombies
             app.SynchronizeProxiedForLifetime(app, nameof(app.InputManager) + "." + nameof(GameInputManager.KeyMap) + "." + ObservableObject.AnyProperty, () =>
             {
                 var primaryWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
-                primaryWeaponRow.Trigger = $"[{this.gameApp.InputManager.KeyMap.PrimaryWeaponKey},{this.gameApp.InputManager.KeyMap.PrimaryWeaponAlternateKey}]".ToWhite();
+                primaryWeaponRow.Trigger = $"[{this.gameApp.InputManager.KeyMap.PrimaryWeaponKey}]".ToWhite();
 
                 var explosiveWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
                 explosiveWeaponRow.Trigger = $"[{this.gameApp.InputManager.KeyMap.ExplosiveWeaponKey}]".ToWhite();

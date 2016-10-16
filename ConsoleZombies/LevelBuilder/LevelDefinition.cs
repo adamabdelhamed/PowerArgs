@@ -14,7 +14,7 @@ namespace ConsoleZombies
         public static readonly int Width = 78;
         public static readonly int Height = 20;
         
-        public static string LevelBuilderLevelsPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Levels", "Local");
+        public static string LevelBuilderLevelsPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "LocalLevels");
         
         public List<ISerializableThing> Things { get; private set; } = new List<ISerializableThing>();
 

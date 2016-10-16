@@ -44,20 +44,21 @@ namespace ConsoleZombies
                 Assembly.GetExecutingAssembly()
                 .GetTypes()
                 .Where(t => t.HasAttr<AmmoInfo>())
-                .Select(t => new DialogOption() { DisplayText = t.Attr<AmmoInfo>().DisplayName.ToConsoleString(), Id = t.FullName }), (choice) =>
-             {
-                 Context.PreviewScene.QueueAction(() =>
-                 {
-                     int amount = 10;
-                     bounds = Context.Cursor.Bounds.Clone();
-                     bounds.Pad(.1f);
-                     this.ammo = new SerializedAmmo() { AmmoType = choice.Id, Amount = amount, Bounds = bounds };
+                .Select(t => new DialogOption() { DisplayText = t.Attr<AmmoInfo>().DisplayName.ToConsoleString(), Id = t.FullName }))
+                .Then((choice) =>
+                {
+                    Context.PreviewScene.QueueAction(() =>
+                    {
+                        int amount = 10;
+                        bounds = Context.Cursor.Bounds.Clone();
+                        bounds.Pad(.1f);
+                        this.ammo = new SerializedAmmo() { AmmoType = choice.Id, Amount = amount, Bounds = bounds };
 
-                     Context.CurrentLevelDefinition.Things.Add(ammo);
-                     ammo.Rehydrate(true);
-                     Context.PreviewScene.Add(ammo.HydratedThing);
-                 });
-             });
+                        Context.CurrentLevelDefinition.Things.Add(ammo);
+                        ammo.Rehydrate(true);
+                        Context.PreviewScene.Add(ammo.HydratedThing);
+                    });
+                });
         }
 
         public void Undo()

@@ -53,33 +53,33 @@
     <Compile Include="Character\GameInputManager.cs" />
     <Compile Include="CustomControls\FramerateControl.cs" />
     <Compile Include="CustomControls\HeadsUpDisplay.cs" />
+    <Compile Include="CustomControls\KeyMapEditor.cs" />
     <Compile Include="Items\AmmoTypes.cs" />
     <Compile Include="Items\Ammo.cs" />
-    <Compile Include="Levels\Builder\Things\SerializedTurret.cs" />
+    <Compile Include="SerializableThings\SerializedTurret.cs" />
     <Compile Include="StaticObjects\IInteractable.cs" />
     <Compile Include="StaticObjects\Turret.cs" />
-    <Compile Include="Levels\Builder\ILevelBuilderAction.cs" />
-    <Compile Include="Levels\Builder\ISerializableThing.cs" />
-    <Compile Include="Levels\Builder\LevelBuilder.cs" />
-    <Compile Include="Levels\Builder\LevelDefinition.cs" />
-    <Compile Include="Levels\Builder\Things\DropAutoCeilingAction.cs" />
-    <Compile Include="Levels\Builder\Things\DropPortalAction.cs" />
-    <Compile Include="Levels\Builder\Things\DropAmmoAction.cs" />
-    <Compile Include="Levels\Builder\Things\DeleteAction.cs" />
-    <Compile Include="Levels\Builder\Things\DropDoorAction.cs" />
-    <Compile Include="Levels\Builder\Things\SerializedCeiling.cs" />
-    <Compile Include="Levels\Builder\Things\SerializedMainCharacter.cs" />
-    <Compile Include="Levels\Builder\Things\SerializedWall.cs" />
-    <Compile Include="Levels\Builder\Things\SerializedZombie.cs" />
+    <Compile Include="LevelBuilder\ILevelBuilderAction.cs" />
+    <Compile Include="LevelBuilder\ISerializableThing.cs" />
+    <Compile Include="LevelBuilder\LevelBuilder.cs" />
+    <Compile Include="LevelBuilder\LevelDefinition.cs" />
+    <Compile Include="SerializableThings\SerializedPortal.cs" />
+    <Compile Include="SerializableThings\SerializedAmmo.cs" />
+    <Compile Include="LevelBuilder\DeleteAction.cs" />
+    <Compile Include="SerializableThings\SerializedDoor.cs" />
+    <Compile Include="SerializableThings\SerializedCeiling.cs" />
+    <Compile Include="SerializableThings\SerializedMainCharacter.cs" />
+    <Compile Include="SerializableThings\SerializedWall.cs" />
+    <Compile Include="SerializableThings\SerializedZombie.cs" />
     <Compile Include="Sound\SoundEffects.cs" />
     <Compile Include="Character\Inventory.cs" />
     <Compile Include="Character\MainCharacter.cs" />
     <Compile Include="Character\Targeting.cs" />
     <Compile Include="Enemies\Zombie.cs" />
-    <Compile Include="Helpers.cs" />
+    <Compile Include="Hosting\Helpers.cs" />
     <Compile Include="StaticObjects\Cursor.cs" />
-    <Compile Include="GameApp.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Hosting\GameApp.cs" />
+    <Compile Include="Hosting\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sound\SoundPlaybackLifetime.cs" />
     <Compile Include="Sound\SoundThread.cs" />
@@ -99,16 +99,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Levels\Local\1.czl">
+    <None Include="LocalLevels\1.czl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Levels\Local\2.czl">
+    <None Include="LocalLevels\2.czl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Levels\Local\3.czl">
+    <None Include="LocalLevels\3.czl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Levels\Local\4.czl">
+    <None Include="LocalLevels\4.czl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />

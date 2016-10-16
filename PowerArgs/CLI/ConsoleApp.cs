@@ -149,6 +149,23 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Runs the given action as soon as possible.  If calling from this app's running thread
+        /// then the action will run now.  Otherwise, it will be forcefully inserted into position 0 the work queue (i.e. skips to the front of the line).
+        /// </summary>
+        /// <param name="a"></param>
+        public void RunASAP(Action a)
+        {
+            if(Current == this)
+            {
+                a();
+            }
+            else
+            {
+                QueueActionInFront(a);
+            }
+        }
+
+        /// <summary>
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>

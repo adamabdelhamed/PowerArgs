@@ -17,7 +17,7 @@ namespace PowerArgs
         /// <summary>
         /// Returns true if the promise has been resolved
         /// </summary>
-        public bool IsFulFilled { get; private set; }
+        public bool IsFulfilled { get; private set; }
 
         /// <summary>
         /// The exception associated with the deferred work, or null if there is none
@@ -27,12 +27,17 @@ namespace PowerArgs
         /// <summary>
         /// Handlers to call after the deferred work is complete
         /// </summary>
-        public List<Action> Thens { get; private set; } 
+        internal List<Action> Thens { get; private set; } 
 
         /// <summary>
         /// Handlers to call if the deferred work fails
         /// </summary>
-        public List<Action<Exception>> Fails { get; private set; }
+        internal List<Action<Exception>> Fails { get; private set; }
+
+        /// <summary>
+        /// Handlers to call after all other handlers
+        /// </summary>
+        internal List<Action<Promise>> Finalies { get; private set; }
 
         /// <summary>
         /// used as the lock key when synchronizing work
@@ -44,6 +49,7 @@ namespace PowerArgs
             SyncObject = new object();
             Thens = new List<Action>();
             Fails = new List<Action<Exception>>();
+            Finalies = new List<Action<Promise>>();
             Promise = new Promise(this);
         }
 
@@ -64,14 +70,20 @@ namespace PowerArgs
         {
             lock(SyncObject)
             {
-                if (IsFulFilled) throw new InvalidOperationException("Already fulfilled");
+                if (IsFulfilled) throw new InvalidOperationException("Already fulfilled");
 
                 foreach (var action in Fails)
                 {
                     action(ex);
                 }
+
+                foreach(var action in Finalies)
+                {
+                    action(Promise);
+                }
+
                 Exception = ex;
-                IsFulFilled = true;
+                IsFulfilled = true;
             }
         }
 
@@ -82,14 +94,19 @@ namespace PowerArgs
         {
             lock (SyncObject)
             {
-                if (IsFulFilled) throw new InvalidOperationException("Already fulfilled");
+                if (IsFulfilled) throw new InvalidOperationException("Already fulfilled");
 
                 foreach (var action in Thens)
                 {
                     action();
                 }
 
-                IsFulFilled = true;
+                foreach (var action in Finalies)
+                {
+                    action(Promise);
+                }
+
+                IsFulfilled = true;
             }
         }
     }
@@ -101,6 +118,15 @@ namespace PowerArgs
     public class Promise
     {
         private Deferred myDeferred;
+
+        public Exception Exception
+        {
+            get
+            {
+                return myDeferred.Exception;
+            }
+        }
+
         internal Promise(Deferred deferred)
         {
             this.myDeferred = deferred;
@@ -115,11 +141,11 @@ namespace PowerArgs
         {
             lock(myDeferred.SyncObject)
             {
-                if (myDeferred.IsFulFilled && myDeferred.Exception == null)
+                if (myDeferred.IsFulfilled && myDeferred.Exception == null)
                 {
                     a();
                 }
-                else if (!myDeferred.IsFulFilled)
+                else if (!myDeferred.IsFulfilled)
                 {
                     myDeferred.Thens.Add(a);
                 }
@@ -136,13 +162,34 @@ namespace PowerArgs
         {
             lock(myDeferred.SyncObject)
             {
-                if (myDeferred.IsFulFilled && myDeferred.Exception != null)
+                if (myDeferred.IsFulfilled && myDeferred.Exception != null)
                 {
                     a(myDeferred.Exception);
                 }
-                else if (!myDeferred.IsFulFilled)
+                else if (!myDeferred.IsFulfilled)
                 {
                     myDeferred.Fails.Add(a);
+                }
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Registers an action to run at the end of all handlers.
+        /// </summary>
+        /// <param name="a">the  handler</param>
+        /// <returns>this promise</returns>
+        public Promise Finally(Action<Promise> a)
+        {
+            lock (myDeferred.SyncObject)
+            {
+                if (myDeferred.IsFulfilled && myDeferred.Exception != null)
+                {
+                    a(this);
+                }
+                else if (!myDeferred.IsFulfilled)
+                {
+                    myDeferred.Finalies.Add(a);
                 }
             }
             return this;
@@ -153,11 +200,82 @@ namespace PowerArgs
         /// </summary>
         public void Wait()
         {
-            while (myDeferred.IsFulFilled == false)
+            while (myDeferred.IsFulfilled == false)
             {
                 Thread.Sleep(1);
             }
         }
+    }
 
+    public class Deferred<T>
+    {
+        public Promise<T> Promise { get; private set; }
+        public T Result { get; private set; }
+
+        public bool IsFulfilled
+        {
+            get
+            {
+                return innerDeferred.IsFulfilled;
+            }
+        }
+
+        private Deferred()
+        {
+            innerDeferred = Deferred.Create();
+            Promise = new Promise<T>(this);
+        }
+
+        internal Deferred innerDeferred;
+
+        public static Deferred<T> Create()
+        {
+            return new Deferred<T>();
+        }
+        
+        public void Resolve(T result)
+        {
+            this.Result = result;
+            innerDeferred.Resolve();
+        }
+
+        public void Reject(Exception ex)
+        {
+            innerDeferred.Reject(ex);
+        }
+    }
+
+    public class Promise<T>
+    {
+        private Deferred<T> myDeferred;
+        private Promise innerPromise;
+        internal Promise(Deferred<T> myDeferred)
+        {
+            this.myDeferred = myDeferred;
+            this.innerPromise = new Promise(myDeferred.innerDeferred);
+        }
+
+        public Promise<T> Then(Action<T> thenHandler)
+        {
+            innerPromise.Then(() => { thenHandler(myDeferred.Result); });
+            return this;
+        }
+
+        public Promise<T> Fail(Action<Exception> handler)
+        {
+            innerPromise.Fail(handler);
+            return this;
+        }
+
+        public Promise<T> Finally(Action<Promise<T>> handler)
+        {
+            innerPromise.Finally((promise) => { handler(this); });
+            return this;
+        }
+
+        public void Wait()
+        {
+            innerPromise.Wait();
+        }
     }
 }

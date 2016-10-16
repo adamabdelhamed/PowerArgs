@@ -93,7 +93,7 @@ namespace ConsoleZombies
                 }
                 else
                 {
-                    Dialog.Pick("Choose a level to load".ToYellow(), options, (button) =>
+                    Dialog.Pick("Choose a level to load".ToYellow(), options).Then((button) =>
                     {
                         var levelFile = button.Id;
                         LoadLevel(levelFile);

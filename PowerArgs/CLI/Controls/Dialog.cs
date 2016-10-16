@@ -30,11 +30,21 @@ namespace PowerArgs.Cli
         public Dialog(ConsoleControl content)
         {
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
+            AllowEscapeToCancel = true;
             closeButton = Add(new Button() { Text = "Close (ESC)".ToConsoleString(),Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
             closeButton.Pressed.SubscribeForLifetime(Escape, this.LifetimeManager);
             BeforeAddedToVisualTree.SubscribeForLifetime(OnBeforeAddedToVisualTree, this.LifetimeManager);
             AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
             RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this.LifetimeManager);
+        }
+
+        public Promise Show()
+        {
+            var deferred = Deferred.Create();
+            ConsoleApp.AssertAppThread();
+            ConsoleApp.Current.LayoutRoot.Add(this);
+            RemovedFromVisualTree.SubscribeForLifetime(deferred.Resolve, this.LifetimeManager);
+            return deferred.Promise;
         }
 
         private void OnBeforeAddedToVisualTree()
@@ -159,8 +169,9 @@ namespace PowerArgs.Cli
         }
 
 
-        public static void Pick(ConsoleString message, IEnumerable<DialogOption> options, Action<DialogOption> resultCallback, bool allowEscapeToCancel = true, int maxHeight = 12)
+        public static Promise<DialogOption> Pick(ConsoleString message, IEnumerable<DialogOption> options, bool allowEscapeToCancel = true, int maxHeight = 12)
         {
+            var deferred = Deferred<DialogOption>.Create();
             ConsoleApp.AssertAppThread();
 
             ConsolePanel dialogContent = new StackPanel() { };
@@ -169,19 +180,33 @@ namespace PowerArgs.Cli
             dialog.MaxHeight = maxHeight;
             dialog.AllowEscapeToCancel = allowEscapeToCancel;
 
-            Label messageLabel = dialogContent.Add(new Label() { Mode = LabelRenderMode.SingleLineAutoSize, Text = message }).FillHoriontally(padding: new Thickness(3, 3, 1, 0));
 
-            Grid optionsGrid = dialogContent.Add(new Grid(options.Select(o => o as object).ToList())).Fill(padding: new Thickness(0, 0, 2, 0));
+            Grid optionsGrid = dialogContent.Add(new Grid(options.Select(o => o as object).ToList())).Fill();
+            optionsGrid.MoreDataMessage = "More options below".ToYellow();
+            optionsGrid.EndOfDataMessage = "End of menu";
+
             optionsGrid.VisibleColumns.Remove(optionsGrid.VisibleColumns.Where(v => v.ColumnName.ToString() == nameof(DialogOption.Id)).Single());
             optionsGrid.VisibleColumns[0].WidthPercentage = 1;
+            optionsGrid.VisibleColumns[0].ColumnDisplayName = message.IsUnstyled ? message.ToYellow() : message;
+
             (optionsGrid.VisibleColumns[0].OverflowBehavior as TruncateOverflowBehavior).ColumnWidth = 0;
+
+            DialogOption result = null;
+
             optionsGrid.SelectedItemActivated += ()=>
             {
-                resultCallback(optionsGrid.SelectedItem as DialogOption);
+                result = optionsGrid.SelectedItem as DialogOption;
                 ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
             };
 
+            dialog.RemovedFromVisualTree.SubscribeForLifetime(() =>
+            {
+               deferred.Resolve(result);
+
+            }, dialog.LifetimeManager);
+
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
+            return deferred.Promise;
         }
 
         public static void ShowMessage(string message, Action doneCallback = null, int maxHeight = 12)

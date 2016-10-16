@@ -12,6 +12,10 @@ namespace PowerArgs.Cli
 
         public TextBox FilterTextBox { get  { return _filterTextBox; } set {  SetFilterTextBox(value); } }
 
+        public ConsoleString MoreDataMessage
+        {
+            get; set;
+        } 
         public bool ShowEndIfComplete { get; set; } = true;
 
         protected override void OnPaint(ConsoleBitmap context)
@@ -130,7 +134,7 @@ namespace PowerArgs.Cli
             }
             else
             {
-                table += "more data below".ToConsoleString(Application.Theme.H1Color);
+                table += MoreDataMessage;
             }
             context.DrawString(table, 0, 0);
 
@@ -188,6 +192,7 @@ namespace PowerArgs.Cli
 
         private void InitGridView()
         {
+            MoreDataMessage = "more data below".ToConsoleString(new Theme().H1Color);
             this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
 
             this.filterTextDebouncer = new ActionDebouncer(TimeSpan.FromSeconds(0), () =>

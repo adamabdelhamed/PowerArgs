@@ -305,7 +305,7 @@ namespace PowerArgs.Cli.Physics
                     try
                     {
                         Stopped.Fire();
-                        if(deferred.IsFulFilled == false)
+                        if(deferred.IsFulfilled == false)
                         {
                             deferred.Resolve();
                         }
@@ -317,7 +317,7 @@ namespace PowerArgs.Cli.Physics
                             ExceptionOccurred.Fire(ex);
                         }
 
-                        if (deferred.IsFulFilled == false)
+                        if (deferred.IsFulfilled == false)
                         {
                             deferred.Reject(ex);
                         }

@@ -56,15 +56,14 @@ namespace ConsoleZombies
             base.Dispose(disposing);
             lock (Player)
             {
-                soundThread.EnqueueSoundThreadAction(() =>
+
+                SoundThread.AssertSoundThread();
+                Player.Stop();
+
+                lock (soundThread.CurrentlyPlayingSounds)
                 {
-                    Player.Stop();
-                 
-                    lock (soundThread.CurrentlyPlayingSounds)
-                    {
-                        soundThread.CurrentlyPlayingSounds.Remove(this);
-                    }
-                });
+                    soundThread.CurrentlyPlayingSounds.Remove(this);
+                }
             }
         }
     }

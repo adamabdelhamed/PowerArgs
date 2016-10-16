@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
+using System.Linq;
 
 namespace ConsoleZombies
 {
@@ -23,6 +24,26 @@ namespace ConsoleZombies
 
     public class SoundThread : Lifetime
     {
+        [ThreadStatic]
+        private static SoundThread _current;
+
+        public static SoundThread Current
+        {
+            get
+            {
+                return _current;
+            }
+        }
+
+        public static void AssertSoundThread()
+        {
+            if(_current == null)
+            {
+                throw new InvalidOperationException("No sound thread");
+            }
+        }
+
+
         public List<SoundPlaybackLifetime> CurrentlyPlayingSounds { get; private set; }
 
         private Dictionary<string, MediaPlayer> players;
@@ -110,6 +131,7 @@ namespace ConsoleZombies
             hiddenWindow.Visibility = Visibility.Hidden;
             hiddenWindow.Loaded += (s, o) =>
             {
+                _current = this;
                 Thread.CurrentThread.IsBackground = true;
                 DispatcherTimer t = new DispatcherTimer();
                 t.Interval = TimeSpan.FromMilliseconds(1);
@@ -130,8 +152,9 @@ namespace ConsoleZombies
                         if (next is StopSoundThreadAction)
                         {
                             t.Stop();
-                            CurrentlyPlayingSounds.ForEach(sound => sound.Player.Stop());
+                            CurrentlyPlayingSounds.ToArray().ToList().ForEach(sound => sound.Dispose());
                             hiddenWindow.Close();
+                            _current = null;
                         }
                         else
                         {

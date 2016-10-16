@@ -1,4 +1,5 @@
 ﻿using PowerArgs.Cli;
+using PowerArgs;
 using PowerArgs.Cli.Physics;
 using System;
 using System.Linq;
@@ -24,7 +25,6 @@ namespace ConsoleZombies
 
         public GameApp()
         {
-
             this.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, () =>
             {
                 implicitPause = true;
@@ -96,7 +96,7 @@ namespace ConsoleZombies
                     {
                         MainCharacter.Current.Inventory = toKeep;
                     }
-                    InputManager.SetKeyMap();
+                    InputManager.SetKeyMap(InputManager.KeyMap);
                     MainCharacter.Current.EatenByZombie.SubscribeForLifetime(() =>
                     {
                         implicitPause = true;
@@ -112,6 +112,51 @@ namespace ConsoleZombies
                         });
                     },scenePanel.LifetimeManager);
                 }
+            });
+        }
+
+        public void ShowMenu()
+        {
+            if (ConsoleApp.Current == this)
+            {
+                ShowMenuInternal();
+            }
+            else
+            {
+                QueueAction(ShowMenuInternal);
+            }
+        }
+
+        private void ShowMenuInternal()
+        {
+            implicitPause = true;
+            GameScene.TogglePause();
+            Dialog.Pick("Game Menu".ToConsoleString(), new DialogOption[]
+            {
+                new DialogOption() { Id = "controls", DisplayText = "Kayboard Controls".ToConsoleString() },
+                new DialogOption() { Id = "options", DisplayText = "Game Options".ToConsoleString() },
+                new DialogOption() { Id = "help", DisplayText = "Help".ToConsoleString() },
+                new DialogOption() { Id = "about", DisplayText = "About".ToConsoleString() },
+            }).Then((menuItem) =>
+            {
+                if (menuItem == null) return;
+                if(menuItem.Id == "controls")
+                {
+                    var editor = new KeyMapEditor(this.InputManager.KeyMap) { Y = 3 };
+                    var scrollPanel = new ScrollablePanel();
+                    scrollPanel.ScrollableContent.Add(editor);
+                    var dialog = new Dialog(scrollPanel);
+                    dialog.Show().Then(() => 
+                    {
+                        GameScene.QueueAction(() => { InputManager.SetKeyMap(InputManager.KeyMap); });
+                        
+                        GameScene.Start();
+                    });
+
+                }
+            }).Finally((p)=>
+            {
+
             });
         }
     }

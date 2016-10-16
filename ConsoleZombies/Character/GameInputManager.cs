@@ -8,7 +8,6 @@ namespace ConsoleZombies
     public class KeyMap : ObservableObject
     {
         public ConsoleKey PrimaryWeaponKey { get { return Get<ConsoleKey>(); } set { Set(value); } }
-        public ConsoleKey PrimaryWeaponAlternateKey { get { return Get<ConsoleKey>(); } set { Set(value); } } 
         public ConsoleKey ExplosiveWeaponKey { get { return Get<ConsoleKey>(); } set { Set(value); } } 
         
 
@@ -27,16 +26,15 @@ namespace ConsoleZombies
 
         public KeyMap()
         {
-            this.PrimaryWeaponKey = ConsoleKey.D;
-            this.PrimaryWeaponAlternateKey = ConsoleKey.F;
+            this.PrimaryWeaponKey = ConsoleKey.F;
             this.ExplosiveWeaponKey = ConsoleKey.G;
 
-            this.MoveUpKey = ConsoleKey.UpArrow;
-            this.MoveDownKey = ConsoleKey.DownArrow;
-            this.MoveLeftKey = ConsoleKey.LeftArrow;
-            this.MoveRightKey = ConsoleKey.RightArrow;
+            this.MoveUpKey = ConsoleKey.W;
+            this.MoveDownKey = ConsoleKey.S;
+            this.MoveLeftKey = ConsoleKey.A;
+            this.MoveRightKey = ConsoleKey.D;
 
-            this.AimToggleKey = ConsoleKey.A;
+            this.AimToggleKey = ConsoleKey.Q;
             this.InteractKey = ConsoleKey.Enter;
 
             this.MenuKey = ConsoleKey.M;
@@ -48,7 +46,7 @@ namespace ConsoleZombies
     {
         public Event ReWired { get; private set; } = new Event();
         public Scene Scene { get; private set; }
-        public ConsoleApp App { get; private set; }
+        public GameApp App { get; private set; }
 
         private Dictionary<ConsoleKey, Action> keyboardMap;
         private Dictionary<ConsoleKey, Action> shiftKeyboardMap;
@@ -57,7 +55,7 @@ namespace ConsoleZombies
         private Lifetime currentMappingLifetime;
         public KeyMap KeyMap { get { return Get<KeyMap>(); } private set { Set(value); } }
 
-        public GameInputManager(Scene scene, ConsoleApp app)
+        public GameInputManager(Scene scene, GameApp app)
         {
             this.Scene = scene;
             this.App = app;
@@ -78,7 +76,8 @@ namespace ConsoleZombies
             shiftKeyboardMap.Clear();
 
             // manage
-            keyboardMap.Add(map.TogglePauseKey, ()=> { Scene.TogglePause(); });
+            keyboardMap.Add(map.TogglePauseKey, ()=> { Scene.TogglePause(); });        
+            keyboardMap.Add(map.MenuKey, () => { App.ShowMenu(); });
 
             // move and aim
             keyboardMap.Add(map.MoveUpKey, () => { MainCharacter.Current.MoveUp(); });
@@ -89,7 +88,6 @@ namespace ConsoleZombies
 
             // fire weapons
             keyboardMap.Add(map.PrimaryWeaponKey,()=> { MainCharacter.Current?.Inventory?.PrimaryWeapon?.TryFire(); });
-            keyboardMap.Add(map.PrimaryWeaponAlternateKey, () => { MainCharacter.Current?.Inventory?.PrimaryWeapon?.TryFire(); });
             keyboardMap.Add(map.ExplosiveWeaponKey, () => { MainCharacter.Current?.Inventory?.ExplosiveWeapon?.TryFire(); });
 
             // doors
