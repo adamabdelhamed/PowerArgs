@@ -168,6 +168,37 @@ namespace PowerArgs.Cli
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
         }
 
+        public static Promise<T?> PickFromEnum<T>(ConsoleString message) where T : struct
+        {
+            Deferred<T?> deferred = Deferred<T?>.Create();
+            var enumVals = Enum.GetValues(typeof(T));
+            List<T> genericVals = new List<T>();
+            foreach(T val in enumVals)
+            {
+                genericVals.Add(val);
+            }
+
+            var innerPromise = Pick(message, genericVals.Select(v => new DialogOption()
+            {
+                Id = v.ToString(),
+                DisplayText = v.ToString().ToConsoleString()
+            }));
+
+            innerPromise.Finally((p) =>
+            {
+                if(p.Exception != null)
+                {
+                    deferred.Reject(p.Exception);
+                } 
+                else
+                {
+                    deferred.Resolve(innerPromise.Result != null ? (T)Enum.Parse(typeof(T),innerPromise.Result.Id) : default(T?));
+                }
+            });
+
+
+            return deferred.Promise;
+        }
 
         public static Promise<DialogOption> Pick(ConsoleString message, IEnumerable<DialogOption> options, bool allowEscapeToCancel = true, int maxHeight = 12)
         {

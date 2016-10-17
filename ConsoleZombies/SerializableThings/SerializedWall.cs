@@ -1,4 +1,5 @@
-﻿using PowerArgs.Cli.Physics;
+﻿using PowerArgs;
+using PowerArgs.Cli.Physics;
 
 namespace ConsoleZombies
 {
@@ -6,12 +7,13 @@ namespace ConsoleZombies
     {
         public int RehydrateOrderHint { get; set; }
         public Rectangle Bounds { get; set; }
+        public ConsoleCharacter Texture { get; set; }
 
         public Thing HydratedThing { get; private set; }
 
         public void Rehydrate(bool IsInLevelBuilderMode)
         {
-            HydratedThing = new Wall() { Bounds = Bounds };
+            HydratedThing = new Wall() { Bounds = Bounds, Texture = Texture };
         }
     }
 
@@ -19,7 +21,7 @@ namespace ConsoleZombies
     {
         protected override ISerializableThing SerializeThing()
         {
-            return new SerializedWall();
+            return new SerializedWall() { Texture = Context.WallPen };
         }
     }
 }

@@ -212,6 +212,14 @@ namespace PowerArgs
         public Promise<T> Promise { get; private set; }
         public T Result { get; private set; }
 
+        public Exception Exception
+        {
+            get
+            {
+                return innerDeferred.Exception;
+            }
+        }
+
         public bool IsFulfilled
         {
             get
@@ -249,6 +257,23 @@ namespace PowerArgs
     {
         private Deferred<T> myDeferred;
         private Promise innerPromise;
+
+        public Exception Exception
+        {
+            get
+            {
+                return myDeferred.Exception;
+            }
+        }
+
+        public T Result
+        {
+            get
+            {
+                return myDeferred.Result;
+            }
+        }
+
         internal Promise(Deferred<T> myDeferred)
         {
             this.myDeferred = myDeferred;

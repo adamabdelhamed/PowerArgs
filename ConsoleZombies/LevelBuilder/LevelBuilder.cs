@@ -25,6 +25,11 @@ namespace ConsoleZombies
 
         public UndoRedoStack UndoStack { get; private set; }
 
+        public ConsoleCharacter WallPen
+        {
+            get; private set;
+        } =  new Wall().Texture;
+
         public LevelBuilder()
         {
             Cursor = new Cursor();
@@ -175,6 +180,18 @@ namespace ConsoleZombies
 
             BrokerToScene(ConsoleKey.U,      () => { UndoStack.Undo(); });
             BrokerToScene(ConsoleKey.R,      () => { UndoStack.Redo(); });
+
+            PushAppHandler(ConsoleKey.T, () => 
+            {
+                Dialog.PickFromEnum<ConsoleColor>("Choose a background color".ToConsoleString())
+                .Then((val) =>
+                {
+                    if (val.HasValue == false) return;
+
+                    this.WallPen = new ConsoleCharacter(this.WallPen.Value, this.WallPen.ForegroundColor, val.Value);
+                });
+            });
+
         }
 
         private void PushAppHandler(ConsoleKey key, Action a, ConsoleModifiers? modifiers = null)

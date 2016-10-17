@@ -4,7 +4,7 @@ namespace ConsoleZombies
 {
     public class SerializedMainCharacter : ISerializableThing
     {
-        public int RehydrateOrderHint { get; set; }
+        public int RehydrateOrderHint { get; set; } = -1;
         public Rectangle Bounds { get; set; }
 
         public Thing HydratedThing { get; private set; }
