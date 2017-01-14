@@ -45,15 +45,7 @@ namespace ConsoleZombies
                 if(impact.ThingHit is IDestructible)
                 {
                     var destructible = impact.ThingHit as IDestructible;
-                    destructible.HealthPoints -= 5*rpg.HealthPointsPerShrapnel;
-                    if (destructible.HealthPoints <= 0)
-                    {
-                        if (impact.ThingHit is MainCharacter)
-                        {
-                            MainCharacter.Current.EatenByZombie.Fire();
-                        }
-                        impact.ThingHit.Scene.Remove(impact.ThingHit);
-                    }
+                    destructible.TakeDamage(5 * rpg.HealthPointsPerShrapnel);
                 }
 
                 rpg.Explode();

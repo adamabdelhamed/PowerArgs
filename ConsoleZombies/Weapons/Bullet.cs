@@ -70,15 +70,7 @@ namespace ConsoleZombies
                 }
                 var destructible = impact.ThingHit as IDestructible;
 
-                destructible.HealthPoints -= this.HealthPoints;
-                if (destructible.HealthPoints <= 0)
-                {
-                    if(impact.ThingHit is MainCharacter)
-                    {
-                        MainCharacter.Current.EatenByZombie.Fire();
-                    }
-                    Scene.Remove(impact.ThingHit);
-                }
+                destructible.TakeDamage(this.HealthPoints);
             }
 
             Scene.Remove(this);

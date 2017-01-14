@@ -27,7 +27,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -53,7 +54,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -79,7 +81,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -105,7 +108,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -131,7 +135,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -157,7 +162,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -183,7 +189,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -209,7 +216,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -235,7 +243,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -261,7 +270,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -287,7 +297,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -313,7 +324,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -339,7 +351,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -365,7 +378,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -391,7 +405,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -417,7 +432,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -443,7 +459,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -469,7 +486,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -495,7 +513,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -521,7 +540,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -547,7 +567,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -573,7 +594,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -599,7 +621,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -625,7 +648,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -651,7 +675,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -677,7 +702,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -703,7 +729,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -729,7 +756,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -755,7 +783,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -781,7 +810,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -807,7 +837,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -833,7 +864,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -859,7 +891,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -885,7 +918,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -911,7 +945,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -937,7 +972,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -963,7 +999,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -989,7 +1026,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1015,7 +1053,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1041,7 +1080,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1067,7 +1107,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1093,7 +1134,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1119,7 +1161,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1145,7 +1188,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1171,7 +1215,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1197,7 +1242,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1223,7 +1269,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1249,7 +1296,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1275,7 +1323,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1301,7 +1350,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1327,7 +1377,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1353,7 +1404,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1379,7 +1431,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1405,7 +1458,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1431,7 +1485,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1457,7 +1512,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1483,7 +1539,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1509,7 +1566,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1535,7 +1593,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1561,7 +1620,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1587,7 +1647,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1613,7 +1674,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1639,7 +1701,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1665,7 +1728,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1691,7 +1755,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1717,7 +1782,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1743,7 +1809,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1769,7 +1836,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1795,7 +1863,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1821,7 +1890,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1847,7 +1917,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1873,7 +1944,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1899,7 +1971,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1925,7 +1998,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1951,7 +2025,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -1977,7 +2052,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2003,7 +2079,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2029,7 +2106,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2055,7 +2133,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2081,7 +2160,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2107,7 +2187,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2133,7 +2214,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2159,7 +2241,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2185,7 +2268,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2211,7 +2295,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2237,7 +2322,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2263,7 +2349,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2289,7 +2376,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2315,7 +2403,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2341,7 +2430,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2367,7 +2457,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2393,7 +2484,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2419,7 +2511,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2445,7 +2538,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2471,7 +2565,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2497,7 +2592,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2523,7 +2619,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2549,7 +2646,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2575,7 +2673,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2601,7 +2700,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2627,7 +2727,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2653,7 +2754,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2679,7 +2781,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2705,7 +2808,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2731,7 +2835,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2757,7 +2862,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2783,7 +2889,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2809,7 +2916,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2835,7 +2943,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2861,7 +2970,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2887,7 +2997,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2913,7 +3024,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2939,7 +3051,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2965,7 +3078,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -2991,7 +3105,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3017,7 +3132,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3043,7 +3159,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3069,7 +3186,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3095,7 +3213,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3121,7 +3240,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3147,7 +3267,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3173,7 +3294,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3199,7 +3321,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3225,7 +3348,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3251,7 +3375,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3277,7 +3402,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3303,7 +3429,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3329,7 +3456,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3355,7 +3483,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3381,7 +3510,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3407,7 +3537,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3433,7 +3564,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3459,7 +3591,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3485,7 +3618,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3511,7 +3645,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3537,7 +3672,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3563,7 +3699,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3589,7 +3726,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3615,7 +3753,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3641,7 +3780,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3667,7 +3807,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3693,7 +3834,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3719,7 +3861,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3745,7 +3888,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3771,7 +3915,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3797,7 +3942,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3823,7 +3969,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3849,7 +3996,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3875,7 +4023,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3901,7 +4050,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3927,7 +4077,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3953,7 +4104,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -3979,7 +4131,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4005,7 +4158,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4031,7 +4185,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4057,7 +4212,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4083,7 +4239,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4109,7 +4266,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4135,7 +4293,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4161,7 +4320,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4187,7 +4347,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4213,7 +4374,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4239,7 +4401,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4265,7 +4428,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4291,7 +4455,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4317,7 +4482,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4343,7 +4509,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4369,7 +4536,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4395,7 +4563,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4421,7 +4590,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4447,7 +4617,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4473,7 +4644,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4499,7 +4671,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4525,7 +4698,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4551,7 +4725,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4577,7 +4752,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4603,7 +4779,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4629,7 +4806,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4655,7 +4833,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4681,7 +4860,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4707,7 +4887,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4733,7 +4914,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4759,7 +4941,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4785,7 +4968,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4811,7 +4995,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4837,7 +5022,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4863,7 +5049,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4889,7 +5076,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4915,7 +5103,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4941,7 +5130,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4967,7 +5157,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -4993,7 +5184,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5019,7 +5211,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5045,7 +5238,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5071,7 +5265,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5097,7 +5292,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5123,7 +5319,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5149,7 +5346,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5175,7 +5373,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5201,7 +5400,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5227,7 +5427,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5253,7 +5454,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5279,7 +5481,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5305,7 +5508,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5331,7 +5535,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5357,7 +5562,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5383,7 +5589,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5409,7 +5616,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5435,7 +5643,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5461,7 +5670,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5487,7 +5697,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5513,7 +5724,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5539,7 +5751,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5565,7 +5778,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5591,7 +5805,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5617,7 +5832,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5643,7 +5859,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5669,7 +5886,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5695,7 +5913,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5721,7 +5940,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5747,7 +5967,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5773,7 +5994,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5799,7 +6021,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5825,7 +6048,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5851,7 +6075,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5877,7 +6102,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5903,7 +6129,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5929,7 +6156,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5955,7 +6183,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -5981,7 +6210,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6007,7 +6237,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6033,7 +6264,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6059,7 +6291,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6085,7 +6318,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6111,7 +6345,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6137,7 +6372,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6163,7 +6399,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6189,7 +6426,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6215,7 +6453,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6241,7 +6480,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6267,7 +6507,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6293,7 +6534,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6319,7 +6561,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6345,7 +6588,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6371,7 +6615,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6397,7 +6642,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6423,7 +6669,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6449,7 +6696,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 11
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6475,7 +6723,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6501,7 +6750,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6527,7 +6777,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6553,7 +6804,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6579,7 +6831,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6605,7 +6858,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6631,7 +6885,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6657,7 +6912,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6683,7 +6939,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6709,7 +6966,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6735,7 +6993,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6761,7 +7020,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6787,7 +7047,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6813,7 +7074,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6839,7 +7101,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6865,7 +7128,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6891,7 +7155,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6917,7 +7182,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6943,7 +7209,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6969,7 +7236,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -6995,7 +7263,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7021,7 +7290,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7047,7 +7317,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7073,7 +7344,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7099,7 +7371,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7125,7 +7398,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7151,7 +7425,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7177,7 +7452,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7203,7 +7479,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7229,7 +7506,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7255,7 +7533,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7281,7 +7560,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7307,7 +7587,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7333,7 +7614,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7359,7 +7641,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7385,7 +7668,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7411,7 +7695,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7437,7 +7722,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7463,7 +7749,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7489,7 +7776,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7515,7 +7803,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7541,7 +7830,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7567,7 +7857,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7593,7 +7884,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7619,7 +7911,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7645,7 +7938,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7671,7 +7965,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7697,7 +7992,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7723,7 +8019,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7749,7 +8046,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7775,7 +8073,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7801,7 +8100,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7827,7 +8127,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7853,7 +8154,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7879,7 +8181,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7905,7 +8208,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7931,7 +8235,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7957,7 +8262,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -7983,7 +8289,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8009,7 +8316,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8035,7 +8343,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8061,7 +8370,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8087,7 +8397,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8113,7 +8424,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8139,7 +8451,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8165,7 +8478,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8191,7 +8505,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8217,7 +8532,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8243,7 +8559,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8269,7 +8586,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8295,7 +8613,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8321,7 +8640,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8347,7 +8667,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8373,7 +8694,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8399,7 +8721,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8425,7 +8748,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8451,7 +8775,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8477,7 +8802,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8503,7 +8829,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8529,7 +8856,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8555,7 +8883,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8581,7 +8910,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8607,7 +8937,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8633,7 +8964,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8659,7 +8991,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8685,7 +9018,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8711,7 +9045,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8737,7 +9072,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8763,7 +9099,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8789,7 +9126,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8815,7 +9153,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8841,7 +9180,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8867,7 +9207,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 6
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8893,7 +9234,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8919,7 +9261,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8945,7 +9288,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8971,7 +9315,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -8997,7 +9342,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9023,7 +9369,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9049,7 +9396,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9075,7 +9423,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9101,7 +9450,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9127,7 +9477,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9153,7 +9504,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9179,7 +9531,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9205,7 +9558,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9231,7 +9585,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9257,7 +9612,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9283,7 +9639,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9309,7 +9666,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9335,7 +9693,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9361,7 +9720,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9387,7 +9747,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9413,7 +9774,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9439,7 +9801,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9465,7 +9828,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9491,7 +9855,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9517,7 +9882,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9543,7 +9909,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9569,7 +9936,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9595,7 +9963,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9621,7 +9990,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9647,7 +10017,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -9673,397 +10044,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 30.1,
-            "Y": 18.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 30.1,
-          "Y": 18.1,
-          "W": 0.8,
-          "H": 0.8
         },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 31.1,
-            "Y": 18.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 31.1,
-          "Y": 18.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 32.1,
-            "Y": 18.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 32.1,
-          "Y": 18.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 33.1,
-            "Y": 18.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 33.1,
-          "Y": 18.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 33.1,
-            "Y": 17.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 33.1,
-          "Y": 17.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 32.1,
-            "Y": 17.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 32.1,
-          "Y": 17.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 31.1,
-            "Y": 17.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 31.1,
-          "Y": 17.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 30.1,
-            "Y": 17.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 30.1,
-          "Y": 17.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 30.1,
-            "Y": 16.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 30.1,
-          "Y": 16.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 31.1,
-            "Y": 16.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 31.1,
-          "Y": 16.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 32.1,
-            "Y": 16.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 32.1,
-          "Y": 16.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 33.1,
-            "Y": 16.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 33.1,
-          "Y": 16.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 34.1,
-            "Y": 16.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 34.1,
-          "Y": 16.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 34.1,
-            "Y": 17.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 34.1,
-          "Y": 17.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
-      },
-      {
-        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
-        "Bounds": {
-          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
-          "Location": {
-            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
-            "X": 34.1,
-            "Y": 18.1
-          },
-          "Size": {
-            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
-            "W": 0.8,
-            "H": 0.8
-          },
-          "X": 34.1,
-          "Y": 18.1,
-          "W": 0.8,
-          "H": 0.8
-        },
-        "Texture": {
-          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
-          "Value": " ",
-          "ForegroundColor": 7,
-          "BackgroundColor": 10
-        }
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedZombie, ConsoleZombies",
@@ -10249,7 +10231,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10275,7 +10258,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10301,7 +10285,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10327,7 +10312,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10353,7 +10339,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10379,7 +10366,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10405,7 +10393,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10431,7 +10420,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10457,7 +10447,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10483,7 +10474,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10509,7 +10501,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10535,7 +10528,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10561,7 +10555,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10587,7 +10582,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10613,7 +10609,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10639,7 +10636,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedPortal, ConsoleZombies",
@@ -10686,7 +10684,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10712,7 +10711,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10738,7 +10738,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10764,7 +10765,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10790,7 +10792,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10816,7 +10819,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10842,7 +10846,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10868,7 +10873,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10894,7 +10900,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10920,7 +10927,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10946,7 +10954,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10972,7 +10981,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -10998,7 +11008,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11024,7 +11035,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11050,7 +11062,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11076,7 +11089,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11102,7 +11116,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11128,7 +11143,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11154,7 +11170,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11180,7 +11197,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11206,7 +11224,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11232,7 +11251,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11258,7 +11278,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11284,7 +11305,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11310,7 +11332,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11336,7 +11359,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11362,7 +11386,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11388,7 +11413,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11414,7 +11440,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11440,7 +11467,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11466,7 +11494,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11492,7 +11521,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11518,7 +11548,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11544,7 +11575,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11570,7 +11602,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11596,7 +11629,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11622,7 +11656,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11648,7 +11683,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11674,7 +11710,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11700,7 +11737,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11726,7 +11764,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11752,7 +11791,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
@@ -11778,7 +11818,8 @@
           "Value": " ",
           "ForegroundColor": 7,
           "BackgroundColor": 8
-        }
+        },
+        "HealthPoints": 20.0
       },
       {
         "$type": "ConsoleZombies.SerializedMainCharacter, ConsoleZombies",
@@ -11865,6 +11906,941 @@
         },
         "AmmoType": "ConsoleZombies.PistolAmmo",
         "Amount": 10
+      },
+      {
+        "$type": "ConsoleZombies.SerializedAmmo, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 69.1,
+            "Y": 18.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 69.1,
+          "Y": 18.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "AmmoType": "ConsoleZombies.RPGAmmo",
+        "Amount": 10
+      },
+      {
+        "$type": "ConsoleZombies.SerializedAmmo, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 67.1,
+            "Y": 18.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 67.1,
+          "Y": 18.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "AmmoType": "ConsoleZombies.RPGAmmo",
+        "Amount": 10
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 18.1,
+            "Y": 1.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 18.1,
+          "Y": 1.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 18.1,
+            "Y": 2.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 18.1,
+          "Y": 2.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 18.1,
+            "Y": 3.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 18.1,
+          "Y": 3.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 17.1,
+            "Y": 3.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 17.1,
+          "Y": 3.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 16.1,
+            "Y": 3.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 16.1,
+          "Y": 3.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 16.1,
+            "Y": 4.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 16.1,
+          "Y": 4.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 15.1,
+            "Y": 4.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 15.1,
+          "Y": 4.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 14.1,
+            "Y": 4.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 14.1,
+          "Y": 4.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 14.1,
+            "Y": 5.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 14.1,
+          "Y": 5.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 15.1,
+            "Y": 5.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 15.1,
+          "Y": 5.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 15.1,
+            "Y": 6.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 15.1,
+          "Y": 6.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 15.1,
+            "Y": 7.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 15.1,
+          "Y": 7.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 16.1,
+            "Y": 7.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 16.1,
+          "Y": 7.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 16.1,
+            "Y": 8.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 16.1,
+          "Y": 8.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 17.1,
+            "Y": 8.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 17.1,
+          "Y": 8.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 17.1,
+            "Y": 9.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 17.1,
+          "Y": 9.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 18.1,
+            "Y": 9.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 18.1,
+          "Y": 9.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 18.1,
+            "Y": 10.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 18.1,
+          "Y": 10.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 19.1,
+            "Y": 10.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 19.1,
+          "Y": 10.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 19.1,
+            "Y": 11.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 19.1,
+          "Y": 11.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 20.1,
+            "Y": 11.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 20.1,
+          "Y": 11.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 20.1,
+            "Y": 12.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 20.1,
+          "Y": 12.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 20.1,
+            "Y": 13.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 20.1,
+          "Y": 13.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 20.1,
+            "Y": 14.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 20.1,
+          "Y": 14.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 20.1,
+            "Y": 15.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 20.1,
+          "Y": 15.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 19.1,
+            "Y": 15.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 19.1,
+          "Y": 15.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 19.1,
+            "Y": 15.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 19.1,
+          "Y": 15.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 18.1,
+            "Y": 15.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 18.1,
+          "Y": 15.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 18.1,
+            "Y": 16.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 18.1,
+          "Y": 16.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 17.1,
+            "Y": 16.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 17.1,
+          "Y": 16.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 16.1,
+            "Y": 17.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 16.1,
+          "Y": 17.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 15.1,
+            "Y": 18.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 15.1,
+          "Y": 18.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
+      },
+      {
+        "$type": "ConsoleZombies.SerializedWall, ConsoleZombies",
+        "Bounds": {
+          "$type": "PowerArgs.Cli.Physics.Rectangle, PowerArgs",
+          "Location": {
+            "$type": "PowerArgs.Cli.Physics.Location, PowerArgs",
+            "X": 15.1,
+            "Y": 19.1
+          },
+          "Size": {
+            "$type": "PowerArgs.Cli.Physics.Size, PowerArgs",
+            "W": 0.8,
+            "H": 0.8
+          },
+          "X": 15.1,
+          "Y": 19.1,
+          "W": 0.8,
+          "H": 0.8
+        },
+        "Texture": {
+          "$type": "PowerArgs.ConsoleCharacter, PowerArgs",
+          "Value": " ",
+          "ForegroundColor": 7,
+          "BackgroundColor": 6
+        },
+        "HealthPoints": -1.0
       }
     ]
   }

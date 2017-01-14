@@ -26,7 +26,7 @@ namespace ConsoleZombies
 
         public KeyMap()
         {
-            this.PrimaryWeaponKey = ConsoleKey.F;
+            this.PrimaryWeaponKey = ConsoleKey.H;
             this.ExplosiveWeaponKey = ConsoleKey.G;
 
             this.MoveUpKey = ConsoleKey.W;

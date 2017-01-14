@@ -30,6 +30,8 @@ namespace ConsoleZombies
             get; private set;
         } =  new Wall().Texture;
 
+        public float WallPenHP = 10;
+
         public LevelBuilder()
         {
             Cursor = new Cursor();
@@ -148,20 +150,20 @@ namespace ConsoleZombies
 
             BrokerToScene(ConsoleKey.M, () => { UndoStack.Do(new DropMainCharacterAction() { Context = this }); });
 
-            BrokerToScene(ConsoleKey.Z,      () => { UndoStack.Do(new DropZombieAction() { Context = this }); });
-            PushAppHandler(ConsoleKey.A,     () => { UndoStack.Do(new DropAmmoAction() { Context = this }); });
-            PushAppHandler(ConsoleKey.P,     () => { UndoStack.Do(new DropPortalAction() {  Context = this }); });
-            BrokerToScene(ConsoleKey.D,      () =>
-             {
-                 if(PositionDoorAction.IsReadyForDrop(this) == false)
-                 {
-                     UndoStack.Do(new PositionDoorAction(false) { Context = this });
-                 }
-                 else
-                 {
-                     UndoStack.Do(new DropDoorAction() { Context = this });
-                 }
-             });
+            BrokerToScene(ConsoleKey.Z, () => { UndoStack.Do(new DropZombieAction() { Context = this }); });
+            PushAppHandler(ConsoleKey.A, () => { UndoStack.Do(new DropAmmoAction() { Context = this }); });
+            PushAppHandler(ConsoleKey.P, () => { UndoStack.Do(new DropPortalAction() { Context = this }); });
+            BrokerToScene(ConsoleKey.D, () =>
+        {
+            if (PositionDoorAction.IsReadyForDrop(this) == false)
+            {
+                UndoStack.Do(new PositionDoorAction(false) { Context = this });
+            }
+            else
+            {
+                UndoStack.Do(new DropDoorAction() { Context = this });
+            }
+        });
 
             BrokerToScene(ConsoleKey.D, () =>
             {
@@ -178,10 +180,10 @@ namespace ConsoleZombies
 
             BrokerToScene(ConsoleKey.Delete, () => { UndoStack.Do(new DeleteAction() { Context = this }); });
 
-            BrokerToScene(ConsoleKey.U,      () => { UndoStack.Undo(); });
-            BrokerToScene(ConsoleKey.R,      () => { UndoStack.Redo(); });
+            BrokerToScene(ConsoleKey.U, () => { UndoStack.Undo(); });
+            BrokerToScene(ConsoleKey.R, () => { UndoStack.Redo(); });
 
-            PushAppHandler(ConsoleKey.T, () => 
+            PushAppHandler(ConsoleKey.T, () =>
             {
                 Dialog.PickFromEnum<ConsoleColor>("Choose a background color".ToConsoleString())
                 .Then((val) =>
@@ -189,9 +191,24 @@ namespace ConsoleZombies
                     if (val.HasValue == false) return;
 
                     this.WallPen = new ConsoleCharacter(this.WallPen.Value, this.WallPen.ForegroundColor, val.Value);
+                }).Then((val) =>
+                {
+                    Dialog.ShowTextInput("Pick a character".ToConsoleString(), (result) =>
+                    {
+                        this.WallPen = new ConsoleCharacter(result.Length == 0 ? ' ' : result[0].Value, WallPen.ForegroundColor, WallPen.BackgroundColor);
+
+                        Dialog.ShowTextInput("Pick HP".ToConsoleString(), (hpResult) =>
+                        {
+                            float hpVal;
+                            if (float.TryParse(hpResult.ToString(), out hpVal) == false)
+                            {
+                                hpVal = 10;
+                            }
+                            this.WallPenHP = hpVal;
+                        });
+                    });
                 });
             });
-
         }
 
         private void PushAppHandler(ConsoleKey key, Action a, ConsoleModifiers? modifiers = null)

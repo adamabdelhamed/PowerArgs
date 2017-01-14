@@ -9,11 +9,13 @@ namespace ConsoleZombies
         public Rectangle Bounds { get; set; }
         public ConsoleCharacter Texture { get; set; }
 
+        public float HealthPoints { get; set; } = new Wall().HealthPoints;
+
         public Thing HydratedThing { get; private set; }
 
         public void Rehydrate(bool IsInLevelBuilderMode)
         {
-            HydratedThing = new Wall() { Bounds = Bounds, Texture = Texture };
+            HydratedThing = new Wall() { Bounds = Bounds, Texture = Texture, HealthPoints = HealthPoints };
         }
     }
 
@@ -21,7 +23,7 @@ namespace ConsoleZombies
     {
         protected override ISerializableThing SerializeThing()
         {
-            return new SerializedWall() { Texture = Context.WallPen };
+            return new SerializedWall() { Texture = Context.WallPen, HealthPoints = Context.WallPenHP };
         }
     }
 }
