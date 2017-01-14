@@ -1,6 +1,8 @@
-﻿using System;
+﻿using PowerArgs.Cli;
+using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerArgs
 {
@@ -27,7 +29,7 @@ namespace PowerArgs
         /// <summary>
         /// Handlers to call after the deferred work is complete
         /// </summary>
-        internal List<Action> Thens { get; private set; } 
+        internal List<Action> Thens { get; private set; }
 
         /// <summary>
         /// Handlers to call if the deferred work fails
@@ -68,21 +70,22 @@ namespace PowerArgs
         /// <param name="ex">the details of the rejection</param>
         public void Reject(Exception ex)
         {
-            lock(SyncObject)
+            lock (SyncObject)
             {
                 if (IsFulfilled) throw new InvalidOperationException("Already fulfilled");
+
+                Exception = ex;
 
                 foreach (var action in Fails)
                 {
                     action(ex);
                 }
 
-                foreach(var action in Finalies)
+                foreach (var action in Finalies)
                 {
                     action(Promise);
                 }
 
-                Exception = ex;
                 IsFulfilled = true;
             }
         }
@@ -139,7 +142,7 @@ namespace PowerArgs
         /// <returns>this promise</returns>
         public Promise Then(Action a)
         {
-            lock(myDeferred.SyncObject)
+            lock (myDeferred.SyncObject)
             {
                 if (myDeferred.IsFulfilled && myDeferred.Exception == null)
                 {
@@ -153,6 +156,14 @@ namespace PowerArgs
             return this;
         }
 
+        public Promise Then(ConsoleApp app, Action a)
+        {
+            return Then(() =>
+            {
+                app.QueueAction(a);
+            });
+        }
+
         /// <summary>
         /// Registers an action to run if this promise is rejected.
         /// </summary>
@@ -160,7 +171,7 @@ namespace PowerArgs
         /// <returns>this promise</returns>
         public Promise Fail(Action<Exception> a)
         {
-            lock(myDeferred.SyncObject)
+            lock (myDeferred.SyncObject)
             {
                 if (myDeferred.IsFulfilled && myDeferred.Exception != null)
                 {
@@ -195,15 +206,107 @@ namespace PowerArgs
             return this;
         }
 
+        public Promise Finally(ConsoleApp app, Action<Promise> a)
+        {
+            return Finally((p) =>
+            {
+                app.QueueAction(() => a(p));
+            });
+        }
+
         /// <summary>
         /// Blocks the current thread until the promise is resolved or rejected
         /// </summary>
-        public void Wait()
+        public void Wait(int sleepTime = 1)
         {
             while (myDeferred.IsFulfilled == false)
             {
-                Thread.Sleep(1);
+                Thread.Sleep(sleepTime);
             }
+
+            if (myDeferred.Exception != null)
+            {
+                throw new Exception("The promise was rejected", myDeferred.Exception);
+            }
+        }
+
+        public Task AsAwaitable()
+        {
+            Func<Task> ret = new Func<Task>(async () =>
+            {
+                while (myDeferred.IsFulfilled == false)
+                {
+                    await Task.Delay(1);
+                }
+
+                if (myDeferred.Exception != null)
+                {
+                    throw new Exception("The promise was rejected", myDeferred.Exception);
+                }
+            });
+            return ret();
+        }
+
+        public static Promise WhenAll(List<Promise> others)
+        {
+            List<Exception> aggregateExceptions = new List<Exception>();
+            Deferred outerDeferred = Deferred.Create();
+
+            int waitCount = others.Count;
+            foreach (var promise in others)
+            {
+                promise.Finally((p) =>
+                {
+                    if (p.Exception != null)
+                    {
+                        aggregateExceptions.Add(p.Exception);
+                    }
+
+                    var decrementResult = Interlocked.Decrement(ref waitCount);
+                    if (decrementResult == 0)
+                    {
+                        if (aggregateExceptions.Count == 0)
+                        {
+                            outerDeferred.Resolve();
+                        }
+                        else
+                        {
+                            outerDeferred.Reject(new AggregateException(aggregateExceptions.ToArray()));
+                        }
+                    }
+                });
+            }
+
+            return outerDeferred.Promise;
+        }
+
+        public static Promise WhenAnyFail(List<Promise> others)
+        {
+            Deferred outerDeferred = Deferred.Create();
+
+            int waitCount = others.Count;
+            foreach (var promise in others)
+            {
+                promise.Finally((p) =>
+                {
+                    lock (outerDeferred)
+                    {
+                        if (p.Exception != null && outerDeferred.IsFulfilled == false)
+                        {
+                            outerDeferred.Resolve();
+                        }
+
+
+                        var decrementResult = Interlocked.Decrement(ref waitCount);
+                        if (decrementResult == 0 && outerDeferred.IsFulfilled == false)
+                        {
+                            outerDeferred.Reject(new Exception("None of the promises failed"));
+                        }
+                    }
+                });
+            }
+
+            return outerDeferred.Promise;
         }
     }
 
@@ -240,7 +343,7 @@ namespace PowerArgs
         {
             return new Deferred<T>();
         }
-        
+
         public void Resolve(T result)
         {
             this.Result = result;
