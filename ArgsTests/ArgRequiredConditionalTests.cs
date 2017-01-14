@@ -82,7 +82,37 @@ namespace ArgsTests
             [ArgRequired(If = "!FastTrack")]
             public string SlowInput { get; set; }
         }
-        
+
+        [TabCompletion("$")]
+        public class KeepAskingArgs
+        {
+            [PromptIfEmpty(KeepAsking = true)]
+            public string Name { get; set; }
+        }
+
+        [TabCompletion("$")]
+        public class AskOnceArgs
+        {
+            [PromptIfEmpty]
+            public string Name { get; set; }
+        }
+
+        [TestMethod]
+        public void TestKeepAskingOnPromptIfEmpty()
+        {
+            TestConsoleProvider.SimulateConsoleInput("{enter}{enter}Adam{enter}");
+            var parsed = Args.Parse<KeepAskingArgs>("$");
+            Assert.AreEqual("Adam", parsed.Name);
+        }
+
+        [TestMethod]
+        public void TestAskOnceOnPromptIfEmpty()
+        {
+            TestConsoleProvider.SimulateConsoleInput("{enter}{enter}Adam{enter}");
+            var parsed = Args.Parse<AskOnceArgs>("$");
+            Assert.AreEqual(null, parsed.Name);
+        }
+
         [TestMethod]
         public void TestSimpleUnlessArgsWithTypo()
         {

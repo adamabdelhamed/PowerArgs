@@ -22,30 +22,40 @@ namespace PowerArgs
         public Type HighlighterConfiguratorType { get; set; }
 
         /// <summary>
+        /// If set to true the prompt will only run once on empty.  Program execution will continue if the value given to the prompt is empty
+        /// </summary>
+        public bool KeepAsking { get; set; }
+
+        /// <summary>
         /// Prompts the user to enter a value for the given property in the case that the option was specified with no value
         /// </summary>
         /// <param name="context">the parser context</param>
         public override void BeforePopulateProperty(ArgHook.HookContext context)
         {
-            if (context.ArgumentValue == string.Empty)
+            if (string.IsNullOrEmpty(context.ArgumentValue))
             {
-                var cli = new CliHelper();
-
-                ITabCompletionHandler tabHandler;
-                IHighlighterConfigurator highlighterConfigurator;
-
-                if (TabCompletionHandlerType.TryCreate<ITabCompletionHandler>(out tabHandler))
+                do
                 {
-                    cli.Reader.TabHandler.TabCompletionHandlers.Add(tabHandler);
-                }
+                    var cli = new CliHelper();
 
-                if (HighlighterConfiguratorType.TryCreate<IHighlighterConfigurator>(out highlighterConfigurator))
-                {
-                    cli.Reader.Highlighter = new SimpleSyntaxHighlighter();
-                    highlighterConfigurator.Configure(cli.Reader.Highlighter);
-                }
+                    ITabCompletionHandler tabHandler;
+                    IHighlighterConfigurator highlighterConfigurator;
 
-                context.ArgumentValue = cli.PromptForLine("Enter value for " + context.CurrentArgument.DefaultAlias);
+                    if (TabCompletionHandlerType.TryCreate<ITabCompletionHandler>(out tabHandler))
+                    {
+                        cli.Reader.TabHandler.TabCompletionHandlers.Add(tabHandler);
+                    }
+
+                    if (HighlighterConfiguratorType.TryCreate<IHighlighterConfigurator>(out highlighterConfigurator))
+                    {
+                        cli.Reader.Highlighter = new SimpleSyntaxHighlighter();
+                        highlighterConfigurator.Configure(cli.Reader.Highlighter);
+                    }
+
+                    var result = cli.PromptForLine("Enter value for " + context.CurrentArgument.DefaultAlias);
+                    result = result == "" ? null : result;
+                    context.ArgumentValue = result;
+                } while (KeepAsking && context.ArgumentValue == null);
             }
         }
     }
