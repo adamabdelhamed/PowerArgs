@@ -2,7 +2,7 @@
 {
     /// <summary>
     /// Use this attribute to hide an argument from the usage output.  Users will still be able to provide
-    /// the argument, but it will be undocumented.  This is useful if you want to invlude some secret commands
+    /// the argument, but it will be undocumented.  This is useful if you want to include some secret commands
     /// or diagnostic commands.
     /// </summary>
     public class ArgHiddenFromUsage : UsageHook
