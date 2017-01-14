@@ -67,16 +67,11 @@ namespace PowerArgs.Cli
             
             parent.SynchronizeForLifetime(nameof(ConsoleControl.Bounds), () =>
             {
-                if(child == ConsoleApp.Current.LayoutRoot)
-                {
-
-                }
-
                 if (parent.Height == 0 || child.Height == 0) return;
 
                 var gap = parent.Height - child.Height;
                 var y = gap / 2;
-                child.Y = y;
+                child.Y = Math.Max(0, y);
             }, parent.LifetimeManager);
 
             return child;
@@ -92,7 +87,7 @@ namespace PowerArgs.Cli
 
                 var gap = parent.Width - child.Width;
                 var x = gap / 2;
-                child.X = x;
+                child.X = Math.Max(0,x);
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
             child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
@@ -119,6 +114,35 @@ namespace PowerArgs.Cli
                 newBounds.Height -= effectivePadding.Bottom;
 
                 child.Bounds = newBounds;
+            };
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            syncAction();
+            return child;
+        }
+
+
+        public static T FillAndPreserveAspectRatio<T>(this T child, ConsoleControl parent = null, Thickness? padding = null) where T : ConsoleControl
+        {
+            parent = parent ?? child.Parent;
+            var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
+            Action syncAction = () =>
+            {
+                if (parent.Width == 0 || parent.Height == 0) return;
+
+                var aspectRatio = (float)child.Width / child.Height;
+                var newW = parent.Width - (effectivePadding.Left + effectivePadding.Right);
+                var newH = (int)Math.Round(newW / aspectRatio);
+
+                if (newH > parent.Height)
+                {
+                    newH = parent.Height;
+                    newW = (int)Math.Round(newH * aspectRatio);
+                }
+
+                var newLeft = (parent.Width - newW) / 2;
+                var newTop = (parent.Height - newH) / 2;
+
+                child.Bounds = new Rectangle(newLeft, newTop, newW, newH);
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
             syncAction();

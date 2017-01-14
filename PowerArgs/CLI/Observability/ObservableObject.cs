@@ -1,13 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Linq;
+using System.Reflection;
 
 namespace PowerArgs.Cli
 {
+    public interface IObservableObject
+    {
+        bool SuppressEqualChanges { get; set; }
+        IDisposable SubscribeUnmanaged(string propertyName, Action handler);
+        void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager);
+        IDisposable SynchronizeUnmanaged(string propertyName, Action handler);
+        void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager);
+
+    }
+
     /// <summary>
     /// A class that makes it easy to define an object with observable properties
     /// </summary>
-    public class ObservableObject : Lifetime
+    public class ObservableObject : Lifetime, IObservableObject
     {
         /// <summary>
         /// Subscribe or synchronize using this key to receive notifications when any property changes
@@ -23,13 +35,19 @@ namespace PowerArgs.Cli
         public bool SuppressEqualChanges { get; set; }
 
         /// <summary>
+        /// DeepObservableRoot
+        /// </summary>
+        public IObservableObject DeepObservableRoot { get; private set; }
+
+        /// <summary>
         /// Creates a new bag and optionally sets the notifier object.
         /// </summary>
-        public ObservableObject()
+        public ObservableObject(IObservableObject proxy = null)
         {
             SuppressEqualChanges = true;
             subscribers = new Dictionary<string, List<PropertyChangedSubscription>>();
             values = new Dictionary<string, object>();
+            DeepObservableRoot = proxy;
         }
 
         /// <summary>
@@ -83,20 +101,86 @@ namespace PowerArgs.Cli
         /// <param name="propertyName">The name of the property to subscribe to or ObservableObject.AnyProperty if you want to be notified of any property change.</param>
         /// <param name="handler">The action to call for notifications</param>
         /// <returns>A subscription that will receive notifications until it is disposed</returns>
-        public PropertyChangedSubscription SubscribeUnmanaged(string propertyName, Action handler)
+        public IDisposable SubscribeUnmanaged(string propertyName, Action handler)
         {
-            var sub = new PropertyChangedSubscription(propertyName, handler, CleanupSubscription);
-
-            List<PropertyChangedSubscription> subsForProperty;
-            if (subscribers.TryGetValue(propertyName, out subsForProperty) == false)
+            if (propertyName.Contains(".") == false)
             {
-                subsForProperty = new List<PropertyChangedSubscription>();
-                subscribers.Add(propertyName, subsForProperty);
+                var sub = new PropertyChangedSubscription(propertyName, handler, CleanupSubscription);
+
+                List<PropertyChangedSubscription> subsForProperty;
+                if (subscribers.TryGetValue(propertyName, out subsForProperty) == false)
+                {
+                    subsForProperty = new List<PropertyChangedSubscription>();
+                    subscribers.Add(propertyName, subsForProperty);
+                }
+
+                subsForProperty.Add(sub);
+
+                return sub;
+            }
+            else
+            {
+                return DeepSubscribeInternal(propertyName, handler);
+            }
+        }
+
+        private IDisposable DeepSubscribeInternal(string path, Action handler, Lifetime rootLifetime = null)
+        {
+            rootLifetime = rootLifetime ?? new Lifetime();
+            var observableRoot = DeepObservableRoot ?? this;
+            IObservableObject currentObservable = observableRoot;
+            var pathExpression = ObjectPathExpression.Parse(path);
+            List<IObjectPathElement> currentPath = new List<IObjectPathElement>();
+
+            var anyChangeLifetime = new Lifetime();
+            for (int i = 0; i < pathExpression.Elements.Count; i++)
+            {
+                var propertyElement = pathExpression.Elements[i] as PropertyPathElement;
+                if (propertyElement == null)
+                {
+                    throw new NotSupportedException("Indexers are not supported for deep observability");
+                }
+
+                currentPath.Add(propertyElement);
+
+                ObjectPathExpression.TraceNode eval;
+
+                if (i == pathExpression.Elements.Count - 1 && propertyElement.PropertyName == ObservableObject.AnyProperty)
+                {
+                    eval = new ObjectPathExpression.TraceNode() { Value = null };
+                }
+                else
+                {
+                    eval = new ObjectPathExpression(currentPath).EvaluateAndTraceInfo(observableRoot).Last();
+                    if (i != pathExpression.Elements.Count - 1 && (eval.MemberInfo as PropertyInfo).PropertyType.GetInterfaces().Contains(typeof(IObservableObject)) == false)
+                    {
+                        throw new NotSupportedException($"element {eval.MemberInfo.Name} is not observable");
+                    }
+                }
+
+                currentObservable.SubscribeForLifetime(propertyElement.PropertyName, () =>
+                {
+                    handler();
+                    if (anyChangeLifetime.IsExpired == false)
+                    {
+                        anyChangeLifetime.Dispose();
+                    }
+
+                    if (rootLifetime.IsExpired == false)
+                    {
+                        DeepSubscribeInternal(path, handler, rootLifetime);
+                    }
+                }, EarliestOf(anyChangeLifetime, rootLifetime).LifetimeManager);
+
+                currentObservable = eval.Value as IObservableObject;
+
+                if(currentObservable == null)
+                {
+                    break;
+                }
             }
 
-            subsForProperty.Add(sub);
-
-            return sub;
+            return rootLifetime;
         }
 
         /// <summary>
@@ -118,7 +202,7 @@ namespace PowerArgs.Cli
         /// <param name="propertyName">The name of the property to subscribe to or ObservableObject.AnyProperty if you want to be notified of any property change.</param>
         /// <param name="handler">The action to call for notifications</param>
         /// <returns>A subscription that will receive notifications until it is disposed</returns>
-        public PropertyChangedSubscription SynchronizeUnmanaged(string propertyName, Action handler)
+        public IDisposable SynchronizeUnmanaged(string propertyName, Action handler)
         {
             handler();
             return SubscribeUnmanaged(propertyName, handler);
@@ -137,12 +221,25 @@ namespace PowerArgs.Cli
             var sub = SynchronizeUnmanaged(propertyName, handler);
             lifetimeManager.Manage(sub);
         }
+
+        public Lifetime GetPropertyValueLifetime(string propertyName)
+        {
+            Lifetime ret = new Lifetime();
+            IDisposable sub = null;
+            sub = SubscribeUnmanaged(propertyName, () =>
+            {
+                sub.Dispose();
+                ret.Dispose();
+            });
+
+            return ret;
+        }
        
         /// <summary>
         /// Fires the PropertyChanged event with the given property name.
         /// </summary>
         /// <param name="propertyName">the name of the property that changed</param>
-        protected void FirePropertyChanged(string propertyName)
+        public void FirePropertyChanged(string propertyName)
         {
             List<PropertyChangedSubscription> filteredSubs;
             if(subscribers.TryGetValue(propertyName, out filteredSubs))

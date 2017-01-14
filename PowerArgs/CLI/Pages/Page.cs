@@ -5,6 +5,9 @@ using System.ComponentModel;
 using System.Linq;
 namespace PowerArgs.Cli
 {
+    [MarkupIgnore("Route")]
+    [MarkupIgnore("IsDefaultRoute")]
+    [MarkupIgnore("ViewModelType")]
     public class Page : ConsolePanel
     {
         public ReadOnlyDictionary<string,string> RouteVariables { get; internal set; }
@@ -19,7 +22,7 @@ namespace PowerArgs.Cli
         public ProgressOperationsManager ProgressOperationManager { get; private set; }
         private Dialog progressOperationManagerDialog;
 
-        private PropertyChangedSubscription appResizeSubscription;
+        private IDisposable appResizeSubscription;
         
         public PageStack PageStack
         {
@@ -104,12 +107,12 @@ namespace PowerArgs.Cli
             {
                 Dialog.ShowMessage("Are you sure you want to quit?".ToConsoleString(), (choice) =>
                  {
-                     if(choice != null && choice.DisplayText == "Yes")
+                     if(choice != null && choice.DisplayText.StringValue == "Yes")
                      {
                          Application.Stop();
                      }
 
-                 }, true, 10, new DialogButton() { DisplayText = "Yes" }, new DialogButton() { DisplayText = "No" });
+                 }, true, 10, new DialogButton() { DisplayText = "Yes".ToConsoleString() }, new DialogButton() { DisplayText = "No".ToConsoleString() });
             }
             else if(consolePageApp.AllowEscapeToExit)
             {

@@ -38,7 +38,6 @@ namespace PowerArgs.Cli
             return sub;
         }
 
-
         public void SubscribeForLifetime(Action handler, LifetimeManager lifetimeManager)
         {
             var sub = SubscribeUnmanaged(handler);

@@ -24,6 +24,35 @@ namespace PowerArgs
             currentIndex = -1;
         }
 
+        public int Position
+        {
+            get
+            {
+                return currentIndex;
+            }
+            set
+            {
+                currentIndex = value;
+            }
+        }
+
+        public T Current
+        {
+            get
+            {
+                return tokens[Position];
+            }
+        }
+
+        public void RewindOne()
+        {
+            if (currentIndex == -1)
+            {
+                throw new IndexOutOfRangeException();
+            }
+            currentIndex--;
+        }
+
         /// <summary>
         /// Advances the reader to the next token
         /// </summary>
@@ -40,6 +69,30 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Advances the reader and asserts that there is a value and that it matches the expected value.  If the assertion
+        /// fails then a FormatException is thrown.
+        /// </summary>
+        /// <param name="skipWhiteSpace">determines if whitespace tokens are skipped</param>
+        /// <param name="expectedValue">the token value to expect</param>
+        /// <param name="comparison">how to compare the strings</param>
+        /// <returns>the token which matches the expected value</returns>
+        public T Expect(string expectedValue, bool skipWhiteSpace = false, StringComparison comparison = StringComparison.Ordinal)
+        {
+            T ret;
+            if (TryAdvance(out ret, skipWhiteSpace) == false)
+            {
+                throw new FormatException($"Expected '{expectedValue}', got end of string");
+            }
+
+            if (ret.Value.Equals(expectedValue, comparison) == false)
+            {
+                throw new FormatException($"Expected '{expectedValue}', got '{ret.Value}' @ {ret.Position}");
+            }
+
+            return ret;
+        }
+
+        /// <summary>
         /// Gets the next token in the list without actually advancing the reader
         /// </summary>
         /// <param name="skipWhitespace">If true, the reader will skip past whitespace tokens when reading</param>
@@ -48,7 +101,7 @@ namespace PowerArgs
         {
             T ret;
             int lastPeekIndex;
-            if (TryPeek(out ret, out lastPeekIndex,skipWhitespace: skipWhitespace) == false)
+            if (TryPeek(out ret, out lastPeekIndex, skipWhitespace: skipWhitespace) == false)
             {
                 throw new IndexOutOfRangeException("Unexpected end of file");
             }
@@ -65,7 +118,7 @@ namespace PowerArgs
         {
             int peekIndex;
             bool peekResult = TryPeekOnce(out ret, out peekIndex, skipWhitespace: skipWhitespace);
-            if(peekResult)
+            if (peekResult)
             {
                 currentIndex = peekIndex;
                 return true;
@@ -98,7 +151,7 @@ namespace PowerArgs
         /// <returns>True if the reader peeked at a value, false otherwise</returns>
         public bool TryPeek(out T ret, out int lastPeekIndex, int lookAhead = 1, bool skipWhitespace = false)
         {
-            if(lookAhead <= 0)
+            if (lookAhead <= 0)
             {
                 throw new ArgumentOutOfRangeException("lookAhead must be >= 1");
             }
@@ -106,7 +159,7 @@ namespace PowerArgs
             ret = null;
             lastPeekIndex = -1;
 
-            for (int i = 0; i < lookAhead; i++ )
+            for (int i = 0; i < lookAhead; i++)
             {
                 if (TryPeekOnce(out ret, out lastPeekIndex, skipWhitespace) == false)
                 {
@@ -152,10 +205,10 @@ namespace PowerArgs
         /// <param name="skipWhitespace">If true, whitespace tokens will not be included in the output.  Tokens that have
         /// whitespace and non whitespace characters will always be included</param>
         /// <returns>all the tokens in the list concatenated into a single string, with whitespace tokens optionally excluded</returns>
-        public string ToString(bool skipWhitespace= false)
+        public string ToString(bool skipWhitespace = false)
         {
             var ret = "";
-            foreach(var token in tokens)
+            foreach (var token in tokens)
             {
                 if (skipWhitespace == true && string.IsNullOrWhiteSpace(token.Value))
                 {

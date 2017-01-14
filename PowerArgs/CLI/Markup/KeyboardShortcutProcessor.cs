@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
-    public class KeyboardShortcutProcessor : IMarkupProcessor
+    internal class KeyboardShortcutProcessor : IMarkupProcessor
     {
         public void Process(ParserContext context)
         {

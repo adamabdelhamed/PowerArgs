@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PowerArgs.Cli
 {
@@ -57,9 +58,32 @@ namespace PowerArgs.Cli
             return false;
         }
 
+        private IEnumerable<ConsoleControl> GetPaintOrderedControls()
+        {
+
+            // todo - perf if needed - this is slow
+
+            List<ConsoleControl> unordered = new List<ConsoleControl>();
+            List<ConsoleControl> ordered = new List<ConsoleControl>();
+            foreach (var control in Controls)
+            {
+                if(control.ZIndex <= 0)
+                {
+                    unordered.Add(control);
+                }
+                else
+                {
+                    ordered.Add(control);
+                }
+            }
+
+            unordered.AddRange(ordered.OrderBy(c => c.ZIndex));
+            return unordered;
+        }
+
         protected override void OnPaint(ConsoleBitmap context)
         {
-            foreach (var control in Controls)
+            foreach (var control in GetPaintOrderedControls())
             {
                 Rectangle scope = context.GetScope();
                 try

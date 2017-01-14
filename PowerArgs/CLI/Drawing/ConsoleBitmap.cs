@@ -313,11 +313,13 @@ namespace PowerArgs.Cli
                     return;
                 }
 
-                if(lastBufferWidth != this.Console.BufferWidth)
+                bool changed = false;
+                if (lastBufferWidth != this.Console.BufferWidth)
                 {
                     lastBufferWidth = this.Console.BufferWidth;
                     Invalidate();
                     this.Console.Clear();
+                    changed = true;
                 }
 
                 for (int y = scope.Y; y < scope.Y + scope.Height; y++)
@@ -327,6 +329,7 @@ namespace PowerArgs.Cli
                         var pixel = pixels[x][y];
                         if (pixel.HasChanged)
                         {
+                            changed = true;
                             if (pixel.Value.HasValue)
                             {
                                 DrawPixel(x, y, pixel, pixel.Value.Value);
@@ -337,6 +340,11 @@ namespace PowerArgs.Cli
                             }
                         }
                     }
+                }
+                if (changed)
+                {
+                    Console.CursorLeft = Left;
+                    Console.CursorTop = Top;
                 }
             }
         }

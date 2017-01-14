@@ -35,7 +35,7 @@ namespace PowerArgs
             ITabCompletionSource ret;
             if(this.CompletionSourceType.GetInterfaces().Contains(typeof(ISmartTabCompletionSource)))
             {
-                var source = Activator.CreateInstance(CompletionSourceType) as ISmartTabCompletionSource;
+                var source = ObjectFactory.CreateInstance(CompletionSourceType) as ISmartTabCompletionSource;
                 return new ArgumentAwareWrapperSmartTabCompletionSource(definition, argument, source);
             }
             else if (this.CompletionSourceType.IsSubclassOf(typeof(ArgumentAwareTabCompletionSource)))
@@ -44,7 +44,7 @@ namespace PowerArgs
             }
             else if (this.CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)))
             {
-                var toWrap = (ITabCompletionSource)Activator.CreateInstance(this.CompletionSourceType);
+                var toWrap = (ITabCompletionSource)ObjectFactory.CreateInstance(this.CompletionSourceType);
                 ret = new ArgumentAwareWrapperTabCompletionSource(definition, argument, toWrap);
             }
             else
@@ -176,7 +176,7 @@ namespace PowerArgs
                 this.REPL = false;
                 return;
             }
-            
+
             if (REPL && ShowREPLWelcome)
             {
                 ConsoleString.Empty.WriteLine();
@@ -192,18 +192,15 @@ namespace PowerArgs
             }
             else
             {
-
-                // This is a little hacky, but I could not find a better way to make the tab completion start on the same lime
-                // as the command line input
-                try
+                var lastLine = StdConsoleProvider.ReadALineOfConsoleOutput(Console.CursorTop - 1);
+                if (lastLine != null)
                 {
-                    var lastLine = StdConsoleProvider.ReadALineOfConsoleOutput(Console.CursorTop - 1);
                     Console.CursorTop--;
                     Console.WriteLine(lastLine);
                     Console.CursorTop--;
                     Console.CursorLeft = lastLine.Length + 1;
                 }
-                catch (Exception)
+                else
                 {
                     Console.WriteLine();
                     Console.Write(Indicator + "> ");

@@ -34,42 +34,98 @@ namespace PowerArgs.Cli
         /// The current control being processed in the visual treee
         /// </summary>
         public ConsoleControl CurrentControl { get; set; }
+
+        public List<Assembly> ReferencedAssemblies { get; private set; }   
+
+        public ParserContext()
+        {
+            ReferencedAssemblies = new List<Assembly>();
+            ReferencedAssemblies.Add(typeof(Args).Assembly);
+            var entry = Assembly.GetEntryAssembly();
+            if(entry != null)
+            {
+                ReferencedAssemblies.Add(entry);
+            }
+        }
     }
 
-    internal class MarkupParser
+    public class ViewModelBinding
     {
-        private class ViewModelBinding
+        private object latestValue;
+
+        private Func<object, object> mapper;
+        private Func<object, object> reverseMapper;
+
+        public ViewModelBinding(ConsoleControl control, string propertyName, ObservableObject viewModel, string observablePath) : this(control, control.GetType().GetProperty(propertyName),viewModel, observablePath)
         {
-            private object latestValue;
 
-            public ViewModelBinding(ConsoleControl control, PropertyInfo controlProperty, ObservableObject viewModel, string observablePropertyName)
+        }
+        
+
+        public static ViewModelBinding OneWayBind<TControlPropertyType, TDataPropertyType>(ConsoleControl control, string propertyName, ObservableObject viewModel, string observablePath, Func<TDataPropertyType,TControlPropertyType> map)
+        {
+            ViewModelBinding ret = new ViewModelBinding(control, control.GetType().GetProperty(propertyName), viewModel, observablePath, (v) =>
             {
-                var viewModelObservableProperty = viewModel.GetType().GetProperty(observablePropertyName);
+                return map((TDataPropertyType)v);
+            }, null);
+            return ret;
+        }
 
+        public ViewModelBinding(ConsoleControl control, PropertyInfo controlProperty, ObservableObject viewModel, string observablePath) : this(control, controlProperty, viewModel, observablePath, null, null)
+        {
+
+        }
+        public ViewModelBinding(ConsoleControl control, PropertyInfo controlProperty, ObservableObject viewModel, string observablePath, Func<object,object> mapper, Func<object,object> reverseMapper)
+        {
+            this.mapper = mapper;
+            this.reverseMapper = reverseMapper;
+            var exp = ObjectPathExpression.Parse(observablePath);
+            var trace = exp.EvaluateAndTraceInfo(viewModel);
+            var observableObject = trace[trace.Count - 2].Value as ObservableObject;
+
+            var viewModelObservableProperty = trace.Last()?.MemberInfo as PropertyInfo;
+
+            if (observableObject == null)
+            {
+                throw new InvalidOperationException($"ViewModel property '{viewModel.GetType().FullName}.{observablePath}' is not observable");
+            }
+
+            if (viewModelObservableProperty == null)
+            {
+                throw new InvalidOperationException($"Cannot resolve ViewModel property '{viewModel.GetType().FullName}.{observablePath}'");
+            }
+
+            if (mapper != null && reverseMapper != null)
+            {
                 if (viewModelObservableProperty.PropertyType != controlProperty.PropertyType &&
                     viewModelObservableProperty.PropertyType.IsSubclassOf(controlProperty.PropertyType) == false &&
                     viewModelObservableProperty.PropertyType.GetInterfaces().Contains(controlProperty.PropertyType) == false)
                 {
-                    throw new InvalidOperationException($"ViewModel property '{viewModel.GetType().FullName}.{observablePropertyName}' of type {viewModelObservableProperty.PropertyType.FullName} is not compatible with control property '{controlProperty.DeclaringType.FullName}.{controlProperty.Name}' of type {controlProperty.PropertyType.FullName} ");
+                    throw new InvalidOperationException($"ViewModel type '{viewModel.GetType().FullName} property {observablePath}' of type {viewModelObservableProperty.PropertyType.FullName} is not compatible with control property '{controlProperty.DeclaringType.FullName}.{controlProperty.Name}' of type {controlProperty.PropertyType.FullName} ");
                 }
-
-                viewModel.SynchronizeForLifetime(observablePropertyName, () =>
-                {
-                    var newValue = viewModelObservableProperty.GetValue(viewModel);
-                    if (newValue == latestValue) return;
-                    latestValue = newValue;
-                    controlProperty.SetValue(control, newValue);
-                }, control.LifetimeManager);
-
-                control.SubscribeForLifetime(controlProperty.Name, () =>
-                {
-                    var newValue = controlProperty.GetValue(control);
-                    if (newValue == latestValue) return;
-                    latestValue = newValue;
-                    viewModelObservableProperty.SetValue(viewModel, newValue);
-                }, control.LifetimeManager);
             }
+
+            observableObject.SynchronizeForLifetime(trace.Last().MemberInfo.Name, () =>
+            {
+                var newValue = viewModelObservableProperty.GetValue(observableObject);
+                if (newValue == latestValue) return;
+                latestValue = newValue;
+                controlProperty.SetValue(control, mapper != null ? mapper(newValue) : newValue);
+            }, control.LifetimeManager);
+
+            control.SubscribeForLifetime(controlProperty.Name, () =>
+            {
+                var newValue = controlProperty.GetValue(control);
+                if (newValue == latestValue) return;
+                latestValue = newValue;
+            viewModelObservableProperty.SetValue(observableObject, reverseMapper != null ? reverseMapper(newValue) : newValue);
+            }, control.LifetimeManager);
         }
+    }
+
+    internal class MarkupParser
+    {
+        
         
         public static ConsoleApp Parse(string markup, object viewModel = null)
         {
@@ -83,6 +139,60 @@ namespace PowerArgs.Cli
             var app = ParseApp(context);
 
             return app;
+        }
+
+        public static void Parse(ConsolePageApp pageApp, IEnumerable<string> markupFiles)
+        {
+            foreach(var markup in markupFiles)
+            {
+                ParserContext context = new ParserContext()
+                {
+                    RootElement = new XmlElement(markup),
+                };
+
+                context.CurrentElement = context.RootElement;
+
+                if(context.RootElement.Name != "Page")
+                {
+                    throw new InvalidOperationException("Root element must be a page");
+                }
+
+                if(context.RootElement["Route"] == null)
+                {
+                    throw new InvalidOperationException("Page tag is missing Route tag");
+                }
+
+                Func<Page> pageFactory = () =>
+                {
+                    Type baseType = typeof(Page);
+                    if (context.RootElement["BaseType"] != null)
+                    {
+                        baseType = FindType(context.RootElement["BaseType"], context);
+                    }
+
+                    var page = (Page)Activator.CreateInstance(baseType);
+
+                    if (context.RootElement["ViewModelType"] != null)
+                    {
+                        var viewModelType = FindType(context.RootElement["ViewModelType"], context);
+                        context.RootViewModel = Activator.CreateInstance(viewModelType);
+                        context.CurrentViewModel = context.RootViewModel;
+                    }
+
+                    ParsePanel(context, page);
+
+                    return page;
+                };
+
+                if (context.RootElement["IsDefaultRoute"] == "true")
+                {
+                    pageApp.PageStack.RegisterDefaultRoute(context.RootElement["Route"], pageFactory);
+                }
+                else
+                {
+                    pageApp.PageStack.RegisterRoute(context.RootElement["Route"], pageFactory);
+                }
+            }
         }
 
         private static ConsoleApp ParseApp(ParserContext context)
@@ -110,20 +220,6 @@ namespace PowerArgs.Cli
 
             ParsePanel(context, app.LayoutRoot);
             return app;
-        }
-
-        public static ConsolePanel ParsePanel(string markup, object viewModel = null)
-        {
-            ParserContext context = new ParserContext()
-            {
-                RootElement = new XmlElement(markup),
-                RootViewModel = viewModel,
-                CurrentViewModel = viewModel,
-            };
-
-            var panel = new ConsolePanel();
-            ParsePanel(context, panel);
-            return panel;
         }
 
         private static void ParsePanel(ParserContext context, ConsolePanel panel)
@@ -158,8 +254,32 @@ namespace PowerArgs.Cli
             var controlTypeName = context.CurrentElement.Name;
             var controlFullTypeName = $"PowerArgs.Cli.{controlTypeName}";
             var controlType = typeof(Args).Assembly.GetType(controlFullTypeName);
-            var control = (ConsoleControl)Activator.CreateInstance(controlType);
+            var control = (ConsoleControl)ObjectFactory.CreateInstance(controlType);
             return control;
+        }
+
+        private static Type FindType(string typeName, ParserContext context)
+        {
+            // todo - conflict resolution, caching
+            foreach(var assembly in context.ReferencedAssemblies)
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    if(type.FullName == typeName || type.Name == typeName)
+                    {
+                        return type;
+                    }
+                }
+            }
+
+            var ret = Type.GetType(typeName);
+
+            if(ret == null)
+            {
+                throw new ArgumentException("Cannot resolve type " + typeName);
+            }
+
+            return ret;
         }
 
         private static void ParseControlAttributes(ConsoleControl control, ParserContext context)
@@ -203,10 +323,10 @@ namespace PowerArgs.Cli
 
             if (isObservable)
             {
-                var observablePropertyName = textValue.Substring(1, textValue.Length - 2);
+                var observablePath = textValue.Substring(1, textValue.Length - 2);
                 var viewModelObservable = context.CurrentViewModel as ObservableObject;
                 if (viewModelObservable == null) throw new InvalidOperationException("View model is not observable");
-                new ViewModelBinding(control, property, viewModelObservable, observablePropertyName);
+                new ViewModelBinding(control, property, viewModelObservable, observablePath);
             }
             else if(property.HasAttr<MarkupPropertyAttribute>())
             {

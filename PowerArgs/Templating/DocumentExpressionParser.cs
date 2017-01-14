@@ -115,7 +115,7 @@ namespace PowerArgs
             var providerTypes = from type in target.GetTypes() where type.GetInterfaces().Contains(typeof(IDocumentExpressionProvider)) && type.HasAttr<DynamicExpressionProviderAttribute>() select type;
             foreach (var providerType in providerTypes)
             {
-                var provider = (IDocumentExpressionProvider)Activator.CreateInstance(providerType);
+                var provider = (IDocumentExpressionProvider)ObjectFactory.CreateInstance(providerType);
                 var key = providerType.Attr<DynamicExpressionProviderAttribute>().Key;
                 RegisterReplacementExpressionProvider(key, provider, allowOverrideExistingKeys);
             }

@@ -220,8 +220,8 @@ namespace PowerArgs.Cli
             }
         }
 
-        Subscription dataSourceSub;
-        Subscription boundsSub;
+        IDisposable dataSourceSub;
+        IDisposable boundsSub;
         private void InitGridViewModel()
         {
             this.SelectionMode = GridSelectionMode.Row;
@@ -279,12 +279,12 @@ namespace PowerArgs.Cli
 
     public class ColumnViewModel : ObservableObject
     {
-        public ConsoleString ColumnName { get; private set; }
+        public ConsoleString ColumnName { get; set; }
         public ConsoleString ColumnDisplayName { get { return Get<ConsoleString>(); } set { Set(value); } }
 
         public double WidthPercentage { get { return Get<double>(); } set { Set(value); } }
 
-        internal ColumnOverflowBehavior OverflowBehavior { get; set; }
+        public ColumnOverflowBehavior OverflowBehavior { get; set; }
 
         public ColumnViewModel(ConsoleString columnName)
         {

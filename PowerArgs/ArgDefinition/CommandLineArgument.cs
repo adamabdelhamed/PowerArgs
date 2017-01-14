@@ -206,7 +206,9 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p =>true, false);
+                var omitFromUsage = overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p =>true, false);
+                var omitFromUsageAltername = overrides.Get<ArgHiddenFromUsage, bool>("ArgHiddenFromUsage", Metadata, p => true, false);
+                return omitFromUsage || omitFromUsageAltername;
             }
             set
             {

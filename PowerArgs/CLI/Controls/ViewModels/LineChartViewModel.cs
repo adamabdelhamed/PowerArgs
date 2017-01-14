@@ -51,9 +51,9 @@ namespace PowerArgs.Cli
         public int FocusedDataSeriesIndex { get { return Get<int>(); } set { Set(value); } }
         public int FocusedDataPointIndex { get { return Get<int>(); } set { Set(value); } }
 
-        Subscription seriesRemovedSubscription;
-        Subscription focusedSeriesSubscription;
-        Subscription focusedDataPointSubscription;
+        IDisposable seriesRemovedSubscription;
+        IDisposable focusedSeriesSubscription;
+        IDisposable focusedDataPointSubscription;
         public LineChartViewModel()
         {
             DataSeriesCollection = new ObservableCollection<DataSeries>();

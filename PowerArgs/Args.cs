@@ -39,6 +39,25 @@ namespace PowerArgs
         private Args() { }
 
         /// <summary>
+        /// Registers a factory method the PowerArgs will use whenever it creates an object of the given type
+        /// </summary>
+        /// <param name="t">The type of the object created by the factory</param>
+        /// <param name="factoryMethod">the factory method implementation</param>
+        public static void RegisterFactory(Type t, Func<object> factoryMethod)
+        {
+            ObjectFactory.Register(t, factoryMethod);
+        }
+
+        /// <summary>
+        /// Unregisters a factory method that PowerArgs is using to creates an object of the given type
+        /// </summary>
+        /// <param name="t">The type to unregister</param>
+        public static void UnRegisterFactory(Type t)
+        {
+            ObjectFactory.UnRegister(t);
+        }
+
+        /// <summary>
         /// PowerArgs will manually search the assembly you provide for any custom type revivers.  If you don't specify an
         /// assembly then the assembly that calls this function will automatically be searched.
         /// </summary>
@@ -510,7 +529,7 @@ namespace PowerArgs
             }
             else if (typeof(T).IsSubclassOf(typeof(ArgAction)))
             {
-                ret = Activator.CreateInstance(typeof(T)) as ArgAction;
+                ret = ObjectFactory.CreateInstance(typeof(T)) as ArgAction;
             }
             else
             {
@@ -553,7 +572,7 @@ namespace PowerArgs
 
             definition.Validate(context);
 
-            if (definition.ArgumentScaffoldType != null) context.Args = Activator.CreateInstance(definition.ArgumentScaffoldType);
+            if (definition.ArgumentScaffoldType != null) context.Args = ObjectFactory.CreateInstance(definition.ArgumentScaffoldType);
             context.CmdLineArgs = input;
 
             context.RunBeforeParse();

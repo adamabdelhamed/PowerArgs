@@ -17,10 +17,10 @@ namespace HelloWorld.Samples
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudTable.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.NoDataMessage = "No tables";
             Grid.NoVisibleColumnsMessage = "Loading...";
-            addButton = CommandBar.Add(new Button() { Text = "Add table" });
+            addButton = CommandBar.Add(new Button() { Text = "Add table".ToConsoleString() });
             addButton.Pressed.SubscribeForLifetime(AddTable, LifetimeManager);
 
-            deleteButton = CommandBar.Add(new Button() { Text = "Delete table", Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null), CanFocus = false });
+            deleteButton = CommandBar.Add(new Button() { Text = "Delete table".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null), CanFocus = false });
             deleteButton.Pressed.SubscribeForLifetime(DeleteSelectedTable, LifetimeManager);
 
             

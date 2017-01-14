@@ -5,7 +5,7 @@ namespace PowerArgs.Cli
     public class Subscription : Disposable
     {
         protected Action unsubscribeHandler;
-        internal Subscription(Action unsubscribeHandler)
+        public Subscription(Action unsubscribeHandler)
         {
             this.unsubscribeHandler = unsubscribeHandler;
         }

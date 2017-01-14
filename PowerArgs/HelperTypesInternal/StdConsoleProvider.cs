@@ -164,7 +164,10 @@ namespace PowerArgs
         /// <returns>Used for internal implementation, but marked public for testing, please do not use.</returns>
         public static string ReadALineOfConsoleOutput(int y)
         {
-            if (y < 0) throw new Exception();
+            if (y < 0)
+            {
+                return null;
+            }
             IntPtr stdout = GetStdHandle(STD_OUTPUT_HANDLE);
 
             uint nLength = (uint)Console.WindowWidth;

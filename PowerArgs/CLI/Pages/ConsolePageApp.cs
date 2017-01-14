@@ -24,6 +24,13 @@ namespace PowerArgs.Cli
             InitCommon();
         }
 
+        public ConsolePageApp(IEnumerable<string> markupFiles)
+        {
+            InitCommon();
+            MarkupParser.Parse(this, markupFiles);
+            PageStack.Navigate("");
+        }
+
         private void InitCommon()
         {
             this.PageStack = new PageStack();

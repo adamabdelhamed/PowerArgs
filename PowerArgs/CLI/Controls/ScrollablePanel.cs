@@ -55,7 +55,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        private PropertyChangedSubscription focusSubscription;
+        private IDisposable focusSubscription;
 
         private Scrollbar verticalScrollbar;
         private Scrollbar horizontalScrollbar;

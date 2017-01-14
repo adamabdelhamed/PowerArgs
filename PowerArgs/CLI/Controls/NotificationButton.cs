@@ -57,13 +57,13 @@ namespace PowerArgs.Cli
             {
                 spinner.IsSpinning = false;
                 spinner.IsVisible = false;
-                launcher.Text = ""+numberOfOperations+ (numberOfOperations == 1 ? " notification" : " notifications");
+                launcher.Text = (""+numberOfOperations+ (numberOfOperations == 1 ? " notification" : " notifications")).ToConsoleString();
             }
             else
             {
                 spinner.IsVisible = true;
                 spinner.IsSpinning = true;
-                launcher.Text = " "+numberOfOperations+ (numberOfOperations == 1 ? " notification" : " notifications");
+                launcher.Text = (" "+numberOfOperations+ (numberOfOperations == 1 ? " notification" : " notifications")).ToConsoleString();
             }
         }
 

@@ -7,9 +7,9 @@
 {{ifnot HasSpecifiedAction}}
 Usage - {{UsageSummary Cyan!}}
 !{{ifnot}}
-{{if HasGlobalArguments}}
+{{if HasGlobalUsageArguments}}
 
-{{table Arguments Syntax>GlobalOption Description+ !}}
+{{table UsageArguments Syntax>GlobalOption Description+ !}}
 !{{if}}
 {{if HasActions}}
 {{if HasSpecifiedAction}}
@@ -18,9 +18,9 @@ Usage - {{UsageSummary Cyan!}}
 
 Usage - {{ExeName Cyan!}} {{SpecifiedAction.UsageSummary Cyan!}}
 
-{{if SpecifiedAction.HasArguments }}
+{{if SpecifiedAction.HasUsageArguments }}
 {{SpecifiedAction.DefaultAlias!}} Options
-{{table SpecifiedAction.Arguments Syntax>Option Description+ !}}
+{{table SpecifiedAction.UsageArguments Syntax>Option Description+ !}}
 !{{if}}
 !{{if}}
 {{ifnot HasSpecifiedAction}}
@@ -30,8 +30,8 @@ Actions
 
   {{action.UsageSummary Cyan!}} - {{action.Description!}}
 
-{{if action.HasArguments }}
-    {{table action.Arguments Syntax>Option Description+ !}}
+{{if action.HasUsageArguments }}
+    {{table action.UsageArguments Syntax>Option Description+ !}}
 !{{if}}
 {{if action.HasExamples }}
 

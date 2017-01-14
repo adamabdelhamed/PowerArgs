@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
@@ -33,6 +34,18 @@ namespace PowerArgs.Cli
             get
             {
                 return _current;
+            }
+        }
+
+        public static void AssertAppThread(ConsoleApp expectedApp = null)
+        {
+            if (Current == null)
+            {
+                throw new InvalidOperationException("There is no ConsoleApp running on this thread");
+            }
+            else if (expectedApp != null && Current != expectedApp)
+            {
+                throw new InvalidOperationException("The ConsoleApp on this thread is different from the one expected");
             }
         }
 
@@ -136,12 +149,29 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Runs the given action as soon as possible.  If calling from this app's running thread
+        /// then the action will run now.  Otherwise, it will be forcefully inserted into position 0 the work queue (i.e. skips to the front of the line).
+        /// </summary>
+        /// <param name="a"></param>
+        public void RunASAP(Action a)
+        {
+            if(Current == this)
+            {
+                a();
+            }
+            else
+            {
+                QueueActionInFront(a);
+            }
+        }
+
+        /// <summary>
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>
-        public override Task Start()
+        public override Promise Start()
         {
-            QueueAction(() =>
+            QueueActionInFront(() =>
             {
                 if (_current != null)
                 {
@@ -161,14 +191,11 @@ namespace PowerArgs.Cli
 
             Paint();
 
-            Task pumpTask = base.Start();
-
-            var cleanupTask = pumpTask.ContinueWith((t) =>
+            return base.Start().Then(ExitInternal).Fail((ex) =>
             {
-                 ExitInternal();
+                ExitInternal();
+                throw ex;
             });
-
-            return cleanupTask;
         }
 
         private void HandleDebouncedResize()

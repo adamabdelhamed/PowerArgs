@@ -188,6 +188,7 @@ namespace PowerArgs.Cli
 
             int initialPosition = focusStack.Peek().FocusIndex;
 
+            DateTime start = DateTime.Now;
             do
             {
                 bool wrapped = CycleFocusIndex(forward);
@@ -199,7 +200,7 @@ namespace PowerArgs.Cli
 
                 if (wrapped && initialPosition < 0) break;
             }
-            while (focusStack.Peek().FocusIndex != initialPosition);
+            while (focusStack.Peek().FocusIndex != initialPosition && DateTime.Now - start < TimeSpan.FromSeconds(.2));
 
             return false;
         }
@@ -230,7 +231,8 @@ namespace PowerArgs.Cli
                     wrapped = CycleFocusIndex(true);
                 }
 
-                focusStack.Peek().FocusIndex = Math.Min(focusStack.Peek().FocusIndex, focusStack.Peek().Controls.Count - 1);
+                var newFocusIndex = Math.Max(0, Math.Min(focusStack.Peek().FocusIndex, focusStack.Peek().Controls.Count - 1));
+                focusStack.Peek().FocusIndex = newFocusIndex;
                 var nextControl = focusStack.Peek().Controls[focusStack.Peek().FocusIndex];
                 if (nextControl.CanFocus)
                 {

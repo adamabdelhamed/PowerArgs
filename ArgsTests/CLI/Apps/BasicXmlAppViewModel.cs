@@ -1,21 +1,25 @@
 ﻿using PowerArgs;
 using PowerArgs.Cli;
-using System;
 
 namespace ArgsTests
 {
     public class BasicXmlAppViewModel : ObservableObject
     {
-        public ConsoleString Name { get { return Get<ConsoleString>(); } set { Set(value); } }
+        public Customer Customer { get; set; }
 
         public BasicXmlAppViewModel()
         {
-            this.Name = new ConsoleString("", ConsoleColor.Green);
+            Customer = new Customer();
         }
 
         public void SubmitClicked()
         {
             ConsoleApp.Current.Stop();
         }
+    }
+
+    public class Customer : ObservableObject
+    {
+        public ConsoleString Name { get { return Get<ConsoleString>(); } set { Set(value); } }
     }
 }

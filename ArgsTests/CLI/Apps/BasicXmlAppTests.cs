@@ -9,7 +9,7 @@ namespace ArgsTests.CLI.Apps
 {
     [TestClass]
     public class BasicXmlAppTests
-    {
+    {    
         [TestMethod]
         [Timeout(30000)]
         public void TestBasicFormSubmit()
@@ -38,7 +38,7 @@ namespace ArgsTests.CLI.Apps
             }, TimeSpan.FromMilliseconds(1));
 
             task.Wait();
-            Assert.AreEqual(new ConsoleString("Adam"), viewModel.Name);
+            Assert.AreEqual(new ConsoleString("Adam"), viewModel.Customer.Name);
         }
 
         [TestMethod]

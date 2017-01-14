@@ -41,7 +41,7 @@ namespace ArgsTests.CLI
             grid.Height = app.LayoutRoot.Height;
 
             app.LayoutRoot.Controls.Add(grid);
-            Task doneTask = app.Start();
+            Promise doneTask = app.Start();
             // give the UI thread a few milliseconds to paint before checking it
             // todo - maybe implement an after paint event on console app
             Thread.Sleep(100);

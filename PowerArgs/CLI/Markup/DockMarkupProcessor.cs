@@ -1,6 +1,6 @@
 ﻿namespace PowerArgs.Cli
 {
-    public class DockMarkupProcessor : IMarkupProcessor
+    internal class DockMarkupProcessor : IMarkupProcessor
     {
         public void Process(ParserContext context)
         {

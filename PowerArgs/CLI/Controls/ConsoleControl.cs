@@ -14,6 +14,9 @@ namespace PowerArgs.Cli
         /// An id that can be used for debugging.  It is not used for anything internally.
         /// </summary>
         public string Id { get { return Get<string>(); } set { Set(value); } }
+
+        public int ZIndex { get; set; }
+
         /// <summary>
         /// An event that fires after this control gets focus
         /// </summary>
@@ -110,7 +113,14 @@ namespace PowerArgs.Cli
             Background = Theme.DefaultTheme.BackgroundColor;
             this.Foreground = Theme.DefaultTheme.ForegroundColor;
             this.IsVisible = true;
-            this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> { Application?.Paint(); }, this.LifetimeManager);
+            this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> 
+            {
+                if (Application != null && Application.IsRunning)
+                {
+                    ConsoleApp.AssertAppThread(Application);
+                    Application.Paint();
+                }
+            }, this.LifetimeManager);
         }
 
         /// <summary>

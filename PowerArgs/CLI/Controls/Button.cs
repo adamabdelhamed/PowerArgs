@@ -56,7 +56,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Gets or sets the text that is displayed on the button
         /// </summary>
-        public string Text { get { return Get<string>(); } set { Set(value); } }
+        public ConsoleString Text { get { return Get<ConsoleString>(); } set { Set(value); } }
 
         /// <summary>
         /// Gets or sets the keyboard shortcut info for this button.
@@ -156,23 +156,32 @@ namespace PowerArgs.Cli
             {
                 ConsoleColor fg, bg;
 
-                if(HasFocus)
+                var effectiveText = Text;
+                if (effectiveText.IsUnstyled)
                 {
-                    fg = Application.Theme.FocusContrastColor;
-                    bg = Application.Theme.FocusColor;
+                    if (HasFocus)
+                    {
+                        fg = Application.Theme.FocusContrastColor;
+                        bg = Application.Theme.FocusColor;
+                    }
+                    else if (CanFocus)
+                    {
+                        fg = Foreground;
+                        bg = Background;
+                    }
+                    else
+                    {
+                        fg = Application.Theme.DisabledColor;
+                        bg = Background;
+                    }
+                    effectiveText = new ConsoleString(effectiveText.StringValue, fg, bg);
                 }
-                else if(CanFocus)
+                else if (HasFocus)
                 {
-                    fg = Foreground;
-                    bg = Background;
-                }
-                else
-                {
-                    fg = Application.Theme.DisabledColor;
-                    bg = Background;
+                    effectiveText = effectiveText.ToDifferentBackground(Application.Theme.FocusColor);
                 }
 
-                drawState += new ConsoleString(Text, fg, bg);
+                drawState += effectiveText;
 
                 if(Shortcut != null)
                 {

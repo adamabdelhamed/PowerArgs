@@ -8,9 +8,11 @@ namespace PowerArgs.Cli
 {
     public class DialogButton
     {
-        public string DisplayText { get; set; }
+        public ConsoleString DisplayText { get; set; }
         public string Id { get; set; }
     }
+
+    public class DialogOption : DialogButton { }
 
     // todo - restrict the focus system to include only the dialog buttons so the dialog feels more modal
     public class Dialog : ConsolePanel
@@ -28,11 +30,21 @@ namespace PowerArgs.Cli
         public Dialog(ConsoleControl content)
         {
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
-            closeButton = Add(new Button() { Text = "Close (ESC)",Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
+            AllowEscapeToCancel = true;
+            closeButton = Add(new Button() { Text = "Close (ESC)".ToConsoleString(),Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
             closeButton.Pressed.SubscribeForLifetime(Escape, this.LifetimeManager);
             BeforeAddedToVisualTree.SubscribeForLifetime(OnBeforeAddedToVisualTree, this.LifetimeManager);
             AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
             RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this.LifetimeManager);
+        }
+
+        public Promise Show()
+        {
+            var deferred = Deferred.Create();
+            ConsoleApp.AssertAppThread();
+            ConsoleApp.Current.LayoutRoot.Add(this);
+            RemovedFromVisualTree.SubscribeForLifetime(deferred.Resolve, this.LifetimeManager);
+            return deferred.Promise;
         }
 
         private void OnBeforeAddedToVisualTree()
@@ -117,12 +129,13 @@ namespace PowerArgs.Cli
                 {
                     noCallback();
                 }
-            }, true, maxHeight, new DialogButton() { Id = "y", DisplayText = "Yes", }, new DialogButton() { Id = "n", DisplayText = "No" });
+            }, true, maxHeight, new DialogButton() { Id = "y", DisplayText = "Yes".ToConsoleString(), }, new DialogButton() { Id = "n", DisplayText = "No".ToConsoleString() });
         }
 
         public static void ShowMessage(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, int maxHeight = 6, params DialogButton [] buttons)
         {
-            if(buttons.Length == 0)
+            ConsoleApp.AssertAppThread();
+            if (buttons.Length == 0)
             {
                 throw new ArgumentException("You need to specify at least one button");
             }
@@ -155,6 +168,77 @@ namespace PowerArgs.Cli
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
         }
 
+        public static Promise<T?> PickFromEnum<T>(ConsoleString message) where T : struct
+        {
+            Deferred<T?> deferred = Deferred<T?>.Create();
+            var enumVals = Enum.GetValues(typeof(T));
+            List<T> genericVals = new List<T>();
+            foreach(T val in enumVals)
+            {
+                genericVals.Add(val);
+            }
+
+            var innerPromise = Pick(message, genericVals.Select(v => new DialogOption()
+            {
+                Id = v.ToString(),
+                DisplayText = v.ToString().ToConsoleString()
+            }));
+
+            innerPromise.Finally((p) =>
+            {
+                if(p.Exception != null)
+                {
+                    deferred.Reject(p.Exception);
+                } 
+                else
+                {
+                    deferred.Resolve(innerPromise.Result != null ? (T)Enum.Parse(typeof(T),innerPromise.Result.Id) : default(T?));
+                }
+            });
+
+
+            return deferred.Promise;
+        }
+
+        public static Promise<DialogOption> Pick(ConsoleString message, IEnumerable<DialogOption> options, bool allowEscapeToCancel = true, int maxHeight = 12)
+        {
+            var deferred = Deferred<DialogOption>.Create();
+            ConsoleApp.AssertAppThread();
+
+            ConsolePanel dialogContent = new StackPanel() { };
+
+            Dialog dialog = new Dialog(dialogContent);
+            dialog.MaxHeight = maxHeight;
+            dialog.AllowEscapeToCancel = allowEscapeToCancel;
+
+
+            Grid optionsGrid = dialogContent.Add(new Grid(options.Select(o => o as object).ToList())).Fill();
+            optionsGrid.MoreDataMessage = "More options below".ToYellow();
+            optionsGrid.EndOfDataMessage = "End of menu";
+
+            optionsGrid.VisibleColumns.Remove(optionsGrid.VisibleColumns.Where(v => v.ColumnName.ToString() == nameof(DialogOption.Id)).Single());
+            optionsGrid.VisibleColumns[0].WidthPercentage = 1;
+            optionsGrid.VisibleColumns[0].ColumnDisplayName = message.IsUnstyled ? message.ToYellow() : message;
+
+            (optionsGrid.VisibleColumns[0].OverflowBehavior as TruncateOverflowBehavior).ColumnWidth = 0;
+
+            DialogOption result = null;
+
+            optionsGrid.SelectedItemActivated += ()=>
+            {
+                result = optionsGrid.SelectedItem as DialogOption;
+                ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
+            };
+
+            dialog.RemovedFromVisualTree.SubscribeForLifetime(() =>
+            {
+               deferred.Resolve(result);
+
+            }, dialog.LifetimeManager);
+
+            ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
+            return deferred.Promise;
+        }
 
         public static void ShowMessage(string message, Action doneCallback = null, int maxHeight = 12)
         {
@@ -163,7 +247,7 @@ namespace PowerArgs.Cli
 
         public static void ShowMessage(ConsoleString message, Action doneCallback = null, int maxHeight = 12)
         {
-            ShowMessage(message, (b) => { if (doneCallback != null) doneCallback(); },true,maxHeight, new DialogButton() { DisplayText = "ok" });
+            ShowMessage(message, (b) => { if (doneCallback != null) doneCallback(); },true,maxHeight, new DialogButton() { DisplayText = "ok".ToConsoleString() });
         }
 
         public static void ShowTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12)
@@ -171,8 +255,9 @@ namespace PowerArgs.Cli
             ShowRichTextInput(message, resultCallback, cancelCallback, allowEscapeToCancel, maxHeight, null);
         }
 
-        public static void ShowRichTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12, TextBox inputBox = null)
+        public static void ShowRichTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12, TextBox inputBox = null, ConsoleString initialValue = null)
         {
+            ConsoleApp.AssertAppThread();
             if (ConsoleApp.Current == null)
             {
                 throw new InvalidOperationException("There is no console app running");
@@ -192,6 +277,11 @@ namespace PowerArgs.Cli
             if (inputBox == null)
             {
                 inputBox = new TextBox() { Foreground = ConsoleColor.Black, Background = ConsoleColor.White };
+            }
+
+            if(initialValue != null)
+            {
+                inputBox.Value = initialValue;
             }
 
             content.Add(inputBox).CenterHorizontally();

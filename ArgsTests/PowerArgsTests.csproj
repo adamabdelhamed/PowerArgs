@@ -106,6 +106,7 @@
     <Compile Include="CLI\CliUnitTestConsole.cs" />
     <Compile Include="CLI\Controls\TextBoxTests.cs" />
     <Compile Include="CLI\GridTests.cs" />
+    <Compile Include="CLI\Observability\DeepObservable.cs" />
     <Compile Include="CLI\Observability\ObservabilityTests.cs" />
     <Compile Include="CLI\ProgressBarTests.cs" />
     <Compile Include="CLI\PromptTests.cs" />
@@ -161,6 +162,8 @@
     <Compile Include="AllowUnexpectedArgsTests.cs" />
     <Compile Include="TestStuff\AfterInvokeInterceptor.cs" />
     <Compile Include="TestStuff\SetupCleanup.cs" />
+    <Compile Include="ObjectPathExpressionTests.cs" />
+    <Compile Include="ObjectFactoryTests.cs" />
     <Compile Include="_GLOBAL_SETUP.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />
