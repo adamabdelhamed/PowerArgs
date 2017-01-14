@@ -164,6 +164,17 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Returns true if there is at least 1 global argument that should be visible in usage, false otherwise
+        /// </summary>
+        public bool HasGlobalUsageArguments
+        {
+            get
+            {
+                return UsageArguments.Count > 0;
+            }
+        }
+
+        /// <summary>
         /// Returns true if there is at least 1 action, false otherwise
         /// </summary>
         public bool HasActions
@@ -253,6 +264,18 @@ namespace PowerArgs
         /// The command line arguments that are global to this definition.
         /// </summary>
         public List<CommandLineArgument> Arguments { get; private set; }
+
+        /// <summary>
+        /// Gets the list of arguments, filtering out those that have the ArgHiddenFromUsage attribute
+        /// </summary>
+        public List<CommandLineArgument> UsageArguments
+        {
+            get
+            {
+                var ret = Arguments.Where(a => !a.OmitFromUsage).ToList();
+                return ret;
+            }
+        }
 
         /// <summary>
         /// Gets all global command line arguments as well as all arguments of any actions in this definition

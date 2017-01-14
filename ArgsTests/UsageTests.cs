@@ -194,6 +194,14 @@ namespace ArgsTests
             Assert.IsTrue(usage.Contains("POSITION"));
         }
 
+        [TestMethod]
+        public void TestOmitFromUsageWithTemplatingPath()
+        {
+            var usage = ArgUsage.GenerateUsageFromTemplate(typeof(BasicUsageArgs));
+            Assert.IsFalse(usage.Contains("SecretArg"));
+            Assert.IsFalse(usage.Contains("WE SHOULD NEVER"));
+        }
+
         #region Samples
 
         [UsageAutomation]

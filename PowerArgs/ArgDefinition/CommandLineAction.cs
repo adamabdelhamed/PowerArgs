@@ -26,6 +26,18 @@ namespace PowerArgs
         public List<CommandLineArgument> Arguments { get; private set; }
 
         /// <summary>
+        /// Gets the list of arguments, filtering out those that have the ArgHiddenFromUsage attribute
+        /// </summary>
+        public List<CommandLineArgument> UsageArguments
+        {
+            get
+            {
+                var ret = Arguments.Where(a => !a.OmitFromUsage).ToList();
+                return ret;
+            }
+        }
+
+        /// <summary>
         /// Creates a usage summary string that is specific to this action and accounts for positional argument, etc.
         /// </summary>
         public string UsageSummary
@@ -169,6 +181,17 @@ namespace PowerArgs
             get
             {
                 return Arguments.Count > 0;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if there is at least 1 global argument that should be visible in usage, false otherwise
+        /// </summary>
+        public bool HasUsageArguments
+        {
+            get
+            {
+                return UsageArguments.Count > 0;
             }
         }
 
