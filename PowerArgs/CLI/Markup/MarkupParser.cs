@@ -105,7 +105,7 @@ namespace PowerArgs.Cli
                 }
             }
 
-            observableObject.SynchronizeForLifetime(observablePath, () =>
+            observableObject.SynchronizeForLifetime(trace.Last().MemberInfo.Name, () =>
             {
                 var newValue = viewModelObservableProperty.GetValue(observableObject);
                 if (newValue == latestValue) return;

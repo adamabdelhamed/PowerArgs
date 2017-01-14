@@ -4,7 +4,7 @@ using PowerArgs;
 
 using System.Linq;
 using PowerArgs.Cli;
-
+using PowerArgs.Cli.Physics;
 
 namespace ArgsTests
 {
@@ -267,6 +267,7 @@ namespace ArgsTests
                 typeof(MarkupPropertyAttribute),
                 typeof(MarkupExtensionAttribute),
                 typeof(MarkupIgnoreAttribute),
+                typeof(ThingBindingAttribute),
             };
 
             var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>
