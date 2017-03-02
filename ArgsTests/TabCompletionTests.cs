@@ -457,6 +457,31 @@ namespace ArgsTests
             }
         }
 
+        [TestMethod]
+        public void TestInvalidActionDoesNotCallPreviousActionWithREPL()
+        {
+            try
+            {
+                TestConsoleProvider.SimulateConsoleInput("Do{enter}invalidaction{enter}quit");
+                var parsed = Args.InvokeAction<ArgsREPLWithAction>("$");
+                Assert.Fail("An exception should have been thrown");
+            }
+            catch (UnknownActionArgException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("invalidaction"));
+                Console.WriteLine("Yay!");
+            }
+        }
+
+        [TabCompletion(REPL = true, Indicator = "$")]
+        public class ArgsREPLWithAction
+        {
+            [ArgActionMethod]
+            public void Do()
+            {
+            }
+        }
+
         public class ArgsWithRequiredAndNoREPL
         {
             [ArgRequired(PromptIfMissing = true)]

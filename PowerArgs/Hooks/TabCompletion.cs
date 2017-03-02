@@ -235,6 +235,7 @@ namespace PowerArgs
             }
 
             context.CmdLineArgs = newCommandLineArray;
+            context.SpecifiedAction = null;
             AddToHistory(newCommandLineString);
         }
 
