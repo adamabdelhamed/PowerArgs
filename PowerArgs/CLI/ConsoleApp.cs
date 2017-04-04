@@ -191,10 +191,9 @@ namespace PowerArgs.Cli
 
             Paint();
 
-            return base.Start().Then(ExitInternal).Fail((ex) =>
+            return base.Start().Finally((p)=>
             {
                 ExitInternal();
-                throw ex;
             });
         }
 

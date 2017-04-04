@@ -192,17 +192,8 @@ namespace PowerArgs
         /// <returns>this promise</returns>
         public Promise Finally(Action<Promise> a)
         {
-            lock (myDeferred.SyncObject)
-            {
-                if (myDeferred.IsFulfilled && myDeferred.Exception != null)
-                {
-                    a(this);
-                }
-                else if (!myDeferred.IsFulfilled)
-                {
-                    myDeferred.Finalies.Add(a);
-                }
-            }
+            Then(() => { a(this); });
+            Fail((pPrime) => { a(this); });
             return this;
         }
 
@@ -219,14 +210,16 @@ namespace PowerArgs
         /// </summary>
         public void Wait(int sleepTime = 1)
         {
-            while (myDeferred.IsFulfilled == false)
+            bool done = false;
+            Finally((pPrime) => done = true);
+            while (done == false)
             {
                 Thread.Sleep(sleepTime);
             }
 
-            if (myDeferred.Exception != null)
+            if (this.Exception != null)
             {
-                throw new Exception("The promise was rejected", myDeferred.Exception);
+                throw new PromiseWaitException(this.Exception);
             }
         }
 
@@ -404,6 +397,48 @@ namespace PowerArgs
         public void Wait()
         {
             innerPromise.Wait();
+        }
+    }
+
+    /// <summary>
+    /// An aggregate exception that is thrown from the Wait()
+    /// method of a promise in the case where the promise fails.
+    /// 
+    /// Inner aggregate exceptions will be unwrapped so that the elements within 
+    /// this exception's InnerExceptions property will never contain aggregate exceptions.
+    /// </summary>
+    public class PromiseWaitException : AggregateException
+    {
+        internal PromiseWaitException(Exception inner) : base("There were one or more exceptions that caused this promise to fail", Clean(inner)) { }
+
+        private static List<Exception> Clean(Exception ex)
+        {
+            if (ex is AggregateException)
+            {
+                return Clean(((AggregateException)ex).InnerExceptions);
+            }
+            else
+            {
+                return new List<Exception>() { ex };
+            }
+        }
+
+        private static List<Exception> Clean(IEnumerable<Exception> inners)
+        {
+            List<Exception> cleaned = new List<Exception>();
+            foreach (var exception in inners)
+            {
+                if (exception is AggregateException)
+                {
+                    cleaned.AddRange(Clean(((AggregateException)exception).InnerExceptions));
+                }
+                else
+                {
+                    cleaned.Add(exception);
+                }
+            }
+
+            return cleaned;
         }
     }
 }
