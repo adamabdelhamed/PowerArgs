@@ -1,9 +1,9 @@
-###Binary
+### Binary
 PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
 Reference information for the entire API surface of the latest version is available [here](http://adamabdelhamed2.blob.core.windows.net/powerargsdocs/2.7.0.0/html/classes.html).
 
-###Overview
+### Overview
 
 PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility.
 
@@ -157,7 +157,7 @@ You can't mix and match though.  An action method needs to be formatted in one o
 - A single parameter of a complex type whose own properties describe the action's arguments, validation, and other metadata. The first calculator example used this pattern.
 - One or more 'loose' parameters that are individually revivable, meaning that one command line parameter maps to one property in your class. The second calculator example showed a variation of the Add method that uses this pattern.
 
-###Metadata Attributes 
+### Metadata Attributes 
 
 These attributes can be specified on argument properties. PowerArgs uses this metadata to influence how the parser behaves.
 
@@ -172,7 +172,7 @@ These attributes can be specified on argument properties. PowerArgs uses this me
 * `[Query(typeof(MyDataSource))]` Easily query a data source (see documentation below).
 * `[TabCompletion]` Enable tab completion for parameter names (see documentation below)
     
-###Validator Attributes
+### Validator Attributes
 
 These attributes can be specified on argument properties.  You can create custom validators by implementing classes that derive from ArgValidator.
 
@@ -183,7 +183,7 @@ These attributes can be specified on argument properties.  You can create custom
 * `[ArgRegex("MyRegex")]` Apply a regular expression validation rule
 * `[UsPhoneNumber]` A good example of how to create a reuable, custom validator.
 
-###Custom Revivers
+### Custom Revivers
 
 Revivers are used to convert command line strings into their proper .NET types.  By default, many of the simple types such as int, DateTime, Guid, string, char,  and bool are supported.
 
@@ -230,7 +230,7 @@ public class CustomReviverExample
 }
 ```
 
-###Generate usage documentation from templates (built in or custom)
+### Generate usage documentation from templates (built in or custom)
 
 PowerArgs has always provided auto-generated usage documentation via the ArgUsage class.  However, the format was hard coded, and gave very little flexibility in terms of the output format. With the latest release of PowerArgs usage documentation can be fully customized via templates.  A template is just a piece of text that represents the documentation structure you want along with some placeholders that will be replaced with the actual information about your command line application.  There are built in templates designed for the console and a web browser, and you can also create your own.  
 
@@ -287,7 +287,7 @@ var document = renderer.Render("Hi {{ Name !}}", new { Name = "Adam" });
 // outputs 'Hi Adam'
 ```
 
-###Ambient Args
+### Ambient Args
 
 Access your parsed command line arguments from anywhere in your application.
 
@@ -325,7 +325,7 @@ TestArgs parsed = Args.Parse<TestArgs>();
 string notSecure = parsed.Password.ConvertToNonsecureString(); // This line causes the user to be prompted
 ```
 
-###Tab Completion
+### Tab Completion
 
 Get tab completion for your command line arguments.  Just add the TabCompletion attribute and when your users run the program from the command line with no arguments they will get an enhanced prompt (should turn blue) where they can have tab completion for command line argument names.
 
@@ -409,11 +409,11 @@ public class TestArgs
 }
 ```
 
-###The PowerArgs.Cli (undocumented) namespace
+### The PowerArgs.Cli (undocumented) namespace
 
 The PowerArgs.Cli namespace contains framework components that make it easy to build very interactive command line applications.  This namespace is undocumented since these capabilities are still a work in progress.  When it gets closer to being ready I'll document the classes just like the rest of PowerArgs.
 
-###Data Source Queries
+### Data Source Queries
 
 Easily query a data source such as an Entity Framework Model (Code First or traditional) using Linq.
 

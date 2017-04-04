@@ -24,5 +24,10 @@ namespace PowerArgs.Cli
         {
             _managedItems.Add(item);
         }
+
+        public void Manage(Action cleanupCode)
+        {
+            _managedItems.Add(new Subscription(cleanupCode));
+        }
     }
 }

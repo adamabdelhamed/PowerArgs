@@ -15,6 +15,10 @@ namespace PowerArgs.Cli
         /// </summary>
         public string Id { get { return Get<string>(); } set { Set(value); } }
 
+        /// <summary>
+        /// Used to determine the order in which to paint a control within its parent.  Controls
+        /// with higher ZIndex values are pained on top of controls with lower values.
+        /// </summary>
         public int ZIndex { get; set; }
 
         /// <summary>
