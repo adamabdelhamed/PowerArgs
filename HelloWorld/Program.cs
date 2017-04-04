@@ -1,6 +1,4 @@
-﻿using PowerArgs.Cli;
-using PowerArgs.Cli.Physics;
-using System;
+﻿using System;
 
 namespace HelloWorld
 {
@@ -9,52 +7,6 @@ namespace HelloWorld
         [STAThread]
         static void Main(string[] args)
         {
-            var app = new ConsoleApp();
-            var scenePanel = app.LayoutRoot.Add(new ScenePanel(32,9) { Width=32,Height=9}).CenterHorizontally().CenterVertically();
-            Random r = new Random();
-            app.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Spacebar, null, () =>
-            {
-                scenePanel.Scene.QueueAction(() =>
-                {
-                    Thing t = new Thing(9f, .01f, .5f, 1f);
-                    SceneHelpers.PlaceInEmptyLocation(scenePanel.Scene, t);
-                    var speedTracker = new SpeedTracker(t);
-                    speedTracker.HitDetectionTypes.Add(typeof(Thing));
-                    var gravity = new Gravity(speedTracker);
-                    var forwardForce = new Force(speedTracker, r.Next(20, 20), r.Next(210, 330));
-                    scenePanel.Scene.Add(t);
-                });
-            }, app.LifetimeManager);
-
-            var appTask = app.Start();
-
-            app.QueueAction(() =>
-            {
-                scenePanel.Scene.Start();
-            });
-
-            appTask.Wait();
-            return;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             // Samples.SearchSample.Run();
             // Samples.ProgressBarSample.Run();
             // Samples.CalculatorProgramSample._Main(args); // a simple 4 function calculator

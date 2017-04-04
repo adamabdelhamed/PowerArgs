@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -313,8 +314,8 @@ namespace PowerArgs.Cli
                     PaintMessage iterationPaintMessage = null;
                     lock (pumpMessageQueue)
                     {
-                        iterationQueue = pumpMessageQueue;
-                        pumpMessageQueue = new List<PumpMessage>();
+                        iterationQueue = new List<PumpMessage>(pumpMessageQueue);
+                        pumpMessageQueue.Clear();
                     }
 
                     foreach (var message in iterationQueue)
@@ -397,7 +398,14 @@ namespace PowerArgs.Cli
       
                 if (exceptionArgs.Handled == false)
                 {
-                    throw;
+                    if (ex.InnerException != null)
+                    {
+                        ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                    }
+                    else
+                    {
+                        ExceptionDispatchInfo.Capture(ex).Throw();
+                    }
                 }
             }
 #if PROFILING
