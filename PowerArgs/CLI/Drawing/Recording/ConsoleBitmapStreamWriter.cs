@@ -1,11 +1,12 @@
-﻿using PowerArgs;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// An object that can write console bitmap video data to a stream
+    /// </summary>
     public class ConsoleBitmapStreamWriter : Lifetime
     {
         private DateTime? firstFrameTime;
@@ -14,8 +15,20 @@ namespace PowerArgs.Cli
         private StreamWriter writer;
         private ConsoleBitmapFrameSerializer serializer;
 
+        /// <summary>
+        /// If true then the writer will close the inner stream when it's finished
+        /// </summary>
         public bool CloseInnerStream { get; set; } = true;
+
+        /// <summary>
+        /// Gets the inner stream that was passed to the constructor
+        /// </summary>
         public Stream InnerStream => outputStream;
+
+        /// <summary>
+        /// Creates a new writer given a stream
+        /// </summary>
+        /// <param name="s">the stream to write to</param>
         public ConsoleBitmapStreamWriter(Stream s)
         {
             this.outputStream = s;
@@ -32,6 +45,15 @@ namespace PowerArgs.Cli
             this.LifetimeManager.Manage(this.WriteEnd);
         }
 
+        /// <summary>
+        /// Writes the given bitmap image as a frame to the stream.  If this is the first image or more than half of the pixels have
+        /// changed then a raw frame will be written.   Otherwise, a diff frame will be written.
+        /// 
+        /// This method uses the system's wall clock to determine the timestamp for this frame. The timestamp will be 
+        /// relative to the wall clock time when the first frame was written.
+        /// </summary>
+        /// <param name="bitmap">the image to write</param>
+        /// <returns>the same bitmap that was passed in</returns>
         public ConsoleBitmap WriteFrame(ConsoleBitmap bitmap)
         {
             var rawFrame = GetRawFrame(bitmap);
@@ -74,6 +96,10 @@ namespace PowerArgs.Cli
             return bitmap;
         }
 
+        /// <summary>
+        /// Writes the duration information in the beginning of the stream and then closes the inner stream
+        /// if CloseInnerStream is true
+        /// </summary>
         private void WriteEnd()
         {
             writer.Flush();
@@ -81,7 +107,6 @@ namespace PowerArgs.Cli
             var recordingTicks = lastFrame.Timestamp.Ticks;
             var bytes = BitConverter.GetBytes(recordingTicks);
             outputStream.Write(bytes, 0, bytes.Length);
-
             writer.Flush();
 
             if (CloseInnerStream)
@@ -90,13 +115,11 @@ namespace PowerArgs.Cli
             }
         }
 
-
+        
         private void StreamHeader(ConsoleBitmap initialFrame)
         {
             writer.WriteLine($"{initialFrame.Width}x{initialFrame.Height}");
         }
-
-      
 
         private ConsoleBitmapRawFrame GetRawFrame(ConsoleBitmap bitmap)
         {
