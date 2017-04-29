@@ -36,8 +36,9 @@ namespace PowerArgs.Cli
 
         public bool IsLocked { get; private set; }
 
-        public ConsoleBitmap(int x, int y, int w, int h, ConsoleCharacter? bg = null) : this(new Rectangle(x,y,w,h), bg){}
-        
+        public ConsoleBitmap(int x, int y, int w, int h, ConsoleCharacter? bg = null) : this(new Rectangle(x,y,w,h), bg) {}
+        public ConsoleBitmap(int w, int h, ConsoleCharacter? bg = null) : this(new Rectangle(0, 0, w, h), bg) { }
+
         public ConsoleBitmap(Rectangle bounds, ConsoleCharacter? bg = null)
         {
             _syncLock = new object();
@@ -161,8 +162,6 @@ namespace PowerArgs.Cli
         {
             DrawString(new ConsoleString(str), x, y, vert);
         }
-
-
 
         public void FillRect(int x, int y, int w, int h)
         {
@@ -303,6 +302,30 @@ namespace PowerArgs.Cli
             }
         }
 
+        public ConsoleBitmap Clone()
+        {
+            var ret = new ConsoleBitmap(this.Bounds, this.Background);
+            for (var x = 0; x < Width; x++)
+            {
+                for (var y = 0; y < Height; y++)
+                {
+                    ret.Pen = this.GetPixel(x, y).Value.HasValue ? this.GetPixel(x, y).Value.Value : new ConsoleCharacter(' ');
+                    ret.DrawPoint(x, y);
+                }
+            }
+            return ret;
+        }
+
+        public void Sync()
+        {
+            for (var x = 0; x < Width; x++)
+            {
+                for (var y = 0; y < Height; y++)
+                {
+                    pixels[x][y].Sync();
+                }
+            }
+        }
 
         public void Paint()
         {
@@ -421,6 +444,105 @@ namespace PowerArgs.Cli
             }
 
             return ret;
+        }
+
+        public override bool Equals(Object obj)
+        {
+            var other = obj as ConsoleBitmap;
+            if (other == null) return false;
+
+            if (this.Width != other.Width || this.Height != other.Height)
+            {
+                return false;
+            }
+
+            for (var x = 0; x < this.Width; x++)
+            {
+                for (var y = 0; y < this.Height; y++)
+                {
+                    var thisVal = this.GetPixel(x, y).Value;
+                    var otherVal = other.GetPixel(x, y).Value;
+
+                    if (thisVal.HasValue != otherVal.HasValue) return false;
+
+                    if (thisVal.HasValue && thisVal.Value != otherVal.Value) return false;
+
+                }
+            }
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        // new style methods that don't require you to set the pen before drawing
+
+        public ConsoleBitmap DrawLine(ConsoleCharacter character, int x1, int y1, int x2, int y2)
+        {
+            var oldPen = this.Pen;
+            try
+            {
+                this.Pen = character;
+                DrawLine(x1, y1, x2, y2);
+            }
+            finally
+            {
+                this.Pen = oldPen;
+            }
+            return this;
+        }
+
+        public ConsoleBitmap DrawRect(ConsoleCharacter character, int x = 0, int y = 0, int w = -1, int h = -1)
+        {
+            var oldPen = this.Pen;
+            try
+            {
+                w = w < 0 ? Width : w;
+                h = h < 0 ? Height : h;
+                this.Pen = character;
+                DrawRect(x, y, w, h);
+            }
+            finally
+            {
+                this.Pen = oldPen;
+            }
+            return this;
+        }
+
+        public ConsoleBitmap FillRect(ConsoleCharacter character, int x = 0, int y = 0, int w = -1, int h = -1)
+        {
+            var oldPen = this.Pen;
+            try
+            {
+                w = w < 0 ? Width : w;
+                h = h < 0 ? Height : h;
+                this.Pen = character;
+                FillRect(x, y, w, h);
+            }
+            finally
+            {
+                this.Pen = oldPen;
+            }
+            return this;
+        }
+
+        public ConsoleBitmap DrawPoint(ConsoleCharacter character, int x, int y)
+        {
+            var oldPen = this.Pen;
+            try
+            {
+                this.Pen = character;
+                DrawPoint(x,y);
+            }
+            finally
+            {
+                this.Pen = oldPen;
+            }
+
+            return this;
         }
     }
 

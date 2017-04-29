@@ -54,6 +54,8 @@
     <Compile Include="CLI\CliHelper.cs" />
     <Compile Include="CLI\CliMessagePump.cs" />
     <Compile Include="CLI\CliProgressBar.cs" />
+    <Compile Include="CLI\Controls\BitmapControl.cs" />
+    <Compile Include="CLI\Controls\Border.cs" />
     <Compile Include="CLI\Controls\CommandBar.cs" />
     <Compile Include="CLI\Controls\BreadcrumbBar.cs" />
     <Compile Include="CLI\Controls\Dialog.cs" />
@@ -77,6 +79,12 @@
     <Compile Include="CLI\Data\LoadMoreDataSource.cs" />
     <Compile Include="CLI\Data\MemoryDataSource.cs" />
     <Compile Include="CLI\Data\SortExpression.cs" />
+    <Compile Include="CLI\Drawing\Recording\ConsoleBitmapFrame.cs" />
+    <Compile Include="CLI\Drawing\Recording\ConsoleBitmapFrameSerializer.cs" />
+    <Compile Include="CLI\Drawing\Recording\ConsoleBitmapPlayer.cs" />
+    <Compile Include="CLI\Drawing\Recording\ConsoleBitmapStreamReader.cs" />
+    <Compile Include="CLI\Drawing\Recording\ConsoleBitmapStreamWriter.cs" />
+    <Compile Include="CLI\Drawing\Recording\PlayerProgressBar.cs" />
     <Compile Include="CLI\Drawing\Thickness.cs" />
     <Compile Include="CLI\FocusManager.cs" />
     <Compile Include="CLI\Helpers\Disposable.cs" />

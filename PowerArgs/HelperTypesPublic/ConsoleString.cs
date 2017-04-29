@@ -26,6 +26,262 @@ namespace PowerArgs
         public ConsoleColor BackgroundColor { get; set; }
 
         /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter Black(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Black, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter BlackBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Black);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkBlue(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkBlue, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkBlueBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkBlue);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkGreen(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkGreen, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkGreenBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkGreen);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkCyan(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkCyan, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkCyanBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkCyan);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkRed(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkRed, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkRedBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkRed);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkMagenta(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkMagenta, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkMagentaBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkMagenta);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkYellow(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkYellow, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkYellowBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkYellow);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter Gray(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Gray, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter GrayBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Gray);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkGray(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkGray, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter DarkGrayBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkGray);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter Blue(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Blue, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter BlueBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Blue);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter Green(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Green, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter GreenBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Green);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter Cyan(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Cyan, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter CyanBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Cyan);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter Red(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Red, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter RedBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Red);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter Magenta(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Magenta, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter MagentaBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Magenta);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter Yellow(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Yellow, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter YellowBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Yellow);
+
+        /// <summary>
+        /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="bg">an optional background color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter White(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.White, bg);
+
+        /// <summary>
+        /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
+        /// </summary>
+        /// <param name="val">the character to style</param>
+        /// <param name="fg">an optional foreground color that defaults to the console default</param>
+        /// <returns>a styled character</returns>
+        public static ConsoleCharacter WhiteBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.White);
+
+        /// <summary>
         /// Create a new ConsoleCharacter given a char value and optionally set the foreground or background coor.
         /// </summary>
         /// <param name="value">The character value</param>

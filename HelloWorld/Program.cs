@@ -1,12 +1,35 @@
-﻿using System;
+﻿using PowerArgs.Cli;
+using PowerArgs.Cli.Physics;
+using System;
+using System.IO;
 
 namespace HelloWorld
 {
     class Program
     {
+        private static void Play()
+        {
+            var app = new ConsoleApp();
+            var player = app.LayoutRoot.Add(new ConsoleBitmapPlayer()).Fill();
+            var promise = app.Start();
+            player.Load(File.OpenRead(@"C:\temp\firstpowerargsvideo.txt"));
+            promise.Wait();
+        }
+
+        private static void Record()
+        {
+            var app = new Samples.AzureTableBrowserApp();
+            app.Recorder = new ConsoleBitmapStreamWriter(File.OpenWrite(@"C:\temp\firstpowerargsvideo.txt"));
+            var appPromise = app.Start();
+            appPromise.Wait();
+        }
         [STAThread]
         static void Main(string[] args)
         {
+
+            Play();
+            return;
+
             // Samples.SearchSample.Run();
             // Samples.ProgressBarSample.Run();
             // Samples.CalculatorProgramSample._Main(args); // a simple 4 function calculator
