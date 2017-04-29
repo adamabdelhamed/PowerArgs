@@ -17,6 +17,11 @@ namespace PowerArgs
 
         internal void Set(string propertyName, object value)
         {
+            if(value == null)
+            {
+                throw new InvalidArgDefinitionException("You cannot override a metadata property with null");
+            }
+
             if (overrideValues.ContainsKey(propertyName))
             {
                 overrideValues[propertyName] = value;
