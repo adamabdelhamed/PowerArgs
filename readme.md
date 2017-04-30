@@ -137,17 +137,17 @@ Here are some valid ways that an end user could call this program:
 
 * `Calculator.exe add -Value1 1 -Value2 5` outputs '6'
 * `Calculator.exe multiply /Value1:2 /Value2:5` outputs '10'
-* `Calculator.exe add 1 4` outputs '5' - Since the [ArgPosition] attribute is specified on the Value1 and Value1 properties, PowerArgs knows how to map these arguments.
+* `Calculator.exe add 1 4` outputs '5' - Since the [ArgPosition] attribute is specified on the Value1 and Value2 properties, PowerArgs knows how to map these arguments.
 
 If you wanted to, your action method could accept loose parameters in each action method.  I find this is useful for small, simple programs where the input parameters don't need to be reused across many actions. 
 
 ```cs
-[ArgActionMethod, ArgDescription("Divides the two operands")]
+[ArgActionMethod, ArgDescription("Adds the two operands")]
 public void Add(
 	[ArgRequired][ArgDescription("The first value to add"), ArgPosition(1)] double value1, 
 	[ArgRequired][ArgDescription("The second value to add"), ArgPosition(2)] double value2)
 {
-    Console.WriteLine(value1 / value2);
+    Console.WriteLine(value1 + value2);
 }
 ```
 
