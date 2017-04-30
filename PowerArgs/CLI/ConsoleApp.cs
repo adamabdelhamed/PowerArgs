@@ -49,6 +49,8 @@ namespace PowerArgs.Cli
             }
         }
 
+        public ConsoleBitmapStreamWriter Recorder { get; set; }
+
         /// <summary>
         /// An event that fires when the application is about to stop, before the console is wiped
         /// </summary>
@@ -127,6 +129,13 @@ namespace PowerArgs.Cli
             LayoutRoot.Controls.Removed.SubscribeForLifetime(ControlRemovedFromVisualTree, LifetimeManager);
             WindowResized.SubscribeForLifetime(HandleDebouncedResize, LifetimeManager);
         }
+
+        /// <summary>
+        /// Creates a new console app of the given width and height, positioned at x=0,y=0
+        /// </summary>
+        /// <param name="w">The width of the app</param>
+        /// <param name="h">The height of the app</param>
+        public ConsoleApp(int w, int h) : this(0, 0, w, h) { }
 
         /// <summary>
         /// Creates a ConsoleApp from markup and a view model
@@ -300,6 +309,7 @@ namespace PowerArgs.Cli
         private void ExitInternal()
         {
             Stopping.Fire();
+            Recorder?.Dispose();
             using (var snapshot = Bitmap.CreateSnapshot())
             {
                 Bitmap.CreateWiper().Wipe();
@@ -329,7 +339,8 @@ namespace PowerArgs.Cli
             using (new TimeProfiler("Bitmap.Paint"))
             {
 #endif
-                Bitmap.Paint();
+            Recorder?.WriteFrame(Bitmap);
+            Bitmap.Paint();
 #if PROFILING
             }
 #endif

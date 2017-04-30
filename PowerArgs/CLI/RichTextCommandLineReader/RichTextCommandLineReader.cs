@@ -185,8 +185,9 @@ namespace PowerArgs.Cli
                         }
                         catch(Exception ex)
                         {
-                            PowerLogger.LogLine(ex.ToString());
-                            throw;
+                            "\n\nConsole was resized, type input again\n".ToYellow().Write();
+                            ">".ToCyan().Write();
+                            return ReadLine(initialBuffer);
                         }
                     }
 

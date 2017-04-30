@@ -89,7 +89,10 @@ namespace PowerArgs.Cli
                 try
                 {
                     context.Rescope(control.X, control.Y, control.Width, control.Height);
-                    control.Paint(context);
+                    if (control.Width > 0 && control.Height > 0)
+                    {
+                        control.Paint(context);
+                    }
                 }
                 finally
                 {

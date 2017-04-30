@@ -123,7 +123,7 @@ namespace PowerArgs.Cli
 
         private void RegisterShortcutIfPossibleAndNotAlreadyDone()
         {
-            if (Shortcut != null && shortcutRegistered == false)
+            if (Shortcut != null && shortcutRegistered == false && Application != null)
             {
                 shortcutRegistered = true;
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(Shortcut.Key, Shortcut.Modifier, Click, this.LifetimeManager);

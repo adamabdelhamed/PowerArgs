@@ -113,9 +113,6 @@ namespace HelloWorld.Samples
     {
         // This is the code you would put in your Main method.  It's called _Main here since you can only have 1 called Main
         // in the assembly.
-        public static void _Main(string[] args)
-        {
-            var parsed = Args.InvokeAction<REPLInvokeArgs>(args);
-        }
+        public static void _Main(string[] args) => Args.InvokeAction<REPLInvokeArgs>(args);
     }
 }

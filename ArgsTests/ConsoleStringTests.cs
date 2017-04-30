@@ -335,6 +335,23 @@ namespace ArgsTests
             }
         }
 
+        [TestMethod]
+        public void TestConsoleCharacterHelpers()
+        {
+            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            {
+                var method = typeof(ConsoleCharacter).GetMethod(color+"", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                Assert.AreEqual(new ConsoleCharacter('*', color, color), method.Invoke(null, new object[] { '*', color }));
+                Assert.AreEqual(new ConsoleCharacter('*', color, null), method.Invoke(null, new object[] { '*', null }));
+            }
+
+            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            {
+                var method = typeof(ConsoleCharacter).GetMethod(color + "BG", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                Assert.AreEqual(new ConsoleCharacter('*', color, color), method.Invoke(null, new object[] { '*', color }));
+                Assert.AreEqual(new ConsoleCharacter('*', null, color), method.Invoke(null, new object[] { '*', null }));
+            }
+        }
 
         private static void ValidateStringCharacteristics(string expected, ConsoleString actual)
         {
