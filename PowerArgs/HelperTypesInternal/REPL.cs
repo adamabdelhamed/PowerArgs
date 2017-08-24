@@ -7,7 +7,7 @@ namespace PowerArgs
 {
     internal static class REPL
     {
-        internal static T DriveREPL<T>(TabCompletion t, Func<string[], T> eval, string[] args) where T : class
+        internal static T DriveREPL<T>(TabCompletion t, Func<string[], T> eval, string[] args, Func<T> defaultEval) where T : class
         {
             T ret = null;
 
@@ -29,7 +29,7 @@ namespace PowerArgs
                 }
                 catch (REPLExitException)
                 {
-                    return ret;
+                    return ret ?? defaultEval();
                 }
                 catch (REPLContinueException)
                 {

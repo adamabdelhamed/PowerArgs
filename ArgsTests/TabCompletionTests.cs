@@ -340,6 +340,16 @@ namespace ArgsTests
             Assert.AreEqual(1, clearCount);
         }
 
+
+        [TestMethod]
+        public void TestREPLCancelled()
+        {
+            var provider = TestConsoleProvider.SimulateConsoleInput("quit");
+            var ret = Args.InvokeMain<TestArgsWithREPL>("$");
+            Assert.IsNotNull(ret);
+            Assert.IsTrue(ret.Cancelled);
+        }
+
         [TestMethod]
         public void TestREPLExitsWhenIndicatorIsNotPresent()
         {

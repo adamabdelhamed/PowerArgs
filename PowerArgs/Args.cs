@@ -233,7 +233,15 @@ namespace PowerArgs
                     }
                     return result;
                 });
-            }, args);
+            }, args, ()=>
+            {
+                return new ArgAction()
+                {
+                    Cancelled = true,
+                    Definition = definition,
+                    Context = ArgHook.HookContext.Current,
+                };
+            });
         }
 
         /// <summary>
@@ -268,7 +276,15 @@ namespace PowerArgs
                     }
                     return result;
                 });
-            }, args);
+            }, args, ()=>
+            {
+                return new ArgAction()
+                {
+                    Cancelled = true,
+                    Definition = definition,
+                    Context = ArgHook.HookContext.Current,
+                };
+            });
         }
 
         /// <summary>

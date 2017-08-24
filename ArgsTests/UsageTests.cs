@@ -82,8 +82,8 @@ namespace ArgsTests
         {
             int verifyCount = 0;
             var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttributes(typeof(UsageAutomation), true).Length > 0);
-            System.Threading.Tasks.Parallel.ForEach(types, (type) =>
-             {
+           foreach(var type in types)
+            { 
                  ArgUsage.GetStyledUsage(type, "testusage.exe");
                  var consoleOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultConsoleUsageTemplate);
                  var browserOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultBrowserUsageTemplate);
@@ -100,7 +100,7 @@ namespace ArgsTests
                  Console.WriteLine("*************************************\n");
                  Console.WriteLine(consoleOutput);
                  Console.WriteLine("*************************************\n");
-             });
+             }
             Console.WriteLine("Verified usage output for "+verifyCount+" types");
         }
 
