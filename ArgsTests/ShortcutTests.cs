@@ -63,6 +63,17 @@ namespace ArgsTests
             public bool Help { get; set; }
         }
 
+        public class ParameterShortcuts
+        {
+            public static string NameCapture { get; set; }
+
+            [ArgActionMethod]
+            public void AnAction([ArgShortcut("-foo")]string name)
+            {
+                NameCapture = name;
+            }
+        }
+
         public class MultipleShortcutDuplicateArgs
         {
             [ArgShortcut("-h")]
@@ -150,6 +161,15 @@ namespace ArgsTests
             [ArgShortcut(ArgShortcutPolicy.NoShortcut)]
             public string SomeOtherString { get; set; }
         }
+
+        [TestMethod]
+        public void TestParameterShortcuts()
+        {
+            ParameterShortcuts.NameCapture = null;
+            Args.InvokeAction<ParameterShortcuts>("AnAction", "-foo", "Adam");
+            Assert.AreEqual("Adam", ParameterShortcuts.NameCapture);
+        }
+
 
         [TestMethod]
         public void TestBasicShortcuts()
