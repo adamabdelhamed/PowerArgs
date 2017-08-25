@@ -19,7 +19,7 @@ namespace ArgsTests {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Resources {
@@ -77,10 +77,13 @@ namespace ArgsTests {
         
         /// <summary>
         ///   Looks up a localized string similar to &lt;App&gt;
-        ///  &lt;StackPanel Fill=&quot;Both&quot; Orientation=&quot;Vertical&quot;&gt;
-        ///    &lt;Label Text=&quot;Name&quot; Fill=&quot;Horizontal&quot; /&gt;
-        ///    &lt;TextBox Value=&quot;{Name}&quot; Width=&quot;40&quot; Background=&quot;Gray&quot; Foreground=&quot;Black&quot; /&gt;
-        ///	  &lt;Button Activated=&quot;SubmitClicked&quot; Text=&quot;Submit&quot;/&gt;
+        ///  &lt;StackPanel AutoSize=&quot;true&quot; Orientation=&quot;Vertical&quot;&gt;
+        ///    &lt;StackPanel AutoSize=&quot;true&quot; Orientation=&quot;Horizontal&quot; Fill=&quot;Horizontal&quot;&gt;
+        ///      &lt;Spinner Foreground=&quot;Green&quot; IsSpinning=&quot;true&quot;&gt;&lt;/Spinner&gt;
+        ///      &lt;Label Text=&quot;Name&quot; Fill=&quot;Horizontal&quot; /&gt;
+        ///    &lt;/StackPanel&gt;
+        ///    &lt;TextBox Value=&quot;{Customer.Name}&quot; Background=&quot;Gray&quot; Foreground=&quot;Black&quot; /&gt;
+        ///    &lt;Button Pressed=&quot;SubmitClicked&quot; Shortcut=&quot;Enter&quot; Text=&quot;Submit&quot;/&gt;
         ///  &lt;/StackPanel&gt;
         ///&lt;/App&gt;.
         /// </summary>
@@ -122,10 +125,17 @@ namespace ArgsTests {
         ///
         ///Usage - PhotoManager &lt;action&gt; -options
         ///
-        ///GlobalOption   Description                                                                            
-        ///Output (-O)    How much output to display while performing management operations [Default=&apos;Light&apos;]    
-        ///               Verbose                                                                                
-        ///               Light                                                   [rest of string was truncated]&quot;;.
+        ///GlobalOption   Description
+        ///Output (-O)    How much output to display while performing management operations [Default=&apos;Light&apos;] 
+        ///               Verbose
+        ///               Light
+        ///               Quiet
+        ///
+        ///Actions
+        ///
+        ///  CreateAlbum &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options - Creates a new album in the target container, creating the container if it does not exist
+        ///
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string PhotoAlbumManagerExpectedConsoleUsage {
             get {
