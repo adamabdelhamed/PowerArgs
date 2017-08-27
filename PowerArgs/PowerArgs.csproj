@@ -9,9 +9,9 @@
     <Authors>Adam Abdelhamed</Authors>
     <Description>The ultimate command line application framework</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Ported to .NET Standard 2.0</PackageReleaseNotes>
+    <PackageReleaseNotes>Ported to .NET Standard 2.0, deprecated query feature</PackageReleaseNotes>
     <Copyright>Copyright 2017 (c) Adam Abdelhamed. All rights reserved.</Copyright>
-    <PackageTags>command line arguments parser CLI</PackageTags>
+    <PackageTags>command line arguments parser CLI Core Standard</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

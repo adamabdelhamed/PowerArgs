@@ -1,8 +1,7 @@
 ### Binary
 PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
-Reference information for the entire API surface of the latest version is available [here](http://adamabdelhamed2.blob.core.windows.net/powerargsdocs/2.7.0.0/html/classes.html).
-
+As of version 3.0.0 PowerArgs targets [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) so that it can run cross platform.
 ### Overview
 
 PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility.
