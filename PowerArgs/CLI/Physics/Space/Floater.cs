@@ -2,26 +2,26 @@
 
 namespace PowerArgs.Cli.Physics
 {
-    public class Floater : ThingInteraction
+    public class Floater : SpacialElementFunction
     {
         static Random rand = new Random();
 
         SpeedTracker tracker;
         public float MaxFloat { get; set; }
 
-        public Floater() { }
-
-        public Floater(Thing t, SpeedTracker tracker, float maxFloat = 1) : base(t)
+        public Floater(SpacialElement t, SpeedTracker tracker, float maxFloat = 1) : base(t)
         {
             this.MaxFloat = maxFloat;
             this.Governor.Rate = TimeSpan.FromSeconds(.03);
             this.tracker = tracker;
         }
 
-        public override void Behave(Scene scene)
+        public override void Initialize()
         {
-            base.Behave(scene);
+        }
 
+        public override void Evaluate()
+        {
             float dX = ((float)(rand.NextDouble())) * MaxFloat;
             float dY = ((float)(rand.NextDouble())) * MaxFloat;
 

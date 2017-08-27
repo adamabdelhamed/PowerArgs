@@ -2,21 +2,21 @@
 
 namespace PowerArgs.Cli.Physics
 {
-    public class Roamer : ThingInteraction
+    public class Roamer : SpacialElementFunction
     {
         public bool IsRoaming { get; set; }
         public SpeedTracker RoamerSpeed { get; private set; }
         private Force currentForce;
         private float accelleration;
 
-        public Roamer(Thing roamer, SpeedTracker roamerSpeed, float accelleration) : base(roamer)
+        public Roamer(SpacialElement roamer, SpeedTracker roamerSpeed, float accelleration) : base(roamer)
         {
             this.RoamerSpeed = roamerSpeed;
             this.accelleration = accelleration;
             Governor.Rate = TimeSpan.FromSeconds(.1);
          }
 
-        public override void Initialize(Scene scene)
+        public override void Initialize()
         {
             if (IsRoaming)
             {
@@ -26,16 +26,16 @@ namespace PowerArgs.Cli.Physics
 
         private float NextAngle()
         {
-            var baseVal = ((float)Scene.ElapsedTime.TotalMilliseconds * MyThing.Bounds.X* MyThing.Bounds.Y) % 359f;
+            var baseVal = ((float)Time.CurrentTime.Now.TotalMilliseconds * Element.Bounds.Left* Element.Bounds.Top) % 359f;
 
             return baseVal;
         }
 
-        public override void Behave(Scene scene)
+        public override void Evaluate()
         {
             if (currentForce != null)
             {
-                new Force(RoamerSpeed, 1, SceneHelpers.GetOppositeAngle(currentForce.Angle));
+                new Force(RoamerSpeed, 1, SpaceExtensions.GetOppositeAngle(currentForce.Angle));
                 currentForce = null;
             }
 

@@ -2,7 +2,7 @@
 
 namespace PowerArgs.Cli.Physics
 {
-    public class Force : ThingInteraction
+    public class Force : SpacialElementFunction
     {
         public float Accelleration { get; set; }
         public float Angle { get; set; }
@@ -11,7 +11,7 @@ namespace PowerArgs.Cli.Physics
         public bool IsPermanentForce { get; set; }
         SpeedTracker tracker;
 
-        public Force(SpeedTracker tracker, float accelleration, float angle, TimeSpan? duration = null) : base(tracker.MyThing)
+        public Force(SpeedTracker tracker, float accelleration, float angle, TimeSpan? duration = null) : base(tracker.Element)
         {
             this.Accelleration = accelleration;
             this.Angle = angle;
@@ -19,16 +19,15 @@ namespace PowerArgs.Cli.Physics
             this.Duration = duration.HasValue ? duration.Value : TimeSpan.Zero;
         }
 
-        public override void Initialize(Scene scene)
+        public override void Initialize()
         {
-            base.Initialize(scene);
             if (Duration < TimeSpan.Zero)
             {
                 this.IsPermanentForce = true;
             }
             else
             {
-                this.EndTime = scene.ElapsedTime + Duration;
+                this.EndTime = Time.CurrentTime.Now + Duration;
             }
 
             if (Duration == TimeSpan.Zero)
@@ -37,19 +36,19 @@ namespace PowerArgs.Cli.Physics
                 CalculateSpeedDeltas(Accelleration, out dx, out dy);
                 tracker.SpeedX += dx;
                 tracker.SpeedY += dy;
-                scene.Remove(this);
+                this.Lifetime.Dispose();
             }
         }
 
-        public override void Behave(Scene scene)
+        public override void Evaluate()
         {
-            if (!IsPermanentForce && scene.ElapsedTime >= EndTime)
+            if (!IsPermanentForce && Time.CurrentTime.Now >= EndTime)
             {
-                scene.Remove(this);
+                this.Lifetime.Dispose();
                 return;
             }
 
-            float dt = (float)(scene.ElapsedTime.TotalSeconds - LastBehavior.TotalSeconds);
+            float dt = (float)(Time.CurrentTime.Now.TotalSeconds - Governor.Rate.TotalSeconds);
             float dSpeed = (Accelleration * dt);
             float dx, dy;
 

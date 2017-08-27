@@ -267,7 +267,7 @@ namespace ArgsTests
                 typeof(MarkupPropertyAttribute),
                 typeof(MarkupExtensionAttribute),
                 typeof(MarkupIgnoreAttribute),
-                typeof(ThingBindingAttribute),
+                typeof(SpacialElementBindingAttribute),
             };
 
             var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>

@@ -1,19 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
 
 namespace PowerArgs.Cli.Physics
 {
-    public class Impact
-    {
-        public float Angle { get; set; }
-        public Rectangle Bounds { get; set; }
-        public Thing ThingHit { get; set; }
-    }
-
-    public class SpeedTracker : ThingInteraction
+    public class SpeedTracker : SpacialElementFunction
     {
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
 
@@ -76,39 +66,39 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public SpeedTracker(Thing t) : base(t)
+        public SpeedTracker(SpacialElement t) : base(t)
         {
             HitDetectionTypes = new List<Type>();
             Bounciness = .4f;
             ImpactFriction = .95f;
         }
-
-        public override void Behave(Scene scene)
+        public override void Initialize()
         {
-            base.Behave(scene);
 
-            float dt = (float)(scene.ElapsedTime.TotalSeconds - LastBehavior.TotalSeconds);
-            if (dt == 0) return;
+        }
 
+        public override void Evaluate()
+        {
+            float dt = (float)Governor.Rate.TotalSeconds;
             float dx = SpeedX * dt;
             float dy = SpeedY * dt;
 
-            var hitPrediction = SceneHelpers.PredictHit(scene, MyThing, HitDetectionTypes, dx, dy);
-            
-            if (hitPrediction.Type != SceneHelpers.HitType.None)
+            var hitPrediction = HitDetection.PredictHit(SpaceTime.CurrentSpaceTime, Element, HitDetectionTypes, dx, dy);
+
+            if (hitPrediction.Type != HitType.None)
             {
-                float angle = MyThing.Bounds.Location.CalculateAngleTo(hitPrediction.BoundsOfItemBeingHit.Location);
+                float angle = Element.Center().CalculateAngleTo(hitPrediction.ElementHit.Center());
                 if (ImpactOccurred != null && haveMovedSinceLastHitDetection)
                 {
                     ImpactOccurred.Fire(new Impact()
                     {
                         Angle = angle,
                         Bounds = hitPrediction.BoundsOfItemBeingHit,
-                        ThingHit = hitPrediction.ThingHit
+                        ElementHit = hitPrediction.ElementHit
                     });
                 }
                 haveMovedSinceLastHitDetection = false;
-                Rectangle testArea = new Rectangle(MyThing.Left + dx, MyThing.Top + dy, MyThing.Bounds.Size.W, MyThing.Bounds.Size.H);
+                var testArea = Rectangular.Create(Element.Left + dx, Element.Top + dy, Element.Width, Element.Height);
 
                 if (hitPrediction.Direction == Direction.Down || hitPrediction.Direction == Direction.Up)
                 {
@@ -128,16 +118,15 @@ namespace PowerArgs.Cli.Physics
             }
             else
             {
-                var oldLocation = MyThing.Bounds.Location;
-                if (SceneHelpers.MoveThingSafeBy(scene, MyThing, dx, dy))
-                {
-                    this.Angle = oldLocation.CalculateAngleTo(MyThing.Bounds.Location);
-                    haveMovedSinceLastHitDetection = true;
-                }
+                var oldLocation = Element.CopyBounds();
+                Element.MoveBy(dx, dy);
+
+                this.Angle = oldLocation.Center().CalculateAngleTo(Element.Center());
+                haveMovedSinceLastHitDetection = true;
             }
         }
 
-        public static void FindEdgesGivenHyp(float hyp, float angle, out float dx, out float dy)
+        internal static void FindEdgesGivenHyp(float hyp, float angle, out float dx, out float dy)
         {
             float angleTemp, d1, d2;
             if (angle >= 0 && angle < 90)
