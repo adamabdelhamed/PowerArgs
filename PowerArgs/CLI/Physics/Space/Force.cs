@@ -15,7 +15,7 @@ namespace PowerArgs.Cli.Physics
         {
             this.Accelleration = accelleration;
             this.Angle = angle;
-            this.tracker = tracker;
+            this.tracker = tracker ?? throw new ArgumentNullException();
             this.Duration = duration.HasValue ? duration.Value : TimeSpan.Zero;
         }
 
@@ -47,6 +47,9 @@ namespace PowerArgs.Cli.Physics
                 this.Lifetime.Dispose();
                 return;
             }
+
+            var increment = Governor.Rate.TotalSeconds;
+            if (increment == 0) increment = Time.CurrentTime.Increment.TotalSeconds;
 
             float dt = (float)(Time.CurrentTime.Now.TotalSeconds - Governor.Rate.TotalSeconds);
             float dSpeed = (Accelleration * dt);

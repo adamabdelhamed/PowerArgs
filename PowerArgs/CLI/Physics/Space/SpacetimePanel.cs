@@ -47,7 +47,7 @@ namespace PowerArgs.Cli.Physics
             {
                 LifetimeManager.Manage(Application.SetInterval(() =>
                 {
-                    RealTimeViewing.Evaluate();
+                    RealTimeViewing?.Evaluate();
                 }, TimeSpan.FromSeconds(.1)));
             }, this.LifetimeManager);
 

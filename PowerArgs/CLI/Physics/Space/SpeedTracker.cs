@@ -80,14 +80,47 @@ namespace PowerArgs.Cli.Physics
         public override void Evaluate()
         {
             float dt = (float)Governor.Rate.TotalSeconds;
+            if (dt == 0) dt = (float)Time.CurrentTime.Increment.TotalSeconds;
+
             float dx = SpeedX * dt;
             float dy = SpeedY * dt;
+
+            if(dx == 0 && dy == 0)
+            {
+                return;
+            }
 
             var hitPrediction = HitDetection.PredictHit(SpaceTime.CurrentSpaceTime, Element, HitDetectionTypes, dx, dy);
 
             if (hitPrediction.Type != HitType.None)
             {
-                float angle = Element.Center().CalculateAngleTo(hitPrediction.ElementHit.Center());
+                float angle;
+
+                if (hitPrediction.ElementHit != null)
+                {
+                    angle = Element.Center().CalculateAngleTo(hitPrediction.ElementHit.Center());
+                }
+                else if(hitPrediction.Direction == Direction.Left)
+                {
+                    angle = 180;
+                }
+                else if(hitPrediction.Direction == Direction.Right)
+                {
+                    angle = 0;
+                }
+                else if(hitPrediction.Direction == Direction.Up)
+                {
+                    angle = 270;
+                }
+                else if(hitPrediction.Direction == Direction.Down)
+                {
+                    angle = 90;
+                }
+                else
+                {
+                    throw new NotSupportedException($"Unsupported direction: {hitPrediction.Direction}");
+                }
+
                 if (ImpactOccurred != null && haveMovedSinceLastHitDetection)
                 {
                     ImpactOccurred.Fire(new Impact()

@@ -33,28 +33,35 @@ namespace PowerArgs.Cli.Physics
         {
             HitPrediction prediction = new HitPrediction();
 
-            if (Target.Bottom() + dy >= r.Height)
+            if(dx == 0 && dy == 0)
+            {
+                prediction.Direction = Direction.None;
+                prediction.Type = HitType.None;
+                return prediction;
+            }
+
+            if (dy > 0 && Target.Bottom() + dy >= r.Height)
             {
                 prediction.Direction = Direction.Down;
                 prediction.Type = HitType.Boundary;
                 prediction.BoundsOfItemBeingHit = Rectangular.Create(Target.Left + dx, r.Bounds.Height + dy, 1, 1);
                 return prediction;
             }
-            else if (Target.Left + dx <= 0)
+            else if (dx < 0 && Target.Left + dx <= 0)
             {
                 prediction.Direction = Direction.Left;
                 prediction.Type = HitType.Boundary;
                 prediction.BoundsOfItemBeingHit = Rectangular.Create(-dx, Target.Top + dy, 1, 1);
                 return prediction;
             }
-            else if (Target.Top + dy <= 0)
+            else if (dy < 0 && Target.Top + dy <= 0)
             {
                 prediction.Direction = Direction.Up;
                 prediction.Type = HitType.Boundary;
                 prediction.BoundsOfItemBeingHit = Rectangular.Create(Target.Left + dx, -dy, 1, 1);
                 return prediction;
             }
-            else if (Target.Right() + dx >= r.Width)
+            else if (dx > 0 && Target.Right() + dx >= r.Width)
             {
                 prediction.Direction = Direction.Right;
                 prediction.Type = HitType.Boundary;

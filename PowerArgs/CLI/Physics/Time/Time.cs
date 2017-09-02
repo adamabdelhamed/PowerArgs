@@ -105,12 +105,14 @@ namespace PowerArgs.Cli.Physics
         {
             AssertIsThisTimeThread();
             timeFunction.InternalState.AddedTime = Now;
+            timeFunction.InternalState.AttachedTime = this;
             toAdd.Add(timeFunction);
 
             timeFunction.Lifetime.LifetimeManager.Manage(() =>
             {
                 toRemove.Add(timeFunction);
                 TimeFunctionRemoved.Fire(timeFunction);
+                timeFunction.InternalState.AttachedTime = null;
             });
 
             timeFunction.Initialize();

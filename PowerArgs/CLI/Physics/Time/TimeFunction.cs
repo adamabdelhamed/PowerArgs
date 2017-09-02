@@ -41,10 +41,12 @@ namespace PowerArgs.Cli.Physics
     public static class ITimeFunctionExtensions
     {
         public static TimeSpan CalculateAge(this ITimeFunction function) => Time.CurrentTime.Now - function.InternalState.AddedTime;
+        public static bool IsAttached(this ITimeFunction function) => function.InternalState.AttachedTime != null;
     }
 
     public class TimeFunctionInternalState
     {
+        internal Time AttachedTime { get; set; }
         internal TimeSpan AddedTime { get; set; }
     }
 

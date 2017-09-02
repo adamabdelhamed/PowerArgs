@@ -17,6 +17,7 @@ namespace PowerArgs.Cli.Physics
             this.Seekee = seekee;
             this.SeekerSpeed = seekerSpeed;
             this.accelleration = accelleration;
+            IsSeeking = true;
             Governor.Rate = TimeSpan.FromSeconds(.1);
             Seekee.Lifetime.LifetimeManager.Manage(() => { this.Lifetime.Dispose(); });
         }
@@ -33,7 +34,7 @@ namespace PowerArgs.Cli.Physics
         {
             if (currentForce != null)
             {
-                new Force(SeekerSpeed, 1, SpaceExtensions.GetOppositeAngle(currentForce.Angle));
+                new Force(SeekerSpeed, accelleration, SpaceExtensions.GetOppositeAngle(currentForce.Angle));
                 currentForce = null;
             }
 
