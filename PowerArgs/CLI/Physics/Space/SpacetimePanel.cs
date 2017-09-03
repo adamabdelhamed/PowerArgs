@@ -179,6 +179,13 @@ namespace PowerArgs.Cli.Physics
 
         public SpacialElementRenderer Bind(SpacialElement t, SpaceTime spaceTime)
         {
+            if (t.Renderer != null)
+            {
+                t.Renderer.Element = t;
+                t.Renderer.OnBind();
+                return t.Renderer;
+            }
+
             Type binding;
             if (Bindings.TryGetValue(t.GetType(), out binding) == false)
             {

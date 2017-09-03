@@ -40,7 +40,11 @@ namespace PowerArgs.Cli.Physics
 
             if (IsSeeking && Element.CalculateDistanceTo(Seekee) < 1)
             {
-                Element.MoveTo(Seekee.CenterX, Seekee.CenterY);
+                var myLeft = Seekee.CenterX() - (Element.Width / 2);
+                var myTop = Seekee.CenterY() - (Element.Height / 2);
+                Element.MoveTo(myLeft, myTop);
+                SeekerSpeed.SpeedX = 0;
+                SeekerSpeed.SpeedY = 0;
                 if(RemoveWhenReached)
                 {
                     this.Lifetime.Dispose();

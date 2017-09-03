@@ -14,6 +14,8 @@ namespace PowerArgs.Cli.Physics
         public float Width { get; private set; }
         public float Height { get; private set; }
 
+        public SpacialElementRenderer Renderer { get; set; }
+
         public IRectangular Bounds => Rectangular.Create(Left, Top, Width, Height);
 
         public float CenterX => Left + (Width / 2);
@@ -58,6 +60,7 @@ namespace PowerArgs.Cli.Physics
             {
                 this.ZIndex = z.Value;
             }
+
             SizeOrPositionChanged.Fire();
         }
 

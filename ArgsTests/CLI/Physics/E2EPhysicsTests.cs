@@ -8,6 +8,8 @@ namespace ArgsTests.CLI.Physics
     [TestClass]
     public class E2EPhysicsTests
     {
+        public TestContext TestContext { get; set; }
+
         [TestMethod]
         public void E2ESimplestApp()
         {
@@ -39,21 +41,34 @@ namespace ArgsTests.CLI.Physics
         [TestMethod]
         public void TestSeeking()
         {
-            SpaceTime st = new SpaceTime(100, 20, TimeSpan.FromSeconds(.1));
+            var w = 10;
+            var h = 3;
+            ConsoleApp app = new ConsoleApp(w,h);
+            SpaceTime st = new SpaceTime(w, h, TimeSpan.FromSeconds(.1));
+            var panel = app.LayoutRoot.Add(new SpacetimePanel(w, h, time: st)).Fill();
+            app.Recorder = TestRecorder.CreateTestRecorder("Seeker", TestContext);
+
+
             SpacialElement seeker = null;
             SpacialElement target = null;
             st.QueueAction(() =>
             {
-                seeker = SpaceTime.CurrentSpaceTime.Add(new SpacialElement(1, 1, 0, 0));
-                target = SpaceTime.CurrentSpaceTime.Add(new SpacialElement(1, 1, 99, 0));
+                seeker = SpaceTime.CurrentSpaceTime.Add(new SpacialElement(1, 1, 0, 1));
+                seeker.Renderer = new SpacialElementRenderer() { Background = ConsoleColor.Green };
+                target = SpaceTime.CurrentSpaceTime.Add(new SpacialElement(1, 1, w-2, 1));
                 var seekerV = new SpeedTracker(seeker);
                 var seekerFunc = new Seeker(seeker, target, seekerV, 1) { RemoveWhenReached = true };
-                seekerFunc.Lifetime.LifetimeManager.Manage(() => { st.Stop(); });
+                seekerFunc.Lifetime.LifetimeManager.Manage(() => 
+                {
+                    st.Stop(); 
+                });
             });
 
+            app.Start();
             st.Start().Wait();
-            Assert.AreEqual(seeker.CenterX, seeker.CenterX);
-            Assert.AreEqual(seeker.CenterY, seeker.CenterY);
+            app.Stop();
+            Assert.AreEqual(seeker.CenterX, target.CenterX);
+            Assert.AreEqual(seeker.CenterY, target.CenterY);
         }
     }
 }
