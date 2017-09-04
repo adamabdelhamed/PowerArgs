@@ -2,12 +2,21 @@
 
 namespace PowerArgs.Cli.Physics
 {
+    /// <summary>
+    /// A time function that ensures that its target time simulation does not proceed
+    /// faster than the system's wall clock
+    /// </summary>
     public class RealTimeViewingFunction
     {
+        /// <summary>
+        /// An event that fires when the target time simulation falls behind or catches up to
+        /// the wall clock
+        /// </summary>
         public Event<bool> Behind => behindSignal.ActiveChanged;
 
-
-
+        /// <summary>
+        /// Enables or disables the real time viewing function
+        /// </summary>
         public bool Enabled
         {
             get
@@ -27,18 +36,27 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        private DebounceableSignal behindSignal = new DebounceableSignal()
-        {
-            Threshold = 100, // we've fallen behind if we're 100ms off of wall clock time
-            CoolDownAmount = 30, // we're not back on track until we are within 70 ms of wall clock time
-        };
-
+        private DebounceableSignal behindSignal;
         private DateTime wallClockTimeAdded;
         private TimeSpan timeAdded;
         private Time t;
         private ITimeFunction impl;
-        public RealTimeViewingFunction(Time t)
+
+        /// <summary>
+        /// Creates a realtime viewing function
+        /// </summary>
+        /// <param name="t">the time simulation model to target</param>
+        /// <param name="fallBehindThreshold">The time model will be determined to have fallen behind if the simulation falls
+        /// behind the system wall clock by more than this amound (defaults to 100 ms)</param>
+        /// <param name="fallBehindCooldownPeriod">When in the behind state the time simulation must surpass the FallBehindThreshold
+        /// by this amount before moving out of the behind state. This is a debouncing mechanism.</param>
+        public RealTimeViewingFunction(Time t, TimeSpan? fallBehindThreshold = null, TimeSpan? fallBehindCooldownPeriod = null)
         {
+            behindSignal = new DebounceableSignal()
+            {
+                Threshold = fallBehindThreshold.HasValue ? fallBehindThreshold.Value.TotalMilliseconds : 100, // we've fallen behind if we're 100ms off of wall clock time
+                CoolDownAmount = fallBehindCooldownPeriod.HasValue ? fallBehindCooldownPeriod.Value.TotalMilliseconds : 30, // we're not back on track until we are within 70 ms of wall clock time
+            };
             this.t = t;
         }
 
@@ -55,8 +73,8 @@ namespace PowerArgs.Cli.Physics
         {
             impl.Lifetime.Dispose();
         }
-
-        public void Evaluate()
+    
+        internal void Evaluate()
         {
             var realTimeNow = DateTime.UtcNow;
             // while the simulation time is ahead of the wall clock, spin
@@ -75,10 +93,10 @@ namespace PowerArgs.Cli.Physics
             // At this point, we're sure that the wall clock is equal to or ahead of the simulation time.
 
             // If the wall clock is ahead by too much then the simulation is falling behind. Calculate the amount. 
-            var behindAmount = (wallClockTimeElapsed - age).TotalMilliseconds;
+            var behindAmount = wallClockTimeElapsed - age;
 
             // Send the latest behind amount to the behind signal debouncer.
-            behindSignal.Update(behindAmount);
+            behindSignal.Update(behindAmount.TotalMilliseconds);
         }
     }
 }
