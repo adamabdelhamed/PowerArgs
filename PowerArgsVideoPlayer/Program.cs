@@ -8,7 +8,7 @@ namespace PowerArgsVideoPlayer
     class Program
     {
         [ArgRequired]
-        [ArgDefaultValue(@"C:\temp\recordings\Seeker.vid")]
+        [ArgDefaultValue(@"C:\temp\recordings\TestSeeking.vid")]
         [ArgPosition(0)]
         [ArgExistingFile]
         public string InputFile { get; set; }
