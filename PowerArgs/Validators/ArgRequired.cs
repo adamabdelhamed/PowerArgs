@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace PowerArgs
 {
@@ -264,6 +265,13 @@ namespace PowerArgs
 
                 context.ArgumentValue = cli.PromptForLine("Enter value for " + context.CurrentArgument.DefaultAlias);
                 context.CurrentArgument.Populate(context);
+               
+                var property = context.CurrentArgument.Source as PropertyInfo;
+                if (property != null && context.Args != null)
+                {
+                    property.SetValue(context.Args, context.CurrentArgument.RevivedValue, null);
+                }
+
                 return true;
             }
             else
