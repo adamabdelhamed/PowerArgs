@@ -15,7 +15,7 @@ namespace ArgsTests
             ConsoleProvider.Current = new CLI.CliUnitTestConsole() { BufferWidth = 160 };
             var def = new CommandLineArgumentsDefinition(typeof(PhotoAlbumManagerArgs));
             def.ExeName = "PhotoManager";
-            var browserUsage = ArgUsage.GenerateUsageFromTemplate(def, template: PowerArgs.Resources.DefaultBrowserUsageTemplate).ToString().Replace("\r\n", "\n").Replace("\r", "\n");
+            var browserUsage = ArgUsage.GenerateUsageFromTemplate(def, template: UsageTemplates.BrowserTemplate).ToString().Replace("\r\n", "\n").Replace("\r", "\n");
             var consoleUsage = ArgUsage.GenerateUsageFromTemplate(def).ToString().Replace("\r\n", "\n").Replace("\r", "\n");
 
 

@@ -44,7 +44,7 @@ namespace PowerArgs
         /// <returns>the default console usage template</returns>
         public string GetTemplate()
         {
-            return Resources.DefaultConsoleUsageTemplate;
+            return UsageTemplates.ConsoleTemplate;
         }
     }
 
@@ -59,7 +59,7 @@ namespace PowerArgs
         /// <returns>the default browser usage template</returns>
         public string GetTemplate()
         {
-            return Resources.DefaultBrowserUsageTemplate;
+            return UsageTemplates.BrowserTemplate;
         }
     }
 }

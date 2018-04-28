@@ -238,7 +238,7 @@ In its latest release, PowerArgs adds a new method called ArgUsage.GenerateUsage
 The first one, the default, is designed to create general purpose command line usage documentation that is similar to the older usage documentation that PowerArgs generated.  You can see what that template looks like [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/Resources/DefaultConsoleUsageTemplate.txt).
 
 
-The second one is designed to create documentation that looks good in a browser.  You can see what that template looks like [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/Resources/DefaultBrowserUsageTemplate.html).  
+The second one is designed to create documentation that looks good in a browser.  You can see what that template looks like [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/Resources/UsageTemplates.cs).  
 
 [Here is an example of what the built in browser usage looks like](http://adamabdelhamed2.blob.core.windows.net/powerargs/Samples/BrowserUsage.html).
 

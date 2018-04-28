@@ -289,7 +289,7 @@ namespace PowerArgs
 
                 if (template == null)
                 {
-                    template = Resources.DefaultConsoleUsageTemplate;
+                    template = UsageTemplates.ConsoleTemplate;
                     templateSourceLocation = "Default console usage template";
                 }
                 var document = new DocumentRenderer().Render(template, def, templateSourceLocation);
@@ -329,7 +329,7 @@ namespace PowerArgs
         /// <returns>The usage document as a string</returns>
         public static string ShowUsageInBrowser(CommandLineArgumentsDefinition def, string template = null, string outputFileName = null, bool deleteFileAfterBrowse = true, bool waitForBrowserExit = true)
         {
-            var usage = ArgUsage.GenerateUsageFromTemplate(def, template ?? Resources.DefaultBrowserUsageTemplate);
+            var usage = ArgUsage.GenerateUsageFromTemplate(def, template ?? UsageTemplates.BrowserTemplate);
             outputFileName = outputFileName ?? Path.GetTempFileName().ToLower().Replace(".tmp", ".html");
             Process proc = null;
             try

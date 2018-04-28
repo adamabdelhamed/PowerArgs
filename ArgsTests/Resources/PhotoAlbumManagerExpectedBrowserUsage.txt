@@ -1,38 +1,38 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns='http://www.w3.org/1999/xhtml'>
 <head>
     <title>PhotoManager documentation</title>
 </head>
 <body>
-    <h1 class="program-specific-content">PhotoManager</h1>
-    <p class="program-specific-content">A program that lets you manage a collection of photos in Azure storage containers.</p>
+    <h1 class='program-specific-content'>PhotoManager</h1>
+    <p class='program-specific-content'>A program that lets you manage a collection of photos in Azure storage containers.</p>
 
     <h2>Usage</h2>
-<pre class="code-sample">PhotoManager &lt;action&gt; -options</pre>
+<pre class='code-sample'>PhotoManager &lt;action&gt; -options</pre>
 
         <h2>Global options</h2>
     
 
     <table>
         <tr>
-            <td class="option-col table-header">OPTION</td>
-            <td class="desc-col table-header">DESCRIPTION</td>
+            <td class='option-col table-header'>OPTION</td>
+            <td class='desc-col table-header'>DESCRIPTION</td>
         </tr>
                         <tr>
-            <td class="option-col program-specific-content">-Output</td>
-            <td class="desc-col program-specific-content">How much output to display while performing management operations<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">Light<span /></td>
+            <td class='option-col program-specific-content'>-Output</td>
+            <td class='desc-col program-specific-content'>How much output to display while performing management operations<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>Light<span /></td>
         </tr>
                         <tr>
-            <td class="option-col program-specific-content"></td>
-            <td class="defaultValue"> Verbose</td>
+            <td class='option-col program-specific-content'></td>
+            <td class='defaultValue'> Verbose</td>
         </tr>
                 <tr>
-            <td class="option-col program-specific-content"></td>
-            <td class="defaultValue"> Light</td>
+            <td class='option-col program-specific-content'></td>
+            <td class='defaultValue'> Light</td>
         </tr>
                 <tr>
-            <td class="option-col program-specific-content"></td>
-            <td class="defaultValue"> Quiet</td>
+            <td class='option-col program-specific-content'></td>
+            <td class='defaultValue'> Quiet</td>
         </tr>
                                     </table>
     
@@ -40,13 +40,13 @@
     <ul>
                 <li>
             <div>
-                <span class="program-specific-content">CreateAlbum</span>
+                <span class='program-specific-content'>CreateAlbum</span>
                 <span> - </span>
-                <span class="program-specific-content">Creates a new album in the target container, creating the container if it does not exist</span>
-                <button id="action0ExpandButton" onclick="toggleAction(0)" class="expander-button">show details</button>
-                <div id="action0details" class="expandable hidden">
+                <span class='program-specific-content'>Creates a new album in the target container, creating the container if it does not exist</span>
+                <button id='action0ExpandButton' onclick='toggleAction(0)' class='expander-button'>show details</button>
+                <div id='action0details' class='expandable hidden'>
                     <h4>CreateAlbum Usage</h4>
-                    <pre class="code-sample">PhotoManager CreateAlbum &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
+                    <pre class='code-sample'>PhotoManager CreateAlbum &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
                     <h4>Action options</h4>
                     <table>
                         <tr>
@@ -54,20 +54,20 @@
                             <td>DESCRIPTION</td>
                         </tr>
                                                                         <tr>
-                            <td class="option-col program-specific-content">StorageAccountName</td>
-                            <td class="desc-col program-specific-content">-The storage account to connect to</td>
+                            <td class='option-col program-specific-content'>StorageAccountName</td>
+                            <td class='desc-col program-specific-content'>-The storage account to connect to</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">StorageAccountKey</td>
-                            <td class="desc-col program-specific-content">-The storage key to use to connect</td>
+                            <td class='option-col program-specific-content'>StorageAccountKey</td>
+                            <td class='desc-col program-specific-content'>-The storage key to use to connect</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">Container</td>
-                            <td class="desc-col program-specific-content">-The storage container to target<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">DefaultAlbum<span /></td>
+                            <td class='option-col program-specific-content'>Container</td>
+                            <td class='desc-col program-specific-content'>-The storage container to target<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>DefaultAlbum<span /></td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">UseHttps</td>
-                            <td class="desc-col program-specific-content">-Set this flag to use https</td>
+                            <td class='option-col program-specific-content'>UseHttps</td>
+                            <td class='desc-col program-specific-content'>-Set this flag to use https</td>
                         </tr>
                                                                                             </table>
                                     </div>
@@ -75,13 +75,13 @@
         </li>
                 <li>
             <div>
-                <span class="program-specific-content">Download</span>
+                <span class='program-specific-content'>Download</span>
                 <span> - </span>
-                <span class="program-specific-content">Downloads a single blob to the local file system.</span>
-                <button id="action1ExpandButton" onclick="toggleAction(1)" class="expander-button">show details</button>
-                <div id="action1details" class="expandable hidden">
+                <span class='program-specific-content'>Downloads a single blob to the local file system.</span>
+                <button id='action1ExpandButton' onclick='toggleAction(1)' class='expander-button'>show details</button>
+                <div id='action1details' class='expandable hidden'>
                     <h4>Download Usage</h4>
-                    <pre class="code-sample">PhotoManager Download &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
+                    <pre class='code-sample'>PhotoManager Download &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
                     <h4>Action options</h4>
                     <table>
                         <tr>
@@ -89,62 +89,62 @@
                             <td>DESCRIPTION</td>
                         </tr>
                                                                         <tr>
-                            <td class="option-col program-specific-content">BlobFilePath</td>
-                            <td class="desc-col program-specific-content">-The name of a blob to download</td>
+                            <td class='option-col program-specific-content'>BlobFilePath</td>
+                            <td class='desc-col program-specific-content'>-The name of a blob to download</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">LocalFile</td>
-                            <td class="desc-col program-specific-content">-The local path to download to.  This description does not really need to be this long, but I need to test to make sure that the new description formatting feature that cleanly wraps long descriptions is working properly.  This long description should be enough to test that out!</td>
+                            <td class='option-col program-specific-content'>LocalFile</td>
+                            <td class='desc-col program-specific-content'>-The local path to download to.  This description does not really need to be this long, but I need to test to make sure that the new description formatting feature that cleanly wraps long descriptions is working properly.  This long description should be enough to test that out!</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">ConflictPolicy</td>
-                            <td class="desc-col program-specific-content">-What do do if there is a conflict when downloading a file<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">Throw<span /></td>
+                            <td class='option-col program-specific-content'>ConflictPolicy</td>
+                            <td class='desc-col program-specific-content'>-What do do if there is a conflict when downloading a file<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>Throw<span /></td>
                         </tr>
                                                                         <tr>
-                            <td class="option-col program-specific-content"></td>
-                            <td class="defaultValue"> Throw</td>
+                            <td class='option-col program-specific-content'></td>
+                            <td class='defaultValue'> Throw</td>
                         </tr>
                                                 <tr>
-                            <td class="option-col program-specific-content"></td>
-                            <td class="defaultValue"> ServerWins</td>
+                            <td class='option-col program-specific-content'></td>
+                            <td class='defaultValue'> ServerWins</td>
                         </tr>
                                                 <tr>
-                            <td class="option-col program-specific-content"></td>
-                            <td class="defaultValue"> ClientWins</td>
+                            <td class='option-col program-specific-content'></td>
+                            <td class='defaultValue'> ClientWins</td>
                         </tr>
                                                                                                                                                 <tr>
-                            <td class="option-col program-specific-content">StorageAccountName</td>
-                            <td class="desc-col program-specific-content">-The storage account to connect to</td>
+                            <td class='option-col program-specific-content'>StorageAccountName</td>
+                            <td class='desc-col program-specific-content'>-The storage account to connect to</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">StorageAccountKey</td>
-                            <td class="desc-col program-specific-content">-The storage key to use to connect</td>
+                            <td class='option-col program-specific-content'>StorageAccountKey</td>
+                            <td class='desc-col program-specific-content'>-The storage key to use to connect</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">Container</td>
-                            <td class="desc-col program-specific-content">-The storage container to target<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">DefaultAlbum<span /></td>
+                            <td class='option-col program-specific-content'>Container</td>
+                            <td class='desc-col program-specific-content'>-The storage container to target<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>DefaultAlbum<span /></td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">UseHttps</td>
-                            <td class="desc-col program-specific-content">-Set this flag to use https</td>
+                            <td class='option-col program-specific-content'>UseHttps</td>
+                            <td class='desc-col program-specific-content'>-Set this flag to use https</td>
                         </tr>
                                                                                             </table>
                                         <h4>Examples</h4>
                                         <h3></h3>
                     <p>Downloads a blob called ceremony.png to a temp folder on the local machine</p>
-                    <pre class="code-sample">photos download -a myaccount -k mykey -c wedding -BlobFilePath ceremony.png -LocalFile C:\temp\ceremony.png</pre>
+                    <pre class='code-sample'>photos download -a myaccount -k mykey -c wedding -BlobFilePath ceremony.png -LocalFile C:\temp\ceremony.png</pre>
                                                         </div>
             </div>
         </li>
                 <li>
             <div>
-                <span class="program-specific-content">Upload</span>
+                <span class='program-specific-content'>Upload</span>
                 <span> - </span>
-                <span class="program-specific-content">Uploads one or more files from the local file system to the target container</span>
-                <button id="action2ExpandButton" onclick="toggleAction(2)" class="expander-button">show details</button>
-                <div id="action2details" class="expandable hidden">
+                <span class='program-specific-content'>Uploads one or more files from the local file system to the target container</span>
+                <button id='action2ExpandButton' onclick='toggleAction(2)' class='expander-button'>show details</button>
+                <div id='action2details' class='expandable hidden'>
                     <h4>Upload Usage</h4>
-                    <pre class="code-sample">PhotoManager Upload &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
+                    <pre class='code-sample'>PhotoManager Upload &lt;StorageAccountName&gt; &lt;StorageAccountKey&gt; [&lt;Container&gt;] -options</pre>
                     <h4>Action options</h4>
                     <table>
                         <tr>
@@ -152,53 +152,53 @@
                             <td>DESCRIPTION</td>
                         </tr>
                                                                         <tr>
-                            <td class="option-col program-specific-content">LocalFile</td>
-                            <td class="desc-col program-specific-content">-If specified the single file will be uploaded</td>
+                            <td class='option-col program-specific-content'>LocalFile</td>
+                            <td class='desc-col program-specific-content'>-If specified the single file will be uploaded</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">LocalDirectory</td>
-                            <td class="desc-col program-specific-content">-If specified, all files in the directory will be uploaded</td>
+                            <td class='option-col program-specific-content'>LocalDirectory</td>
+                            <td class='desc-col program-specific-content'>-If specified, all files in the directory will be uploaded</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">ConflictPolicy</td>
-                            <td class="desc-col program-specific-content">-What do do if there is a conflict when uploading a file<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">Throw<span /></td>
+                            <td class='option-col program-specific-content'>ConflictPolicy</td>
+                            <td class='desc-col program-specific-content'>-What do do if there is a conflict when uploading a file<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>Throw<span /></td>
                         </tr>
                                                                         <tr>
-                            <td class="option-col program-specific-content"></td>
-                            <td class="defaultValue"> Throw</td>
+                            <td class='option-col program-specific-content'></td>
+                            <td class='defaultValue'> Throw</td>
                         </tr>
                                                 <tr>
-                            <td class="option-col program-specific-content"></td>
-                            <td class="defaultValue"> ServerWins</td>
+                            <td class='option-col program-specific-content'></td>
+                            <td class='defaultValue'> ServerWins</td>
                         </tr>
                                                 <tr>
-                            <td class="option-col program-specific-content"></td>
-                            <td class="defaultValue"> ClientWins</td>
+                            <td class='option-col program-specific-content'></td>
+                            <td class='defaultValue'> ClientWins</td>
                         </tr>
                                                                                                                                                 <tr>
-                            <td class="option-col program-specific-content">StorageAccountName</td>
-                            <td class="desc-col program-specific-content">-The storage account to connect to</td>
+                            <td class='option-col program-specific-content'>StorageAccountName</td>
+                            <td class='desc-col program-specific-content'>-The storage account to connect to</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">StorageAccountKey</td>
-                            <td class="desc-col program-specific-content">-The storage key to use to connect</td>
+                            <td class='option-col program-specific-content'>StorageAccountKey</td>
+                            <td class='desc-col program-specific-content'>-The storage key to use to connect</td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">Container</td>
-                            <td class="desc-col program-specific-content">-The storage container to target<span class="defaultvalue"> Default<span /><span class="defaultvalue">=<span /><span class="defaultvalue">DefaultAlbum<span /></td>
+                            <td class='option-col program-specific-content'>Container</td>
+                            <td class='desc-col program-specific-content'>-The storage container to target<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>DefaultAlbum<span /></td>
                         </tr>
                                                                                                                         <tr>
-                            <td class="option-col program-specific-content">UseHttps</td>
-                            <td class="desc-col program-specific-content">-Set this flag to use https</td>
+                            <td class='option-col program-specific-content'>UseHttps</td>
+                            <td class='desc-col program-specific-content'>-Set this flag to use https</td>
                         </tr>
                                                                                             </table>
                                         <h4>Examples</h4>
                                         <h3></h3>
                     <p>Uploads all the files in the local directory to the 'wedding' container</p>
-                    <pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\videos</pre>
+                    <pre class='code-sample'>photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\videos</pre>
                                         <h3></h3>
                     <p>Uploads all the files in the local directory to the 'wedding' container</p>
-                    <pre class="code-sample">photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images</pre>
+                    <pre class='code-sample'>photos upload -a myaccount -k mykey -c wedding -LocalDirectory C:\images</pre>
                                                         </div>
             </div>
         </li>
@@ -207,24 +207,24 @@
         <h2>Examples</h2>
         <h3></h3>
     <p>creates an album called 'wedding' in a container named 'wedding'</p>
-    <pre class="code-sample">photos createalbum -a myaccount -k mykey -c wedding</pre>
+    <pre class='code-sample'>photos createalbum -a myaccount -k mykey -c wedding</pre>
         </body>
 
 <script>
     function toggleAction(index)
     {
-        var toggleElement = document.getElementById("action" + index + "details");
-        var toggleButton = document.getElementById("action" + index + "ExpandButton");
+        var toggleElement = document.getElementById('action' + index + 'details');
+        var toggleButton = document.getElementById('action' + index + 'ExpandButton');
 
-        if (toggleElement.classList.contains("hidden"))
+        if (toggleElement.classList.contains('hidden'))
         {
-            toggleElement.classList.remove("hidden");
-            toggleButton.innerHTML = "hide details";
+            toggleElement.classList.remove('hidden');
+            toggleButton.innerHTML = 'hide details';
         }
         else
         {
-            toggleElement.classList.add("hidden");
-            toggleButton.innerHTML = "show details";
+            toggleElement.classList.add('hidden');
+            toggleButton.innerHTML = 'show details';
         }
     }
 </script>
@@ -320,7 +320,7 @@
 
     .code-sample
     {
-        font-family: "Courier New", Courier, monospace;
+        font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
         background-color: #A3D8FF;
         color: #333;

@@ -73,7 +73,7 @@ namespace ArgsTests
         public void TestNullablesInTableExpression()
         {
             var def = new CommandLineArgumentsDefinition(typeof(NullableArgs));
-            var usage = ArgUsage.GenerateUsageFromTemplate(def, PowerArgs.Resources.DefaultConsoleUsageTemplate, "dynamic template").ToString();
+            var usage = ArgUsage.GenerateUsageFromTemplate(def, UsageTemplates.ConsoleTemplate, "dynamic template").ToString();
             Assert.IsTrue(usage.Contains("Monday"));
             Assert.IsTrue(usage.Contains("Tuesday"));
             Assert.IsTrue(usage.Contains("Wednesday"));

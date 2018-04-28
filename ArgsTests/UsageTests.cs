@@ -85,8 +85,8 @@ namespace ArgsTests
            foreach(var type in types)
             { 
                  ArgUsage.GetStyledUsage(type, "testusage.exe");
-                 var consoleOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultConsoleUsageTemplate);
-                 var browserOutput = ArgUsage.GenerateUsageFromTemplate(type, template: PowerArgs.Resources.DefaultBrowserUsageTemplate);
+                 var consoleOutput = ArgUsage.GenerateUsageFromTemplate(type, template: UsageTemplates.ConsoleTemplate);
+                 var browserOutput = ArgUsage.GenerateUsageFromTemplate(type, template: UsageTemplates.BrowserTemplate);
 
                  Assert.IsFalse(consoleOutput.Contains("{{"));
                  Assert.IsFalse(consoleOutput.Contains("}}"));

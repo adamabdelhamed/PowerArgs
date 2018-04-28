@@ -14,6 +14,8 @@
     <PackageTags>command line arguments parser CLI Core Standard</PackageTags>
     <PackageProjectUrl>https://github.com/adamabdelhamed/powerargs</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/adamabdelhamed/PowerArgs/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/adamabdelhamed/powerargs</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
