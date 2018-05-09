@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PowerArgs.Cli
 {
@@ -211,7 +212,7 @@ namespace PowerArgs.Cli
         /// <returns>True if the focus changed, false otehrwise</returns>
         public bool TryRestoreFocus()
         {
-            if (focusStack.Peek().Controls.Count == 0)
+            if (focusStack.Peek().Controls.Where(c => c.CanFocus).Count() == 0)
             {
                 return false;
             }
