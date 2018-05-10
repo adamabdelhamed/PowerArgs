@@ -290,7 +290,7 @@ namespace PowerArgs.Cli
         {
             this.ColumnName = columnName;
             this.ColumnDisplayName = columnName;
-            this.OverflowBehavior = new TruncateOverflowBehavior();
+            this.OverflowBehavior = new GrowUnboundedOverflowBehavior();
         }
 
         public ColumnViewModel(string columnName) : this(columnName.ToConsoleString())

@@ -344,5 +344,18 @@ namespace ArgsTests.CLI.Observability
 
             Assert.AreEqual(expectedFireCount, fireCount);
         }
+
+        [TestMethod]
+        public void TestSubscribeOnce()
+        {
+            var ev = new Event();
+            var counter = 0;
+            ev.SubscribeOnce(() => counter++);
+            Assert.AreEqual(0, counter);
+            ev.Fire();
+            Assert.AreEqual(1, counter);
+            ev.Fire();
+            Assert.AreEqual(1, counter);
+        }
     }
 }

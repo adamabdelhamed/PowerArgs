@@ -6,6 +6,30 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+
+    internal class TimerDisposer : Disposable
+    {
+        public Timer Timer { get; private set; }
+        private List<IDisposable> tracker;
+        public TimerDisposer(Timer t, List<IDisposable> tracker)
+        {
+            this.Timer = t;
+            this.tracker = tracker;
+            lock (tracker)
+            {
+                tracker.Add(this);
+            }
+        }
+        protected override void DisposeManagedResources()
+        {
+            Timer.Dispose();
+            lock (tracker)
+            {
+                tracker.Remove(this);
+            }
+        }
+    }
+
     /// <summary>
     /// A class that defines the exception handling contract for a ConsoleApp
     /// </summary>
@@ -76,6 +100,16 @@ namespace PowerArgs.Cli
         public PaintMessage(Action paintAction) : base(paintAction, PaintDescription) { }
     }
 
+    internal class CustomSyncContext : SynchronizationContext
+    {
+        private CliMessagePump pump;
+        public CustomSyncContext(CliMessagePump pump) { this.pump = pump; }
+
+        public override void Post(SendOrPostCallback d, object state) => pump.QueueAction(() => d.Invoke(state));
+
+        public override void Send(SendOrPostCallback d, object state) => pump.QueueAction(() => d.Invoke(state));
+    }
+
     /// <summary>
     /// A class that is used to manage a CLI thread in a similar way that other platforms synchronize work
     /// on a UI thread
@@ -103,9 +137,9 @@ namespace PowerArgs.Cli
 
         private List<PumpMessage> pumpMessageQueue = new List<PumpMessage>();
         private IConsoleProvider console;
-        private int managedCliThreadId;
         private int lastConsoleWidth, lastConsoleHeight;
         private Deferred runDeferred;
+        private List<IDisposable> timerHandles = new List<IDisposable>();
 
         private FrameRateMeter frameRateMeter;
         /// <summary>
@@ -192,7 +226,6 @@ namespace PowerArgs.Cli
             }
         }
 
-        private List<Timer> asyncActionTimers = new List<Timer>();
         public void QueueAsyncAction(Task t, Action<Task> action)
         {
             t.ContinueWith((tPrime) =>
@@ -214,14 +247,10 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="a">The action to schedule for periodic processing</param>
         /// <param name="interval">the execution interval for the action</param>
-        /// <returns>A timer that can be passed to ClearInterval if you want to cancel the work</returns>
-        public Timer SetInterval(Action a, TimeSpan interval)
+        /// <returns>A handle that can be passed to ClearInterval if you want to cancel the work</returns>
+        public IDisposable SetInterval(Action a, TimeSpan interval)
         {
-            var ret = new Timer((o) =>
-            {
-                QueueAction(a);
-            }, null, (int)interval.TotalMilliseconds, (int)interval.TotalMilliseconds);
-            return ret;
+            return new TimerDisposer(new Timer((o) => QueueAction(a), null, (int)interval.TotalMilliseconds, (int)interval.TotalMilliseconds), timerHandles);
         }
 
         /// <summary>
@@ -230,43 +259,18 @@ namespace PowerArgs.Cli
         /// <param name="a">The action to schedule</param>
         /// <param name="period">the period of time to wait before executing the action</param>
         /// <returns></returns>
-        public Timer SetTimeout(Action a, TimeSpan period)
+        public IDisposable SetTimeout(Action a, TimeSpan period)
         {
-            var ret = new Timer((o) =>
-            {
-                QueueAction(a);
-            }, null, (int)period.TotalMilliseconds,Timeout.Infinite);
-            return ret;
+            return new TimerDisposer(new Timer((o) => QueueAction(a), null, (int)period.TotalMilliseconds,Timeout.Infinite), timerHandles);
         }
 
-        /// <summary>
-        /// Cancels the scheduled execution of a periodic action given the timer that was provided by SetInterval.  The timer will be disposed.
-        /// </summary>
-        /// <param name="t">the timer given by SetInterval</param>
-        public void ClearInterval(Timer t)
+        public void ChangeInterval(IDisposable handle, TimeSpan newInterval)
         {
-            try
-            {
-                t.Change(Timeout.Infinite, Timeout.Infinite);
-                t.Dispose();
-            }
-            catch (Exception) { }
+            var disposer = handle as TimerDisposer;
+            if (disposer == null) throw new ArgumentException($"The argument was not provided by {nameof(SetInterval)}");
+            disposer.Timer.Change(newInterval, newInterval);
         }
-
-        /// <summary>
-        /// Cancels the scheduled execution of a one time action given the timer that was provided by SetTimeout.  The timer will be disposed.
-        /// </summary>
-        /// <param name="t">The timer given by SetTimeout</param>
-        public void ClearTimeout(Timer t)
-        {
-            try
-            {
-                t.Change(Timeout.Infinite, Timeout.Infinite);
-                t.Dispose();
-            }
-            catch (Exception) { }
-        }
-
+        
         /// <summary>
         /// Starts the message pump which will begin processing messages
         /// </summary>
@@ -298,6 +302,7 @@ namespace PowerArgs.Cli
         {
             try
             {
+                SynchronizationContext.SetSynchronizationContext(new CustomSyncContext(this));
                 bool stopRequested = false;
                 frameRateMeter = new FrameRateMeter();
                 paintRateMeter = new FrameRateMeter();

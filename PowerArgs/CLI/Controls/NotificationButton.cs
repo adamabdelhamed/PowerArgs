@@ -10,7 +10,7 @@ namespace PowerArgs.Cli
         Spinner spinner;
         ProgressOperationsManager manager;
         ConsoleColor launcherFg;
-        Timer resetTimer;
+        IDisposable resetTimer;
         public NotificationButton(ProgressOperationsManager manager)
         {
             this.manager = manager;
@@ -35,7 +35,7 @@ namespace PowerArgs.Cli
                     launcher.Foreground = ConsoleColor.Green;
                     if(resetTimer != null)
                     {
-                        Application.ClearTimeout(resetTimer);
+                        resetTimer.Dispose();
                         resetTimer = null;
                     }
                     resetTimer = Application.SetTimeout(ResetLaundherFG, TimeSpan.FromSeconds(5));

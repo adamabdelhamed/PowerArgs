@@ -14,7 +14,7 @@ namespace PowerArgs.Cli
         private RichTextEditor textState;
         private bool blinkState;
 
-        private Timer blinkTimerHandle;
+        private IDisposable blinkTimerHandle;
 
         /// <summary>
         /// Gets the editor object that controls the rich text capabilities of the text box
@@ -37,7 +37,7 @@ namespace PowerArgs.Cli
         // or two when wanting to clear out the text. 
         // 
         private bool enableBackspaceNavigationOptimization;
-        private Timer backspaceNavigationOptimizationTimerHandle;
+        private IDisposable backspaceNavigationOptimizationTimerHandle;
 
         /// <summary>
         /// Gets or sets the value in the text box
@@ -76,7 +76,7 @@ namespace PowerArgs.Cli
 
             if (backspaceNavigationOptimizationTimerHandle != null)
             {
-                Application.ClearTimeout(backspaceNavigationOptimizationTimerHandle);
+                backspaceNavigationOptimizationTimerHandle.Dispose();
             }
 
             enableBackspaceNavigationOptimization = false;
@@ -117,7 +117,7 @@ namespace PowerArgs.Cli
         private void TextBox_Unfocused()
         {
             backspacceSub.Dispose();
-            Application.ClearInterval(blinkTimerHandle);
+            blinkTimerHandle.Dispose();
             blinkState = false;
         }
 
@@ -125,7 +125,7 @@ namespace PowerArgs.Cli
         {
             textState.RegisterKeyPress(info);
             blinkState = true;
-            blinkTimerHandle.Change(BlinkInterval, BlinkInterval);
+            Application.ChangeInterval(blinkTimerHandle, BlinkInterval);
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace PowerArgs.Cli
         private static readonly TimeSpan spinTimeInterval = TimeSpan.FromMilliseconds(80);
         private static readonly char[] frames = "|/-\\".ToCharArray();
 
-        private Timer spinTimerHandle;
+        private IDisposable spinTimerHandle;
         private int currentFrameIndex;
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace PowerArgs.Cli
 
         private void StopSpinTimer()
         {
-            Application.ClearInterval(spinTimerHandle);
+            spinTimerHandle.Dispose();
             spinTimerHandle = null;
         }
 

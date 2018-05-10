@@ -116,6 +116,8 @@
     <Compile Include="CLI\ContextAssistTests.cs" />
     <Compile Include="CLI\Recording\RecordingTests.cs" />
     <Compile Include="CLI\Recording\TestRecorder.cs" />
+    <Compile Include="CLI\AsyncUITests.cs" />
+    <Compile Include="CLI\TimerTest.cs" />
     <Compile Include="CLI\VisualTreeTests.cs" />
     <Compile Include="CLI\WinFormsConsole.cs">
       <SubType>Component</SubType>

@@ -48,6 +48,18 @@ namespace PowerArgs.Cli
         {
             subscribers[handler].Dispose();
         }
+
+        public void SubscribeOnce(Action handler)
+        {
+            Action wrappedAction = null;
+            wrappedAction = () =>
+            {
+                handler();
+                subscribers.Remove(wrappedAction);
+            };
+
+            SubscribeUnmanaged(wrappedAction);
+        }
     }
     
     public class Event<T>
