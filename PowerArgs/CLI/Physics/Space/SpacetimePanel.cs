@@ -32,15 +32,6 @@ namespace PowerArgs.Cli.Physics
                 RealTimeViewing = new RealTimeViewingFunction(this.SpaceTime) { Enabled = true };
                 this.SpaceTime.ChangeTrackingEnabled = true;
                 this.SpaceTime.AfterTick.SubscribeForLifetime(() => UpdateView(false), this.LifetimeManager);
-
-                RealTimeViewing.Behind.SubscribeForLifetime((isBehind) =>
-                {
-                    Application?.QueueAction(() =>
-                    {
-                        Background = isBehind ? ConsoleColor.DarkYellow : ConsoleColor.White;
-                    });
-                }, LifetimeManager);
-
             });
 
             this.AddedToVisualTree.SubscribeForLifetime(() =>

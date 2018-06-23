@@ -116,9 +116,9 @@ namespace PowerArgs.Cli
             pictureFrame = Add(new Border()).Fill(padding: new Thickness(0,0,0,1));
             pictureFrame.Background = ConsoleColor.DarkGray;
             pictureInTheFrame = pictureFrame.Add(new BitmapControl() { AutoSize = true, CanFocus = false });
-            playerProgressBar = Add(new PlayerProgressBar() { ShowPlayCursor = false }).FillHoriontally(padding: new Thickness(0,0,0,0)).DockToBottom(padding: 1);
+            playerProgressBar = Add(new PlayerProgressBar() { ShowPlayCursor = false }).FillHorizontally(padding: new Thickness(0,0,0,0)).DockToBottom(padding: 1);
 
-            var buttonBar = Add(new StackPanel() { CanFocus =false, Height=1, Orientation = Orientation.Horizontal }).FillHoriontally().DockToBottom();
+            var buttonBar = Add(new StackPanel() { CanFocus =false, Height=1, Orientation = Orientation.Horizontal }).FillHorizontally().DockToBottom();
 
             seekToBeginningButton = buttonBar.Add(new Button() { Text = "<<".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.Home), CanFocus = false });
             seekToBeginningButton.Pressed.SubscribeForLifetime(SeekToBeginningButtonPressed, this.LifetimeManager);

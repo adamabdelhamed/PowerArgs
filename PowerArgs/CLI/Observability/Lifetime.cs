@@ -8,6 +8,11 @@ namespace PowerArgs.Cli
     {
         private LifetimeManager _manager;
 
+
+        private static Lifetime forever = new Lifetime();
+
+        public static LifetimeManager Forever => forever.LifetimeManager;
+
         public bool IsExpired
         {
             get

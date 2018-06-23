@@ -11,7 +11,7 @@
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes>Ported to .NET Standard 2.0, deprecated query feature</PackageReleaseNotes>
     <Copyright>Copyright 2017 (c) Adam Abdelhamed. All rights reserved.</Copyright>
-    <PackageTags>command line arguments parser CLI Core Standard</PackageTags>
+    <PackageTags>command line arguments parser CLI .NET Core Standard</PackageTags>
     <PackageProjectUrl>https://github.com/adamabdelhamed/powerargs</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/adamabdelhamed/PowerArgs/blob/master/LICENSE.txt</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/adamabdelhamed/powerargs</RepositoryUrl>

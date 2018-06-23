@@ -156,14 +156,6 @@ namespace PowerArgs
             return this;
         }
 
-        public Promise Then(ConsoleApp app, Action a)
-        {
-            return Then(() =>
-            {
-                app.QueueAction(a);
-            });
-        }
-
         /// <summary>
         /// Registers an action to run if this promise is rejected.
         /// </summary>
@@ -197,14 +189,6 @@ namespace PowerArgs
             return this;
         }
 
-        public Promise Finally(ConsoleApp app, Action<Promise> a)
-        {
-            return Finally((p) =>
-            {
-                app.QueueAction(() => a(p));
-            });
-        }
-
         /// <summary>
         /// Blocks the current thread until the promise is resolved or rejected
         /// </summary>
@@ -234,7 +218,7 @@ namespace PowerArgs
 
                 if (myDeferred.Exception != null)
                 {
-                    throw new Exception("The promise was rejected", myDeferred.Exception);
+                    throw new PromiseWaitException(myDeferred.Exception);
                 }
             });
             return ret();
@@ -354,21 +338,9 @@ namespace PowerArgs
         private Deferred<T> myDeferred;
         private Promise innerPromise;
 
-        public Exception Exception
-        {
-            get
-            {
-                return myDeferred.Exception;
-            }
-        }
-
-        public T Result
-        {
-            get
-            {
-                return myDeferred.Result;
-            }
-        }
+        public Exception Exception => myDeferred.Exception;
+        public T Result => myDeferred.Result;
+        public void Wait() => innerPromise.Wait();
 
         internal Promise(Deferred<T> myDeferred)
         {
@@ -394,9 +366,23 @@ namespace PowerArgs
             return this;
         }
 
-        public void Wait()
+        public Task<T> AsAwaitable()
         {
-            innerPromise.Wait();
+            Func<Task<T>> ret = new Func<Task<T>>(async () =>
+            {
+                while (myDeferred.IsFulfilled == false)
+                {
+                    await Task.Delay(1);
+                }
+
+                if (myDeferred.Exception != null)
+                {
+                    throw new PromiseWaitException(myDeferred.Exception);
+                }
+
+                return Result;
+            });
+            return ret();
         }
     }
 

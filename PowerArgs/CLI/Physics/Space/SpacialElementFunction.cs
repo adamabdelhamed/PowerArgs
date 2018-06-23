@@ -14,7 +14,13 @@
 
             if (target.IsAttached())
             {
-                Time.CurrentTime.QueueAction(() => { Time.CurrentTime.Add(this); });
+                Time.CurrentTime.QueueAction(() => 
+                {
+                    if (target.Lifetime.IsExpired == false && target.IsAttached())
+                    {
+                        Time.CurrentTime.Add(this);
+                    }
+                });
             }
             else
             {
@@ -22,7 +28,13 @@
             }
 
 
-            Element.Lifetime.LifetimeManager.Manage(this.Lifetime.Dispose);
+            Element.Lifetime.LifetimeManager.Manage(()=>
+            {
+                if (this.Lifetime.IsExpired == false)
+                {
+                    this.Lifetime.Dispose();
+                }
+            });
         }
     }
 }

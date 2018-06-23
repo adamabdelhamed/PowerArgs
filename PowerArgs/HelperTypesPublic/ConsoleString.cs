@@ -407,8 +407,14 @@ namespace PowerArgs
         /// </summary>
         public static IConsoleProvider ConsoleProvider { get; set; }
 
-        internal static ConsoleColor DefaultForegroundColor;
-        internal static ConsoleColor DefaultBackgroundColor;
+        /// <summary>
+        /// Gets the console's default foreground color
+        /// </summary>
+        public static ConsoleColor DefaultForegroundColor { get; private set; }
+        /// <summary>
+        /// Gets the console's default background color
+        /// </summary
+        public static ConsoleColor DefaultBackgroundColor { get; private set; }
         
         static ConsoleString ()
         {

@@ -10,7 +10,7 @@
 
             if (textValue == "Horizontal")
             {
-                context.CurrentControl.FillHoriontally(padding: padding);
+                context.CurrentControl.FillHorizontally(padding: padding);
             }
             else if (textValue == "Vertical")
             {

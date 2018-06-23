@@ -149,7 +149,7 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T FillHoriontally<T>(this T child, ConsoleControl parent = null, Thickness? padding = null) where T : ConsoleControl
+        public static T FillHorizontally<T>(this T child, ConsoleControl parent = null, Thickness? padding = null) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
             var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);

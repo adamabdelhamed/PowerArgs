@@ -25,7 +25,7 @@ namespace PowerArgs.Cli
             this.Height = 2;
             messageAndOperationsPanel = Add(new StackPanel() { Orientation = Orientation.Vertical }).Fill();
 
-            messageLabel = messageAndOperationsPanel.Add(new Label() { Mode = LabelRenderMode.ManualSizing }).FillHoriontally();
+            messageLabel = messageAndOperationsPanel.Add(new Label() { Mode = LabelRenderMode.ManualSizing }).FillHorizontally();
             messageLabel.CanFocus = true;
 
             messageLabel.KeyInputReceived.SubscribeForLifetime((k) =>
@@ -48,7 +48,7 @@ namespace PowerArgs.Cli
             }, this.LifetimeManager);
 
      
-            actionPanel = messageAndOperationsPanel.Add(new StackPanel() { Orientation = Orientation.Horizontal, Height = 1, Margin = 2 }).FillHoriontally(messageAndOperationsPanel);
+            actionPanel = messageAndOperationsPanel.Add(new StackPanel() { Orientation = Orientation.Horizontal, Height = 1, Margin = 2 }).FillHorizontally(messageAndOperationsPanel);
             spinner = actionPanel.Add(new Spinner() { CanFocus=false});
             timeLabel = actionPanel.Add(new Label() { Mode = LabelRenderMode.SingleLineAutoSize, Text = operation.StartTime.ToFriendlyPastTimeStamp().ToConsoleString() });
 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HelloWorld", "HelloWorld\HelloWorld.csproj", "{9FF5B5D7-B7FC-4F03-B13E-ADC16D4E8350}"
 EndProject
@@ -25,7 +25,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{75F86E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerArgs", "PowerArgs\PowerArgs.csproj", "{B321562D-4335-4EE2-9DB3-E263B0DDF06A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArgsVideoPlayer", "PowerArgsVideoPlayer\PowerArgsVideoPlayer.csproj", "{7D76E438-2E9D-4CB6-BBD7-C41364B67956}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerArgsVideoPlayer", "PowerArgsVideoPlayer\PowerArgsVideoPlayer.csproj", "{7D76E438-2E9D-4CB6-BBD7-C41364B67956}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleGames", "ConsoleGames\ConsoleGames.csproj", "{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Playground", "Playground\Playground.csproj", "{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +85,30 @@ Global
 		{7D76E438-2E9D-4CB6-BBD7-C41364B67956}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{7D76E438-2E9D-4CB6-BBD7-C41364B67956}.Release|x86.ActiveCfg = Release|Any CPU
 		{7D76E438-2E9D-4CB6-BBD7-C41364B67956}.Release|x86.Build.0 = Release|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Debug|x86.Build.0 = Debug|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Release|x86.ActiveCfg = Release|Any CPU
+		{D92ACB09-A5CE-459B-BF39-3F5F3656E2E9}.Release|x86.Build.0 = Release|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Debug|x86.Build.0 = Debug|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Release|x86.ActiveCfg = Release|Any CPU
+		{399FE7C1-53FE-4BE6-AB17-E6E16B865E12}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -143,7 +143,8 @@ namespace PowerArgs.Cli.Physics
         {
             Route ret = new Route();
             IRectangular current = from;
-            while (from.Center().CalculateDistanceTo(to) > increment)
+            var dest = Rectangular.Create(to.X, to.Y, 0, 0);
+            while (current.CalculateDistanceTo(dest) > increment)
             {
                 current = Rectangular.Create(MoveTowards(current.Center(), to, increment), from);
                 ret.Steps.Add(current.Center());
@@ -162,6 +163,8 @@ namespace PowerArgs.Cli.Physics
 
             return ret;
         }
+
+        public static float CalculateAngleTo(this IRectangular from, IRectangular to) => CalculateAngleTo(from.Center(), to.Center());
 
         public static float CalculateAngleTo(this ILocation start, ILocation end)
         {

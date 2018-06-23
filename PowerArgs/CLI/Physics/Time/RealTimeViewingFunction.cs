@@ -69,9 +69,16 @@ namespace PowerArgs.Cli.Physics
             t.Add(impl);
         }
 
+        public void ReSync()
+        {
+            wallClockTimeAdded = DateTime.UtcNow;
+            timeAdded = t.Now;
+        }
+
         private void Disable()
         {
             impl.Lifetime.Dispose();
+            impl = null;
         }
     
         internal void Evaluate()
@@ -80,7 +87,7 @@ namespace PowerArgs.Cli.Physics
             // while the simulation time is ahead of the wall clock, spin
             var wallClockTimeElapsed = realTimeNow - wallClockTimeAdded;
             var age = t.Now - timeAdded;
-            while (age > wallClockTimeElapsed)
+            while (Enabled && age > wallClockTimeElapsed)
             {
                 wallClockTimeElapsed = DateTime.UtcNow - wallClockTimeAdded;
             }

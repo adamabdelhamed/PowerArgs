@@ -71,7 +71,7 @@ namespace PowerArgs.Cli
             }
 
             this.CenterVertically();
-            this.FillHoriontally();
+            this.FillHorizontally();
             ConsoleApp.Current.FocusManager.TryMoveFocus();
 
             Application.FocusManager.SubscribeForLifetime(nameof(FocusManager.StackDepth), () =>
@@ -148,9 +148,9 @@ namespace PowerArgs.Cli
             dialog.Cancelled.SubscribeForLifetime(() => { resultCallback(null); }, dialog.LifetimeManager);
 
             ScrollablePanel messagePanel = dialogContent.Add(new ScrollablePanel()).Fill(padding: new Thickness(0, 0, 1, 3));
-            Label messageLabel = messagePanel.ScrollableContent.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Text = message }).FillHoriontally(padding: new Thickness(3,3,0,0) );
+            Label messageLabel = messagePanel.ScrollableContent.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Text = message }).FillHorizontally(padding: new Thickness(3,3,0,0) );
 
-            StackPanel buttonPanel = dialogContent.Add(new StackPanel() { Margin = 1, Height = 1, Orientation = Orientation.Horizontal }).FillHoriontally(padding: new Thickness(1,0,0,0)).DockToBottom(padding: 1);
+            StackPanel buttonPanel = dialogContent.Add(new StackPanel() { Margin = 1, Height = 1, Orientation = Orientation.Horizontal }).FillHorizontally(padding: new Thickness(1,0,0,0)).DockToBottom(padding: 1);
 
             Button firstButton = null;
             foreach (var buttonInfo in buttons)

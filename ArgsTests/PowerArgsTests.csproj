@@ -170,6 +170,7 @@
     <Compile Include="TestStuff\SetupCleanup.cs" />
     <Compile Include="ObjectPathExpressionTests.cs" />
     <Compile Include="ObjectFactoryTests.cs" />
+    <Compile Include="PromiseTests.cs" />
     <Compile Include="_GLOBAL_SETUP.cs" />
     <Compile Include="UsageTests.cs" />
     <Compile Include="ValidatorTests.cs" />

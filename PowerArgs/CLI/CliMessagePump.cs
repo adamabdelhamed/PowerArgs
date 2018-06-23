@@ -359,10 +359,7 @@ namespace PowerArgs.Cli
                     {
                         idle = false;
                         var info = this.console.ReadKey(true);
-                        QueueAction(() =>
-                        {
-                            HandleKeyInput(info);
-                        });
+                        QueueAction(() => HandleKeyInput(info));
                     }
 
                     frameRateMeter.Increment();
