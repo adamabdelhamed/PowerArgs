@@ -6,11 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PowerArgs" Version="3.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\ConsoleGames\ConsoleGames.csproj" />
+    <ProjectReference Include="..\PowerArgs\PowerArgs.csproj" />
   </ItemGroup>
 
 </Project>
