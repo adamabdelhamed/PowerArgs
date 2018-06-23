@@ -14,9 +14,9 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         public TimeSpan Rate { get; set; }
 
-        internal RateGovernor(TimeSpan rate) { Rate = rate; }
+        public RateGovernor(TimeSpan rate) { Rate = rate; }
 
-        internal bool ShouldFire(TimeSpan currentTime)
+        public bool ShouldFire(TimeSpan currentTime)
         {
             if (currentTime - lastFire < Rate) return false;
             lastFire = currentTime;

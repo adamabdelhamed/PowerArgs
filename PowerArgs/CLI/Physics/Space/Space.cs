@@ -144,8 +144,17 @@ namespace PowerArgs.Cli.Physics
             Route ret = new Route();
             IRectangular current = from;
             var dest = Rectangular.Create(to.X, to.Y, 0, 0);
-            while (current.CalculateDistanceTo(dest) > increment)
+            var currentDistance = current.CalculateDistanceTo(dest);
+            var firstDistance = currentDistance;
+            while (currentDistance > increment)
             {
+#if DEBUG
+                if(currentDistance > firstDistance)
+                {
+                    throw new Exception("Bug, we got farther away");
+                }
+#endif
+
                 current = Rectangular.Create(MoveTowards(current.Center(), to, increment), from);
                 ret.Steps.Add(current.Center());
 
@@ -159,6 +168,8 @@ namespace PowerArgs.Cli.Physics
                         ret.Obstacles.Add(obstacle);
                     }
                 }
+
+                currentDistance = current.CalculateDistanceTo(dest);
             }
 
             return ret;

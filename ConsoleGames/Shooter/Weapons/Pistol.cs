@@ -9,18 +9,23 @@ namespace ConsoleGames.Shooter
 
         public override void FireInternal()
         {
-            var angle = MainCharacter.Current.Target != null ?
-                MainCharacter.Current.Bounds.CalculateAngleTo(MainCharacter.Current.Target) :
+            var angle = Holder.Target != null ?
+                Holder.Bounds.CalculateAngleTo(Holder.Target) :
                 MainCharacter.Current.Speed.Angle;
 
-            if (MainCharacter.Current.FreeAimCursor != null)
+            if (Holder == MainCharacter.Current && MainCharacter.Current.FreeAimCursor != null)
             {
-                angle = MainCharacter.Current.CalculateAngleTo(MainCharacter.Current.FreeAimCursor);
-
+                angle = Holder.CalculateAngleTo(MainCharacter.Current.FreeAimCursor);
             }
 
-            var bullet = new Projectile(MainCharacter.Current.Left, MainCharacter.Current.Top, angle) { PlaySoundOnImpact = true };
-            bullet.Speed.HitDetectionTypes.Remove(typeof(MainCharacter));
+            var bullet = new Projectile(Holder.Left, Holder.Top, angle) { PlaySoundOnImpact = true };
+
+            bullet.Speed.HitDetectionTypes.Remove(Holder.GetType());
+
+            if (Holder.Target != null)
+            {
+                bullet.Speed.HitDetectionTypes.Add(Holder.Target.GetType());
+            }
             SpaceTime.CurrentSpaceTime.Add(bullet);
             
             // todo - uncomment after sound added

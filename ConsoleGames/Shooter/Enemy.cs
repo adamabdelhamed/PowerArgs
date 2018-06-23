@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ConsoleGames.Shooter
 {
-    public class Enemy : Character, IDestructible
+    public class Enemy : ShooterCharacter, IDestructible
     {
         public bool IsBeingTargeted { get; private set; }
 
@@ -15,6 +15,12 @@ namespace ConsoleGames.Shooter
         public Event Destroyed { get; set; } = new Event();
 
         public float HealthPoints { get; set; } = 3;
+
+        public Enemy()
+        {
+            this.Inventory = new ShooterInventory(this);
+            this.Target = MainCharacter.Current;
+        }
 
         public override void Evaluate()
         {

@@ -4,7 +4,8 @@ using System.Text;
 
 namespace ConsoleGames
 {
-    public class ShooterCharacter
+    public class ShooterCharacter : Character
     {
+        public Character Target { get; set; }
     }
 }

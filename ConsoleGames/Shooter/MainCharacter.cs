@@ -12,7 +12,7 @@ namespace ConsoleGames.Shooter
         Manual
     }
 
-    public class MainCharacter : Character, IDestructible
+    public class MainCharacter : ShooterCharacter, IDestructible
     {
 
 
@@ -41,9 +41,6 @@ namespace ConsoleGames.Shooter
 
         public AutoTargetingFunction Targeting { get; private set; }
         public Cursor FreeAimCursor { get; set; }
-        public SpacialElement Target { get; set; }
-
-
         public AimMode AimMode
         {
             get
@@ -60,12 +57,9 @@ namespace ConsoleGames.Shooter
 
         public MainCharacter()
         {
-            this.Inventory = new ShooterInventory();
+            this.Inventory = new ShooterInventory(this);
             HealthPoints = 100;
-
-
             InitializeTargeting();
-
             this.Added.SubscribeForLifetime(() => Current = this, this.Lifetime.LifetimeManager);
         }
 
@@ -82,7 +76,7 @@ namespace ConsoleGames.Shooter
                     this.Target.SizeOrPositionChanged.Fire();
                 }
 
-                this.Target = target;
+                this.Target = target as ShooterCharacter;
 
                 if (this.Target != null && this.Target.Lifetime.IsExpired == false)
                 {

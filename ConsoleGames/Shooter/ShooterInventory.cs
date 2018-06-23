@@ -7,6 +7,8 @@ namespace ConsoleGames.Shooter
 {
     public class ShooterInventory : Inventory
     {
+        public ShooterCharacter Owner { get; private set; }
+        
         private Weapon _primaryWeapon;
         public Weapon PrimaryWeapon
         {
@@ -45,14 +47,15 @@ namespace ConsoleGames.Shooter
             }
         }
 
-        public ShooterInventory()
+        public ShooterInventory(ShooterCharacter owner)
         {
+            this.Owner = owner;
             Items.Added.SubscribeForLifetime((item) =>
             {
                 if(item is Weapon)
                 {
                     var weapon = item as Weapon;
-
+                    weapon.Holder = this.Owner;
                     if(weapon.Style == WeaponStyle.Primary)
                     {
                         if (PrimaryWeapon == null || PrimaryWeapon.AmmoAmount == 0)

@@ -10,6 +10,8 @@ namespace ConsoleGames.Shooter
 
     public abstract class Weapon : ObservableObject, IInventoryItem
     {
+        public ShooterCharacter Holder { get; set; }
+
         public abstract WeaponStyle Style { get; }
 
         public int AmmoAmount
@@ -19,7 +21,7 @@ namespace ConsoleGames.Shooter
 
         public void TryFire()
         {
-            if (AmmoAmount > 0)
+            if (AmmoAmount > 0 && Holder != null)
             {
                 FireInternal();
                 AmmoAmount--;
