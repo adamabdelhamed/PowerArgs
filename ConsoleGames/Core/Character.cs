@@ -8,7 +8,7 @@ namespace ConsoleGames
 {
 
 
-    public class Character : SpacialElement, IObservableObject
+    public class Character : SpacialElement, IObservableObject, IDestructible
     {
         public Inventory Inventory { get; protected set; }
 
@@ -22,6 +22,10 @@ namespace ConsoleGames
 
 
         public SpeedTracker Speed { get; set; }
+
+        public Event Damaged { get; private set; } = new Event();
+        public Event Destroyed { get; private set; } = new Event();
+        public float HealthPoints { get => observable.Get<float>(); set => observable.Set(value); } 
 
         public Character()
         {

@@ -33,6 +33,7 @@ namespace ConsoleGames.Shooter
                 }
 
                 var shrapnel = new Projectile(this.Left, this.Top, angle) { HealthPoints = HealthPointsPerShrapnel, Range = effectiveRange };
+                shrapnel.Tags.Add("hot");
                 SpaceTime.CurrentSpaceTime.Add(shrapnel);
             }
 

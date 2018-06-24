@@ -12,7 +12,7 @@ namespace ConsoleGames.Shooter
         Manual
     }
 
-    public class MainCharacter : ShooterCharacter, IDestructible
+    public class MainCharacter : ShooterCharacter
     {
 
 
@@ -49,9 +49,6 @@ namespace ConsoleGames.Shooter
             }
         }
 
-        public Event Damaged { get; private set; } = new Event();
-        public Event Destroyed { get; private set; } = new Event();
-        public float HealthPoints { get { return observable.Get<float>(); } set { observable.Set(value); } }  
 
      
 
