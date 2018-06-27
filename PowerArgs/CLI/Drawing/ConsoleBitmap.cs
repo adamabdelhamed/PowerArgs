@@ -64,6 +64,61 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Converts this ConsoleBitmap to a ConsoleString
+        /// </summary>
+        /// <param name="trimMode">if false (the default), unformatted whitespace at the end of each line will be included as whitespace in the return value. If true, that whitespace will be trimmed from the return value.</param>
+        /// <returns>the bitmap as a ConsoleString</returns>
+        public ConsoleString ToConsoleString(bool trimMode = false)
+        {
+            List<ConsoleCharacter> chars = new List<ConsoleCharacter>();
+            for (var y = 0; y < this.Height; y++)
+            {
+                for (var x = 0; x < this.Width; x++)
+                {
+                    if (trimMode && IsRestOfLineWhitespaceWithDefaultBackground(x, y))
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        var pixel = this.GetPixel(x, y);
+                        var pixelValue = pixel.Value.HasValue ? pixel.Value.Value : new ConsoleCharacter(' ');
+                        chars.Add(pixelValue);
+                    }
+                }
+                if (y < this.Height - 1)
+                {
+                    chars.Add(new ConsoleCharacter('\n'));
+                }
+            }
+
+            return new ConsoleString(chars);
+        }
+
+        private bool IsRestOfLineWhitespaceWithDefaultBackground(int xStart, int y)
+        {
+            var defaultBg = new ConsoleCharacter(' ').BackgroundColor;
+
+            for (var x = xStart; x < this.Width; x++)
+            {
+                if (this.GetPixel(x, y).Value.HasValue == false)
+                {
+                    // this is whitespace
+                }
+                else if (char.IsWhiteSpace(this.GetPixel(x, y).Value.Value.Value) && this.GetPixel(x, y).Value.Value.BackgroundColor == defaultBg)
+                {
+                    // this is whitespace
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
 
         // todo - is rectangular, but if you try to set width and height there will be inconsistent state
         public void Resize(int w, int h)

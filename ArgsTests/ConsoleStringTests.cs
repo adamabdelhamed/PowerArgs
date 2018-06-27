@@ -353,6 +353,172 @@ namespace ArgsTests
             }
         }
 
+        [TestMethod]
+        public void TestConvertBetweenConsoleBitmapAndConsoleStringTrimMode()
+        {
+            // the last 4 characters will be whitespace with default formatting
+            var str = "Adam".ToYellow(bg: ConsoleColor.Green) + "    ".ToConsoleString();
+            var bmp = str.ToConsoleBitmap();
+            Assert.AreEqual(8, bmp.Width);
+            Assert.AreEqual(1, bmp.Height);
+            Assert.AreEqual('A', bmp.GetPixel(0, 0).Value.Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(1, 0).Value.Value.Value);
+            Assert.AreEqual('a', bmp.GetPixel(2, 0).Value.Value.Value);
+            Assert.AreEqual('m', bmp.GetPixel(3, 0).Value.Value.Value);
+            Assert.AreEqual(' ', bmp.GetPixel(4, 0).Value.Value.Value);
+            Assert.AreEqual(' ', bmp.GetPixel(5, 0).Value.Value.Value);
+            Assert.AreEqual(' ', bmp.GetPixel(6, 0).Value.Value.Value);
+            Assert.AreEqual(' ', bmp.GetPixel(7, 0).Value.Value.Value);
+
+            for (var x = 0; x < "Adam".Length; x++)
+            {
+                Assert.AreEqual(ConsoleColor.Yellow, bmp.GetPixel(x, 0).Value.Value.ForegroundColor);
+                Assert.AreEqual(ConsoleColor.Green, bmp.GetPixel(x, 0).Value.Value.BackgroundColor);
+            }
+
+            // the last 4 characters should get trimmed here
+            var readBack = bmp.ToConsoleString(trimMode: true);
+            Assert.AreEqual("Adam".ToYellow(bg: ConsoleColor.Green), readBack);
+        }
+
+        [TestMethod]
+        public void TestConvertBetweenConsoleBitmapAndConsoleStringMultiLine()
+        {
+            var str = "Adam".ToYellow(bg: ConsoleColor.Green) + "\n".ToConsoleString() + "Abdelhamed".ToYellow(bg: ConsoleColor.Green);
+            var bmp = str.ToConsoleBitmap();
+            Assert.AreEqual(10, bmp.Width);
+            Assert.AreEqual(2, bmp.Height);
+            Assert.AreEqual('A', bmp.GetPixel(0, 0).Value.Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(1, 0).Value.Value.Value);
+            Assert.AreEqual('a', bmp.GetPixel(2, 0).Value.Value.Value);
+            Assert.AreEqual('m', bmp.GetPixel(3, 0).Value.Value.Value);
+
+            Assert.AreEqual('A', bmp.GetPixel(0, 1).Value.Value.Value);
+            Assert.AreEqual('b', bmp.GetPixel(1, 1).Value.Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(2, 1).Value.Value.Value);
+            Assert.AreEqual('e', bmp.GetPixel(3, 1).Value.Value.Value);
+            Assert.AreEqual('l', bmp.GetPixel(4, 1).Value.Value.Value);
+            Assert.AreEqual('h', bmp.GetPixel(5, 1).Value.Value.Value);
+            Assert.AreEqual('a', bmp.GetPixel(6, 1).Value.Value.Value);
+            Assert.AreEqual('m', bmp.GetPixel(7, 1).Value.Value.Value);
+            Assert.AreEqual('e', bmp.GetPixel(8, 1).Value.Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(9, 1).Value.Value.Value);
+
+            var pixelsWithValueCount = 0;
+            for (var x = 0; x < bmp.Width; x++)
+            {
+                for (var y = 0; y < bmp.Height; y++)
+                {
+                    if (bmp.GetPixel(x, y).Value.HasValue)
+                    {
+                        pixelsWithValueCount++;
+                        Assert.AreEqual(ConsoleColor.Yellow, bmp.GetPixel(x, y).Value.Value.ForegroundColor);
+                        Assert.AreEqual(ConsoleColor.Green, bmp.GetPixel(x, y).Value.Value.BackgroundColor);
+                    }
+                }
+            }
+            Assert.AreEqual("AdamAbdelhamed".Length, pixelsWithValueCount);
+            var readBack = bmp.ToConsoleString(trimMode: true);
+            Assert.AreEqual(str, readBack);
+        }
+
+        [TestMethod]
+        public void TestConvertBetweenConsoleBitmapAndConsoleStringSingleLine()
+        {
+            var str = "Adam".ToYellow(bg: ConsoleColor.Green);
+            var bmp = str.ToConsoleBitmap();
+            Assert.AreEqual(4, bmp.Width);
+            Assert.AreEqual(1, bmp.Height);
+            Assert.AreEqual('A', bmp.GetPixel(0, 0).Value.Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(1, 0).Value.Value.Value);
+            Assert.AreEqual('a', bmp.GetPixel(2, 0).Value.Value.Value);
+            Assert.AreEqual('m', bmp.GetPixel(3, 0).Value.Value.Value);
+
+            for (var x = 0; x < bmp.Width; x++)
+            {
+                Assert.AreEqual(ConsoleColor.Yellow, bmp.GetPixel(x, 0).Value.Value.ForegroundColor);
+                Assert.AreEqual(ConsoleColor.Green, bmp.GetPixel(x, 0).Value.Value.BackgroundColor);
+            }
+
+            var readBack = bmp.ToConsoleString();
+            Assert.AreEqual(str, readBack);
+
+            var andBackAgain = readBack.ToConsoleBitmap();
+            Assert.AreEqual(bmp, andBackAgain);
+        }
+
+        [TestMethod]
+        public void TestConsoleStringEncodingBasic()
+        {
+            var inputString = "A".ToRed() + "BC".ToWhite(bg: ConsoleColor.Red) + "DE".ToBlue() + "FG".ToConsoleString();
+
+            var serialized = inputString.Serialize();
+            var readBack = ConsoleString.Parse(serialized);
+            Assert.AreEqual(inputString, readBack);
+
+            var serializedImplicitDefaults = inputString.Serialize(true);
+            var readBackImplicitDefaults = ConsoleString.Parse(serialized);
+            Assert.AreEqual(inputString, readBackImplicitDefaults);
+        }
+
+        [TestMethod]
+        public void TestConsoleStringEncodingEdgeCases()
+        {
+            var parsed = ConsoleString.Parse("[B=Blue][Red]Adam");
+            Assert.AreEqual(new ConsoleString("Adam", ConsoleColor.Red, ConsoleColor.Blue), parsed);
+            parsed = ConsoleString.Parse("[  B   =   Blue ][ Red ]Adam");
+            Assert.AreEqual(new ConsoleString("Adam", ConsoleColor.Red, ConsoleColor.Blue), parsed);
+
+            parsed = ConsoleString.Parse(@"\[Adam\]");
+            Assert.AreEqual(new ConsoleString("[Adam]"), parsed);
+            parsed = ConsoleString.Parse(@"\[Adam]");
+            Assert.AreEqual(new ConsoleString("[Adam]"), parsed);
+
+            var original = "[Adam]";
+            var s = original.ToConsoleString().Serialize();
+            var back = ConsoleString.Parse(s);
+            Assert.AreEqual(original, back.StringValue);
+        }
+
+        [TestMethod]
+        public void TestConsoleStringImplicitDefaultMode()
+        {
+            var defaultFg = new ConsoleCharacter(' ').ForegroundColor;
+            var defaultBg = new ConsoleCharacter(' ').BackgroundColor;
+            Assert.AreEqual($"[{defaultFg}][B={defaultBg}]Adam", new ConsoleString("Adam").Serialize());
+            Assert.AreEqual("Adam", new ConsoleString("Adam").Serialize(true));
+        }
+
+
+        [TestMethod]
+        public void TestConsoleStringSplit()
+        {
+            // It will split on the space here because the styles match
+            var split = "Adam Abdelhamed".ToConsoleString().Split(" ".ToConsoleString());
+            Assert.AreEqual(2, split.Count);
+            Assert.AreEqual("Adam", split[0].StringValue);
+            Assert.AreEqual("Abdelhamed", split[1].StringValue);
+
+            // Make sure those extra spaces don't make it into the split
+            split = "Adam                   Abdelhamed".ToConsoleString().Split(" ".ToConsoleString());
+            Assert.AreEqual(2, split.Count);
+            Assert.AreEqual("Adam", split[0].StringValue);
+            Assert.AreEqual("Abdelhamed", split[1].StringValue);
+
+            // It won't split on the space here because the style is different
+            split = ("Adam".ToConsoleString() + " ".ToYellow() + "Abdelhamed".ToConsoleString()).Split(" ".ToConsoleString());
+            Assert.AreEqual(1, split.Count);
+            Assert.AreEqual("Adam Abdelhamed", split[0].StringValue);
+        }
+
+        [TestMethod]
+        public void TestConsoleStringToDiv()
+        {
+            var str = "Adam".ToRed() + " ".ToConsoleString() + "Abdelhamed".ToGreen();
+            var toDiv = str.ToHtmlDiv(indent: false);
+            Assert.AreEqual("<div class='powerargs-console-string' style='font-family:Consolas;background-color:black'><span style='color:red;background-color:black;'>Adam</span><span style='color:grey;background-color:black;'> </span><span style='color:green;background-color:black;'>Abdelhamed</span></div>", toDiv);
+        }
+
         private static void ValidateStringCharacteristics(string expected, ConsoleString actual)
         {
             Assert.AreEqual(expected, string.Join("", actual.Select(c => c.Value)));
