@@ -5,9 +5,11 @@ namespace ConsoleGames.Shooter
 {
     public class FireAtWill : IBotStrategy
     {
-        public Character Me { get; set; }
-        public Character Target { get; set; }
+        public ShooterCharacter Me { get; set; }
         public RateGovernor EvalGovernor { get; } = new RateGovernor(TimeSpan.FromSeconds(1));
+
+        public DecisionSpace DecisionSpace => DecisionSpace.PrimaryWeapon;
+
         public StrategyEval EvaluateApplicability()
         {
             var canFire = (Me.Inventory as ShooterInventory).PrimaryWeapon != null &&
@@ -28,7 +30,7 @@ namespace ConsoleGames.Shooter
                 return new StrategyEval() { Applicability = 0, Strategy = this };
             }
 
-            var d = Me.CalculateDistanceTo(Target);
+            var d = Me.CalculateDistanceTo(Me.Target);
             if (d > 20) return new StrategyEval() { Applicability = 0, Strategy = this };
             else if(d > 15) return new StrategyEval() { Applicability = .2f, Strategy = this };
             else if (d > 10) return new StrategyEval() { Applicability = .5f, Strategy = this };

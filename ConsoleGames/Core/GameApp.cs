@@ -12,7 +12,7 @@ namespace ConsoleGames
         public KeyboardInputManager KeyboardInput { get; private set; } 
 
         public int SceneWidth { get; set; } = 78;
-        public int SceneHeight { get; set; } = 20;
+        public int SceneHeight { get; set; } = 40;
 
         public GameApp()
         {

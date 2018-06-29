@@ -1,11 +1,22 @@
 ﻿using PowerArgs.Cli.Physics;
+using System;
 
 namespace ConsoleGames.Shooter
 {
+    [Flags]
+    public enum DecisionSpace
+    {
+        Exclusive,
+        PrimaryWeapon,
+        ExplosiveWeapon,
+        Movement,
+        None,
+    }
+
     public interface IBotStrategy
     {
-        Character Me { get; set; }
-        Character Target { get; set; }
+        DecisionSpace DecisionSpace { get;  }
+        ShooterCharacter Me { get; set; }
         RateGovernor EvalGovernor { get; }
         StrategyEval EvaluateApplicability();
         void Work();

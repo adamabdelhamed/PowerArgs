@@ -7,22 +7,21 @@ namespace PowerArgsVideoPlayer
 {
     class Program
     {
-        [ArgRequired]
-        [ArgDefaultValue(@"C:\temp\recordings\TestSeeking.vid")]
-        [ArgPosition(0)]
-        [ArgExistingFile]
+        [ArgExistingFile, ArgPosition(0)]
         public string InputFile { get; set; }
         static void Main(string[] args) => Args.InvokeMain<Program>(args);
 
         public void Main()
         {
+            if(InputFile == null)
+            {
+                "No input file specified".ToRed().WriteLine();
+                return;
+            }
+
             var app = new ConsoleApp();
             var player = app.LayoutRoot.Add(new ConsoleBitmapPlayer()).Fill();
-            app.QueueAction(() =>
-            {
-                player.Load(File.OpenRead(InputFile));
-            });
-
+            app.QueueAction(() => player.Load(File.OpenRead(InputFile)));
             app.Start().Wait();
         }
     }

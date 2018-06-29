@@ -8,19 +8,18 @@ namespace ConsoleGames.Shooter
     {
         private List<IBotStrategy> strategies;
         private StrategyEval currentStrategy;
-        private Character me;
-        private Character target;
+        private ShooterCharacter me;
+  
 
-        public Bot(Character toAnimate, IEnumerable<IBotStrategy> strategies, Character target = null) : base(toAnimate)
+        public Bot(ShooterCharacter toAnimate, IEnumerable<IBotStrategy> strategies) : base(toAnimate)
         {
             this.strategies = strategies.ToList();
-            this.target = target ?? MainCharacter.Current;
             this.me = toAnimate;
         }
         
         public override void Initialize()
         {
-            strategies.ForEach(s => { s.Target = target; s.Me = me; });
+            strategies.ForEach(s => s.Me = me);
         }
 
         public override void Evaluate()

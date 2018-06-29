@@ -14,7 +14,7 @@ namespace ConsoleGames
     {
         public static void TakeDamage(this IDestructible destructible, float damage)
         {
-            if (destructible.HealthPoints > 0)
+            if (destructible.HealthPoints > 0 && damage > 0)
             {
                 destructible.HealthPoints -= damage;
                 if (destructible.HealthPoints <= 0)

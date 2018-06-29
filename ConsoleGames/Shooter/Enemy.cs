@@ -6,15 +6,9 @@ using System.Text;
 
 namespace ConsoleGames.Shooter
 {
-    public class Enemy : ShooterCharacter, IDestructible
+    public class Enemy : ShooterCharacter
     {
         public bool IsBeingTargeted { get; private set; }
-
-        public Event Damaged { get; private set; } = new Event();
-
-        public Event Destroyed { get; set; } = new Event();
-
-        public float HealthPoints { get; set; } = 3;
 
         public Enemy()
         {
