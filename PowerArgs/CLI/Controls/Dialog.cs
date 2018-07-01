@@ -132,7 +132,7 @@ namespace PowerArgs.Cli
             }, true, maxHeight, new DialogButton() { Id = "y", DisplayText = "Yes".ToConsoleString(), }, new DialogButton() { Id = "n", DisplayText = "No".ToConsoleString() });
         }
 
-        public static void ShowMessage(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, int maxHeight = 6, params DialogButton [] buttons)
+        public static void ShowMessage(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, int maxHeight = 10, params DialogButton [] buttons)
         {
             ConsoleApp.AssertAppThread();
             if (buttons.Length == 0)
@@ -219,7 +219,7 @@ namespace PowerArgs.Cli
             optionsGrid.VisibleColumns.Remove(optionsGrid.VisibleColumns.Where(v => v.ColumnName.ToString() == nameof(DialogOption.Id)).Single());
             optionsGrid.VisibleColumns[0].WidthPercentage = 1;
             optionsGrid.VisibleColumns[0].ColumnDisplayName = message.IsUnstyled ? message.ToYellow() : message;
-
+            optionsGrid.VisibleColumns[0].OverflowBehavior = new TruncateOverflowBehavior();
             (optionsGrid.VisibleColumns[0].OverflowBehavior as TruncateOverflowBehavior).ColumnWidth = 0;
 
             DialogOption result = null;

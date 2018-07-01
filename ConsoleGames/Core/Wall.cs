@@ -1,4 +1,5 @@
-﻿using PowerArgs.Cli;
+﻿using PowerArgs;
+using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 
@@ -12,6 +13,8 @@ namespace ConsoleGames
         public void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
         public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
         public void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
+
+        public ConsoleCharacter Pen { get; set; } = new ConsoleCharacter(' ', ConsoleColor.White);
 
         public Event Damaged { get; private set; } = new Event();
 
@@ -34,15 +37,7 @@ namespace ConsoleGames
     {
         protected override void OnPaint(ConsoleBitmap context)
         {
-            if((Element as Wall).HealthPoints < 10)
-            {
-                context.Pen = new PowerArgs.ConsoleCharacter(' ', backgroundColor: System.ConsoleColor.DarkGray);
-            }
-            else
-            {
-                context.Pen = new PowerArgs.ConsoleCharacter(' ', backgroundColor: System.ConsoleColor.Gray);
-            }
-
+            context.Pen = (Element as Wall).Pen;
             context.DrawPoint(0, 0);
         }
     }

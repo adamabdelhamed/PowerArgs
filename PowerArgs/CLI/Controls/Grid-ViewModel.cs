@@ -98,7 +98,6 @@ namespace PowerArgs.Cli
                 SelectedIndex--;
                 SelectedItem = DataView.Items[SelectedIndex - visibleRowOffset];
             }
-
         }
 
         public void Refresh()
