@@ -17,14 +17,22 @@ namespace ConsoleGames.Shooter
 
         protected override void OnSceneInitialize()
         {
-            this.MainCharacter = new MainCharacter();
-
-            this.Scene.Add(MainCharacter);
             this.KeyMap = new ShooterKeyMap();
             this.KeyboardInput.KeyMap = KeyMap.GenerateKeyMap();
             this.KeyboardInput.UpdateKeyboardMappings();
         }
 
+        public void Load(Level level, SceneFactory factory)
+        {
+            foreach(var item in factory.InitializeScene(level))
+            {
+                if(item is MainCharacter)
+                {
+                    this.MainCharacter = item as MainCharacter;
+                }
+                this.Scene.Add(item);
+            }
+        }
 
         private void ConfigureHeadsUpDisplay()
         {

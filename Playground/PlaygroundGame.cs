@@ -1,5 +1,7 @@
 ﻿using ConsoleGames;
 using ConsoleGames.Shooter;
+using System;
+using System.Collections.Generic;
 
 namespace Playground
 {
@@ -8,34 +10,23 @@ namespace Playground
         protected override void OnSceneInitialize()
         {
             base.OnSceneInitialize();
-            this.MainCharacter.MoveTo(3, 3);
 
-            this.MainCharacter.Inventory.Items.Add(new Net() { AmmoAmount = 1000 });
-            this.MainCharacter.Inventory.Items.Add(new RPGLauncher() { AmmoAmount = 1000 });
-
-            var enemy = new Enemy();
-            enemy.Inventory.Items.Add(new Pistol() { Holder = enemy, AmmoAmount = 10 });
-            enemy.MoveTo(50, 8);
-            this.Scene.Add(enemy);
-
-            var bot = new Bot(enemy, new IBotStrategy[] { new FireAtWill() });
-            this.Scene.Add(bot);
-
-            var weapon = new LooseWeapon(new Net() { AmmoAmount = 100000 });
-            weapon.MoveTo(20, 15);
-            this.Scene.Add(weapon);
-
-
-            var weapon2 = new LooseWeapon(new Pistol() { AmmoAmount = 100000 });
-            weapon2.MoveTo(15, 15);
-            this.Scene.Add(weapon2);
-
-            for (var y = 2; y < 17; y++)
+            var level = new Level()
             {
-                var wall = new Wall();
-                wall.MoveTo(60, y);
-                this.Scene.Add(wall);
-            }
+                Items = new System.Collections.Generic.List<LevelItem>()
+                {
+                    new LevelItem(){ X = 4, Y = 4, Width = 1, Height = 1, Tags = new List<string>(){ "main-character" } },
+                    new LevelItem(){ X = 6, Y = 6, Symbol = 'W', FG = ConsoleColor.Red, BG = ConsoleColor.Yellow, Width = 1, Height = 1,  }
+                }
+            };
+
+            var factory = new SceneFactory(new List<ItemReviver>()
+            {
+                new MainCharacterReviver(),
+                new WallReviver()
+            });
+
+            this.Load(level, factory);
         }
     }
 }

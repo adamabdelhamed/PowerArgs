@@ -19,7 +19,6 @@ namespace ConsoleGames
         private Button saveCommand;
         public LevelEditor(int levelWidth, int levelHeight, ConsoleCharacter? bg = null)
         {
-
             if (Directory.Exists(SavedLevelsDirectory) == false)
             {
                 Directory.CreateDirectory(SavedLevelsDirectory);
@@ -38,7 +37,6 @@ namespace ConsoleGames
             var saveAsCommand = innerEditor.AddCommand(new Button() { Text = "Save as".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });
             var discardCommand = innerEditor.AddCommand(new Button() { Text = "Discard".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.D, ConsoleModifiers.Alt) });
             var tagCommand = innerEditor.AddCommand(new Button() { Text = "Tag".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.T, ConsoleModifiers.Alt) });
-
 
             newCommand.Pressed.SubscribeForLifetime(() =>
             {
@@ -225,6 +223,8 @@ namespace ConsoleGames
                     {
                         X = x,
                         Y = y,
+                        Width = 1,
+                        Height = 1,
                         FG = pixel.Value.Value.ForegroundColor,
                         BG = pixel.Value.Value.BackgroundColor,
                         Symbol = pixel.Value.Value.Value,
