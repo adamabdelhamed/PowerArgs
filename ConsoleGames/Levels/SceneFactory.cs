@@ -7,7 +7,7 @@ namespace ConsoleGames
 {
     public interface ItemReviver
     {
-        bool TryRevive(LevelItem item, out SpacialElement hydratedElement);
+        bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement);
     }
 
     
@@ -23,10 +23,15 @@ namespace ConsoleGames
         {
             foreach(var item in level.Items)
             {
+                if(item.Ignore)
+                {
+                    continue;
+                }
+
                 bool hydrated = false;
                 foreach(var reviver in revivers)
                 {
-                    if(reviver.TryRevive(item, out SpacialElement hydratedElement))
+                    if(reviver.TryRevive(item, level.Items, out SpacialElement hydratedElement))
                     {
                         hydratedElement.MoveTo(item.X, item.Y);
                         hydratedElement.ResizeTo(item.Width, item.Height);

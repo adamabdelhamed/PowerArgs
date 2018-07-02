@@ -2,6 +2,7 @@
 using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 namespace ConsoleGames
 {
@@ -42,7 +43,7 @@ namespace ConsoleGames
 
     public class PortalReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
         {
             if (item.HasValueTag("destination") == false)
             {

@@ -3,6 +3,7 @@ using PowerArgs.Cli.Physics;
 using System;
 using System.Reflection;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace ConsoleGames
 {
@@ -48,7 +49,7 @@ namespace ConsoleGames
 
     public class LooseWeaponReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
         {
             if (item.HasValueTag("ammo") == false || item.HasValueTag("amount") == false)
             {

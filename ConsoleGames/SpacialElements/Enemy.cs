@@ -52,7 +52,7 @@ namespace ConsoleGames
 
     public class EnemyReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
         {
             var enemyTag = item.Tags.Where(testc => testc.Equals("enemy")).SingleOrDefault();
             if (enemyTag == null)

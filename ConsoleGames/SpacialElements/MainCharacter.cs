@@ -3,6 +3,7 @@ using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PowerArgs;
 
 namespace ConsoleGames
 {
@@ -10,6 +11,12 @@ namespace ConsoleGames
     {
         Auto,
         Manual
+    }
+
+    public interface IInteractable
+    {
+        IRectangular InteractionPoint { get; }
+        void Interact(MainCharacter character);
     }
 
     public class MainCharacter : Character
@@ -56,6 +63,7 @@ namespace ConsoleGames
         {
             HealthPoints = 100;
             InitializeTargeting();
+            this.MoveTo(0, 0, int.MaxValue);
             this.Added.SubscribeForLifetime(() =>
             {
                 Current = this;
@@ -107,8 +115,12 @@ namespace ConsoleGames
             }
         }
 
-   
-
+        public void TryInteract() => SpaceTime.CurrentSpaceTime.Elements
+            .Where(e => e is IInteractable)
+            .Select(i => i as IInteractable)
+            .Where(i => i.InteractionPoint.CalculateDistanceTo(this) <= 2)
+            .ForEach(i => i.Interact(this));
+        
 
         public void MoveLeft()
         {
@@ -212,7 +224,7 @@ namespace ConsoleGames
 
     public class MainCharacterReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
         {
             if (item.Tags.Contains("main-character") == false)
             {

@@ -51,6 +51,7 @@ namespace ConsoleGames
             ret.KeyboardMap.Add(MoveRightKey, () => MainCharacter.Current?.MoveRight());
 
             ret.KeyboardMap.Add(AimToggleKey, () => MainCharacter.Current?.ToggleFreeAim());
+            ret.KeyboardMap.Add(InteractKey, () => MainCharacter.Current?.TryInteract());
             ret.KeyboardMap.Add(PrimaryWeaponKey, () => (MainCharacter.Current?.Inventory)?.PrimaryWeapon?.TryFire());
             ret.KeyboardMap.Add(ExplosiveWeaponKey, () => (MainCharacter.Current?.Inventory)?.ExplosiveWeapon?.TryFire());
             return ret;
