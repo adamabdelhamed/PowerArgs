@@ -1,4 +1,5 @@
-﻿using PowerArgs.Cli;
+﻿using Newtonsoft.Json;
+using PowerArgs.Cli;
 
 namespace ConsoleGames
 {
@@ -10,8 +11,10 @@ namespace ConsoleGames
 
     public abstract class Weapon : ObservableObject, IInventoryItem
     {
+        [JsonIgnore]
         public Character Holder { get; set; }
 
+        [JsonIgnore]
         public abstract WeaponStyle Style { get; }
 
         public int AmmoAmount

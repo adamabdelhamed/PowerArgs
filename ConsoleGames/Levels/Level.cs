@@ -7,6 +7,8 @@ namespace ConsoleGames
 {
     public class Level
     {
+        [JsonIgnore]
+        public string Name { get; set; }
         public List<LevelItem> Items { get; set; } = new List<LevelItem>();
         public string Serialize() => JsonConvert.SerializeObject(this, Formatting.Indented);
         public static Level Deserialize(string json) => JsonConvert.DeserializeObject<Level>(json);

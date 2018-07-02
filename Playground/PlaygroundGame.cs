@@ -18,12 +18,40 @@ namespace Playground
         protected override SceneFactory SceneFactory => factory;
 
         private ShooterKeys shooterKeys = new ShooterKeys();
-
+        private GameState currentState;
         protected override void OnSceneInitialize()
         {
             this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
-            var level = LevelEditor.LoadBySimpleName("DefaultLevel");
+            currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
+
+            if(currentState.Data.TryGetValue("CurrentLevel", out object levelName) == false)
+            {
+                levelName = "DefaultLevel";
+            }
+
+            var level = LevelEditor.LoadBySimpleName(levelName.ToString());
             this.Load(level);
+        }
+
+        protected override void OnLevelLoaded(Level l)
+        {
+            currentState.SetValue("CurrentLevel", l.Name);
+            if(currentState.Data.TryGetValue(nameof(Character.Inventory), out object data))
+            {
+                var inventory = data as Inventory;
+                inventory.Owner = MainCharacter.Current;
+                MainCharacter.Current.Inventory = inventory;
+            }
+            this.GameState.SaveGame(currentState, GameState.DefaultSavedGameName);
+        }
+
+        protected override void BeforeLevelUnloaded()
+        {
+            if(MainCharacter.Current != null)
+            {
+                currentState.SetValue(nameof(Character.Inventory), MainCharacter.Current.Inventory);
+                this.GameState.SaveGame(currentState, GameState.DefaultSavedGameName);
+            }
         }
 
         protected override void OnAppInitialize()

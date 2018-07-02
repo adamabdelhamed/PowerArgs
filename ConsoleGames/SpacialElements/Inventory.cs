@@ -1,5 +1,6 @@
 ﻿using PowerArgs.Cli;
-using PowerArgs.Cli.Physics;
+using PowerArgs;
+using Newtonsoft.Json;
 using System.Linq;
 
 namespace ConsoleGames
@@ -8,11 +9,15 @@ namespace ConsoleGames
 
     public class Inventory : ObservableObject
     {
-        public ObservableCollection<IInventoryItem> Items { get; private set; } = new ObservableCollection<IInventoryItem>();
+        private Lifetime itemsLifetime;
+        public ObservableCollection<IInventoryItem> Items { get => Get<ObservableCollection<IInventoryItem>>(); private set => Set(value); }  
 
-        public Character Owner { get; private set; }
+        [JsonIgnore]
+        public Character Owner { get => Get<Character>(); set => Set(value); }
 
         private Weapon _primaryWeapon;
+
+        [JsonIgnore]
         public Weapon PrimaryWeapon
         {
             get
@@ -32,6 +37,8 @@ namespace ConsoleGames
         }
 
         private Weapon _explosiveWeapon;
+
+        [JsonIgnore]
         public Weapon ExplosiveWeapon
         {
             get
@@ -50,33 +57,49 @@ namespace ConsoleGames
             }
         }
 
-        public Inventory(Character owner)
+        public Inventory()
         {
-            this.Owner = owner;
-            Items.Added.SubscribeForLifetime((item) =>
+            this.SubscribeForLifetime(nameof(Items), () =>
             {
-                if (item is Weapon)
+                itemsLifetime?.Dispose();
+                itemsLifetime = new Lifetime();
+                Items.ForEach(item => ProcessItem(item));
+                Items.Added.SubscribeForLifetime((item) => ProcessItem(item), itemsLifetime.LifetimeManager);
+
+            }, this.LifetimeManager);
+
+            this.SubscribeForLifetime(nameof(Owner), () =>
+            {
+                foreach(var item in Items.Where(i => i is Weapon).Select(i => i as Weapon))
                 {
-                    var weapon = item as Weapon;
-                    weapon.Holder = this.Owner;
-                    if (weapon.Style == WeaponStyle.Primary)
+                    item.Holder = Owner;
+                }
+            }, this.LifetimeManager);
+
+            Items = new ObservableCollection<IInventoryItem>();
+        }
+
+        private void ProcessItem(IInventoryItem item)
+        {
+            if (item is Weapon)
+            {
+                var weapon = item as Weapon;
+                weapon.Holder = this.Owner;
+                if (weapon.Style == WeaponStyle.Primary)
+                {
+                    if (PrimaryWeapon == null || PrimaryWeapon.AmmoAmount == 0)
                     {
-                        if (PrimaryWeapon == null || PrimaryWeapon.AmmoAmount == 0)
-                        {
-                            PrimaryWeapon = weapon;
-                        }
-                    }
-                    else
-                    {
-                        if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0)
-                        {
-                            ExplosiveWeapon = weapon;
-                        }
+                        PrimaryWeapon = weapon;
                     }
                 }
-
-
-            }, Lifetime.Forever);
+                else
+                {
+                    if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0)
+                    {
+                        ExplosiveWeapon = weapon;
+                    }
+                }
+            }
         }
     }
 }

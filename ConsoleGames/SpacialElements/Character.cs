@@ -10,7 +10,7 @@ namespace ConsoleGames
 
     public class Character : SpacialElement, IObservableObject, IDestructible
     {
-        public Inventory Inventory { get; private set; }  
+        public Inventory Inventory { get => observable.Get<Inventory>(); set => observable.Set(value); }  
 
 
         protected ObservableObject observable;
@@ -29,8 +29,9 @@ namespace ConsoleGames
 
         public Character()
         {
-            Inventory = new Inventory(this);
             observable = new ObservableObject(this);
+            this.SubscribeForLifetime(nameof(Inventory), () => this.Inventory.Owner = this, this.Lifetime.LifetimeManager);
+            Inventory = new Inventory();
             Speed = new SpeedTracker(this) { Bounciness = 0 };
             Speed.HitDetectionTypes.Add(typeof(Wall));
             this.ResizeTo(1, 1);

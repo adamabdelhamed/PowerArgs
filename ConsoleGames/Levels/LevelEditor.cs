@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace ConsoleGames
 {
@@ -13,13 +14,17 @@ namespace ConsoleGames
         private IEnumerable<string> LevelLibraryFilePaths => Directory.GetFiles(SavedLevelsDirectory).Where(f => f.ToLower().EndsWith(LevelFileExtension));
         private ConsoleBitmapEditor innerEditor;
         private Dictionary<Point, List<string>> tags = new Dictionary<Point, List<string>>();
-        private static string SavedLevelsDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LevelsLibrary");
+        private static string SavedLevelsDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PowerArgsGames", Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location), "LevelsLibrary");
         private string currentLevelPath;
         private bool hasUnsavedChanges = false;
         private Button saveCommand;
 
-        public static Level LoadBySimpleName(string simpleName) => Level.Deserialize(File.ReadAllText(Path.Combine(SavedLevelsDirectory, simpleName + LevelFileExtension)));
-
+        public static Level LoadBySimpleName(string simpleName)
+        {
+            var ret = Level.Deserialize(File.ReadAllText(Path.Combine(SavedLevelsDirectory, simpleName + LevelFileExtension)));
+            ret.Name = simpleName;
+            return ret;
+        }
         public LevelEditor(int levelWidth, int levelHeight, ConsoleCharacter? bg = null)
         {
             if (Directory.Exists(SavedLevelsDirectory) == false)
@@ -188,6 +193,7 @@ namespace ConsoleGames
             try
             {
                 var level = Level.Deserialize(File.ReadAllText(path));
+                level.Name = Path.GetFileNameWithoutExtension(path);
                 Load(level);
                 currentLevelPath = path;
             }

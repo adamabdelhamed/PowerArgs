@@ -15,6 +15,7 @@ namespace ConsoleGames
         private SpacetimePanel ScenePanel { get; set; }
         public SpaceTime Scene => ScenePanel.SpaceTime;
         public KeyboardInputManager KeyboardInput { get; private set; } 
+        public GameStateManager GameState { get; private set; }
 
         public int SceneWidth { get; set; } = 78;
         public int SceneHeight { get; set; } = 40;
@@ -27,17 +28,13 @@ namespace ConsoleGames
         }
 
         protected abstract SceneFactory SceneFactory { get; }
-
-        protected virtual void OnAppInitialize()
-        {
-            
-        }
-
-        protected virtual void OnAddedToScene(SpacialElement element) { }
-
-        protected virtual void OnLevelLoaded() { }
-
         protected abstract void OnSceneInitialize();
+
+
+        protected virtual void OnAppInitialize() { }
+        protected virtual void OnAddedToScene(SpacialElement element) { }
+        protected virtual void OnLevelLoaded(Level l) { }
+        protected virtual void BeforeLevelUnloaded() { }
 
         private void InitializeGame()
         {
@@ -48,6 +45,7 @@ namespace ConsoleGames
 
         public void Load(Level level)
         {
+            BeforeLevelUnloaded();
             foreach(var element in Scene.Elements)
             {
                 element.Lifetime.Dispose();
@@ -68,7 +66,7 @@ namespace ConsoleGames
                 this.Scene.Add(item);
                 OnAddedToScene(item);
             }
-            OnLevelLoaded();
+            OnLevelLoaded(level);
         }
 
 
@@ -80,6 +78,7 @@ namespace ConsoleGames
             Scene.QueueAction(OnSceneInitialize);
             Scene.Start();
             KeyboardInput = new KeyboardInputManager(Scene, this);
+            GameState = new GameStateManager();
             LayoutRoot.Add(new FramerateControl(ScenePanel));
 
         }
