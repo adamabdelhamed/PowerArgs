@@ -7,7 +7,6 @@ namespace ConsoleGames
     public class Bot : SpacialElementFunction
     {
         private List<IBotStrategy> strategies;
-        private StrategyEval currentStrategy;
         private Character me;
   
 
@@ -24,21 +23,16 @@ namespace ConsoleGames
 
         public override void Evaluate()
         {
-            var newStrategyCandidate = strategies
+            var newStrategyCandidateGroups = strategies
                  .Where(s => s.EvalGovernor.ShouldFire(Time.CurrentTime.Now))
                  .Select(s => s.EvaluateApplicability())
                  .Where(s => s.Applicability > 0)
-                 .OrderByDescending(r => r.Applicability)
-                 .SingleOrDefault();
+                 .GroupBy(r => r.Strategy.DecisionSpace);
 
-            if (newStrategyCandidate != null)
+            foreach (var category in newStrategyCandidateGroups)
             {
-                newStrategyCandidate.Strategy.Work();
-                currentStrategy = newStrategyCandidate;
-            }
-            else if(currentStrategy != null && currentStrategy.Strategy.EvalGovernor.ShouldFire(Time.CurrentTime.Now))
-            {
-                currentStrategy.Strategy.Work();
+                var bestStrategyInCategory = category.OrderByDescending(s => s.Applicability).First().Strategy;
+                bestStrategyInCategory.Work();
             }
         }
     }

@@ -7,7 +7,7 @@ namespace PowerArgs.Cli.Physics
     /// </summary>
     public class RateGovernor
     {
-        TimeSpan lastFire;
+        private TimeSpan lastFire;
 
         /// <summary>
         /// The regulation rate
@@ -18,9 +18,15 @@ namespace PowerArgs.Cli.Physics
 
         public bool ShouldFire(TimeSpan currentTime)
         {
-            if (currentTime - lastFire < Rate) return false;
-            lastFire = currentTime;
-            return true;
+            if (currentTime - lastFire < Rate)
+            {
+                return false;
+            }
+            else
+            {
+                lastFire = currentTime;
+                return true;
+            }
         }
     }
 }

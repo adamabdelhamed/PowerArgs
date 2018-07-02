@@ -99,6 +99,8 @@ namespace PowerArgs.Cli.Physics
 
         public static ILocation Center(this IRectangular rectangular) => Location.Create(rectangular.CenterX(), rectangular.CenterY());
 
+        public static ILocation TopLeft(this IRectangular rectangular) => Location.Create(rectangular.Left, rectangular.Top);
+
         public static IRectangular CopyBounds(this IRectangular rectangular) => Rectangular.Create(rectangular.Left, rectangular.Top, rectangular.Width, rectangular.Height);
 
         public static float GetOppositeAngle(float angle)

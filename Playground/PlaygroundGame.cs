@@ -12,6 +12,7 @@ namespace Playground
             new LooseWeaponReviver(),
             new EnemyReviver(),
             new PortalReviver(),
+            new WaypointReviver(),
             new WallReviver()
         });
 
