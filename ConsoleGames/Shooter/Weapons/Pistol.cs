@@ -32,19 +32,4 @@ namespace ConsoleGames.Shooter
             //SoundEffects.Instance.PlaySound("pistol");
         }
     }
-
-    public class PistolAmmo : LooseAmmo<Pistol>
-    {
-        public PistolAmmo(int amount) : base(amount) { }
-    }
-
-    [SpacialElementBinding(typeof(PistolAmmo))]
-    public class PistolAmmoRenderer : SpacialElementRenderer
-    {
-        protected override void OnPaint(ConsoleBitmap context)
-        {
-            context.Pen = new PowerArgs.ConsoleCharacter('P', foregroundColor: ConsoleColor.White, backgroundColor: ConsoleColor.Blue);
-            context.DrawPoint(0, 0);
-        }
-    }
 }

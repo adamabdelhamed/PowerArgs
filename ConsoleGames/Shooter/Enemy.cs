@@ -14,6 +14,7 @@ namespace ConsoleGames.Shooter
         {
             this.Inventory = new ShooterInventory(this);
             this.Target = MainCharacter.Current;
+            this.HealthPoints = 10;
         }
 
         public override void Evaluate()

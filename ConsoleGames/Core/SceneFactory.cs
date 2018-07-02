@@ -9,6 +9,18 @@ namespace ConsoleGames
         bool TryRevive(LevelItem item, out SpacialElement hydratedElement);
     }
 
+    public static class ItemReviverEx
+    {
+        public static string ParseTagValue(this ItemReviver reviver, string tag)
+        {
+            var splitIndex = tag.IndexOf(':');
+            if (splitIndex <= 0) throw new ArgumentException("No tag value present for tag: "+tag);
+
+            var val = tag.Substring(splitIndex + 1, tag.Length - (splitIndex + 1));
+            return val;
+        }
+    }
+
     public class SceneFactory
     {
         private List<ItemReviver> revivers;

@@ -11,18 +11,13 @@ namespace Playground
         {
             base.OnSceneInitialize();
 
-            var level = new Level()
-            {
-                Items = new System.Collections.Generic.List<LevelItem>()
-                {
-                    new LevelItem(){ X = 4, Y = 4, Width = 1, Height = 1, Tags = new List<string>(){ "main-character" } },
-                    new LevelItem(){ X = 6, Y = 6, Symbol = 'W', FG = ConsoleColor.Red, BG = ConsoleColor.Yellow, Width = 1, Height = 1,  }
-                }
-            };
+            var level = LevelEditor.LoadBySimpleName("DefaultLevel");
 
             var factory = new SceneFactory(new List<ItemReviver>()
             {
                 new MainCharacterReviver(),
+                new AmmoReviver(),
+                new EnemyReviver(),
                 new WallReviver()
             });
 
