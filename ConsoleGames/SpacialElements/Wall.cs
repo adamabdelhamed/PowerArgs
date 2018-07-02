@@ -2,6 +2,7 @@
 using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
+using System.Collections.Generic;
 
 namespace ConsoleGames
 {
@@ -45,6 +46,15 @@ namespace ConsoleGames
             }
 
             context.DrawPoint(0, 0);
+        }
+    }
+
+    public class WallReviver : ItemReviver
+    {
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
+        {
+            hydratedElement = new Wall() { Pen = new ConsoleCharacter(item.Symbol, item.FG, item.BG) };
+            return true;
         }
     }
 }
