@@ -30,7 +30,7 @@ namespace ConsoleGames
             {
                 if(matter[i].Lifetime.IsExpired == false)
                 {
-                    matter[i].MoveTo(matter[0].Left + structure[matter[i]].X, matter[0].Top + structure[matter[i]].Y);
+                    matter[i].MoveTo(matter[0].Left + structure[matter[i]].Left, matter[0].Top + structure[matter[i]].Top);
                 }
             }
         }

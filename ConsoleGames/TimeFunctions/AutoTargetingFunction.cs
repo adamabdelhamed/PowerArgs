@@ -27,7 +27,7 @@ namespace ConsoleGames
 
             foreach (var target in targets)
             {
-                var route = SpaceExtensions.CalculateLineOfSight(sourceEval(), target.Bounds.Center(), 1);
+                var route = SpaceExtensions.CalculateLineOfSight(sourceEval(), target, 1);
 
                 if (route.Obstacles.Where(o => o is Wall).Count() == 0)
                 {

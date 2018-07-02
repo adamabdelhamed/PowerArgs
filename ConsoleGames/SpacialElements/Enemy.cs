@@ -61,7 +61,10 @@ namespace ConsoleGames
                 return false;
             }
 
-            hydratedElement = new Enemy();
+            var enemy = new Enemy();
+            enemy.Inventory.Items.Add(new Pistol() { AmmoAmount = 100 });
+            hydratedElement = enemy;
+            new Bot(enemy, new List<IBotStrategy> { new FireAtWill() });
             return true;
         }
     }

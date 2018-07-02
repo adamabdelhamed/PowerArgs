@@ -17,14 +17,9 @@ namespace ConsoleGames
 
             if (canFire == false) return new StrategyEval() { Applicability = 0, Strategy = this };
 
-            // todo - Fix line of sight and then uncomment
-            /*
-            var hasLineOfSight = SpaceExtensions
-                .CalculateLineOfSight(Me, Location.Create(Target.CenterX, Target.CenterY), .5f)
-                .Obstacles.Count == 0;
-                */
 
-            var hasLineOfSight = true;
+            var hasLineOfSight = Me.CalculateLineOfSight(Me.Target, 1).Obstacles.Count == 0;
+            
             if(hasLineOfSight == false)
             {
                 return new StrategyEval() { Applicability = 0, Strategy = this };

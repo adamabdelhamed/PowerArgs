@@ -35,19 +35,19 @@ namespace PowerArgs.Cli.Physics
 
     public interface ILocation
     {
-        float X { get; }
-        float Y { get; }
+        float Left { get; }
+        float Top { get; }
     }
 
     public static class Location
     {
         private class LocationImpl : ILocation
         {
-            public float X { get; internal set; }
-            public float Y { get; internal set; }
+            public float Left { get; internal set; }
+            public float Top { get; internal set; }
         }
 
-        public static ILocation Create(float x, float y) => new LocationImpl() { X = x, Y = y };
+        public static ILocation Create(float x, float y) => new LocationImpl() { Left = x, Top = y };
     }
 
     public static class Size
@@ -80,12 +80,12 @@ namespace PowerArgs.Cli.Physics
         }
 
         public static IRectangular Create(float x, float y, float w, float h) => new Rectangular(x, y, w, h);
-        public static IRectangular Create(ILocation location, ISize size) => new Rectangular(location.X, location.Y, size.Width, size.Height);
+        public static IRectangular Create(ILocation location, ISize size) => new Rectangular(location.Left, location.Top, size.Width, size.Height);
     }
 
     public class Route
     {
-        public List<ILocation> Steps { get; private set; } = new List<ILocation>();
+        public List<IRectangular> Steps { get; private set; } = new List<IRectangular>();
         public List<IRectangular> Obstacles { get; private set; } = new List<IRectangular>();
     }
 
@@ -136,15 +136,14 @@ namespace PowerArgs.Cli.Physics
 
         public static float CalculateDistanceTo(this ILocation start, ILocation end)
         {
-            return (float)Math.Sqrt(((start.X - end.X) * (start.X - end.X)) + ((start.Y - end.Y) * (start.Y - end.Y)));
+            return (float)Math.Sqrt(((start.Left - end.Left) * (start.Left - end.Left)) + ((start.Top - end.Top) * (start.Top - end.Top)));
         }
 
-        public static Route CalculateLineOfSight(IRectangular from, ILocation to, float increment)
+        public static Route CalculateLineOfSight(this IRectangular from, IRectangular to, float increment)
         {
             Route ret = new Route();
             IRectangular current = from;
-            var dest = Rectangular.Create(to.X, to.Y, 0, 0);
-            var currentDistance = current.CalculateDistanceTo(dest);
+            var currentDistance = current.CalculateDistanceTo(to);
             var firstDistance = currentDistance;
             while (currentDistance > increment)
             {
@@ -155,11 +154,12 @@ namespace PowerArgs.Cli.Physics
                 }
 #endif
 
-                current = Rectangular.Create(MoveTowards(current.Center(), to, increment), from);
-                ret.Steps.Add(current.Center());
+                current = Rectangular.Create(MoveTowards(current.Center(), to.Center(), increment), from);
+                current = Rectangular.Create(current.Left - from.Width / 2, current.Top - from.Height / 2, from.Width, from.Height);
+                ret.Steps.Add(current);
 
                 var obstacles = SpaceTime.CurrentSpaceTime.Elements
-                    .Where(el => el.NumberOfPixelsThatOverlap(current) > 0);
+                    .Where(el => el != from && el != to &&  el.NumberOfPixelsThatOverlap(current) > 0);
 
                 foreach (var obstacle in obstacles)
                 {
@@ -169,7 +169,7 @@ namespace PowerArgs.Cli.Physics
                     }
                 }
 
-                currentDistance = current.CalculateDistanceTo(dest);
+                currentDistance = current.CalculateDistanceTo(to);
             }
 
             return ret;
@@ -179,8 +179,8 @@ namespace PowerArgs.Cli.Physics
 
         public static float CalculateAngleTo(this ILocation start, ILocation end)
         {
-            float dx = end.X - start.X;
-            float dy = end.Y - start.Y;
+            float dx = end.Left - start.Left;
+            float dy = end.Top - start.Top;
             float d = CalculateDistanceTo(start, end);
 
             if (dy == 0 && dx > 0) return 0;
@@ -251,17 +251,17 @@ namespace PowerArgs.Cli.Physics
 
         public static ILocation MoveTowards(this ILocation a, ILocation b, float distance)
         {
-            float slope = (a.Y - b.Y) / (a.X - b.X);
-            bool forward = a.X <= b.X;
-            bool up = a.Y <= b.Y;
+            float slope = (a.Top - b.Top) / (a.Left - b.Left);
+            bool forward = a.Left <= b.Left;
+            bool up = a.Top <= b.Top;
 
             float abDistance = a.CalculateDistanceTo(b);
-            double angle = Math.Asin(Math.Abs(b.Y - a.Y) / abDistance);
+            double angle = Math.Asin(Math.Abs(b.Top - a.Top) / abDistance);
             float dy = (float)Math.Abs(distance * Math.Sin(angle));
             float dx = (float)Math.Sqrt((distance * distance) - (dy * dy));
 
-            float x2 = forward ? a.X + dx : a.X - dx;
-            float y2 = up ? a.Y + dy : a.Y - dy;
+            float x2 = forward ? a.Left + dx : a.Left - dx;
+            float y2 = up ? a.Top + dy : a.Top - dy;
 
             var ret = Location.Create(x2, y2);
             return ret;
