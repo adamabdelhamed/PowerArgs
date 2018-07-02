@@ -38,6 +38,12 @@ namespace ConsoleGames
         protected override void OnPaint(ConsoleBitmap context)
         {
             context.Pen = (Element as Wall).Pen;
+
+            if(context.Pen.Value == ' ' && context.Pen.BackgroundColor == ConsoleString.DefaultBackgroundColor)
+            {
+                context.Pen = new ConsoleCharacter('W');
+            }
+
             context.DrawPoint(0, 0);
         }
     }

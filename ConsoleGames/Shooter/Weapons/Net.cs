@@ -120,7 +120,7 @@ namespace ConsoleGames.Shooter
         }
 
         [SpacialElementBinding(typeof(NetMatter))]
-        public class NetRenderer : SpacialElementRenderer
+        public class NetMatterRenderer : SpacialElementRenderer
         {
             protected override void OnPaint(ConsoleBitmap context)
             {

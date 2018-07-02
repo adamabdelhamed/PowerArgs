@@ -7,21 +7,24 @@ namespace Playground
 {
     public class PlaygroundGame : ShooterGameApp
     {
+        private SceneFactory factory = new SceneFactory(new List<ItemReviver>()
+        {
+            new MainCharacterReviver(),
+            new AmmoReviver(),
+            new EnemyReviver(),
+            new ShooterPortalReviver(),
+            new WallReviver()
+        });
+
+        protected override SceneFactory SceneFactory => factory;
+
         protected override void OnSceneInitialize()
         {
             base.OnSceneInitialize();
 
             var level = LevelEditor.LoadBySimpleName("DefaultLevel");
-
-            var factory = new SceneFactory(new List<ItemReviver>()
-            {
-                new MainCharacterReviver(),
-                new AmmoReviver(),
-                new EnemyReviver(),
-                new WallReviver()
-            });
-
-            this.Load(level, factory);
+            this.Load(level);
+ 
         }
     }
 }

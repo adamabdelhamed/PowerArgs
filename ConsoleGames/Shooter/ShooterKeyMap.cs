@@ -42,7 +42,10 @@ namespace ConsoleGames.Shooter
         {
             var ret = new KeyMap();
 
-            ret.KeyboardMap.Add(MoveUpKey, ( )=>  MainCharacter.Current?.MoveUp());
+            ret.KeyboardMap.Add(MoveUpKey, ( )=>
+            {
+                MainCharacter.Current?.MoveUp();
+            });
             ret.KeyboardMap.Add(MoveDownKey, () => MainCharacter.Current?.MoveDown());
             ret.KeyboardMap.Add(MoveLeftKey, () => MainCharacter.Current?.MoveLeft());
             ret.KeyboardMap.Add(MoveRightKey, () => MainCharacter.Current?.MoveRight());

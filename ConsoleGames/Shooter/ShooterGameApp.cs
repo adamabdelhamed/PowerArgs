@@ -1,13 +1,15 @@
 ﻿using System;
 using PowerArgs.Cli;
+using PowerArgs.Cli.Physics;
+
 namespace ConsoleGames.Shooter
 {
-    public class ShooterGameApp : GameApp
+    public abstract class ShooterGameApp : GameApp
     {
         public MainCharacter MainCharacter { get { return Get<MainCharacter>(); } private set { Set(value); } }
 
         public ShooterKeyMap KeyMap { get; private set; }
- 
+
 
         protected override void OnAppInitialize()
         {
@@ -22,17 +24,15 @@ namespace ConsoleGames.Shooter
             this.KeyboardInput.UpdateKeyboardMappings();
         }
 
-        public void Load(Level level, SceneFactory factory)
+        protected override void OnAddedToScene(SpacialElement element)
         {
-            foreach(var item in factory.InitializeScene(level))
+            if(element is MainCharacter)
             {
-                if(item is MainCharacter)
-                {
-                    this.MainCharacter = item as MainCharacter;
-                }
-                this.Scene.Add(item);
+                this.MainCharacter = element as MainCharacter;
             }
         }
+
+
 
         private void ConfigureHeadsUpDisplay()
         {

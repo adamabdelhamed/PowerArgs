@@ -24,15 +24,13 @@ namespace ConsoleGames.Shooter
     {
         public bool TryRevive(LevelItem item, out SpacialElement hydratedElement)
         {
-            var ammoTag = item.Tags.Where(testc => testc.StartsWith("ammo:")).SingleOrDefault();
-            var amountTag = item.Tags.Where(testc => testc.StartsWith("amount:")).SingleOrDefault();
-            if (ammoTag == null)
+            if (item.HasValueTag("ammo") == false || item.HasValueTag("amount") == false)
             {
                 hydratedElement = null;
                 return false;
             }
 
-            var weaponTypeName = this.ParseTagValue(ammoTag);
+            var weaponTypeName = item.GetTagValue("ammo");
             var weaponType = Type.GetType(weaponTypeName, false, true);
 
             if(weaponType == null)
@@ -50,7 +48,7 @@ namespace ConsoleGames.Shooter
                 throw new ArgumentException("Could not resolve weapon type: "+weaponTypeName);
             }
 
-            var amount = int.Parse(this.ParseTagValue(amountTag));
+            var amount = int.Parse(item.GetTagValue("amount"));
 
             var weapon = Activator.CreateInstance(weaponType) as Weapon;
             weapon.AmmoAmount = amount;

@@ -57,7 +57,10 @@ namespace ConsoleGames.Shooter
             this.Inventory = new ShooterInventory(this);
             HealthPoints = 100;
             InitializeTargeting();
-            this.Added.SubscribeForLifetime(() => Current = this, this.Lifetime.LifetimeManager);
+            this.Added.SubscribeForLifetime(() =>
+            {
+                Current = this;
+            }, this.Lifetime.LifetimeManager);
         }
 
         private void InitializeTargeting()

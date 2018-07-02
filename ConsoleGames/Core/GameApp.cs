@@ -4,6 +4,11 @@ using System;
 
 namespace ConsoleGames
 {
+    public interface IGameAppAware
+    {
+        GameApp GameApp { get; set; }
+    }
+
     public abstract class GameApp : ConsoleApp
     {
         public static GameApp CurrentGameApp => ConsoleApp.Current as GameApp;
@@ -19,10 +24,15 @@ namespace ConsoleGames
             this.QueueActionInFront(InitializeGame);
         }
 
+        protected abstract SceneFactory SceneFactory { get; }
+
         protected virtual void OnAppInitialize()
         {
             
         }
+
+        protected virtual void OnAddedToScene(SpacialElement element) { }
+
         protected abstract void OnSceneInitialize();
 
         private void InitializeGame()
@@ -32,7 +42,25 @@ namespace ConsoleGames
             OnAppInitialize();
         }
 
- 
+        public void Load(Level level)
+        {
+            foreach(var element in Scene.Elements)
+            {
+                element.Lifetime.Dispose();
+            }
+
+            foreach (var item in SceneFactory.InitializeScene(level))
+            {
+                if(item is IGameAppAware)
+                {
+                    (item as IGameAppAware).GameApp = this;
+                }
+                this.Scene.Add(item);
+                OnAddedToScene(item);
+            }
+        }
+
+
         private void ConfigureGamingArea()
         {
             var borderPanel = LayoutRoot.Add(new ConsolePanel() { Background = ConsoleColor.DarkGray, Width = SceneWidth + 2, Height = SceneHeight + 2 }).CenterHorizontally().CenterVertically();
