@@ -6,7 +6,7 @@ namespace Playground
 {
     public class PlaygroundGame : GameApp
     {
-        private SceneFactory factory = new SceneFactory(new List<ItemReviver>()
+        protected override SceneFactory SceneFactory => new SceneFactory(new List<ItemReviver>()
         {
             new MainCharacterReviver(),
             new LooseWeaponReviver(),
@@ -18,10 +18,9 @@ namespace Playground
             new WallReviver()
         });
 
-        protected override SceneFactory SceneFactory => factory;
-
         private ShooterKeys shooterKeys = new ShooterKeys();
         private GameState currentState;
+
         protected override void OnSceneInitialize()
         {
             this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
