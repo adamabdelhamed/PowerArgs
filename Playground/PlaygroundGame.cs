@@ -1,30 +1,34 @@
 ﻿using ConsoleGames;
-using ConsoleGames.Shooter;
 using System;
 using System.Collections.Generic;
-
+using PowerArgs.Cli;
 namespace Playground
 {
-    public class PlaygroundGame : ShooterGameApp
+    public class PlaygroundGame : GameApp
     {
         private SceneFactory factory = new SceneFactory(new List<ItemReviver>()
         {
             new MainCharacterReviver(),
-            new AmmoReviver(),
+            new LooseWeaponReviver(),
             new EnemyReviver(),
-            new ShooterPortalReviver(),
+            new PortalReviver(),
             new WallReviver()
         });
 
         protected override SceneFactory SceneFactory => factory;
 
+        private ShooterKeys shooterKeys = new ShooterKeys();
+
         protected override void OnSceneInitialize()
         {
-            base.OnSceneInitialize();
-
+            this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
             var level = LevelEditor.LoadBySimpleName("DefaultLevel");
             this.Load(level);
- 
+        }
+
+        protected override void OnAppInitialize()
+        {
+            var hud = LayoutRoot.Add(new HeadsUpDisplay(this, shooterKeys)).CenterHorizontally().DockToBottom();
         }
     }
 }

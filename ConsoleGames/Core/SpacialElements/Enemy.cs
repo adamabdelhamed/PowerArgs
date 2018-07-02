@@ -3,16 +3,16 @@ using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
-    public class Enemy : ShooterCharacter
+    public class Enemy : Character
     {
         public bool IsBeingTargeted { get; private set; }
 
         public Enemy()
         {
-            this.Inventory = new ShooterInventory(this);
             this.Target = MainCharacter.Current;
             this.HealthPoints = 10;
         }
@@ -47,6 +47,22 @@ namespace ConsoleGames.Shooter
                 context.Pen = new PowerArgs.ConsoleCharacter('E', (Element as Enemy).HealthPoints < 2 ? ConsoleColor.Gray : ConsoleColor.DarkRed);
             }
             context.FillRect(0, 0, Width, Height);
+        }
+    }
+
+    public class EnemyReviver : ItemReviver
+    {
+        public bool TryRevive(LevelItem item, out SpacialElement hydratedElement)
+        {
+            var enemyTag = item.Tags.Where(testc => testc.Equals("enemy")).SingleOrDefault();
+            if (enemyTag == null)
+            {
+                hydratedElement = null;
+                return false;
+            }
+
+            hydratedElement = new Enemy();
+            return true;
         }
     }
 }

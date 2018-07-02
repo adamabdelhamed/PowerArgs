@@ -1,7 +1,7 @@
 ﻿using PowerArgs.Cli.Physics;
 using System;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     [Flags]
     public enum DecisionSpace
@@ -16,7 +16,7 @@ namespace ConsoleGames.Shooter
     public interface IBotStrategy
     {
         DecisionSpace DecisionSpace { get;  }
-        ShooterCharacter Me { get; set; }
+        Character Me { get; set; }
         RateGovernor EvalGovernor { get; }
         StrategyEval EvaluateApplicability();
         void Work();

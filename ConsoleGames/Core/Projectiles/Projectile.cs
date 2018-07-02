@@ -2,7 +2,7 @@
 using PowerArgs.Cli.Physics;
 using System;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     public class Projectile : SpacialElement
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ConsoleGames.Shooter 
+namespace ConsoleGames 
 {
     public class RemoteMine : Explosive
     {

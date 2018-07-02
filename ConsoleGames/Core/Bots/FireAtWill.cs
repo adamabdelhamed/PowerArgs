@@ -1,19 +1,19 @@
 ﻿using PowerArgs.Cli.Physics;
 using System;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     public class FireAtWill : IBotStrategy
     {
-        public ShooterCharacter Me { get; set; }
+        public Character Me { get; set; }
         public RateGovernor EvalGovernor { get; } = new RateGovernor(TimeSpan.FromSeconds(1));
 
         public DecisionSpace DecisionSpace => DecisionSpace.PrimaryWeapon;
 
         public StrategyEval EvaluateApplicability()
         {
-            var canFire = (Me.Inventory as ShooterInventory).PrimaryWeapon != null &&
-                (Me.Inventory as ShooterInventory).PrimaryWeapon.AmmoAmount > 0;
+            var canFire = (Me.Inventory).PrimaryWeapon != null &&
+                (Me.Inventory).PrimaryWeapon.AmmoAmount > 0;
 
             if (canFire == false) return new StrategyEval() { Applicability = 0, Strategy = this };
 
@@ -39,7 +39,7 @@ namespace ConsoleGames.Shooter
 
         public void Work()
         {
-            (Me.Inventory as ShooterInventory).PrimaryWeapon.TryFire();
+            Me.Inventory?.PrimaryWeapon?.TryFire();
         }
     }
 }

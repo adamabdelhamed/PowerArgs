@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     public class WeaponRow
     {
@@ -15,11 +15,13 @@ namespace ConsoleGames.Shooter
 
     public class HeadsUpDisplay : ConsolePanel
     {
-        private ShooterGameApp gameApp;
+        private GameApp gameApp;
+        private ShooterKeys keyMap;
         private Label messageLabel;
         private ConsolePanel messagePanel;
-        public HeadsUpDisplay(ShooterGameApp app)
+        public HeadsUpDisplay(GameApp app, ShooterKeys keyMap)
         {
+            this.keyMap = keyMap;
             this.gameApp = app;
             this.Height = 7;
             this.Width = 45;
@@ -60,32 +62,32 @@ namespace ConsoleGames.Shooter
             }, this.LifetimeManager);
 
 
-            app.SynchronizeProxiedForLifetime(app, nameof(app.KeyMap) + "." + nameof(ShooterKeyMap.MenuKey), () =>
+            keyMap.SynchronizeProxiedForLifetime(app, nameof(ShooterKeys.MenuKey), () =>
             {
-                menuLabel.Text = $"Menu [{app.KeyMap.MenuKey}]".ToYellow();
+                menuLabel.Text = $"Menu [{keyMap.MenuKey}]".ToYellow();
             }, this.LifetimeManager);
 
-            app.SynchronizeProxiedForLifetime(app, nameof(app.KeyMap) + "." + nameof(ShooterKeyMap.TogglePauseKey), () =>
+            keyMap.SynchronizeProxiedForLifetime(app, nameof(ShooterKeys.TogglePauseKey), () =>
             {
-                pauseLabel.Text = $"Pause [{app.KeyMap.TogglePauseKey}]".ToYellow();
+                pauseLabel.Text = $"Pause [{keyMap.TogglePauseKey}]".ToYellow();
             }, this.LifetimeManager);
 
-            app.SynchronizeProxiedForLifetime(app, nameof(app.KeyMap) + "." + ObservableObject.AnyProperty, () =>
+            keyMap.SynchronizeProxiedForLifetime(app, ObservableObject.AnyProperty, () =>
             {
                 var primaryWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
-                primaryWeaponRow.Trigger = $"[{this.gameApp.KeyMap.PrimaryWeaponKey}]".ToWhite();
+                primaryWeaponRow.Trigger = $"[{keyMap.PrimaryWeaponKey}]".ToWhite();
 
                 var explosiveWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
-                explosiveWeaponRow.Trigger = $"[{this.gameApp.KeyMap.ExplosiveWeaponKey}]".ToWhite();
+                explosiveWeaponRow.Trigger = $"[{keyMap.ExplosiveWeaponKey}]".ToWhite();
 
 
-                aimLabel.Text = $"Aim[{this.gameApp.KeyMap.AimToggleKey}]".ToGray();
+                aimLabel.Text = $"Aim[{keyMap.AimToggleKey}]".ToGray();
             }, this.LifetimeManager);
 
-            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(ShooterInventory.PrimaryWeapon), () =>
+            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(Inventory.PrimaryWeapon), () =>
             {
                 var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
-                var weaponName = (app.MainCharacter?.Inventory as ShooterInventory)?.PrimaryWeapon?.GetType().Name;
+                var weaponName = (app.MainCharacter?.Inventory)?.PrimaryWeapon?.GetType().Name;
                 row.Weapon = weaponName != null ? weaponName.ToWhite() : "none".ToRed();
                 if (weaponName != null)
                 {
@@ -96,18 +98,18 @@ namespace ConsoleGames.Shooter
             app.SynchronizeProxiedForLifetime(app,
                 nameof(app.MainCharacter) + "." +
                 nameof(MainCharacter.Inventory) + "." +
-                nameof(ShooterInventory.PrimaryWeapon) + "." +
+                nameof(Inventory.PrimaryWeapon) + "." +
                 nameof(Weapon.AmmoAmount), () =>
                 {
                     var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
-                    var ammo = (app.MainCharacter?.Inventory as ShooterInventory)?.PrimaryWeapon?.AmmoAmount;
+                    var ammo = (app.MainCharacter?.Inventory)?.PrimaryWeapon?.AmmoAmount;
                     row.Amount = ammo.HasValue ? FormatAmmoAmmount(ammo.Value) : "empty".ToRed();
                 }, this.LifetimeManager);
 
-            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(ShooterInventory.ExplosiveWeapon), () =>
+            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(Inventory.ExplosiveWeapon), () =>
             {
                 var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
-                var weaponName = (app.MainCharacter?.Inventory as ShooterInventory)?.ExplosiveWeapon?.GetType().Name;
+                var weaponName = (app.MainCharacter?.Inventory)?.ExplosiveWeapon?.GetType().Name;
                 row.Weapon = weaponName != null ? weaponName.ToWhite() : "none".ToRed();
                 if (weaponName != null)
                 {
@@ -118,11 +120,11 @@ namespace ConsoleGames.Shooter
             app.SynchronizeProxiedForLifetime(app,
                 nameof(app.MainCharacter) + "." +
                 nameof(MainCharacter.Inventory) + "." +
-                nameof(ShooterInventory.ExplosiveWeapon) + "." +
+                nameof(Inventory.ExplosiveWeapon) + "." +
                 nameof(Weapon.AmmoAmount), () =>
                 {
                     var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
-                    var ammo = (app.MainCharacter?.Inventory as ShooterInventory)?.ExplosiveWeapon?.AmmoAmount;
+                    var ammo = (app.MainCharacter?.Inventory)?.ExplosiveWeapon?.AmmoAmount;
                     row.Amount = ammo.HasValue ? FormatAmmoAmmount(ammo.Value) : "empty".ToRed();
                 }, this.LifetimeManager);
 

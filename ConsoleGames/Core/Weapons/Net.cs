@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using PowerArgs.Cli;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     public class Net : Weapon
     {

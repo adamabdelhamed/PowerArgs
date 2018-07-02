@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     public enum AimMode
     {
@@ -12,7 +12,7 @@ namespace ConsoleGames.Shooter
         Manual
     }
 
-    public class MainCharacter : ShooterCharacter
+    public class MainCharacter : Character
     {
 
 
@@ -54,7 +54,6 @@ namespace ConsoleGames.Shooter
 
         public MainCharacter()
         {
-            this.Inventory = new ShooterInventory(this);
             HealthPoints = 100;
             InitializeTargeting();
             this.Added.SubscribeForLifetime(() =>
@@ -76,7 +75,7 @@ namespace ConsoleGames.Shooter
                     this.Target.SizeOrPositionChanged.Fire();
                 }
 
-                this.Target = target as ShooterCharacter;
+                this.Target = target as Character;
 
                 if (this.Target != null && this.Target.Lifetime.IsExpired == false)
                 {
@@ -208,6 +207,21 @@ namespace ConsoleGames.Shooter
         {
             context.Pen = new PowerArgs.ConsoleCharacter('X', ConsoleColor.Magenta);
             context.DrawPoint(0, 0);
+        }
+    }
+
+    public class MainCharacterReviver : ItemReviver
+    {
+        public bool TryRevive(LevelItem item, out SpacialElement hydratedElement)
+        {
+            if (item.Tags.Contains("main-character") == false)
+            {
+                hydratedElement = null;
+                return false;
+            }
+
+            hydratedElement = new MainCharacter();
+            return true;
         }
     }
 }

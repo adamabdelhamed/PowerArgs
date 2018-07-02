@@ -14,11 +14,9 @@ namespace ConsoleGames
 
     public class KeyboardInputManager : ObservableObject
     {
-        public Event ReWired { get; private set; } = new Event();
         public SpaceTime Scene { get; private set; }
         public GameApp App { get; private set; }
-
-        public KeyMap KeyMap { get; set; } = new KeyMap();
+        public KeyMap KeyMap { get => Get<KeyMap>(); set => Set(value); }
 
         private Lifetime currentMappingLifetime;
  
@@ -28,9 +26,10 @@ namespace ConsoleGames
             this.Scene = scene;
             this.App = app;
             this.KeyMap = new KeyMap();
+            this.SubscribeForLifetime(nameof(KeyMap), UpdateKeyboardMappings, this.LifetimeManager);
         }
 
-        public void UpdateKeyboardMappings()
+        private void UpdateKeyboardMappings()
         {
             if (currentMappingLifetime != null)
             {
@@ -53,15 +52,16 @@ namespace ConsoleGames
             {
                 App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, ConsoleModifiers.Alt, QueueToScene(KeyMap.AltKeyboardMap[key]), currentMappingLifetime.LifetimeManager);
             }
-
-            ReWired.Fire();
         }
 
         private Action QueueToScene(Action a)
         {
             return () =>
             {
-                Scene.QueueAction(() => { a(); });
+                Scene.QueueAction(() => 
+                {
+                    a();
+                });
             };
         }
     }

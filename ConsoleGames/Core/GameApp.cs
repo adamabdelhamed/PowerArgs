@@ -19,6 +19,8 @@ namespace ConsoleGames
         public int SceneWidth { get; set; } = 78;
         public int SceneHeight { get; set; } = 40;
 
+        public MainCharacter MainCharacter { get { return Get<MainCharacter>(); } private set { Set(value); } }
+
         public GameApp()
         {
             this.QueueActionInFront(InitializeGame);
@@ -32,6 +34,8 @@ namespace ConsoleGames
         }
 
         protected virtual void OnAddedToScene(SpacialElement element) { }
+
+        protected virtual void OnLevelLoaded() { }
 
         protected abstract void OnSceneInitialize();
 
@@ -55,9 +59,16 @@ namespace ConsoleGames
                 {
                     (item as IGameAppAware).GameApp = this;
                 }
+
+                if (item is MainCharacter)
+                {
+                    this.MainCharacter = item as MainCharacter;
+                }
+
                 this.Scene.Add(item);
                 OnAddedToScene(item);
             }
+            OnLevelLoaded();
         }
 
 
@@ -67,7 +78,6 @@ namespace ConsoleGames
             ScenePanel = borderPanel.Add(new SpacetimePanel(SceneWidth, SceneHeight)).Fill(padding: new Thickness(1, 1, 1, 1));
             ScenePanel.Background = ConsoleColor.Black;
             Scene.QueueAction(OnSceneInitialize);
-
             Scene.Start();
             KeyboardInput = new KeyboardInputManager(Scene, this);
             LayoutRoot.Add(new FramerateControl(ScenePanel));

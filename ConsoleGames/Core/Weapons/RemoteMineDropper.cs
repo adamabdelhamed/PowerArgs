@@ -1,6 +1,6 @@
 ﻿using PowerArgs.Cli.Physics;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     public class RemoteMineDropper : Weapon
     {

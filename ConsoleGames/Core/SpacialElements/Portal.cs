@@ -9,8 +9,6 @@ namespace ConsoleGames
     {
         public GameApp GameApp { get; set; }
 
-        public Event<Character> TouchedByCharacter { get; private set; } = new Event<Character>();
-
         public Portal()
         {
             this.ResizeTo(1, 1);
@@ -19,8 +17,18 @@ namespace ConsoleGames
         public override void Evaluate() => SpaceTime.CurrentSpaceTime.Elements
             .Where(c => c is Character && c.Touches(this))
             .Select(c => c as Character)
-            .ForEach(c => TouchedByCharacter.Fire(c));
-        
+            .ForEach(c => OnTouchedByCharacter(c));
+
+        public string Destination { get; set; }
+ 
+        private void OnTouchedByCharacter(Character c)
+        {
+            if (c == MainCharacter.Current)
+            {
+                var level = LevelEditor.LoadBySimpleName(Destination);
+                GameApp.Load(level);
+            }
+        }
     }
 
     [SpacialElementBinding(typeof(Portal))]
@@ -29,6 +37,21 @@ namespace ConsoleGames
         public PortalRenderer()
         {
             Background = ConsoleColor.Magenta;
+        }
+    }
+
+    public class PortalReviver : ItemReviver
+    {
+        public bool TryRevive(LevelItem item, out SpacialElement hydratedElement)
+        {
+            if (item.HasValueTag("destination") == false)
+            {
+                hydratedElement = null;
+                return false;
+            }
+
+            hydratedElement = new Portal() { Destination = item.GetTagValue("destination") };
+            return true;
         }
     }
 }

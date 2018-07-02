@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     public class Bot : SpacialElementFunction
     {
         private List<IBotStrategy> strategies;
         private StrategyEval currentStrategy;
-        private ShooterCharacter me;
+        private Character me;
   
 
-        public Bot(ShooterCharacter toAnimate, IEnumerable<IBotStrategy> strategies) : base(toAnimate)
+        public Bot(Character toAnimate, IEnumerable<IBotStrategy> strategies) : base(toAnimate)
         {
             this.strategies = strategies.ToList();
             this.me = toAnimate;

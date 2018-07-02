@@ -10,7 +10,7 @@ namespace ConsoleGames
 
     public class Character : SpacialElement, IObservableObject, IDestructible
     {
-        public Inventory Inventory { get; protected set; }
+        public Inventory Inventory { get; private set; }  
 
 
         protected ObservableObject observable;
@@ -19,7 +19,7 @@ namespace ConsoleGames
         public void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
         public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
         public void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
-
+        public Character Target { get; set; }
 
         public SpeedTracker Speed { get; set; }
 
@@ -29,6 +29,7 @@ namespace ConsoleGames
 
         public Character()
         {
+            Inventory = new Inventory(this);
             observable = new ObservableObject(this);
             Speed = new SpeedTracker(this) { Bounciness = 0 };
             Speed.HitDetectionTypes.Add(typeof(Wall));

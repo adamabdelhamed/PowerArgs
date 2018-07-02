@@ -1,6 +1,6 @@
 ﻿using PowerArgs.Cli;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     public enum WeaponStyle
     {
@@ -10,7 +10,7 @@ namespace ConsoleGames.Shooter
 
     public abstract class Weapon : ObservableObject, IInventoryItem
     {
-        public ShooterCharacter Holder { get; set; }
+        public Character Holder { get; set; }
 
         public abstract WeaponStyle Style { get; }
 

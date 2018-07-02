@@ -3,7 +3,7 @@ using PowerArgs.Cli.Physics;
 using System;
 using System.Linq;
 
-namespace ConsoleGames.Shooter
+namespace ConsoleGames
 {
     public class AutoTargetingFunction : TimeFunction
     {
