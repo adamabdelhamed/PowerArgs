@@ -144,10 +144,6 @@ namespace ArgsTests.CLI.Observability
             Assert.AreEqual(0, triggerCount);
             observable.SomeEvent.Fire();
             Assert.AreEqual(1, triggerCount);
-
-            observable.SomeEvent.Unsubscribe(handler);
-            observable.SomeEvent.Fire();
-            Assert.AreEqual(1, triggerCount);
         }
 
         [TestMethod]

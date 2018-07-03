@@ -67,7 +67,7 @@ namespace PowerArgs.Cli
 
         private Action pumpAction;
 
-        public Deferred Deferred { get; set; }
+        internal Deferred Deferred { get; set; }
 
         /// <summary>
         /// Creates a pump message with the given action and idempotency id.  
@@ -130,6 +130,10 @@ namespace PowerArgs.Cli
         /// </summary>
         public Event<PumpExceptionArgs> PumpException { get; private set; } = new Event<PumpExceptionArgs>();
 
+
+        /// <summary>
+        /// An event that fires when the console window has been resized by the user
+        /// </summary>
         public Event WindowResized { get; private set; } = new Event();
 
         /// <summary>
@@ -171,7 +175,6 @@ namespace PowerArgs.Cli
         /// Creates a new message pump given a console to use for keyboard input
         /// </summary>
         /// <param name="console">the console to use for keyboard input</param>
-        /// <param name="keyInputHandler">a key event handler to use to process keyboard input</param>
         public CliMessagePump(IConsoleProvider console)
         {
             this.console = console;
@@ -201,7 +204,7 @@ namespace PowerArgs.Cli
         /// Queues the given message for processing on the pump thread
         /// </summary>
         /// <param name="pumpMessage">the message that will be processed in order on the pump thread</param>
-        public void QueueAction(PumpMessage pumpMessage)
+        protected void QueueAction(PumpMessage pumpMessage)
         {
             lock (pumpMessageQueue)
             {
@@ -216,13 +219,24 @@ namespace PowerArgs.Cli
             }
         }
 
-        protected void QueueActionInFront(Action a)
+        /// <summary>
+        /// Puts the given action into the work queue, but skips it to the front of the queue
+        /// </summary>
+        /// <param name="a">the action code to run</param>
+        /// <returns>a promise that will resolve when the work is done</returns>
+        protected Promise QueueActionInFront(Action a)
         {
-            var pumpMessage = new PumpMessage(a);
+            var d = Deferred.Create();
+            var pumpMessage = new PumpMessage(a) { Deferred = d };
             QueueActionInFront(pumpMessage);
+            return d.Promise;
         }
 
-        protected void QueueActionInFront(PumpMessage pumpMessage)
+        /// <summary>
+        /// Puts the given action into the work queue, but skips it to the front of the queue
+        /// </summary>
+        /// <param name="pumpMessage">the message to process</param>
+        private void QueueActionInFront(PumpMessage pumpMessage)
         {
             lock (pumpMessageQueue)
             {
@@ -230,20 +244,38 @@ namespace PowerArgs.Cli
             }
         }
 
-        public void QueueAsyncAction(Task t, Action<Task> action)
+        /// <summary>
+        /// Queues up work that is to be scheduled only after the given task completes
+        /// </summary>
+        /// <param name="t">the task to await before scheduling the work</param>
+        /// <param name="action">the work that will be placed in the work queue once the given task has completed</param>
+        /// <returns>A promise that will resolve once the scheduled work completes</returns>
+        public Promise QueueAsyncAction(Task t, Action<Task> action)
         {
+            var d = Deferred.Create();
             t.ContinueWith((tPrime) =>
             {
-                QueueAction(() => { action(tPrime); });
+                QueueAction(new PumpMessage(() => { action(tPrime); }) { Deferred = d });
             });
+            return d.Promise;
         }
 
-        public void QueueAsyncAction<TResult>(Task<TResult> t, Action<Task<TResult>> action)
+        /// <summary>
+        /// Queues up work that is to be scheduled only after the given task completes
+        /// </summary>
+        /// <typeparam name="TResult">The type of object produced by the task to wait for</typeparam>
+        /// <param name="t">the task to await before scheduling the work</param>
+        /// <param name="action">the work that will be placed in the work queue once the given task has completed</param>
+        /// <returns>A promise that will resolve once the scheduled work completes</returns>
+        public Promise QueueAsyncAction<TResult>(Task<TResult> t, Action<Task<TResult>> action)
         {
+            var d = Deferred.Create();
             t.ContinueWith((tPrime) =>
             {
-                QueueAction(()=> { action(tPrime); });
+                QueueAction(new PumpMessage(() => { action(tPrime); }) { Deferred = d });
             });
+
+            return d.Promise;
         }
 
         /// <summary>
@@ -268,6 +300,11 @@ namespace PowerArgs.Cli
             return new TimerDisposer(new Timer((o) => QueueAction(a), null, (int)period.TotalMilliseconds,Timeout.Infinite), timerHandles);
         }
 
+        /// <summary>
+        /// Updates a previously scheduled interval
+        /// </summary>
+        /// <param name="handle">the handle that was returned by a previous call to setInterval</param>
+        /// <param name="newInterval">the new interval</param>
         public void ChangeInterval(IDisposable handle, TimeSpan newInterval)
         {
             var disposer = handle as TimerDisposer;
@@ -294,6 +331,9 @@ namespace PowerArgs.Cli
             return runDeferred.Promise;
         }
 
+        /// <summary>
+        /// Stops the pump thread
+        /// </summary>
         public void Stop()
         {
             if (IsRunning)
