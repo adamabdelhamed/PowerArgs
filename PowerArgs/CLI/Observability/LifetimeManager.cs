@@ -3,7 +3,13 @@ using System.Collections.Generic;
 
 namespace PowerArgs.Cli
 {
-    public class LifetimeManager
+    public interface ILifetimeManager
+    {
+        Promise OnDisposed(Action cleanupCode);
+        Promise OnDisposed(IDisposable cleanupCode);
+    }
+
+    public class LifetimeManager : ILifetimeManager
     {
         private List<IDisposable> _managedItems;
 
@@ -20,14 +26,17 @@ namespace PowerArgs.Cli
             _managedItems = new List<IDisposable>();
         }
 
-        public void Manage(IDisposable item)
-        {
-            _managedItems.Add(item);
-        }
+        public Promise OnDisposed(IDisposable item) => OnDisposed(() => item.Dispose());
 
-        public void Manage(Action cleanupCode)
+        public Promise OnDisposed(Action cleanupCode)
         {
-            _managedItems.Add(new Subscription(cleanupCode));
+            var d = Deferred.Create();
+            _managedItems.Add(new Subscription(()=>
+            {
+                cleanupCode();
+                d.Resolve();
+            }));
+            return d.Promise;
         }
     }
 }

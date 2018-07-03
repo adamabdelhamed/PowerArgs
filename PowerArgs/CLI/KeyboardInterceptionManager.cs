@@ -28,7 +28,7 @@ namespace PowerArgs.Cli
         {
             PushInternal();
             var ret = new Lifetime();
-            ret.LifetimeManager.Manage(new Subscription(() =>
+            ret.OnDisposed(new Subscription(() =>
             {
                 PopInternal();
             }));
@@ -112,9 +112,9 @@ namespace PowerArgs.Cli
         }
 
 
-        public void PushForLifetime(ConsoleKey key, ConsoleModifiers? modifier, Action<ConsoleKeyInfo> handler, LifetimeManager manager)
+        public void PushForLifetime(ConsoleKey key, ConsoleModifiers? modifier, Action<ConsoleKeyInfo> handler, ILifetimeManager manager)
         {
-           manager.Manage(PushUnmanaged(key, modifier, handler));
+           manager.OnDisposed(PushUnmanaged(key, modifier, handler));
         }
 
         public Subscription PushUnmanaged(ConsoleKey key, ConsoleModifiers? modifier, Action handler)
@@ -122,7 +122,7 @@ namespace PowerArgs.Cli
             return PushUnmanaged(key, modifier, (k) => { handler(); });
         }
 
-        public void PushForLifetime(ConsoleKey key, ConsoleModifiers? modifier, Action handler, LifetimeManager manager)
+        public void PushForLifetime(ConsoleKey key, ConsoleModifiers? modifier, Action handler, ILifetimeManager manager)
         {
             PushForLifetime(key, modifier, (k) => { handler(); }, manager);
         }

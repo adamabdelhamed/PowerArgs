@@ -124,7 +124,7 @@ namespace PowerArgs.Cli
                     ConsoleApp.AssertAppThread(Application);
                     Application.Paint();
                 }
-            }, this.LifetimeManager);
+            }, this);
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace PowerArgs.Cli
 
             hasBeenAddedToVisualTree = true;
             AddedToVisualTree.Fire();
-            SubscribeForLifetime(ObservableObject.AnyProperty, Application.Paint, this.LifetimeManager);
+            SubscribeForLifetime(ObservableObject.AnyProperty, Application.Paint, this);
         }
 
         internal void BeforeAddedToVisualTreeInternal()

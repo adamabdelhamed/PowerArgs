@@ -24,11 +24,11 @@
             }
             else
             {
-                target.Added.SubscribeForLifetime(() => { Time.CurrentTime.Add(this); }, target.Lifetime.LifetimeManager);
+                target.Added.SubscribeForLifetime(() => { Time.CurrentTime.Add(this); }, target.Lifetime);
             }
 
 
-            Element.Lifetime.LifetimeManager.Manage(()=>
+            Element.Lifetime.OnDisposed(()=>
             {
                 if (this.Lifetime.IsExpired == false)
                 {

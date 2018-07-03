@@ -83,10 +83,10 @@ namespace PowerArgs.Cli
         {
             Height = 1;
             this.Foreground = Theme.DefaultTheme.ButtonColor;
-            this.SynchronizeForLifetime(nameof(Text), UpdateWidth, this.LifetimeManager);
-            this.SynchronizeForLifetime(nameof(Shortcut), UpdateWidth, this.LifetimeManager);
-            this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
-            this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
+            this.SynchronizeForLifetime(nameof(Text), UpdateWidth, this);
+            this.SynchronizeForLifetime(nameof(Shortcut), UpdateWidth, this);
+            this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
+            this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this);
         }
 
         private void UpdateWidth()
@@ -126,7 +126,7 @@ namespace PowerArgs.Cli
             if (Shortcut != null && shortcutRegistered == false && Application != null)
             {
                 shortcutRegistered = true;
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(Shortcut.Key, Shortcut.Modifier, Click, this.LifetimeManager);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(Shortcut.Key, Shortcut.Modifier, Click, this);
             }
         }
 

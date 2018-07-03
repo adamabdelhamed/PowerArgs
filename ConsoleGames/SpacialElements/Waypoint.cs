@@ -17,7 +17,7 @@ namespace ConsoleGames
             if(mostRecentlyVisited.ContainsKey(character) == false)
             {
                 mostRecentlyVisited.Add(character, null);
-                character.Lifetime.LifetimeManager.Manage(() => { mostRecentlyVisited.Remove(character); });
+                character.Lifetime.OnDisposed(() => { mostRecentlyVisited.Remove(character); });
             }
 
             if(character.CalculateLineOfSight(destination, increment).Obstacles.Where(o => o is Waypoint == false).Count() == 0)

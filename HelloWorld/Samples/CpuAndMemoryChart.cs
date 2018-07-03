@@ -42,7 +42,7 @@ namespace HelloWorld.Samples
         {
             InitSeries();
             InitAxes();
-            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
+            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
         }
 
         private void InitAxes()
@@ -104,8 +104,8 @@ namespace HelloWorld.Samples
             var running = true;
 
             // Stop watching CPU and memory when the application stops or this control is removed
-            Application.Stopped.SubscribeForLifetime(() => { running = false; }, Application.LifetimeManager);
-            this.RemovedFromVisualTree.SubscribeForLifetime(() => { running = false; }, this.LifetimeManager);
+            Application.Stopped.SubscribeForLifetime(() => { running = false; }, Application);
+            this.RemovedFromVisualTree.SubscribeForLifetime(() => { running = false; }, this);
 
             while (running)
             {

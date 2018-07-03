@@ -178,7 +178,7 @@ namespace PowerArgs.Cli.Physics
             timeFunction.InternalState.AttachedTime = this;
             toAdd.Add(timeFunction);
 
-            timeFunction.Lifetime.LifetimeManager.Manage(() =>
+            timeFunction.Lifetime.OnDisposed(() =>
             {
                 toRemove.Add(timeFunction);
                 TimeFunctionRemoved.Fire(timeFunction);

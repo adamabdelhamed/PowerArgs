@@ -17,16 +17,16 @@ namespace HelloWorld.Samples
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.Key).ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.UseHttps).ToConsoleString(Theme.DefaultTheme.H1Color)));
             Grid.NoDataMessage = "No storage accounts";
-            Grid.KeyInputReceived.SubscribeForLifetime(HandleGridDeleteKeyPress, this.LifetimeManager);
+            Grid.KeyInputReceived.SubscribeForLifetime(HandleGridDeleteKeyPress, this);
             addButton = CommandBar.Add(new Button() { Text = "Add account".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });
             deleteButton = CommandBar.Add(new Button() { Text = "Forget account".ToConsoleString(), CanFocus=false, Shortcut = new KeyboardShortcut(ConsoleKey.F, ConsoleModifiers.Alt) });
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
 
-            addButton.Pressed.SubscribeForLifetime(AddStorageAccount, LifetimeManager);
-            deleteButton.Pressed.SubscribeForLifetime(ForgetSelectedStorageAccount, LifetimeManager);
+            addButton.Pressed.SubscribeForLifetime(AddStorageAccount, this);
+            deleteButton.Pressed.SubscribeForLifetime(ForgetSelectedStorageAccount, this);
 
             Grid.SelectedItemActivated += NavigateToStorageAccount;
-            Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedItemChanged, this.LifetimeManager);
+            Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedItemChanged, this);
         }
  
 

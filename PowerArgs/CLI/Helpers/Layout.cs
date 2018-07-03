@@ -72,7 +72,7 @@ namespace PowerArgs.Cli
                 var gap = parent.Height - child.Height;
                 var y = gap / 2;
                 child.Y = Math.Max(0, y);
-            }, parent.LifetimeManager);
+            }, parent);
 
             return child;
         }
@@ -89,8 +89,8 @@ namespace PowerArgs.Cli
                 var x = gap / 2;
                 child.X = Math.Max(0,x);
             };
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
-            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
 
             return child;
@@ -115,7 +115,7 @@ namespace PowerArgs.Cli
 
                 child.Bounds = newBounds;
             };
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
             return child;
         }
@@ -144,7 +144,7 @@ namespace PowerArgs.Cli
 
                 child.Bounds = new Rectangle(newLeft, newTop, newW, newH);
             };
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
             return child;
         }
@@ -159,7 +159,7 @@ namespace PowerArgs.Cli
 
                 child.Bounds = new Rectangle(effectivePadding.Left, child.Y, parent.Width - (effectivePadding.Right+effectivePadding.Left), child.Height);
             };
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
             return child;
         }
@@ -172,7 +172,7 @@ namespace PowerArgs.Cli
             {
                 child.Bounds = new Rectangle(child.X, effectivePadding.Top, child.Width, parent.Height - (effectivePadding.Top + effectivePadding.Bottom));
             };
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
             return child;
         }
@@ -186,8 +186,8 @@ namespace PowerArgs.Cli
                 child.Y = parent.Height - child.Height - padding;
             };
 
-            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
             return child;
         }
@@ -200,8 +200,8 @@ namespace PowerArgs.Cli
                 child.Y = padding;
             };
 
-            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
             return child;
         }
@@ -216,8 +216,8 @@ namespace PowerArgs.Cli
                 child.X = parent.Width - child.Width - padding;
             };
 
-            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
             return child;
         }
@@ -230,8 +230,8 @@ namespace PowerArgs.Cli
                 child.X = padding;
             };
 
-            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent.LifetimeManager);
+            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
             return child;
         }

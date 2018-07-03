@@ -57,7 +57,7 @@ namespace ArgsTests.CLI.Observability
                 observable.SubscribeForLifetime(nameof(SomeObservable.Name), () =>
                 {
                     triggerCount++;
-                }, lifetime.LifetimeManager);
+                }, lifetime);
 
                 Assert.AreEqual(0, triggerCount);
                 observable.Name = "Some value";
@@ -78,7 +78,7 @@ namespace ArgsTests.CLI.Observability
             using (var lifetime = new Lifetime())
             {
 
-                observable.SubscribeForLifetime(nameof(SomeObservable.Name), () => { triggerCount++; }, lifetime.LifetimeManager);
+                observable.SubscribeForLifetime(nameof(SomeObservable.Name), () => { triggerCount++; }, lifetime);
 
                 Assert.AreEqual(0, triggerCount);
                 observable.Name = "Some value";
@@ -97,7 +97,7 @@ namespace ArgsTests.CLI.Observability
 
             using (var lifetime = new Lifetime())
             {
-                observable.SubscribeForLifetime(ObservableObject.AnyProperty, () => { numChanged++; }, lifetime.LifetimeManager);
+                observable.SubscribeForLifetime(ObservableObject.AnyProperty, () => { numChanged++; }, lifetime);
 
                 Assert.AreEqual(0, numChanged);
                 observable.Name = "Foo";
@@ -174,7 +174,7 @@ namespace ArgsTests.CLI.Observability
 
             using (var lifetime = new Lifetime())
             {
-                observable.SomeEvent.SubscribeForLifetime(() => { triggerCount++; }, lifetime.LifetimeManager);
+                observable.SomeEvent.SubscribeForLifetime(() => { triggerCount++; }, lifetime);
 
                 Assert.AreEqual(0, triggerCount);
                 observable.SomeEvent.Fire();
@@ -195,7 +195,7 @@ namespace ArgsTests.CLI.Observability
             using (var lifetime = new Lifetime())
             {
 
-                observable.SomeEvent.SubscribeForLifetime(() => { triggerCount++; }, lifetime.LifetimeManager);
+                observable.SomeEvent.SubscribeForLifetime(() => { triggerCount++; }, lifetime);
 
                 Assert.AreEqual(0, triggerCount);
                 observable.SomeEvent.Fire();
@@ -221,7 +221,7 @@ namespace ArgsTests.CLI.Observability
 
             using (var lifetime = new Lifetime())
             {
-                observable.Strings.SynchronizeForLifetime((s) => { addCalls++; }, (s) => { removeCalls++; }, () => { changedCalls++; }, lifetime.LifetimeManager);
+                observable.Strings.SynchronizeForLifetime((s) => { addCalls++; }, (s) => { removeCalls++; }, () => { changedCalls++; }, lifetime);
 
                 Assert.AreEqual(2, addCalls);
                 Assert.AreEqual(0, removeCalls);
@@ -271,7 +271,7 @@ namespace ArgsTests.CLI.Observability
                 }, 
                 () =>
                 {
-                }, observable.LifetimeManager);
+                }, observable);
 
             var newItem = new SomeOtherObservable();
 

@@ -31,11 +31,11 @@ namespace PowerArgs.Cli
             cursor = frame.Add(new PixelControl() { IsVisible = false, X = 1, Y = 1, Value = new ConsoleCharacter('C', ConsoleColor.White, ConsoleColor.Cyan) }); // place at top left
             frame.CanFocus = true;
 
-            frame.Focused.SubscribeForLifetime(() => cursor.IsVisible = true, cursor.LifetimeManager);
-            frame.Unfocused.SubscribeForLifetime(() => cursor.IsVisible = false, cursor.LifetimeManager);
+            frame.Focused.SubscribeForLifetime(() => cursor.IsVisible = true, cursor);
+            frame.Unfocused.SubscribeForLifetime(() => cursor.IsVisible = false, cursor);
             cursor.CanFocus = false;
 
-            frame.KeyInputReceived.SubscribeForLifetime((key) => HandleCursorKeyPress(key), cursor.LifetimeManager);
+            frame.KeyInputReceived.SubscribeForLifetime((key) => HandleCursorKeyPress(key), cursor);
 
             var changeFgButton = commandBar.Add(new Button() { Shortcut = new KeyboardShortcut(ConsoleKey.F, ConsoleModifiers.Alt) });
 
@@ -45,7 +45,7 @@ namespace PowerArgs.Cli
                 {
                     currentFg = newColor.HasValue ? newColor.Value : currentFg;   
                 });
-            }, this.LifetimeManager);
+            }, this);
 
             var changeBgButton = commandBar.Add(new Button() { Shortcut = new KeyboardShortcut(ConsoleKey.B, ConsoleModifiers.Alt) });
 
@@ -55,18 +55,18 @@ namespace PowerArgs.Cli
                 {
                     currentBg = newColor.HasValue ? newColor.Value : currentBg;
                 });
-            }, this.LifetimeManager);
+            }, this);
 
             this.SynchronizeForLifetime(nameof(currentFg), () =>
             {
                 var displayColor = currentFg == this.Background ? this.Foreground : currentFg;
                 changeFgButton.Text = "FG: ".ToConsoleString() + currentFg.ToString().ToConsoleString(displayColor);
-            }, this.LifetimeManager);
+            }, this);
             this.SynchronizeForLifetime(nameof(currentBg), () =>
             {
                 var displayColor = currentBg == this.Background ? this.Foreground : currentBg;
                 changeBgButton.Text = "BG: ".ToConsoleString() + currentBg.ToString().ToConsoleString(displayColor);
-            }, this.LifetimeManager);
+            }, this);
 
             frame.AddedToVisualTree.SubscribeOnce(()=>
             {

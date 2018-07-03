@@ -17,7 +17,7 @@ namespace PowerArgs.Cli
                 {
                     activationHandler();
                 }
-            }, this.LifetimeManager);
+            }, this);
         }
  
     }
@@ -27,7 +27,7 @@ namespace PowerArgs.Cli
         {
             this.Height = 1;
             this.CanFocus = false;
-            AddedToVisualTree.SubscribeForLifetime(Compose, this.LifetimeManager);
+            AddedToVisualTree.SubscribeForLifetime(Compose, this);
         }
 
         internal void Compose()

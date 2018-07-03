@@ -15,7 +15,7 @@ namespace PowerArgs.Cli
             this.scrollablePanel = Add(new ScrollablePanel()).Fill();
             operationsStackPanel = scrollablePanel.ScrollableContent.Add(new StackPanel() { Orientation = Orientation.Vertical, AutoSize=true }).FillHorizontally();
             noNotificationsLabel = Add(new Label() { Text = "No notifications".ToConsoleString(), X=1, Y=1 });
-            manager.Operations.SynchronizeForLifetime(Operations_Added, Operations_Removed, Operations_Changed, this.LifetimeManager);
+            manager.Operations.SynchronizeForLifetime(Operations_Added, Operations_Removed, Operations_Changed, this);
         }
  
         private void Operations_Changed()

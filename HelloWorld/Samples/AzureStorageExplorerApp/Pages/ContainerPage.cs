@@ -28,9 +28,9 @@ namespace HelloWorld.Samples
             deleteButton = CommandBar.Add(new Button() { Text = "Delete blob".ToConsoleString(), CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null) });
             openButton = CommandBar.Add(new Button() { Text = "Open blob".ToConsoleString(), CanFocus = false, Shortcut = new KeyboardShortcut(ConsoleKey.O, ConsoleModifiers.Alt) });
 
-            uploadButton.Pressed.SubscribeForLifetime(UploadBlob, LifetimeManager);
-            deleteButton.Pressed.SubscribeForLifetime(DeleteSelectedBlob, LifetimeManager);
-            openButton.Pressed.SubscribeForLifetime(OpenSelectedBlob, LifetimeManager);
+            uploadButton.Pressed.SubscribeForLifetime(UploadBlob, this);
+            deleteButton.Pressed.SubscribeForLifetime(DeleteSelectedBlob, this);
+            openButton.Pressed.SubscribeForLifetime(OpenSelectedBlob, this);
 
             Grid.PropertyResolver = (o, prop) =>
             {
@@ -50,7 +50,7 @@ namespace HelloWorld.Samples
 
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
 
-            Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedItemChanged, this.LifetimeManager);
+            Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedItemChanged, this);
         }
  
 

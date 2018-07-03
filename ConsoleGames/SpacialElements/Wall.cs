@@ -11,9 +11,9 @@ namespace ConsoleGames
         protected ObservableObject observable;
         public bool SuppressEqualChanges { get; set; }
         public IDisposable SubscribeUnmanaged(string propertyName, Action handler) => observable.SubscribeUnmanaged(propertyName, handler);
-        public void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
+        public void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
         public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
-        public void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
+        public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
 
         public ConsoleCharacter Pen { get; set; } = new ConsoleCharacter(' ', ConsoleColor.White);
 
@@ -29,7 +29,7 @@ namespace ConsoleGames
             HealthPoints = 20;
             ResizeTo(1, 1);
 
-            observable.SubscribeForLifetime(nameof(HealthPoints), this.SizeOrPositionChanged.Fire, this.Lifetime.LifetimeManager);
+            observable.SubscribeForLifetime(nameof(HealthPoints), this.SizeOrPositionChanged.Fire, this.Lifetime);
         }
     }
 

@@ -42,7 +42,7 @@ namespace PowerArgs.Cli
             s.Write(new byte[sizeof(long)], 0, sizeof(long)); // write an empty space for the total time
 
 
-            this.LifetimeManager.Manage(this.WriteEnd);
+            this.OnDisposed(this.WriteEnd);
         }
 
         /// <summary>

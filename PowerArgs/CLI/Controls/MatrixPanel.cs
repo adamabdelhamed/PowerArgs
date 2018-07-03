@@ -7,12 +7,12 @@ namespace PowerArgs.Cli
         private static Random r = new Random();
         public MatrixPanel()
         {
-            this.AddedToVisualTree.SubscribeForLifetime(Added, this.LifetimeManager); 
+            this.AddedToVisualTree.SubscribeForLifetime(Added, this); 
         }
 
         private void Added()
         {
-            LifetimeManager.Manage(Application.SetInterval(() =>
+            this.OnDisposed(Application.SetInterval(() =>
             {
                 var fore = r.NextDouble() < .4;
                 var pixel = Add(new PixelControl()
@@ -24,7 +24,7 @@ namespace PowerArgs.Cli
                     X = r.Next(0, Width)
                 });
 
-                LifetimeManager.Manage(Application.SetInterval(() =>
+                this.OnDisposed(Application.SetInterval(() =>
                 {
                     if (pixel.Y < Height)
                     {

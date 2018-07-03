@@ -3,16 +3,23 @@ using System.Collections.Generic;
 
 namespace PowerArgs.Cli
 {
-    
-    public class Lifetime : Disposable
+    /// <summary>
+    /// An object that has a beginning and and end  that can be used to define the lifespan of event and observable subscriptions.
+    /// </summary>
+    public class Lifetime : Disposable, ILifetimeManager
     {
         private LifetimeManager _manager;
 
-
         private static Lifetime forever = new Lifetime();
 
-        public static LifetimeManager Forever => forever.LifetimeManager;
+        /// <summary>
+        /// The forever lifetime manager that will never end. Any subscriptions you intend to keep forever should use this lifetime so it's easy to spot leaks.
+        /// </summary>
+        public static LifetimeManager Forever => forever._manager;
 
+        /// <summary>
+        /// If true then this lifetime has already ended
+        /// </summary>
         public bool IsExpired
         {
             get
@@ -20,27 +27,14 @@ namespace PowerArgs.Cli
                 return _manager == null;
             }
         }
-
-        public LifetimeManager LifetimeManager
-        {
-            get
-            {
-                if (_manager == null)
-                {
-                    throw new ObjectDisposedException("The lifetime has expired");
-                }
-                return _manager;
-            }
-            set
-            {
-                _manager = value;
-            }
-        }
-
+        
         public Lifetime()
         {
-            LifetimeManager = new LifetimeManager();
+            _manager = new LifetimeManager();
         }
+
+        public Promise OnDisposed(Action cleanupCode) => _manager.OnDisposed(cleanupCode);
+        public Promise OnDisposed(IDisposable cleanupCode) => _manager.OnDisposed(cleanupCode);
 
         public static Lifetime EarliestOf(params Lifetime[] others)
         {
@@ -52,13 +46,13 @@ namespace PowerArgs.Cli
             Lifetime ret = new Lifetime();
             foreach (var other in others)
             {
-                other.LifetimeManager.Manage(new Subscription(() =>
+                other._manager.OnDisposed(() =>
                 {
                     if(ret.IsExpired == false)
                     {
                         ret.Dispose();
                     }
-                }));
+                });
             }
             return ret;
         }
@@ -66,23 +60,23 @@ namespace PowerArgs.Cli
         public Lifetime CreateChildLifetime()
         {
             var ret = new Lifetime();
-            LifetimeManager.Manage(new Subscription(()=>
+            _manager.OnDisposed(()=>
             {
                 if(ret.IsExpired == false)
                 {
                     ret.Dispose();
                 }
-            }));
+            });
             return ret;
         }
 
         protected override void DisposeManagedResources()
         {
-            foreach (var item in LifetimeManager.ManagedItems)
+            foreach (var item in _manager.ManagedItems)
             {
                 item.Dispose();
             }
-            LifetimeManager = null;
+            _manager = null;
         }
     }
 }

@@ -67,14 +67,14 @@ namespace ConsoleGames
             this.Added.SubscribeForLifetime(() =>
             {
                 Current = this;
-            }, this.Lifetime.LifetimeManager);
+            }, this.Lifetime);
         }
 
         private void InitializeTargeting()
         {
             Targeting = new AutoTargetingFunction(() => this.Bounds, t => t is Enemy);
-            Added.SubscribeForLifetime(() => { Time.CurrentTime.Add(Targeting); }, this.Lifetime.LifetimeManager);
-            this.Lifetime.LifetimeManager.Manage(Targeting.Lifetime.Dispose);
+            Added.SubscribeForLifetime(() => { Time.CurrentTime.Add(Targeting); }, this.Lifetime);
+            this.Lifetime.OnDisposed(Targeting.Lifetime.Dispose);
 
             Targeting.TargetChanged.SubscribeForLifetime((target) =>
             {
@@ -89,7 +89,7 @@ namespace ConsoleGames
                 {
                     this.Target.SizeOrPositionChanged.Fire();
                 }
-            }, this.Lifetime.LifetimeManager);
+            }, this.Lifetime);
         }
 
         public void ToggleFreeAim()

@@ -227,14 +227,14 @@ namespace PowerArgs.Cli.Physics
             Time.AssertTimeThread();
 #endif
             enablementLifetime = new Lifetime();
-            enablementLifetime.LifetimeManager.Manage(() => { enablementLifetime = null; });
+            enablementLifetime.OnDisposed(() => { enablementLifetime = null; });
             foreach (var element in SpaceTime.CurrentSpaceTime.Elements)
             {
                 ConnectToElement(element);
             }
 
             SpaceTime.CurrentSpaceTime.SpacialElementAdded
-                .SubscribeForLifetime((element) => ConnectToElement(element), enablementLifetime.LifetimeManager);
+                .SubscribeForLifetime((element) => ConnectToElement(element), enablementLifetime);
         }
 
         private void Disable()
@@ -249,7 +249,7 @@ namespace PowerArgs.Cli.Physics
         {
             added.Add(element);
 
-            element.Lifetime.LifetimeManager.Manage(() =>
+            element.Lifetime.OnDisposed(() =>
             {
                 removed.Add(element);
             });
@@ -261,7 +261,7 @@ namespace PowerArgs.Cli.Physics
                     changed.Add(element);
                     element.InternalSpacialState.Changed = true;
                 }
-            }, Lifetime.EarliestOf(enablementLifetime, element.Lifetime).LifetimeManager);
+            }, Lifetime.EarliestOf(enablementLifetime, element.Lifetime));
         }
     }
 }

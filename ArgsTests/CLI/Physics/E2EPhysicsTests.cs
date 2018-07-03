@@ -54,7 +54,7 @@ namespace ArgsTests.CLI.Physics
                 target = SpaceTime.CurrentSpaceTime.Add(new SpacialElement(1, 1, w - 2, 1));
                 var seekerV = new SpeedTracker(seeker);
                 var seekerFunc = new Seeker(seeker, target, seekerV, 5) { RemoveWhenReached = true };
-                seekerFunc.Lifetime.LifetimeManager.Manage(() =>
+                seekerFunc.Lifetime.OnDisposed(() =>
                 {
                     panel.SpaceTime.Stop();
                 });

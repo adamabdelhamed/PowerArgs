@@ -58,7 +58,7 @@ namespace ArgsTests.CLI
                 form.Height = console.Height;
                 var oldProvider = ConsoleProvider.Current;
                 form.Controls.Add(console);
-                app.Stopped.SubscribeForLifetime(() => { Application.Exit(); }, app.LifetimeManager);
+                app.Stopped.SubscribeForLifetime(() => { Application.Exit(); }, app);
                 var task = app.Start();
 
                 Task.Factory.StartNew(input);

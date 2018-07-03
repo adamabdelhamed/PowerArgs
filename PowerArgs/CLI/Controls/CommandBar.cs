@@ -7,7 +7,7 @@ namespace PowerArgs.Cli
         public CommandBar()
         {
             this.Height = 1;
-            this.Controls.SynchronizeForLifetime(Commands_Added, Commands_Removed, () => { }, this.LifetimeManager);
+            this.Controls.SynchronizeForLifetime(Commands_Added, Commands_Removed, () => { }, this);
         }
 
         private void Commands_Added(ConsoleControl c)

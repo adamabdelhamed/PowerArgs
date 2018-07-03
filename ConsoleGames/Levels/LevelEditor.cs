@@ -45,7 +45,7 @@ namespace ConsoleGames
             }
 
             innerEditor = Add(new ConsoleBitmapEditor(currentLevel != null ? currentLevel.Width : Level.DefaultWidth, currentLevel != null ? currentLevel.Height : Level.DefaultHeight));
-            innerEditor.BitmapChanged.SubscribeForLifetime(() => hasUnsavedChanges = true, innerEditor.LifetimeManager);
+            innerEditor.BitmapChanged.SubscribeForLifetime(() => hasUnsavedChanges = true, innerEditor);
             this.Width = innerEditor.Width;
             this.Height = innerEditor.Height;
 
@@ -71,7 +71,7 @@ namespace ConsoleGames
                         currentLevelPath = null;
                     });
                 }
-            }, this.LifetimeManager);
+            }, this);
 
             openCommand.Pressed.SubscribeForLifetime(() =>
             {
@@ -86,7 +86,7 @@ namespace ConsoleGames
                         Open();
                     });
                 }
-            }, this.LifetimeManager);
+            }, this);
 
 
             saveCommand.Pressed.SubscribeForLifetime(() =>
@@ -103,7 +103,7 @@ namespace ConsoleGames
                     saveAsCommand.Pressed.Fire();
                 }
 
-            }, this.LifetimeManager);
+            }, this);
 
 
             saveAsCommand.Pressed.SubscribeForLifetime(() =>
@@ -113,7 +113,7 @@ namespace ConsoleGames
                     currentLevelPath = Path.Combine(SavedLevelsDirectory, val.ToString() + LevelFileExtension);
                     saveCommand.Pressed.Fire();
                 }, initialValue: currentLevelPath != null ? Path.GetFileNameWithoutExtension(currentLevelPath).ToConsoleString() : ConsoleString.Empty);
-            }, this.LifetimeManager);
+            }, this);
 
             discardCommand.Pressed.SubscribeForLifetime(() =>
             {
@@ -128,7 +128,7 @@ namespace ConsoleGames
                         ConfigueEditor();
                     }
                 });
-            }, this.LifetimeManager);
+            }, this);
 
             tagCommand.Pressed.SubscribeForLifetime(() =>
             {
@@ -147,7 +147,7 @@ namespace ConsoleGames
                     tagsForPosition.AddRange(split);
                 },
                 initialValue: tagsString.ToConsoleString());
-            }, this.LifetimeManager);
+            }, this);
             tags.Clear();
         }
 

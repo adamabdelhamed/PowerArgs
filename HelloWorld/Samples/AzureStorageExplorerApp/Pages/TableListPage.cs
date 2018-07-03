@@ -18,16 +18,16 @@ namespace HelloWorld.Samples
             Grid.NoDataMessage = "No tables";
             Grid.NoVisibleColumnsMessage = "Loading...";
             addButton = CommandBar.Add(new Button() { Text = "Add table".ToConsoleString() });
-            addButton.Pressed.SubscribeForLifetime(AddTable, LifetimeManager);
+            addButton.Pressed.SubscribeForLifetime(AddTable, this);
 
             deleteButton = CommandBar.Add(new Button() { Text = "Delete table".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.Delete, null), CanFocus = false });
-            deleteButton.Pressed.SubscribeForLifetime(DeleteSelectedTable, LifetimeManager);
+            deleteButton.Pressed.SubscribeForLifetime(DeleteSelectedTable, this);
 
             
             Grid.SelectedItemActivated += NavigateToTable;
 
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
-            Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedItemChanged, this.LifetimeManager);
+            Grid.SubscribeForLifetime(nameof(Grid.SelectedItem), SelectedItemChanged, this);
         }
 
         private void NavigateToTable()

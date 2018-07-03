@@ -26,9 +26,9 @@ namespace PowerArgs.Cli
         public ConsolePanel()
         {
             Controls = new ObservableCollection<ConsoleControl>();
-            SynchronizeForLifetime(nameof(Id), () => { Controls.Id = Id; }, LifetimeManager);
-            Controls.Added.SubscribeForLifetime((c) => { c.Parent = this; }, LifetimeManager);
-            Controls.Removed.SubscribeForLifetime((c) => { c.Parent = null; }, LifetimeManager);
+            SynchronizeForLifetime(nameof(Id), () => { Controls.Id = Id; }, this);
+            Controls.Added.SubscribeForLifetime((c) => { c.Parent = this; }, this);
+            Controls.Removed.SubscribeForLifetime((c) => { c.Parent = null; }, this);
             this.CanFocus = false;
         }
 

@@ -121,27 +121,27 @@ namespace PowerArgs.Cli
             var buttonBar = Add(new StackPanel() { CanFocus =false, Height=1, Orientation = Orientation.Horizontal }).FillHorizontally().DockToBottom();
 
             seekToBeginningButton = buttonBar.Add(new Button() { Text = "<<".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.Home), CanFocus = false });
-            seekToBeginningButton.Pressed.SubscribeForLifetime(SeekToBeginningButtonPressed, this.LifetimeManager);
+            seekToBeginningButton.Pressed.SubscribeForLifetime(SeekToBeginningButtonPressed, this);
 
             seekBack10SButton = buttonBar.Add(new Button() { Shortcut = new KeyboardShortcut(ConsoleKey.LeftArrow), CanFocus = false });
-            seekBack10SButton.Pressed.SubscribeForLifetime(Rewind, this.LifetimeManager);
+            seekBack10SButton.Pressed.SubscribeForLifetime(Rewind, this);
 
             playButton = buttonBar.Add(new Button() { Text = "".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.P), CanFocus = false });
-            playButton.Pressed.SubscribeForLifetime(PlayPressed, this.LifetimeManager);
+            playButton.Pressed.SubscribeForLifetime(PlayPressed, this);
 
             seekForward10SButton = buttonBar.Add(new Button() { Shortcut = new KeyboardShortcut(ConsoleKey.RightArrow), CanFocus = false });
-            seekForward10SButton.Pressed.SubscribeForLifetime(FastForward, this.LifetimeManager);
+            seekForward10SButton.Pressed.SubscribeForLifetime(FastForward, this);
 
             seekToEndButton = buttonBar.Add(new Button() { Text = ">>".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.End), CanFocus = false });
-            seekToEndButton.Pressed.SubscribeForLifetime(SeekToEndButtonPressed, this.LifetimeManager);
+            seekToEndButton.Pressed.SubscribeForLifetime(SeekToEndButtonPressed, this);
 
-            this.SubscribeForLifetime(nameof(State), StateChanged, this.LifetimeManager);
+            this.SubscribeForLifetime(nameof(State), StateChanged, this);
 
             this.SynchronizeForLifetime(nameof(RewindAndFastForwardIncrement), () =>
             {
                 seekBack10SButton.Text = $"< {RewindAndFastForwardIncrement.TotalSeconds}s".ToConsoleString();
                 seekForward10SButton.Text = $"{RewindAndFastForwardIncrement.TotalSeconds}s >".ToConsoleString();
-            }, this.LifetimeManager);
+            }, this);
 
             State = PlayerState.NotLoaded;
         }
@@ -285,7 +285,7 @@ namespace PowerArgs.Cli
 
                 // start a play loop for as long as the state remains unchanged
                 this.playLifetime = this.GetPropertyValueLifetime(nameof(State));
-                playLifetime.LifetimeManager.Manage(Application.SetInterval(() =>
+                playLifetime.OnDisposed(Application.SetInterval(() =>
                 {
                     if(State != PlayerState.Playing)
                     {

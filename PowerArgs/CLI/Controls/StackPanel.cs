@@ -42,9 +42,9 @@ namespace PowerArgs.Cli
         /// </summary>
         public StackPanel()
         {
-            SubscribeForLifetime(nameof(Bounds), RedoLayout, this.LifetimeManager);
-            SubscribeForLifetime(nameof(Margin), RedoLayout, this.LifetimeManager);
-            Controls.Added.SubscribeForLifetime(Controls_Added, this.LifetimeManager);
+            SubscribeForLifetime(nameof(Bounds), RedoLayout, this);
+            SubscribeForLifetime(nameof(Margin), RedoLayout, this);
+            Controls.Added.SubscribeForLifetime(Controls_Added, this);
         }
 
         private void Controls_Added(ConsoleControl obj)

@@ -19,7 +19,7 @@ namespace PowerArgs.Cli.Physics
             this.accelleration = accelleration;
             IsSeeking = true;
             Governor.Rate = TimeSpan.FromSeconds(.1);
-            Seekee.Lifetime.LifetimeManager.Manage(() => { this.Lifetime.Dispose(); });
+            Seekee.Lifetime.OnDisposed(() => { this.Lifetime.Dispose(); });
         }
 
         public override void Initialize()

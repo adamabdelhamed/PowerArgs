@@ -26,7 +26,7 @@ namespace ConsoleGames
             this.Scene = scene;
             this.App = app;
             this.KeyMap = new KeyMap();
-            this.SubscribeForLifetime(nameof(KeyMap), UpdateKeyboardMappings, this.LifetimeManager);
+            this.SubscribeForLifetime(nameof(KeyMap), UpdateKeyboardMappings, this);
         }
 
         private void UpdateKeyboardMappings()
@@ -40,17 +40,17 @@ namespace ConsoleGames
 
             foreach (var key in KeyMap.KeyboardMap.Keys)
             {
-                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, null, QueueToScene(KeyMap.KeyboardMap[key]), currentMappingLifetime.LifetimeManager);
+                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, null, QueueToScene(KeyMap.KeyboardMap[key]), currentMappingLifetime);
             }
 
             foreach (var key in KeyMap.ShiftKeyboardMap.Keys)
             {
-                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, ConsoleModifiers.Shift, QueueToScene(KeyMap.ShiftKeyboardMap[key]), currentMappingLifetime.LifetimeManager);
+                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, ConsoleModifiers.Shift, QueueToScene(KeyMap.ShiftKeyboardMap[key]), currentMappingLifetime);
             }
 
             foreach (var key in KeyMap.AltKeyboardMap.Keys)
             {
-                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, ConsoleModifiers.Alt, QueueToScene(KeyMap.AltKeyboardMap[key]), currentMappingLifetime.LifetimeManager);
+                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, ConsoleModifiers.Alt, QueueToScene(KeyMap.AltKeyboardMap[key]), currentMappingLifetime);
             }
         }
 

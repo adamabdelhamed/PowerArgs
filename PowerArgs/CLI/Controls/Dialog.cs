@@ -32,10 +32,10 @@ namespace PowerArgs.Cli
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
             AllowEscapeToCancel = true;
             closeButton = Add(new Button() { Text = "Close (ESC)".ToConsoleString(),Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
-            closeButton.Pressed.SubscribeForLifetime(Escape, this.LifetimeManager);
-            BeforeAddedToVisualTree.SubscribeForLifetime(OnBeforeAddedToVisualTree, this.LifetimeManager);
-            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
-            RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this.LifetimeManager);
+            closeButton.Pressed.SubscribeForLifetime(Escape, this);
+            BeforeAddedToVisualTree.SubscribeForLifetime(OnBeforeAddedToVisualTree, this);
+            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
+            RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this);
         }
 
         public Promise Show()
@@ -43,7 +43,7 @@ namespace PowerArgs.Cli
             var deferred = Deferred.Create();
             ConsoleApp.AssertAppThread();
             ConsoleApp.Current.LayoutRoot.Add(this);
-            RemovedFromVisualTree.SubscribeForLifetime(deferred.Resolve, this.LifetimeManager);
+            RemovedFromVisualTree.SubscribeForLifetime(deferred.Resolve, this);
             return deferred.Promise;
         }
 
@@ -51,7 +51,7 @@ namespace PowerArgs.Cli
         {
             Application.FocusManager.Push();
             myFocusStackDepth = Application.FocusManager.StackDepth;
-            Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, Escape,LifetimeManager );
+            Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, Escape, this );
         }
 
         private void OnAddedToVisualTree()
@@ -84,7 +84,7 @@ namespace PowerArgs.Cli
                 {
                     closeButton.Background = Application.Theme.H1Color;
                 }
-            }, this.LifetimeManager);
+            }, this);
 
         }
 
@@ -145,7 +145,7 @@ namespace PowerArgs.Cli
             Dialog dialog = new Dialog(dialogContent);
             dialog.MaxHeight = maxHeight;
             dialog.AllowEscapeToCancel = allowEscapeToCancel;
-            dialog.Cancelled.SubscribeForLifetime(() => { resultCallback(null); }, dialog.LifetimeManager);
+            dialog.Cancelled.SubscribeForLifetime(() => { resultCallback(null); }, dialog);
 
             ScrollablePanel messagePanel = dialogContent.Add(new ScrollablePanel()).Fill(padding: new Thickness(0, 0, 1, 3));
             Label messageLabel = messagePanel.ScrollableContent.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Text = message }).FillHorizontally(padding: new Thickness(3,3,0,0) );
@@ -161,7 +161,7 @@ namespace PowerArgs.Cli
                 {
                     ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
                     resultCallback(myButtonInfo);
-                }, dialog.LifetimeManager);
+                }, dialog);
                 buttonPanel.Controls.Add(b);
                 firstButton = firstButton ?? b;
             }
@@ -234,7 +234,7 @@ namespace PowerArgs.Cli
             {
                deferred.Resolve(result);
 
-            }, dialog.LifetimeManager);
+            }, dialog);
 
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
             return deferred.Promise;
@@ -271,7 +271,7 @@ namespace PowerArgs.Cli
             var dialog = new Dialog(content);
             dialog.MaxHeight = maxHeight;
             dialog.AllowEscapeToCancel = allowEscapeToCancel;
-            dialog.Cancelled.SubscribeForLifetime(() => { if (cancelCallback != null) cancelCallback(); }, dialog.LifetimeManager);
+            dialog.Cancelled.SubscribeForLifetime(() => { if (cancelCallback != null) cancelCallback(); }, dialog);
             
             Label messageLabel = content.Add(new Label() { Text = message,  X = 2, Y = 2 });
             if (inputBox == null)
@@ -287,7 +287,7 @@ namespace PowerArgs.Cli
             content.Add(inputBox).CenterHorizontally();
             inputBox.Y = 4;
 
-            content.SynchronizeForLifetime(nameof(Bounds), () => { inputBox.Width = content.Width - 4; }, content.LifetimeManager);
+            content.SynchronizeForLifetime(nameof(Bounds), () => { inputBox.Width = content.Width - 4; }, content);
 
             inputBox.KeyInputReceived.SubscribeForLifetime((k) =>
             {
@@ -296,7 +296,7 @@ namespace PowerArgs.Cli
                     ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
                     resultCallback(inputBox.Value);
                 }
-            }, inputBox.LifetimeManager);
+            }, inputBox);
 
             ConsoleApp.Current.LayoutRoot.Controls.Add(dialog);
             inputBox.TryFocus();

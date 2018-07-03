@@ -132,8 +132,8 @@ namespace PowerArgs.Cli
             ViewModel = new LineChartViewModel();
 
             YAxisLeftOffset = 14;
-            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
-            KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
+            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
+            KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this);
         }
 
         private void OnAddedToVisualTree()
@@ -147,7 +147,7 @@ namespace PowerArgs.Cli
             XAxisValueFormatter = XAxisValueFormatter ?? ((d) => { return new ConsoleString(string.Format("{0:0,0.0}", d), Foreground, Background); });
             YAxisValueFormatter = YAxisValueFormatter ?? ((d) => { return new ConsoleString("" + string.Format("{0:0,0.0}", d), Foreground, Background); });
 
-            ViewModel.SubscribeForLifetime(ObservableObject.AnyProperty, Application.Paint, this.LifetimeManager);
+            ViewModel.SubscribeForLifetime(ObservableObject.AnyProperty, Application.Paint, this);
         }
 
         private void OnKeyInputReceived(ConsoleKeyInfo info)

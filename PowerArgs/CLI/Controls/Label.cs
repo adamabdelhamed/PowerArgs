@@ -73,11 +73,11 @@ namespace PowerArgs.Cli
             this.CanFocus = false;
             lines = new List<List<ConsoleCharacter>>();
 
-            this.SubscribeForLifetime(nameof(Text), HandleTextChanged, this.LifetimeManager);
-            this.SubscribeForLifetime(nameof(Mode), HandleTextChanged, this.LifetimeManager);
-            this.SubscribeForLifetime(nameof(MaxHeight), HandleTextChanged, this.LifetimeManager);
-            this.SubscribeForLifetime(nameof(MaxWidth), HandleTextChanged, this.LifetimeManager);
-            this.SynchronizeForLifetime(nameof(Bounds), HandleTextChanged, this.LifetimeManager);
+            this.SubscribeForLifetime(nameof(Text), HandleTextChanged, this);
+            this.SubscribeForLifetime(nameof(Mode), HandleTextChanged, this);
+            this.SubscribeForLifetime(nameof(MaxHeight), HandleTextChanged, this);
+            this.SubscribeForLifetime(nameof(MaxWidth), HandleTextChanged, this);
+            this.SynchronizeForLifetime(nameof(Bounds), HandleTextChanged, this);
         }
 
         private void HandleTextChanged()

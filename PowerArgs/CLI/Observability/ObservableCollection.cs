@@ -52,7 +52,7 @@ namespace PowerArgs.Cli
             membershipLifetimes = new Dictionary<T, Lifetime>();
         }
 
-        public void SynchronizeForLifetime(Action<T> addAction, Action<T> removeAction, Action changedAction, LifetimeManager manager)
+        public void SynchronizeForLifetime(Action<T> addAction, Action<T> removeAction, Action changedAction, ILifetimeManager manager)
         {
             Added.SubscribeForLifetime(addAction, manager);
             Removed.SubscribeForLifetime(removeAction, manager);
@@ -90,9 +90,9 @@ namespace PowerArgs.Cli
             itemLifetime.Dispose();
         }
 
-        public LifetimeManager GetMembershipLifetime(T item)
+        public ILifetimeManager GetMembershipLifetime(T item)
         {
-            return membershipLifetimes[item].LifetimeManager;
+            return membershipLifetimes[item];
         }
 
         internal void FireBeforeAdded(T item)

@@ -26,7 +26,7 @@ namespace ArgsTests.CLI.Controls
             app.Stopping.SubscribeForLifetime(() =>
             {
                 result = testCli.Buffer.ToString();
-            }, app.LifetimeManager);
+            }, app);
             
             testCli.Input.Enqueue(new ConsoleKeyInfo('*', ConsoleKey.Escape, false, false, false));
             task.Wait();

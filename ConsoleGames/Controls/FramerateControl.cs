@@ -17,12 +17,12 @@ namespace ConsoleGames
             sceneFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             renderFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             paintFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
-            AddedToVisualTree.SubscribeForLifetime(SetupPolling, this.LifetimeManager);
+            AddedToVisualTree.SubscribeForLifetime(SetupPolling, this);
         }
 
         private void SetupPolling()
         {
-            Application.LifetimeManager.Manage(Application.SetInterval(() =>
+            Application.OnDisposed(Application.SetInterval(() =>
             {
                 nowControl.Text = $"{scene.SpaceTime.Now.TotalSeconds}".ToConsoleString();
                 sceneFPSLabel.Text = $"TODO scene frames per second".ToConsoleString();

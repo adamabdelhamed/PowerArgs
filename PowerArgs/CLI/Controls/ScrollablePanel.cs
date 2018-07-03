@@ -67,16 +67,16 @@ namespace PowerArgs.Cli
             verticalScrollbar = Add(new Scrollbar(Orientation.Vertical) { Width = 1 }).DockToRight();
             horizontalScrollbar = Add(new Scrollbar(Orientation.Horizontal) { Height = 1 }).DockToBottom();
 
-            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
-            RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this.LifetimeManager);
+            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
+            RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this);
         }
 
         private void OnAddedToVisualTree()
         {
             focusSubscription = Application.FocusManager.SubscribeUnmanaged(nameof(FocusManager.FocusedControl), FocusChanged);
-            SynchronizeForLifetime(nameof(HorizontalScrollUnits), UpdateScrollbars, this.LifetimeManager);
-            SynchronizeForLifetime(nameof(VerticalScrollUnits), UpdateScrollbars, this.LifetimeManager);
-            ScrollableContent.Controls.SynchronizeForLifetime(ScrollableControls_Added, (c)=> { }, () => { }, this.LifetimeManager);
+            SynchronizeForLifetime(nameof(HorizontalScrollUnits), UpdateScrollbars, this);
+            SynchronizeForLifetime(nameof(VerticalScrollUnits), UpdateScrollbars, this);
+            ScrollableContent.Controls.SynchronizeForLifetime(ScrollableControls_Added, (c)=> { }, () => { }, this);
         }
 
         private void OnRemovedFromVisualTree()
@@ -86,7 +86,7 @@ namespace PowerArgs.Cli
 
         private void ScrollableControls_Added(ConsoleControl c)
         {
-            c.SubscribeForLifetime(nameof(Bounds), UpdateScrollbars, c.LifetimeManager);
+            c.SubscribeForLifetime(nameof(Bounds), UpdateScrollbars, c);
         }
         private void UpdateScrollbars()
         {
@@ -224,7 +224,7 @@ namespace PowerArgs.Cli
         {
             this.orientation = orientation;
             Background = ConsoleColor.DarkGray;
-            KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
+            KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this);
         }
 
         protected override void OnPaint(ConsoleBitmap context)

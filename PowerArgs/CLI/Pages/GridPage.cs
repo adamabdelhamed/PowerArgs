@@ -48,7 +48,7 @@ namespace PowerArgs.Cli
 
         protected override void OnLoad()
         {
-            this.SynchronizeForLifetime(nameof(Bounds), HandleResize, this.LifetimeManager);
+            this.SynchronizeForLifetime(nameof(Bounds), HandleResize, this);
             FilterTextBox.TryFocus();
         }
     }

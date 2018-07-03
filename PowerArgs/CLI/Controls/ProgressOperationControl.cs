@@ -45,7 +45,7 @@ namespace PowerArgs.Cli
                     manager.Operations.Remove(operation);
                     app.FocusManager.TryMoveFocus();
                 }
-            }, this.LifetimeManager);
+            }, this);
 
      
             actionPanel = messageAndOperationsPanel.Add(new StackPanel() { Orientation = Orientation.Horizontal, Height = 1, Margin = 2 }).FillHorizontally(messageAndOperationsPanel);
@@ -60,18 +60,18 @@ namespace PowerArgs.Cli
                 BindActionToActionPanel(action);
             }
 
-            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
+            AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
         }
 
         private void OnAddedToVisualTree()
         {
-            Operation.Actions.Added.SubscribeForLifetime(Actions_Added, this.LifetimeManager);
-            Operation.Actions.Removed.SubscribeForLifetime(Actions_Removed, this.LifetimeManager);
+            Operation.Actions.Added.SubscribeForLifetime(Actions_Added, this);
+            Operation.Actions.Removed.SubscribeForLifetime(Actions_Removed, this);
 
             Operation.SynchronizeForLifetime(nameof(ProgressOperation.Message), () =>
             {
                 messageLabel.Text = Operation.Message;
-            }, this.LifetimeManager);
+            }, this);
 
             Operation.SynchronizeForLifetime(nameof(ProgressOperation.State), () =>
             {
@@ -104,7 +104,7 @@ namespace PowerArgs.Cli
                     spinner.IsSpinning = false;
                     spinner.Value = new ConsoleCharacter('?', backgroundColor: ConsoleColor.Gray);
                 }
-            }, this.LifetimeManager);
+            }, this);
 
         }
 
@@ -125,7 +125,7 @@ namespace PowerArgs.Cli
         private void BindActionToActionPanel(ProgressOperationAction action)
         {
             var button = actionPanel.Add(new Button() { Text = action.DisplayName, Tag = action });
-            button.Pressed.SubscribeForLifetime(action.Action, button.LifetimeManager);
+            button.Pressed.SubscribeForLifetime(action.Action, button);
         }
 
         private void UnbindActionToActionPanel(ProgressOperationAction action)

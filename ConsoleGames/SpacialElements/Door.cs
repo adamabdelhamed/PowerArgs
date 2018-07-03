@@ -52,8 +52,8 @@ namespace ConsoleGames
             Added.SubscribeForLifetime(() =>
             {
                 this.IsOpen = this.IsOpen;
-            }, this.Lifetime.LifetimeManager);
-            Lifetime.LifetimeManager.Manage(() => FindCieling().ForEach(c => c.Lifetime.Dispose()));
+            }, this.Lifetime);
+            Lifetime.OnDisposed(() => FindCieling().ForEach(c => c.Lifetime.Dispose()));
         }
 
         public List<Ceiling> FindCieling()

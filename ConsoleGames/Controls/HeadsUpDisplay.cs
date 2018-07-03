@@ -59,18 +59,18 @@ namespace ConsoleGames
             {
                 var hp = app.MainCharacter?.HealthPoints;
                 hpValue.Text = hp.HasValue ? FormatHPValue(hp.Value) : "unknown".ToRed();
-            }, this.LifetimeManager);
+            }, this);
 
 
             keyMap.SynchronizeProxiedForLifetime(app, nameof(ShooterKeys.MenuKey), () =>
             {
                 menuLabel.Text = $"Menu [{keyMap.MenuKey}]".ToYellow();
-            }, this.LifetimeManager);
+            }, this);
 
             keyMap.SynchronizeProxiedForLifetime(app, nameof(ShooterKeys.TogglePauseKey), () =>
             {
                 pauseLabel.Text = $"Pause [{keyMap.TogglePauseKey}]".ToYellow();
-            }, this.LifetimeManager);
+            }, this);
 
             keyMap.SynchronizeProxiedForLifetime(app, ObservableObject.AnyProperty, () =>
             {
@@ -82,7 +82,7 @@ namespace ConsoleGames
 
 
                 aimLabel.Text = $"Aim[{keyMap.AimToggleKey}]".ToGray();
-            }, this.LifetimeManager);
+            }, this);
 
             app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(Inventory.PrimaryWeapon), () =>
             {
@@ -93,7 +93,7 @@ namespace ConsoleGames
                 {
                     ShowMessage("Equipped ".ToBlack() + weaponName.ToDarkBlue(), TimeSpan.FromSeconds(4));
                 }
-            }, this.LifetimeManager);
+            }, this);
 
             app.SynchronizeProxiedForLifetime(app,
                 nameof(app.MainCharacter) + "." +
@@ -104,7 +104,7 @@ namespace ConsoleGames
                     var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
                     var ammo = (app.MainCharacter?.Inventory)?.PrimaryWeapon?.AmmoAmount;
                     row.Amount = ammo.HasValue ? FormatAmmoAmmount(ammo.Value) : "empty".ToRed();
-                }, this.LifetimeManager);
+                }, this);
 
             app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(Inventory.ExplosiveWeapon), () =>
             {
@@ -115,7 +115,7 @@ namespace ConsoleGames
                 {
                     ShowMessage("Equipped ".ToBlack() + weaponName.ToDarkBlue(), TimeSpan.FromSeconds(4));
                 }
-            }, this.LifetimeManager);
+            }, this);
 
             app.SynchronizeProxiedForLifetime(app,
                 nameof(app.MainCharacter) + "." +
@@ -126,7 +126,7 @@ namespace ConsoleGames
                     var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
                     var ammo = (app.MainCharacter?.Inventory)?.ExplosiveWeapon?.AmmoAmount;
                     row.Amount = ammo.HasValue ? FormatAmmoAmmount(ammo.Value) : "empty".ToRed();
-                }, this.LifetimeManager);
+                }, this);
 
 
 
@@ -134,7 +134,7 @@ namespace ConsoleGames
             {
                 var aimMode = app.MainCharacter?.AimMode;
                 aimValue.Text = aimMode.HasValue ? aimMode.Value.ToString().ToConsoleString(aimMode.Value == AimMode.Auto ? ConsoleColor.White : ConsoleColor.Cyan) : "".ToConsoleString();
-            }, this.LifetimeManager);
+            }, this);
         }
 
         public void ShowMessage(ConsoleString message, TimeSpan? time = null)
@@ -144,8 +144,8 @@ namespace ConsoleGames
             messagePanel.IsVisible = true;
             if (time.HasValue)
             {
-                messageLabel.GetPropertyValueLifetime(nameof(Label.Text)).LifetimeManager
-                    .Manage(Application.SetTimeout(() =>
+                messageLabel.GetPropertyValueLifetime(nameof(Label.Text))
+                    .OnDisposed(Application.SetTimeout(() =>
                     {
                         messageLabel.Text = ConsoleString.Empty;
                         messagePanel.IsVisible = false;

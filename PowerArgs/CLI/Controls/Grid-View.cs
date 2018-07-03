@@ -193,7 +193,7 @@ namespace PowerArgs.Cli
         private void InitGridView()
         {
             MoreDataMessage = "more data below".ToConsoleString(new Theme().H1Color);
-            this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
+            this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this);
 
             this.filterTextDebouncer = new ActionDebouncer(TimeSpan.FromSeconds(0), () =>
             {
@@ -213,7 +213,7 @@ namespace PowerArgs.Cli
                 {
                     Application.FocusManager.TryMoveFocus();
                 }
-            }, this.LifetimeManager);
+            }, this);
         }
 
         private void SetFilterTextBox(TextBox value)
@@ -224,8 +224,8 @@ namespace PowerArgs.Cli
             }
 
             _filterTextBox = value;
-            _filterTextBox.SubscribeForLifetime(nameof(TextBox.Value), FilterTextValueChanged, value.LifetimeManager);
-            _filterTextBox.KeyInputReceived.SubscribeForLifetime(FilterTextKeyPressed, value.LifetimeManager);
+            _filterTextBox.SubscribeForLifetime(nameof(TextBox.Value), FilterTextValueChanged, value);
+            _filterTextBox.KeyInputReceived.SubscribeForLifetime(FilterTextKeyPressed, value);
             FilteringEnabled = true;
         }
 

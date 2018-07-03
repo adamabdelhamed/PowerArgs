@@ -64,10 +64,10 @@ namespace PowerArgs.Cli
             this.Height = 1;
             this.Width = 15;
             CanFocus = true;
-            this.Focused.SubscribeForLifetime(TextBox_Focused, this.LifetimeManager);
-            this.Unfocused.SubscribeForLifetime(TextBox_Unfocused, this.LifetimeManager);
-            textState.SubscribeForLifetime(nameof(textState.CurrentValue), TextValueChanged, this.LifetimeManager);
-            KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this.LifetimeManager);
+            this.Focused.SubscribeForLifetime(TextBox_Focused, this);
+            this.Unfocused.SubscribeForLifetime(TextBox_Unfocused, this);
+            textState.SubscribeForLifetime(nameof(textState.CurrentValue), TextValueChanged, this);
+            KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this);
         }
 
         private void TextValueChanged()

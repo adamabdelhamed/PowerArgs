@@ -53,7 +53,7 @@ namespace ConsoleGames
                                 }
                             }
                         }
-                    }, matter.Lifetime.LifetimeManager);
+                    }, matter.Lifetime);
                     
                 }
             }

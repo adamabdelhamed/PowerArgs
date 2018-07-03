@@ -120,12 +120,12 @@ namespace PowerArgs.Cli
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
             AutoFillOnConsoleResize = false;
-            FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), Paint, LifetimeManager);
-            LayoutRoot.Controls.BeforeAdded.SubscribeForLifetime((c) => { c.Application = this; c.BeforeAddedToVisualTreeInternal(); }, LifetimeManager);
-            LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, LifetimeManager);
-            LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, LifetimeManager);
-            LayoutRoot.Controls.Removed.SubscribeForLifetime(ControlRemovedFromVisualTree, LifetimeManager);
-            WindowResized.SubscribeForLifetime(HandleDebouncedResize, LifetimeManager);
+            FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), Paint, this);
+            LayoutRoot.Controls.BeforeAdded.SubscribeForLifetime((c) => { c.Application = this; c.BeforeAddedToVisualTreeInternal(); }, this);
+            LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, this);
+            LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, this);
+            LayoutRoot.Controls.Removed.SubscribeForLifetime(ControlRemovedFromVisualTree, this);
+            WindowResized.SubscribeForLifetime(HandleDebouncedResize, this);
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace PowerArgs.Cli
             if (c is ConsolePanel)
             {
                 var childPanel = c as ConsolePanel;
-                childPanel.Controls.SynchronizeForLifetime((cp) => { ControlAddedToVisualTree(cp); }, (cp) => { ControlRemovedFromVisualTree(cp); }, () => { }, c.LifetimeManager);
+                childPanel.Controls.SynchronizeForLifetime((cp) => { ControlAddedToVisualTree(cp); }, (cp) => { ControlRemovedFromVisualTree(cp); }, () => { }, c);
             }
 
             FocusManager.Add(c);

@@ -31,16 +31,16 @@ namespace PowerArgs.Cli.Physics
             {
                 RealTimeViewing = new RealTimeViewingFunction(this.SpaceTime) { Enabled = true };
                 this.SpaceTime.ChangeTrackingEnabled = true;
-                this.SpaceTime.AfterTick.SubscribeForLifetime(() => UpdateView(false), this.LifetimeManager);
+                this.SpaceTime.AfterTick.SubscribeForLifetime(() => UpdateView(false), this);
             });
 
             this.AddedToVisualTree.SubscribeForLifetime(() =>
             {
-                LifetimeManager.Manage(Application.SetInterval(() =>
+                this.OnDisposed(Application.SetInterval(() =>
                 {
                     RealTimeViewing?.Evaluate();
                 }, TimeSpan.FromSeconds(.1)));
-            }, this.LifetimeManager);
+            }, this);
 
             this.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>
             {
@@ -48,9 +48,9 @@ namespace PowerArgs.Cli.Physics
                 {
                     throw new AggregateException(ex);
                 });
-            }, this.LifetimeManager);
+            }, this);
 
-            this.SubscribeForLifetime(nameof(Bounds), () => { resizedSinceLastRender = false; }, this.LifetimeManager);
+            this.SubscribeForLifetime(nameof(Bounds), () => { resizedSinceLastRender = false; }, this);
         }
 
         public void UpdateView(bool force)

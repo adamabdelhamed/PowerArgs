@@ -21,7 +21,7 @@ namespace ConsoleGames
             Speed.HitDetectionTypes.Add(typeof(Enemy));
             Speed.HitDetectionTypes.Add(typeof(Wall));
             Speed.Governor.Rate = TimeSpan.FromSeconds(0);
-            Speed.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime.LifetimeManager);
+            Speed.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime);
         }
 
         public Projectile(float x, float y, float angle) : this()

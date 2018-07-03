@@ -30,7 +30,7 @@ namespace PowerArgs.Cli
         {
             Width = 1;
             Height = 1;
-            SubscribeForLifetime(nameof(Bounds), EnsureNoResize, this.LifetimeManager);
+            SubscribeForLifetime(nameof(Bounds), EnsureNoResize, this);
             Value = new ConsoleCharacter(' ', Foreground, Background);
         }
 

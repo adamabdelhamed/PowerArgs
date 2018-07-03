@@ -132,7 +132,7 @@ namespace HelloWorld.Samples
                             }
                         }
                     }
-                }, grid.LifetimeManager);
+                }, grid);
 
                 grid.TryFocus();
             };

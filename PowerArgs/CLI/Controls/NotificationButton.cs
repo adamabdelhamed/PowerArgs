@@ -17,17 +17,17 @@ namespace PowerArgs.Cli
             
             launcher = Add(new Button());
             launcher.Shortcut = new KeyboardShortcut(ConsoleKey.N, ConsoleModifiers.Alt);
-            launcher.Pressed.SubscribeForLifetime(NotificationButton_Activated, LifetimeManager);
+            launcher.Pressed.SubscribeForLifetime(NotificationButton_Activated, this);
             launcherFg = launcher.Foreground;
             spinner = Add(new Spinner() { IsVisible = false, IsSpinning = false, CanFocus = false, X = 1, Foreground = ConsoleColor.Cyan });
             Manager_ProgressOperationsChanged();
             manager.ProgressOperationsChanged += Manager_ProgressOperationsChanged;
-            this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this.LifetimeManager);
+            this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
         }
 
         private void OnAddedToVisualTree()
         {
-            launcher.SynchronizeForLifetime(nameof(Bounds), () => { this.Size = launcher.Size; }, this.LifetimeManager);
+            launcher.SynchronizeForLifetime(nameof(Bounds), () => { this.Size = launcher.Size; }, this);
             manager.ProgressOperationStatusChanged.SubscribeForLifetime((op) =>
             {
                 if(op.State == OperationState.Completed)
@@ -40,7 +40,7 @@ namespace PowerArgs.Cli
                     }
                     resetTimer = Application.SetTimeout(ResetLaundherFG, TimeSpan.FromSeconds(5));
                 }
-            }, this.LifetimeManager);
+            }, this);
         }
 
         private void ResetLaundherFG()

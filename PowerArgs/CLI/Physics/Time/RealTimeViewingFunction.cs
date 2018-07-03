@@ -65,7 +65,7 @@ namespace PowerArgs.Cli.Physics
             wallClockTimeAdded = DateTime.UtcNow;
             timeAdded = t.Now;
             impl = TimeFunction.Create(Evaluate);
-            impl.Lifetime.LifetimeManager.Manage(() => { impl = null; });
+            impl.Lifetime.OnDisposed(() => { impl = null; });
             t.Add(impl);
         }
 

@@ -10,9 +10,9 @@ namespace PowerArgs.Cli
     {
         bool SuppressEqualChanges { get; set; }
         IDisposable SubscribeUnmanaged(string propertyName, Action handler);
-        void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager);
+        void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager);
         IDisposable SynchronizeUnmanaged(string propertyName, Action handler);
-        void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager);
+        void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager);
 
     }
 
@@ -170,7 +170,7 @@ namespace PowerArgs.Cli
                     {
                         DeepSubscribeInternal(path, handler, rootLifetime);
                     }
-                }, EarliestOf(anyChangeLifetime, rootLifetime).LifetimeManager);
+                }, EarliestOf(anyChangeLifetime, rootLifetime));
 
                 currentObservable = eval.Value as IObservableObject;
 
@@ -190,10 +190,10 @@ namespace PowerArgs.Cli
         /// <param name="propertyName">The name of the property to subscribe to or ObservableObject.AnyProperty if you want to be notified of any property change.</param>
         /// <param name="handler">The action to call for notifications</param>
         /// <param name="lifetimeManager">the lifetime manager that determines when the subscription ends</param>
-        public void SubscribeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager)
+        public void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager)
         {
             var sub = SubscribeUnmanaged(propertyName, handler);
-            lifetimeManager.Manage(sub);
+            lifetimeManager.OnDisposed(sub);
         }
 
         /// <summary>
@@ -216,10 +216,10 @@ namespace PowerArgs.Cli
         /// <param name="handler">The action to call for notifications</param>
         /// <param name="lifetimeManager">the lifetime manager that determines when the subscription ends</param>
 
-        public void SynchronizeForLifetime(string propertyName, Action handler, LifetimeManager lifetimeManager)
+        public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager)
         {
             var sub = SynchronizeUnmanaged(propertyName, handler);
-            lifetimeManager.Manage(sub);
+            lifetimeManager.OnDisposed(sub);
         }
 
         public Lifetime GetPropertyValueLifetime(string propertyName)

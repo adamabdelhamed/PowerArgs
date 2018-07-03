@@ -111,7 +111,7 @@ namespace PowerArgs.Cli
                 if (newValue == latestValue) return;
                 latestValue = newValue;
                 controlProperty.SetValue(control, mapper != null ? mapper(newValue) : newValue);
-            }, control.LifetimeManager);
+            }, control);
 
             control.SubscribeForLifetime(controlProperty.Name, () =>
             {
@@ -119,7 +119,7 @@ namespace PowerArgs.Cli
                 if (newValue == latestValue) return;
                 latestValue = newValue;
             viewModelObservableProperty.SetValue(observableObject, reverseMapper != null ? reverseMapper(newValue) : newValue);
-            }, control.LifetimeManager);
+            }, control);
         }
     }
 
@@ -368,7 +368,7 @@ namespace PowerArgs.Cli
                     }
                 };
 
-                ev.SubscribeForLifetime(handler, control.LifetimeManager);
+                ev.SubscribeForLifetime(handler, control);
             }
             else
             {

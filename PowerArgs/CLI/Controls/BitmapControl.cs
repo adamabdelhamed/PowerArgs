@@ -22,8 +22,8 @@ namespace PowerArgs.Cli
         /// </summary>
         public BitmapControl()
         {
-            this.SubscribeForLifetime(nameof(AutoSize), BitmapOrAutoSizeChanged, this.LifetimeManager);
-            this.SubscribeForLifetime(nameof(Bitmap), BitmapOrAutoSizeChanged, this.LifetimeManager);
+            this.SubscribeForLifetime(nameof(AutoSize), BitmapOrAutoSizeChanged, this);
+            this.SubscribeForLifetime(nameof(Bitmap), BitmapOrAutoSizeChanged, this);
         }
 
         private void BitmapOrAutoSizeChanged()

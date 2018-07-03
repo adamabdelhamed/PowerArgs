@@ -24,7 +24,7 @@ namespace ArgsTests.CLI.Apps
                 Console.WriteLine("STOPPING");
                 Console.WriteLine(testCli.Buffer.ToString());
                 Console.WriteLine("STOPPING");
-            }, app.LifetimeManager);
+            }, app);
 
             var task = app.Start();
 
@@ -62,7 +62,7 @@ namespace ArgsTests.CLI.Apps
                 Console.WriteLine("STOPPING");
                 Console.WriteLine(testCli.Buffer.ToString());
                 Console.WriteLine("STOPPING");
-            }, app.LifetimeManager);
+            }, app);
 
             app.Stopped.SubscribeForLifetime(() =>
             {
@@ -71,7 +71,7 @@ namespace ArgsTests.CLI.Apps
                 Console.WriteLine(testCli.Buffer.ToString());
                 Console.WriteLine("STOPPED");
             }
-            , app.LifetimeManager);
+            , app);
 
             var task = app.Start();
             var timer = app.SetTimeout(() =>

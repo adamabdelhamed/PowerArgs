@@ -60,10 +60,10 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="handler">the action to run when the event fires</param>
         /// <param name="lifetimeManager">the lifetime manager that determines when to stop being notified</param>
-        public void SubscribeForLifetime(Action handler, LifetimeManager lifetimeManager)
+        public void SubscribeForLifetime(Action handler, ILifetimeManager lifetimeManager)
         {
             var sub = SubscribeUnmanaged(handler);
-            lifetimeManager.Manage(sub);
+            lifetimeManager.OnDisposed(sub.Dispose);
         }
 
         /// <summary>
@@ -142,10 +142,10 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="handler">the action to run when the event fires</param>
         /// <param name="lifetimeManager">the lifetime manager that determines when to stop being notified by this event</param>
-        public void SubscribeForLifetime(Action<T> handler, LifetimeManager lifetimeManager)
+        public void SubscribeForLifetime(Action<T> handler, ILifetimeManager lifetimeManager)
         {
             var sub = SubscribeUnmanaged(handler);
-            lifetimeManager.Manage(sub);
+            lifetimeManager.OnDisposed(sub.Dispose);
         }
 
         /// <summary>

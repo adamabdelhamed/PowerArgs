@@ -27,7 +27,7 @@ namespace ConsoleGames
                 }
 
                 rpg.Explode();
-            }, rpg.Lifetime.LifetimeManager);
+            }, rpg.Lifetime);
 
             var angle = MainCharacter.Current.Target != null ?
                 MainCharacter.Current.CalculateAngleTo(MainCharacter.Current.Target) :

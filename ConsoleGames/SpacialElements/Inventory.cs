@@ -64,9 +64,9 @@ namespace ConsoleGames
                 itemsLifetime?.Dispose();
                 itemsLifetime = new Lifetime();
                 Items.ForEach(item => ProcessItem(item));
-                Items.Added.SubscribeForLifetime((item) => ProcessItem(item), itemsLifetime.LifetimeManager);
+                Items.Added.SubscribeForLifetime((item) => ProcessItem(item), itemsLifetime);
 
-            }, this.LifetimeManager);
+            }, this);
 
             this.SubscribeForLifetime(nameof(Owner), () =>
             {
@@ -74,7 +74,7 @@ namespace ConsoleGames
                 {
                     item.Holder = Owner;
                 }
-            }, this.LifetimeManager);
+            }, this);
 
             Items = new ObservableCollection<IInventoryItem>();
         }

@@ -112,7 +112,7 @@ namespace ConsoleGames
                     ScenePanel.RealTimeViewing.ReSync();
                     Scene.Start();
                 });
-            }, this.LifetimeManager);
+            }, this);
         }
     }
 }

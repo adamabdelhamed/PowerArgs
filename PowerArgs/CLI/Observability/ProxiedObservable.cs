@@ -32,7 +32,7 @@ namespace PowerArgs.Cli
             });
         }
 
-        public static void SynchronizeProxiedForLifetime(this IObservableObject obj, ConsoleApp app, string propertyName, Action handler, LifetimeManager manager)
+        public static void SynchronizeProxiedForLifetime(this IObservableObject obj, ConsoleApp app, string propertyName, Action handler, ILifetimeManager manager)
         {
             obj.SynchronizeForLifetime(propertyName, () =>
             {
