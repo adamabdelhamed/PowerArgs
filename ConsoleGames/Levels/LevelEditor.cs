@@ -138,11 +138,11 @@ namespace ConsoleGames
                     tags.Add(innerEditor.CursorPosition, tagsForPosition);
                 }
 
-                var tagsString = string.Join(';', tagsForPosition);
+                var tagsString = string.Join(";", tagsForPosition);
 
                 Dialog.ShowRichTextInput("Add/edit semi-colon delimited tags. Press enter to cmmmit".ToYellow(), (newString) =>
                 {
-                    var split = newString.ToString().Split(";").ToList();
+                    var split = newString.ToString().Split(';').ToList();
                     tagsForPosition.Clear();
                     tagsForPosition.AddRange(split);
                 },

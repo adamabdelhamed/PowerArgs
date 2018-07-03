@@ -29,4 +29,9 @@ namespace PowerArgs.Cli
 
         protected abstract void DisposeManagedResources();
     }
+
+    public class DummyDisposable : Disposable
+    {
+        protected override void DisposeManagedResources() { }
+    }
 }

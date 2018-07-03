@@ -27,7 +27,7 @@ namespace ConsoleGames
                 }
                 else if (value)
                 {
-                    //SoundEffects.Instance.PlaySound("opendoor");
+                    Sound.Play("opendoor");
                     this.MoveTo(OpenBounds.Left, OpenBounds.Top);
                     FindCieling().ForEach(c => c.IsVisible = false);
                 }
@@ -37,7 +37,7 @@ namespace ConsoleGames
                 }
                 else if (value == false)
                 {
-                   // SoundEffects.Instance.PlaySound("closedoor");
+                    Sound.Play("closedoor");
                     this.MoveTo(ClosedBounds.Left, ClosedBounds.Top);
                     FindCieling().ForEach(c => c.IsVisible = true);
                 }

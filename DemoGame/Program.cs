@@ -1,15 +1,15 @@
-﻿
-using ConsoleGames;
+﻿using ConsoleGames;
 using PowerArgs.Cli;
-using System;
 
-namespace Playground
+namespace DemoGame
 {
     class Program
     {
         static void Main(string[] args)
         {
-            new PlaygroundGame().Start().Wait();
+            Sound.Provider = new WindowsSoundProvider.SoundProvider();
+            new DemoGameApp().Start().Wait();
+            Sound.Dispose();
             return;
 
             var app = new ConsoleApp();

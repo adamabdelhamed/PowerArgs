@@ -62,8 +62,7 @@ namespace ConsoleGames
             {
                 if (PlaySoundOnImpact)
                 {
-                    // todo - uncomment
-                   // SoundEffects.Instance.PlaySound("bulletHit");
+                    Sound.Play("bulletHit");
                 }
                 var destructible = impact.ElementHit as IDestructible;
 

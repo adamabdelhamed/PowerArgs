@@ -324,7 +324,7 @@ namespace PowerArgs.Cli
             }
             IsRunning = true;
             runDeferred = Deferred.Create();
-            var pumpThread = new Thread(Pump);
+            var pumpThread = new Thread(Pump) { Name = "CliMessagePump" };
             pumpThread.Priority = ThreadPriority.AboveNormal;
             pumpThread.IsBackground = true;
             pumpThread.Start();

@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 using PowerArgs.Cli;
-namespace Playground
+namespace DemoGame
 {
-    public class PlaygroundGame : GameApp
+    public class DemoGameApp : GameApp
     {
         protected override SceneFactory SceneFactory => new SceneFactory(new List<ItemReviver>()
         {
@@ -21,7 +21,7 @@ namespace Playground
         private ShooterKeys shooterKeys = new ShooterKeys();
         private GameState currentState;
 
-        public PlaygroundGame()
+        public DemoGameApp()
         {
             currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
 

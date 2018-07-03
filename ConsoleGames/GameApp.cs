@@ -17,7 +17,6 @@ namespace ConsoleGames
         public SpaceTime Scene => ScenePanel.SpaceTime;
         public KeyboardInputManager KeyboardInput { get; private set; } 
         public GameStateManager GameState { get; private set; }
-
         public Theme Theme { get => Get<Theme>(); set => Set(value); }
 
         public MainCharacter MainCharacter { get { return Get<MainCharacter>(); } private set { Set(value); } }

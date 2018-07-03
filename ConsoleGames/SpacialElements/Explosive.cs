@@ -22,9 +22,7 @@ namespace ConsoleGames
 
         public void Explode()
         {
-     
-            // todo - uncomment when we add sound
-            // SoundEffects.Instance.PlaySound("boom");
+            Sound.Play("boom");
             for (float angle = 0; angle < 360; angle += angleIcrement)
             {
                 var effectiveRange = range;

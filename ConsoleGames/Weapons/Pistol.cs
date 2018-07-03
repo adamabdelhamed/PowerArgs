@@ -27,9 +27,8 @@ namespace ConsoleGames
                 bullet.Speed.HitDetectionTypes.Add(Holder.Target.GetType());
             }
             SpaceTime.CurrentSpaceTime.Add(bullet);
-            
-            // todo - uncomment after sound added
-            //SoundEffects.Instance.PlaySound("pistol");
+
+            Sound.Play("pistol");
         }
     }
 }

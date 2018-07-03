@@ -129,7 +129,8 @@ namespace PowerArgs.Cli.Physics
                     UnhandledException.Fire(ex);
                     runDeferred.Reject(ex);
                 }
-            });
+            })
+            { Name = "TimeThread" };
             t.Start();
 
             return runDeferred.Promise;

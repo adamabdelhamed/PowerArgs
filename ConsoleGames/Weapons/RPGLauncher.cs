@@ -11,8 +11,7 @@ namespace ConsoleGames
 
         public override void FireInternal()
         {
-            // todo - uncomment when we get sound
-            //SoundEffects.Instance.PlaySound("thump");
+            Sound.Play("thump");
             var rpg = new TimedMine(TimeSpan.FromSeconds(2), MainCharacter.Current.Left, MainCharacter.Current.Top, 5, 4) { HealthPointsPerShrapnel = 5 };
 
             var rpgSpeed = new SpeedTracker(rpg);
