@@ -21,6 +21,7 @@ namespace ConsoleGames
             }
 
             var matterList = new List<NetMatter>();
+            StructuralIntegrity<NetMatter> matterIntegrity = null;
             for (var y = 0; y < 3; y++)
             {
                 for (var x = 0; x < 7; x++)
@@ -42,16 +43,23 @@ namespace ConsoleGames
                         if (i.ElementHit != Holder && i.ElementHit is Character)
                         {
                             matterList.ForEach(m => m.Lifetime.Dispose());
-
+                            matterList.Clear();
+                            matterIntegrity.Lifetime.Dispose();
                             for(var newX = i.ElementHit.Left-2; newX <= i.ElementHit.Left+2; newX++ )
                             {
                                 for (var newY = i.ElementHit.Top - 1; newY <= i.ElementHit.Top+ 1; newY++)
                                 {
                                     var newMatter = new NetMatter();
                                     newMatter.MoveTo(newX, newY);
-                                    SpaceTime.CurrentSpaceTime.Add(newMatter);
+                                    matterList.Add(newMatter);
                                 }
                             }
+
+                            matterList.ForEach(m =>
+                            {
+                                m.Composite = matterList;
+                                SpaceTime.CurrentSpaceTime.Add(m);
+                            });
                         }
                     }, matter.Lifetime);
                     
@@ -60,11 +68,12 @@ namespace ConsoleGames
 
             matterList.ForEach(m =>
             {
-                SpaceTime.CurrentSpaceTime.Add(m);
                 m.Composite = matterList;
+                SpaceTime.CurrentSpaceTime.Add(m);
             });
 
-            SpaceTime.CurrentSpaceTime.Add(new StructuralIntegrity<NetMatter>(matterList));
+            matterIntegrity = new StructuralIntegrity<NetMatter>(matterList);
+            SpaceTime.CurrentSpaceTime.Add(matterIntegrity);
         }
 
         public class NetMatter : SpacialElement, IDestructible

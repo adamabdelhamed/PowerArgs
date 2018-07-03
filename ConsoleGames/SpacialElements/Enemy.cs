@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using PowerArgs;
 
 namespace ConsoleGames
 {
@@ -25,9 +26,13 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(Enemy))]
-    public class EnemyRenderer : SpacialElementRenderer
+    public class EnemyRenderer : ThemeAwareSpacialElementRenderer
     {
         public bool IsHighlighted { get; private set; }
+
+        public ConsoleCharacter NormalStyle { get; set; } = new ConsoleCharacter('E', ConsoleColor.White);
+        public ConsoleCharacter HurtStyle { get; set; } = new ConsoleCharacter('E', ConsoleColor.DarkGray);
+        public ConsoleCharacter TargetedStyle { get; set; } = new ConsoleCharacter('E', ConsoleColor.DarkBlue, ConsoleColor.Cyan);
 
         public EnemyRenderer()
         {
@@ -40,11 +45,11 @@ namespace ConsoleGames
         {
             if ((Element as Enemy).IsBeingTargeted)
             {
-                context.Pen = new PowerArgs.ConsoleCharacter('E', (Element as Enemy).HealthPoints < 2 ? ConsoleColor.Gray : ConsoleColor.DarkRed, ConsoleColor.Cyan);
+                context.Pen = TargetedStyle;
             }
             else
             {
-                context.Pen = new PowerArgs.ConsoleCharacter('E', (Element as Enemy).HealthPoints < 2 ? ConsoleColor.Gray : ConsoleColor.DarkRed);
+                context.Pen = (Element as Enemy).HealthPoints >= 3 ? NormalStyle : HurtStyle;
             }
             context.FillRect(0, 0, Width, Height);
         }

@@ -154,7 +154,7 @@ namespace PowerArgs.Cli
             if (blinkState)
             {
                 char blinkChar = textState.CursorPosition >= toPaint.Length ? ' ' : toPaint[textState.CursorPosition].Value;
-                context.Pen = new ConsoleCharacter(blinkChar, Application.Theme.FocusContrastColor, Application.Theme.FocusColor);
+                context.Pen = new ConsoleCharacter(blinkChar, DefaultColors.FocusContrastColor, DefaultColors.FocusColor);
                 context.DrawPoint(textState.CursorPosition, 0);
             }
         }

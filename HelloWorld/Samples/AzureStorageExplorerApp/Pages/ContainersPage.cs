@@ -26,7 +26,7 @@ namespace HelloWorld.Samples
         private Button addButton;
         public ContainersPage()
         {
-            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudBlobContainer.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudBlobContainer.Name).ToConsoleString(DefaultColors.H1Color)));
             Grid.NoDataMessage = "No containers";
 
             addButton = CommandBar.Add(new Button() { Text = "Add container".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });

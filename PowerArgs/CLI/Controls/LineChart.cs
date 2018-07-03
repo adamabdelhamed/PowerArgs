@@ -260,7 +260,7 @@ namespace PowerArgs.Cli
                 {
                     var xValue = XAxisValueFormatter(series.DataPoints[ViewModel.FocusedDataPointIndex].X);
                     var yValue = YAxisValueFormatter(series.DataPoints[ViewModel.FocusedDataPointIndex].Y);
-                    title += new ConsoleString(" ( " + xValue + ", " + yValue + " )", Application.Theme.FocusColor);
+                    title += new ConsoleString(" ( " + xValue + ", " + yValue + " )", DefaultColors.FocusColor);
                 }
 
                 if (title.Length > MaxTitleLength)
@@ -324,7 +324,7 @@ namespace PowerArgs.Cli
 
             if(focused)
             {
-                context.Pen = new ConsoleCharacter(series.PlotCharacter, Application.Theme.FocusColor, Application.Theme.FocusColor);
+                context.Pen = new ConsoleCharacter(series.PlotCharacter, DefaultColors.FocusColor, DefaultColors.FocusColor);
             }
             else if(series.Threshold == null || series.Threshold.IsActive(p.Y) == false)
             {

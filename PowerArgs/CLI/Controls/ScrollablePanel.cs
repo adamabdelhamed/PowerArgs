@@ -232,7 +232,7 @@ namespace PowerArgs.Cli
             base.OnPaint(context);
             if (HasFocus)
             {
-                context.Pen = new ConsoleCharacter(' ', backgroundColor: Application.Theme.FocusColor);
+                context.Pen = new ConsoleCharacter(' ', backgroundColor: DefaultColors.FocusColor);
                 context.FillRect(0, 0, Width, Height);
             }
         }

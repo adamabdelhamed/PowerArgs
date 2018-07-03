@@ -20,8 +20,8 @@ namespace HelloWorld.Samples
 
         public ContainerPage()
         {
-            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudBlob.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
-            Grid.VisibleColumns.Add(new ColumnViewModel(SizeColumn.ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudBlob.Name).ToConsoleString(DefaultColors.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(SizeColumn.ToConsoleString(DefaultColors.H1Color)));
             Grid.NoDataMessage = "No blobs";
 
             uploadButton = CommandBar.Add(new Button() { Text = "Upload blob".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.U, ConsoleModifiers.Alt) });

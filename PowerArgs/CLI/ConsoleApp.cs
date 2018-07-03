@@ -95,11 +95,6 @@ namespace PowerArgs.Cli
         public bool AutoFillOnConsoleResize { get; set; }
 
         /// <summary>
-        /// Gets or sets the theme
-        /// </summary>
-        public Theme Theme { get { return Get<Theme>(); } set { Set(value); } }
-
-        /// <summary>
         /// Gets or set whether or not to give focus to a control when the app starts.  The default is true.
         /// </summary>
         public bool SetFocusOnStart { get; set; }
@@ -114,7 +109,6 @@ namespace PowerArgs.Cli
         public ConsoleApp(int x, int y, int w, int h) : base(ConsoleProvider.Current)
         {
             SetFocusOnStart = true;
-            Theme = new Theme();
             Bitmap = new ConsoleBitmap(x, y, w, h);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
             FocusManager = new FocusManager();
@@ -305,7 +299,7 @@ namespace PowerArgs.Cli
         private void PaintInternal()
         {
 
-            Bitmap.Pen = new ConsoleCharacter(' ', null, Theme.BackgroundColor);
+            Bitmap.Pen = new ConsoleCharacter(' ', null, DefaultColors.BackgroundColor);
             Bitmap.FillRect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
 #if PROFILING
             using (new TimeProfiler("LayoutRoot.Paint"))

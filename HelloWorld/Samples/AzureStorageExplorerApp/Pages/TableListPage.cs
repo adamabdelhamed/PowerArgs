@@ -14,7 +14,7 @@ namespace HelloWorld.Samples
         private Button addButton;
         public TablesPage()
         {
-            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudTable.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(CloudTable.Name).ToConsoleString(DefaultColors.H1Color)));
             Grid.NoDataMessage = "No tables";
             Grid.NoVisibleColumnsMessage = "Loading...";
             addButton = CommandBar.Add(new Button() { Text = "Add table".ToConsoleString() });

@@ -213,12 +213,14 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(MainCharacter))]
-    public class MainCharacterRenderer : SpacialElementRenderer
+    public class MainCharacterRenderer : ThemeAwareSpacialElementRenderer
     {
+        public ConsoleCharacter Style { get; set; } = new ConsoleCharacter('X', ConsoleColor.Magenta);
+
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = new PowerArgs.ConsoleCharacter('X', ConsoleColor.Magenta);
-            context.DrawPoint(0, 0);
+            context.Pen = Style;
+            context.FillRect(0, 0, Width, Height);
         }
     }
 

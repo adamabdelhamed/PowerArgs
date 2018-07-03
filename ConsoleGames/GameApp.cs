@@ -18,6 +18,8 @@ namespace ConsoleGames
         public KeyboardInputManager KeyboardInput { get; private set; } 
         public GameStateManager GameState { get; private set; }
 
+        public Theme Theme { get => Get<Theme>(); set => Set(value); }
+
         public MainCharacter MainCharacter { get { return Get<MainCharacter>(); } private set { Set(value); } }
 
         private ConsolePanel disposableRoot;
@@ -25,6 +27,8 @@ namespace ConsoleGames
         public GameApp()
         {
             GameState = new GameStateManager();
+            this.SubscribeForLifetime(nameof(Theme), () => Theme.Bind(this), this);
+            Theme = new DefaultTheme();
             this.QueueActionInFront(InitializeGame);
         }
 

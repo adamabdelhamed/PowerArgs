@@ -41,7 +41,7 @@ namespace PowerArgs.Cli
 
             if (VisibleColumns.Count == 0)
             {
-                context.DrawString(NoVisibleColumnsMessage.ToConsoleString(Application.Theme.H1Color), 0, 0);
+                context.DrawString(NoVisibleColumnsMessage.ToConsoleString(DefaultColors.H1Color), 0, 0);
                 return;
             }
 
@@ -89,7 +89,7 @@ namespace PowerArgs.Cli
                     {
                         if (this.SelectionMode == GridSelectionMode.Row || (this.SelectionMode == GridSelectionMode.Cell && columnIndex == selectedColumnIndex))
                         {
-                            displayValue = new ConsoleString(displayValue.ToString(), this.Background, HasFocus ? Application.Theme.FocusColor : Application.Theme.SelectedUnfocusedColor);
+                            displayValue = new ConsoleString(displayValue.ToString(), this.Background, HasFocus ? DefaultColors.FocusColor : DefaultColors.SelectedUnfocusedColor);
                         }
                     }
 
@@ -114,22 +114,22 @@ namespace PowerArgs.Cli
 
             if (FilterText != null)
             {
-                table = table.Highlight(FilterText, Application.Theme.HighlightContrastColor, Application.Theme.HighlightColor, StringComparison.InvariantCultureIgnoreCase);
+                table = table.Highlight(FilterText, DefaultColors.HighlightContrastColor, DefaultColors.HighlightColor, StringComparison.InvariantCultureIgnoreCase);
             }
 
             if (DataView.IsViewComplete == false)
             {
-                table += "Loading more rows...".ToConsoleString(Application.Theme.H1Color);
+                table += "Loading more rows...".ToConsoleString(DefaultColors.H1Color);
             }
             else if (DataView.IsViewEndOfData && DataView.Items.Count == 0)
             {
-                table += NoDataMessage.ToConsoleString(Application.Theme.H1Color);
+                table += NoDataMessage.ToConsoleString(DefaultColors.H1Color);
             }
             else if (DataView.IsViewEndOfData)
             {
                 if (ShowEndIfComplete)
                 {
-                    table += EndOfDataMessage.ToConsoleString(Application.Theme.H1Color);
+                    table += EndOfDataMessage.ToConsoleString(DefaultColors.H1Color);
                 }
             }
             else
@@ -192,7 +192,7 @@ namespace PowerArgs.Cli
 
         private void InitGridView()
         {
-            MoreDataMessage = "more data below".ToConsoleString(new Theme().H1Color);
+            MoreDataMessage = "more data below".ToConsoleString(DefaultColors.H1Color);
             this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this);
 
             this.filterTextDebouncer = new ActionDebouncer(TimeSpan.FromSeconds(0), () =>

@@ -31,7 +31,7 @@ namespace PowerArgs.Cli
         {
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
             AllowEscapeToCancel = true;
-            closeButton = Add(new Button() { Text = "Close (ESC)".ToConsoleString(),Background = Theme.DefaultTheme.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
+            closeButton = Add(new Button() { Text = "Close (ESC)".ToConsoleString(),Background = DefaultColors.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
             closeButton.Pressed.SubscribeForLifetime(Escape, this);
             BeforeAddedToVisualTree.SubscribeForLifetime(OnBeforeAddedToVisualTree, this);
             AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
@@ -78,11 +78,11 @@ namespace PowerArgs.Cli
             {
                 if(Application.FocusManager.StackDepth != myFocusStackDepth)
                 {
-                    closeButton.Background = Application.Theme.DisabledColor;
+                    closeButton.Background = DefaultColors.DisabledColor;
                 }
                 else
                 {
-                    closeButton.Background = Application.Theme.H1Color;
+                    closeButton.Background = DefaultColors.H1Color;
                 }
             }, this);
 
@@ -106,7 +106,7 @@ namespace PowerArgs.Cli
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = new ConsoleCharacter(' ', null, myFocusStackDepth == Application.FocusManager.StackDepth ? Theme.DefaultTheme.H1Color : Theme.DefaultTheme.DisabledColor);
+            context.Pen = new ConsoleCharacter(' ', null, myFocusStackDepth == Application.FocusManager.StackDepth ? DefaultColors.H1Color : DefaultColors.DisabledColor);
             context.DrawLine(0, 0, Width, 0);
             context.DrawLine(0, Height-1, Width, Height-1);
             base.OnPaint(context);

@@ -48,7 +48,7 @@ namespace PowerArgs.Cli
                 }
                 else
                 {
-                    var label = Add(new Label() { Mode = LabelRenderMode.SingleLineAutoSize, Text = "->".ToConsoleString(Theme.DefaultTheme.H1Color) });
+                    var label = Add(new Label() { Mode = LabelRenderMode.SingleLineAutoSize, Text = "->".ToConsoleString(DefaultColors.H1Color) });
                     builtUpPath += "/" + s;
                     myPath = builtUpPath;
                 }

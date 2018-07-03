@@ -13,9 +13,9 @@ namespace HelloWorld.Samples
         public StorageAccountsPage()
         {
             Grid.DataSource = new MemoryDataSource() { Items = new List<object>(StorageAccountInfo.Load()) };
-            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.AccountName).ToConsoleString(Theme.DefaultTheme.H1Color)));
-            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.Key).ToConsoleString(Theme.DefaultTheme.H1Color)));
-            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.UseHttps).ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.AccountName).ToConsoleString(DefaultColors.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.Key).ToConsoleString(DefaultColors.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(StorageAccountInfo.UseHttps).ToConsoleString(DefaultColors.H1Color)));
             Grid.NoDataMessage = "No storage accounts";
             Grid.KeyInputReceived.SubscribeForLifetime(HandleGridDeleteKeyPress, this);
             addButton = CommandBar.Add(new Button() { Text = "Add account".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });

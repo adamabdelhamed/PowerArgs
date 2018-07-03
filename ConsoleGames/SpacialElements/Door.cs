@@ -100,18 +100,9 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(Door))]
-    public class DoorRenderer : SpacialElementRenderer
+    public class DoorRenderer : SingleStyleRenderer
     {
-        public DoorRenderer()
-        {
-            Background = ConsoleColor.Cyan;
-        }
-
-        protected override void OnPaint(ConsoleBitmap context)
-        {
-            context.Pen = new PowerArgs.ConsoleCharacter(' ', backgroundColor: ConsoleColor.Cyan);
-            context.FillRect(0, 0, Width, Height);
-        }
+        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Cyan);
     }
 
     public class DoorReviver : ItemReviver

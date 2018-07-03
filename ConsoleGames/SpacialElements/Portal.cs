@@ -33,12 +33,9 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(Portal))]
-    public class PortalRenderer : SpacialElementRenderer
+    public class PortalRenderer : SingleStyleRenderer
     {
-        public PortalRenderer()
-        {
-            Background = ConsoleColor.Magenta;
-        }
+        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Magenta);
     }
 
     public class PortalReviver : ItemReviver

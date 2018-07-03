@@ -82,7 +82,7 @@ namespace PowerArgs.Cli
         public Button()
         {
             Height = 1;
-            this.Foreground = Theme.DefaultTheme.ButtonColor;
+            this.Foreground = DefaultColors.ButtonColor;
             this.SynchronizeForLifetime(nameof(Text), UpdateWidth, this);
             this.SynchronizeForLifetime(nameof(Shortcut), UpdateWidth, this);
             this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
@@ -151,7 +151,7 @@ namespace PowerArgs.Cli
         {
             var drawState = new ConsoleString();
 
-            drawState = "[".ToConsoleString(CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor, Background = Background);
+            drawState = "[".ToConsoleString(CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, Background = Background);
             if (Text != null)
             {
                 ConsoleColor fg, bg;
@@ -161,8 +161,8 @@ namespace PowerArgs.Cli
                 {
                     if (HasFocus)
                     {
-                        fg = Application.Theme.FocusContrastColor;
-                        bg = Application.Theme.FocusColor;
+                        fg = DefaultColors.FocusContrastColor;
+                        bg = DefaultColors.FocusColor;
                     }
                     else if (CanFocus)
                     {
@@ -171,14 +171,14 @@ namespace PowerArgs.Cli
                     }
                     else
                     {
-                        fg = Application.Theme.DisabledColor;
+                        fg = DefaultColors.DisabledColor;
                         bg = Background;
                     }
                     effectiveText = new ConsoleString(effectiveText.StringValue, fg, bg);
                 }
                 else if (HasFocus)
                 {
-                    effectiveText = effectiveText.ToDifferentBackground(Application.Theme.FocusColor);
+                    effectiveText = effectiveText.ToDifferentBackground(DefaultColors.FocusColor);
                 }
 
                 drawState += effectiveText;
@@ -187,24 +187,24 @@ namespace PowerArgs.Cli
                 {
                     if(Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Alt)
                     {
-                        drawState += new ConsoleString($" (ALT+{Shortcut.Key})", CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor);
+                        drawState += new ConsoleString($" (ALT+{Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
                     }
                     else if (Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Shift)
                     {
-                        drawState += new ConsoleString($" (SHIFT+{Shortcut.Key})", CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor);
+                        drawState += new ConsoleString($" (SHIFT+{Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
                     }
                     else if (Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Control)
                     {
-                        drawState += new ConsoleString($" (CTL+{Shortcut.Key})", CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor);
+                        drawState += new ConsoleString($" (CTL+{Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
                     }
                     else
                     {
-                        drawState += new ConsoleString($" ({Shortcut.Key})", CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor);
+                        drawState += new ConsoleString($" ({Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
                     }
                 }
             }
 
-            drawState += "]".ToConsoleString(CanFocus ? Application.Theme.H1Color : Application.Theme.DisabledColor, Background);
+            drawState += "]".ToConsoleString(CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, Background);
             Width = drawState.Length;
             context.DrawString(drawState, 0, 0);
         }

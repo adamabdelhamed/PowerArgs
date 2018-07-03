@@ -63,6 +63,20 @@ namespace Playground
         protected override void OnAppInitialize()
         {
             var hud = LayoutRoot.Add(new HeadsUpDisplay(this, shooterKeys)).CenterHorizontally().DockToBottom();
+
+            this.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.T, null, () =>
+             {
+                 if(Theme is DefaultTheme)
+                 {
+                     Theme = new DarkTheme();
+                 }
+                 else
+                 {
+                     Theme = new DefaultTheme();
+                 }
+             }, this);
+
+        
         }
     }
 }

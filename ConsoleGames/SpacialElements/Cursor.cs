@@ -1,5 +1,7 @@
-﻿using PowerArgs.Cli.Physics;
+﻿using PowerArgs;
+using PowerArgs.Cli.Physics;
 using System;
+using PowerArgs.Cli;
 
 namespace ConsoleGames
 {
@@ -12,12 +14,8 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(Cursor))]
-    public class CursorRenderer : SpacialElementRenderer
+    public class CursorRenderer : SingleStyleRenderer
     {
-        public CursorRenderer()
-        {
-            Background = ConsoleColor.Cyan;
-            ZIndex = int.MaxValue;
-        }
+        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter('X', ConsoleColor.DarkCyan, ConsoleColor.Cyan);
     }
 }

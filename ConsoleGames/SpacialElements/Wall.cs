@@ -15,7 +15,7 @@ namespace ConsoleGames
         public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
         public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
 
-        public ConsoleCharacter Pen { get; set; } = new ConsoleCharacter(' ', ConsoleColor.White);
+        public ConsoleCharacter? Pen { get; set; }
 
         public Event Damaged { get; private set; } = new Event();
 
@@ -34,18 +34,20 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(Wall))]
-    public class WallRenderer : SpacialElementRenderer
+    public class WallRenderer : ThemeAwareSpacialElementRenderer
     {
+        public ConsoleCharacter Style { get; set; } = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.White);
+
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = (Element as Wall).Pen;
+            context.Pen = Style;
 
-            if(context.Pen.Value == ' ' && context.Pen.BackgroundColor == ConsoleString.DefaultBackgroundColor)
+            if (context.Pen.Value == ' ' && context.Pen.BackgroundColor == ConsoleString.DefaultBackgroundColor)
             {
                 context.Pen = new ConsoleCharacter('W');
             }
 
-            context.DrawPoint(0, 0);
+            context.FillRect(0, 0, Width, Height);
         }
     }
 

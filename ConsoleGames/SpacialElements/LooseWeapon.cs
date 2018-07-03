@@ -37,12 +37,18 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(LooseWeapon))]
-    public class LooseWeaponRenderer : SpacialElementRenderer
+    public class LooseWeaponRenderer : ThemeAwareSpacialElementRenderer
     {
+        public LooseWeaponRenderer()
+        {
+            Background = ConsoleColor.White;
+            Foreground = ConsoleColor.Black;
+        }
+
         protected override void OnPaint(ConsoleBitmap context)
         {
             var indicator = (Element as LooseWeapon).InnerWeapon.GetType().Name[0];
-            context.Pen = new PowerArgs.ConsoleCharacter(indicator, ConsoleColor.Yellow);
+            context.Pen = new PowerArgs.ConsoleCharacter(indicator, Foreground, Background);
             context.DrawPoint(0, 0);
         }
     }

@@ -1,5 +1,7 @@
-﻿using PowerArgs.Cli.Physics;
+﻿using PowerArgs;
+using PowerArgs.Cli.Physics;
 using System;
+using PowerArgs.Cli;
 
 namespace ConsoleGames
 {
@@ -42,11 +44,8 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(Explosive))]
-    public class ExplosiveRenderer : SpacialElementRenderer
+    public class ExplosiveRenderer : SingleStyleRenderer
     {
-        public ExplosiveRenderer()
-        {
-            Background = ConsoleColor.DarkYellow;
-        }
+        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter(' ', backgroundColor: ConsoleColor.DarkYellow);
     }
 }

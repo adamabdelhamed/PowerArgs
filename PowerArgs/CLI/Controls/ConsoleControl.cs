@@ -114,8 +114,8 @@ namespace PowerArgs.Cli
         public ConsoleControl()
         {
             CanFocus = true;
-            Background = Theme.DefaultTheme.BackgroundColor;
-            this.Foreground = Theme.DefaultTheme.ForegroundColor;
+            Background = DefaultColors.BackgroundColor;
+            this.Foreground = DefaultColors.ForegroundColor;
             this.IsVisible = true;
             this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> 
             {

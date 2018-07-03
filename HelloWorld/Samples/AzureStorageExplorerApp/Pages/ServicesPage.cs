@@ -22,7 +22,7 @@ namespace HelloWorld.Samples
             CommandBar.Add(new NotificationButton(ProgressOperationManager));
 
             Grid.DataSource = new MemoryDataSource() { Items = new List<object>() { new Service("containers"), new Service("tables"), new Service("queues") } };
-            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(Service.Name).ToConsoleString(Theme.DefaultTheme.H1Color)));
+            Grid.VisibleColumns.Add(new ColumnViewModel(nameof(Service.Name).ToConsoleString(DefaultColors.H1Color)));
             Grid.SelectedItemActivated += Navigate;
         }
 

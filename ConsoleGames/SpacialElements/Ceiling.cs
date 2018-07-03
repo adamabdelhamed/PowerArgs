@@ -1,4 +1,5 @@
-﻿using PowerArgs.Cli;
+﻿using PowerArgs;
+using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
@@ -25,18 +26,12 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(Ceiling))]
-    public class CielingRenderer : SpacialElementRenderer
+    public class CeilingRenderer : SingleStyleRenderer
     {
-        public CielingRenderer()
-        {
-            this.ZIndex = int.MaxValue-1;
-            Background = ConsoleColor.Gray;
-        }
-
-        public override void OnRender()
-        {
-            this.IsVisible = (Element as Ceiling).IsVisible;
-        }
+        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Gray);
+        public CeilingRenderer() { this.ZIndex = int.MaxValue-1; }
+        public override void OnRender() => this.IsVisible = (Element as Ceiling).IsVisible;
+        
     }
 
     public class CeilingReviver : ItemReviver

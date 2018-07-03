@@ -1,4 +1,5 @@
-﻿using PowerArgs.Cli;
+﻿using PowerArgs;
+using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 
@@ -74,17 +75,8 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(Projectile))]
-    public class ProjectileRenderer : SpacialElementRenderer
+    public class ProjectileRenderer : SingleStyleRenderer
     {
-        public ProjectileRenderer()
-        {
-            TransparentBackground = true;
-        }
-
-        protected override void OnPaint(ConsoleBitmap context)
-        {
-            context.Pen = new PowerArgs.ConsoleCharacter('*', ConsoleColor.Red);
-            context.DrawPoint(0, 0);
-        }
+        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter('*', ConsoleColor.Red);
     }
 }

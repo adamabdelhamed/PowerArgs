@@ -6,21 +6,20 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
-    public class Theme
+    public static class DefaultColors
     {
-        public ConsoleColor BackgroundColor { get; set; }
-        public ConsoleColor ForegroundColor { get; set; }
-        public ConsoleColor FocusColor { get; set; }
-        public ConsoleColor FocusContrastColor { get; set; }
-        public ConsoleColor SelectedUnfocusedColor { get; set; }
-        public ConsoleColor H1Color { get; set; }
-        public ConsoleColor ButtonColor { get; set; }
-        public ConsoleColor HighlightColor { get; set; }
-        public ConsoleColor HighlightContrastColor { get; set; }
-        public ConsoleColor DisabledColor { get; set; }
-        public static readonly Theme DefaultTheme = new Theme();
+        public static ConsoleColor BackgroundColor { get; set; }
+        public static ConsoleColor ForegroundColor { get; set; }
+        public static ConsoleColor FocusColor { get; set; }
+        public static ConsoleColor FocusContrastColor { get; set; }
+        public static ConsoleColor SelectedUnfocusedColor { get; set; }
+        public static ConsoleColor H1Color { get; set; }
+        public static ConsoleColor ButtonColor { get; set; }
+        public static ConsoleColor HighlightColor { get; set; }
+        public static ConsoleColor HighlightContrastColor { get; set; }
+        public static ConsoleColor DisabledColor { get; set; }
 
-        public Theme()
+        static DefaultColors()
         {
             BackgroundColor = ConsoleString.DefaultBackgroundColor;
             ForegroundColor = ConsoleString.DefaultForegroundColor;

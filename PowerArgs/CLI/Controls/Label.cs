@@ -31,7 +31,7 @@ namespace PowerArgs.Cli
     /// </summary>
     public class Label : ConsoleControl
     {
-        internal static readonly ConsoleString Null = "<null>".ToConsoleString(Theme.DefaultTheme.DisabledColor);
+        internal static readonly ConsoleString Null = "<null>".ToConsoleString(DefaultColors.DisabledColor);
 
         /// <summary>
         /// Gets or sets the text displayed on the label
@@ -186,7 +186,7 @@ namespace PowerArgs.Cli
 
                 for(int x = 0; x < line.Count && x < Width; x++)
                 {
-                    context.Pen = HasFocus ? new ConsoleCharacter(line[x].Value, Application.Theme.FocusContrastColor, Application.Theme.FocusColor) : line[x];
+                    context.Pen = HasFocus ? new ConsoleCharacter(line[x].Value, DefaultColors.FocusContrastColor, DefaultColors.FocusColor) : line[x];
                     context.DrawPoint(x, y);
                 }
             }

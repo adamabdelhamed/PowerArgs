@@ -53,10 +53,16 @@ namespace ConsoleGames
     }
 
     [SpacialElementBinding(typeof(Fire))]
-    public class FireRenderer : SpacialElementRenderer
+    public class FireRenderer : ThemeAwareSpacialElementRenderer
     {
-        Random r = new Random();
-        char[] symbols = new char[] { '~', '-' };
+        public ConsoleColor PrimaryBurnColor { get; set; } = ConsoleColor.Yellow;
+        public ConsoleColor SecondaryBurnColor { get; set; } = ConsoleColor.Red;
+
+        public char BurnSymbol1 { get; set; } = '~';
+        public char BurnSymbol2 { get; set; } = '-';
+
+        private static Random r = new Random();
+
         public FireRenderer()
         {
             this.TransparentBackground = true;
@@ -66,11 +72,10 @@ namespace ConsoleGames
         {
             if (r.NextDouble() < .8)
             {
-                var color = r.NextDouble() < .8 ? ConsoleColor.Yellow : ConsoleColor.Red;
+                var color = r.NextDouble() < .8 ? PrimaryBurnColor : SecondaryBurnColor;
+                var symbol = r.NextDouble() < .5 ? BurnSymbol1 : BurnSymbol2;
 
-                var symbol = symbols[r.Next(0, symbols.Length)];
-
-                context.Pen = new PowerArgs.ConsoleCharacter(symbol, color);
+                context.Pen = new ConsoleCharacter(symbol, color);
                 context.FillRect(0, 0, Width, Height);
             }
         }

@@ -42,12 +42,12 @@ namespace HelloWorld.Samples
             {
                 var prototype = Grid.DataView.Items.First() as DynamicTableEntity;
                 Grid.VisibleColumns.Clear();
-                Grid.VisibleColumns.Add(new ColumnViewModel("PartitionKey".ToConsoleString(Application.Theme.H1Color)));
-                Grid.VisibleColumns.Add(new ColumnViewModel("RowKey".ToConsoleString(Application.Theme.H1Color)));
+                Grid.VisibleColumns.Add(new ColumnViewModel("PartitionKey".ToConsoleString(DefaultColors.H1Color)));
+                Grid.VisibleColumns.Add(new ColumnViewModel("RowKey".ToConsoleString(DefaultColors.H1Color)));
 
                 for (int i = 0; i < prototype.Properties.Count && i < 2; i++)
                 {
-                    Grid.VisibleColumns.Add(new ColumnViewModel(prototype.Properties.Keys.ToList()[i].ToConsoleString(Application.Theme.H1Color)));
+                    Grid.VisibleColumns.Add(new ColumnViewModel(prototype.Properties.Keys.ToList()[i].ToConsoleString(DefaultColors.H1Color)));
                 }
             }
             else
@@ -94,7 +94,7 @@ namespace HelloWorld.Samples
                  ProgressOperation operation = new ProgressOperation()
                  {
                      State = OperationState.InProgress,
-                     Message = "Deleting entity ".ToConsoleString() + rowKey.ToConsoleString(Application.Theme.H1Color) + " from table " + table.Name,
+                     Message = "Deleting entity ".ToConsoleString() + rowKey.ToConsoleString(DefaultColors.H1Color) + " from table " + table.Name,
                  };
 
                  ProgressOperationManager.Operations.Add(operation);
@@ -104,13 +104,13 @@ namespace HelloWorld.Samples
                  {
                       if (t.Exception != null)
                       {
-                          operation.Message = "Failed to delete entity ".ToConsoleString(ConsoleColor.Red) + rowKey.ToConsoleString(applicationRef.Theme.H1Color) + " from table " + table.Name;
+                          operation.Message = "Failed to delete entity ".ToConsoleString(ConsoleColor.Red) + rowKey.ToConsoleString(DefaultColors.H1Color) + " from table " + table.Name;
                           operation.Details = t.Exception.ToString().ToConsoleString();
                           operation.State = OperationState.Failed;
                       }
                       else
                       {
-                          operation.Message = "Finished deleting entity ".ToConsoleString() + rowKey.ToConsoleString(applicationRef.Theme.H1Color) + " from table " + table.Name;
+                          operation.Message = "Finished deleting entity ".ToConsoleString() + rowKey.ToConsoleString(DefaultColors.H1Color) + " from table " + table.Name;
                           operation.State = OperationState.Completed;
                       }
 
