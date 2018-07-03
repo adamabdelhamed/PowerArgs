@@ -12,6 +12,20 @@ namespace PowerArgs.Cli.Physics
     {
         private class StopTimeException : Exception { }
 
+
+        private class WorkItem
+        {
+            public Action Work { get; set; }
+
+            public Deferred Deferred { get; set; }
+
+            public WorkItem(Action work)
+            {
+                this.Work = work;
+                Deferred = Deferred.Create();
+            }
+        }
+
         [ThreadStatic]
         private static Time current;
 
@@ -59,7 +73,7 @@ namespace PowerArgs.Cli.Physics
         private List<ITimeFunction> toAdd = new List<ITimeFunction>();
         private List<ITimeFunction> toRemove = new List<ITimeFunction>();
         private Deferred runDeferred;
-        private Queue<Action> syncQueue = new Queue<Action>();
+        private Queue<WorkItem> syncQueue = new Queue<WorkItem>();
 
         /// <summary>
         /// Creates a new time model, optionally providing a starting time and increment
@@ -87,7 +101,7 @@ namespace PowerArgs.Cli.Physics
                     current = this;
                     while (true)
                     {
-                        List<Action> syncActions = new List<Action>();
+                        List<WorkItem> syncActions = new List<WorkItem>();
                         lock (syncQueue)
                         {
                             while (syncQueue.Count > 0)
@@ -98,7 +112,8 @@ namespace PowerArgs.Cli.Physics
 
                         foreach (var syncAction in syncActions)
                         {
-                            syncAction();
+                            syncAction.Work();
+                            syncAction.Deferred.Resolve();
                         }
 
                         Tick();
@@ -140,11 +155,13 @@ namespace PowerArgs.Cli.Physics
         /// Queues an action that will run at the beginning of the next time iteration
         /// </summary>
         /// <param name="action">code to run at the beginning of the next time iteration</param>
-        public void QueueAction(Action action)
+        public Promise QueueAction(Action action)
         {
             lock (syncQueue)
             {
-                syncQueue.Enqueue(action);
+                var workItem = new WorkItem(action);
+                syncQueue.Enqueue(workItem);
+                return workItem.Deferred.Promise;
             }
         }
 

@@ -145,7 +145,7 @@ namespace PowerArgs.Cli
             var index = focusStack.Peek().Controls.IndexOf(newFocusControl);
             if (index < 0)
             {
-                throw new InvalidOperationException("The given control is not in the control tree");
+                return false;
             }
 
             if(newFocusControl.CanFocus == false)

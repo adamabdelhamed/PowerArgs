@@ -13,7 +13,7 @@ namespace Playground
             return;
 
             var app = new ConsoleApp();
-            app.LayoutRoot.Add(new LevelEditor(75, 20)).CenterVertically().CenterHorizontally();
+            app.LayoutRoot.Add(new LevelEditor()).CenterVertically().CenterHorizontally();
             app.Start().Wait();
         }
     }

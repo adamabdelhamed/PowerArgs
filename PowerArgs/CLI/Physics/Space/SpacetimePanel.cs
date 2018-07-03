@@ -62,7 +62,7 @@ namespace PowerArgs.Cli.Physics
         {
             foreach (var element in SpaceTime.AddedElements)
             {
-                Application.QueueAction(() =>
+                Application?.QueueAction(() =>
                 {
                     var renderer = thingBinder.Bind(element, SpaceTime);
                     renderers.Add(element, renderer);
@@ -74,7 +74,7 @@ namespace PowerArgs.Cli.Physics
 
             foreach (var t in SpaceTime.ChangedElements)
             {
-                Application.QueueAction(() =>
+                Application?.QueueAction(() =>
                 {
                     var renderer = renderers[t];
                     SizeAndLocate(renderer);
@@ -84,7 +84,7 @@ namespace PowerArgs.Cli.Physics
 
             foreach (var t in SpaceTime.RemovedElements)
             {
-                Application.QueueAction(() =>
+                Application?.QueueAction(() =>
                 {
                     var renderer = renderers[t];
                     renderers.Remove(t);
@@ -96,7 +96,7 @@ namespace PowerArgs.Cli.Physics
             {
                 foreach (var renderer in renderers.Values)
                 {
-                    Application.QueueAction(() =>
+                    Application?.QueueAction(() =>
                     {
                         SizeAndLocate(renderer);
                     });
@@ -105,7 +105,7 @@ namespace PowerArgs.Cli.Physics
 
             resizedSinceLastRender = false;
             SpaceTime.ClearChanges();
-            Application.Paint();
+            Application?.Paint();
         }
 
         private bool SizeAndLocate(SpacialElementRenderer r)
@@ -197,14 +197,20 @@ namespace PowerArgs.Cli.Physics
 
             foreach (var rendererAssembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (Type t in from type in rendererAssembly.ExportedTypes where type.GetTypeInfo().IsSubclassOf(typeof(SpacialElementRenderer)) select type)
+                if(rendererAssembly.IsDynamic)
+                {
+                    continue;
+                }
+
+                var types = rendererAssembly.ExportedTypes.ToList();
+                foreach (Type t in from type in types where IsRendererType(type) select type)
                 {
                     if (t.GetTypeInfo().GetCustomAttributes(typeof(SpacialElementBindingAttribute), true).Count() != 1) continue;
                     rendererTypes.Add(t);
                 }
             }
 
-            foreach (var thingAssembly in AppDomain.CurrentDomain.GetAssemblies())
+            foreach (var thingAssembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => a.IsDynamic == false))
             {
                 foreach (Type t in from type in thingAssembly.ExportedTypes where type.GetTypeInfo().IsSubclassOf(typeof(SpacialElement)) select type)
                 {
@@ -213,6 +219,11 @@ namespace PowerArgs.Cli.Physics
             }
 
             return ret;
+        }
+
+        private bool IsRendererType(Type type)
+        {
+            return type.GetTypeInfo().IsSubclassOf(typeof(SpacialElementRenderer));
         }
 
         private Type FindMatchingBinder(List<Type> rendererTypes, Type thingType)

@@ -293,8 +293,8 @@ namespace PowerArgs.Cli
             {
                 if (k.Key == ConsoleKey.Enter)
                 {
-                    resultCallback(inputBox.Value);
                     ConsoleApp.Current.LayoutRoot.Controls.Remove(dialog);
+                    resultCallback(inputBox.Value);
                 }
             }, inputBox.LifetimeManager);
 

@@ -21,18 +21,22 @@ namespace Playground
         private ShooterKeys shooterKeys = new ShooterKeys();
         private GameState currentState;
 
-        protected override void OnSceneInitialize()
+        public PlaygroundGame()
         {
-            this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
             currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
 
-            if(currentState.Data.TryGetValue("CurrentLevel", out object levelName) == false)
+            if (currentState.Data.TryGetValue("CurrentLevel", out object levelName) == false)
             {
                 levelName = "DefaultLevel";
             }
 
             var level = LevelEditor.LoadBySimpleName(levelName.ToString());
             this.Load(level);
+        }
+
+        protected override void OnSceneInitialize()
+        {
+            this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
         }
 
         protected override void OnLevelLoaded(Level l)

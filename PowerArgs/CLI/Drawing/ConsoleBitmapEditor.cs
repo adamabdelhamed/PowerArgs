@@ -72,7 +72,10 @@ namespace PowerArgs.Cli
             {
                 Application.SetTimeout(() =>
                 {
-                    frame.TryFocus();
+                    if (this.IsExpired == false)
+                    {
+                        frame.TryFocus();
+                    }
                 }, TimeSpan.FromMilliseconds(10));
             });
         }

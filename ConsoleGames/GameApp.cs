@@ -1,4 +1,5 @@
-﻿using PowerArgs.Cli;
+﻿using PowerArgs;
+using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 
@@ -17,13 +18,13 @@ namespace ConsoleGames
         public KeyboardInputManager KeyboardInput { get; private set; } 
         public GameStateManager GameState { get; private set; }
 
-        public int SceneWidth { get; set; } = 78;
-        public int SceneHeight { get; set; } = 40;
-
         public MainCharacter MainCharacter { get { return Get<MainCharacter>(); } private set { Set(value); } }
+
+        private ConsolePanel disposableRoot;
 
         public GameApp()
         {
+            GameState = new GameStateManager();
             this.QueueActionInFront(InitializeGame);
         }
 
@@ -39,46 +40,64 @@ namespace ConsoleGames
         private void InitializeGame()
         {
             ConfigureQuitOnEscapeKey();
-            ConfigureGamingArea();
             OnAppInitialize();
         }
 
         public void Load(Level level)
         {
-            BeforeLevelUnloaded();
-            foreach(var element in Scene.Elements)
+            Promise cleanupPromise = null;
+            if (ScenePanel != null)
             {
-                element.Lifetime.Dispose();
+                cleanupPromise = Scene.QueueAction(() =>
+                {
+                    BeforeLevelUnloaded();
+                    foreach (var element in Scene.Elements)
+                    {
+                        element.Lifetime.Dispose();
+                    }
+                });
+            }
+            else
+            {
+                var d = Deferred.Create();
+                cleanupPromise = d.Promise;
+                d.Resolve();
             }
 
-            foreach (var item in SceneFactory.InitializeScene(level))
+            cleanupPromise.Then(()=> QueueAction(() => ConfigureGamingArea(level.Width, level.Height)).Then(() =>
             {
-                if(item is IGameAppAware)
+                Scene.QueueAction(() =>
                 {
-                    (item as IGameAppAware).GameApp = this;
-                }
+                    foreach (var item in SceneFactory.InitializeScene(level))
+                    {
+                        if (item is IGameAppAware)
+                        {
+                            (item as IGameAppAware).GameApp = this;
+                        }
 
-                if (item is MainCharacter)
-                {
-                    this.MainCharacter = item as MainCharacter;
-                }
+                        if (item is MainCharacter)
+                        {
+                            this.MainCharacter = item as MainCharacter;
+                        }
 
-                this.Scene.Add(item);
-                OnAddedToScene(item);
-            }
-            OnLevelLoaded(level);
+                        this.Scene.Add(item);
+                        OnAddedToScene(item);
+                    }
+                    OnLevelLoaded(level);
+                });
+            }));
+            
         }
 
-
-        private void ConfigureGamingArea()
+        private void ConfigureGamingArea(int w, int h)
         {
-            var borderPanel = LayoutRoot.Add(new ConsolePanel() { Background = ConsoleColor.DarkGray, Width = SceneWidth + 2, Height = SceneHeight + 2 }).CenterHorizontally().CenterVertically();
-            ScenePanel = borderPanel.Add(new SpacetimePanel(SceneWidth, SceneHeight)).Fill(padding: new Thickness(1, 1, 1, 1));
+            LayoutRoot.Controls.Remove(disposableRoot);
+            disposableRoot = LayoutRoot.Add(new ConsolePanel() { Background = ConsoleColor.DarkGray, Width = w + 2, Height = h + 2 }).CenterHorizontally().CenterVertically();
+            ScenePanel = disposableRoot.Add(new SpacetimePanel(w, h)).Fill(padding: new Thickness(1, 1, 1, 1));
             ScenePanel.Background = ConsoleColor.Black;
             Scene.QueueAction(OnSceneInitialize);
-            Scene.Start();
             KeyboardInput = new KeyboardInputManager(Scene, this);
-            GameState = new GameStateManager();
+            Scene.Start();
             LayoutRoot.Add(new FramerateControl(ScenePanel));
 
         }

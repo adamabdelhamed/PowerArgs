@@ -67,6 +67,8 @@ namespace PowerArgs.Cli
 
         private Action pumpAction;
 
+        public Deferred Deferred { get; set; }
+
         /// <summary>
         /// Creates a pump message with the given action and idempotency id.  
         /// </summary>
@@ -187,10 +189,12 @@ namespace PowerArgs.Cli
         /// Queues the given action for processing on the pump thread
         /// </summary>
         /// <param name="a">the action that will be processed in order on the pump thread</param>
-        public void QueueAction(Action a)
+        public Promise QueueAction(Action a)
         {
-            var pumpMessage = new PumpMessage(a);
+            var d = Deferred.Create();
+            var pumpMessage = new PumpMessage(a) { Deferred = d };
             QueueAction(pumpMessage);
+            return d.Promise;
         }
 
         /// <summary>
@@ -392,9 +396,11 @@ namespace PowerArgs.Cli
             try
             {
                 work.Execute();
+                work.Deferred?.Resolve();
             }
             catch (Exception ex)
             {
+                work.Deferred?.Reject(ex);
                 PumpExceptionArgs exceptionArgs = new PumpExceptionArgs(ex);
                 PumpException.Fire(exceptionArgs);
       

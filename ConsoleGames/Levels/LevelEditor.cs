@@ -19,23 +19,33 @@ namespace ConsoleGames
         private bool hasUnsavedChanges = false;
         private Button saveCommand;
 
+        private Level currentLevel;
+
         public static Level LoadBySimpleName(string simpleName)
         {
             var ret = Level.Deserialize(File.ReadAllText(Path.Combine(SavedLevelsDirectory, simpleName + LevelFileExtension)));
             ret.Name = simpleName;
             return ret;
         }
-        public LevelEditor(int levelWidth, int levelHeight, ConsoleCharacter? bg = null)
+        public LevelEditor()
         {
             if (Directory.Exists(SavedLevelsDirectory) == false)
             {
                 Directory.CreateDirectory(SavedLevelsDirectory);
             }
 
-            innerEditor = Add(new ConsoleBitmapEditor(levelWidth, levelHeight, bg));
+            ConfigueEditor();
+        }
 
-            innerEditor.BitmapChanged.SubscribeForLifetime(() => hasUnsavedChanges = true, this.LifetimeManager);
+        private void ConfigueEditor()
+        {
+            if(innerEditor != null)
+            {
+                this.Controls.Remove(innerEditor);
+            }
 
+            innerEditor = Add(new ConsoleBitmapEditor(currentLevel != null ? currentLevel.Width : Level.DefaultWidth, currentLevel != null ? currentLevel.Height : Level.DefaultHeight));
+            innerEditor.BitmapChanged.SubscribeForLifetime(() => hasUnsavedChanges = true, innerEditor.LifetimeManager);
             this.Width = innerEditor.Width;
             this.Height = innerEditor.Height;
 
@@ -50,14 +60,14 @@ namespace ConsoleGames
             {
                 if (hasUnsavedChanges == false)
                 {
-                    Load(new Level());
+                    LoadLevel(null);
                     currentLevelPath = null;
                 }
                 else
                 {
-                    UnsavedChanges(()=>
+                    UnsavedChanges(() =>
                     {
-                        Load(new Level());
+                        LoadLevel(null);
                         currentLevelPath = null;
                     });
                 }
@@ -71,7 +81,7 @@ namespace ConsoleGames
                 }
                 else
                 {
-                    UnsavedChanges(()=>
+                    UnsavedChanges(() =>
                     {
                         Open();
                     });
@@ -115,7 +125,7 @@ namespace ConsoleGames
                     }
                     else
                     {
-                        Clear();
+                        ConfigueEditor();
                     }
                 });
             }, this.LifetimeManager);
@@ -138,6 +148,7 @@ namespace ConsoleGames
                 },
                 initialValue: tagsString.ToConsoleString());
             }, this.LifetimeManager);
+            tags.Clear();
         }
 
         private void Open()
@@ -180,13 +191,6 @@ namespace ConsoleGames
                         new DialogButton() { DisplayText = "Cancel".ToConsoleString(), Id="cancel" },
                     });
         }
-    
-        private void Clear()
-        {
-            this.innerEditor.Bitmap.Pen = new ConsoleCharacter(' ');
-            this.innerEditor.Bitmap.FillRect(0, 0, innerEditor.Bitmap.Width, innerEditor.Bitmap.Height);
-            this.tags.Clear();
-        }
 
         private void Load(string path)
         {
@@ -194,7 +198,7 @@ namespace ConsoleGames
             {
                 var level = Level.Deserialize(File.ReadAllText(path));
                 level.Name = Path.GetFileNameWithoutExtension(path);
-                Load(level);
+                LoadLevel(level);
                 currentLevelPath = path;
             }
             catch (Exception ex)
@@ -203,9 +207,45 @@ namespace ConsoleGames
             }
         }
 
-        private void Load(Level l)
+        private void LoadLevel(Level l)
         {
-            Clear();
+            if(l != null)
+            {
+                LoadLevelInternal(l);
+            }
+            else
+            {
+                Dialog.ShowRichTextInput("Choose Width".ToConsoleString(), (val) =>
+                {
+                    if(int.TryParse(val.ToString(), out int w) == false)
+                    {
+                        Dialog.ShowMessage("Invalid width: "+val);
+                    }
+                    else
+                    {
+                        Dialog.ShowRichTextInput("Choose height".ToConsoleString(), (heightVal) =>
+                        {
+                            if (int.TryParse(heightVal.ToString(), out int h) == false)
+                            {
+                                Dialog.ShowMessage("Invalid height: " + heightVal);
+                            }
+                            else
+                            {
+                                LoadLevelInternal(new Level() { Width = w, Height = h });
+                            }
+
+                        }, initialValue: Level.DefaultWidth.ToString().ToConsoleString());
+                    }
+
+                }, initialValue: Level.DefaultWidth.ToString().ToConsoleString());
+            }
+
+        }
+
+        private void LoadLevelInternal(Level l)
+        {
+            this.currentLevel = l;
+            ConfigueEditor();
             foreach (var item in l.Items)
             {
                 this.innerEditor.Bitmap.Pen = new ConsoleCharacter(item.Symbol, item.FG, item.BG);
@@ -217,7 +257,9 @@ namespace ConsoleGames
 
         private Level ExtractLevel()
         {
-            var ret = new Level();
+            var ret = currentLevel ?? new Level();
+            ret.Items.Clear();
+
             for (var x = 0; x < innerEditor.Bitmap.Width; x++)
             {
                 for (var y = 0; y < innerEditor.Bitmap.Height; y++)

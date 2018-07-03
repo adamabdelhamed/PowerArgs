@@ -7,8 +7,15 @@ namespace ConsoleGames
 {
     public class Level
     {
+        public const int DefaultWidth = 78;
+        public const int DefaultHeight = 30;
+
         [JsonIgnore]
         public string Name { get; set; }
+
+        public int Width { get; set; } = DefaultHeight;
+        public int Height { get; set; } = DefaultWidth;
+
         public List<LevelItem> Items { get; set; } = new List<LevelItem>();
         public string Serialize() => JsonConvert.SerializeObject(this, Formatting.Indented);
         public static Level Deserialize(string json) => JsonConvert.DeserializeObject<Level>(json);
