@@ -32,6 +32,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Set to true if you want to suppress notification events for properties that get set to their existing values.
         /// </summary>
+        [FormIgnore]
         public bool SuppressEqualChanges { get; set; }
 
         /// <summary>

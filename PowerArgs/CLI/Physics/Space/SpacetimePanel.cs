@@ -36,6 +36,7 @@ namespace PowerArgs.Cli.Physics
 
             this.AddedToVisualTree.SubscribeForLifetime(() =>
             {
+                this.SpaceTime.Application = this.Application;
                 this.OnDisposed(Application.SetInterval(() =>
                 {
                     RealTimeViewing?.Evaluate();

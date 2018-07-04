@@ -91,6 +91,28 @@ namespace ConsoleGames
             }));
             
         }
+ 
+
+        internal void Pause(bool showPauseDialog)
+        {
+            if(Scene.IsRunning)
+            {
+                Scene.Stop();
+                if (showPauseDialog)
+                {
+                    QueueAction(() => Dialog.ShowMessage("Game paused", Resume));
+                }
+            }
+        }
+
+        public void Resume()
+        {
+            if(Scene.IsRunning == false)
+            {
+                ScenePanel.RealTimeViewing.ReSync();
+                Scene.Start();
+            }
+        }
 
         private void ConfigureGamingArea(int w, int h)
         {
@@ -112,8 +134,7 @@ namespace ConsoleGames
                 Scene.Stop();
                 Dialog.ConfirmYesOrNo("Are you sure you want to quit?", Stop, () =>
                 {
-                    ScenePanel.RealTimeViewing.ReSync();
-                    Scene.Start();
+                    Resume();
                 });
             }, this);
         }

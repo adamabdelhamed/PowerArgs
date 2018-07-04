@@ -13,6 +13,8 @@ namespace PowerArgs.Cli.Physics
         private class StopTimeException : Exception { }
 
 
+        public ConsoleApp Application { get; set; }
+
         private class WorkItem
         {
             public Action Work { get; set; }
@@ -64,6 +66,12 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         public TimeSpan Increment { get; private set; }
 
+
+        /// <summary>
+        /// Tells you if the time thread is currently running
+        /// </summary>
+        public bool IsRunning { get; private set; }
+
         /// <summary>
         /// Enumerates all of the time functions that are a part of the model as of now.
         /// </summary>
@@ -96,6 +104,7 @@ namespace PowerArgs.Cli.Physics
             runDeferred.Promise.Finally((p) => { runDeferred = null; });
             Thread t = new Thread(() =>
             {
+                IsRunning = true;
                 try
                 {
                     current = this;
@@ -122,10 +131,12 @@ namespace PowerArgs.Cli.Physics
                 }
                 catch (StopTimeException)
                 {
+                    IsRunning = false;
                     runDeferred.Resolve();
                 }
                 catch (Exception ex)
                 {
+                    IsRunning = false;
                     UnhandledException.Fire(ex);
                     runDeferred.Reject(ex);
                 }

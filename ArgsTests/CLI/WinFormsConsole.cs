@@ -52,7 +52,7 @@ namespace ArgsTests.CLI
 
             public static void Run(ConsoleApp app, WinFormsTestConsole console, Action input)
             {
-                var form = new Form();
+                var form = new System.Windows.Forms.Form();
                 form.BackColor = Color.Black;
                 form.Width = console.Width;
                 form.Height = console.Height;

@@ -1,4 +1,5 @@
 ﻿using PowerArgs.Cli;
+using PowerArgs.Cli.Physics;
 using System;
 
 namespace ConsoleGames
@@ -54,7 +55,25 @@ namespace ConsoleGames
             ret.KeyboardMap.Add(InteractKey, () => MainCharacter.Current?.TryInteract());
             ret.KeyboardMap.Add(PrimaryWeaponKey, () => (MainCharacter.Current?.Inventory)?.PrimaryWeapon?.TryFire());
             ret.KeyboardMap.Add(ExplosiveWeaponKey, () => (MainCharacter.Current?.Inventory)?.ExplosiveWeapon?.TryFire());
+            ret.KeyboardMap.Add(TogglePauseKey, () => (SpaceTime.CurrentSpaceTime.Application as GameApp)?.Pause(true));
+            ret.KeyboardMap.Add(MenuKey, () => ShowKeyMapForm());
+
             return ret;
+        }
+
+        private void ShowKeyMapForm()
+        {
+            var spaceTime = SpaceTime.CurrentSpaceTime;
+            (spaceTime.Application as GameApp).Pause(false);
+            (spaceTime.Application as GameApp).QueueAction(() => 
+            {
+                var dialog = new Dialog(new Form(FormOptions.FromObject(this)));
+                dialog.Show().Then(() =>
+                {
+                    (spaceTime.Application as GameApp).KeyboardInput.KeyMap = this.ToKeyMap();
+                    (spaceTime.Application as GameApp).Resume();
+                });
+            });
         }
     }
 }
