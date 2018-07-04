@@ -13,7 +13,7 @@ namespace ConsoleGames
         {
             Sound.Play("thump");
             var rpg = new TimedMine(TimeSpan.FromSeconds(2));
-
+            rpg.MoveTo(Holder.Left, Holder.Top);
             var rpgSpeed = new SpeedTracker(rpg);
             rpgSpeed.HitDetectionTypes.Add(typeof(Wall));
             rpgSpeed.HitDetectionTypes.Add(typeof(Enemy));
@@ -28,16 +28,16 @@ namespace ConsoleGames
                 rpg.Explode();
             }, rpg.Lifetime);
 
-            var angle = MainCharacter.Current.Target != null ?
-                MainCharacter.Current.CalculateAngleTo(MainCharacter.Current.Target) :
-                MainCharacter.Current.Speed.Angle;
+            var angle = Holder.Target != null ?
+                Holder.CalculateAngleTo(MainCharacter.Current.Target) :
+                Holder.Speed.Angle;
 
-            if (MainCharacter.Current.FreeAimCursor != null)
+            if (MainCharacter.Current?.FreeAimCursor != null)
             {
                 angle = MainCharacter.Current.CalculateAngleTo(MainCharacter.Current.FreeAimCursor);
             }
 
-            new Force(rpgSpeed, 10, angle);
+            new Force(rpgSpeed, 25, angle);
             SpaceTime.CurrentSpaceTime.Add(rpg);
         }
     }

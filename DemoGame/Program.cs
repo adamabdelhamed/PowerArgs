@@ -7,7 +7,9 @@ namespace DemoGame
     {
         static void Main(string[] args)
         {
-            Sound.Provider = new WindowsSoundProvider.SoundProvider();
+            var winSound = new WindowsSoundProvider.SoundProvider();
+            Sound.Provider = winSound;
+            winSound.StartPromise.Wait();
             new DemoGameApp().Start().Wait();
             Sound.Dispose();
             return;

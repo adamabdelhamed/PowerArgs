@@ -11,9 +11,10 @@ namespace ConsoleGames
         public float AngleIncrement { get; set; } = 5;
         public float Range { get; set; } = 5;
 
+        public Event Exploded { get; private set; } = new Event();
+
         public Explosive() 
         {
-            this.MoveTo(MainCharacter.Current.Left, MainCharacter.Current.Top);
             this.AngleIncrement = 5;
             this.Range = 5;
         }
@@ -35,6 +36,7 @@ namespace ConsoleGames
                 SpaceTime.CurrentSpaceTime.Add(shrapnel);
             }
 
+            Exploded.Fire();
             this.Lifetime.Dispose();
         }
     }

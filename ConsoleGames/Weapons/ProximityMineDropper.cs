@@ -8,7 +8,9 @@ namespace ConsoleGames
 
         public override void FireInternal()
         {
-            SpaceTime.CurrentSpaceTime.Add(new ProximityMine());
+            var mine = new ProximityMine();
+            mine.MoveTo(Holder.Left, Holder.Top);
+            SpaceTime.CurrentSpaceTime.Add(mine);
         }
     }
 }

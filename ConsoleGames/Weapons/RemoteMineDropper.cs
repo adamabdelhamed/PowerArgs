@@ -17,6 +17,7 @@ namespace ConsoleGames
             else
             {
                 activeMine = new Explosive();
+                activeMine.MoveTo(Holder.Left, Holder.Top);
                 SpaceTime.CurrentSpaceTime.Add(activeMine);
             }
         }

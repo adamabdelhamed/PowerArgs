@@ -25,6 +25,9 @@ namespace WindowsSoundProvider
 
     internal class SoundThread : Lifetime
     {
+        private Deferred startDeferred = Deferred.Create();
+        public Promise StartPromise => startDeferred.Promise;
+ 
         [ThreadStatic]
         private static SoundThread _current;
 
@@ -91,7 +94,7 @@ namespace WindowsSoundProvider
         public Promise<Lifetime> Play(string name)
         {
             var d = Deferred<Lifetime>.Create();
-            if (HasSound(name))
+            if (players.ContainsKey(name))
             {
                 EnqueueSoundThreadAction(() =>
                 {
@@ -115,7 +118,7 @@ namespace WindowsSoundProvider
         public Promise<IDisposable> Loop(string name)
         {
             var d = Deferred<IDisposable>.Create();
-            if (HasSound(name))
+            if (players.ContainsKey(name))
             {
                 EnqueueSoundThreadAction(() =>
                 {
@@ -194,6 +197,7 @@ namespace WindowsSoundProvider
             };
             hiddenWindow.Show();
             hiddenWindow.Visibility = Visibility.Hidden;
+            startDeferred.Resolve();
             Dispatcher.Run();
         }
 
@@ -203,24 +207,16 @@ namespace WindowsSoundProvider
 
             foreach (var file in Directory.GetFiles(soundsDir))
             {
-                var key = Path.GetFileNameWithoutExtension(file);
-                ret.Add(key, PreLoad(key));
+                if (file.ToLower().EndsWith(".wav") || file.ToLower().EndsWith(".mp3") || file.ToLower().EndsWith(".m4a"))
+                {
+                    var key = Path.GetFileNameWithoutExtension(file);
+                    ret.Add(key, PreLoad(key));
+                }
             }
 
             return ret;
         }
-
-        private bool HasSound(string name)
-        {
-            var fileCandidates = new string[]
-            {
-                Path.Combine(soundsDir, name + ".wav"),
-                Path.Combine(soundsDir, name + ".mp3"),
-                Path.Combine(soundsDir, name + ".m45"),
-            };
-
-            return fileCandidates.Where(f => File.Exists(f)).Count() > 0;
-        }
+ 
 
         private MediaPlayer PreLoad(string name)
         {
@@ -237,10 +233,7 @@ namespace WindowsSoundProvider
             }
 
             MediaPlayer player = new MediaPlayer();
-            if (name == "music")
-            {
-                player.Volume = .1;
-            }
+            player.Volume = 0;
             player.Open(new Uri(file));
             return player;
         }

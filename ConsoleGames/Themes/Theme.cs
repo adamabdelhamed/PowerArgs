@@ -70,9 +70,11 @@ namespace ConsoleGames
 
         public ConsoleCharacter? Style { get; set; }
 
+        public ConsoleCharacter EffectiveStyle => Style.HasValue ? Style.Value : DefaultStyle;
+
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = Style.HasValue ? Style.Value : DefaultStyle;
+            context.Pen = EffectiveStyle;
             context.FillRect(0, 0, Width, Height);
         }
     }

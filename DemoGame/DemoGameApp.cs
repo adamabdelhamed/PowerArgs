@@ -23,34 +23,10 @@ namespace DemoGame
 
         private IDisposable bgMusicHandle;
 
-        public DemoGameApp()
-        {
-            currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
-
-            if (currentState.Data.TryGetValue("CurrentLevel", out object levelName) == false)
-            {
-                levelName = "DefaultLevel";
-            }
-
-            var level = LevelEditor.LoadBySimpleName(levelName.ToString());
-            this.Load(level);
-
-            this.Paused.SubscribeForLifetime(() =>
-            {
-                bgMusicHandle?.Dispose();
-                bgMusicHandle = null;
-            }, this);
-
-            this.Resumed.SubscribeForLifetime(() =>
-            {
-                Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
-            }, this);
-        }
-
+   
         protected override void OnSceneInitialize()
         {
             this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
-            Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
         }
 
         protected override void OnLevelLoaded(Level l)
@@ -76,21 +52,48 @@ namespace DemoGame
 
         protected override void OnAppInitialize()
         {
-            var hud = LayoutRoot.Add(new HeadsUpDisplay(this, shooterKeys)).CenterHorizontally().DockToBottom();
+            var introPanel = LayoutRoot.Add(new PowerArgsGamesIntro()).CenterHorizontally().CenterVertically();
+            introPanel.Play().Then(() =>
+            {
+                QueueAction(() =>
+                {
+                    var hud = LayoutRoot.Add(new HeadsUpDisplay(this, shooterKeys)).CenterHorizontally().DockToBottom();
 
-            this.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.T, null, () =>
-             {
-                 if(Theme is DefaultTheme)
-                 {
-                     Theme = new DarkTheme();
-                 }
-                 else
-                 {
-                     Theme = new DefaultTheme();
-                 }
-             }, this);
+                    this.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.T, null, () =>
+                    {
+                        if (Theme is DefaultTheme)
+                        {
+                            Theme = new DarkTheme();
+                        }
+                        else
+                        {
+                            Theme = new DefaultTheme();
+                        }
+                    }, this);
 
-        
+                    currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
+
+                    if (currentState.Data.TryGetValue("CurrentLevel", out object levelName) == false)
+                    {
+                        levelName = "DefaultLevel";
+                    }
+
+                    var level = LevelEditor.LoadBySimpleName(levelName.ToString());
+                    this.Load(level);
+
+                    this.Paused.SubscribeForLifetime(() =>
+                    {
+                        bgMusicHandle?.Dispose();
+                        bgMusicHandle = null;
+                    }, this);
+
+                    Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
+                    this.Resumed.SubscribeForLifetime(() =>
+                    {
+                        Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
+                    }, this);
+                }); 
+            });
         }
     }
 }

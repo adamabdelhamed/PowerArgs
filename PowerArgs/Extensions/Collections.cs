@@ -15,12 +15,13 @@ namespace PowerArgs
         /// <typeparam name="T">The type of items in the collection</typeparam>
         /// <param name="enumerable">the collection</param>
         /// <param name="a">the action to execute against each item</param>
-        public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> a)
+        public static IEnumerable<T> ForEach<T>(this IEnumerable<T> enumerable, Action<T> a)
         {
             foreach(var item in enumerable)
             {
                 a(item);
             }
+            return enumerable;
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace ConsoleGames
         private TimeSpan duration;
         private TimeSpan initTime;
 
-        private static Promise<IDisposable> currentSound;
+        private static Promise<Lifetime> currentSound;
 
         public Fire(TimeSpan duration)
         {
@@ -22,11 +22,12 @@ namespace ConsoleGames
             this.Tags.Add("hot");
         }
 
-        public static void BurnIfTouchingSomethingHot<T>(T me) where T : SpacialElement, IDestructible
+        public static void BurnIfTouchingSomethingHot<T>(T me, TimeSpan? burnTime = null) where T : SpacialElement, IDestructible
         {
+            burnTime = burnTime.HasValue ? burnTime.Value : TimeSpan.FromSeconds(3);
             if (SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasTag("hot") && e.CalculateDistanceTo(me) < 2).Count() > 0)
             {
-                var fire = new Fire(TimeSpan.FromSeconds(3));
+                var fire = new Fire(burnTime.Value);
                 fire.MoveTo(me.Left, me.Top, me.ZIndex+1);
                 fire.ResizeTo(me.Width, me.Height);
                 SpaceTime.CurrentSpaceTime.Add(fire);
@@ -38,14 +39,17 @@ namespace ConsoleGames
             initTime = Time.CurrentTime.Now;
             if(currentSound == null)
             {
-                currentSound = Sound.Loop("burn");
+                currentSound = Sound.Play("burn");
             }
 
             this.Lifetime.OnDisposed(() =>
             {
                 if(currentSound != null && SpaceTime.CurrentSpaceTime.Elements.Where(e => e != this && e is Fire).Count() == 0)
                 {
-                    currentSound?.Result.Dispose();
+                    if (currentSound.Result.IsExpired == false)
+                    {
+                        currentSound?.Result.Dispose();
+                    }
                     currentSound = null;
                 }
             });
@@ -63,8 +67,6 @@ namespace ConsoleGames
                 .Where(e => e is IDestructible && this.Touches(e))
                 .Select(e => e as IDestructible)
                 .ForEach(d => d.TakeDamage(1));
-
-       
         }
 
 

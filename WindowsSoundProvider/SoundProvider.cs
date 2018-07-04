@@ -7,6 +7,7 @@ namespace WindowsSoundProvider
 {
     public class SoundProvider : Disposable, ISoundProvider
     {
+        public Promise StartPromise => SoundThread.StartPromise;
         private SoundThread SoundThread { get; set; }
         public SoundProvider() { SoundThread = new SoundThread(); SoundThread.Start(); }
         public Promise<Lifetime> Play(string name) => SoundThread.Play(name);
