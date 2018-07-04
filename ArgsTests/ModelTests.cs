@@ -260,6 +260,9 @@ namespace ArgsTests
             var whitelist = new Type[]
             {
                 typeof(ArgReviverAttribute),
+                typeof(FormIgnoreAttribute),
+                typeof(FormReadOnlyAttribute),
+                typeof(FormLabelAttribute),
                 typeof(DynamicExpressionProviderAttribute),
                 typeof(ArgActions),
                 typeof(FilterableAttribute),
