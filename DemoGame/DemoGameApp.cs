@@ -21,6 +21,8 @@ namespace DemoGame
         private ShooterKeys shooterKeys = new ShooterKeys();
         private GameState currentState;
 
+        private IDisposable bgMusicHandle;
+
         public DemoGameApp()
         {
             currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
@@ -32,11 +34,23 @@ namespace DemoGame
 
             var level = LevelEditor.LoadBySimpleName(levelName.ToString());
             this.Load(level);
+
+            this.Paused.SubscribeForLifetime(() =>
+            {
+                bgMusicHandle?.Dispose();
+                bgMusicHandle = null;
+            }, this);
+
+            this.Resumed.SubscribeForLifetime(() =>
+            {
+                Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
+            }, this);
         }
 
         protected override void OnSceneInitialize()
         {
             this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
+            Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
         }
 
         protected override void OnLevelLoaded(Level l)

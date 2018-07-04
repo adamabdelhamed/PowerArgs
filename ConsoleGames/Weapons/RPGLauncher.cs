@@ -12,7 +12,7 @@ namespace ConsoleGames
         public override void FireInternal()
         {
             Sound.Play("thump");
-            var rpg = new TimedMine(TimeSpan.FromSeconds(2), MainCharacter.Current.Left, MainCharacter.Current.Top, 5, 4) { HealthPointsPerShrapnel = 5 };
+            var rpg = new TimedMine(TimeSpan.FromSeconds(2));
 
             var rpgSpeed = new SpeedTracker(rpg);
             rpgSpeed.HitDetectionTypes.Add(typeof(Wall));

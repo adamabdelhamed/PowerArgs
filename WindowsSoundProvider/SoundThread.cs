@@ -88,7 +88,31 @@ namespace WindowsSoundProvider
             }
         }
 
-        public Promise<IDisposable> Play(string name, bool loop)
+        public Promise<Lifetime> Play(string name)
+        {
+            var d = Deferred<Lifetime>.Create();
+            if (HasSound(name))
+            {
+                EnqueueSoundThreadAction(() =>
+                {
+                    var player = players[name];
+                    players[name] = PreLoad(name);
+                    var soundLifetime = new SoundPlaybackLifetime(player, false, this);
+                    CurrentlyPlayingSounds.Add(soundLifetime);
+                    d.Resolve(soundLifetime);
+                });
+            }
+            else
+            {
+                var lifetime = new Lifetime();
+                lifetime.Dispose();
+                d.Resolve(lifetime);
+            }
+
+            return d.Promise;
+        }
+
+        public Promise<IDisposable> Loop(string name)
         {
             var d = Deferred<IDisposable>.Create();
             if (HasSound(name))
@@ -97,14 +121,16 @@ namespace WindowsSoundProvider
                 {
                     var player = players[name];
                     players[name] = PreLoad(name);
-                    var soundLifetime = new SoundPlaybackLifetime(player, loop, this);
+                    var soundLifetime = new SoundPlaybackLifetime(player, true, this);
                     CurrentlyPlayingSounds.Add(soundLifetime);
                     d.Resolve(soundLifetime);
                 });
             }
             else
             {
-                d.Resolve(new DummyDisposable());
+                var lifetime = new Lifetime();
+                lifetime.Dispose();
+                d.Resolve(lifetime);
             }
 
             return d.Promise;
@@ -186,26 +212,14 @@ namespace WindowsSoundProvider
 
         private bool HasSound(string name)
         {
-            var file = Path.Combine(soundsDir, name + ".wav");
-
-            if (File.Exists(file) == false)
+            var fileCandidates = new string[]
             {
-                file = Path.Combine(soundsDir, name + ".m4a");
+                Path.Combine(soundsDir, name + ".wav"),
+                Path.Combine(soundsDir, name + ".mp3"),
+                Path.Combine(soundsDir, name + ".m45"),
+            };
 
-                if (File.Exists(file))
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-
-            }
-            else
-            {
-                return true;
-            }
+            return fileCandidates.Where(f => File.Exists(f)).Count() > 0;
         }
 
         private MediaPlayer PreLoad(string name)
@@ -215,6 +229,11 @@ namespace WindowsSoundProvider
             if (File.Exists(file) == false)
             {
                 file = Path.Combine(soundsDir, name + ".m4a");
+            }
+
+            if (File.Exists(file) == false)
+            {
+                file = Path.Combine(soundsDir, name + ".mp3");
             }
 
             MediaPlayer player = new MediaPlayer();

@@ -5,31 +5,29 @@ using PowerArgs.Cli;
 
 namespace ConsoleGames
 {
-    public abstract class Explosive : SpacialElement
+    public class Explosive : SpacialElement
     {
-        public float HealthPointsPerShrapnel { get; set; }
+        public float HealthPointsPerShrapnel { get; set; } = 5;
+        public float AngleIncrement { get; set; } = 5;
+        public float Range { get; set; } = 5;
 
-        private float angleIcrement;
-        private float range;
-
-        public Explosive(float x, float y, float angleIcrement, float range) 
+        public Explosive() 
         {
-            this.MoveTo(x, y);
-            this.HealthPointsPerShrapnel = 1;
-            this.angleIcrement = angleIcrement;
-            this.range = range;
+            this.MoveTo(MainCharacter.Current.Left, MainCharacter.Current.Top);
+            this.AngleIncrement = 5;
+            this.Range = 5;
         }
 
         public void Explode()
         {
             Sound.Play("boom");
-            for (float angle = 0; angle < 360; angle += angleIcrement)
+            for (float angle = 0; angle < 360; angle += AngleIncrement)
             {
-                var effectiveRange = range;
+                var effectiveRange = Range;
 
                 if ((angle > 200 && angle < 340) || (angle > 20 && angle < 160))
                 {
-                    effectiveRange = range / 3;
+                    effectiveRange = Range / 3;
                 }
 
                 var shrapnel = new Projectile(this.Left, this.Top, angle) { HealthPoints = HealthPointsPerShrapnel, Range = effectiveRange };

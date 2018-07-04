@@ -2,6 +2,7 @@
 using PowerArgs;
 using Newtonsoft.Json;
 using System.Linq;
+using System;
 
 namespace ConsoleGames
 {
@@ -77,6 +78,25 @@ namespace ConsoleGames
             }, this);
 
             Items = new ObservableCollection<IInventoryItem>();
+        }
+
+        public void TryEquip(Type weaponType)
+        {
+            var match = Items.Where(i => i is Weapon && i.GetType() == weaponType).Select(i => i as Weapon).FirstOrDefault();
+            if(match == null)
+            {
+                return;
+            }
+            else if(match.Style == WeaponStyle.Primary && match.AmmoAmount > 0)
+            {
+                Sound.Play("switchweapon");
+                PrimaryWeapon = match;
+            }
+            else if(match.Style == WeaponStyle.Explosive && match.AmmoAmount > 0)
+            {
+                Sound.Play("switchweapon");
+                ExplosiveWeapon = match;
+            }
         }
 
         private void ProcessItem(IInventoryItem item)

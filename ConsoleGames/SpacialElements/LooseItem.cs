@@ -17,6 +17,7 @@ namespace ConsoleGames
             if (target != null)
             {
                 Incorporate(target);
+                Sound.Play("collect");
                 this.Lifetime.Dispose();
             }
         }

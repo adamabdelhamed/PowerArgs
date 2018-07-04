@@ -12,6 +12,7 @@ namespace ConsoleGames
 
         public override void FireInternal()
         {
+            Sound.Play("thrownet");
             var angle = Holder.Target != null ? Holder.CalculateAngleTo(Holder.Target) : Holder.Speed.Angle;
 
             // todo - make it so each weapon does not need to be main character aim aware
@@ -42,6 +43,7 @@ namespace ConsoleGames
                     {
                         if (i.ElementHit != Holder && i.ElementHit is Character)
                         {
+                            Sound.Play("wrapped");
                             matterList.ForEach(m => m.Lifetime.Dispose());
                             matterList.Clear();
                             matterIntegrity.Lifetime.Dispose();

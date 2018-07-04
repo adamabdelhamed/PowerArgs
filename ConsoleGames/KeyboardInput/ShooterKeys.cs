@@ -22,6 +22,14 @@ namespace ConsoleGames
         public ConsoleKey MenuKey { get => Get<ConsoleKey>(); set => Set(value); }
         public ConsoleKey InteractKey { get => Get<ConsoleKey>(); set => Set(value); }
 
+        public ConsoleKey PistolKey { get => Get<ConsoleKey>(); set => Set(value); }
+        public ConsoleKey NetKey { get => Get<ConsoleKey>(); set => Set(value); }
+
+        public ConsoleKey RPGLauncherKey { get => Get<ConsoleKey>(); set => Set(value); }
+        public ConsoleKey RemoteMineKey { get => Get<ConsoleKey>(); set => Set(value); }
+        public ConsoleKey TimedMineKey { get => Get<ConsoleKey>(); set => Set(value); }
+        public ConsoleKey ProximityMineKey { get => Get<ConsoleKey>(); set => Set(value); }
+
         public ShooterKeys()
         {
             this.PrimaryWeaponKey = ConsoleKey.H;
@@ -37,6 +45,14 @@ namespace ConsoleGames
 
             this.MenuKey = ConsoleKey.M;
             this.TogglePauseKey = ConsoleKey.P;
+
+            this.PistolKey = ConsoleKey.D1;
+            this.NetKey = ConsoleKey.D2;
+
+            this.RPGLauncherKey = ConsoleKey.D5;
+            this.RemoteMineKey = ConsoleKey.D6;
+            this.TimedMineKey = ConsoleKey.D7;
+            this.ProximityMineKey = ConsoleKey.D8;
         }
 
         public KeyMap ToKeyMap()
@@ -58,20 +74,27 @@ namespace ConsoleGames
             ret.KeyboardMap.Add(TogglePauseKey, () => (SpaceTime.CurrentSpaceTime.Application as GameApp)?.Pause(true));
             ret.KeyboardMap.Add(MenuKey, () => ShowKeyMapForm());
 
+            ret.KeyboardMap.Add(PistolKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(Pistol)));
+            ret.KeyboardMap.Add(NetKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(Net)));
+            ret.KeyboardMap.Add(RPGLauncherKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(RPGLauncher)));
+            ret.KeyboardMap.Add(RemoteMineKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(RemoteMineDropper)));
+            ret.KeyboardMap.Add(TimedMineKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(TimedMineDropper)));
+            ret.KeyboardMap.Add(ProximityMineKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(ProximityMineDropper)));
             return ret;
         }
 
         private void ShowKeyMapForm()
         {
             var spaceTime = SpaceTime.CurrentSpaceTime;
-            (spaceTime.Application as GameApp).Pause(false);
-            (spaceTime.Application as GameApp).QueueAction(() => 
+            var game = (spaceTime.Application as GameApp);
+            game.Pause(false);
+            game.QueueAction(() => 
             {
                 var dialog = new Dialog(new Form(FormOptions.FromObject(this)));
                 dialog.Show().Then(() =>
                 {
-                    (spaceTime.Application as GameApp).KeyboardInput.KeyMap = this.ToKeyMap();
-                    (spaceTime.Application as GameApp).Resume();
+                    game.KeyboardInput.KeyMap = this.ToKeyMap();
+                    game.Resume();
                 });
             });
         }

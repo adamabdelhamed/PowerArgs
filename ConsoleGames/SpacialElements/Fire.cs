@@ -11,6 +11,9 @@ namespace ConsoleGames
     {
         private TimeSpan duration;
         private TimeSpan initTime;
+
+        private static Promise<IDisposable> currentSound;
+
         public Fire(TimeSpan duration)
         {
             this.duration = duration;
@@ -33,6 +36,19 @@ namespace ConsoleGames
         public override void Initialize()
         {
             initTime = Time.CurrentTime.Now;
+            if(currentSound == null)
+            {
+                currentSound = Sound.Loop("burn");
+            }
+
+            this.Lifetime.OnDisposed(() =>
+            {
+                if(currentSound != null && SpaceTime.CurrentSpaceTime.Elements.Where(e => e != this && e is Fire).Count() == 0)
+                {
+                    currentSound?.Result.Dispose();
+                    currentSound = null;
+                }
+            });
         }
 
         public override void Evaluate()
@@ -47,6 +63,8 @@ namespace ConsoleGames
                 .Where(e => e is IDestructible && this.Touches(e))
                 .Select(e => e as IDestructible)
                 .ForEach(d => d.TakeDamage(1));
+
+       
         }
 
 

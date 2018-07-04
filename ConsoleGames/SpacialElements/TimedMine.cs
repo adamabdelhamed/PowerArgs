@@ -7,7 +7,7 @@ namespace ConsoleGames
     {
         private TimeSpan timeToDetinate;
         private TimeSpan startTime;
-        public TimedMine(TimeSpan timeToDetinate, float x, float y, float angleIcrement, float range) : base(x,y, angleIcrement, range)
+        public TimedMine(TimeSpan timeToDetinate)
         {
             this.timeToDetinate = timeToDetinate;
         }

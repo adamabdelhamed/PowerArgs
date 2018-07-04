@@ -18,7 +18,7 @@ namespace ConsoleGames
             Add<CeilingRenderer>((w) => w.Style = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Gray));
             Add<ProjectileRenderer>((p) => p.Style = new ConsoleCharacter('*', ConsoleColor.White));
             Add<PortalRenderer>((p) => p.Style = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Magenta));
-            Add<MainCharacterRenderer>((p) => p.Style = new ConsoleCharacter('M',  ConsoleColor.Blue));
+            Add<MainCharacterRenderer>((p) => p.Style = new ConsoleCharacter('M',  ConsoleColor.Magenta));
             Add<CursorRenderer>((p) => p.Style = new ConsoleCharacter('X', ConsoleColor.Blue, ConsoleColor.Cyan));
 
             Add<LooseWeaponRenderer>((p) => p.Foreground = ConsoleColor.Yellow);

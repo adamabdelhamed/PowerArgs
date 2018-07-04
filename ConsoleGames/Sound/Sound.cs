@@ -24,7 +24,7 @@ namespace ConsoleGames
         /// Plays the sound associated with the given id immediately and once
         /// </summary>
         /// <param name="soundId">a sound id</param>
-        public static void Play(string soundId) => Provider.Play(soundId);
+        public static Promise<Lifetime> Play(string soundId) => Provider.Play(soundId);
 
         /// <summary>
         /// Plays the sound associated with the given id immidiately and in a loop
@@ -52,7 +52,7 @@ namespace ConsoleGames
         /// Plays the sound associated with the given id immediately and once
         /// </summary>
         /// <param name="soundId">a sound id</param>
-        void Play(string soundId);
+        Promise<Lifetime> Play(string soundId);
 
         /// <summary>
         /// Plays the sound associated with the given id immidiately and in a loop
@@ -76,7 +76,14 @@ namespace ConsoleGames
         /// Does nothing
         /// </summary>
         /// <param name="soundId">unused</param>
-        public void Play(string soundId) { }
+        public Promise<Lifetime> Play(string soundId)
+        {
+            var d = Deferred<Lifetime>.Create();
+            var l = new Lifetime();
+            l.Dispose();
+            d.Resolve(l);
+            return d.Promise;
+        }
 
         /// <summary>
         /// Does nothing

@@ -12,6 +12,8 @@ namespace ConsoleGames
 
     public abstract class GameApp : ConsoleApp
     {
+        public Event Paused { get; private set; } = new Event();
+        public Event Resumed { get; private set; } = new Event();
         public static GameApp CurrentGameApp => ConsoleApp.Current as GameApp;
         private SpacetimePanel ScenePanel { get; set; }
         public SpaceTime Scene => ScenePanel.SpaceTime;
@@ -98,6 +100,7 @@ namespace ConsoleGames
             if(Scene.IsRunning)
             {
                 Scene.Stop();
+                Paused.Fire();
                 if (showPauseDialog)
                 {
                     QueueAction(() => Dialog.ShowMessage("Game paused", Resume));
@@ -111,6 +114,7 @@ namespace ConsoleGames
             {
                 ScenePanel.RealTimeViewing.ReSync();
                 Scene.Start();
+                Resumed.Fire();
             }
         }
 

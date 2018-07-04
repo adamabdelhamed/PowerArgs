@@ -16,6 +16,14 @@ namespace WindowsSoundProvider
             this.soundThread = soundThread;
 
             player.MediaEnded += Player_MediaEnded;
+            if(loop)
+            {
+                player.Volume = .1;
+            }
+            else
+            {
+                player.Volume = 1;
+            }
             player.Play();
 
             /*
@@ -55,17 +63,20 @@ namespace WindowsSoundProvider
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            lock (Player)
+            soundThread.EnqueueSoundThreadAction(() =>
             {
-
-                SoundThread.AssertSoundThread();
-                Player.Stop();
-
-                lock (soundThread.CurrentlyPlayingSounds)
+                lock (Player)
                 {
-                    soundThread.CurrentlyPlayingSounds.Remove(this);
+
+                    SoundThread.AssertSoundThread();
+                    Player.Stop();
+
+                    lock (soundThread.CurrentlyPlayingSounds)
+                    {
+                        soundThread.CurrentlyPlayingSounds.Remove(this);
+                    }
                 }
-            }
+            });
         }
     }
 }
