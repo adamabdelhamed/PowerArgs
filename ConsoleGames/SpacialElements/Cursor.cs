@@ -10,6 +10,7 @@ namespace ConsoleGames
         public Cursor()
         {
             this.ResizeTo(1, 1);
+            this.MoveTo(0, 0, int.MaxValue);
         }
     }
 

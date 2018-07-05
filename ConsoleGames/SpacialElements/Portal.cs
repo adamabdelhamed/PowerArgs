@@ -10,6 +10,8 @@ namespace ConsoleGames
     {
         public GameApp GameApp { get; set; }
 
+        public Level Level { get; set; }
+
         public Portal()
         {
             this.ResizeTo(1, 1);
@@ -24,10 +26,9 @@ namespace ConsoleGames
  
         private void OnTouchedByCharacter(Character c)
         {
-            if (c == MainCharacter.Current)
+            if (c == MainCharacter.Current && Level != null)
             {
-                var level = LevelEditor.LoadBySimpleName(Destination);
-                GameApp.Load(level);
+                GameApp.Load(Level);
             }
         }
     }
@@ -36,6 +37,15 @@ namespace ConsoleGames
     public class PortalRenderer : SingleStyleRenderer
     {
         protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Magenta);
+
+        protected override void OnPaint(ConsoleBitmap context)
+        {
+            if((Element as Portal).Level == null)
+            {
+                Style = new ConsoleCharacter('?', ConsoleColor.Black, ConsoleColor.Magenta);
+            }
+            base.OnPaint(context);
+        }
     }
 
     public class PortalReviver : ItemReviver
@@ -48,7 +58,16 @@ namespace ConsoleGames
                 return false;
             }
 
-            hydratedElement = new Portal() { Destination = item.GetTagValue("destination") };
+            hydratedElement = new Portal();
+
+            try
+            {
+                (hydratedElement as Portal).Level = LevelEditor.LoadBySimpleName(item.GetTagValue("destination"));
+            }
+            catch(Exception ex)
+            {
+
+            }
             return true;
         }
     }

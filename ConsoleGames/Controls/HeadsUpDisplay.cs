@@ -24,7 +24,7 @@ namespace ConsoleGames
             this.keyMap = keyMap;
             this.gameApp = app;
             this.Height = 7;
-            this.Width = 45;
+            this.Width = 80;
             var topPanel = Add(new StackPanel() { Orientation = Orientation.Horizontal, Height = 6 }).FillHorizontally();
             var leftPanel = topPanel.Add(new StackPanel() { Orientation = Orientation.Vertical, Width = 12 }).FillVertically();
             var middleGrid = topPanel.Add(new Grid(new List<object>()

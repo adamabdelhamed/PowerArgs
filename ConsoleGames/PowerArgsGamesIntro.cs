@@ -25,16 +25,7 @@ namespace ConsoleGames
 
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, () =>
                 {
-                    SpaceTime.Stop();
-                    if (d.IsFulfilled == false)
-                    {
-                        d.Resolve();
-                    }
-
-                    if(this.IsExpired == false)
-                    {
-                        (this.Parent as ConsolePanel).Controls.Remove(this);
-                    }
+                    Cleanup();
                 }, this);
 
             });
@@ -74,10 +65,10 @@ namespace ConsoleGames
                 if (character.Left > Width - 2)
                 {
                     // turn the character around so he now moves to the left
-                    character.Speed.SpeedX = -7;
+                    character.Speed.SpeedX = -8;
 
                     // drop a timed mine
-                    var dropper = new TimedMineDropper() { Delay = TimeSpan.FromSeconds(4.5), AmmoAmount = 1, Holder = character };
+                    var dropper = new TimedMineDropper() { Delay = TimeSpan.FromSeconds(4), AmmoAmount = 1, Holder = character };
                     dropper.Exploded.SubscribeOnce(() => Sound.Play("PowerArgsIntro"));
                     dropper.FireInternal();
 
@@ -98,20 +89,25 @@ namespace ConsoleGames
                 var remainingCount = SpaceTime.Elements.Where(e => e is FlammableLetter || e is Fire).Count();
                 if (remainingCount == 0)
                 {
-                    SpaceTime.Elements.ForEach(e => e.Lifetime.Dispose());
-                    SpaceTime.Stop();
-
-                    if (d.IsFulfilled == false)
-                    {
-                        d.Resolve();
-                    }
-
-                    if (this.IsExpired == false)
-                    {
-                        this.Dispose();
-                    }
+                    Cleanup();
                 }
             }));
+        }
+
+        private void Cleanup()
+        {
+            SpaceTime.Elements.ForEach(e => e.Lifetime.Dispose());
+            SpaceTime.Stop();
+
+            if (d.IsFulfilled == false)
+            {
+                d.Resolve();
+            }
+
+            if (this.IsExpired == false)
+            {
+                this.Dispose();
+            }
         }
     }
 

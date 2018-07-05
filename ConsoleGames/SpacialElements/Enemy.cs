@@ -22,6 +22,11 @@ namespace ConsoleGames
         {
             if (MainCharacter.Current == null) return;
             IsBeingTargeted = MainCharacter.Current.Target == this;
+
+            if(MainCharacter.Current.Touches(this))
+            {
+                MainCharacter.Current.TakeDamage(5);
+            }
         }
     }
 
@@ -67,7 +72,7 @@ namespace ConsoleGames
             }
 
             var enemy = new Enemy();
-            enemy.Inventory.Items.Add(new Pistol() { AmmoAmount = 100 });
+            enemy.Inventory.Items.Add(new Pistol() { AmmoAmount = 100, HealthPoints = 10, });
             hydratedElement = enemy;
             new Bot(enemy, new List<IBotStrategy> { new FireAtWill(), new MoveTowardsEnemy() });
             return true;

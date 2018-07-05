@@ -21,7 +21,7 @@ namespace ConsoleGames
 
     public class MainCharacter : Character
     {
-
+        public float PlayerMovementSpeed { get; set; } = 17;
 
         private static Dictionary<SpaceTime, MainCharacter> mainCharacters = new Dictionary<SpaceTime, MainCharacter>();
         public static MainCharacter Current
@@ -63,7 +63,7 @@ namespace ConsoleGames
         {
             HealthPoints = 100;
             InitializeTargeting();
-            this.MoveTo(0, 0, int.MaxValue);
+            this.MoveTo(0, 0, int.MaxValue-2);
             this.Added.SubscribeForLifetime(() =>
             {
                 Current = this;
@@ -137,7 +137,7 @@ namespace ConsoleGames
             }
             else
             {
-                Speed.SpeedX = -12;
+                Speed.SpeedX = SpaceExtensions.NormalizeQuantity(-PlayerMovementSpeed, 0);
                 Speed.SpeedY = 0;
             }
         }
@@ -157,7 +157,7 @@ namespace ConsoleGames
             }
             else
             {
-                Speed.SpeedX = 12;
+                Speed.SpeedX = SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 0); ;
                 Speed.SpeedY = 0;
             }
         }
@@ -177,7 +177,7 @@ namespace ConsoleGames
             }
             else
             {
-                Speed.SpeedY = 7;
+                Speed.SpeedY = SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 90);
                 Speed.SpeedX = 0;
             }
         }
@@ -197,7 +197,7 @@ namespace ConsoleGames
             }
             else
             {
-                Speed.SpeedY = -7;
+                Speed.SpeedY = -SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 90);
                 Speed.SpeedX = 0;
             }
         }

@@ -44,6 +44,10 @@ namespace ConsoleGames
                     {
                         Sound.Play("tick");
                         var d = SpaceTime.CurrentSpaceTime.Application.SetInterval(() => Sound.Play("tick"), TimeSpan.FromSeconds(1));
+                        this.Lifetime.OnDisposed(()=>
+                        {
+                            d.Dispose();
+                        });
                         this.Exploded.SubscribeOnce(d.Dispose);
                         startedTimer = true;
                     }

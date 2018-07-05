@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using PowerArgs.Cli;
+using PowerArgs;
+
 namespace DemoGame
 {
     public class DemoGameApp : GameApp
@@ -68,6 +70,19 @@ namespace DemoGame
                 inventory.Owner = MainCharacter.Current;
                 MainCharacter.Current.Inventory = inventory;
             }
+
+            MainCharacter.Current.Destroyed.SubscribeOnce(() =>
+            {
+                QueueAction(() =>
+                {
+                    Sound.Play("gameover");
+                    Dialog.ShowMessage("Game over".ToRed(), ()=>
+                    {
+                        Load(LevelEditor.LoadBySimpleName("DefaultLevel"));
+                    });
+                });
+            });
+
             this.GameState.SaveGame(currentState, GameState.DefaultSavedGameName);
         }
 
