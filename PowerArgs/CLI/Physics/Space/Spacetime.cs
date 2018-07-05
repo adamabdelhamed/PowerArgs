@@ -54,9 +54,20 @@ namespace PowerArgs.Cli.Physics
 
         public void MoveTo(float x, float y, int? z = null)
         {
-#if DEBUG
             Time.AssertTimeThread();
-#endif
+
+            x = x < 0 ? 0 : x;
+            y = y < 0 ? 0 : y;
+
+            if(x+Width > SpaceTime.CurrentSpaceTime.Width)
+            {
+                x = SpaceTime.CurrentSpaceTime.Width - Width;
+            }
+
+            if (y + Height> SpaceTime.CurrentSpaceTime.Height)
+            {
+                y = SpaceTime.CurrentSpaceTime.Height - Height;
+            }
 
             this.Left = x;
             this.Top = y;
@@ -158,6 +169,16 @@ namespace PowerArgs.Cli.Physics
                 }
             }
             return true;
+        }
+
+        public bool IsInBounds(IRectangular bounds) => !IsOutOfBounds(bounds);
+      
+
+        public bool IsOutOfBounds(IRectangular bounds)
+        {
+            var testBounds = Rectangular.Create(0, 0, Width, Height);
+            var overlap = testBounds.OverlapPercentage(bounds);
+            return overlap < 1;
         }
 
         public bool TryGetEmptyOneUnitLocation(out float x, out float y, int maxAttempts = 10)

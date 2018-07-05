@@ -12,6 +12,8 @@ namespace ConsoleGames
 
         private bool startedTimer = false;
 
+        public bool Silent { get; set; }
+
         public TimedMine(TimeSpan timeToDetinate)
         {
             this.timeToDetinate = timeToDetinate;
@@ -38,7 +40,11 @@ namespace ConsoleGames
                 this.SizeOrPositionChanged.Fire();
                 if (startedTimer == false && SecondsRemaining <= 3)
                 {
-                    Sound.Play("tick");
+                    if (!Silent)
+                    {
+                        Sound.Play("tick");
+                    }
+
                     var d = SpaceTime.CurrentSpaceTime.Application.SetInterval(() => Sound.Play("tick"), TimeSpan.FromSeconds(1));
                     this.Exploded.SubscribeOnce(d.Dispose);
                     startedTimer = true;

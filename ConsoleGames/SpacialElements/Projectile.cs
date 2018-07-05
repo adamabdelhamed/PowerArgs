@@ -7,6 +7,7 @@ namespace ConsoleGames
 {
     public class Projectile : SpacialElement
     {
+        public float Accelleration { get; set; } = 40;
         public float Range { get; set; } = -1;
         public float HealthPoints { get; set; }
         public float angle { get; private set; }
@@ -44,7 +45,7 @@ namespace ConsoleGames
         {
             startLocation = this.Bounds;
             // todo - replace with bullet speed from config
-            force = new Force(Speed, 35, angle);
+            force = new Force(Speed, SpaceExtensions.NormalizeQuantity(Accelleration, angle), angle);
         }
    
 

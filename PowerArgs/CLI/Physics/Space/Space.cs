@@ -123,9 +123,10 @@ namespace PowerArgs.Cli.Physics
 
         public static float NumberOfPixelsThatOverlap(this IRectangular rectangle, IRectangular other)
         {
-            return
+            var ret = 
                 Math.Max(0, Math.Min(rectangle.Right(), other.Right()) - Math.Max(rectangle.Left, other.Left)) *
                 Math.Max(0, Math.Min(rectangle.Bottom(), other.Bottom()) - Math.Max(rectangle.Top, other.Top));
+            return ret;
         }
 
         public static float OverlapPercentage(this IRectangular rectangle, IRectangular other) => NumberOfPixelsThatOverlap(rectangle, other) / (other.Width * other.Height);
@@ -269,6 +270,52 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-     
+        public static ILocation MoveTowards(this ILocation a, float angle, float distance)
+        {
+
+            var forward = !(angle > 270 || angle < 90);
+            var up = angle > 180;
+
+            // convert to radians
+            angle = (float)(angle * Math.PI / 180);
+            float dy = (float)Math.Abs(distance * Math.Sin(angle));
+            float dx = (float)Math.Sqrt((distance * distance) - (dy * dy));
+
+
+            float x2 = forward ? a.Left + dx : a.Left - dx;
+            float y2 = up ? a.Top + dy : a.Top - dy;
+
+            var ret = Location.Create(x2, y2);
+            return ret;
+        }
+
+        /// <summary>
+        /// In most consoles the recrtangles allocated to characters are about twice as tall as they
+        /// are wide. Since we want to treat the console like a uniform grid we'll have to account for that.
+        /// 
+        /// This method takes in some quantity and an angle and normalizes it so that if the angle were flat (e.g. 0 or 180)
+        /// then you'll get back the same quantity you gave in. If the angle is vertical (e.g. 90 or 270) then you will get back
+        /// a quantity that is only half of what you gave. The degree to which we normalize the quantity is linear.
+        /// </summary>
+        /// <param name="quantity">The quantity to normalize</param>
+        /// <param name="angle">the angle to use to adjust the quantity</param>
+        /// <returns></returns>
+        public static float NormalizeQuantity(float quantity, float angle)
+        {
+            float degreesFromFlat;
+            if (angle <= 180)
+            {
+                degreesFromFlat = Math.Min(180 - angle, angle);
+            }
+            else
+            {
+                degreesFromFlat = Math.Min(angle - 180, 360-angle);
+            }
+
+            var skewPercentage = 1+(degreesFromFlat / 90);
+
+            return quantity * 1 / skewPercentage;
+        }
+
     }
 }

@@ -27,7 +27,10 @@ namespace ConsoleGames
             {
                 if(item.GetType() == InnerWeapon.GetType())
                 {
-                    (item as Weapon).AmmoAmount += InnerWeapon.AmmoAmount;
+                    if ((item as Weapon).AmmoAmount != -1)
+                    {
+                        (item as Weapon).AmmoAmount += InnerWeapon.AmmoAmount;
+                    }
                     return;
                 }
             }

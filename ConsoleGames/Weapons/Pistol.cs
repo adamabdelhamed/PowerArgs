@@ -8,17 +8,8 @@ namespace ConsoleGames
         public override WeaponStyle Style => WeaponStyle.Primary;
 
         public override void FireInternal()
-        {
-            var angle = Holder.Target != null ?
-                Holder.Bounds.CalculateAngleTo(Holder.Target) :
-                MainCharacter.Current.Speed.Angle;
-
-            if (Holder == MainCharacter.Current && MainCharacter.Current.FreeAimCursor != null)
-            {
-                angle = Holder.CalculateAngleTo(MainCharacter.Current.FreeAimCursor);
-            }
-
-            var bullet = new Projectile(Holder.Left, Holder.Top, angle) { PlaySoundOnImpact = true };
+        {   
+            var bullet = new Projectile(Holder.Left, Holder.Top, CalculateAngleToTarget()) { PlaySoundOnImpact = true };
 
             bullet.Speed.HitDetectionTypes.Remove(Holder.GetType());
 

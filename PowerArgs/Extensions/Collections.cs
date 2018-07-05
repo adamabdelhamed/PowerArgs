@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,12 +28,19 @@ namespace PowerArgs
         /// <summary>
         /// Filters the collection to only those who are of type TOut and then narrows the IEnumerable type to TOut
         /// </summary>
-        /// <typeparam name="TIn">The broad input type of elements</typeparam>
         /// <typeparam name="TOut">The type to narrow to</typeparam>
         /// <param name="enumerable">the collection to filter and narrow</param>
         /// <returns>the filtered and narrowed enumerable</returns>
-        public static IEnumerable<TOut> WhereAs<TIn, TOut>(this IEnumerable<TIn> enumerable) => enumerable.Where(i => i is TOut).Select(i => FoolTheCompilerCast<TOut>(i));
-
+        public static IEnumerable<TOut> WhereAs<TOut>(this IEnumerable enumerable)
+        {
+            foreach(var item in enumerable)
+            {
+                if(item is TOut)
+                {
+                    yield return (TOut)item;
+                }
+            }
+        }
         private static T FoolTheCompilerCast<T>(object o) => (T)o;
     }
 }

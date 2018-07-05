@@ -25,7 +25,12 @@ namespace ConsoleGames
 
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, () =>
                 {
-                    d.Resolve();
+                    SpaceTime.Stop();
+                    if (d.IsFulfilled == false)
+                    {
+                        d.Resolve();
+                    }
+
                     if(this.IsExpired == false)
                     {
                         (this.Parent as ConsolePanel).Controls.Remove(this);
@@ -95,8 +100,13 @@ namespace ConsoleGames
                 {
                     SpaceTime.Elements.ForEach(e => e.Lifetime.Dispose());
                     SpaceTime.Stop();
-                    d.Resolve();
-                    if(this.IsExpired == false)
+
+                    if (d.IsFulfilled == false)
+                    {
+                        d.Resolve();
+                    }
+
+                    if (this.IsExpired == false)
                     {
                         this.Dispose();
                     }

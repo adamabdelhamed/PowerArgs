@@ -13,13 +13,6 @@ namespace ConsoleGames
         public override void FireInternal()
         {
             Sound.Play("thrownet");
-            var angle = Holder.Target != null ? Holder.CalculateAngleTo(Holder.Target) : Holder.Speed.Angle;
-
-            // todo - make it so each weapon does not need to be main character aim aware
-            if(Holder is MainCharacter && (Holder as MainCharacter).AimMode == AimMode.Manual)
-            {
-                angle =  Holder.CalculateAngleTo((Holder as MainCharacter).FreeAimCursor);
-            }
 
             var matterList = new List<NetMatter>();
             StructuralIntegrity<NetMatter> matterIntegrity = null;
@@ -29,7 +22,7 @@ namespace ConsoleGames
                 {
                     var matter = new NetMatter();
 
-                    var force = new Force(matter.Speed, 45, angle);
+                    var force = new Force(matter.Speed, SpaceExtensions.NormalizeQuantity(45, CalculateAngleToTarget()), CalculateAngleToTarget());
                     var matterX = this.Holder.Left + 1 + x;
                     var matterY = this.Holder.Top - 1 + y;
                     matter.MoveTo(matterX, matterY, 1);

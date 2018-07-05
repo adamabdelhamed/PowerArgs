@@ -1,7 +1,5 @@
 ﻿using PowerArgs.Cli.Physics;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ConsoleGames
 {
@@ -12,7 +10,7 @@ namespace ConsoleGames
         public override void FireInternal()
         {
             Sound.Play("thump");
-            var rpg = new TimedMine(TimeSpan.FromSeconds(2));
+            var rpg = new TimedMine(TimeSpan.FromSeconds(2)) { Silent = true };
             rpg.MoveTo(Holder.Left, Holder.Top);
             var rpgSpeed = new SpeedTracker(rpg);
             rpgSpeed.HitDetectionTypes.Add(typeof(Wall));
@@ -28,16 +26,7 @@ namespace ConsoleGames
                 rpg.Explode();
             }, rpg.Lifetime);
 
-            var angle = Holder.Target != null ?
-                Holder.CalculateAngleTo(MainCharacter.Current.Target) :
-                Holder.Speed.Angle;
-
-            if (MainCharacter.Current?.FreeAimCursor != null)
-            {
-                angle = MainCharacter.Current.CalculateAngleTo(MainCharacter.Current.FreeAimCursor);
-            }
-
-            new Force(rpgSpeed, 25, angle);
+            new Force(rpgSpeed, SpaceExtensions.NormalizeQuantity(25, CalculateAngleToTarget()), CalculateAngleToTarget());
             SpaceTime.CurrentSpaceTime.Add(rpg);
         }
     }

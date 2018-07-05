@@ -8,6 +8,11 @@ namespace PowerArgs.Cli.Physics
     /// </summary>
     public class RealTimeViewingFunction
     {
+        public double BusyPercentage { get; private set; }
+
+        private RollingAverage sleepTimeAverage = new RollingAverage(30);
+        public double SleepTime => sleepTimeAverage.Average;
+
         /// <summary>
         /// An event that fires when the target time simulation falls behind or catches up to
         /// the wall clock
@@ -93,8 +98,8 @@ namespace PowerArgs.Cli.Physics
             }
 
             var idleTime = DateTime.UtcNow - realTimeNow;
-            var idlePercentage = idleTime.TotalSeconds / t.Increment.TotalSeconds;
-
+            BusyPercentage = 1 - (idleTime.TotalSeconds / t.Increment.TotalSeconds);
+            sleepTimeAverage.AddSample(idleTime.TotalMilliseconds);
             age = t.Now - timeAdded;
 
             // At this point, we're sure that the wall clock is equal to or ahead of the simulation time.

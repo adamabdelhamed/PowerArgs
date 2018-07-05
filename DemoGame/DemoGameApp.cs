@@ -24,8 +24,11 @@ namespace DemoGame
 
         protected override void OnAppInitialize()
         {
-            LayoutRoot.Add(new PowerArgsGamesIntro()).Play().Then(() => { QueueAction(() =>
+            var introPanel = new PowerArgsGamesIntro();
+            var frameRateControl = LayoutRoot.Add(new FramerateControl(introPanel) { ZIndex = 100 });
+            LayoutRoot.Add(introPanel).Play().Then(() => { QueueAction(() =>
             {
+                LayoutRoot.Controls.Remove(frameRateControl);
                 this.shooterKeys = new ShooterKeys(()=> this.Scene);
                 this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
                 EnableThemeToggling();

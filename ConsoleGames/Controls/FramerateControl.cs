@@ -7,7 +7,7 @@ namespace ConsoleGames
 {
     public class FramerateControl : StackPanel
     {
-        private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl;
+        private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel;
         private SpacetimePanel scene;
         public FramerateControl(SpacetimePanel scene)
         {
@@ -17,6 +17,7 @@ namespace ConsoleGames
             sceneFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             renderFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             paintFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
+            sceneBusyPercentageLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             AddedToVisualTree.SubscribeForLifetime(SetupPolling, this);
         }
 
@@ -24,11 +25,16 @@ namespace ConsoleGames
         {
             Application.OnDisposed(Application.SetInterval(() =>
             {
+                if (Application == null)
+                {
+                    return;
+                }
                 nowControl.Text = $"{scene.SpaceTime.Now.TotalSeconds}".ToConsoleString();
                 sceneFPSLabel.Text = $"TODO scene frames per second".ToConsoleString();
                 //sceneFPSLabel.Text = FormatFramerateMessage($"{scene.FPS} scene frames per second", scene.FPS);
                 renderFPSLabel.Text = FormatFramerateMessage($"{Application.FPS} render frames per second", Application.FPS);
                 paintFPSLabel.Text = FormatFramerateMessage($"{Application.PPS} paint frames per second", Application.PPS);
+                sceneBusyPercentageLabel.Text = (Math.Round(scene.RealTimeViewing.SleepTime, 2) + " ms").ToConsoleString();
             }, TimeSpan.FromSeconds(1)));
         }
 

@@ -90,7 +90,7 @@ namespace ConsoleGames
         {
             var newDoorDest = IsOpen ? ClosedBounds : OpenBounds;
 
-            var charactersThatWillTouchNewDest = SpaceTime.CurrentSpaceTime.Elements.WhereAs<SpacialElement, Character>().Where(c => c.OverlapPercentage(newDoorDest) > 0).Count();
+            var charactersThatWillTouchNewDest = SpaceTime.CurrentSpaceTime.Elements.WhereAs<Character>().Where(c => c.OverlapPercentage(newDoorDest) > 0).Count();
 
             if (charactersThatWillTouchNewDest == 0)
             {
