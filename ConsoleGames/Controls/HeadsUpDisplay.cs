@@ -163,6 +163,10 @@ namespace ConsoleGames
             {
                 return (amount + "").ToYellow();
             }
+            else if(amount == -1)
+            {
+                return "∞".ToGreen();
+            }
             else
             {
                 return "empty".ToRed();

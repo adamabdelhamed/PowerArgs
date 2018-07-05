@@ -40,14 +40,13 @@ namespace ConsoleGames
                 this.SizeOrPositionChanged.Fire();
                 if (startedTimer == false && SecondsRemaining <= 3)
                 {
-                    if (!Silent)
+                    if (Silent == false)
                     {
                         Sound.Play("tick");
+                        var d = SpaceTime.CurrentSpaceTime.Application.SetInterval(() => Sound.Play("tick"), TimeSpan.FromSeconds(1));
+                        this.Exploded.SubscribeOnce(d.Dispose);
+                        startedTimer = true;
                     }
-
-                    var d = SpaceTime.CurrentSpaceTime.Application.SetInterval(() => Sound.Play("tick"), TimeSpan.FromSeconds(1));
-                    this.Exploded.SubscribeOnce(d.Dispose);
-                    startedTimer = true;
                 }
             }
         }
