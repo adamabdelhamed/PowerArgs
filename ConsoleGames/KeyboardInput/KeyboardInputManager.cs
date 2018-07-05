@@ -14,16 +14,14 @@ namespace ConsoleGames
 
     public class KeyboardInputManager : ObservableObject
     {
-        public SpaceTime Scene { get; private set; }
         public GameApp App { get; private set; }
         public KeyMap KeyMap { get => Get<KeyMap>(); set => Set(value); }
 
         private Lifetime currentMappingLifetime;
  
 
-        public KeyboardInputManager(SpaceTime scene, GameApp app)
+        public KeyboardInputManager(GameApp app)
         {
-            this.Scene = scene;
             this.App = app;
             this.KeyMap = new KeyMap();
             this.SubscribeForLifetime(nameof(KeyMap), UpdateKeyboardMappings, this);
@@ -40,29 +38,18 @@ namespace ConsoleGames
 
             foreach (var key in KeyMap.KeyboardMap.Keys)
             {
-                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, null, QueueToScene(KeyMap.KeyboardMap[key]), currentMappingLifetime);
+                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, null, KeyMap.KeyboardMap[key], currentMappingLifetime);
             }
 
             foreach (var key in KeyMap.ShiftKeyboardMap.Keys)
             {
-                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, ConsoleModifiers.Shift, QueueToScene(KeyMap.ShiftKeyboardMap[key]), currentMappingLifetime);
+                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, ConsoleModifiers.Shift, KeyMap.ShiftKeyboardMap[key], currentMappingLifetime);
             }
 
             foreach (var key in KeyMap.AltKeyboardMap.Keys)
             {
-                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, ConsoleModifiers.Alt, QueueToScene(KeyMap.AltKeyboardMap[key]), currentMappingLifetime);
+                App.FocusManager.GlobalKeyHandlers.PushForLifetime(key, ConsoleModifiers.Alt, KeyMap.AltKeyboardMap[key], currentMappingLifetime);
             }
-        }
-
-        private Action QueueToScene(Action a)
-        {
-            return () =>
-            {
-                Scene.QueueAction(() => 
-                {
-                    a();
-                });
-            };
         }
     }
 }

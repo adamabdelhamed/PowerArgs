@@ -61,6 +61,10 @@ namespace PowerArgs.Cli
             return StackHorizontally(margin, (IEnumerable<ConsoleControl>)controls);
         }
 
+        public static T CenterBoth<T>(this T child, ConsoleControl parent = null) where T : ConsoleControl => child.CenterHorizontally(parent).CenterVertically(parent);
+
+
+
         public static T CenterVertically<T>(this T child, ConsoleControl parent = null) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;

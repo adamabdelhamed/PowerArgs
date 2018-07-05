@@ -1,6 +1,7 @@
 ﻿using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
+using System.Linq;
 
 namespace ConsoleGames
 {
@@ -30,8 +31,11 @@ namespace ConsoleGames
         public ConsoleKey TimedMineKey { get => Get<ConsoleKey>(); set => Set(value); }
         public ConsoleKey ProximityMineKey { get => Get<ConsoleKey>(); set => Set(value); }
 
-        public ShooterKeys()
+        private Func<SpaceTime> spaceTimeResolver;
+
+        public ShooterKeys(Func<SpaceTime> spaceTimeResolver)
         {
+            this.spaceTimeResolver = spaceTimeResolver;
             this.PrimaryWeaponKey = ConsoleKey.H;
             this.ExplosiveWeaponKey = ConsoleKey.G;
 
@@ -59,13 +63,10 @@ namespace ConsoleGames
         {
             var ret = new KeyMap();
 
-            ret.KeyboardMap.Add(MoveUpKey, ( )=>
-            {
-                MainCharacter.Current?.MoveUp();
-            });
+            ret.KeyboardMap.Add(MoveUpKey, ( )=> { MainCharacter.Current?.MoveUp(); });
             ret.KeyboardMap.Add(MoveDownKey, () => MainCharacter.Current?.MoveDown());
             ret.KeyboardMap.Add(MoveLeftKey, () => MainCharacter.Current?.MoveLeft());
-            ret.KeyboardMap.Add(MoveRightKey, () => MainCharacter.Current?.MoveRight());
+            ret.KeyboardMap.Add(MoveRightKey, () => { MainCharacter.Current?.MoveRight(); });
 
             ret.KeyboardMap.Add(AimToggleKey, () => MainCharacter.Current?.ToggleFreeAim());
             ret.KeyboardMap.Add(InteractKey, () => MainCharacter.Current?.TryInteract());
@@ -80,6 +81,16 @@ namespace ConsoleGames
             ret.KeyboardMap.Add(RemoteMineKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(RemoteMineDropper)));
             ret.KeyboardMap.Add(TimedMineKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(TimedMineDropper)));
             ret.KeyboardMap.Add(ProximityMineKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(ProximityMineDropper)));
+
+            foreach(var key in ret.KeyboardMap.Keys.ToList())
+            {
+                var rawAction = ret.KeyboardMap[key];
+                ret.KeyboardMap[key] = () =>
+                {
+                    spaceTimeResolver()?.QueueAction(rawAction);
+                };
+            }
+
             return ret;
         }
 

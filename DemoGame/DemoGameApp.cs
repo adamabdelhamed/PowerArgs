@@ -18,18 +18,45 @@ namespace DemoGame
             new WallReviver()
         });
 
-        private ShooterKeys shooterKeys = new ShooterKeys();
+        private ShooterKeys shooterKeys;
         private GameState currentState;
-
         private IDisposable bgMusicHandle;
 
-   
-        protected override void OnSceneInitialize()
+        protected override void OnAppInitialize()
         {
-            this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
+            LayoutRoot.Add(new PowerArgsGamesIntro()).Play().Then(() => { QueueAction(() =>
+            {
+                this.shooterKeys = new ShooterKeys(()=> this.Scene);
+                this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
+                EnableThemeToggling();
+                LayoutRoot.Add(new HeadsUpDisplay(this, shooterKeys)).CenterHorizontally().DockToBottom();
+                currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
+
+                if (currentState.Data.TryGetValue("CurrentLevel", out object levelName) == false)
+                {
+                    levelName = "DefaultLevel";
+                }
+
+                var level = LevelEditor.LoadBySimpleName(levelName.ToString());
+                this.Load(level);
+
+
+                Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
+
+                this.Paused.SubscribeForLifetime(() =>
+                {
+                    bgMusicHandle?.Dispose();
+                    bgMusicHandle = null;
+                }, this);
+
+                this.Resumed.SubscribeForLifetime(() =>
+                {
+                    Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
+                }, this);
+            });});
         }
 
-        protected override void OnLevelLoaded(Level l)
+        protected override void AfterLevelLoaded(Level l)
         {
             currentState.SetValue("CurrentLevel", l.Name);
             if(currentState.Data.TryGetValue(nameof(Character.Inventory), out object data))
@@ -50,50 +77,19 @@ namespace DemoGame
             }
         }
 
-        protected override void OnAppInitialize()
+        private void EnableThemeToggling()
         {
-            var introPanel = LayoutRoot.Add(new PowerArgsGamesIntro()).CenterHorizontally().CenterVertically();
-            introPanel.Play().Then(() =>
+            this.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.T, null, () =>
             {
-                QueueAction(() =>
+                if (Theme is DefaultTheme)
                 {
-                    var hud = LayoutRoot.Add(new HeadsUpDisplay(this, shooterKeys)).CenterHorizontally().DockToBottom();
-
-                    this.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.T, null, () =>
-                    {
-                        if (Theme is DefaultTheme)
-                        {
-                            Theme = new DarkTheme();
-                        }
-                        else
-                        {
-                            Theme = new DefaultTheme();
-                        }
-                    }, this);
-
-                    currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
-
-                    if (currentState.Data.TryGetValue("CurrentLevel", out object levelName) == false)
-                    {
-                        levelName = "DefaultLevel";
-                    }
-
-                    var level = LevelEditor.LoadBySimpleName(levelName.ToString());
-                    this.Load(level);
-
-                    this.Paused.SubscribeForLifetime(() =>
-                    {
-                        bgMusicHandle?.Dispose();
-                        bgMusicHandle = null;
-                    }, this);
-
-                    Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
-                    this.Resumed.SubscribeForLifetime(() =>
-                    {
-                        Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
-                    }, this);
-                }); 
-            });
+                    Theme = new DarkTheme();
+                }
+                else
+                {
+                    Theme = new DefaultTheme();
+                }
+            }, this);
         }
     }
 }

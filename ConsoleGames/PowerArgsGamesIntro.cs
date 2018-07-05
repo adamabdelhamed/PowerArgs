@@ -19,6 +19,7 @@ namespace ConsoleGames
             Background = ConsoleColor.Black;
             level = LevelEditor.LoadBySimpleName("PowerArgsIntro");
             factory = new SceneFactory(new List<ItemReviver>() { new LetterReviver() });
+            AddedToVisualTree.SubscribeOnce(() => this.CenterBoth());
         }
         public Promise Play()
         {
