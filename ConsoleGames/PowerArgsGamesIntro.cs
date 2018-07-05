@@ -1,60 +1,92 @@
-﻿using PowerArgs.Cli;
+﻿using PowerArgs;
+using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using PowerArgs;
 using System.Linq;
 
 namespace ConsoleGames
 {
     public class PowerArgsGamesIntro : SpacetimePanel
     {
+        private Deferred d;
+        private Level level;
+        private SceneFactory factory;
+        private Character character;
+
         public PowerArgsGamesIntro() : base(52, 7)
         {
             Background = ConsoleColor.Black;
+            level = LevelEditor.LoadBySimpleName("PowerArgsIntro");
+            factory = new SceneFactory(new List<ItemReviver>() { new LetterReviver() });
         }
         public Promise Play()
         {
-            Deferred d = Deferred.Create();
-
-            SpaceTime.QueueAction(() =>
-            {
-                var level = LevelEditor.LoadBySimpleName("PowerArgsIntro");
-                SceneFactory factory = new SceneFactory(new List<ItemReviver>()
-                {
-                    new LetterReviver()
-                });
-
-                var dummyCharacter = new Character();
-                dummyCharacter.MoveTo(Width-1, 0);
-                var dropper = new TimedMineDropper() { Delay = TimeSpan.FromSeconds(4.5), AmmoAmount = 1, Holder = dummyCharacter };
-                dropper.Exploded.SubscribeOnce(()=>Sound.Play("PowerArgsIntro"));
-
-                dropper.FireInternal();
-                factory.InitializeScene(level).ForEach(e => SpaceTime.Add(e));
-
-                var playedFinalBurn = false;
-                SpaceTime.Add(TimeFunction.Create(() =>
-                {
-                    var remainingCount = SpaceTime.Elements.Where(e => e is FlammableLetter || e is Fire).Count();
-                    if (remainingCount == 0)
-                    {
-                        SpaceTime.Elements.ForEach(e => e.Lifetime.Dispose());
-                        SpaceTime.Stop();
-                        d.Resolve();
-                    }
-                    else if(remainingCount < 50 && playedFinalBurn == false)
-                    {
-                        Sound.Play("burn");
-                        playedFinalBurn = true;
-                    }
-                }));
-            });
-            
-
+            d = Deferred.Create();
+            SpaceTime.QueueAction(PlaySceneInternal);
             SpaceTime.Start();
             return d.Promise;
+        }
+
+        private void PlaySceneInternal()
+        {
+            // reveal the PowerArgs logo
+            factory.InitializeScene(level).ForEach(e => SpaceTime.Add(e));
+            // create the character
+            character = new MainCharacter();
+            // he starts a few pixels from the right edge
+            character.MoveTo(Width - 7, 0);
+            // he moves to the right
+            character.Speed.SpeedX = 5;
+            // he drops a timed mine and turns around when he gets near the right edge
+            ListenForCharacterNearRightEdge();
+
+            SpaceTime.Add(character);
+
+            ListenForEndOfIntro();
+        }
+
+        private void ListenForCharacterNearRightEdge()
+        {
+            ITimeFunction watcher = null;
+            watcher = TimeFunction.Create(() =>
+            {
+                if (character.Left > Width - 2)
+                {
+                    // turn the character around so he now moves to the left
+                    character.Speed.SpeedX = -7;
+
+                    // drop a timed mine
+                    var dropper = new TimedMineDropper() { Delay = TimeSpan.FromSeconds(4.5), AmmoAmount = 1, Holder = character };
+                    dropper.Exploded.SubscribeOnce(() => Sound.Play("PowerArgsIntro"));
+                    dropper.FireInternal();
+
+                    // eventually he will hit the left wall, remove him when that happens
+                    character.Speed.ImpactOccurred.SubscribeForLifetime((i) =>  character.Lifetime.Dispose(), character.Lifetime);
+
+                    // this watcher has done its job, stop watching the secne 
+                    watcher.Lifetime.Dispose();
+                }
+            });
+            SpaceTime.Add(watcher);
+        }
+
+        private void ListenForEndOfIntro()
+        {
+            SpaceTime.Add(TimeFunction.Create(() =>
+            {
+                var remainingCount = SpaceTime.Elements.Where(e => e is FlammableLetter || e is Fire).Count();
+                if (remainingCount == 0)
+                {
+                    SpaceTime.Elements.ForEach(e => e.Lifetime.Dispose());
+                    SpaceTime.Stop();
+                    d.Resolve();
+                    if(this.IsExpired == false)
+                    {
+                        this.Dispose();
+                    }
+                }
+            }));
         }
     }
 
@@ -69,7 +101,7 @@ namespace ConsoleGames
             }
             else
             {
-                hydratedElement = new FlammableLetter() { Symbol = new ConsoleCharacter(item.Symbol, item.FG, item.BG) };
+                hydratedElement = new FlammableLetter() { Symbol = new ConsoleCharacter(item.Symbol, ConsoleColor.White, item.BG) };
                 return true;
             }
         }
@@ -87,12 +119,12 @@ namespace ConsoleGames
 
         public override void Initialize()
         {
-            this.HealthPoints = SpaceTime.CurrentSpaceTime.Random.Next(30, 100);
+            this.HealthPoints = SpaceTime.CurrentSpaceTime.Random.Next(40, 60);
         }
 
         public override void Evaluate()
         {
-            Fire.BurnIfTouchingSomethingHot(this, TimeSpan.FromSeconds(.1));
+            Fire.BurnIfTouchingSomethingHot(this, TimeSpan.FromSeconds(.1), this.Symbol.Value);
         }
     }
 

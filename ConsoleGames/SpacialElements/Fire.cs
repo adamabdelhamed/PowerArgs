@@ -11,7 +11,7 @@ namespace ConsoleGames
     {
         private TimeSpan duration;
         private TimeSpan initTime;
-
+        public char? SymbolOverride { get; set; }
         private static Promise<Lifetime> currentSound;
 
         public Fire(TimeSpan duration)
@@ -22,12 +22,12 @@ namespace ConsoleGames
             this.Tags.Add("hot");
         }
 
-        public static void BurnIfTouchingSomethingHot<T>(T me, TimeSpan? burnTime = null) where T : SpacialElement, IDestructible
+        public static void BurnIfTouchingSomethingHot<T>(T me, TimeSpan? burnTime = null, char? symbol = null) where T : SpacialElement, IDestructible
         {
             burnTime = burnTime.HasValue ? burnTime.Value : TimeSpan.FromSeconds(3);
             if (SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasTag("hot") && e.CalculateDistanceTo(me) < 2).Count() > 0)
             {
-                var fire = new Fire(burnTime.Value);
+                var fire = new Fire(burnTime.Value) { SymbolOverride = symbol };
                 fire.MoveTo(me.Left, me.Top, me.ZIndex+1);
                 fire.ResizeTo(me.Width, me.Height);
                 SpaceTime.CurrentSpaceTime.Add(fire);
@@ -90,10 +90,11 @@ namespace ConsoleGames
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            if (r.NextDouble() < .8)
+            var primarySymbol = (Element as Fire).SymbolOverride.HasValue ? (Element as Fire).SymbolOverride.Value : BurnSymbol1;
+            if (r.NextDouble() < .9)
             {
                 var color = r.NextDouble() < .8 ? PrimaryBurnColor : SecondaryBurnColor;
-                var symbol = r.NextDouble() < .5 ? BurnSymbol1 : BurnSymbol2;
+                var symbol = r.NextDouble() < .65 ? primarySymbol : BurnSymbol2;
 
                 context.Pen = new ConsoleCharacter(symbol, color);
                 context.FillRect(0, 0, Width, Height);

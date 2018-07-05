@@ -72,11 +72,14 @@ namespace PowerArgs.Cli
 
         protected override void DisposeManagedResources()
         {
-            foreach (var item in _manager.ManagedItems)
+            if (!IsExpired)
             {
-                item.Dispose();
+                foreach (var item in _manager.ManagedItems)
+                {
+                    item.Dispose();
+                }
+                _manager = null;
             }
-            _manager = null;
         }
     }
 }
