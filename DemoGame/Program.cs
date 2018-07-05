@@ -13,7 +13,7 @@ namespace DemoGame
             new DemoGameApp().Start().Wait();
             Sound.Dispose();
             return;
-
+            
             var app = new ConsoleApp();
             app.LayoutRoot.Add(new LevelEditor()).CenterVertically().CenterHorizontally();
             app.Start().Wait();

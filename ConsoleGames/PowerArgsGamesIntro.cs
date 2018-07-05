@@ -19,7 +19,21 @@ namespace ConsoleGames
             Background = ConsoleColor.Black;
             level = LevelEditor.LoadBySimpleName("PowerArgsIntro");
             factory = new SceneFactory(new List<ItemReviver>() { new LetterReviver() });
-            AddedToVisualTree.SubscribeOnce(() => this.CenterBoth());
+            AddedToVisualTree.SubscribeOnce(() =>
+            {
+                this.CenterBoth();
+
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, () =>
+                {
+                    d.Resolve();
+                    if(this.IsExpired == false)
+                    {
+                        (this.Parent as ConsolePanel).Controls.Remove(this);
+                    }
+                }, this);
+
+            });
+
         }
         public Promise Play()
         {

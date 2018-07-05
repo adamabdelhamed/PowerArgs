@@ -40,7 +40,15 @@ namespace ConsoleGames
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = Style;
+            var w = Element as Wall;
+            if(w.Pen.HasValue && w.Pen.Value.Value != ' ')
+            {
+                context.Pen = w.Pen.Value;
+            }
+            else
+            {
+                context.Pen = Style;
+            }
 
             if (context.Pen.Value == ' ' && context.Pen.BackgroundColor == ConsoleString.DefaultBackgroundColor)
             {
