@@ -149,6 +149,7 @@ namespace ConsoleGames
                 initialValue: tagsString.ToConsoleString());
             }, this);
             tags.Clear();
+            AddedToVisualTree.SubscribeOnce(()=>Application.QueueAction(newCommand.Pressed.Fire));
         }
 
         private void Open()
@@ -234,7 +235,7 @@ namespace ConsoleGames
                                 LoadLevelInternal(new Level() { Width = w, Height = h });
                             }
 
-                        }, initialValue: Level.DefaultWidth.ToString().ToConsoleString());
+                        }, initialValue: Level.DefaultHeight.ToString().ToConsoleString());
                     }
 
                 }, initialValue: Level.DefaultWidth.ToString().ToConsoleString());

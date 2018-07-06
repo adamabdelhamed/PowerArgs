@@ -1,6 +1,6 @@
 ﻿using PowerArgs.Cli.Physics;
 using System;
-
+using System.Linq;
 namespace ConsoleGames
 {
     public class FireAtWill : IBotStrategy
@@ -12,13 +12,13 @@ namespace ConsoleGames
 
         public StrategyEval EvaluateApplicability()
         {
-            var canFire = (Me.Inventory).PrimaryWeapon != null &&
+            var canFire = Me.Target != null && (Me.Inventory).PrimaryWeapon != null &&
                 (Me.Inventory).PrimaryWeapon.AmmoAmount > 0;
 
             if (canFire == false) return new StrategyEval() { Applicability = 0, Strategy = this };
 
 
-            var hasLineOfSight = Me.CalculateLineOfSight(Me.Target, 1).Obstacles.Count == 0;
+            var hasLineOfSight = Me.CalculateLineOfSight(Me.Target, 1).Obstacles.Where(o => (o as SpacialElement).HasTag("passthru") == false).Count() == 0;
             
             if(hasLineOfSight == false)
             {

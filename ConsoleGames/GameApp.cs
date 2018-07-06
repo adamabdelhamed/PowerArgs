@@ -2,7 +2,7 @@
 using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
-
+using System.Linq;
 namespace ConsoleGames
 {
     public interface IGameAppAware
@@ -90,7 +90,7 @@ namespace ConsoleGames
                 .Then(() => QueueAction(() => InitializeScene(level.Width, level.Height))
                 .Then(() => { Scene.QueueAction(() =>
                 {
-                    foreach (var item in SceneFactory.InitializeScene(level))
+                    foreach (var item in SceneFactory.InitializeScene(level).OrderBy(i => i is MainCharacter ? 0 : i is Ceiling == false ? 1 : 2))
                     {
                         if (item is IGameAppAware)
                         {

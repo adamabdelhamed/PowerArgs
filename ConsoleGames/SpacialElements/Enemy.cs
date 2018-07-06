@@ -14,13 +14,13 @@ namespace ConsoleGames
 
         public Enemy()
         {
-            this.Target = MainCharacter.Current;
             this.HealthPoints = 10;
         }
 
         public override void Evaluate()
         {
             if (MainCharacter.Current == null) return;
+            this.Target = MainCharacter.Current;
             IsBeingTargeted = MainCharacter.Current.Target == this;
 
             if(MainCharacter.Current.Touches(this))
