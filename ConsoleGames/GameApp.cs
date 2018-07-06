@@ -147,7 +147,7 @@ namespace ConsoleGames
         {
             this.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, () =>
             {
-                Scene.Stop();
+                Pause(false);
                 Dialog.ConfirmYesOrNo("Are you sure you want to quit?", Stop, () =>
                 {
                     Resume();
