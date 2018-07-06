@@ -24,6 +24,7 @@ namespace ConsoleGames
         public ConsoleKey InteractKey { get => Get<ConsoleKey>(); set => Set(value); }
 
         public ConsoleKey PistolKey { get => Get<ConsoleKey>(); set => Set(value); }
+        public ConsoleKey ShotgunKey { get => Get<ConsoleKey>(); set => Set(value); }
         public ConsoleKey NetKey { get => Get<ConsoleKey>(); set => Set(value); }
 
         public ConsoleKey RPGLauncherKey { get => Get<ConsoleKey>(); set => Set(value); }
@@ -51,7 +52,8 @@ namespace ConsoleGames
             this.TogglePauseKey = ConsoleKey.P;
 
             this.PistolKey = ConsoleKey.D1;
-            this.NetKey = ConsoleKey.D2;
+            this.ShotgunKey = ConsoleKey.D2;
+            this.NetKey = ConsoleKey.D3;
 
             this.RPGLauncherKey = ConsoleKey.D5;
             this.RemoteMineKey = ConsoleKey.D6;
@@ -76,6 +78,7 @@ namespace ConsoleGames
             ret.KeyboardMap.Add(MenuKey, () => ShowKeyMapForm());
 
             ret.KeyboardMap.Add(PistolKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(Pistol)));
+            ret.KeyboardMap.Add(ShotgunKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(Shotgun)));
             ret.KeyboardMap.Add(NetKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(Net)));
             ret.KeyboardMap.Add(RPGLauncherKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(RPGLauncher)));
             ret.KeyboardMap.Add(RemoteMineKey, () => MainCharacter.Current?.Inventory.TryEquip(typeof(RemoteMineDropper)));

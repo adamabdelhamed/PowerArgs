@@ -300,7 +300,7 @@ namespace PowerArgs.Cli.Physics
         /// <param name="quantity">The quantity to normalize</param>
         /// <param name="angle">the angle to use to adjust the quantity</param>
         /// <returns></returns>
-        public static float NormalizeQuantity(float quantity, float angle)
+        public static float NormalizeQuantity(float quantity, float angle, bool reverse = false)
         {
             float degreesFromFlat;
             if (angle <= 180)
@@ -314,8 +314,18 @@ namespace PowerArgs.Cli.Physics
 
             var skewPercentage = 1+(degreesFromFlat / 90);
 
-            return quantity * 1 / skewPercentage;
+            return reverse ? quantity * skewPercentage :  quantity / skewPercentage;
         }
 
+        public static float AddToAngle(float angle, float toAdd)
+        {
+            var ret = angle + toAdd;
+            ret = ret % 360;
+            if(ret < 0)
+            {
+                ret += 360;
+            }
+            return ret;
+        }
     }
 }

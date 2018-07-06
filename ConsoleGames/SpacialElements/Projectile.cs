@@ -9,7 +9,7 @@ namespace ConsoleGames
     {
         public float Accelleration { get; set; } = 40;
         public float Range { get; set; } = -1;
-        public float HealthPoints { get; set; }
+        public float HealthPoints { get; set; } = 1;
         public float angle { get; private set; }
         public SpeedTracker Speed { get; private set; }
         public bool PlaySoundOnImpact { get; set; }
@@ -30,14 +30,12 @@ namespace ConsoleGames
         {
             this.MoveTo(x, y);
             this.angle = angle;
-            this.HealthPoints = 1;
         }
 
         public Projectile(float x, float y, IRectangular target) : this()
         {
             this.MoveTo(x, y);
             this.angle = this.CalculateAngleTo(target);
-            this.HealthPoints = 1;
         }
 
 

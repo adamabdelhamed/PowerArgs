@@ -59,5 +59,15 @@ namespace ArgsTests.CLI.Physics
 
             spaceTime.Start().Wait();
         }
+
+        [TestMethod]
+        public void TestAngleMath()
+        {
+            Assert.AreEqual(45, SpaceExtensions.AddToAngle(0, 45));
+            Assert.AreEqual(1, SpaceExtensions.AddToAngle(360, 1));
+            Assert.AreEqual(359, SpaceExtensions.AddToAngle(0, -1));
+            Assert.AreEqual(359, SpaceExtensions.AddToAngle(360, -1));
+            
+        }
     }
 }
