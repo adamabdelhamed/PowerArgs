@@ -36,7 +36,6 @@ namespace ConsoleGames
             {
                 KeyboardInput = new KeyboardInputManager(this);
                 ConfigureQuitOnEscapeKey();
-                OnAppInitialize();
             });
         }
 
@@ -45,11 +44,6 @@ namespace ConsoleGames
         /// </summary>
         protected abstract SceneFactory SceneFactory { get; }
 
-        /// <summary>
-        /// This is called one time when the UI thread for the app is initialized. In this
-        /// callback you can do all your non SpaceTime UI initialization
-        /// </summary>
-        protected virtual void OnAppInitialize() { }
 
         /// <summary>
         /// This is called at the end of every level load. It is a good time to apply game state. This is called from the SpaceTime

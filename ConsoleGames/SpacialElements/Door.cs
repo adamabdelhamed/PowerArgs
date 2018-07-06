@@ -12,6 +12,8 @@ namespace ConsoleGames
         private bool isOpen;
         internal IRectangular ClosedBounds;
         internal IRectangular OpenBounds;
+
+        public float MaxInteractDistance => 5;
         public IRectangular InteractionPoint => ClosedBounds;
         public bool IsOpen
         {
@@ -44,8 +46,6 @@ namespace ConsoleGames
                 isOpen = value;
             }
         }
-
-        
 
         public Door()
         {

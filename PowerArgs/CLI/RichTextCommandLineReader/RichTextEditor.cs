@@ -212,7 +212,7 @@ namespace PowerArgs.Cli
             public int BufferWidth { get; set; }
 
             public int WindowHeight { get; set; }
-
+            public int WindowWidth { get; set; }
             public int CursorLeft
             {
                 get

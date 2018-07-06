@@ -299,6 +299,7 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         /// <param name="quantity">The quantity to normalize</param>
         /// <param name="angle">the angle to use to adjust the quantity</param>
+        /// <param name="reverse">if true, grows the quantity instead of shrinking it. This is useful for angle quantities.</param>
         /// <returns></returns>
         public static float NormalizeQuantity(float quantity, float angle, bool reverse = false)
         {

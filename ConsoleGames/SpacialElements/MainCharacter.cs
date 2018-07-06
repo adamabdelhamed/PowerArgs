@@ -15,6 +15,7 @@ namespace ConsoleGames
 
     public interface IInteractable
     {
+        float MaxInteractDistance { get;  } 
         IRectangular InteractionPoint { get; }
         void Interact(MainCharacter character);
     }
@@ -118,7 +119,7 @@ namespace ConsoleGames
         public void TryInteract() => SpaceTime.CurrentSpaceTime.Elements
             .Where(e => e is IInteractable)
             .Select(i => i as IInteractable)
-            .Where(i => i.InteractionPoint.CalculateDistanceTo(this) <= 2)
+            .Where(i => i.InteractionPoint.CalculateDistanceTo(this) <= i.MaxInteractDistance)
             .ForEach(i => i.Interact(this));
         
 

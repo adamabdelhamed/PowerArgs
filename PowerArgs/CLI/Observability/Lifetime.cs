@@ -33,8 +33,34 @@ namespace PowerArgs.Cli
             _manager = new LifetimeManager();
         }
 
-        public Promise OnDisposed(Action cleanupCode) => _manager.OnDisposed(cleanupCode);
-        public Promise OnDisposed(IDisposable cleanupCode) => _manager.OnDisposed(cleanupCode);
+        public Promise OnDisposed(Action cleanupCode)
+        {
+            if (IsExpired == false)
+            {
+                return _manager.OnDisposed(cleanupCode);
+            }
+            else
+            {
+                cleanupCode();
+                var d = Deferred.Create();
+                d.Resolve();
+                return d.Promise;
+            }
+        }
+        public Promise OnDisposed(IDisposable cleanupCode)
+        {
+            if (IsExpired == false)
+            {
+                return _manager.OnDisposed(cleanupCode);
+            }
+            else
+            {
+                cleanupCode.Dispose();
+                var d = Deferred.Create();
+                d.Resolve();
+                return d.Promise;
+            }
+        }
 
         public static Lifetime EarliestOf(params Lifetime[] others)
         {

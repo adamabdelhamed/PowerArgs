@@ -24,51 +24,88 @@ namespace DemoGame
         private GameState currentState;
         private IDisposable bgMusicHandle;
 
-        protected override void OnAppInitialize()
+        public DemoGameApp()
         {
-            var introPanel = new PowerArgsGamesIntro();
-            var frameRateControl = LayoutRoot.Add(new FramerateControl(introPanel) { ZIndex = 100 });
-            LayoutRoot.Add(introPanel).Play().Then(() => { QueueAction(() =>
+            this.RequiredWidth = 102;
+            this.RequiredHeight = 45;
+            QueueAction(Initialize);
+        }
+
+        protected void Initialize()
+        {
+            this.RequiredSizeMet.SubscribeOnce(() =>
             {
-                LayoutRoot.Controls.Remove(frameRateControl);
-                this.shooterKeys = new ShooterKeys(()=> this.Scene);
-                this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
-                EnableThemeToggling();
-                LayoutRoot.Add(new HeadsUpDisplay(this, shooterKeys)).CenterHorizontally().DockToBottom();
-                currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
+                var introPanel = new PowerArgsGamesIntro();
+                var frameRateControl = LayoutRoot.Add(new FramerateControl(introPanel) { ZIndex = 100 });
+                LayoutRoot.Add(introPanel).Play().Then(() => {
+                    QueueAction(() =>
+                    {
+                        LayoutRoot.Controls.Remove(frameRateControl);
+                        this.shooterKeys = new ShooterKeys(() => this.Scene);
+                        this.KeyboardInput.KeyMap = this.shooterKeys.ToKeyMap();
+                        EnableThemeToggling();
+                        LayoutRoot.Add(new HeadsUpDisplay(this, shooterKeys)).CenterHorizontally().DockToBottom();
+                        currentState = this.GameState.LoadSavedGameOrDefault(GameState.DefaultSavedGameName);
 
-                if (currentState.Data.TryGetValue("CurrentLevel", out object levelName) == false)
-                {
-                    levelName = "DefaultLevel";
-                }
+                        if (currentState.Data.TryGetValue("CurrentLevel", out object levelName) == false)
+                        {
+                            levelName = "DefaultLevel";
+                        }
 
-                var level = LevelEditor.LoadBySimpleName(levelName.ToString());
-                this.Load(level);
+                        var level = LevelEditor.LoadBySimpleName(levelName.ToString());
+                        this.Load(level);
 
+                        var requiredSizeCausedPause = false;
+                        this.RequiredSizeNotMet.SubscribeForLifetime(() =>
+                        {
+                            if (Scene.IsRunning)
+                            {
+                                this.Pause(false);
+                                requiredSizeCausedPause = true;
+                            }
+                            else
+                            {
+                                requiredSizeCausedPause = false;
+                            }
+                        }, this);
 
-                Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
+                        this.RequiredSizeMet.SubscribeForLifetime(() =>
+                        {
+                            if(requiredSizeCausedPause)
+                            {
+                                this.Resume();
+                            }
 
-                this.Paused.SubscribeForLifetime(() =>
-                {
-                    bgMusicHandle?.Dispose();
-                    bgMusicHandle = null;
-                }, this);
+                        }, this);
 
-                this.Resumed.SubscribeForLifetime(() =>
-                {
-                    Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
-                }, this);
-            });});
+                        Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
+
+                        this.Paused.SubscribeForLifetime(() =>
+                        {
+                            bgMusicHandle?.Dispose();
+                            bgMusicHandle = null;
+                        }, this);
+
+                        this.Resumed.SubscribeForLifetime(() =>
+                        {
+                            Sound.Loop("bgmusicmain").Then(d => bgMusicHandle = d);
+                        }, this);
+                    });
+                });
+            });
         }
 
         protected override void AfterLevelLoaded(Level l)
         {
             currentState.SetValue("CurrentLevel", l.Name);
-            if(currentState.Data.TryGetValue(nameof(Character.Inventory), out object data))
+            if (l.Name != "DefaultLevel")
             {
-                var inventory = data as Inventory;
-                inventory.Owner = MainCharacter.Current;
-                MainCharacter.Current.Inventory = inventory;
+                if (currentState.Data.TryGetValue(nameof(Character.Inventory), out object data))
+                {
+                    var inventory = data as Inventory;
+                    inventory.Owner = MainCharacter.Current;
+                    MainCharacter.Current.Inventory = inventory;
+                }
             }
 
             MainCharacter.Current.Destroyed.SubscribeOnce(() =>

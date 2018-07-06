@@ -99,6 +99,12 @@ namespace PowerArgs
             set { Console.WindowHeight = value; }
         }
 
+        public int WindowWidth
+        {
+            get { return Console.WindowWidth; }
+            set { Console.WindowWidth = value; }
+        }
+
         public bool KeyAvailable
         {
             get

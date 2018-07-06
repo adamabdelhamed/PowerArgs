@@ -37,9 +37,14 @@ namespace PowerArgs
 
 
         /// <summary>
-        /// Gets or sets the buffer height of the console
+        /// Gets or sets the window height of the console
         /// </summary>
         int WindowHeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets the window width of the console
+        /// </summary>
+        int WindowWidth { get; set; }
 
         /// <summary>
         /// Write's the string representation of the given object to the console

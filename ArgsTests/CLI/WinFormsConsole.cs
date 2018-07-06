@@ -47,6 +47,7 @@ namespace ArgsTests.CLI
             }
 
             public int WindowHeight { get; set; }
+            public int WindowWidth { get; set; }
 
             private System.Drawing.SizeF charSize;
 

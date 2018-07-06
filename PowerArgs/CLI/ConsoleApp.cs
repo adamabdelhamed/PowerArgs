@@ -23,6 +23,10 @@ namespace PowerArgs.Cli
         [ThreadStatic]
         private static ConsoleApp _current;
 
+        private Lifetime tooSmallLifetime;
+
+        private bool isKeyboardInputEnabled = true;
+
         /// <summary>
         /// Gets a reference to the current app running on this thread.  This will only be populated by the thread
         /// that is running the message pump (i.e. it will never be your main thread).
@@ -48,6 +52,23 @@ namespace PowerArgs.Cli
         }
 
         public ConsoleBitmapStreamWriter Recorder { get; set; }
+
+        /// <summary>
+        /// Specifies the minimum console height for this app to run. If the console is too small
+        /// then the app will show a message to the user that asks them to resize it.
+        /// </summary>
+        public int? RequiredHeight { get; set; }
+
+        /// <summary>
+        /// Specifies the minimum console width for this app to run. If the console is too small
+        /// then the app will show a message to the user that asks them to resize it.
+        /// </summary>
+        public int? RequiredWidth { get; set; }
+
+        public Event RequiredSizeMet { get; private set; } = new Event();
+        public Event RequiredSizeNotMet { get; private set; } = new Event();
+
+
 
         /// <summary>
         /// An event that fires when the application is about to stop, before the console is wiped
@@ -163,6 +184,11 @@ namespace PowerArgs.Cli
                 }
                 // ensures that the current app is set on the message pump thread
                 _current = this;
+                QueueAction(() =>
+                {
+                    AssertSizeRequirements(true);
+                    this.WindowResized.SubscribeForLifetime(() => this.AssertSizeRequirements(false), this);
+                });
             });
 
             if (SetFocusOnStart)
@@ -190,6 +216,53 @@ namespace PowerArgs.Cli
             }
 
             Paint();
+        }
+
+        private void AssertSizeRequirements(bool initialCheck)
+        {
+            if (initialCheck)
+            {
+                if (RequiredWidth.HasValue && this.Bitmap.Console.WindowWidth < RequiredWidth.Value)
+                {
+                    this.Bitmap.Console.WindowWidth = RequiredWidth.Value;
+                    this.Bitmap.Console.BufferWidth = RequiredWidth.Value;
+                }
+
+                if (RequiredHeight.HasValue && this.Bitmap.Console.WindowHeight < RequiredHeight.Value)
+                {
+                    this.Bitmap.Console.WindowHeight = RequiredHeight.Value;
+                }
+            }
+
+            var currentHeight = ConsoleProvider.Current.WindowHeight;
+            var currentWidth = ConsoleProvider.Current.WindowWidth;
+            var tallEnough = this.RequiredHeight.HasValue == false || currentHeight >= this.RequiredHeight.Value;
+            var wideEnough = this.RequiredWidth.HasValue == false || currentWidth >= this.RequiredWidth.Value;
+
+            if (tallEnough && wideEnough)
+            {
+                if(tooSmallLifetime != null || initialCheck)
+                {
+                    tooSmallLifetime?.Dispose();
+                    RequiredSizeMet.Fire();
+                }
+            }
+
+            else if (tooSmallLifetime == null)
+            {
+                isKeyboardInputEnabled = false;
+                RequiredSizeNotMet.Fire();
+                tooSmallLifetime = new Lifetime();
+                var mask = LayoutRoot.Add(new ConsolePanel()).Fill();
+                mask.ZIndex = int.MaxValue;
+                mask.Add(new Label() { Text = "Increase the console window's size to view the app".ToYellow() }).CenterBoth();
+                tooSmallLifetime.OnDisposed(() =>
+                {
+                    isKeyboardInputEnabled = true;
+                    LayoutRoot.Controls.Remove(mask);
+                    tooSmallLifetime = null;
+                });
+            }
         }
 
         /// <summary>
@@ -257,6 +330,11 @@ namespace PowerArgs.Cli
         /// <param name="info">The key that was pressed</param>
         protected override void HandleKeyInput(ConsoleKeyInfo info)
         {
+            if(isKeyboardInputEnabled == false)
+            {
+                return;
+            }
+
             if (FocusManager.GlobalKeyHandlers.TryIntercept(info))
             {
                 // great, it was handled
