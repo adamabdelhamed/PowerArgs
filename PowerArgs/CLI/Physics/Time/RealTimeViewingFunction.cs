@@ -8,7 +8,8 @@ namespace PowerArgs.Cli.Physics
     /// </summary>
     public class RealTimeViewingFunction
     {
-        public double BusyPercentage { get; private set; }
+        private RollingAverage busyPercentageAverage = new RollingAverage(30);
+        public double BusyPercentage => busyPercentageAverage.Average;
 
         private RollingAverage sleepTimeAverage = new RollingAverage(30);
         public double SleepTime => sleepTimeAverage.Average;
@@ -98,7 +99,7 @@ namespace PowerArgs.Cli.Physics
             }
 
             var idleTime = DateTime.UtcNow - realTimeNow;
-            BusyPercentage = 1 - (idleTime.TotalSeconds / t.Increment.TotalSeconds);
+            busyPercentageAverage.AddSample(1 - (idleTime.TotalSeconds / t.Increment.TotalSeconds));
             sleepTimeAverage.AddSample(idleTime.TotalMilliseconds);
             age = t.Now - timeAdded;
 

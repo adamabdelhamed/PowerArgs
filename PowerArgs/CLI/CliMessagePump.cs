@@ -151,7 +151,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Gets the current frame rate for the app
         /// </summary>
-        public int FPS
+        public int CyclesPerSecond
         {
             get
             {
@@ -163,7 +163,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Gets the current paint rate for the app
         /// </summary>
-        public int PPS
+        public int PaintRequestsProcessedPerSecond
         {
             get
             {

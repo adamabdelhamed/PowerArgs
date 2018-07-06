@@ -32,19 +32,31 @@ namespace ConsoleGames
                 nowControl.Text = $"{scene.SpaceTime.Now.TotalSeconds}".ToConsoleString();
                 sceneFPSLabel.Text = $"TODO scene frames per second".ToConsoleString();
                 //sceneFPSLabel.Text = FormatFramerateMessage($"{scene.FPS} scene frames per second", scene.FPS);
-                renderFPSLabel.Text = FormatFramerateMessage($"{Application.FPS} render frames per second", Application.FPS);
-                paintFPSLabel.Text = FormatFramerateMessage($"{Application.PPS} paint frames per second", Application.PPS);
-                sceneBusyPercentageLabel.Text = (Math.Round(scene.RealTimeViewing.SleepTime, 2) + " ms").ToConsoleString();
+                renderFPSLabel.Text = FormatFramerateMessage($"{Application.CyclesPerSecond} UI cycles per second", Application.CyclesPerSecond, true);
+                paintFPSLabel.Text = FormatFramerateMessage($"{Application.PaintRequestsProcessedPerSecond} paint frames per second", Application.PaintRequestsProcessedPerSecond, false);
+                sceneBusyPercentageLabel.Text = FormatSceneBusyPercentage();
             }, TimeSpan.FromSeconds(1)));
         }
 
-        private ConsoleString FormatFramerateMessage(string message, int framerate)
+        private ConsoleString FormatSceneBusyPercentage()
         {
-            if (framerate > 60)
+            var color = scene.RealTimeViewing.BusyPercentage >= .9 ? ConsoleColor.Red :
+                scene.RealTimeViewing.BusyPercentage >= .7 ? ConsoleColor.Yellow :
+                ConsoleColor.Green;
+            return ("Scene real time budget: "+Math.Round(100 * scene.RealTimeViewing.BusyPercentage) + " %").ToConsoleString(color);
+        }
+
+        private ConsoleString FormatFramerateMessage(string message, int framerate, bool style)
+        {
+            if(!style)
+            {
+                return message.ToConsoleString();
+            }
+            else if (framerate > 25)
             {
                 return message.ToGreen();
             }
-            else if (framerate > 30)
+            else if (framerate > 10)
             {
                 return message.ToYellow();
             }
