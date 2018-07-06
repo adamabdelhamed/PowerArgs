@@ -10,7 +10,7 @@ namespace ConsoleGames
     {
         public GameApp GameApp { get; set; }
 
-        public Level Level { get; set; }
+        public string LevelId { get; set; }
 
         public Portal()
         {
@@ -26,9 +26,9 @@ namespace ConsoleGames
  
         private void OnTouchedByCharacter(Character c)
         {
-            if (c == MainCharacter.Current && Level != null)
+            if (c == MainCharacter.Current && LevelId != null)
             {
-                GameApp.Load(Level);
+                GameApp.Load(LevelId);
             }
         }
     }
@@ -40,7 +40,7 @@ namespace ConsoleGames
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            if((Element as Portal).Level == null)
+            if((Element as Portal).LevelId == null)
             {
                 Style = new ConsoleCharacter('?', ConsoleColor.Black, ConsoleColor.Magenta);
             }
@@ -62,7 +62,7 @@ namespace ConsoleGames
 
             try
             {
-                (hydratedElement as Portal).Level = LevelEditor.LoadBySimpleName(item.GetTagValue("destination"));
+                (hydratedElement as Portal).LevelId = item.GetTagValue("destination");
             }
             catch(Exception ex)
             {

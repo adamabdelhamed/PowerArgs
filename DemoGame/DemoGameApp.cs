@@ -24,6 +24,9 @@ namespace DemoGame
         private GameState currentState;
         private IDisposable bgMusicHandle;
 
+        private Dictionary<string, Level> levels = LevelEditor.LoadAll();
+        protected override Dictionary<string, Level> Levels => levels;
+       
         public DemoGameApp()
         {
             this.RequiredWidth = 102;
@@ -51,9 +54,8 @@ namespace DemoGame
                         {
                             levelName = "DefaultLevel";
                         }
-
-                        var level = LevelEditor.LoadBySimpleName(levelName.ToString());
-                        this.Load(level);
+                        
+                        this.Load(levelName.ToString());
 
                         var requiredSizeCausedPause = false;
                         this.RequiredSizeNotMet.SubscribeForLifetime(() =>
@@ -115,7 +117,7 @@ namespace DemoGame
                     Sound.Play("gameover");
                     Dialog.ShowMessage("Game over".ToRed(), ()=>
                     {
-                        Load(LevelEditor.LoadBySimpleName("DefaultLevel"));
+                        Load("DefaultLevel");
                     });
                 });
             });

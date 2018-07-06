@@ -2,6 +2,7 @@
 using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 namespace ConsoleGames
 {
@@ -23,6 +24,8 @@ namespace ConsoleGames
 
         private ConsolePanel disposableRoot;
         private SpacetimePanel ScenePanel { get; set; }
+
+        protected abstract Dictionary<string,Level> Levels { get; }
 
         /// <summary>
         /// Creates the app
@@ -59,8 +62,9 @@ namespace ConsoleGames
         /// </summary>
         protected virtual void BeforeLevelUnloaded() { }
 
-        public void Load(Level level)
+        public void Load(string levelName)
         {
+            var level = Levels[levelName];
             Promise cleanupPromise = null;
             if (ScenePanel != null)
             {

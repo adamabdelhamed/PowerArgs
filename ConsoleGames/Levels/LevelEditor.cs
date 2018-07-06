@@ -21,6 +21,17 @@ namespace ConsoleGames
 
         private Level currentLevel;
 
+        public static Dictionary<string,Level> LoadAll()
+        {
+            var ret = new Dictionary<string, Level>();
+            foreach(var file in Directory.GetFiles(SavedLevelsDirectory).Where(f => f.ToLower().EndsWith(LevelFileExtension)))
+            {
+                var simpleName = Path.GetFileNameWithoutExtension(file);
+                ret.Add(simpleName, LoadBySimpleName(simpleName));
+            }
+            return ret;
+        }
+
         public static Level LoadBySimpleName(string simpleName)
         {
             var ret = Level.Deserialize(File.ReadAllText(Path.Combine(SavedLevelsDirectory, simpleName + LevelFileExtension)));
