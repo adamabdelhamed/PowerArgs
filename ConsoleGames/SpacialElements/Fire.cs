@@ -25,7 +25,7 @@ namespace ConsoleGames
         public static void BurnIfTouchingSomethingHot<T>(T me, TimeSpan? burnTime = null, char? symbol = null) where T : SpacialElement, IDestructible
         {
             burnTime = burnTime.HasValue ? burnTime.Value : TimeSpan.FromSeconds(3);
-            if (SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasTag("hot") && e.CalculateDistanceTo(me) < 2).Count() > 0)
+            if (SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("hot") && e.CalculateDistanceTo(me) < 2).Count() > 0)
             {
                 var fire = new Fire(burnTime.Value) { SymbolOverride = symbol };
                 fire.MoveTo(me.Left, me.Top, me.ZIndex+1);

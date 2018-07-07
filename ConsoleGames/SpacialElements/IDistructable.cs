@@ -14,7 +14,7 @@ namespace ConsoleGames
     {
         public static void TakeDamage(this IDestructible destructible, float damage)
         {
-            if(destructible is SpacialElement && (destructible as SpacialElement).HasTag("indestructible"))
+            if(destructible is SpacialElement && (destructible as SpacialElement).HasSimpleTag("indestructible"))
             {
                 return;
             }

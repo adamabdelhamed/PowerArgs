@@ -66,7 +66,7 @@ namespace ConsoleGames
 
     public class WallReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out ITimeFunction hydratedElement)
         {
             hydratedElement = new Wall() { Pen = new ConsoleCharacter(item.Symbol, item.FG, item.BG) };
             return true;

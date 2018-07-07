@@ -50,7 +50,7 @@ namespace ConsoleGames
 
     public class PortalReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out ITimeFunction hydratedElement)
         {
             if (item.HasValueTag("destination") == false)
             {

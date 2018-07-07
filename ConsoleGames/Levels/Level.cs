@@ -55,7 +55,7 @@ namespace ConsoleGames
             key = key.ToLower();
             if(HasValueTag(key))
             {
-                var tag = Tags.Where(t => t.StartsWith(key + ":")).FirstOrDefault();
+                var tag = Tags.Where(t => t.ToLower().StartsWith(key + ":")).FirstOrDefault();
                 value = ParseTagValue(tag);
                 return true;
             }

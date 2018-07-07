@@ -19,24 +19,24 @@ namespace ConsoleGames
 
         public void ShowFire()
         {
-            for(var x = Options.Left; x < Options.Left+Options.Text.Length; x++)
+            foreach(var c in Characters)
             {
-                var fire = new Fire(TimeSpan.FromMilliseconds(500));
-                fire.MoveTo(x, Options.Top, 10);
+                var fire = new Fire(TimeSpan.FromMilliseconds(10));
+                fire.MoveTo(c.Left, c.Top, 10);
                 matter.Add(fire);
-                Time.CurrentTime.Delay(() => SpaceTime.CurrentSpaceTime.Add(fire), (int)(10 * (x - Options.Left)));
+                Time.CurrentTime.Delay(() => SpaceTime.CurrentSpaceTime.Add(fire), 10 * c.CharIndex);
             }
         }
 
         public void DrawHotText()
         {
-            for (var i = 0; i < Options.Text.Length; i++)
+            foreach(var c in Characters)
             {
-                var letter = new Wall() { ForcePen = true, Pen = new ConsoleCharacter(Options.Text[i], Usually(ConsoleColor.Red, ConsoleColor.DarkRed, .95f)) };
+                var letter = new Wall() { ForcePen = true, Pen = new ConsoleCharacter(c.Symbol, Usually(ConsoleColor.Red, ConsoleColor.DarkRed, .95f)) };
                 letter.Tags.Add("indestructible");
-                letter.MoveTo(Options.Left + i, Options.Top, 5);
+                letter.MoveTo(c.Left, c.Top, 5);
                 matter.Add(letter);
-                Time.CurrentTime.Delay(() => SpaceTime.CurrentSpaceTime.Add(letter), 10 * i);
+                Time.CurrentTime.Delay(() => SpaceTime.CurrentSpaceTime.Add(letter), 10 * c.CharIndex);
             }
         }
 

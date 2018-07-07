@@ -14,9 +14,7 @@ namespace PowerArgs.Cli.Physics
         public float Width { get; private set; }
         public float Height { get; private set; }
 
-        public List<string> Tags { get; set; } = new List<string>();
-
-        public bool HasTag(string t) => Tags.Contains(t);
+       
 
         public SpacialElementRenderer Renderer { get; set; }
 

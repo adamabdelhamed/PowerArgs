@@ -58,7 +58,7 @@ namespace ConsoleGames
 
     public class LooseWeaponReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out ITimeFunction hydratedElement)
         {
             if (item.HasValueTag("ammo") == false || item.HasValueTag("amount") == false)
             {

@@ -107,7 +107,7 @@ namespace ConsoleGames
 
     public class DoorReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out ITimeFunction hydratedElement)
         {
             if (item.Symbol == 'd' && item.HasSimpleTag("door"))
             {

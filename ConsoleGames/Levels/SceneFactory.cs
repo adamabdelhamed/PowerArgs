@@ -7,7 +7,7 @@ namespace ConsoleGames
 {
     public interface ItemReviver
     {
-        bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement);
+        bool TryRevive(LevelItem item, List<LevelItem> allItems, out ITimeFunction hydratedElement);
     }
 
     
@@ -19,9 +19,9 @@ namespace ConsoleGames
             this.revivers = revivers;
         }
 
-        public IEnumerable<SpacialElement> InitializeScene(Level level)
+        public IEnumerable<ITimeFunction> InitializeScene(Level level)
         {
-            foreach(var item in level.Items.OrderBy(i => i.Y).ThenBy(i => i.X))
+            foreach(var item in level.Items.OrderBy(i => i.HasValueTag("trigger") ? 0 : 1).ThenBy(i => i.Y).ThenBy(i => i.X))
             {
                 if(item.Ignore)
                 {
@@ -31,11 +31,26 @@ namespace ConsoleGames
                 bool hydrated = false;
                 foreach(var reviver in revivers)
                 {
-                    if(reviver.TryRevive(item, level.Items, out SpacialElement hydratedElement))
+                    if(item.Ignore)
                     {
-                        hydratedElement.MoveTo(item.X, item.Y);
-                        hydratedElement.ResizeTo(item.Width, item.Height);
-                        yield return hydratedElement;
+                        continue;
+                    }
+
+                    var reviveResult = reviver.TryRevive(item, level.Items, out ITimeFunction function);
+                    if (reviveResult)
+                    {
+                        if(function is TimeFunction)
+                        {
+                            (function as TimeFunction).Tags.AddRange(item.Tags);
+                        }
+
+                        if (function is SpacialElement)
+                        {
+                            var hydratedElement = function as SpacialElement;
+                            hydratedElement.MoveTo(item.X, item.Y);
+                            hydratedElement.ResizeTo(item.Width, item.Height);
+                        }
+                        yield return function;
                         hydrated = true;
                         break;
                     }

@@ -149,6 +149,22 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Subscribes to the event for one notification and then immediately unsubscribes so your callback will only be called at most once
+        /// </summary>
+        /// <param name="handler">The action to run when the event fires</param>
+        public void SubscribeOnce(Action<T> handler)
+        {
+            Action<T> wrappedAction = null;
+            wrappedAction = (t) =>
+            {
+                handler(t);
+                subscribers.Remove(wrappedAction);
+            };
+
+            SubscribeUnmanaged(wrappedAction);
+        }
+
+        /// <summary>
         /// Unsubscribes manually. This is obsolete.
         /// </summary>
         /// <param name="handler">The handler that was used to subscribe previously</param>

@@ -73,7 +73,7 @@ namespace ConsoleGames
 
     public class WaypointReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out ITimeFunction hydratedElement)
         {
             var waypointTag = item.Tags.Where(t => t.Equals("waypoint")).SingleOrDefault();
             if (waypointTag == null)

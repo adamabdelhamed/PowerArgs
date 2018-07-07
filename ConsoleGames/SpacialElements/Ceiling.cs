@@ -74,7 +74,7 @@ namespace ConsoleGames
 
     public class CeilingReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out ITimeFunction hydratedElement)
         {
             if(item.Symbol == 'c' && item.HasSimpleTag("ceiling"))
             {

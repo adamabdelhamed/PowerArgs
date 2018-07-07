@@ -97,16 +97,22 @@ namespace ConsoleGames
 
         private void Cleanup()
         {
-            SpaceTime.Elements.ForEach(e => e.Lifetime.Dispose());
-            SpaceTime.Stop();
-
-            if (d.IsFulfilled == false)
+            lock (d)
             {
+                if(d.IsFulfilled)
+                {
+                    return;
+                }
+
+                SpaceTime.Elements.ForEach(e => e.Lifetime.Dispose());
+
+                if (SpaceTime.IsRunning)
+                {
+                    SpaceTime.Stop();
+                }
+
                 d.Resolve();
-            }
-
-            if (this.IsExpired == false)
-            {
+                
                 this.Dispose();
             }
         }
@@ -114,7 +120,7 @@ namespace ConsoleGames
 
     public class LetterReviver : ItemReviver
     {
-        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out SpacialElement hydratedElement)
+        public bool TryRevive(LevelItem item, List<LevelItem> allItems, out ITimeFunction hydratedElement)
         {
             if(item.FG != ConsoleColor.Red)
             {

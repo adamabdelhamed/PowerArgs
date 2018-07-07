@@ -18,7 +18,7 @@ namespace ConsoleGames
             if (canFire == false) return new StrategyEval() { Applicability = 0, Strategy = this };
 
 
-            var hasLineOfSight = Me.CalculateLineOfSight(Me.Target, 1).Obstacles.Where(o => (o as SpacialElement).HasTag("passthru") == false).Count() == 0;
+            var hasLineOfSight = Me.CalculateLineOfSight(Me.Target, 1).Obstacles.Where(o => (o as SpacialElement).HasSimpleTag("passthru") == false).Count() == 0;
             
             if(hasLineOfSight == false)
             {

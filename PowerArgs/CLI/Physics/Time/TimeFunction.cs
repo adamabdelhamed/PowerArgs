@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PowerArgs.Cli.Physics
 {
@@ -80,6 +82,50 @@ namespace PowerArgs.Cli.Physics
         /// whichever is largest.
         /// </summary>
         public RateGovernor Governor { get; protected set; } = new RateGovernor(TimeSpan.Zero);
+
+        public List<string> Tags { get; set; } = new List<string>();
+
+        public bool HasSimpleTag(string tag) => Tags.Where(t => t.ToLower().Equals(tag.ToLower())).Count() > 0;
+        public bool HasValueTag(string tag) => Tags.Where(t => t.ToLower().StartsWith(tag.ToLower() + ":")).Count() > 0;
+
+        public string GetTagValue(string key)
+        {
+            key = key.ToLower();
+            if (TryGetTagValue(key, out string value) == false)
+            {
+                throw new ArgumentException("There is no value for key: " + key);
+            }
+            else
+            {
+                return value;
+            }
+        }
+
+        public bool TryGetTagValue(string key, out string value)
+        {
+            key = key.ToLower();
+            if (HasValueTag(key))
+            {
+                var tag = Tags.Where(t => t.ToLower().StartsWith(key + ":")).FirstOrDefault();
+                value = ParseTagValue(tag);
+                return true;
+            }
+            else
+            {
+                value = null;
+                return false;
+            }
+        }
+
+        private string ParseTagValue(string tag)
+        {
+            var splitIndex = tag.IndexOf(':');
+            if (splitIndex <= 0) throw new ArgumentException("No tag value present for tag: " + tag);
+
+            var val = tag.Substring(splitIndex + 1, tag.Length - (splitIndex + 1));
+            return val;
+        }
+
 
         /// <summary>
         /// An initialization function that will be called when the function is added to the model
