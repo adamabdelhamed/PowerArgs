@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace ConsoleGames
 {
@@ -19,6 +20,22 @@ namespace ConsoleGames
         public List<LevelItem> Items { get; set; } = new List<LevelItem>();
         public string Serialize() => JsonConvert.SerializeObject(this, Formatting.Indented);
         public static Level Deserialize(string json) => JsonConvert.DeserializeObject<Level>(json);
+
+        public string SerializeBase64()
+        {
+            var json = Serialize();
+            var bytes = Encoding.UTF8.GetBytes(json);
+            var ret = Convert.ToBase64String(bytes);
+            return ret;
+        }
+
+        public static Level DeserializeBase64(string b64)
+        {
+            byte[] data = Convert.FromBase64String(b64);
+            string json = Encoding.UTF8.GetString(data);
+            var ret = Deserialize(json);
+            return ret;
+        }
     }
 
     public class LevelItem

@@ -25,7 +25,7 @@ namespace ConsoleGames
         private ConsolePanel disposableRoot;
         private SpacetimePanel ScenePanel { get; set; }
 
-        protected abstract Dictionary<string,Level> Levels { get; }
+        public abstract Dictionary<string,Level> Levels { get; }
 
         /// <summary>
         /// Creates the app

@@ -11,61 +11,42 @@ namespace ConsoleGames
     public class LevelEditor : ConsolePanel
     {
         public const string LevelFileExtension = ".lvl";
-        private IEnumerable<string> LevelLibraryFilePaths => Directory.GetFiles(SavedLevelsDirectory).Where(f => f.ToLower().EndsWith(LevelFileExtension));
         private ConsoleBitmapEditor innerEditor;
         private Dictionary<Point, List<string>> tags = new Dictionary<Point, List<string>>();
-        private static string SavedLevelsDirectory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PowerArgsGames", Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().Location), "LevelsLibrary");
         private string currentLevelPath;
         private bool hasUnsavedChanges = false;
         private Button saveCommand;
 
         private Level currentLevel;
-
-        public static Dictionary<string,Level> LoadAll()
+        
+        public LevelEditor(string initialFile = null)
         {
-            var ret = new Dictionary<string, Level>();
-            foreach(var file in Directory.GetFiles(SavedLevelsDirectory).Where(f => f.ToLower().EndsWith(LevelFileExtension)))
-            {
-                var simpleName = Path.GetFileNameWithoutExtension(file);
-                ret.Add(simpleName, LoadBySimpleName(simpleName));
-            }
-            return ret;
-        }
-
-        public static Level LoadBySimpleName(string simpleName)
-        {
-            var ret = Level.Deserialize(File.ReadAllText(Path.Combine(SavedLevelsDirectory, simpleName + LevelFileExtension)));
-            ret.Name = simpleName;
-            return ret;
-        }
-        public LevelEditor()
-        {
-            if (Directory.Exists(SavedLevelsDirectory) == false)
-            {
-                Directory.CreateDirectory(SavedLevelsDirectory);
-            }
-
+            currentLevelPath = initialFile;
             ConfigueEditor();
         }
 
         private void ConfigueEditor()
         {
-            if(innerEditor != null)
+            if (innerEditor != null)
             {
                 this.Controls.Remove(innerEditor);
             }
 
-            innerEditor = Add(new ConsoleBitmapEditor(currentLevel != null ? currentLevel.Width : Level.DefaultWidth, currentLevel != null ? currentLevel.Height : Level.DefaultHeight));
+            innerEditor = Add(new ConsoleBitmapEditor(currentLevel != null ? currentLevel.Width : Level.DefaultWidth, currentLevel != null ? currentLevel.Height : Level.DefaultHeight)).CenterBoth();
             innerEditor.BitmapChanged.SubscribeForLifetime(() => hasUnsavedChanges = true, innerEditor);
-            this.Width = innerEditor.Width;
-            this.Height = innerEditor.Height;
 
-            var newCommand = innerEditor.AddCommand(new Button() { Text = "New".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.N, ConsoleModifiers.Alt) });
-            var openCommand = innerEditor.AddCommand(new Button() { Text = "Open".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.O, ConsoleModifiers.Alt) });
-            saveCommand = innerEditor.AddCommand(new Button() { Text = "Save".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.S, ConsoleModifiers.Alt) });
-            var saveAsCommand = innerEditor.AddCommand(new Button() { Text = "Save as".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });
-            var discardCommand = innerEditor.AddCommand(new Button() { Text = "Discard".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.D, ConsoleModifiers.Alt) });
-            var tagCommand = innerEditor.AddCommand(new Button() { Text = "Tag".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.T, ConsoleModifiers.Alt) });
+            var commandBar = Add(new StackPanel() { Height = 1, Orientation = Orientation.Horizontal }).FillHorizontally().DockToTop();
+            var tagBar = Add(new Label()).FillHorizontally().DockToTop(padding: 1);
+
+            innerEditor.CursorMoved.SubscribeForLifetime(() => tagBar.Text = FormatTags(), this);
+
+            innerEditor.CreateStandardButtons().ForEach(b => commandBar.Add(b));
+            var newCommand = commandBar.Add(new Button() { Text = "New".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.N, ConsoleModifiers.Alt) });
+            var openCommand = commandBar.Add(new Button() { Text = "Open".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.O, ConsoleModifiers.Alt) });
+            saveCommand = commandBar.Add(new Button() { Text = "Save".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.S, ConsoleModifiers.Alt) });
+            var saveAsCommand = commandBar.Add(new Button() { Text = "Save as".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.A, ConsoleModifiers.Alt) });
+            var discardCommand = commandBar.Add(new Button() { Text = "Discard".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.D, ConsoleModifiers.Alt) });
+            var tagCommand = commandBar.Add(new Button() { Text = "Tag".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.T, ConsoleModifiers.Alt) });
 
             newCommand.Pressed.SubscribeForLifetime(() =>
             {
@@ -84,21 +65,6 @@ namespace ConsoleGames
                 }
             }, this);
 
-            openCommand.Pressed.SubscribeForLifetime(() =>
-            {
-                if (hasUnsavedChanges == false)
-                {
-                    Open();
-                }
-                else
-                {
-                    UnsavedChanges(() =>
-                    {
-                        Open();
-                    });
-                }
-            }, this);
-
 
             saveCommand.Pressed.SubscribeForLifetime(() =>
             {
@@ -106,7 +72,9 @@ namespace ConsoleGames
                 {
                     var level = ExtractLevel();
                     var json = level.Serialize();
+                    var b64 = level.SerializeBase64();
                     File.WriteAllText(currentLevelPath, json);
+                    File.WriteAllText(currentLevelPath+".b64", b64);
                     hasUnsavedChanges = false;
                 }
                 else
@@ -121,9 +89,9 @@ namespace ConsoleGames
             {
                 Dialog.ShowRichTextInput("Choose a name for this level".ToConsoleString(), (val) =>
                 {
-                    currentLevelPath = Path.Combine(SavedLevelsDirectory, val.ToString() + LevelFileExtension);
+                    currentLevelPath = val.ToString();
                     saveCommand.Pressed.Fire();
-                }, initialValue: currentLevelPath != null ? Path.GetFileNameWithoutExtension(currentLevelPath).ToConsoleString() : ConsoleString.Empty);
+                }, initialValue: currentLevelPath != null ? currentLevelPath.ToConsoleString() : Path.Combine(Environment.CurrentDirectory, "Level1" + LevelFileExtension).ToConsoleString());
             }, this);
 
             discardCommand.Pressed.SubscribeForLifetime(() =>
@@ -160,19 +128,54 @@ namespace ConsoleGames
                 initialValue: tagsString.ToConsoleString());
             }, this);
             tags.Clear();
-            AddedToVisualTree.SubscribeOnce(()=>Application.QueueAction(newCommand.Pressed.Fire));
+            if (currentLevelPath == null)
+            {
+                AddedToVisualTree.SubscribeOnce(() => Application.QueueAction(newCommand.Pressed.Fire));
+            }
+            else
+            {
+                AddedToVisualTree.SubscribeOnce(() => Application.QueueAction(()=> Load(currentLevelPath)));
+            }
         }
 
-        private void Open()
+        private ConsoleString FormatTags()
         {
-            Dialog.Pick("Choose a level to open".ToConsoleString(), LevelLibraryFilePaths.Select(p => new DialogOption()
+            if(tags.ContainsKey(innerEditor.CursorPosition)  == false || tags[innerEditor.CursorPosition] == null || tags[innerEditor.CursorPosition].Count == 0)
             {
-                Id = p,
-                DisplayText = Path.GetFileNameWithoutExtension(p).ToConsoleString()
-            }), maxHeight: 20).Then((o) =>
+                return "No tags".ToRed();
+            }
+                
+            var currentTags = string.Join(";", tags[innerEditor.CursorPosition]);
+            var tokenizer = new Tokenizer<Token>();
+            tokenizer.Delimiters.Add(";");
+            tokenizer.Delimiters.Add(":");
+            var reader = new TokenReader<Token>(tokenizer.Tokenize(currentTags));
+            var chars = new List<ConsoleCharacter>();
+            var expectVal = false;
+            while(reader.TryAdvance(out Token t))
             {
-                Load(o.Id);
-            });
+                if(t.Value == ";")
+                {
+                    chars.Add(new ConsoleCharacter(';', ConsoleColor.DarkGray));
+                    expectVal = false;
+                }
+                else if(t.Value == ":")
+                {
+                    chars.Add(new ConsoleCharacter(':', ConsoleColor.White));
+                    expectVal = true;
+                }
+                else if(expectVal)
+                {
+                    chars.AddRange(t.Value.ToCyan());
+                    expectVal = false;
+                }
+                else
+                {
+                    chars.AddRange(t.Value.ToYellow());
+                }
+            }
+
+            return new ConsoleString(chars);
         }
 
         private void UnsavedChanges(Action discardAction)

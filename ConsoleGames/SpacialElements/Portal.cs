@@ -26,7 +26,7 @@ namespace ConsoleGames
  
         private void OnTouchedByCharacter(Character c)
         {
-            if (c == MainCharacter.Current && LevelId != null)
+            if (c == MainCharacter.Current && LevelId != null &&  this.GameApp.Levels.ContainsKey(LevelId))
             {
                 GameApp.Load(LevelId);
             }
