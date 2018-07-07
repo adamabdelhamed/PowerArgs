@@ -13,7 +13,7 @@ namespace ConsoleGames
 
             if (Options.DurationMilliseconds >= 0)
             {
-                Time.CurrentTime.Run(FadeOut, Options.DurationMilliseconds);
+                Time.CurrentTime.Delay(FadeOut, Options.DurationMilliseconds);
             }
         }
 
@@ -24,7 +24,7 @@ namespace ConsoleGames
                 var fire = new Fire(TimeSpan.FromMilliseconds(500));
                 fire.MoveTo(x, Options.Top, 10);
                 matter.Add(fire);
-                Time.CurrentTime.Run(() => SpaceTime.CurrentSpaceTime.Add(fire), (int)(10 * (x - Options.Left)));
+                Time.CurrentTime.Delay(() => SpaceTime.CurrentSpaceTime.Add(fire), (int)(10 * (x - Options.Left)));
             }
         }
 
@@ -36,13 +36,13 @@ namespace ConsoleGames
                 letter.Tags.Add("indestructible");
                 letter.MoveTo(Options.Left + i, Options.Top, 5);
                 matter.Add(letter);
-                Time.CurrentTime.Run(() => SpaceTime.CurrentSpaceTime.Add(letter), 10 * i);
+                Time.CurrentTime.Delay(() => SpaceTime.CurrentSpaceTime.Add(letter), 10 * i);
             }
         }
 
         public void FadeOut()
         {
-            matter.ForEach(e => Time.CurrentTime.Run(e.Lifetime.Dispose, (int)(10 * (e.Left - Options.Left))));
+            matter.ForEach(e => Time.CurrentTime.Delay(e.Lifetime.Dispose, (int)(10 * (e.Left - Options.Left))));
             matter.Clear();
             this.Dispose();
         }

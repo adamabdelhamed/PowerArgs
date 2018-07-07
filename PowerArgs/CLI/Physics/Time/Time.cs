@@ -203,7 +203,13 @@ namespace PowerArgs.Cli.Physics
             return timeFunction;
         }
 
-        public ITimeFunction Run(Action action, int delayInMilliseconds = 0) 
+        /// <summary>
+        /// Runs the given code after a Time thread delay (not wall time)
+        /// </summary>
+        /// <param name="action">the code to run</param>
+        /// <param name="delayInMilliseconds">The amount of Time thread time (not wall time) to delay</param>
+        /// <returns>A time function that represents your action</returns>
+        public ITimeFunction Delay(Action action, int delayInMilliseconds) 
         {
             if (delayInMilliseconds == 0)
             {
