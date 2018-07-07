@@ -282,11 +282,6 @@ namespace ConsoleGames
                         continue;
                     }
 
-                    if(pixel.Value.Value.Value == ' ' && pixel.Value.Value.BackgroundColor == ConsoleString.DefaultBackgroundColor)
-                    {
-                        continue;
-                    }
-
                     ret.Items.Add(new LevelItem()
                     {
                         X = x,

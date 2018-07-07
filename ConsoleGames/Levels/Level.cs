@@ -34,12 +34,13 @@ namespace ConsoleGames
         public ConsoleColor? BG { get; set; }
         public List<String> Tags { get; set; } = new List<string>();
 
-        public bool HasSimpleTag(string tag) => Tags.Where(t => t.Equals(tag)).Count() > 0;
-        public bool HasValueTag(string tag) => Tags.Where(t => t.StartsWith(tag + ":")).Count() > 0;
+        public bool HasSimpleTag(string tag) => Tags.Where(t => t.ToLower().Equals(tag.ToLower())).Count() > 0;
+        public bool HasValueTag(string tag) => Tags.Where(t => t.ToLower().StartsWith(tag.ToLower() + ":")).Count() > 0;
 
         public string GetTagValue(string key)
         {
-            if(TryGetTagValue(key, out string value) == false)
+            key = key.ToLower();
+            if (TryGetTagValue(key, out string value) == false)
             {
                 throw new ArgumentException("There is no value for key: "+key);
             }
@@ -51,6 +52,7 @@ namespace ConsoleGames
 
         public bool TryGetTagValue(string key, out string value)
         {
+            key = key.ToLower();
             if(HasValueTag(key))
             {
                 var tag = Tags.Where(t => t.StartsWith(key + ":")).FirstOrDefault();

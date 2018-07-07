@@ -55,7 +55,7 @@ namespace PowerArgs.Cli.Physics
             public Action Init { get; set; }
             public Action Eval { get; set; }
             public override void Initialize() { Init?.Invoke(); }
-            public override void Evaluate() { Eval?.Invoke(); }
+            public override void Evaluate() { if (Eval == null) { Lifetime.Dispose(); } else { Eval.Invoke(); } }
         }
 
         /// <summary>
@@ -124,12 +124,18 @@ namespace PowerArgs.Cli.Physics
                 if(ret.CalculateAge() >= delay)
                 {
                     ret.Lifetime.Dispose();
-                    SpaceTime.CurrentSpaceTime.Add(Create(eval, init, rate));
+                    Time.CurrentTime.Add(Create(eval, init, rate));
                 }
 
             });
             return ret;
         }
+
+        public static ITimeFunction CreateDelayed(int delayInMilliseconds, Action eval, Action init = null, TimeSpan? rate = null) =>
+            CreateDelayed(TimeSpan.FromMilliseconds(delayInMilliseconds), eval, init, rate);
+
+
+
     }
 
     /// <summary>

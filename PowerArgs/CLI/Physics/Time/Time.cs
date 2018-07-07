@@ -203,6 +203,18 @@ namespace PowerArgs.Cli.Physics
             return timeFunction;
         }
 
+        public ITimeFunction Run(Action action, int delayInMilliseconds = 0) 
+        {
+            if (delayInMilliseconds == 0)
+            {
+                return Add(TimeFunction.Create(null, init: action));
+            }
+            else
+            {
+                return Add(TimeFunction.CreateDelayed(delayInMilliseconds, null, init: action));
+            }
+        }
+
         /// <summary>
         /// Call this method to guard against code running on this model's time thread. It will throw an InvalidOperationException
         /// if the check fails.

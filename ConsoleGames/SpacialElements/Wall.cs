@@ -15,6 +15,7 @@ namespace ConsoleGames
         public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
         public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
 
+        public bool ForcePen { get; set; }
         public ConsoleCharacter? Pen { get; set; }
 
         public Event Damaged { get; private set; } = new Event();
@@ -55,6 +56,10 @@ namespace ConsoleGames
                 context.Pen = new ConsoleCharacter('W');
             }
 
+            if ((Element as Wall).ForcePen)
+            {
+                context.Pen = (Element as Wall).Pen.Value;
+            }
             context.FillRect(0, 0, Width, Height);
         }
     }

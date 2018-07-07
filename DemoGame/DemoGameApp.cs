@@ -10,6 +10,7 @@ namespace DemoGame
     {
         protected override SceneFactory SceneFactory => new SceneFactory(new List<ItemReviver>()
         {
+            new TextEffectReviver(nameof(BurnIn)),
             new MainCharacterReviver(),
             new LooseWeaponReviver(),
             new EnemyReviver(),

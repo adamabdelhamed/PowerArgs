@@ -72,7 +72,7 @@ namespace PowerArgs.Cli
             Lifetime ret = new Lifetime();
             foreach (var other in others)
             {
-                other._manager.OnDisposed(() =>
+                other.OnDisposed(() =>
                 {
                     if(ret.IsExpired == false)
                     {

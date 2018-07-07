@@ -21,7 +21,7 @@ namespace ConsoleGames
 
         public IEnumerable<SpacialElement> InitializeScene(Level level)
         {
-            foreach(var item in level.Items)
+            foreach(var item in level.Items.OrderBy(i => i.Y).ThenBy(i => i.X))
             {
                 if(item.Ignore)
                 {
