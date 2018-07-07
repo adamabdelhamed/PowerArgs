@@ -40,6 +40,7 @@ namespace ConsoleGames
                 KeyboardInput = new KeyboardInputManager(this);
                 ConfigureQuitOnEscapeKey();
             });
+            Levels.ForEach(l => l.Value.Name = l.Key);
         }
 
         /// <summary>

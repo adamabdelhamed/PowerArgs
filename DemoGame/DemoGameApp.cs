@@ -105,6 +105,11 @@ namespace DemoGame
 
         protected override void AfterLevelLoaded(Level l)
         {
+            if(l.Name == null)
+            {
+                throw new ArgumentNullException("level.Name cannot be null");
+            }
+
             currentState.SetValue("CurrentLevel", l.Name);
             if (l.Name != "DefaultLevel")
             {

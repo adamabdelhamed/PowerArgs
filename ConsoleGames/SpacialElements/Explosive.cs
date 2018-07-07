@@ -7,9 +7,9 @@ namespace ConsoleGames
 {
     public class Explosive : SpacialElement
     {
-        public float HealthPointsPerShrapnel { get; set; } = 5;
+        public float HealthPointsPerShrapnel { get; set; } = 40;
         public float AngleIncrement { get; set; } = 5;
-        public float Range { get; set; } = 5;
+        public float Range { get; set; } = 6;
 
         public Event Exploded { get; private set; } = new Event();
 
