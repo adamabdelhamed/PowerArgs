@@ -22,7 +22,9 @@ namespace ConsoleGames
 
     public class MainCharacter : Character
     {
-        public float PlayerMovementSpeed { get; set; } = 17;
+        public float MaxMovementSpeed { get; set; } = 25;
+        public float CurrentSpeedPercentage { get; set; } = .8f;
+        public float PlayerMovementSpeed => MaxMovementSpeed * CurrentSpeedPercentage;
 
         private static Dictionary<SpaceTime, MainCharacter> mainCharacters = new Dictionary<SpaceTime, MainCharacter>();
         public static MainCharacter Current

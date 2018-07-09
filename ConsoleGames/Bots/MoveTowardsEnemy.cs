@@ -6,27 +6,32 @@ namespace ConsoleGames
     public class MoveTowardsEnemy : IBotStrategy
     {
         public Character Me { get; set; }
-        public RateGovernor EvalGovernor { get; private set; } 
+        public RateGovernor EvalGovernor { get; private set; } = new RateGovernor(TimeSpan.FromSeconds(.25f));
 
         public DecisionSpace DecisionSpace => DecisionSpace.Movement;
 
         public MoveTowardsEnemy()
         {
-            EvalGovernor = new RateGovernor(TimeSpan.FromSeconds(.1));
+            
         }
 
         public StrategyEval EvaluateApplicability()
         {
-            return new StrategyEval()
+            var ret = new StrategyEval()
             {
-                Applicability = Me.Target != null && Me.CalculateDistanceTo(Me.Target) > 4 ? 1 : 0,
+                Applicability = Me.Target != null && Me.CalculateDistanceTo(Me.Target) > 4 ? 1 : .25f,
                 Strategy = this
             };
+
+            return ret;
         }
 
         public void Work()
         {
-            Waypoint.MoveTowards(Me, Me.Target, 1);
+            if (Me.Target != null && Me.Target.Width > 0 && Me.Target.Height > 0)
+            {
+                Waypoint.MoveTowards(Me, Me.Target, 1);
+            }
         }
     }
 }

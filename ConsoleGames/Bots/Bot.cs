@@ -8,7 +8,8 @@ namespace ConsoleGames
     {
         private List<IBotStrategy> strategies;
         private Character me;
-  
+
+        public IEnumerable<IBotStrategy> Strategies => strategies.ToArray();
 
         public Bot(Character toAnimate, IEnumerable<IBotStrategy> strategies) : base(toAnimate)
         {

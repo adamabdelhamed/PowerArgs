@@ -100,7 +100,7 @@ namespace ConsoleGames
                 var stay = item.HasValueTag("stay") && int.TryParse(item.GetTagValue("stay"), out int stayResult) ? stayResult : 10000;
 
 
-                var effect = CreateInstance(EffectName);
+                var effect = SceneFactory.CreateInstance<TextEffect>(EffectName);
                 effect.Options = new TextEffectOptions()
                 {
                     Left = item.X,
@@ -138,23 +138,6 @@ namespace ConsoleGames
 
             hydratedElement = null;
             return false;
-        }
-
-        private TextEffect CreateInstance(string name)
-        {
-            var candidate = Assembly.GetExecutingAssembly().ExportedTypes.Where(t => t.Name.ToLower() == name.ToLower()).FirstOrDefault();
-
-            if(candidate == null)
-            {
-                Assembly.GetEntryAssembly().ExportedTypes.Where(t => t.Name.ToLower() == name.ToLower()).FirstOrDefault();
-            }
-
-            if(candidate == null)
-            {
-                throw new ArgumentException("Could not resolve text effect: "+name);
-            }
-
-            return (TextEffect)Activator.CreateInstance(candidate);
         }
     }
 }

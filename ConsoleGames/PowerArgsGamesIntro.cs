@@ -103,7 +103,7 @@ namespace ConsoleGames
                     return;
                 }
 
-                SpaceTime.Elements.ForEach(e => e.Lifetime.Dispose());
+                SpaceTime.Elements.ToList().ForEach(e => e.Lifetime.Dispose());
 
                 if (SpaceTime.IsRunning)
                 {

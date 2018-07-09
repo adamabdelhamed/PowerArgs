@@ -14,6 +14,7 @@ namespace ConsoleGames
 
         public static void MoveTowards(Character character, IRectangular destination, float increment)
         {
+            if (destination.Width == 0 || destination.Height == 0) return;
             if(mostRecentlyVisited.ContainsKey(character) == false)
             {
                 mostRecentlyVisited.Add(character, null);

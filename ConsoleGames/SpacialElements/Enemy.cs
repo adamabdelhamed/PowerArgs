@@ -19,14 +19,31 @@ namespace ConsoleGames
 
         public override void Evaluate()
         {
-            if (MainCharacter.Current == null) return;
-            this.Target = MainCharacter.Current;
-            IsBeingTargeted = MainCharacter.Current.Target == this;
+            var targets = SpaceTime.CurrentSpaceTime.Elements
+                .WhereAs<Character>()
+                .Where(c => c is Enemy == false)
+                .Where(c => c.Height > 0 && c.Width > 0)
+                .OrderBy(c => this.CalculateDistanceTo(c))
+                .ToList();
 
-            if(MainCharacter.Current.Touches(this))
+            this.Target = targets.FirstOrDefault();
+            IsBeingTargeted = MainCharacter.Current != null && MainCharacter.Current.Target == this;
+            targets.Where(t => t.Touches(this)).ForEach(t =>
             {
-                MainCharacter.Current.TakeDamage(5);
-            }
+                t.TakeDamage(5);
+
+                if(t.Lifetime.IsExpired)
+                {
+                    var newEnemy = SpaceTime.CurrentTime.Add(new Enemy() { Symbol = this.Symbol });
+                    var myBot = Time.CurrentTime.Functions.WhereAs<Bot>().Where(b => b.Element == this).SingleOrDefault();
+                    if (myBot != null)
+                    {
+                        new Bot(newEnemy, myBot.Strategies.Select(s => (IBotStrategy)Activator.CreateInstance(s.GetType())));
+                    }
+                    newEnemy.MoveTo(t.Left, t.Top);
+                }
+
+            });
         }
     }
 
@@ -56,6 +73,12 @@ namespace ConsoleGames
             {
                 context.Pen = (Element as Enemy).HealthPoints >= 3 ? NormalStyle : HurtStyle;
             }
+
+            if((Element as Character).Symbol.HasValue)
+            {
+                context.Pen = new ConsoleCharacter((Element as Character).Symbol.Value, context.Pen.ForegroundColor, context.Pen.BackgroundColor);
+            }
+
             context.FillRect(0, 0, Width, Height);
         }
     }

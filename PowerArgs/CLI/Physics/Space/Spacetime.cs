@@ -67,6 +67,16 @@ namespace PowerArgs.Cli.Physics
                 y = SpaceTime.CurrentSpaceTime.Height - Height;
             }
 
+            if(float.IsNaN(x))
+            {
+                x = 0;
+            }
+
+            if (float.IsNaN(y))
+            {
+                y = 0;
+            }
+
             this.Left = x;
             this.Top = y;
             if (z.HasValue)

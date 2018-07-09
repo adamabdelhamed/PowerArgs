@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace ConsoleGames
 {
@@ -17,6 +18,23 @@ namespace ConsoleGames
         public SceneFactory(List<ItemReviver> revivers)
         {
             this.revivers = revivers;
+        }
+
+        public static T CreateInstance<T>(string name)
+        {
+            var candidate = Assembly.GetExecutingAssembly().ExportedTypes.Where(t => t.Name.ToLower() == name.ToLower()).FirstOrDefault();
+
+            if (candidate == null)
+            {
+                candidate = Assembly.GetEntryAssembly().ExportedTypes.Where(t => t.Name.ToLower() == name.ToLower()).FirstOrDefault();
+            }
+
+            if (candidate == null)
+            {
+                throw new ArgumentException("Could not resolve type: " + name);
+            }
+
+            return (T)Activator.CreateInstance(candidate);
         }
 
         public IEnumerable<ITimeFunction> InitializeScene(Level level)

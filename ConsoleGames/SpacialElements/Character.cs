@@ -10,6 +10,7 @@ namespace ConsoleGames
 
     public class Character : SpacialElement, IObservableObject, IDestructible
     {
+        public char? Symbol { get; set; }
         public Inventory Inventory { get => observable.Get<Inventory>(); set => observable.Set(value); }  
 
 
