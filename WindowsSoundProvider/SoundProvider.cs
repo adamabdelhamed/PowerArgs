@@ -1,4 +1,4 @@
-﻿using ConsoleGames;
+﻿using PowerArgs.Games;
 using PowerArgs;
 using PowerArgs.Cli;
 using System;

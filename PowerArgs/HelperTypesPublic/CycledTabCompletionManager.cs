@@ -18,31 +18,22 @@ namespace PowerArgs
         int lastIndex;
         string lastCompletion;
         string lastSoFar;
-
-        /// <summary>
-        /// Cycles through the candidates provided by the given evaluation function using the arguments passed through from
-        /// the tab completion system.
-        /// </summary>
-        /// <param name="shift">You should pass true if the shift key was pressed during the tab</param>
-        /// <param name="soFar">You should pass through a reference to the soFar value that was sent by the tab completion system</param>
-        /// <param name="evaluation">A function that looks at 'soFar' and determines which values might be a match</param>
-        /// <param name="completion">The completion to populate if the conditions all work out</param>
-        /// <returns>True if completion was populated, false otherwise</returns>
-        public bool Cycle(bool shift, ref string soFar, Func<List<string>> evaluation, out string completion)
+ 
+        public bool Cycle(TabCompletionContext context, Func<List<string>> evaluation, out string completion)
         {
-            if (soFar == lastCompletion && lastCompletion != null)
+            if (context.CompletionCandidate == lastCompletion && lastCompletion != null)
             {
-                soFar = lastSoFar;
+                context.CompletionCandidate = lastSoFar;
             }
 
             var candidates = evaluation();
 
-            if (soFar == lastSoFar) lastIndex = shift ? lastIndex - 1 : lastIndex + 1;
+            if (context.CompletionCandidate == lastSoFar) lastIndex = context.Shift ? lastIndex - 1 : lastIndex + 1;
             if (lastIndex >= candidates.Count) lastIndex = 0;
             if (lastIndex < 0) lastIndex = candidates.Count - 1;
-            lastSoFar = soFar;
+            lastSoFar = context.CompletionCandidate;
 
-            if (candidates.Count == 0 || (candidates.Count > 1 && soFar.Length < MinCharsBeforeCyclingBegins))
+            if (candidates.Count == 0 || (candidates.Count > 1 && context.CompletionCandidate.Length < MinCharsBeforeCyclingBegins))
             {
                 completion = null;
                 return false;

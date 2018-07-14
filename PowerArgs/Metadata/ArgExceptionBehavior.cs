@@ -29,36 +29,6 @@ namespace PowerArgs
         /// </summary>
         public ArgExceptionPolicy Policy { get; private set; }
 
-        /// <summary>
-        /// Optionally show the TYPE column in the auto generated usage.  Defaults to true.
-        /// </summary>
-        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
-        public bool ShowTypeColumn { get; set; }
-
-        /// <summary>
-        /// Optionally show the POSITION column in the auto generated usage.  Defaults to true.
-        /// </summary>
-        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
-        public bool ShowPositionColumn { get; set; }
-
-        /// <summary>
-        /// Set to true to list possible values (usually for enums).  Defaults to true.
-        /// </summary>
-        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
-        public bool ShowPossibleValues { get; set; }
-
-        /// <summary>
-        /// Optionally override the ExeName.  You need to do this in unit tests.  In a real console app the
-        /// value will be detected automatically if you leave this as null.
-        /// </summary>
-        [Obsolete("You can now use GenerateUsageFromTemplate to generate usage output.  There are a few built in templates, and you can write your own.  Go to TODO-URL to learn more.")] // TODO - Add a URL to a page that talks about how to create usage templates.
-        public string ExeName { get; set; }
-
-        /// <summary>
-        /// The usage template to use to display usage information.  You can leave this null if you want to use the default template.
-        /// </summary>
-        [Obsolete("Use UsageTemplateProviderType")]
-        public string UsageTemplateFile { get; set; }
 
         /// <summary>
         /// A type that should implement IUsageTemplateProvider.  When specified the help hook will use the GenerateUsageFromTemplate function rather than the obsolete GenerateStyledUsage function.
@@ -72,11 +42,6 @@ namespace PowerArgs
         public ArgExceptionBehavior(ArgExceptionPolicy policy = ArgExceptionPolicy.DontHandleExceptions)
         {
             this.Policy = policy;
-            this.ShowTypeColumn = true;
-            this.ShowPositionColumn = true;
-            this.ShowPossibleValues = true;
-            this.ExeName = null;
-            this.UsageTemplateFile = null;
             this.UsageTemplateProviderType = typeof(DefaultConsoleUsageTemplateProvider);
         }
     }

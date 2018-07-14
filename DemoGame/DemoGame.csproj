@@ -58,10 +58,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ConsoleGames\ConsoleGames.csproj">
-      <Project>{d92acb09-a5ce-459b-bf39-3f5f3656e2e9}</Project>
-      <Name>ConsoleGames</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PowerArgs\PowerArgs.csproj">
       <Project>{b321562d-4335-4ee2-9db3-e263b0ddf06a}</Project>
       <Name>PowerArgs</Name>

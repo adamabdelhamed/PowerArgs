@@ -163,15 +163,5 @@ namespace PowerArgs.Cli
 
             SubscribeUnmanaged(wrappedAction);
         }
-
-        /// <summary>
-        /// Unsubscribes manually. This is obsolete.
-        /// </summary>
-        /// <param name="handler">The handler that was used to subscribe previously</param>
-        [Obsolete("You should use one of the lifetime aware subscribe methods and then unsubscribe using lifetimes")]
-        public void Unsubscribe(Action<T> handler)
-        {
-            subscribers[handler].Dispose();
-        }
     }
 }

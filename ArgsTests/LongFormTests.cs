@@ -11,7 +11,7 @@ namespace ArgsTests
     {
         public class LongFormArgs
         {
-            [ArgLongForm("--your-age")]
+            [ArgShortcut("--your-age")]
             public int Age { get; set; }
 
             public string NotUsed { get; set; }
@@ -19,8 +19,8 @@ namespace ArgsTests
 
         public class LongFormArgs2
         {
-            [ArgLongForm("--your-age")]
-            [ArgLongForm("--your-real-age")]
+            [ArgShortcut("--your-age")]
+            [ArgShortcut("--your-real-age")]
             public int Age { get; set; }
 
             public string NotUsed { get; set; }
@@ -29,28 +29,28 @@ namespace ArgsTests
         public class LongFormArgsMixed
         {
             [ArgShortcut("ag")]
-            [ArgLongForm("--your-age")]
-            [ArgLongForm("--your-real-age")]
+            [ArgShortcut("--your-age")]
+            [ArgShortcut("--your-real-age")]
             public int Age { get; set; }
 
-            [ArgLongForm("--help")]
-            [ArgLongForm("--help-please")]
+            [ArgShortcut("--help")]
+            [ArgShortcut("--help-please")]
             public bool Help { get; set; }
         }
 
         public class LongFormBad
         {
-            [ArgLongForm(null)]
+            [ArgShortcut(null)]
             public int Age { get; set; }
         }
 
         [TestMethod]
         public void TestLongFormAppearsInUsage()
         {
-            string usage = ArgUsage.GetUsage<LongFormArgs>("test");
+            var usage = ArgUsage.GenerateUsageFromTemplate(typeof(LongFormArgs));
             Assert.IsTrue(usage.Contains("--your-age"));
 
-            usage = ArgUsage.GetUsage<LongFormArgsMixed>("test");
+            usage = ArgUsage.GenerateUsageFromTemplate(typeof(LongFormArgsMixed));
             Assert.IsTrue(usage.Contains("--your-age"));
             Assert.IsTrue(usage.Contains("--your-real-age"));
         }

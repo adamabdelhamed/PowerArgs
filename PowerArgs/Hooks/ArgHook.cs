@@ -189,13 +189,6 @@ namespace PowerArgs
             }
 
             /// <summary>
-            /// The current property being operating on.  This is not available during BeforePopulateProperties or
-            /// AfterPopulateProperties.
-            /// </summary>
-            [Obsolete("You should use CurrentArgument instead of Property since it offers more metadata.  It also exposes the PropertyInfo via CommandLineArgument.Source if the argument was created from a PropertyInfo.")]
-            public PropertyInfo Property { get; set; }
-
-            /// <summary>
             /// The current argument being operating on. 
             /// AfterPopulateProperties.
             /// </summary>
@@ -406,10 +399,8 @@ namespace PowerArgs
                 foreach(var info in hooksToRun)
                 {
                     this.CurrentArgument = info.Argument;
-                    this.Property = info.Property;
                     hookAction(info.Hook);
                     this.CurrentArgument = null;
-                    this.Property = null;
                 }
             }
 

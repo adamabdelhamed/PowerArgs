@@ -73,7 +73,6 @@ namespace PowerArgs
             get
             {
                 var aliases = Aliases.OrderBy(a => a.Length).ToList();
-                var maxInlineAliasLength = 8;
                 string inlineAliasInfo = "";
 
                 int aliasIndex;
@@ -81,14 +80,7 @@ namespace PowerArgs
                 {
                     if (aliases[aliasIndex] == DefaultAlias) continue;
                     var proposedInlineAliases = inlineAliasInfo == string.Empty ? "-"+aliases[aliasIndex] : inlineAliasInfo + ", -" + aliases[aliasIndex];
-                    if (proposedInlineAliases.Length <= maxInlineAliasLength)
-                    {
-                        inlineAliasInfo = proposedInlineAliases;
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    inlineAliasInfo = proposedInlineAliases;
                 }
 
                 return inlineAliasInfo;
@@ -129,14 +121,6 @@ namespace PowerArgs
             get
             {
                 return Metadata.Metas<ArgHook>().AsReadOnly();
-            }
-        }
-
-        internal ReadOnlyCollection<UsageHook> UsageHooks
-        {
-            get
-            {
-                return Metadata.Metas<UsageHook>().AsReadOnly();
             }
         }
 
@@ -204,16 +188,8 @@ namespace PowerArgs
         /// </summary>
         public bool OmitFromUsage
         {
-            get
-            {
-                var omitFromUsage = overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p =>true, false);
-                var omitFromUsageAltername = overrides.Get<ArgHiddenFromUsage, bool>("ArgHiddenFromUsage", Metadata, p => true, false);
-                return omitFromUsage || omitFromUsageAltername;
-            }
-            set
-            {
-                overrides.Set("OmitFromUsage", value);
-            }
+            get => overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p =>true, false);
+            set => overrides.Set("OmitFromUsage", value);
         }
 
         /// <summary>
@@ -487,15 +463,12 @@ namespace PowerArgs
             var oldCurrent = context.CurrentArgument;
             try
             {
-                context.Property = Source as PropertyInfo;
                 context.CurrentArgument = this;
 
                 foreach (var hook in Hooks.OrderBy(orderby))
                 {
                     hookAction(hook);
                 }
-
-                context.Property = null;
             }
             finally
             {
@@ -525,12 +498,7 @@ namespace PowerArgs
             {
                 if (v.ImplementsValidateAlways)
                 {
-                    try { v.ValidateAlways(this, ref commandLineValue); }
-                    catch (NotImplementedException)
-                    {
-                        // TODO P0 - Test to make sure the old, PropertyInfo based validators properly work.
-                        v.ValidateAlways(Source as PropertyInfo, ref commandLineValue);
-                    }
+                    v.ValidateAlways(this, ref commandLineValue);  
                 }
                 else if (commandLineValue != null)
                 {

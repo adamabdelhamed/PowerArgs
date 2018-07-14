@@ -9,7 +9,7 @@ using PowerArgs.Cli;
 
 namespace ArgsTests
 {
-    public class AnimalCompletionSource : ISmartTabCompletionSource
+    public class AnimalCompletionSource : ITabCompletionSource
     {
         private SimpleTabCompletionSource source = new SimpleTabCompletionSource(new string[] { "Chicken", "Cow" }) { MinCharsBeforeCyclingBegins = 0 };
         public bool TryComplete(TabCompletionContext context, out string completion)

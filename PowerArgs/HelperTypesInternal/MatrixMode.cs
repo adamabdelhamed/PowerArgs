@@ -6,8 +6,35 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace PowerArgs.EasterEggs
+namespace PowerArgs
 {
+    /// <summary>
+    /// An effect that makes all command line output get written in a green themed, futuristic fasion.   
+    /// </summary>
+    public static class MatrixMode
+    {
+        /// <summary>
+        /// Starts MatrixMode.
+        /// </summary>
+        /// <returns>An action that when invoked stops MatrixMode.</returns>
+        public static Action Start()
+        {
+            var writer = new MatrixWriter();
+
+            Task t = new Task(() =>
+            {
+                Thread.CurrentThread.IsBackground = false;
+                writer.Loop();
+            });
+            t.Start();
+            Thread.Sleep(100);
+            return () =>
+            {
+                writer.Cancel();
+            };
+        }
+    }
+
     internal class MatrixWriter : TextWriter
     {
         TextWriter wrapped;
@@ -113,34 +140,6 @@ namespace PowerArgs.EasterEggs
                 Console.ForegroundColor = resetFG;
                 Console.BackgroundColor = resetBG;
             }
-        }
-    }
-
-    /// <summary>
-    /// An easter egg that makes all command line output get written in a green themed, futuristic fasion.  Don't use in a real program :).
-    /// Breaking changes are allowed in the PowerArgs.EasterEggs namespace.
-    /// </summary>
-    public static class MatrixMode
-    {
-        /// <summary>
-        /// Starts MatrixMode.
-        /// </summary>
-        /// <returns>An action that when invoked stops MatrixMode.</returns>
-        public static Action Start()
-        {
-            var writer = new MatrixWriter();
-
-            Task t = new Task(() =>
-            {
-                Thread.CurrentThread.IsBackground = false;
-                writer.Loop();
-            });
-            t.Start();
-            Thread.Sleep(100);
-            return () =>
-            {
-                writer.Cancel();
-            };
         }
     }
 }

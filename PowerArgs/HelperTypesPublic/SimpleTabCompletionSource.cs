@@ -8,7 +8,7 @@ namespace PowerArgs
     /// <summary>
     /// A simple tab completion source implementation that looks for matches over a set of pre-determined strings.
     /// </summary>
-    public class SimpleTabCompletionSource : ITabCompletionSourceWithContext, ISmartTabCompletionSource
+    public class SimpleTabCompletionSource : ITabCompletionSource
     {
         Func<IEnumerable<string>> CandidateFunction { get; set; }
 
@@ -46,18 +46,6 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Not implemented since this type implements ITabCompletionSourceWithContext
-        /// </summary>
-        /// <param name="shift"></param>
-        /// <param name="soFar"></param>
-        /// <param name="completion"></param>
-        /// <returns></returns>
-        public bool TryComplete(bool shift, string soFar, out string completion)
-        {
-            return TryComplete(shift, null, soFar, out completion);
-        }
-
-        /// <summary>
         /// Iterates through the candidates to try to find a match.  If there are multiple possible matches it 
         /// supports cycling through tem as the user continually presses tab.
         /// </summary>
@@ -66,28 +54,16 @@ namespace PowerArgs
         /// <param name="context"></param>
         /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
         /// <returns>true if the tab completion was successful, false otherwise</returns>
-        public bool TryComplete(bool shift, string context, string soFar, out string completion)
+        public bool TryComplete(TabCompletionContext context, out string completion)
         {
             manager.MinCharsBeforeCyclingBegins = this.MinCharsBeforeCyclingBegins;
 
             bool ignoreCase = true;
 
-            return manager.Cycle(shift, ref soFar, () =>
+            return manager.Cycle(context,  () =>
             {
-                return (from c in CandidateFunction() where c.StartsWith(soFar, ignoreCase, CultureInfo.CurrentCulture) select c).ToList();
+                return (from c in CandidateFunction() where c.StartsWith(context.CompletionCandidate, ignoreCase, CultureInfo.CurrentCulture) select c).ToList();
             }, out completion);
-        }
-
-        /// <summary>
-        /// Iterates through the candidates to try to find a match.  If there are multiple possible matches it 
-        /// supports cycling through tem as the user continually presses tab.
-        /// </summary>
-        /// <param name="context">Information about the tab completion</param>
-        /// <param name="completion">The variable that you should assign the completed string to if you find a match.</param>
-        /// <returns>true if the tab completion was successful, false otherwise</returns>
-        public bool TryComplete(TabCompletionContext context, out string completion)
-        {
-            return TryComplete(context.Shift, context.CompletionCandidate, out completion);
         }
     }
 }

@@ -24,6 +24,12 @@ namespace PowerArgs
         private int selectedIndex;
 
         /// <summary>
+        /// An event that fires when the fetching search results fails. When this happens the search will swallow the excpetion and simply 
+        /// show no results to the user.
+        /// </summary>
+        public Event<Exception> FetchResultsFailed { get; private set; } = new Event<Exception>();
+
+        /// <summary>
         /// Gets the most recent search result that was selected and committed by the user
         /// </summary>
         public ContextAssistSearchResult SelectedValue { get; private set; }
@@ -257,7 +263,7 @@ namespace PowerArgs
                     }
                     catch (Exception ex)
                     {
-                        PowerLogger.LogLine("Exception fetching results on search provider: " + GetType().FullName + "\n\n" + ex);
+                        FetchResultsFailed.Fire(ex);
                         return;
                     }
 
@@ -275,9 +281,10 @@ namespace PowerArgs
                             RedrawSearchResults();
                         }, myRequestId);
                     }
-                }catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
-                    PowerLogger.LogLine("Background exception is search provider: " + GetType().FullName + "\n\n" + ex);
+                    FetchResultsFailed.Fire(ex);
                 }
 
             });

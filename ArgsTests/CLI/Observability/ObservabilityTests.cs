@@ -150,17 +150,14 @@ namespace ArgsTests.CLI.Observability
         public void SubscribeUnmanagedToEventOfStringWithUnsubscribe()
         {
             var observable = new SomeObservable();
-
             var triggerCount = 0;
-
-            Action<string> handler = (s) => { triggerCount++; };
-            observable.SomeEventWithAString.SubscribeUnmanaged(handler);
+            var sub = observable.SomeEventWithAString.SubscribeUnmanaged((s) => { triggerCount++; });
 
             Assert.AreEqual(0, triggerCount);
             observable.SomeEventWithAString.Fire("Foo");
             Assert.AreEqual(1, triggerCount);
 
-            observable.SomeEventWithAString.Unsubscribe(handler);
+            sub.Dispose();
             observable.SomeEventWithAString.Fire("Foo");
             Assert.AreEqual(1, triggerCount);
         }

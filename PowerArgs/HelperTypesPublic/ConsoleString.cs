@@ -9,6 +9,18 @@ using System.Text.RegularExpressions;
 namespace PowerArgs
 {
     /// <summary>
+    /// An interface that defines an object that implements ToConsoleString
+    /// </summary>
+    public interface ICanBeAConsoleString
+    {
+        /// <summary>
+        /// Formats this object as a ConsoleString
+        /// </summary>
+        /// <returns>a ConsoleString</returns>
+        ConsoleString ToConsoleString();
+    }
+
+    /// <summary>
     /// A wrapper for char that encapsulates foreground and background colors.
     /// </summary>
     public struct ConsoleCharacter : ICanBeAConsoleString

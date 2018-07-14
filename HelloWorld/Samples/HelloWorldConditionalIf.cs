@@ -3,7 +3,7 @@ using System;
 
 namespace HelloWorld.Samples
 {
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = false), TabCompletion(REPL=true) /* [TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), TabCompletion(REPL=true) /* [TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
     public class HelloWorldConditionalIfArgs
     {
         [HelpHook, ArgShortcut("-?")]

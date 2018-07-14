@@ -39,15 +39,6 @@ namespace PowerArgs
         /// <param name="arg">The value specified on the command line.  If the user specified the property name, but not a value then arg will equal string.Empty.  The value will never be null.</param>
         public virtual void Validate(string name, ref string arg) { }
 
-        /// <summary>
-        /// Always validates the given property, even if it was not specified by the user (arg will be null in this case).
-        /// If you override this method then you should also override ImplementsValidateAlways so it returns true.
-        ///</summary>
-        /// <param name="property">The property that the attribute was placed on.</param>
-        /// <param name="arg">The value specified on the command line or null if the user didn't actually specify a value for the property.  If the user specified the property name, but not a value then arg will equal string.Empty</param>
-        [Obsolete("Validators should implement the overload of ValidateAlways that accepts a CommandLineArgument as the first parameter.  That overload provides a superset of data compared to this method.")]
-        public virtual void ValidateAlways(PropertyInfo property, ref string arg) { throw new NotImplementedException(); }
-
 
         /// <summary>
         /// Always validates the given argument, even if it was not specified by the user (arg will be null in this case).

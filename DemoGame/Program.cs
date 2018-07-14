@@ -1,4 +1,4 @@
-﻿using ConsoleGames;
+﻿using PowerArgs.Games;
 using PowerArgs.Cli;
 
 namespace DemoGame

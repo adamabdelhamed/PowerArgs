@@ -11,7 +11,7 @@ namespace ArgsTests
         {
             public static event Action Action1Fired;
 
-            [HelpHook(EXEName="test"), ArgShortcut("?"), ArgDescription("Displays this help")]
+            [HelpHook, ArgShortcut("?"), ArgDescription("Displays this help")]
             public bool Help { get; set; }
 
             [ArgActionMethod,ArgDescription("Runs action 1, a really great action")]

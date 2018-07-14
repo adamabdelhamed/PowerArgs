@@ -6,14 +6,14 @@ using System.Linq;
 
 namespace ArgsTests
 {
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ExeName="UnitTests")]
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
     public class SimpleArgs
     {
         [ArgRequired]
         public string StringThatsRequired { get; set; }
     }
 
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ExeName = "UnitTests")]
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
     public class SourceControlArgs
     {
         [ArgActionMethod]

@@ -688,37 +688,6 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void TestBasicUsage()
-        {
-            var basicUsage = ArgUsage.GetUsage<BasicArgs>("basic");
-            ArgUsage.GetUsage<PointArgs>("basic");
-            ArgUsage.GetStyledUsage<PointArgs>("basic").Write();
-            Console.WriteLine(basicUsage);
-        }
-
-        [TestMethod]
-        public void TestBasicUsageWithPositioning()
-        {
-            var basicUsage = ArgUsage.GetUsage<PositionedArgs>( "basic");
-            ArgUsage.GetStyledUsage<PositionedArgs>("basic").Write();
-            Console.WriteLine(basicUsage);
-        }
-
-        [TestMethod]
-        public void TestBasicUsageWithNoExeNameThrows()
-        {
-            try 
-            {
-                var basicUsage = ArgUsage.GetUsage<BasicArgs>();
-            }
-            catch (Exception ex)
-            {
-                Assert.IsInstanceOfType(ex, typeof(InvalidOperationException));
-                Assert.IsTrue(ex.Message.ToLower().Contains("could not determine the name of your executable automatically"));
-            }
-        }
-
-        [TestMethod]
         public void UnexpectedArgumentExceptionInheritsFromArgException()
         {
             var uae = new UnexpectedArgException("test");

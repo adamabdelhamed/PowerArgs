@@ -74,15 +74,11 @@ namespace PowerArgs.Cli
                     }
                 }
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 if (ThrowOnTabCompletionHandlerException)
                 {
                     throw;
-                }
-                else
-                {
-                    PowerLogger.LogLine("Tab completion handler threw exception: " + ex.ToString());
                 }
             }
         }

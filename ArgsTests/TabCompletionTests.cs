@@ -77,24 +77,6 @@ namespace ArgsTests
             public NameSource() : base(new string[] { "Adam", "Joe" }) { }
         }
 
-        public class CustomLegacySourceThatWillOnlyWorkWithATargetArgument : ITabCompletionSource
-        {
-            NameSource wrapped = new NameSource();
-
-  
-            public bool TryComplete(bool shift, string soFar, out string completion)
-            {
-                return wrapped.TryComplete(shift, soFar, out completion);
-            }
-        }
-
-        [TabCompletion("$", ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
-        public class ArgAwareCompletionArgsWithLegacySource
-        {
-            [ArgumentAwareTabCompletionAttribute(typeof(CustomLegacySourceThatWillOnlyWorkWithATargetArgument))]
-            public string Name { get; set; }
-            public string Address { get; set; }
-        }
 
         [TabCompletion(typeof(MyCompletionSource), "$", ExeName = "TestSuiteTestArgs.exe", HistoryToSave = MaxHistory)]
         public class ArgAwareCompletionArgs
@@ -117,15 +99,6 @@ namespace ArgsTests
                 // if we see 'pa' as the argument then we know that the tab completion system did not expand 'pa' to 'password'
                 Assert.AreEqual("Unexpected named argument: pa", ex.Message);
             }
-        }
-
-        [TestMethod]
-        public void LegacyTestWithArgSpecificTabCompletion()
-        {
-            
-            ConsoleProvider.Current = new TestConsoleProvider("-N A\t");
-            var parsed = Args.Parse<ArgAwareCompletionArgsWithLegacySource>("$");
-            Assert.AreEqual("Adam", parsed.Name);
         }
 
         [TestMethod]

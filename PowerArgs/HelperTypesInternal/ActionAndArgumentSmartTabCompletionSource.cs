@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace PowerArgs
 {
-    internal class ActionAndArgumentSmartTabCompletionSource : ISmartTabCompletionSource
+    internal class ActionAndArgumentSmartTabCompletionSource : ITabCompletionSource
     {
         private SimpleTabCompletionSource actionSource;
         private SimpleTabCompletionSource globalArgumentSource;

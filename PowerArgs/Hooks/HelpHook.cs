@@ -10,30 +10,6 @@ namespace PowerArgs
     public class HelpHook : ArgHook
     {
         /// <summary>
-        /// Optional.  The name of the EXE that is displayed by the help.  By default it will use the entry assembly exe name.
-        /// </summary>
-        [Obsolete("The mechanism for customizing usage going forward is to create a usage template via the UsageTemplateProviderType property.")]
-        public string EXEName { get; set; }
-
-        /// <summary>
-        /// Optionally show the TYPE column in the auto generated usage.  Defaults to true.
-        /// </summary>
-        [Obsolete("The mechanism for customizing usage going forward is to create a usage template via the UsageTemplateProviderType property.")]
-        public bool ShowTypeColumn { get; set; }
-
-        /// <summary>
-        /// Optionally show the POSITION column in the auto generated usage.  Defaults to true.
-        /// </summary>
-        [Obsolete("The mechanism for customizing usage going forward is to create a usage template via the UsageTemplateProviderType property.")]
-        public bool ShowPositionColumn { get; set; }
-
-        /// <summary>
-        /// Set to true to list possible values (usually for enums).  Defaults to true.
-        /// </summary>
-        [Obsolete("The mechanism for customizing usage going forward is to create a usage template via the UsageTemplateProviderType property.")]
-        public bool ShowPossibleValues { get; set; }
-
-        /// <summary>
         /// A type that should implement IUsageTemplateProvider.  When specified the help hook will use the GenerateUsageFromTemplate function rather than the obsolete GenerateStyledUsage function.
         /// </summary>
         public Type  UsageTemplateProviderType { get; set; }
@@ -104,15 +80,7 @@ namespace PowerArgs
             if (WriteHelp == false) return;
             var usage = UsageTemplateProvider.GetUsage(UsageTemplateProviderType, context.Definition);
             usage.Write();
-            FireUsageWritten(usage);
-        }
-
-        private void FireUsageWritten(ConsoleString usage)
-        {
-            if (UsageWritten != null)
-            {
-                UsageWritten(usage);
-            }
+            UsageWritten?.Invoke(usage);
         }
     }
 }

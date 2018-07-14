@@ -70,7 +70,7 @@ namespace ArgsTests
             definition.Arguments.Add(argument1);
             definition.Arguments.Add(argument2);
 
-            var usage = ArgUsage.GetUsage(definition, "test");
+            var usage = ArgUsage.GenerateUsageFromTemplate(definition);
 
             Assert.IsTrue(usage.Contains("INT Description"));
             Assert.IsTrue(usage.Contains("URI Description"));
@@ -106,7 +106,7 @@ namespace ArgsTests
             Args.InvokeAction(definition, "go", "-destination", "Hawaii");
             Assert.IsTrue(invoked);
 
-            var usage = ArgUsage.GetUsage(definition, "test");
+            var usage = ArgUsage.GenerateUsageFromTemplate(definition);
             Assert.IsTrue(usage.Contains("A simple action"));
             Assert.IsTrue(usage.Contains("The place to go to"));
         }

@@ -505,7 +505,9 @@ namespace PowerArgs
                 var definition = ArgHook.HookContext.Current.Definition;
                 if (definition.ExceptionBehavior.Policy == ArgExceptionPolicy.StandardExceptionHandling)
                 {
-                    return DoStandardExceptionHandling<T>(ex, ArgHook.HookContext.Current, definition);
+                    ex.Message.ToRed().WriteLine();
+                    UsageTemplateProvider.GetUsage(definition.ExceptionBehavior.UsageTemplateProviderType, definition).Write();
+                    return CreateEmptyResult<T>(ArgHook.HookContext.Current, ex);
                 }
                 else
                 {
@@ -516,23 +518,6 @@ namespace PowerArgs
             {
                 ArgHook.HookContext.Current = null;
             }
-        }
-
-        private static T DoStandardExceptionHandling<T>(ArgException ex, ArgHook.HookContext context, CommandLineArgumentsDefinition definition) where T : class
-        {
-            Console.WriteLine(ex.Message);
-
-            if (definition.ExceptionBehavior.UsageTemplateFile != null)
-            {
-                var template = File.ReadAllText(definition.ExceptionBehavior.UsageTemplateFile);
-                ArgUsage.GenerateUsageFromTemplate(definition, template).Write();
-            }
-            else
-            {
-                UsageTemplateProvider.GetUsage(definition.ExceptionBehavior.UsageTemplateProviderType, definition).Write();
-            }
-
-            return CreateEmptyResult<T>(context, ex);
         }
 
         private static T CreateEmptyResult<T>(ArgHook.HookContext context, ArgException ex = null, bool cancelled = false)

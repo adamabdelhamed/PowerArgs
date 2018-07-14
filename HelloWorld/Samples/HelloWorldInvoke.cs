@@ -14,7 +14,7 @@ namespace HelloWorld.Samples
         Production
     }
 
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = true), TabCompletion(HistoryToSave=10,REPL=true) /* [TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), TabCompletion(HistoryToSave=10,REPL=true) /* [TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
     [ArgDescription("A simple command line application that accepts a few optional arguments.")]
     [ArgExample("HelloWorld -s HelloWorld","A very simple example that results in the 'StringArg' property being set to 'HelloWorld'",Title = "Your very first example")]
     public class HelloWorldInvokeArgs

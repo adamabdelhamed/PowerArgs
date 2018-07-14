@@ -20,7 +20,7 @@ namespace ArgsTests
         [ArgDescription("An int arg")]
         public int IntArgs { get; set; }
 
-        [ArgHiddenFromUsage, ArgDescription("WE SHOULD NEVER SEE THIS")]
+        [OmitFromUsageDocs, ArgDescription("WE SHOULD NEVER SEE THIS")]
         public string SecretArg { get; set; }
     }
 
@@ -84,7 +84,6 @@ namespace ArgsTests
             var types = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.GetCustomAttributes(typeof(UsageAutomation), true).Length > 0);
            foreach(var type in types)
             { 
-                 ArgUsage.GetStyledUsage(type, "testusage.exe");
                  var consoleOutput = ArgUsage.GenerateUsageFromTemplate(type, template: UsageTemplates.ConsoleTemplate);
                  var browserOutput = ArgUsage.GenerateUsageFromTemplate(type, template: UsageTemplates.BrowserTemplate);
 
@@ -117,83 +116,7 @@ namespace ArgsTests
             var arg = new CommandLineArgument(typeof(List<int>), "someInt");
             Assert.AreEqual("List<integer>", arg.FriendlyTypeName);
         }
-
-        [TestMethod]
-        public void TestActionSpecificUsage()
-        {
-            try
-            {
-                Args.InvokeAction<ArgsForActionSpecificUsage>("Foo");
-            }
-            catch (ArgException ex)
-            {
-                var usage = ArgUsage.GetStyledUsage<ArgsForActionSpecificUsage>("test", new ArgUsageOptions()
-                {
-                    SpecifiedActionOverride = ex.Context.SpecifiedAction
-                });
-                Assert.IsTrue(usage.Contains("Foo"));
-                Assert.IsFalse(usage.Contains("Bar"));
-            }
-        }
-
-        [TestMethod]
-        public void TestUsageWithoutTypeAndPosition()
-        {
-            var usage = ArgUsage.GetUsage<BasicUsageArgs>("test", new ArgUsageOptions() 
-            {
-                ShowType = false,
-                ShowPosition=false,
-            });
-
-            Assert.IsFalse(usage.Contains("TYPE"));
-            Assert.IsFalse(usage.Contains("POSITION"));
-        }
-
-        [TestMethod]
-        public void TestArgHiddenFromUsage()
-        {
-            var usage = ArgUsage.GetUsage<BasicUsageArgs>("test");
-
-            Assert.IsFalse(usage.ToUpper().Contains("WE SHOULD NEVER SEE THIS"));
-            Assert.IsFalse(usage.Contains("SecretArg"));
-        }
-
-        [TestMethod]
-        public void TestUsageWithTypeAndPosition()
-        {
-            var usage = ArgUsage.GetUsage<BasicUsageArgs>("test");
-
-            Assert.IsTrue(usage.Contains("TYPE"));
-            Assert.IsTrue(usage.Contains("POSITION"));
-        }
-
-        [TestMethod]
-        public void TestUsageWithTypeAndNotPosition()
-        {
-            var usage = ArgUsage.GetUsage<BasicUsageArgs>("test", new ArgUsageOptions()
-            {
-                ShowType = true,
-                ShowPosition = false,
-            });
-
-            Assert.IsTrue(usage.Contains("TYPE"));
-            Assert.IsFalse(usage.Contains("POSITION"));
-        }
-
-
-        [TestMethod]
-        public void TestUsageWithNoTypeAndWithPosition()
-        {
-            var usage = ArgUsage.GetUsage<BasicUsageArgs>("test", new ArgUsageOptions()
-            {
-                ShowType = false,
-                ShowPosition = true,
-            });
-
-            Assert.IsFalse(usage.Contains("TYPE"));
-            Assert.IsTrue(usage.Contains("POSITION"));
-        }
-
+         
         [TestMethod]
         public void TestOmitFromUsageWithTemplatingPath()
         {

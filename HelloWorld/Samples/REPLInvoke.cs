@@ -25,7 +25,7 @@ namespace HelloWorld.Samples
      * usage documentation.
      */
 
-    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling, ShowTypeColumn = false, ShowPossibleValues = true), TabCompletion(typeof(ItemNameCompletion), REPL = true, HistoryToSave = 10)]
+    [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), TabCompletion(typeof(ItemNameCompletion), REPL = true, HistoryToSave = 10)]
     [ArgExample("add a,b,c", "Adds three items (\"a\", \"b\", and \"c\") to the list"), ArgExample("clear", "Clears the list")]
     public class REPLInvokeArgs
     {
@@ -45,7 +45,7 @@ namespace HelloWorld.Samples
         [ArgActionMethod, OmitFromUsageDocs, ArgDescription("Displays the help")]
         public void Help()
         {
-            ArgUsage.GetStyledUsage<REPLInvokeArgs>().Write();
+            ArgUsage.GenerateUsageFromTemplate(typeof(REPLInvokeArgs)).WriteLine();
         }
 
         [ArgActionMethod, ArgDescription("Adds a new item to the list")]

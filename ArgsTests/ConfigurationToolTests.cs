@@ -48,12 +48,5 @@ namespace ArgsTests
             Assert.AreEqual("background", parsed.Args.ConfigArgs.ConfigName);
             Assert.AreEqual("green", parsed.Args.ConfigArgs.ConfigValue);
         }
-
-        [TestMethod]
-        public void TestConfigToolUsage()
-        {
-            var usage = ArgUsage.GetUsage<ConfigurationToolArgs>("mytool");
-            Console.WriteLine(usage);
-        }
     }
 }

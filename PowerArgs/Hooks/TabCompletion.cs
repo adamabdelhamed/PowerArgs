@@ -30,26 +30,21 @@ namespace PowerArgs
             this.CompletionSourceType = completionSourceType;
         }
 
-        internal object CreateTabCompletionSource(CommandLineArgumentsDefinition definition, CommandLineArgument argument)
+        internal ITabCompletionSource CreateTabCompletionSource(CommandLineArgumentsDefinition definition, CommandLineArgument argument)
         {
             ITabCompletionSource ret;
-            if(this.CompletionSourceType.GetInterfaces().Contains(typeof(ISmartTabCompletionSource)))
+            if(this.CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)))
             {
-                var source = ObjectFactory.CreateInstance(CompletionSourceType) as ISmartTabCompletionSource;
+                var source = ObjectFactory.CreateInstance(CompletionSourceType) as ITabCompletionSource;
                 return new ArgumentAwareWrapperSmartTabCompletionSource(definition, argument, source);
             }
             else if (this.CompletionSourceType.IsSubclassOf(typeof(ArgumentAwareTabCompletionSource)))
             {
                 ret = (ITabCompletionSource)Activator.CreateInstance(this.CompletionSourceType, definition, argument);
             }
-            else if (this.CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)))
-            {
-                var toWrap = (ITabCompletionSource)ObjectFactory.CreateInstance(this.CompletionSourceType);
-                ret = new ArgumentAwareWrapperTabCompletionSource(definition, argument, toWrap);
-            }
             else
             {
-                throw new InvalidArgDefinitionException("The type " + this.CompletionSourceType.FullName + " does not implement ITabCompletionSource or ITabCompletionSource.  The target argument was " + argument.DefaultAlias);
+                throw new InvalidArgDefinitionException("The type " + this.CompletionSourceType.FullName + $" does not implement {nameof(ITabCompletionSource)}.  The target argument was " + argument.DefaultAlias);
             }
 
             return ret;
@@ -154,11 +149,10 @@ namespace PowerArgs
         public override void BeforeParse(ArgHook.HookContext context)
         {
           
-            if (CompletionSourceType != null && 
-                CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)) == false &&
-                CompletionSourceType.GetInterfaces().Contains(typeof(ISmartTabCompletionSource)) == false)
+            if (CompletionSourceType != null &&  
+                CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)) == false)
             {
-                throw new InvalidArgDefinitionException("Type does not implement ITabCompletionSource or ISmartTabCompletionSource: " + CompletionSourceType.FullName);
+                throw new InvalidArgDefinitionException($"Type does not implement {nameof(ITabCompletionSource)}: " + CompletionSourceType.FullName);
             }
 
             if (context.Definition.IsNonInteractive)

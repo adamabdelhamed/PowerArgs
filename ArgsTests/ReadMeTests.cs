@@ -90,9 +90,8 @@ namespace ArgsTests
         [TestMethod]
         public void TestUsageAsActionFx()
         {
-            var usage = ArgUsage.GetUsage<VideoEncoderArgs>("test");
-            Assert.IsTrue(usage.Contains("Actions:"));
-
+            var usage = ArgUsage.GenerateUsageFromTemplate(typeof(VideoEncoderArgs));
+            Assert.IsTrue(usage.Contains("Actions"));
         }
     }
 }

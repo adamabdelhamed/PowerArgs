@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageVersion>3.0.0</PackageVersion>
+    <PackageVersion>3.5.0</PackageVersion>
     <PackageId>PowerArgs</PackageId>
     <Authors>Adam Abdelhamed</Authors>
     <Description>The ultimate command line application framework</Description>

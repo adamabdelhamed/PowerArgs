@@ -120,7 +120,6 @@ namespace ArgsTests.CLI
         [TestMethod]
         public void TestSyncSearchDoesntBreakConsole()
         {
-            PowerLogger.LogFile = @"C:\temp\TestSearchAsync.txt";
             var input = "-s\t {control} ";
 
             for (int i = 0; i < 10000; i++ )
@@ -138,7 +137,6 @@ namespace ArgsTests.CLI
         [TestMethod]
         public void TestAsyncSearchDoesntBreakConsole()
         {
-            PowerLogger.LogFile = @"C:\temp\TestSearchAsync.txt";
             var input = "-s\t {control} ";
 
             for (int i = 0; i < 10000; i++)

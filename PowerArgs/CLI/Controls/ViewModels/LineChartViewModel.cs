@@ -65,14 +65,13 @@ namespace PowerArgs.Cli
         private void SeriesRemoved(DataSeries series)
         {
             this.FirePropertyChanged("DataSeriesCollection");
-            series.DataPoints.Added.Unsubscribe(DataPointAdded);
             ResetFocusedSeries();
         }
 
         private void SeriesAdded(DataSeries series)
         {
             this.FirePropertyChanged("DataSeriesCollection");
-            series.DataPoints.Added.SubscribeUnmanaged(DataPointRemoved);
+            series.DataPoints.Added.SubscribeForLifetime(DataPointRemoved, DataSeriesCollection.GetMembershipLifetime(series));
             ResetFocusedSeries();
         }
 

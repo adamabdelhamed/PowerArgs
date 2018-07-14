@@ -22,7 +22,7 @@ namespace HelloWorld.Samples
             catch (ArgException ex)
             {
                 Console.WriteLine(ex.Message);
-                ArgUsage.GetStyledUsage<HelloWorldParseArgs>().Write();
+                ArgUsage.GenerateUsageFromTemplate(typeof(HelloWorldParseArgs)).WriteLine();
             }
         }
     }

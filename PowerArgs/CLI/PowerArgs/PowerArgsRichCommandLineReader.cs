@@ -35,9 +35,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public CommandLineArgumentsDefinition Definition { get; private set; }
 
-
-        private IEnumerable<ITabCompletionSource> oldHooks;
-        private IEnumerable<ISmartTabCompletionSource> newHooks;
+        private IEnumerable<ITabCompletionSource> newHooks;
         
         /// <summary>
         /// Configures the reader for the given definition and history information.
@@ -57,7 +55,6 @@ namespace PowerArgs.Cli
             this.StringLiteralForeground = ConsoleColor.Yellow;
             this.ActionForeground = ConsoleColor.Magenta;
 
-            this.oldHooks = FindOldTabCompletionHooks(this.Definition);
             this.newHooks = FindNewTabCompletionHooks(this.Definition);
             InitHighlighters();
         }
@@ -106,37 +103,12 @@ namespace PowerArgs.Cli
         public bool TryTabComplete(RichCommandLineContext cliContext)
         {
             var powerArgsContext = ConvertContext(this.Definition, cliContext);
-
-            bool oldHookWon = false;
             string completion = null;
-            foreach (var completionSource in oldHooks)
+            foreach (var completionSource in newHooks)
             {
-                if (completionSource is ITabCompletionSourceWithContext)
+                if (completionSource.TryComplete(powerArgsContext, out completion))
                 {
-                    if (((ITabCompletionSourceWithContext)completionSource).TryComplete(powerArgsContext.Shift, powerArgsContext.PreviousToken, powerArgsContext.CompletionCandidate, out completion))
-                    {
-                        oldHookWon = true;
-                        break;
-                    }
-                }
-                else
-                {
-                    if (completionSource.TryComplete(powerArgsContext.Shift, powerArgsContext.CompletionCandidate, out completion))
-                    {
-                        oldHookWon = true;
-                        break;
-                    }
-                }
-            }
-
-            if (oldHookWon == false)
-            {
-                foreach (var completionSource in newHooks)
-                {
-                    if (completionSource.TryComplete(powerArgsContext, out completion))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
 
@@ -170,7 +142,7 @@ namespace PowerArgs.Cli
             return context;
         }
 
-        private static IEnumerable<ITabCompletionSource> FindOldTabCompletionHooks(CommandLineArgumentsDefinition definition)
+        private static IEnumerable<ITabCompletionSource> FindNewTabCompletionHooks(CommandLineArgumentsDefinition definition)
         {
             List<ITabCompletionSource> completionSources = new List<ITabCompletionSource>();
 
@@ -187,30 +159,6 @@ namespace PowerArgs.Cli
                     if (source is ITabCompletionSource)
                     {
                         completionSources.Insert(0, (ITabCompletionSource)source);
-                    }
-                }
-            }
-
-            return completionSources;
-        }
-
-        private static IEnumerable<ISmartTabCompletionSource> FindNewTabCompletionHooks(CommandLineArgumentsDefinition definition)
-        {
-            List<ISmartTabCompletionSource> completionSources = new List<ISmartTabCompletionSource>();
-
-            if (definition.Metadata.HasMeta<TabCompletion>() && definition.Metadata.Meta<TabCompletion>().CompletionSourceType != null && definition.Metadata.Meta<TabCompletion>().CompletionSourceType.GetInterfaces().Contains(typeof(ISmartTabCompletionSource)))
-            {
-                completionSources.Add((ISmartTabCompletionSource)ObjectFactory.CreateInstance(definition.Metadata.Meta<TabCompletion>().CompletionSourceType));
-            }
-
-            foreach (var argument in definition.AllGlobalAndActionArguments)
-            {
-                foreach (var argSource in argument.Metadata.Metas<ArgumentAwareTabCompletionAttribute>())
-                {
-                    var source = argSource.CreateTabCompletionSource(definition, argument);
-                    if (source is ISmartTabCompletionSource)
-                    {
-                        completionSources.Insert(0, (ISmartTabCompletionSource)source);
                     }
                 }
 

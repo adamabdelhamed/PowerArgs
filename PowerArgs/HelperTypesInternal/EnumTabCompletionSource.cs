@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PowerArgs
 {
-    internal class EnumTabCompletionSource : ISmartTabCompletionSource
+    internal class EnumTabCompletionSource : ITabCompletionSource
     {
         SimpleTabCompletionSource wrappedSource;
         CommandLineArgument target;
@@ -24,7 +24,7 @@ namespace PowerArgs
                 return false;
             }
 
-            return wrappedSource.TryComplete(context.Shift, context.CompletionCandidate, out completion);
+            return wrappedSource.TryComplete(context, out completion);
         }
     }
 }

@@ -258,10 +258,6 @@ namespace PowerArgs.Cli
                 {
                     throw;
                 }
-                else
-                {
-                    PowerLogger.LogLine("Syntax highlighting threw exception: " + ex.ToString());
-                }
             }
 
             if(highlightChanged)

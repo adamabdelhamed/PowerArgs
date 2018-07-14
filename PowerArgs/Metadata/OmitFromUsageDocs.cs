@@ -7,15 +7,8 @@ namespace PowerArgs
     /// in the output created by the ArgUsage class (the class that auto generates usage documentation).
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Parameter)]
-    public class OmitFromUsageDocs : UsageHook, ICommandLineArgumentMetadata
+    public class OmitFromUsageDocs : Attribute,  ICommandLineArgumentMetadata
     {
-        /// <summary>
-        /// sets the ignroe flag on the info object
-        /// </summary>
-        /// <param name="info">the context used to modify the usage documentation</param>
-        public override void BeforeGenerateUsage(ArgumentUsageInfo info)
-        {
-            info.Ignore = true;
-        }
+
     }
 }

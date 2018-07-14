@@ -308,7 +308,7 @@ namespace ArgsTests
             Assert.IsTrue(actionInfo.Definition.SpecifiedAction.Arguments[0].IsRequired);
             Assert.IsFalse(actionInfo.Definition.SpecifiedAction.Arguments[1].IsRequired);
 
-            var usage = ArgUsage.GetUsage<ActionScaffold>("test");
+            var usage = ArgUsage.GenerateUsageFromTemplate(typeof(ActionScaffold));
             Assert.IsTrue(usage.Contains("Your first name"));
         }
 

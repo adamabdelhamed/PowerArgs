@@ -143,13 +143,6 @@ namespace ArgsTests
             parsed.Invoke();
             Assert.IsTrue(called);
         }
-
-        [TestMethod]
-        public void TestVideoEncoderToolUsage()
-        {
-            var usage = ArgUsage.GetUsage<VideoEncoderArgs>("superencoder");
-            Console.WriteLine(usage);
-        }
     }
 }
 
