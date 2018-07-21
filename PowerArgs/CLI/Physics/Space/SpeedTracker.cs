@@ -148,6 +148,7 @@ namespace PowerArgs.Cli.Physics
                     SpeedX = -SpeedX * Bounciness;
                     SpeedY = -SpeedY * Bounciness;
                 }
+                Element.SizeOrPositionChanged.Fire();
             }
             else
             {
