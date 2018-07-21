@@ -109,6 +109,7 @@
     <Compile Include="CLI\GridTests.cs" />
     <Compile Include="CLI\Observability\DeepObservable.cs" />
     <Compile Include="CLI\Observability\ObservabilityTests.cs" />
+    <Compile Include="CLI\Observability\ObservableDocumentTests.cs" />
     <Compile Include="CLI\Physics\MathTests.cs" />
     <Compile Include="CLI\Physics\E2EPhysicsTests.cs" />
     <Compile Include="CLI\Physics\ConsoleAppTestHarness.cs" />

@@ -350,5 +350,22 @@ namespace ArgsTests.CLI.Observability
             ev.Fire();
             Assert.AreEqual(1, counter);
         }
+
+        [TestMethod]
+        public void TestCollectionIndexAssignmentBehavior()
+        {
+            var collection = new ObservableCollection<string>();
+            collection.Add("Hello");
+
+            var asserted = false;
+            collection.AssignedToIndex.SubscribeOnce((assignment) =>
+            {
+                Assert.AreEqual("Hello", assignment.OldValue);
+                Assert.AreEqual("Goodbye", assignment.NewValue);
+                asserted = true;
+            });
+            collection[0] = "Goodbye";
+            Assert.IsTrue(asserted);
+        }
     }
 }

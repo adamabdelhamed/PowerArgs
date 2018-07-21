@@ -28,6 +28,7 @@ namespace PowerArgs.Cli
             Controls = new ObservableCollection<ConsoleControl>();
             SynchronizeForLifetime(nameof(Id), () => { Controls.Id = Id; }, this);
             Controls.Added.SubscribeForLifetime((c) => { c.Parent = this; }, this);
+            Controls.AssignedToIndex.SubscribeForLifetime((assignment) => throw new NotSupportedException("Index assignment is not supported in Controls collection"), this);
             Controls.Removed.SubscribeForLifetime((c) => { c.Parent = null; }, this);
             this.CanFocus = false;
         }
