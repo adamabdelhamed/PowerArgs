@@ -36,7 +36,7 @@ namespace ArgsTests.CLI.Games
 
             assertionIncrementCheck(() =>
             {
-                routedEvent.Fire("Home/ThePage", "Foo");
+                routedEvent.Route("Home/ThePage", "Foo");
             });
             Console.WriteLine(assertionCount);
         }

@@ -22,11 +22,19 @@ namespace PowerArgs.Cli
         private Dictionary<string, Event<RoutedEvent<T>>> routes = new Dictionary<string, Event<RoutedEvent<T>>>();
 
         /// <summary>
+        /// An event that fires when a route was not found for a given path
+        /// </summary>
+        public Event<RoutedEvent<T>> NotFound { get; private set; } = new Event<RoutedEvent<T>>();
+
+        public Event<RoutedEvent<T>> BeforeRouteDelivered { get; private set; } = new Event<RoutedEvent<T>>();
+
+
+        /// <summary>
         /// Fires an event with the given id and data
         /// </summary>
         /// <param name="path">the event id</param>
         /// <param name="data">the event data to send to subscribers</param>
-        public void Fire(string path, T data)
+        public void Route(string path, T data)
         {
             path = path.ToLower();
             if (path.EndsWith("/")) path = path.Substring(0, path.Length - 1);
@@ -103,9 +111,18 @@ namespace PowerArgs.Cli
                         Route = route,
                         RouteVariables = new ReadOnlyDictionary<string, string>(variablesCandidate)
                     };
+                    BeforeRouteDelivered.Fire(args);
                     ev.Fire(args);
+                    return;
                 }
             }
+
+            var notFoundArgs = new RoutedEvent<T>()
+            {
+                Data = data,
+                Path = path,
+            };
+            NotFound.Fire(notFoundArgs);
         }
 
         /// <summary>
@@ -155,6 +172,7 @@ namespace PowerArgs.Cli
             GetOrAddRoutedEvent(route).SubscribeForLifetime((t)=>
             {
                 handler(t);
+                routes.Remove(route);
                 routeLifetime.Dispose();
             }, routeLifetime);
         }

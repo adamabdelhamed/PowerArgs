@@ -26,11 +26,11 @@ namespace PowerArgs.Games
         public Promise OpenForNewConnections() => serverNetworkProvider.OpenForNewConnections();
         public Promise CloseForNewConnections() => serverNetworkProvider.CloseForNewConnections();
 
-        public IMultiPlayerContest Contest { get; set; }
+        public MultiPlayerContest Contest { get; set; }
 
         private IServerNetworkProvider serverNetworkProvider;
 
-        private List<MultiPlayerClientConnection> clients = new List<MultiPlayerClientConnection>();
+        public ObservableCollection<MultiPlayerClientConnection> clients = new ObservableCollection<MultiPlayerClientConnection>();
 
         public EventRouter<MultiPlayerMessage> MessageRouter { get; private set; } = new EventRouter<MultiPlayerMessage>();
 
@@ -41,17 +41,33 @@ namespace PowerArgs.Games
             this.serverNetworkProvider = networkProvider;
             this.serverNetworkProvider.ClientConnected.SubscribeForLifetime(OnClientConnected, this);
             this.serverNetworkProvider.ConnectionLost.SubscribeForLifetime(OnConnectionLost, this);
-            this.serverNetworkProvider.MessageReceived.SubscribeForLifetime((m) => MessageRouter.Fire(m.Path, m), this);
+            this.serverNetworkProvider.MessageReceived.SubscribeForLifetime((m) =>
+            {
+                MessageRouter.Route(m.Path, m);
+            }, this);
             this.OnDisposed(this.serverNetworkProvider.Dispose);
 
-            this.MessageRouter.RegisterRouteForLifetime($"{nameof(Ping)}/{P("sender")}/{this.ServerId.Replace("/", "-")}", Ping, this);
-            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{this.ServerId.Replace("/", "-")}", OnMessageSentToServer, this);
-            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{this.ServerId.Replace("/", "-")}/{P("*")}", OnMessageSentToServer, this);
-            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{P("recipient")}", OnForwardMessageReceived, this);
-            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{P("recipient")}/{P("*")}", OnForwardMessageReceived, this);
+            this.MessageRouter.RegisterRouteForLifetime($"ping/{P("sender")}/{MultiPlayerMessage.Encode(ServerId)}", Ping, this);
+            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/null", Broadcast, this);
+            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/null/{P("*")}", Broadcast, this);
+            this.MessageRouter.NotFound.SubscribeForLifetime(NotFound, this);
         }
 
-        private string P(string name) => "{" + name.Replace("/","-") + "}";
+        private void NotFound(RoutedEvent<MultiPlayerMessage> args)
+        {
+            if (args.Data.Data.ContainsKey("RequestId"))
+            {
+                var message = args.Data;
+                var requester = clients.Where(c => c.ClientId == message.SenderId).SingleOrDefault();
+                SendMessageInternal(MultiPlayerMessage.Create(this.ServerId, message.SenderId, "Response", new Dictionary<string, string>()
+                {
+                    { "RequestId", message.Data["RequestId"] },
+                    { "error", "NotFound" },
+                }), requester);
+            }
+        }
+
+        private string P(string name) => "{" + MultiPlayerMessage.Encode(name) + "}";
 
         private void Ping(RoutedEvent<MultiPlayerMessage> ev)
         {
@@ -63,56 +79,18 @@ namespace PowerArgs.Games
             }
             var requester = clients.Where(c => c.ClientId == message.SenderId).SingleOrDefault();
             var response = MultiPlayerMessage.Create(this.ServerId, message.SenderId, "Response", new Dictionary<string, string>()
-                    {
-                        { "RequestId", message.Data["RequestId"] },
-                    });
+            {
+                { "RequestId", message.Data["RequestId"] },
+            });
 
             SendMessageInternal(response, requester);
         }
 
-        private void OnMessageSentToServer(RoutedEvent<MultiPlayerMessage> ev)
+        private void Broadcast(RoutedEvent<MultiPlayerMessage> ev)
         {
             var message = ev.Data;
 
-            if (Contest == null)
-            {
-                var requester = clients.Where(c => c.ClientId == message.SenderId).SingleOrDefault();
-                if (requester != null)
-                {
-                    var response = MultiPlayerMessage.Create(this.ServerId, message.SenderId, "Response", new Dictionary<string, string>()
-                        {
-                            { "error", "NoContest" },
-                            { "RequestId", message.Data["RequestId"] },
-                        });
-
-                    SendMessageInternal(response, requester);
-                }
-            }
-            else
-            {
-                Contest.GetResponse(message).Then((response) =>
-                {
-                    if (message.Data.ContainsKey("RequestId"))
-                    {
-                        var requester = clients.Where(c => c.ClientId == message.SenderId).SingleOrDefault();
-                        if (requester != null)
-                        {
-                            response.AddProperty("RequestId", message.Data["RequestId"]);
-                            SendMessageInternal(response, requester);
-                        }
-                    }
-                });
-            }
-        }
-
-        private void OnForwardMessageReceived(RoutedEvent<MultiPlayerMessage> ev)
-        {
-            var message = ev.Data;
-            var recipients = message.RecipientId == null ?
-                      clients.Where(c => c.ClientId != message.SenderId) :
-                      clients.Where(c => c.ClientId == message.RecipientId);
-
-            foreach (var recipient in recipients)
+            foreach (var recipient in clients.Where(c => c.ClientId != message.SenderId))
             {
                 SendMessageInternal(message, recipient);
             }
@@ -120,6 +98,12 @@ namespace PowerArgs.Games
 
         private void OnClientConnected(MultiPlayerClientConnection newClient)
         {
+            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{ MultiPlayerMessage.Encode(newClient.ClientId)}/{P("*")}", (toForward)=>
+            {
+                SendMessageInternal(toForward.Data, newClient);
+
+            }, newClient);
+
             lock (clients)
             {
                 foreach (var existingClient in clients)

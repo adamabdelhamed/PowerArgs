@@ -103,7 +103,7 @@ namespace PowerArgs.Games
             this.clientNetworkProvider = networkProvider;
             networkProvider.MessageReceived.SubscribeForLifetime((m) =>
             {
-                EventRouter.Fire(m.Path, m);
+                EventRouter.Route(m.Path, m);
             }, this);
             this.OnDisposed(() =>
             {

@@ -30,7 +30,7 @@ namespace PowerArgs.Games
             }
         }
 
-        private string Encode(string pathElement) => pathElement == null ? "null" : pathElement.Replace("/", "-");
+        public static string Encode(string pathElement) => pathElement == null ? "null" : pathElement.Replace("/", "-");
 
         public static MultiPlayerMessage Parse(string rawMessageContent)
         {

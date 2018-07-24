@@ -59,7 +59,6 @@ namespace ArgsTests.CLI.Games
 
             client1.EventRouter.RegisterRouteOnce("newuser/{*}", (args) =>
             {
-
                 Assert.AreEqual(args.Data.RecipientId, client1.ClientId);
                 Assert.AreEqual(client2.ClientId, args.Data.Data["ClientId"]);
                 assertionCount++;
@@ -86,22 +85,22 @@ namespace ArgsTests.CLI.Games
 
             client1.EventRouter.RegisterRouteOnce("{*}", (args) =>
             {
-                Assert.AreEqual("HelloWorld2", args.Data.EventId);
+                Assert.AreEqual("bounds", args.Data.EventId);
                 assertionCount++;
                 Console.WriteLine("client1 received data message");
             });
 
             client2.EventRouter.RegisterRouteOnce("{*}", (args) =>
             {
-                Assert.AreEqual("HelloWorld1", args.Data.EventId);
+                Assert.AreEqual("bounds", args.Data.EventId);
                 assertionCount++;
                 Console.WriteLine("client2 received data message");
             });
 
-            client1.SendMessage(MultiPlayerMessage.Create(client1.ClientId, client2.ClientId, "HelloWorld1"));
+            client1.SendMessage(MultiPlayerMessage.Create(client1.ClientId, null, "bounds"));
             Console.WriteLine("client1 sent data message");
             Thread.Sleep(delayMs);
-            client2.SendMessage(MultiPlayerMessage.Create(client2.ClientId, client1.ClientId, "HelloWorld2"));
+            client2.SendMessage(MultiPlayerMessage.Create(client2.ClientId, null, "bounds"));
             Console.WriteLine("client2 sent data message");
             Thread.Sleep(delayMs);
             Assert.AreEqual(4, assertionCount);
@@ -149,7 +148,7 @@ namespace ArgsTests.CLI.Games
             {
                 Assert.AreEqual(1, ex.InnerExceptions.Count);
                 Assert.IsTrue(ex.InnerException is IOException);
-                Assert.AreEqual("NoContest", ex.InnerException.Message);
+                Assert.AreEqual("NotFound", ex.InnerException.Message);
             }
 
             try
