@@ -4,6 +4,8 @@ using PowerArgs.Games;
 using System;
 using System.Collections.Generic;
 using PowerArgs;
+using System.Threading.Tasks;
+
 namespace DemoGame
 {
     public class DemoMultiPlayerGameApp : GameApp
@@ -84,57 +86,58 @@ namespace DemoGame
             }
         }
 
-        private void StartLocalServer()
+        private async void StartLocalServer()
         {
             var server = new MultiPlayerServer(new SocketServerNetworkProvider(8080));
             this.OnDisposed(server.Dispose);
-            server.OpenForNewConnections().Then(() =>
+
+            var deathmatch = new Deathmatch(new MultiPlayerContestOptions()
             {
-                client = new MultiPlayerClient(new SocketClientNetworkProvider());
-                client.EventRouter.RegisterRouteOnce("newuser/{*}",(args) =>
-                {
-                    this.Scene.QueueAction(() =>
-                    {
-                        opponent = new RemoteCharacter(args.Data.Data["ClientId"]);
-                        opponent.ResizeTo(1, 1);
-                        opponent.MoveTo(this.LayoutRoot.Width - 2, 0);
-                        this.Scene.Add(opponent);
-                    });
-                });
-
-                client.EventRouter.RegisterRouteForLifetime("bounds/{*}", OnBoundsReceived, this);
-
-                client.Connect(server.ServerId).Then(() =>
-                {
-                    SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(5));
-                });
+                MaxPlayers = 2,
+                Server = server
             });
+
+            deathmatch.Start();
+            await Task.Delay(1000);
+            client = new MultiPlayerClient(new SocketClientNetworkProvider());
+            await client.Connect(server.ServerId).AsAwaitable();
+            var userResult = await client.EventRouter.Await("newuser/{*}"); 
+            this.Scene.QueueAction(() =>
+            {
+                opponent = new RemoteCharacter(userResult.Data.Data["ClientId"]);
+                opponent.ResizeTo(1, 1);
+                opponent.MoveTo(this.LayoutRoot.Width - 2, 0);
+                this.Scene.Add(opponent);
+            });
+              
+            client.EventRouter.RegisterRouteForLifetime("bounds/{*}", OnBoundsReceived, this);
+            SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(5));
         }
 
-        private void ConnectToRemoteServer()
+        private async void ConnectToRemoteServer()
         {
-            MainCharacter.ResizeTo(0, 0);
+             MainCharacter.ResizeTo(0, 0);
+             client = new MultiPlayerClient(new SocketClientNetworkProvider());
+       
+             client.EventRouter.RegisterRouteOnce("newuser/{*}",(userInfoResult)=>
+             {
+                 this.Scene.QueueAction(() =>
+                 {
+                     MainCharacter.ResizeTo(1, 1);
+                     MainCharacter.MoveTo(this.LayoutRoot.Width - 2, 0);
+                     opponent = new RemoteCharacter(userInfoResult.Data.Data["ClientId"]);
+                     opponent.ResizeTo(1, 1);
+                     this.Scene.Add(opponent);
+                 });
+             });
 
-            client = new MultiPlayerClient(new SocketClientNetworkProvider());
-            client.Connect(remoteServerId).Then(() =>
+            client.EventRouter.RegisterRouteOnce("start/{*}",(args)=>
             {
-                client.EventRouter.RegisterRouteOnce("newuser/{*}", (args) =>
-                {
-                    this.Scene.QueueAction(() =>
-                    {
-                        MainCharacter.ResizeTo(1, 1);
-                        MainCharacter.MoveTo(this.LayoutRoot.Width - 2, 0);
-
-                        opponent = new RemoteCharacter(args.Data.Data["ClientId"]);
-                        opponent.ResizeTo(1, 1);
-                   
-                        this.Scene.Add(opponent);  
-                    });
-                });
-
                 client.EventRouter.RegisterRouteForLifetime("bounds/{*}", OnBoundsReceived, this);
                 SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(5));
             });
+
+            await client.Connect(remoteServerId).AsAwaitable();
         }
 
         private MultiPlayerMessage CreateLocationMessage(string clientId, SpacialElement element) =>  MultiPlayerMessage.Create(clientId, null, "Bounds", new Dictionary<string, string>()

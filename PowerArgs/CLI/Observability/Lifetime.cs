@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
@@ -31,6 +32,14 @@ namespace PowerArgs.Cli
         public Lifetime()
         {
             _manager = new LifetimeManager();
+        }
+
+        public async Task AwaitEndOfLifetime()
+        {
+            while(IsExpired == false)
+            {
+                await Task.Delay(10);
+            }
         }
 
         public Promise OnDisposed(Action cleanupCode)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
@@ -123,6 +124,30 @@ namespace PowerArgs.Cli
                 Path = path,
             };
             NotFound.Fire(notFoundArgs);
+        }
+
+        /// <summary>
+        /// Delays until the next time an event occurs for the given route
+        /// </summary>
+        /// <param name="route">the route to match</param>
+        /// <param name="timeout">an optional timeout</param>
+        /// <returns>the event args</returns>
+        public async Task<RoutedEvent<T>> Await(string route, TimeSpan? timeout = null)
+        {
+            var done = false;
+            RoutedEvent<T> ret = null;
+            RegisterRouteOnce(route, (ev) => { ret = ev; done = true; });
+            var startTime = DateTime.UtcNow;
+            while (done == false)
+            {
+                if(timeout.HasValue && DateTime.UtcNow - startTime > timeout.Value)
+                {
+                    throw new TimeoutException();
+                }
+
+                await Task.Delay(10);
+            }
+            return ret;
         }
 
         /// <summary>

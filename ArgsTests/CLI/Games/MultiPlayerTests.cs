@@ -13,21 +13,21 @@ namespace ArgsTests.CLI.Games
     public class MultiPlayerTests
     {
         [TestMethod]
-        public async Task TestMultiPlayerProtocolInProc()
+        public async Task TestDeathmatchInProc()
         {
             var server = new MultiPlayerServer(new InProcServerNetworkProvider("testserver"));
             var client1 = new MultiPlayerClient(new InProcClientNetworkProvider("client1"));
             var client2 = new MultiPlayerClient(new InProcClientNetworkProvider("client2"));
-            await TestMultiPlayerNetwork(server, client1, client2, 0);
+            await TestDeathmatch(server, client1, client2, 100);
         }
 
         [TestMethod, Timeout(4000)]
-        public async Task TestMultiPlayerProtocolWithSockets()
+        public async Task TestDeathmatchWithSockets()
         {
             var server = new MultiPlayerServer(new SocketServerNetworkProvider(8080));
             var client1 = new MultiPlayerClient(new SocketClientNetworkProvider());
             var client2 = new MultiPlayerClient(new SocketClientNetworkProvider());
-            await TestMultiPlayerNetwork(server, client1, client2, 500);
+            await TestDeathmatch(server, client1, client2, 500);
         }
 
         [TestMethod]
@@ -48,77 +48,63 @@ namespace ArgsTests.CLI.Games
              
         }
 
-        private async Task TestMultiPlayerNetwork(MultiPlayerServer server, MultiPlayerClient client1, MultiPlayerClient client2, int delayMs)
+        private async Task TestDeathmatch(MultiPlayerServer server, MultiPlayerClient client1, MultiPlayerClient client2, int delayMs)
         {
-            var assertionCount = 0;
-
             server.Undeliverable.SubscribeForLifetime((args) =>
             {
                 Assert.Fail("There was an undeliverable message");
             }, server);
 
-            client1.EventRouter.RegisterRouteOnce("newuser/{*}", (args) =>
+            var deathmatch = new Deathmatch(new MultiPlayerContestOptions()
             {
-                Assert.AreEqual(args.Data.RecipientId, client1.ClientId);
-                Assert.AreEqual(client2.ClientId, args.Data.Data["ClientId"]);
-                assertionCount++;
-                Console.WriteLine("client1 received new user notification");
+                MaxPlayers = 2,
+                Server = server
             });
 
-            client2.EventRouter.RegisterRouteOnce("newuser/{*}", (args) =>
-            {
-                Assert.AreEqual(client1.ClientId, args.Data.Data["ClientId"]);
-                assertionCount++;
-                Console.WriteLine("client2 received new user notification");
-            });
+            // the game starts
+            deathmatch.Start();
+            await Task.Delay(delayMs);
+            // both clients start waiting for the start of the game
+            var client1StartTask = client1.EventRouter.Await("start/{*}");
+            var client2StartTask = client2.EventRouter.Await("start/{*}");
 
-            await server.OpenForNewConnections().AsAwaitable();
-            Console.WriteLine("server is listening");
+            var client1SeesClient2Task = client1.EventRouter.Await("newuser/{*}");
+            var client2SeesClient1Task = client2.EventRouter.Await("newuser/{*}");
+
+            // both clients connect, which should trigger the start of the game
             await client1.Connect(server.ServerId).AsAwaitable();
             Console.WriteLine("client 1 connected");
             await client2.Connect(server.ServerId).AsAwaitable();
             Console.WriteLine("client 2 connected");
-            await server.CloseForNewConnections().AsAwaitable();
-            Console.WriteLine("server stopped listening");
-            Thread.Sleep(delayMs);
-            Assert.AreEqual(2, assertionCount);
 
-            client1.EventRouter.RegisterRouteOnce("{*}", (args) =>
+            // make sure both clients got the start event
+            await client1StartTask;
+            await client2StartTask;
+
+            await client1SeesClient2Task;
+            await client2SeesClient1Task;
+
+            Assert.AreEqual(client2.ClientId, client1SeesClient2Task.Result.Data.Data["ClientId"]);
+            Assert.AreEqual(client1.ClientId, client2SeesClient1Task.Result.Data.Data["ClientId"]);
+
+            var client1GameOverTask = client1.EventRouter.Await("gameover/{*}");
+            var client2GameOverTask = client2.EventRouter.Await("gameover/{*}");
+
+            // player one sends enough damage to client 2 to win the game
+            for (var i = 0; i < 10; i++)
             {
-                Assert.AreEqual("bounds", args.Data.EventId);
-                assertionCount++;
-                Console.WriteLine("client1 received data message");
-            });
+                var response = await client1.SendRequest(MultiPlayerMessage.Create(client1.ClientId, client2.ClientId, "damage", new System.Collections.Generic.Dictionary<string, string>()
+                {
+                    { "OpponentId", client2.ClientId }
+                })).AsAwaitable();
+                Assert.AreEqual("true", response.Data["accepted"]);
+            }
 
-            client2.EventRouter.RegisterRouteOnce("{*}", (args) =>
-            {
-                Assert.AreEqual("bounds", args.Data.EventId);
-                assertionCount++;
-                Console.WriteLine("client2 received data message");
-            });
-
-            client1.SendMessage(MultiPlayerMessage.Create(client1.ClientId, null, "bounds"));
-            Console.WriteLine("client1 sent data message");
-            Thread.Sleep(delayMs);
-            client2.SendMessage(MultiPlayerMessage.Create(client2.ClientId, null, "bounds"));
-            Console.WriteLine("client2 sent data message");
-            Thread.Sleep(delayMs);
-            Assert.AreEqual(4, assertionCount);
-
-            client2.EventRouter.RegisterRouteOnce("Left/{*}", (args) =>
-            {
-                Assert.AreEqual(client1.ClientId, args.Data.SenderId);
-                assertionCount++;
-                Console.WriteLine("Client1 was notified that client2 left");
-            });
-
-            client1.Dispose();
-            Thread.Sleep(delayMs);
-            Assert.AreEqual(5, assertionCount);
-
-            server.Dispose();
+            // make sure both clients got the game over event event
+            await Task.WhenAll(client1GameOverTask, client2GameOverTask);
+            Assert.AreEqual(client1.ClientId, client1GameOverTask.Result.Data.Data["winner"]);
+            Assert.AreEqual(client1.ClientId, client2GameOverTask.Result.Data.Data["winner"]);
         }
-
 
         private async Task TestRequestResponse(MultiPlayerServer server, MultiPlayerClient client)
         {
