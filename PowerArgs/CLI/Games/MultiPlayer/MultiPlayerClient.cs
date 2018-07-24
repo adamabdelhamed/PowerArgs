@@ -8,11 +8,6 @@ using System.Threading;
 
 namespace PowerArgs.Games
 {
-    public class RemoteClient
-    {
-        public string ClientId { get; set; }
-    }
-
     public class MultiPlayerClient : Lifetime
     {
         private class PendingRequest
@@ -52,10 +47,7 @@ namespace PowerArgs.Games
             }
         }
 
-        public Event<RemoteClient> NewRemoteUser { get; private set; } = new Event<RemoteClient>();
-        public Event<RemoteClient> RemoteUserLeft { get; private set; } = new Event<RemoteClient>();
-
-        public Event<MultiPlayerMessage> MessageReceived { get; private set; } = new Event<MultiPlayerMessage>();
+        public EventRouter<MultiPlayerMessage> EventRouter { get; private set; } = new EventRouter<MultiPlayerMessage>();
         public string ClientId => clientNetworkProvider.ClientId;
 
         private Dictionary<string, PendingRequest> pendingRequests = new Dictionary<string, PendingRequest>();
@@ -109,7 +101,7 @@ namespace PowerArgs.Games
         public MultiPlayerClient(IClientNetworkProvider networkProvider)
         {
             this.clientNetworkProvider = networkProvider;
-            networkProvider.MessageReceived.SubscribeForLifetime(OnMessageReceived, this);
+            networkProvider.MessageReceived.SubscribeForLifetime((m) => EventRouter.Fire(m.Path, m), this);
             this.OnDisposed(() =>
             {
                 if (isConnected)
@@ -118,6 +110,8 @@ namespace PowerArgs.Games
                 }
                 this.clientNetworkProvider.Dispose();
             });
+
+            EventRouter.RegisterRouteForLifetime("response/{*}", OnResponseReceived, this);
         }
 
         private void EvaluateTimeouts()
@@ -134,44 +128,29 @@ namespace PowerArgs.Games
             }
         }
 
-        private void OnMessageReceived(MultiPlayerMessage message)
+        private void OnResponseReceived(RoutedEvent<MultiPlayerMessage> ev)
         {
-            if (message.EventId == "NewUser")
+            var message = ev.Data;
+            var requestId = message.Data["RequestId"];
+            lock (pendingRequests)
             {
-                var id = message.Data["ClientId"];
-                NewRemoteUser.Fire(new RemoteClient() { ClientId = id });
-            }
-            else if (message.EventId == "Left")
-            {
-                RemoteUserLeft.Fire(new RemoteClient() { ClientId = message.SenderId });
-            }
-            else if (message.EventId == "Response")
-            {
-                var requestId = message.Data["RequestId"];
-                lock (pendingRequests)
+                if (pendingRequests.TryGetValue(requestId, out PendingRequest pendingRequest))
                 {
-                    if (pendingRequests.TryGetValue(requestId, out PendingRequest pendingRequest))
+                    if (message.Data.TryGetValue("error", out string errorMessage))
                     {
-                        if (message.Data.TryGetValue("error", out string errorMessage))
-                        {
-                            pendingRequest.Fail(new IOException(errorMessage));
-                            pendingRequests.Remove(requestId);
-                        }
-                        else
-                        {
-                            pendingRequest.Complete(message);
-                            pendingRequests.Remove(requestId);
-                        }
+                        pendingRequest.Fail(new IOException(errorMessage));
+                        pendingRequests.Remove(requestId);
                     }
                     else
                     {
-                        // it probably timed out so we don't have it anymore
+                        pendingRequest.Complete(message);
+                        pendingRequests.Remove(requestId);
                     }
                 }
-            }
-            else
-            {
-                MessageReceived.Fire(message);
+                else
+                {
+                    // it probably timed out so we don't have it anymore
+                }
             }
         }
     }

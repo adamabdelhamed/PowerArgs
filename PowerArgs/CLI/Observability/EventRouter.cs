@@ -114,23 +114,50 @@ namespace PowerArgs.Cli
         /// <param name="route">the event to subscribe to</param>
         /// <param name="handler">the event handler</param>
         /// <returns>a disposable that can be disposed when you want to stop subscribing</returns>
-        public IDisposable SubscribeUnmanaged(string route, Action<RoutedEvent<T>> handler) => GetOrAddRoutedEvent(route).SubscribeUnmanaged(handler);
+        public IDisposable RegisterRouteUnmanaged(string route, Action<RoutedEvent<T>> handler)
+        {
+            var routeLifetime = new Lifetime();
+            var sub = GetOrAddRoutedEvent(route).SubscribeUnmanaged(handler);
 
+            routeLifetime.OnDisposed(() =>
+            {
+                sub.Dispose();
+                routes.Remove(route);
+            });
+            
+
+            return routeLifetime;
+        }
         /// <summary>
         /// Subscribes to the given event for the given lifetime
         /// </summary>
         /// <param name="route">the event to subscribe to</param>
         /// <param name="handler">the event handler</param>
         /// <param name="lifetimeManager">defines the lifetime of the subscription</param>
-        public void SubscribeForLifetime(string route, Action<RoutedEvent<T>> handler, ILifetimeManager lifetimeManager) => GetOrAddRoutedEvent(route).SubscribeForLifetime(handler, lifetimeManager);
+        public void RegisterRouteForLifetime(string route, Action<RoutedEvent<T>> handler, ILifetimeManager lifetimeManager)
+        {
+            GetOrAddRoutedEvent(route).SubscribeForLifetime(handler, lifetimeManager);
+
+            lifetimeManager.OnDisposed(() =>
+            {
+                routes.Remove(route);
+            });
+        }
 
         /// <summary>
         /// Subscribes to the given event for at most one notification
         /// </summary>
         /// <param name="route">the event to subscribe to</param>
         /// <param name="handler">the event handler</param>
-        public void SubscribeOnce(string route, Action<RoutedEvent<T>> handler) => GetOrAddRoutedEvent(route).SubscribeOnce(handler);
-
+        public void RegisterRouteOnce(string route, Action<RoutedEvent<T>> handler)
+        {
+            var routeLifetime = new Lifetime();
+            GetOrAddRoutedEvent(route).SubscribeForLifetime((t)=>
+            {
+                handler(t);
+                routeLifetime.Dispose();
+            }, routeLifetime);
+        }
         private Event<RoutedEvent<T>> GetOrAddRoutedEvent(string route)
         {
             route = route.ToLower();

@@ -52,18 +52,22 @@ namespace ArgsTests.CLI.Games
         {
             var assertionCount = 0;
 
-            server.Undeliverable.SubscribeForLifetime((args) => Assert.Fail("There was an undeliverable message"), server);
-
-            client1.NewRemoteUser.SubscribeOnce((c) =>
+            server.Undeliverable.SubscribeForLifetime((args) =>
             {
-                Assert.AreEqual(client2.ClientId, c.ClientId);
+                Assert.Fail("There was an undeliverable message");
+            }, server);
+
+            client1.EventRouter.RegisterRouteOnce("newuser/{*}", (args) =>
+            {
+                
+                Assert.AreEqual(client2.ClientId, args.Data.Data["ClientId"]);
                 assertionCount++;
                 Console.WriteLine("client1 received new user notification");
             });
 
-            client2.NewRemoteUser.SubscribeOnce((c) =>
+            client2.EventRouter.RegisterRouteOnce("newuser/{*}", (args) =>
             {
-                Assert.AreEqual(client1.ClientId, c.ClientId);
+                Assert.AreEqual(client1.ClientId, args.Data.Data["ClientId"]);
                 assertionCount++;
                 Console.WriteLine("client2 received new user notification");
             });
@@ -79,16 +83,16 @@ namespace ArgsTests.CLI.Games
             Thread.Sleep(delayMs);
             Assert.AreEqual(2, assertionCount);
 
-            client1.MessageReceived.SubscribeOnce((message) =>
+            client1.EventRouter.RegisterRouteOnce("{*}", (args) =>
             {
-                Assert.AreEqual("HelloWorld2", message.EventId);
+                Assert.AreEqual("HelloWorld2", args.Data.EventId);
                 assertionCount++;
                 Console.WriteLine("client1 received data message");
             });
 
-            client2.MessageReceived.SubscribeOnce((message) =>
+            client2.EventRouter.RegisterRouteOnce("{*}", (args) =>
             {
-                Assert.AreEqual("HelloWorld1", message.EventId);
+                Assert.AreEqual("HelloWorld1", args.Data.EventId);
                 assertionCount++;
                 Console.WriteLine("client2 received data message");
             });
@@ -101,9 +105,9 @@ namespace ArgsTests.CLI.Games
             Thread.Sleep(delayMs);
             Assert.AreEqual(4, assertionCount);
 
-            client2.RemoteUserLeft.SubscribeOnce((c) =>
+            client2.EventRouter.RegisterRouteOnce("Left/{*}", (args) =>
             {
-                Assert.AreEqual(client1.ClientId, c.ClientId);
+                Assert.AreEqual(client1.ClientId, args.Data.SenderId);
                 assertionCount++;
                 Console.WriteLine("Client1 was notified that client2 left");
             });

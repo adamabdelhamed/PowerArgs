@@ -44,11 +44,11 @@ namespace PowerArgs.Games
             this.serverNetworkProvider.MessageReceived.SubscribeForLifetime((m) => MessageRouter.Fire(m.Path, m), this);
             this.OnDisposed(this.serverNetworkProvider.Dispose);
 
-            this.MessageRouter.SubscribeForLifetime($"{nameof(Ping)}/{P("sender")}/{this.ServerId.Replace("/", "-")}", Ping, this);
-            this.MessageRouter.SubscribeForLifetime($"{P("event")}/{P("sender")}/{this.ServerId.Replace("/", "-")}", OnMessageSentToServer, this);
-            this.MessageRouter.SubscribeForLifetime($"{P("event")}/{P("sender")}/{this.ServerId.Replace("/", "-")}/{P("*")}", OnMessageSentToServer, this);
-            this.MessageRouter.SubscribeForLifetime($"{P("event")}/{P("sender")}/{P("recipient")}", OnForwardMessageReceived, this);
-            this.MessageRouter.SubscribeForLifetime($"{P("event")}/{P("sender")}/{P("recipient")}/{P("*")}", OnForwardMessageReceived, this);
+            this.MessageRouter.RegisterRouteForLifetime($"{nameof(Ping)}/{P("sender")}/{this.ServerId.Replace("/", "-")}", Ping, this);
+            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{this.ServerId.Replace("/", "-")}", OnMessageSentToServer, this);
+            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{this.ServerId.Replace("/", "-")}/{P("*")}", OnMessageSentToServer, this);
+            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{P("recipient")}", OnForwardMessageReceived, this);
+            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{P("recipient")}/{P("*")}", OnForwardMessageReceived, this);
         }
 
         private string P(string name) => "{" + name.Replace("/","-") + "}";

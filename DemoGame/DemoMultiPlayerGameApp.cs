@@ -91,18 +91,18 @@ namespace DemoGame
             server.OpenForNewConnections().Then(() =>
             {
                 client = new MultiPlayerClient(new SocketClientNetworkProvider());
-                client.NewRemoteUser.SubscribeOnce((u) =>
+                client.EventRouter.RegisterRouteOnce("newuser/{*}",(args) =>
                 {
                     this.Scene.QueueAction(() =>
                     {
-                        opponent = new RemoteCharacter(u);
+                        opponent = new RemoteCharacter(args.Data.Data["ClientId"]);
                         opponent.ResizeTo(1, 1);
                         opponent.MoveTo(this.LayoutRoot.Width - 2, 0);
                         this.Scene.Add(opponent);
                     });
                 });
 
-                client.MessageReceived.SubscribeForLifetime((m) => TryUpdateOpponentBounds(m), this);
+                client.EventRouter.RegisterRouteForLifetime("bounds/{*}", OnBoundsReceived, this);
 
                 client.Connect(server.ServerId).Then(() =>
                 {
@@ -118,21 +118,21 @@ namespace DemoGame
             client = new MultiPlayerClient(new SocketClientNetworkProvider());
             client.Connect(remoteServerId).Then(() =>
             {
-                client.NewRemoteUser.SubscribeOnce((u) =>
+                client.EventRouter.RegisterRouteOnce("newuser/{*}", (args) =>
                 {
                     this.Scene.QueueAction(() =>
                     {
                         MainCharacter.ResizeTo(1, 1);
                         MainCharacter.MoveTo(this.LayoutRoot.Width - 2, 0);
 
-                        opponent = new RemoteCharacter(u);
+                        opponent = new RemoteCharacter(args.Data.Data["ClientId"]);
                         opponent.ResizeTo(1, 1);
                    
                         this.Scene.Add(opponent);  
                     });
                 });
 
-                client.MessageReceived.SubscribeForLifetime((m) => TryUpdateOpponentBounds(m), this);
+                client.EventRouter.RegisterRouteForLifetime("bounds/{*}", OnBoundsReceived, this);
                 SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(5));
             });
         }
@@ -146,16 +146,9 @@ namespace DemoGame
         });
      
 
-        private bool TryUpdateOpponentBounds(MultiPlayerMessage m)
+        private void OnBoundsReceived(RoutedEvent<MultiPlayerMessage> ev)
         {
-            if(m.EventId != "Bounds")
-            {
-                return false;
-            }
-
-            Scene.QueueAction(() => SyncBounds(m, opponent));
-
-            return true;
+            Scene.QueueAction(() => SyncBounds(ev.Data, opponent));
         }
 
         private void SyncBounds(MultiPlayerMessage m, SpacialElement localElement)
@@ -172,10 +165,10 @@ namespace DemoGame
 
     public class RemoteCharacter : SpacialElement
     {
-        public RemoteClient Remote { get; private set; }
-        public RemoteCharacter(RemoteClient remote)
+        public string ClientId{ get; private set; }
+        public RemoteCharacter(string clientId)
         {
-            Remote = remote;
+            this.ClientId = clientId;
         }
     }
 }
