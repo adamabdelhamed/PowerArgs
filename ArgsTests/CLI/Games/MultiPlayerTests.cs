@@ -104,6 +104,11 @@ namespace ArgsTests.CLI.Games
             await Task.WhenAll(client1GameOverTask, client2GameOverTask);
             Assert.AreEqual(client1.ClientId, client1GameOverTask.Result.Data.Data["winner"]);
             Assert.AreEqual(client1.ClientId, client2GameOverTask.Result.Data.Data["winner"]);
+
+            client1.Dispose();
+            client2.Dispose();
+            server.Dispose();
+            Assert.IsTrue(deathmatch.IsExpired);
         }
 
         private async Task TestRequestResponse(MultiPlayerServer server, MultiPlayerClient client)
