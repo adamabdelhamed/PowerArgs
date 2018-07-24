@@ -12,8 +12,8 @@ namespace PowerArgs.Games
 
         public string Name { get; set; }
 
-        public int Width { get; set; } = DefaultHeight;
-        public int Height { get; set; } = DefaultWidth;
+        public int Width { get; set; } = DefaultWidth;
+        public int Height { get; set; } = DefaultHeight;
 
         public List<LevelItem> Items { get; set; } = new List<LevelItem>();
       

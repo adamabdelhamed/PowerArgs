@@ -1,17 +1,20 @@
 ﻿using PowerArgs.Games;
 using PowerArgs.Cli;
+using PowerArgs;
 
 namespace DemoGame
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main(string[] args) => Args.InvokeMain<Prog>(args);
+    }
+
+    class Prog
+    {
+        public string RemoteServer { get; set; }
+        public void Main()
         {
-            var winSound = new WindowsSoundProvider.SoundProvider();
-            Sound.Provider = winSound;
-            winSound.StartPromise.Wait();
-            new DemoGameApp().Start().Wait();
-            Sound.Dispose();
+            new DemoMultiPlayerGameApp(RemoteServer).Start().Wait();
         }
     }
 }

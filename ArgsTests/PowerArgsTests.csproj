@@ -106,6 +106,7 @@
     <Compile Include="CLI\CliKeyboardInputQueue.cs" />
     <Compile Include="CLI\CliUnitTestConsole.cs" />
     <Compile Include="CLI\Controls\TextBoxTests.cs" />
+    <Compile Include="CLI\Games\MultiPlayerTests.cs" />
     <Compile Include="CLI\GridTests.cs" />
     <Compile Include="CLI\Observability\DeepObservable.cs" />
     <Compile Include="CLI\Observability\ObservabilityTests.cs" />

@@ -48,6 +48,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DemoMultiPlayerGameApp.cs" />
     <Compile Include="DemoGameApp.cs" />
     <Compile Include="GameIntro.cs" />
     <Compile Include="Program.cs" />
