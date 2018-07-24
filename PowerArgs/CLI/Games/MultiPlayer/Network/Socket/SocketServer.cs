@@ -106,8 +106,10 @@ namespace PowerArgs.Games
         {
             var bytes = Encoding.UTF8.GetBytes(message);
             var lengthBytes = BitConverter.GetBytes(bytes.Length);
-            (client as RemoteSocketConnection).RemoteSocket.Send(lengthBytes);
-            (client as RemoteSocketConnection).RemoteSocket.Send(bytes);
+            var sent = (client as RemoteSocketConnection).RemoteSocket.Send(lengthBytes);
+            if (sent != lengthBytes.Length) throw new Exception("WTF");
+            sent = (client as RemoteSocketConnection).RemoteSocket.Send(bytes);
+            if (sent != bytes.Length) throw new Exception("WTF");
         }
 
         protected override void DisposeManagedResources() { }

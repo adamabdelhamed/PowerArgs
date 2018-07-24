@@ -114,7 +114,7 @@ namespace PowerArgs.Games
                 this.clientNetworkProvider.Dispose();
             });
 
-            EventRouter.RegisterRouteForLifetime("response/{*}", OnResponseReceived, this);
+            EventRouter.Register("response/{*}", OnResponseReceived, this);
         }
 
         private void EvaluateTimeouts()

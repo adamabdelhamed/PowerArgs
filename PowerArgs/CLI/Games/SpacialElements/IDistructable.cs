@@ -23,6 +23,7 @@ namespace PowerArgs.Games
                 destructible.HealthPoints -= damage;
                 if (destructible.HealthPoints <= 0)
                 {
+                    destructible.Damaged.Fire();
                     destructible.Destroyed.Fire();
                     if(destructible is SpacialElement)
                     {

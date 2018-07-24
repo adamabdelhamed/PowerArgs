@@ -10,7 +10,7 @@ namespace PowerArgs.Games
 
     public class Deathmatch : MultiPlayerContest<MultiPlayerContestOptions>
     {
-        private Dictionary<string, int> playerHealthPoints = new Dictionary<string, int>();
+        private Dictionary<string, float> playerHealthPoints = new Dictionary<string, float>();
 
         public Deathmatch(MultiPlayerContestOptions options) : base(options)
         {
@@ -25,6 +25,7 @@ namespace PowerArgs.Games
             InitializeHealthPoints();
             NotifyPlayersOfGameStart();
             StartListeningForPlayerMovement();
+            StartListeningForPlayerFiring();
             StartListeningForDamageRequests();
         }
 
@@ -59,20 +60,35 @@ namespace PowerArgs.Games
 
         private void StartListeningForPlayerMovement()
         {
-            Server.MessageRouter.RegisterRouteForLifetime("bounds/{*}", (message) =>
+            Server.MessageRouter.Register("bounds/{*}", (message) =>
             {
                 Server.Broadcast(message.Data);
             }
             , this);
         }
 
+        private void StartListeningForPlayerFiring()
+        {
+            Server.MessageRouter.Register("fireprimary/{*}", (message) =>
+            {
+                Server.Broadcast(message.Data);
+            }
+            , this);
+
+            Server.MessageRouter.Register("fireexplosive/{*}", (message) =>
+            {
+                Server.Broadcast(message.Data);
+            }
+          , this);
+        }
+
         private void StartListeningForDamageRequests()
         {
-            Server.MessageRouter.RegisterRouteForLifetime("damage/{*}", (args) =>
+            Server.MessageRouter.Register("damage/{*}", (args) =>
             {
-                var clientIdOfDamagedPlayer = args.Data.Data["OpponentId"];
-
-                playerHealthPoints[clientIdOfDamagedPlayer] = playerHealthPoints[clientIdOfDamagedPlayer] - 10;
+                var clientIdOfDamagedPlayer = args.Data.Data["ClientId"];
+                var newHp = float.Parse(args.Data.Data["NewHP"]);
+                playerHealthPoints[clientIdOfDamagedPlayer] = newHp;
                 if(playerHealthPoints[clientIdOfDamagedPlayer] <= 0)
                 {
                     playerHealthPoints.Remove(clientIdOfDamagedPlayer);
@@ -89,6 +105,14 @@ namespace PowerArgs.Games
                         }));
                         this.Dispose();
                     }
+                }
+                else
+                {
+                    Server.Broadcast(MultiPlayerMessage.Create(ServerId, null, "NewHP", new Dictionary<string, string>()
+                    {
+                        { "ClientId", clientIdOfDamagedPlayer },
+                        { "NewHP", newHp+"" }
+                    }));
                 }
 
                 Server.Respond(args.Data, new Dictionary<string, string>()

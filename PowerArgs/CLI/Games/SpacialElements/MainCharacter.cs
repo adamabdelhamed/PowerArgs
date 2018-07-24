@@ -75,7 +75,7 @@ namespace PowerArgs.Games
 
         private void InitializeTargeting()
         {
-            Targeting = new AutoTargetingFunction(() => this.Bounds, t => t is Enemy);
+            Targeting = new AutoTargetingFunction(() => this.Bounds, t => t is Enemy || t.HasSimpleTag("enemy"));
             Added.SubscribeForLifetime(() => { Time.CurrentTime.Add(Targeting); }, this.Lifetime);
             this.Lifetime.OnDisposed(Targeting.Lifetime.Dispose);
 

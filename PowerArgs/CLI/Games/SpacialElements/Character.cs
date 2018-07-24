@@ -10,6 +10,7 @@ namespace PowerArgs.Games
 
     public class Character : SpacialElement, IObservableObject, IDestructible
     {
+        public MultiPlayerClient MultiPlayerClient { get; set; }
         public char? Symbol { get; set; }
         public Inventory Inventory { get => observable.Get<Inventory>(); set => observable.Set(value); }  
 
@@ -32,6 +33,7 @@ namespace PowerArgs.Games
         public Character()
         {
             observable = new ObservableObject(this);
+            HealthPoints = 100;
             this.SubscribeForLifetime(nameof(Inventory), () => this.Inventory.Owner = this, this.Lifetime);
             Inventory = new Inventory();
             Speed = new SpeedTracker(this) { Bounciness = 0 };

@@ -29,11 +29,11 @@ namespace PowerArgs.Cli.Physics
     public static class HitDetection
     {
 
-        public static HitPrediction PredictHit(SpaceTime r, SpacialElement Target, List<Type> hitDetectionTypes, float dx, float dy)
+        public static HitPrediction PredictHit(SpaceTime r, SpacialElement Target, List<Type> hitDetectionTypes, List<SpacialElement> hitDetectionExclusions, float dx, float dy)
         {
             if (Math.Abs(dx) <= 1 && Math.Abs(dy) <= 1)
             {
-                return PredictHitInternal(r, Target, hitDetectionTypes, dx, dy);
+                return PredictHitInternal(r, Target, hitDetectionTypes, hitDetectionExclusions, dx, dy);
             }
 
             HitPrediction latestResult = null;
@@ -41,7 +41,7 @@ namespace PowerArgs.Cli.Physics
             {
                 var dxP = Approach(0, dx, dx / 10 * i);
                 var dyP = Approach(0, dy, dy / 10 * i);
-                latestResult = PredictHitInternal(r, Target, hitDetectionTypes, dxP, dyP);
+                latestResult = PredictHitInternal(r, Target, hitDetectionTypes, hitDetectionExclusions, dxP, dyP);
                 if(latestResult.Type != HitType.None)
                 {
                     return latestResult;
@@ -63,7 +63,7 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        private static HitPrediction PredictHitInternal(SpaceTime r, SpacialElement Target, List<Type> hitDetectionTypes, float dx, float dy)
+        private static HitPrediction PredictHitInternal(SpaceTime r, SpacialElement Target, List<Type> hitDetectionTypes, List<SpacialElement> hitDetectionExclusions, float dx, float dy)
         {
             HitPrediction prediction = new HitPrediction();
 
@@ -108,6 +108,7 @@ namespace PowerArgs.Cli.Physics
             var match = (from t in r.Elements
                          where
                              t.IsOneOfThese(hitDetectionTypes) &&
+                             hitDetectionExclusions.Contains(t) == false &&
                              Target != t &&
                              testArea.NumberOfPixelsThatOverlap(t) > 0
                          select t).OrderBy(t => t.Center().CalculateDistanceTo(Target.Center()));

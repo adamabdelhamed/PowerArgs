@@ -90,15 +90,14 @@ namespace ArgsTests.CLI.Games
             var client1GameOverTask = client1.EventRouter.Await("gameover/{*}");
             var client2GameOverTask = client2.EventRouter.Await("gameover/{*}");
 
-            // player one sends enough damage to client 2 to win the game
-            for (var i = 0; i < 10; i++)
+       
+            var response = await client1.SendRequest(MultiPlayerMessage.Create(client1.ClientId, client2.ClientId, "damage", new System.Collections.Generic.Dictionary<string, string>()
             {
-                var response = await client1.SendRequest(MultiPlayerMessage.Create(client1.ClientId, client2.ClientId, "damage", new System.Collections.Generic.Dictionary<string, string>()
-                {
-                    { "OpponentId", client2.ClientId }
-                })).AsAwaitable();
-                Assert.AreEqual("true", response.Data["accepted"]);
-            }
+                { "ClientId", client2.ClientId },
+                { "NewHP", "0" }
+            })).AsAwaitable();
+            Assert.AreEqual("true", response.Data["accepted"]);
+          
 
             // make sure both clients got the game over event event
             await Task.WhenAll(client1GameOverTask, client2GameOverTask);

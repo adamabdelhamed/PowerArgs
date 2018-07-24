@@ -79,6 +79,11 @@ namespace PowerArgs.Games
             data.Remove(nameof(RecipientId));
             data.Remove(nameof(SenderId));
 
+            if(messageContents.Contains("/"))
+            {
+                throw new System.Exception("OOPS");
+            }
+
             return new MultiPlayerMessage()
             {
                 SenderId = sender,

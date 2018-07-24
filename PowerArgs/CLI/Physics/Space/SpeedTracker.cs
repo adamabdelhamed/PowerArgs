@@ -53,6 +53,7 @@ namespace PowerArgs.Cli.Physics
         public float ImpactFriction { get; set; } // Should be set between 0 and 1
         public List<Type> HitDetectionTypes { get; set; }
 
+        public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
         public float Angle { get; private set; }
 
         bool haveMovedSinceLastHitDetection;
@@ -90,7 +91,7 @@ namespace PowerArgs.Cli.Physics
                 return;
             }
 
-            var hitPrediction = HitDetection.PredictHit(SpaceTime.CurrentSpaceTime, Element, HitDetectionTypes, dx, dy);
+            var hitPrediction = HitDetection.PredictHit(SpaceTime.CurrentSpaceTime, Element, HitDetectionTypes, HitDetectionExclusions, dx, dy);
 
             if (hitPrediction.Type != HitType.None)
             {

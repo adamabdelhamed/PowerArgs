@@ -26,6 +26,7 @@ namespace PowerArgs.Games
                 client.Connect(uri.Host, uri.Port);
                 this.ClientId = (client.LocalEndPoint as IPEndPoint).Address + ":"+ (client.LocalEndPoint as IPEndPoint).Port;
                 Thread t = new Thread(ListenForMessages);
+                t.IsBackground = true;
                 t.Start(d);
             }
             catch (Exception ex)
@@ -56,8 +57,10 @@ namespace PowerArgs.Games
         {
             var bytes = Encoding.UTF8.GetBytes(message.RawContents);
             var lengthBytes = BitConverter.GetBytes(bytes.Length);
-            client.Send(lengthBytes);
-            client.Send(bytes);
+            var sent = client.Send(lengthBytes);
+            if (sent != lengthBytes.Length) throw new Exception("WTF");
+            sent = client.Send(bytes);
+            if (sent != bytes.Length) throw new Exception("WTF");
         }
 
         protected override void DisposeManagedResources()

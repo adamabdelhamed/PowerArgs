@@ -27,7 +27,7 @@ namespace ArgsTests.CLI.Games
                 Assert.AreEqual(origCount + 1, assertionCount);
             });
 
-            routedEvent.RegisterRouteOnce("Home/{Page}", (args) =>
+            routedEvent.RegisterOnce("Home/{Page}", (args) =>
             {
                 Assert.AreEqual("thepage", args.RouteVariables["page"]);
                 Assert.AreEqual(args.Data, "Foo");

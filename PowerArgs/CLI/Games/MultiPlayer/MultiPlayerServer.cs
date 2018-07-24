@@ -41,11 +41,15 @@ namespace PowerArgs.Games
             this.serverNetworkProvider.ConnectionLost.SubscribeForLifetime(OnConnectionLost, this);
             this.serverNetworkProvider.MessageReceived.SubscribeForLifetime((m) =>
             {
+                if(m.EventId == "damage")
+                {
+
+                }
                 MessageRouter.Route(m.Path, m);
             }, this);
             this.OnDisposed(this.serverNetworkProvider.Dispose);
 
-            this.MessageRouter.RegisterRouteForLifetime($"ping/{P("sender")}/{MultiPlayerMessage.Encode(ServerId)}", Ping, this);
+            this.MessageRouter.Register($"ping/{P("sender")}/{MultiPlayerMessage.Encode(ServerId)}", Ping, this);
             this.MessageRouter.NotFound.SubscribeForLifetime(NotFound, this);
         }
 
@@ -104,7 +108,7 @@ namespace PowerArgs.Games
 
         private void OnClientConnected(MultiPlayerClientConnection newClient)
         {
-            this.MessageRouter.RegisterRouteForLifetime($"{P("event")}/{P("sender")}/{ MultiPlayerMessage.Encode(newClient.ClientId)}/{P("*")}", (toForward)=>
+            this.MessageRouter.Register($"{P("event")}/{P("sender")}/{ MultiPlayerMessage.Encode(newClient.ClientId)}/{P("*")}", (toForward)=>
             {
                 SendMessageInternal(toForward.Data, newClient);
 
