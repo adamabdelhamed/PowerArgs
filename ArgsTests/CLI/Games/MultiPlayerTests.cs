@@ -43,7 +43,9 @@ namespace ArgsTests.CLI.Games
         {
             var server = new MultiPlayerServer(new SocketServerNetworkProvider(8080));
             var client = new MultiPlayerClient(new SocketClientNetworkProvider());
-            await TestRequestResponse(server, client);
+
+             await TestRequestResponse(server, client);
+             
         }
 
         private async Task TestMultiPlayerNetwork(MultiPlayerServer server, MultiPlayerClient client1, MultiPlayerClient client2, int delayMs)
@@ -120,10 +122,18 @@ namespace ArgsTests.CLI.Games
             Console.WriteLine("server is listening");
             await client.Connect(server.ServerId).AsAwaitable();
 
-            var sw = Stopwatch.StartNew();
-            var response = await client.SendRequest(MultiPlayerMessage.Create(client.ClientId, server.ServerId, "ping")).AsAwaitable();
-            sw.Stop();
-            Console.WriteLine("ping took " + sw.ElapsedMilliseconds + " ms");
+
+            try
+            {
+                var sw = Stopwatch.StartNew();
+                var response = await client.SendRequest(MultiPlayerMessage.Create(client.ClientId, server.ServerId, "ping")).AsAwaitable();
+                sw.Stop();
+                Console.WriteLine("ping took " + sw.ElapsedMilliseconds + " ms");
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
 
             try
             {
@@ -136,7 +146,6 @@ namespace ArgsTests.CLI.Games
                 Assert.IsTrue(ex.InnerException is IOException);
                 Assert.AreEqual("NoContest", ex.InnerException.Message);
             }
-
 
             try
             {

@@ -6,7 +6,7 @@ using PowerArgs.Cli;
 
 namespace PowerArgs.Games
 {
-    public class InProcServerNetworkProvider : Disposable, IServerNetworkProvider
+    public class InProcServerNetworkProvider : Lifetime, IServerNetworkProvider
     {
         internal static Dictionary<string, InProcServerNetworkProvider> servers = new Dictionary<string, InProcServerNetworkProvider>();
 
@@ -25,6 +25,14 @@ namespace PowerArgs.Games
             {
                 servers.Add(this.ServerId, this);
             }
+
+            this.OnDisposed(() =>
+            {
+                lock (servers)
+                {
+                    servers.Remove(this.ServerId);
+                }
+            });
         }
 
         public Promise OpenForNewConnections()
@@ -91,8 +99,6 @@ namespace PowerArgs.Games
             }
             return d.Promise;
         }
-
-        protected override void DisposeManagedResources() { }
     }
 
     public class InProcClientNetworkProvider : Disposable, IClientNetworkProvider

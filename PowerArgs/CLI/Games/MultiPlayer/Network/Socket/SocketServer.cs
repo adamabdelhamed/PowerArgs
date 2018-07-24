@@ -22,9 +22,14 @@ namespace PowerArgs.Games
         private bool isListening;
         private Deferred listeningDeferred;
         private int port;
+        private IPHostEntry ipHostInfo;
+        private IPEndPoint localEP;
         public SocketServerNetworkProvider(int port)
         {
             this.port = port;
+            ipHostInfo = Dns.Resolve(Dns.GetHostName());
+            localEP = new IPEndPoint(ipHostInfo.AddressList[0], port);
+            this.ServerId = "http://" + localEP.Address + ":" + port;
         }
 
         public Promise OpenForNewConnections()
@@ -37,10 +42,6 @@ namespace PowerArgs.Games
             {
                 try
                 {
-                    IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
-                    IPEndPoint localEP = new IPEndPoint(ipHostInfo.AddressList[0], port);
-                    this.ServerId = "http://"+ localEP.Address + ":" + port;
-
                     listener = new TcpListener(localEP.Address, port);
                     listener.Start();
                 }
@@ -78,6 +79,7 @@ namespace PowerArgs.Games
                         connections.Add(connection.ClientId, connection);
                         ClientConnected.Fire(connection);
                     }
+                    listener.Stop();
                     listeningDeferred.Resolve();
                 }
                 catch(Exception ex)

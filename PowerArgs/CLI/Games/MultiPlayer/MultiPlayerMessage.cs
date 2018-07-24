@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace PowerArgs.Games
 {
@@ -11,6 +12,25 @@ namespace PowerArgs.Games
         public IReadOnlyDictionary<string, string> Data => new ReadOnlyDictionary<string, string>(_data); 
         public string RecipientId { get; private set; }
         public string SenderId { get; private set; }
+
+        public string Path
+        {
+            get
+            {
+                var path = $"{Encode(EventId)}/{Encode(SenderId)}/{Encode(RecipientId)}";
+
+                foreach(var prop in _data.Keys.OrderBy(k => k))
+                {
+                    if(prop.StartsWith("-routevar"))
+                    {
+                        path += "/" + Encode(Data[prop]);
+                    }
+                }
+                return path.ToLower();
+            }
+        }
+
+        private string Encode(string pathElement) => pathElement == null ? "null" : pathElement.Replace("/", "-");
 
         public static MultiPlayerMessage Parse(string rawMessageContent)
         {
