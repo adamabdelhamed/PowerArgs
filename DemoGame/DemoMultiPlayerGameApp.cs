@@ -160,10 +160,10 @@ namespace DemoGame
 
         private void SyncBounds(MultiPlayerMessage m, SpacialElement localElement)
         {
-            var x = float.Parse(m.Properties["X"]);
-            var y = float.Parse(m.Properties["Y"]);
-            var w = float.Parse(m.Properties["W"]);
-            var h = float.Parse(m.Properties["H"]);
+            var x = float.Parse(m.Data["X"]);
+            var y = float.Parse(m.Data["Y"]);
+            var w = float.Parse(m.Data["W"]);
+            var h = float.Parse(m.Data["H"]);
             
             localElement?.MoveTo(x, y);
             localElement?.ResizeTo(w, h);

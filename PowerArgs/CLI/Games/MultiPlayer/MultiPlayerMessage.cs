@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace PowerArgs.Games
 {
     public class MultiPlayerMessage
     {
+        private Dictionary<string, string> _data = new Dictionary<string, string>();
         public string RawContents { get; private set; }
         public string EventId { get; private set; }
-        public Dictionary<string, string> Properties { get; private set; } = new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, string> Data => new ReadOnlyDictionary<string, string>(_data); 
         public string RecipientId { get; private set; }
         public string SenderId { get; private set; }
 
@@ -16,11 +18,12 @@ namespace PowerArgs.Games
             var lines = rawMessageContent.Split('\n');
             ret.EventId = Base64Decode(lines[0]);
 
+ 
             for (var i = 1; i < lines.Length; i++)
             {
                 var split = lines[i].Split(':');
                 var key = Base64Decode(split[0]);
-                var value = split[1] == "$null" ? null : Base64Decode(split[1]);
+                var value = Base64Decode(split[1]);
 
                 if (key == nameof(RecipientId))
                 {
@@ -32,7 +35,7 @@ namespace PowerArgs.Games
                 }
                 else
                 {
-                    ret.Properties.Add(key, value);
+                    ret._data.Add(key, value);
                 }
             }
 
@@ -46,15 +49,13 @@ namespace PowerArgs.Games
             data.Add(nameof(RecipientId), recipient);
             data.Add(nameof(SenderId), sender);
 
-            var messageContents = Base64Encode(eventId) + "\n";
+            var messageContents = Base64Encode(eventId);
 
             foreach (var property in data)
             {
-                messageContents += Base64Encode(property.Key) + ":" + Base64Encode(property.Value) + "\n";
+                messageContents += "\n" + Base64Encode(property.Key) + ":" + Base64Encode(property.Value);
             }
-
-            messageContents = messageContents.Substring(0, messageContents.Length - 1);
-
+            
             data.Remove(nameof(RecipientId));
             data.Remove(nameof(SenderId));
 
@@ -63,8 +64,15 @@ namespace PowerArgs.Games
                 SenderId = sender,
                 RecipientId = recipient,
                 RawContents = messageContents,
-                Properties = data
+                EventId = eventId,
+                _data = data,
             };
+        }
+
+        public void AddProperty(string key, string value)
+        {
+            _data.Add(key, value);
+            RawContents += "\n" + Base64Encode(key) + ":" + Base64Encode(value);
         }
 
         private static string Base64Encode(string plainText)
@@ -76,8 +84,15 @@ namespace PowerArgs.Games
 
         private static string Base64Decode(string base64EncodedData)
         {
-            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
-            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+            if (base64EncodedData == "$null")
+            {
+                return null;
+            }
+            else
+            {
+                var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+                return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+            }
         }
     }
 }
