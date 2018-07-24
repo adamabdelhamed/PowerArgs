@@ -59,7 +59,8 @@ namespace ArgsTests.CLI.Games
 
             client1.EventRouter.RegisterRouteOnce("newuser/{*}", (args) =>
             {
-                
+
+                Assert.AreEqual(args.Data.RecipientId, client1.ClientId);
                 Assert.AreEqual(client2.ClientId, args.Data.Data["ClientId"]);
                 assertionCount++;
                 Console.WriteLine("client1 received new user notification");

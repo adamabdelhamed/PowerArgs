@@ -101,7 +101,10 @@ namespace PowerArgs.Games
         public MultiPlayerClient(IClientNetworkProvider networkProvider)
         {
             this.clientNetworkProvider = networkProvider;
-            networkProvider.MessageReceived.SubscribeForLifetime((m) => EventRouter.Fire(m.Path, m), this);
+            networkProvider.MessageReceived.SubscribeForLifetime((m) =>
+            {
+                EventRouter.Fire(m.Path, m);
+            }, this);
             this.OnDisposed(() =>
             {
                 if (isConnected)

@@ -24,7 +24,7 @@ namespace PowerArgs.Games
                 Uri uri = new Uri(server);
                 client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 client.Connect(uri.Host, uri.Port);
-                this.ClientId = (client.LocalEndPoint as IPEndPoint).Address.ToString()+ ":"+ (client.LocalEndPoint as IPEndPoint).Port;
+                this.ClientId = (client.LocalEndPoint as IPEndPoint).Address + ":"+ (client.LocalEndPoint as IPEndPoint).Port;
                 Thread t = new Thread(ListenForMessages);
                 t.Start(d);
             }
