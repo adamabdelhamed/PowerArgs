@@ -10,6 +10,7 @@ namespace PowerArgs.Games
     {
         protected ObservableObject observable;
         public bool SuppressEqualChanges { get; set; }
+        public object GetPrevious(string name) => observable.GetPrevious<object>(name);
         public IDisposable SubscribeUnmanaged(string propertyName, Action handler) => observable.SubscribeUnmanaged(propertyName, handler);
         public void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
         public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);

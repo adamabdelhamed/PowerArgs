@@ -205,6 +205,8 @@ namespace PowerArgs.Cli
                 labelColumn.Controls.RemoveAt(index);
                 valueColumn.Controls.RemoveAt(index);
             }, this);
+
+            this.Options.Elements.AssignedToIndex.SubscribeForLifetime((assignment) => throw new NotSupportedException("Index assignments not supported in form elements"), this);
         }
     }
 }

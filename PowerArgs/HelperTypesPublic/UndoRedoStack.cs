@@ -87,5 +87,14 @@ namespace PowerArgs
             undoStack.Push(toRedo);
             return true;
         }
+
+        /// <summary>
+        /// Clears both the undo and redo stacks
+        /// </summary>
+        public void Clear()
+        {
+            redoStack.Clear();
+            undoStack.Clear();
+        }
     }
 }

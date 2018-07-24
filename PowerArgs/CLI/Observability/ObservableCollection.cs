@@ -1,17 +1,57 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace PowerArgs.Cli
 {
+    internal interface IObservableCollection : IEnumerable
+    {
+        int LastModifiedIndex { get; }
+        Event<object> Added { get; }
+        Event<object> Removed { get; }
+        Event<IIndexAssignment> AssignedToIndex { get; }
+        Event Changed { get; }
+
+        void RemoveAt(int index);
+        void Insert(int index, object item);
+        object this[int index] { get;set; }
+    }
+
+    public interface IIndexAssignment
+    {
+        int Index { get; set; }
+        object OldValue { get; }
+        object NewValue { get; }
+    }
+
+    public class IndexAssignment<T> : IIndexAssignment
+    {
+        public int Index { get; set; }
+        public T OldValue { get; set; }
+        public T NewValue { get; set; }
+
+        object IIndexAssignment.OldValue => OldValue;
+        object IIndexAssignment.NewValue => NewValue;
+    }
+
     /// <summary>
     /// An observable list implementation
     /// </summary>
     /// <typeparam name="T">the type of elements this collection will contain</typeparam>
-    public class ObservableCollection<T> : IList<T>
+    public class ObservableCollection<T> : IList<T>, IObservableCollection, IObservableObject
     {
-        public string Id { get; set; } 
+        private ObservableObject observable;
+        public bool SuppressEqualChanges { get; set; } = true;
+        public IDisposable SubscribeUnmanaged(string propertyName, Action handler) => observable.SubscribeUnmanaged(propertyName, handler);
+        public void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
+        public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
+        public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
+
+        public int LastModifiedIndex { get; private set; }
+
+        public string Id { get => observable.Get<string>(); set => observable.Set(value); } 
 
         /// <summary>
         /// Called before an item is added to the list
@@ -28,6 +68,15 @@ namespace PowerArgs.Cli
         /// </summary>
         public Event<T> Added { get; private set; } = new Event<T>();
 
+        private Event<object> _untypedAdded = new Event<object>();
+        Event<Object> IObservableCollection.Added => _untypedAdded;
+
+        private Event<object> _untypedRemove = new Event<object>();
+        Event<Object> IObservableCollection.Removed => _untypedRemove;
+
+        private Event<IIndexAssignment> untyped_Assigned = new Event<IIndexAssignment>();
+        Event<IIndexAssignment> IObservableCollection.AssignedToIndex => untyped_Assigned;
+
         /// <summary>
         /// Called when an element is removed from this list
         /// </summary>
@@ -38,6 +87,11 @@ namespace PowerArgs.Cli
         /// if the changes were atomic (e.g. after calling Clear()).
         /// </summary>
         public Event Changed { get; private set; } = new Event();
+
+        /// <summary>
+        /// Called whenever an index assignment is made
+        /// </summary>
+        public Event<IndexAssignment<T>> AssignedToIndex { get; private set; } = new Event<IndexAssignment<T>>();
 
         private List<T> wrapped;
 
@@ -50,8 +104,9 @@ namespace PowerArgs.Cli
         {
             wrapped = new List<T>();
             membershipLifetimes = new Dictionary<T, Lifetime>();
+            observable = new ObservableObject(this);
         }
-
+        
         public void SynchronizeForLifetime(Action<T> addAction, Action<T> removeAction, Action changedAction, ILifetimeManager manager)
         {
             Added.SubscribeForLifetime(addAction, manager);
@@ -65,6 +120,13 @@ namespace PowerArgs.Cli
 
             changedAction();
         }
+
+        /// <summary>
+        /// Gets the previous value of the given property
+        /// </summary>
+        /// <param name="name">the name of the property to lookup</param>
+        /// <returns>the previous value or null if there was no value</returns>
+        public object GetPrevious(string name) => observable.GetPrevious<object>(name);
         
         /// <summary>
         /// Fires the Added event for the given item
@@ -74,6 +136,7 @@ namespace PowerArgs.Cli
         {
             membershipLifetimes.Add(item, new Lifetime());
             Added.Fire(item);
+            _untypedAdded.Fire(item);
             Changed.Fire();
         }
 
@@ -84,10 +147,19 @@ namespace PowerArgs.Cli
         internal void FireRemoved(T item)
         {
             Removed.Fire(item);
+            _untypedRemove.Fire(item);
             Changed.Fire();
             var itemLifetime = membershipLifetimes[item];
             membershipLifetimes.Remove(item);
             itemLifetime.Dispose();
+        }
+
+        internal void FireAssignedToIndex(T added, T removed)
+        {
+            var assignmentArgs = new IndexAssignment<T>() { Index = LastModifiedIndex, NewValue = added, OldValue = removed };
+            AssignedToIndex.Fire(assignmentArgs);
+            untyped_Assigned.Fire(assignmentArgs);
+            Changed.Fire();
         }
 
         public ILifetimeManager GetMembershipLifetime(T item)
@@ -124,10 +196,13 @@ namespace PowerArgs.Cli
         /// <param name="item">the item to insert</param>
         public void Insert(int index, T item)
         {
+            LastModifiedIndex = index;
             FireBeforeAdded(item);
             wrapped.Insert(index, item);
             FireAdded(item);
         }
+
+        void IObservableCollection.Insert(int index, object item) => Insert(index, (T)item);
 
         /// <summary>
         /// Removes the element at the specified index
@@ -135,6 +210,7 @@ namespace PowerArgs.Cli
         /// <param name="index">the index of the item to remove</param>
         public void RemoveAt(int index)
         {
+            LastModifiedIndex = index;
             var item = wrapped[index];
             FireBeforeRemoved(item);
             wrapped.RemoveAt(index);
@@ -154,15 +230,29 @@ namespace PowerArgs.Cli
             }
             set
             {
-                var item = wrapped[index];
+                var oldItem = wrapped[index];
+                if (SuppressEqualChanges && ObservableObject.EqualsSafe(oldItem, value))
+                {
+                    return;
+                }
 
-                FireBeforeRemoved(item);
+                LastModifiedIndex = index;
+
+                FireBeforeRemoved(oldItem);
                 FireBeforeAdded(value);
+
                 wrapped[index] = value;
 
-                FireRemoved(item);
+                FireAssignedToIndex(value, oldItem);
+                FireRemoved(oldItem);
                 FireAdded(value);
             }
+        }
+
+        object IObservableCollection.this[int index]
+        {
+            get => this[index];
+            set => this[index] = (T)value;
         }
 
         /// <summary>
@@ -171,6 +261,7 @@ namespace PowerArgs.Cli
         /// <param name="item">the item to add</param>
         public void Add(T item)
         {
+            LastModifiedIndex = Count;
             FireBeforeAdded(item);
             wrapped.Add(item);
             FireAdded(item);
@@ -181,19 +272,12 @@ namespace PowerArgs.Cli
         /// </summary>
         public void Clear()
         {
-            if (Removed.HasSubscriptions)
+            var items = wrapped.ToArray();
+            wrapped.Clear();
+            LastModifiedIndex = 0;
+            for (var i = 0; i < items.Length; i++)
             {
-                var items = wrapped.ToArray();
-                wrapped.Clear();
-
-                foreach (var item in items)
-                {
-                    Removed.Fire(item);
-                }
-            }
-            else
-            {
-                wrapped.Clear();
+                FireRemoved(items[i]);
             }
         }
 
@@ -243,7 +327,16 @@ namespace PowerArgs.Cli
             if (wrapped.Contains(item))
             {
                 FireBeforeRemoved(item);
-                wrapped.Remove(item);
+
+                for(var i = 0; i < wrapped.Count; i++)
+                {
+                    if(ObservableObject.EqualsSafe(wrapped[i], item))
+                    {
+                        LastModifiedIndex = i;
+                        wrapped.RemoveAt(i);
+                        break;
+                    }
+                }
                 FireRemoved(item);
                 return true;
             }

@@ -13,6 +13,7 @@ namespace PowerArgs.Cli
         void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager);
         IDisposable SynchronizeUnmanaged(string propertyName, Action handler);
         void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager);
+        object GetPrevious(string propertyName);
 
     }
 
@@ -28,6 +29,7 @@ namespace PowerArgs.Cli
 
         private Dictionary<string, List<PropertyChangedSubscription>> subscribers;
         private Dictionary<string, object> values;
+        private Dictionary<string, object> previousValues;
 
         /// <summary>
         /// Set to true if you want to suppress notification events for properties that get set to their existing values.
@@ -48,6 +50,7 @@ namespace PowerArgs.Cli
             SuppressEqualChanges = true;
             subscribers = new Dictionary<string, List<PropertyChangedSubscription>>();
             values = new Dictionary<string, object>();
+            previousValues = new Dictionary<string, object>();
             DeepObservableRoot = proxy;
         }
 
@@ -71,6 +74,27 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Gets the previous value of the given property name
+        /// </summary>
+        /// <typeparam name="T">the type of property to get</typeparam>
+        /// <param name="name">the name of the property</param>
+        /// <returns>the previous value or default(T) if there was none</returns>
+        public T GetPrevious<T>([CallerMemberName]string name = "")
+        {
+            object ret;
+            if (previousValues.TryGetValue(name, out ret))
+            {
+                return (T)ret;
+            }
+            else
+            {
+                return default(T);
+            }
+        }
+
+        object IObservableObject.GetPrevious(string name) => this.GetPrevious<object>(name);
+
+        /// <summary>
         /// This should be called by a property getter to set the value.
         /// </summary>
         /// <typeparam name="T">The type of property to set</typeparam>
@@ -83,6 +107,11 @@ namespace PowerArgs.Cli
 
             if (values.ContainsKey(name))
             {
+                var previousValue = values[name];
+                if (SuppressEqualChanges == false || isEqualChange == false)
+                {
+                    previousValues[name] = current;
+                }
                 values[name] = value;
             }
             else
@@ -268,7 +297,7 @@ namespace PowerArgs.Cli
         /// <param name="a">The first object to test</param>
         /// <param name="b">The second object to test</param>
         /// <returns>True if the values are equal, false otherwise.</returns>
-        private static bool EqualsSafe(object a, object b)
+        public static bool EqualsSafe(object a, object b)
         {
             if (a == null && b == null) return true;
             if (a == null ^ b == null) return false;

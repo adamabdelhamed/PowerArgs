@@ -160,7 +160,7 @@ namespace PowerArgs.Games
             }
             else
             {
-                Speed.SpeedX = SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 0); ;
+                Speed.SpeedX = SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 0);
                 Speed.SpeedY = 0;
             }
         }
