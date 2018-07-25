@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Linq;
 
 namespace PowerArgs
 {
@@ -34,6 +36,23 @@ namespace PowerArgs
             {
                 return Activator.CreateInstance(t);
             }
+        }
+
+        public static T CreateInstance<T>(string name)
+        {
+            var candidate = Assembly.GetExecutingAssembly().ExportedTypes.Where(t => t.Name.ToLower() == name.ToLower()).FirstOrDefault();
+
+            if (candidate == null)
+            {
+                candidate = Assembly.GetEntryAssembly().ExportedTypes.Where(t => t.Name.ToLower() == name.ToLower()).FirstOrDefault();
+            }
+
+            if (candidate == null)
+            {
+                throw new ArgumentException("Could not resolve type: " + name);
+            }
+
+            return (T)CreateInstance(candidate);
         }
     }
 }

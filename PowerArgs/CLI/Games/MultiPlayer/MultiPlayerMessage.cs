@@ -1,103 +1,92 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace PowerArgs.Games
 {
-    public class MultiPlayerMessage
+    [AttributeUsage(AttributeTargets.Property)]
+    public class IMultiPlayerEventIgnore : Attribute { }
+    public abstract class MultiPlayerMessage
     {
-        private Dictionary<string, string> _data = new Dictionary<string, string>();
-        public string RawContents { get; private set; }
-        public string EventId { get; private set; }
-        public IReadOnlyDictionary<string, string> Data => new ReadOnlyDictionary<string, string>(_data); 
-        public string RecipientId { get; private set; }
-        public string SenderId { get; private set; }
-
-        public string Path
+        private static Type[] SupportedDataTypes = new Type[] 
         {
-            get
-            {
-                var path = $"{Encode(EventId)}/{Encode(SenderId)}/{Encode(RecipientId)}";
+            typeof(string),
+            typeof(int),
+            typeof(float),
+            typeof(bool)
+        };
 
-                foreach(var prop in _data.Keys.OrderBy(k => k))
-                {
-                    if(prop.StartsWith("-routevar"))
-                    {
-                        path += "/" + Encode(Data[prop]);
-                    }
-                }
-                return path.ToLower();
+        public string Sender { get; set; }
+        public string Recipient { get; set; }
+        public string RequestId { get; set; }
+        private string Enc(string val) => val == null ? "null" : val.Replace("/", "-");
+
+        public string Serialize()
+        {
+            var messageContents = Base64Encode(GetType().Name);
+            messageContents += "\n" + Base64Encode(nameof(Sender)) + ":" + Base64Encode(Sender);
+            messageContents += "\n" + Base64Encode(nameof(Recipient)) + ":" + Base64Encode(Recipient);
+
+            if(RequestId != null)
+            {
+                messageContents += "\n" + Base64Encode(nameof(RequestId)) + ":" + Base64Encode(RequestId);
             }
+
+            foreach (var property in GetType().GetProperties().Where(p => p.HasAttr<IMultiPlayerEventIgnore>() == false))
+            {
+                AssertSupported(property.PropertyType);
+                var val = property.GetValue(this);
+                string stringVal;
+                if(property.PropertyType == typeof(string))
+                {
+                    stringVal = (string)val;
+                }
+                else  
+                {
+                    stringVal = val.ToString();
+                }
+
+                messageContents += "\n" + Base64Encode(property.Name) + ":" + Base64Encode(stringVal);
+            }
+            return messageContents;
         }
 
-        public static string Encode(string pathElement) => pathElement == null ? "null" : pathElement.Replace("/", "-");
-
-        public static MultiPlayerMessage Parse(string rawMessageContent)
+        public static MultiPlayerMessage Deserialize(string message)
         {
-            var ret = new MultiPlayerMessage() { RawContents = rawMessageContent };
-            var lines = rawMessageContent.Split('\n');
-            ret.EventId = Base64Decode(lines[0]);
+            var lines = message.Split('\n');
+            var type = Base64Decode(lines[0]);
+            var ret = ObjectFactory.CreateInstance<MultiPlayerMessage>(type);
 
- 
             for (var i = 1; i < lines.Length; i++)
             {
                 var split = lines[i].Split(':');
                 var key = Base64Decode(split[0]);
                 var value = Base64Decode(split[1]);
 
-                if (key == nameof(RecipientId))
+                var prop = ret.GetType().GetProperty(key);
+
+                if(prop.PropertyType == typeof(string))
                 {
-                    ret.RecipientId = value;
-                }
-                else if (key == nameof(SenderId))
-                {
-                    ret.SenderId = value;
+                    prop.SetValue(ret, value);
                 }
                 else
                 {
-                    ret._data.Add(key, value);
+                    var parseMethod = prop.PropertyType.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public)
+                        .Where(p => p.Name == nameof(int.Parse) && p.GetParameters().Length == 1 && p.GetParameters()[0].ParameterType == typeof(string)).Single();
+                    prop.SetValue(ret, parseMethod.Invoke(null, new object[] { value }));
                 }
             }
 
             return ret;
         }
 
-        public static MultiPlayerMessage Create(string sender, string recipient, string eventId, Dictionary<string, string> data = null)
+        private void AssertSupported(Type t)
         {
-
-            data = data ?? new Dictionary<string, string>();
-            data.Add(nameof(RecipientId), recipient);
-            data.Add(nameof(SenderId), sender);
-
-            var messageContents = Base64Encode(eventId);
-
-            foreach (var property in data)
+            if (SupportedDataTypes.Contains(t) == false)
             {
-                messageContents += "\n" + Base64Encode(property.Key) + ":" + Base64Encode(property.Value);
+                throw new NotSupportedException($"Type '{t.FullName}' not supported");
             }
-            
-            data.Remove(nameof(RecipientId));
-            data.Remove(nameof(SenderId));
-
-            if(messageContents.Contains("/"))
-            {
-                throw new System.Exception("OOPS");
-            }
-
-            return new MultiPlayerMessage()
-            {
-                SenderId = sender,
-                RecipientId = recipient,
-                RawContents = messageContents,
-                EventId = eventId,
-                _data = data,
-            };
-        }
-
-        public void AddProperty(string key, string value)
-        {
-            _data.Add(key, value);
-            RawContents += "\n" + Base64Encode(key) + ":" + Base64Encode(value);
         }
 
         private static string Base64Encode(string plainText)

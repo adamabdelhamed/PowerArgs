@@ -8,6 +8,8 @@ using System.Threading;
 
 namespace PowerArgs.Games
 {
+ 
+
     public class MultiPlayerClient : Lifetime
     {
         private class PendingRequest
@@ -67,30 +69,30 @@ namespace PowerArgs.Games
             return ret;
         }
 
-      
-
         public void SendMessage(MultiPlayerMessage message)
         {
-            clientNetworkProvider.SendMessage(message);
+            message.Sender = ClientId;
+            clientNetworkProvider.SendMessage(message.Serialize());
         }
 
-        public Promise<MultiPlayerMessage> SendRequest(MultiPlayerMessage message, TimeSpan? timeout = null)
+      
+        public Promise<MultiPlayerMessage> SendRequest(MultiPlayerMessage message, TimeSpan? timeout = null)  
         {
-            var requestId = Guid.NewGuid().ToString();
+            message.Sender = ClientId;
+            message.RequestId = Guid.NewGuid().ToString();
             var pendingRequest = new PendingRequest()
             {
-                Id = requestId,
+                Id = message.RequestId,
                 ResponseDeferred = Deferred<MultiPlayerMessage>.Create(),
             };
+
             if(timeout.HasValue)
             {
                 pendingRequest.Timeout = timeout.Value;
             }
-
-            message.AddProperty("RequestId", requestId);
             lock (pendingRequests)
             {
-                pendingRequests.Add(requestId, pendingRequest);
+                pendingRequests.Add(message.RequestId, pendingRequest);
             }
             SendMessage(message);
             return pendingRequest.ResponseDeferred.Promise;
@@ -103,18 +105,19 @@ namespace PowerArgs.Games
             this.clientNetworkProvider = networkProvider;
             networkProvider.MessageReceived.SubscribeForLifetime((m) =>
             {
-                EventRouter.Route(m.Path, m);
+                var hydratedEvent = MultiPlayerMessage.Deserialize(m);
+                EventRouter.Route(hydratedEvent.GetType().Name, hydratedEvent);
             }, this);
             this.OnDisposed(() =>
             {
                 if (isConnected)
                 {
-                    SendMessage(MultiPlayerMessage.Create(ClientId, null, "Left"));
+                    SendMessage(new LeftMessage());
                 }
                 this.clientNetworkProvider.Dispose();
             });
 
-            EventRouter.Register("response/{*}", OnResponseReceived, this);
+            EventRouter.Register(nameof(Ack), OnAck, this);
         }
 
         private void EvaluateTimeouts()
@@ -131,17 +134,17 @@ namespace PowerArgs.Games
             }
         }
 
-        private void OnResponseReceived(RoutedEvent<MultiPlayerMessage> ev)
+        private void OnAck(RoutedEvent<MultiPlayerMessage> ev)
         {
-            var message = ev.Data;
-            var requestId = message.Data["RequestId"];
+            var message = ev.Data as Ack;
+            var requestId = message.RequestId;
             lock (pendingRequests)
             {
                 if (pendingRequests.TryGetValue(requestId, out PendingRequest pendingRequest))
                 {
-                    if (message.Data.TryGetValue("error", out string errorMessage))
+                    if (message.Error != null)
                     {
-                        pendingRequest.Fail(new IOException(errorMessage));
+                        pendingRequest.Fail(new IOException(message.Error));
                         pendingRequests.Remove(requestId);
                     }
                     else
@@ -156,5 +159,15 @@ namespace PowerArgs.Games
                 }
             }
         }
+    }
+
+    public class LeftMessage : MultiPlayerMessage
+    {
+
+    }
+
+    public class ErrorMessage : MultiPlayerMessage
+    {
+        public string Error { get; set; }
     }
 }

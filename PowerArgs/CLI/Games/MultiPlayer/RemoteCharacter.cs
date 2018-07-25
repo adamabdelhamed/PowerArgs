@@ -19,28 +19,23 @@ namespace PowerArgs.Games
             this.MultiPlayerClient = client;
 
             this.Damaged.SubscribeForLifetime(ReportDamageToServer, this.Lifetime);
-            Router.Register("fireprimary/{*}", RemoteFire, this.Lifetime);
-            Router.Register("fireexplosive/{*}", RemoteFire, this.Lifetime);
+            Router.Register(nameof(RPGFireMessage), RemoteFireRPG, this.Lifetime);
         }
 
         private void ReportDamageToServer()
         {
-            MultiPlayerClient.SendRequest(MultiPlayerMessage.Create(MultiPlayerClient.ClientId, null, "damage", new Dictionary<string, string>()
+            MultiPlayerClient.SendRequest(new DamageMessage()
             {
-                { "ClientId", this.remoteClientId },
-                { "NewHP", this.HealthPoints+"" }
-            }));
+                DamagedClient = this.remoteClientId,
+                NewHP = this.HealthPoints
+            });
         }
 
-        private void RemoteFire(RoutedEvent<MultiPlayerMessage> args)
+        private void RemoteFireRPG(RoutedEvent<MultiPlayerMessage> args)
         {
-            IMultiPlayerWeapon toFire = args.Data.EventId == "fireprimary"  ?
-                this.Inventory.PrimaryWeapon as IMultiPlayerWeapon :
-                this.Inventory.ExplosiveWeapon as IMultiPlayerWeapon;
-
-            if (toFire != null)
+            if (Inventory.ExplosiveWeapon is RPGLauncher)
             {
-                this.spaceTime.QueueAction(() => toFire.RemoteFire(args.Data));
+                this.spaceTime.QueueAction(() => (Inventory.ExplosiveWeapon as IMultiPlayerWeapon).RemoteFire(args.Data));
             }
         }
     }

@@ -1,6 +1,5 @@
 ﻿using PowerArgs.Cli;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -39,94 +38,74 @@ namespace PowerArgs.Games
             this.serverNetworkProvider = networkProvider;
             this.serverNetworkProvider.ClientConnected.SubscribeForLifetime(OnClientConnected, this);
             this.serverNetworkProvider.ConnectionLost.SubscribeForLifetime(OnConnectionLost, this);
-            this.serverNetworkProvider.MessageReceived.SubscribeForLifetime((m) =>
+            this.serverNetworkProvider.MessageReceived.SubscribeForLifetime((messageText) =>
             {
-                if(m.EventId == "damage")
-                {
-
-                }
-                MessageRouter.Route(m.Path, m);
+                var hydratedMessage = MultiPlayerMessage.Deserialize(messageText);
+                MessageRouter.Route(hydratedMessage.GetType().Name, hydratedMessage);
             }, this);
             this.OnDisposed(this.serverNetworkProvider.Dispose);
 
-            this.MessageRouter.Register($"ping/{P("sender")}/{MultiPlayerMessage.Encode(ServerId)}", Ping, this);
+            this.MessageRouter.Register(nameof(PingMessage), Ping, this);
             this.MessageRouter.NotFound.SubscribeForLifetime(NotFound, this);
         }
 
-        private void NotFound(RoutedEvent<MultiPlayerMessage> args)
+    
+
+        public void SendMessage(MultiPlayerMessage message)
         {
-            if (args.Data.Data.ContainsKey("RequestId"))
-            {
-                Respond(args.Data, new Dictionary<string, string>()
-                {
-                    {"error", "NotFound" }
-                });
-            }
-        }
-
-        public void Respond(MultiPlayerMessage request, Dictionary<string,string> data)
-        {
-            data.Add("RequestId", request.Data["RequestId"]);
-            var requester = clients.Where(c => c.ClientId == request.SenderId).SingleOrDefault();
-            SendMessageInternal(MultiPlayerMessage.Create(this.ServerId, request.SenderId, "Response", data), requester);
-        }
-
-        private string P(string name) => "{" + MultiPlayerMessage.Encode(name) + "}";
-
-        private void Ping(RoutedEvent<MultiPlayerMessage> ev)
-        {
-            var message = ev.Data;
-            if (message.Data.TryGetValue("delay", out string delay))
-            {
-                var delayMs = int.Parse(delay);
-                Thread.Sleep(delayMs);
-            }
-            var requester = clients.Where(c => c.ClientId == message.SenderId).SingleOrDefault();
-            var response = MultiPlayerMessage.Create(this.ServerId, message.SenderId, "Response", new Dictionary<string, string>()
-            {
-                { "RequestId", message.Data["RequestId"] },
-            });
-
-            SendMessageInternal(response, requester);
-        }
-
-        private MultiPlayerClientConnection GetClient(string id) => clients.Where(c => c.ClientId == id).SingleOrDefault();
-         
-        public void Send(MultiPlayerMessage message)
-        {
-            var client = GetClient(message.RecipientId);
-            SendMessageInternal(message, client);
+            SendMessageInternal(message, GetClient(message.Recipient));
         }
 
         public void Broadcast(MultiPlayerMessage message)
         {
-            foreach (var recipient in clients.Where(c => c.ClientId != message.SenderId))
+            foreach (var recipient in clients.Where(c => c.ClientId != message.Sender))
             {
                 SendMessageInternal(message, recipient);
             }
         }
 
+        public void Respond(MultiPlayerMessage response)
+        {
+            if(response.RequestId == null)
+            {
+                throw new ArgumentNullException("RequestId cannot be null");
+            }
+
+            var requester = clients.Where(c => c.ClientId == response.Recipient).SingleOrDefault();
+            SendMessageInternal(response, requester);
+        }
+ 
+        private void Ping(RoutedEvent<MultiPlayerMessage> ev)
+        {
+            var pingMessage = ev.Data as PingMessage;
+   
+            if (pingMessage.Delay > 0)
+            {
+                Thread.Sleep(pingMessage.Delay);
+            }
+            var requester = GetClient(pingMessage.Sender);
+            Respond(new Ack() { Recipient = pingMessage.Sender, RequestId = pingMessage.RequestId });
+        }
+
+        private void NotFound(RoutedEvent<MultiPlayerMessage> args)
+        {
+            if (args.Data.RequestId != null)
+            {
+                Respond(new NotFoundMessage() { Recipient = args.Data.Sender, RequestId = args.Data.RequestId });
+            }
+        }
+
+
+        private MultiPlayerClientConnection GetClient(string id) => clients.Where(c => c.ClientId == id).SingleOrDefault();
+
         private void OnClientConnected(MultiPlayerClientConnection newClient)
         {
-            this.MessageRouter.Register($"{P("event")}/{P("sender")}/{ MultiPlayerMessage.Encode(newClient.ClientId)}/{P("*")}", (toForward)=>
-            {
-                SendMessageInternal(toForward.Data, newClient);
-
-            }, newClient);
-
             lock (clients)
             {
                 foreach (var existingClient in clients)
                 {
-                    SendMessageInternal(MultiPlayerMessage.Create(this.ServerId, existingClient.ClientId, "NewUser", new Dictionary<string, string>()
-                    {
-                        { "ClientId", newClient.ClientId  }
-                    }), existingClient);
-
-                    SendMessageInternal(MultiPlayerMessage.Create(this.ServerId, newClient.ClientId, "NewUser", new Dictionary<string, string>()
-                    {
-                        { "ClientId", existingClient.ClientId  }
-                    }), newClient);
+                    SendMessageInternal(new NewUserMessage() { NewUserId = newClient.ClientId }, existingClient);
+                    SendMessageInternal(new NewUserMessage() { NewUserId = existingClient.ClientId }, newClient);
                 }
                 clients.Add(newClient);
             }
@@ -139,9 +118,11 @@ namespace PowerArgs.Games
 
         private void SendMessageInternal(MultiPlayerMessage message, MultiPlayerClientConnection client)
         {
+            message.Sender = message.Sender ?? ServerId;
+            message.Recipient = client.ClientId;
             try
             {
-                serverNetworkProvider.SendMessageToClient(message.RawContents, client);
+                serverNetworkProvider.SendMessageToClient(message.Serialize(), client);
             }
             catch (Exception ex)
             {
@@ -153,4 +134,16 @@ namespace PowerArgs.Games
             }
         }
     }
+
+    public class NewUserMessage : MultiPlayerMessage
+    {
+        public string NewUserId { get; set; }
+    }
+
+    public class PingMessage : MultiPlayerMessage
+    {
+        public int Delay { get; set; }
+    }
+
+    public class NotFoundMessage : MultiPlayerMessage { }
 }

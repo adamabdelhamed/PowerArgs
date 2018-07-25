@@ -19,11 +19,8 @@ namespace PowerArgs.Games
 
             if (Holder.MultiPlayerClient != null && Holder is MainCharacter)
             {
-                var dataToSendToServer = new Dictionary<string, string>();
-                dataToSendToServer.Add("X", Holder.Left + "");
-                dataToSendToServer.Add("Y", Holder.Top + "");
-                dataToSendToServer.Add("angle", angle + "");
-                Holder.MultiPlayerClient.SendMessage(MultiPlayerMessage.Create(Holder.MultiPlayerClient.ClientId, null, "fireexplosive", dataToSendToServer));
+                Holder.MultiPlayerClient.SendMessage(
+                    new RPGFireMessage() { X = Holder.Left, Y = Holder.Top, Angle = angle });
             }
 
             FireDoubleInternal(Holder.Left, Holder.Top, angle);
@@ -55,10 +52,10 @@ namespace PowerArgs.Games
 
         public void RemoteFire(MultiPlayerMessage message)
         {
-            var x = float.Parse(message.Data["X"]);
-            var y = float.Parse(message.Data["Y"]);
-            var angle = float.Parse(message.Data["angle"]);
-            FireDoubleInternal(x, y, angle);
+            var rpgMessage = message as RPGFireMessage;
+            FireDoubleInternal(rpgMessage.X, rpgMessage.Y, rpgMessage.Angle);
         }
     }
+
+
 }

@@ -5,6 +5,7 @@ using PowerArgs;
 using System.Linq;
 using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
+using PowerArgs.Games;
 
 namespace ArgsTests
 {
@@ -271,6 +272,7 @@ namespace ArgsTests
                 typeof(MarkupExtensionAttribute),
                 typeof(MarkupIgnoreAttribute),
                 typeof(SpacialElementBindingAttribute),
+                typeof(IMultiPlayerEventIgnore)
             };
 
             var iArgMetadataSubInterfaces = typeof(Args).Assembly.GetTypes().Where(t =>

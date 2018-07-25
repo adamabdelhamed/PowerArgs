@@ -65,11 +65,11 @@ namespace ArgsTests.CLI.Games
             deathmatch.Start();
             await Task.Delay(delayMs);
             // both clients start waiting for the start of the game
-            var client1StartTask = client1.EventRouter.Await("start/{*}");
-            var client2StartTask = client2.EventRouter.Await("start/{*}");
+            var client1StartTask = client1.EventRouter.Await(nameof(StartGameMessage));
+            var client2StartTask = client2.EventRouter.Await(nameof(StartGameMessage));
 
-            var client1SeesClient2Task = client1.EventRouter.Await("newuser/{*}");
-            var client2SeesClient1Task = client2.EventRouter.Await("newuser/{*}");
+            var client1SeesClient2Task = client1.EventRouter.Await(nameof(NewUserMessage));
+            var client2SeesClient1Task = client2.EventRouter.Await(nameof(NewUserMessage));
 
             // both clients connect, which should trigger the start of the game
             await client1.Connect(server.ServerId).AsAwaitable();
@@ -84,25 +84,22 @@ namespace ArgsTests.CLI.Games
             await client1SeesClient2Task;
             await client2SeesClient1Task;
 
-            Assert.AreEqual(client2.ClientId, client1SeesClient2Task.Result.Data.Data["ClientId"]);
-            Assert.AreEqual(client1.ClientId, client2SeesClient1Task.Result.Data.Data["ClientId"]);
+            Assert.AreEqual(client2.ClientId, (client1SeesClient2Task.Result.Data as NewUserMessage).NewUserId);
+            Assert.AreEqual(client1.ClientId, (client2SeesClient1Task.Result.Data as NewUserMessage).NewUserId);
 
-            var client1GameOverTask = client1.EventRouter.Await("gameover/{*}");
-            var client2GameOverTask = client2.EventRouter.Await("gameover/{*}");
+            var client1GameOverTask = client1.EventRouter.Await(nameof(GameOverMessage));
+            var client2GameOverTask = client2.EventRouter.Await(nameof(GameOverMessage));
 
-       
-            var response = await client1.SendRequest(MultiPlayerMessage.Create(client1.ClientId, client2.ClientId, "damage", new System.Collections.Generic.Dictionary<string, string>()
+            var response = await client1.SendRequest(new DamageMessage()
             {
-                { "ClientId", client2.ClientId },
-                { "NewHP", "0" }
-            })).AsAwaitable();
-            Assert.AreEqual("true", response.Data["accepted"]);
-          
-
+                DamagedClient = client2.ClientId,
+                NewHP = 0
+            }, timeout: TimeSpan.FromDays(1)).AsAwaitable();
+ 
             // make sure both clients got the game over event event
             await Task.WhenAll(client1GameOverTask, client2GameOverTask);
-            Assert.AreEqual(client1.ClientId, client1GameOverTask.Result.Data.Data["winner"]);
-            Assert.AreEqual(client1.ClientId, client2GameOverTask.Result.Data.Data["winner"]);
+            Assert.AreEqual(client1.ClientId, (client1GameOverTask.Result.Data as GameOverMessage).Winner);
+            Assert.AreEqual(client1.ClientId, (client2GameOverTask.Result.Data as GameOverMessage).Winner);
 
             client1.Dispose();
             client2.Dispose();
@@ -120,7 +117,7 @@ namespace ArgsTests.CLI.Games
             try
             {
                 var sw = Stopwatch.StartNew();
-                var response = await client.SendRequest(MultiPlayerMessage.Create(client.ClientId, server.ServerId, "ping")).AsAwaitable();
+                var response = await client.SendRequest(new PingMessage(), timeout: TimeSpan.FromDays(1)).AsAwaitable();
                 sw.Stop();
                 Console.WriteLine("ping took " + sw.ElapsedMilliseconds + " ms");
             }
@@ -129,24 +126,11 @@ namespace ArgsTests.CLI.Games
                 throw;
             }
 
-            try
-            {
-                await client.SendRequest(MultiPlayerMessage.Create(client.ClientId, server.ServerId, "Hello")).AsAwaitable();
-                Assert.Fail("An exception should have been thrown");
-            }
-            catch (PromiseWaitException ex)
-            {
-                Assert.AreEqual(1, ex.InnerExceptions.Count);
-                Assert.IsTrue(ex.InnerException is IOException);
-                Assert.AreEqual("NotFound", ex.InnerException.Message);
-            }
+         
 
             try
             {
-                await client.SendRequest(MultiPlayerMessage.Create(client.ClientId, server.ServerId, "ping", new System.Collections.Generic.Dictionary<string, string>()
-                {
-                    { "delay", "200" }
-                }), timeout: TimeSpan.FromSeconds(.1)).AsAwaitable();
+                await client.SendRequest(new PingMessage() { Delay = 200 }, timeout: TimeSpan.FromSeconds(.1)).AsAwaitable();
                 Assert.Fail("An exception should have been thrown");
             }
             catch (PromiseWaitException ex)

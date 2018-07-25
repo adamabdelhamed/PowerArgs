@@ -13,7 +13,7 @@ namespace PowerArgs.Games
         public string ServerId { get; set; }
         public Event<MultiPlayerClientConnection> ClientConnected { get; private set; } = new Event<MultiPlayerClientConnection>();
         public Event<MultiPlayerClientConnection> ConnectionLost { get; private set; } = new Event<MultiPlayerClientConnection>();
-        public Event<MultiPlayerMessage> MessageReceived { get; private set; } = new Event<MultiPlayerMessage>();
+        public Event<string> MessageReceived { get; private set; } = new Event<string>();
  
         private Dictionary<string, InProcClientNetworkProvider> inProcClients = new Dictionary<string, InProcClientNetworkProvider>();
         private bool allowNewConnections;
@@ -59,12 +59,11 @@ namespace PowerArgs.Games
             }
 
             var inProcClient = inProcClients[client.ClientId];
-            var parsedMessage = MultiPlayerMessage.Parse(message);
-            inProcClient.MessageReceived.Fire(parsedMessage);
+            inProcClient.MessageReceived.Fire(message);
         }
 
 
-        internal static void AcceptMessage(string clientId, MultiPlayerMessage message)
+        internal static void AcceptMessage(string clientId, string message)
         {
             foreach(var server in servers.Values)
             {
@@ -110,9 +109,9 @@ namespace PowerArgs.Games
             this.ClientId = id;
         }
 
-        public Event<MultiPlayerMessage> MessageReceived { get; private set; } = new Event<MultiPlayerMessage>();
+        public Event<string> MessageReceived { get; private set; } = new Event<string>();
         public Promise Connect(string server) => InProcServerNetworkProvider.AcceptConnection(this, server);
-        public void SendMessage(MultiPlayerMessage message) => InProcServerNetworkProvider.AcceptMessage(this.ClientId, message);
+        public void SendMessage(string message) => InProcServerNetworkProvider.AcceptMessage(this.ClientId, message);
         protected override void DisposeManagedResources() { }
     }
 }

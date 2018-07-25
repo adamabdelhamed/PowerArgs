@@ -15,7 +15,7 @@ namespace PowerArgs.Games
 
         public Event<MultiPlayerClientConnection> ClientConnected { get; private set; } = new Event<MultiPlayerClientConnection>();
         public Event<MultiPlayerClientConnection> ConnectionLost { get; private set; } = new Event<MultiPlayerClientConnection>();
-        public Event<MultiPlayerMessage> MessageReceived { get; private set; } = new Event<MultiPlayerMessage>();
+        public Event<string> MessageReceived { get; private set; } = new Event<string>();
 
         private Dictionary<string, RemoteSocketConnection> connections = new Dictionary<string, RemoteSocketConnection>();
         private TcpListener listener;
@@ -119,7 +119,7 @@ namespace PowerArgs.Games
     {
         public Socket RemoteSocket { get; set; }
 
-        public Event<MultiPlayerMessage> MessageReceived { get; set; }
+        public Event<string> MessageReceived { get; set; }
 
         public Promise Listen() => new BackgroundThread(ListenThread).Start();
         
@@ -137,7 +137,7 @@ namespace PowerArgs.Games
                     SocketHelpers.Read(this, RemoteSocket, buffer, messageLength);
                     if (this.IsExpired) break;
                     var messageText = Encoding.UTF8.GetString(buffer, 0, messageLength);
-                    MessageReceived.Fire(MultiPlayerMessage.Parse(messageText));
+                    MessageReceived.Fire(messageText);
                 }
             }
             finally

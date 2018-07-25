@@ -55,12 +55,12 @@ namespace PowerArgs.Games
 
         private void NotifyPlayersOfGameStart()
         {
-            Server.Broadcast(MultiPlayerMessage.Create(ServerId, null, "start"));
+            Server.Broadcast(new StartGameMessage());
         }
 
         private void StartListeningForPlayerMovement()
         {
-            Server.MessageRouter.Register("bounds/{*}", (message) =>
+            Server.MessageRouter.Register(nameof(BoundsMessage), (message) =>
             {
                 Server.Broadcast(message.Data);
             }
@@ -69,13 +69,7 @@ namespace PowerArgs.Games
 
         private void StartListeningForPlayerFiring()
         {
-            Server.MessageRouter.Register("fireprimary/{*}", (message) =>
-            {
-                Server.Broadcast(message.Data);
-            }
-            , this);
-
-            Server.MessageRouter.Register("fireexplosive/{*}", (message) =>
+            Server.MessageRouter.Register(nameof(RPGFireMessage), (message) =>
             {
                 Server.Broadcast(message.Data);
             }
@@ -84,42 +78,84 @@ namespace PowerArgs.Games
 
         private void StartListeningForDamageRequests()
         {
-            Server.MessageRouter.Register("damage/{*}", (args) =>
+            Server.MessageRouter.Register(nameof(DamageMessage), (args) =>
             {
-                var clientIdOfDamagedPlayer = args.Data.Data["ClientId"];
-                var newHp = float.Parse(args.Data.Data["NewHP"]);
-                playerHealthPoints[clientIdOfDamagedPlayer] = newHp;
-                if(playerHealthPoints[clientIdOfDamagedPlayer] <= 0)
+                var message = args.Data as DamageMessage;
+    
+                playerHealthPoints[message.DamagedClient] = message.NewHP;
+                if(playerHealthPoints[message.DamagedClient] <= 0)
                 {
-                    playerHealthPoints.Remove(clientIdOfDamagedPlayer);
-                    Server.Broadcast(MultiPlayerMessage.Create(ServerId, null, "dead", new Dictionary<string, string>()
-                    {
-                        { "ClientId", clientIdOfDamagedPlayer }
-                    }));
+                    playerHealthPoints.Remove(message.DamagedClient);
+                    Server.Broadcast(new DeadMessage() { DeadClient = message.DamagedClient });
 
                     if(playerHealthPoints.Count == 1)
                     {
-                        Server.Broadcast(MultiPlayerMessage.Create(ServerId, null, "gameover", new Dictionary<string, string>()
-                        {
-                            { "winner", playerHealthPoints.First().Key }
-                        }));
+                        Server.Broadcast(new GameOverMessage() { Winner = playerHealthPoints.First().Key });
                         this.Dispose();
                     }
                 }
                 else
                 {
-                    Server.Broadcast(MultiPlayerMessage.Create(ServerId, null, "NewHP", new Dictionary<string, string>()
-                    {
-                        { "ClientId", clientIdOfDamagedPlayer },
-                        { "NewHP", newHp+"" }
-                    }));
+                    Server.Broadcast(new NewHPMessage() { NewHP = message.NewHP, ClientWithNewHP = message.DamagedClient });
                 }
 
-                Server.Respond(args.Data, new Dictionary<string, string>()
-                {
-                    {"accepted", "true" }
-                });
+                Server.Respond(new Ack() { RequestId = args.Data.RequestId, Recipient = args.Data.Sender });
             }, this);
         }
+    }
+
+    public class DamageMessage : MultiPlayerMessage
+    {
+        public string DamagedClient { get; set; }
+        public float NewHP { get; set; }
+    }
+
+    public class RPGFireMessage : MultiPlayerMessage
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float Angle { get; set; }
+    }
+
+    public class NewHPMessage : MultiPlayerMessage
+    {
+        public string ClientWithNewHP { get; set; }
+        public float NewHP { get; set; }
+    }
+
+    public class Ack : MultiPlayerMessage
+    {
+        public string Error { get; set; }
+    }
+
+    public class StartGameMessage : MultiPlayerMessage
+    {
+
+    }
+
+    public class DeadMessage : MultiPlayerMessage
+    {
+        public string DeadClient { get; set; }
+ 
+    }
+
+    public class GameOverMessage : MultiPlayerMessage
+    {
+        public string Winner { get; set; }
+
+    }
+
+    public class DamageResponse : MultiPlayerMessage
+    {
+        public bool Accepted { get; set; }
+    }
+ 
+    public class BoundsMessage : MultiPlayerMessage
+    {
+        public string ClientToUpdate { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
+        public float W { get; set; }
+        public float H { get; set; }
     }
 }

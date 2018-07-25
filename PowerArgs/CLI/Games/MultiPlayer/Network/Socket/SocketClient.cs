@@ -13,7 +13,7 @@ namespace PowerArgs.Games
     {
         public string ClientId { get; private set; }
 
-        public Event<MultiPlayerMessage> MessageReceived { get; private set; } = new Event<MultiPlayerMessage>();
+        public Event<string> MessageReceived { get; private set; } = new Event<string>();
 
         private Socket client;
         public Promise Connect(string server)
@@ -49,13 +49,13 @@ namespace PowerArgs.Games
                 SocketHelpers.Read(this, client, buffer, messageLength);
                 if (this.IsExpired) return;
                 var messageText = Encoding.UTF8.GetString(buffer, 0, messageLength);
-                MessageReceived.Fire(MultiPlayerMessage.Parse(messageText));
+                MessageReceived.Fire(messageText);
             } 
         }
 
-        public void SendMessage(MultiPlayerMessage message)
+        public void SendMessage(string message)
         {
-            var bytes = Encoding.UTF8.GetBytes(message.RawContents);
+            var bytes = Encoding.UTF8.GetBytes(message);
             var lengthBytes = BitConverter.GetBytes(bytes.Length);
             var sent = client.Send(lengthBytes);
             if (sent != lengthBytes.Length) throw new Exception("WTF");

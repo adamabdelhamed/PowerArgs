@@ -16,7 +16,7 @@ namespace PowerArgs.Games
         Promise CloseForNewConnections();
 
         // send / receive
-        Event<MultiPlayerMessage> MessageReceived { get; }
+        Event<string> MessageReceived { get; }
         void SendMessageToClient(string message, MultiPlayerClientConnection client);
     }
 
@@ -25,8 +25,8 @@ namespace PowerArgs.Games
         string ClientId { get; }
 
         Promise Connect(string server);
-        Event<MultiPlayerMessage> MessageReceived { get; }
+        Event<string> MessageReceived { get; }
 
-        void SendMessage(MultiPlayerMessage message);
+        void SendMessage(string message);
     }
 }
