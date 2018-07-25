@@ -87,7 +87,9 @@ namespace PowerArgs.Games
 
                     if(playerHealthPoints.Count == 1)
                     {
-                        Server.Broadcast(new GameOverMessage() { Winner = playerHealthPoints.First().Key });
+                        var info = Server.Clients.Where(c => c.ClientId == playerHealthPoints.First().Key).Single();
+
+                        Server.Broadcast(new GameOverMessage() { WinnerId = info.ClientId, WinnerDisplayName = info.DisplayName });
                         this.Dispose();
                     }
                 }
@@ -138,7 +140,8 @@ namespace PowerArgs.Games
 
     public class GameOverMessage : MultiPlayerMessage
     {
-        public string Winner { get; set; }
+        public string WinnerId { get; set; }
+        public string WinnerDisplayName { get; set; }
 
     }
 

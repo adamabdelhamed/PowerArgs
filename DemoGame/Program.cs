@@ -10,11 +10,10 @@ namespace DemoGame
     }
 
     class Prog
-    {
-        public string RemoteServer { get; set; }
+    { 
         public void Main()
         {
-            new DemoMultiPlayerGameApp(RemoteServer).Start().Wait();
+            new DemoMultiPlayerGameApp().Start().Wait();
         }
     }
 }

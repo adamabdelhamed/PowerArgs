@@ -24,7 +24,7 @@ namespace PowerArgs.Games
     {
         string ClientId { get; }
 
-        Promise Connect(string server);
+        Promise Connect(ServerInfo server);
         Event<string> MessageReceived { get; }
 
         void SendMessage(string message);

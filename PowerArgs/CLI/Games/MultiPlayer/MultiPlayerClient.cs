@@ -8,7 +8,12 @@ using System.Threading;
 
 namespace PowerArgs.Games
 {
- 
+
+    public class ServerInfo
+    {
+        public string Server { get; set; }
+        public int Port { get; set; }
+    }
 
     public class MultiPlayerClient : Lifetime
     {
@@ -56,7 +61,7 @@ namespace PowerArgs.Games
 
         private Timer timeoutChecker;
 
-        public Promise Connect(string server)
+        public Promise Connect(ServerInfo server)
         {
             var ret = clientNetworkProvider.Connect(server);
             ret.Then(() =>

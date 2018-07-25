@@ -15,40 +15,45 @@ namespace ArgsTests.CLI.Games
         [TestMethod]
         public async Task TestDeathmatchInProc()
         {
-            var server = new MultiPlayerServer(new InProcServerNetworkProvider("testserver"));
+
+            var serverInfo = new ServerInfo() { Port = 8080, Server = "testserver" };
+            var server = new MultiPlayerServer(new InProcServerNetworkProvider(serverInfo));
             var client1 = new MultiPlayerClient(new InProcClientNetworkProvider("client1"));
             var client2 = new MultiPlayerClient(new InProcClientNetworkProvider("client2"));
-            await TestDeathmatch(server, client1, client2, 100);
+            await TestDeathmatch(server, serverInfo, client1, client2, 100);
         }
 
         [TestMethod, Timeout(4000)]
         public async Task TestDeathmatchWithSockets()
         {
-            var server = new MultiPlayerServer(new SocketServerNetworkProvider(8080));
+            var socketServer = new SocketServerNetworkProvider(8080);
+            var server = new MultiPlayerServer(socketServer);
             var client1 = new MultiPlayerClient(new SocketClientNetworkProvider());
             var client2 = new MultiPlayerClient(new SocketClientNetworkProvider());
-            await TestDeathmatch(server, client1, client2, 500);
+            await TestDeathmatch(server, socketServer.ServerInfo, client1, client2, 500);
         }
 
         [TestMethod]
         public async Task TestRequestResponseInProc()
         {
-            var server = new MultiPlayerServer(new InProcServerNetworkProvider("testserver"));
+            var serverInfo = new ServerInfo() { Port = 8080, Server = "testserver" };
+            var server = new MultiPlayerServer(new InProcServerNetworkProvider(serverInfo));
             var client = new MultiPlayerClient(new InProcClientNetworkProvider("client1"));
-            await TestRequestResponse(server, client);
+            await TestRequestResponse(server, serverInfo, client);
         }
 
         [TestMethod]
         public async Task TestRequestResponseWithSockets()
         {
-            var server = new MultiPlayerServer(new SocketServerNetworkProvider(8080));
+            var socketServer = new SocketServerNetworkProvider(8080);
+            var server = new MultiPlayerServer(socketServer);
             var client = new MultiPlayerClient(new SocketClientNetworkProvider());
 
-             await TestRequestResponse(server, client);
+             await TestRequestResponse(server, socketServer.ServerInfo, client);
              
         }
 
-        private async Task TestDeathmatch(MultiPlayerServer server, MultiPlayerClient client1, MultiPlayerClient client2, int delayMs)
+        private async Task TestDeathmatch(MultiPlayerServer server, ServerInfo serverInfo, MultiPlayerClient client1, MultiPlayerClient client2, int delayMs)
         {
             server.Undeliverable.SubscribeForLifetime((args) =>
             {
@@ -72,9 +77,9 @@ namespace ArgsTests.CLI.Games
             var client2SeesClient1Task = client2.EventRouter.Await<NewUserMessage>();
 
             // both clients connect, which should trigger the start of the game
-            await client1.Connect(server.ServerId).AsAwaitable();
+            await client1.Connect(serverInfo).AsAwaitable();
             Console.WriteLine("client 1 connected");
-            await client2.Connect(server.ServerId).AsAwaitable();
+            await client2.Connect(serverInfo).AsAwaitable();
             Console.WriteLine("client 2 connected");
 
             // make sure both clients got the start event
@@ -98,8 +103,8 @@ namespace ArgsTests.CLI.Games
  
             // make sure both clients got the game over event event
             await Task.WhenAll(client1GameOverTask, client2GameOverTask);
-            Assert.AreEqual(client1.ClientId, client1GameOverTask.Result.Winner);
-            Assert.AreEqual(client1.ClientId, client2GameOverTask.Result.Winner);
+            Assert.AreEqual(client1.ClientId, client1GameOverTask.Result.WinnerId);
+            Assert.AreEqual(client1.ClientId, client2GameOverTask.Result.WinnerId);
 
             client1.Dispose();
             client2.Dispose();
@@ -107,11 +112,11 @@ namespace ArgsTests.CLI.Games
             Assert.IsTrue(deathmatch.IsExpired);
         }
 
-        private async Task TestRequestResponse(MultiPlayerServer server, MultiPlayerClient client)
+        private async Task TestRequestResponse(MultiPlayerServer server, ServerInfo serverInfo, MultiPlayerClient client)
         {
             await server.OpenForNewConnections().AsAwaitable();
             Console.WriteLine("server is listening");
-            await client.Connect(server.ServerId).AsAwaitable();
+            await client.Connect(serverInfo).AsAwaitable();
 
 
             try

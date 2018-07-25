@@ -10,6 +10,7 @@ namespace PowerArgs.Cli
     {
         public ConsoleString DisplayText { get; set; }
         public string Id { get; set; }
+        public object Value { get; set; }
     }
 
     public class DialogOption : DialogButton { }
@@ -132,6 +133,18 @@ namespace PowerArgs.Cli
             }, true, maxHeight, new DialogButton() { Id = "y", DisplayText = "Yes".ToConsoleString(), }, new DialogButton() { Id = "n", DisplayText = "No".ToConsoleString() });
         }
 
+        public static Promise<DialogButton> ShowMessage(ConsoleString message, bool allowEscapeToCancel = true, int maxHeight = 10, params DialogButton[] buttons)
+        {
+            var d = Deferred<DialogButton>.Create();
+            ShowMessage(message, (b) =>
+            {
+                d.Resolve(b);
+            }, allowEscapeToCancel, maxHeight, buttons);
+
+            return d.Promise;
+        }
+
+
         public static void ShowMessage(ConsoleString message, Action<DialogButton> resultCallback, bool allowEscapeToCancel = true, int maxHeight = 10, params DialogButton [] buttons)
         {
             ConsoleApp.AssertAppThread();
@@ -248,6 +261,13 @@ namespace PowerArgs.Cli
         public static void ShowMessage(ConsoleString message, Action doneCallback = null, int maxHeight = 12)
         {
             ShowMessage(message, (b) => { if (doneCallback != null) doneCallback(); },true,maxHeight, new DialogButton() { DisplayText = "ok".ToConsoleString() });
+        }
+
+        public static Promise<ConsoleString> ShowRichTextInput(ConsoleString message, bool allowEscapeToCancel = true, int maxHeight = 12, ConsoleString initialValue = null)
+        {
+            var d = Deferred<ConsoleString>.Create();
+            ShowRichTextInput(message, (ret) => d.Resolve(ret) , () => d.Resolve(null), allowEscapeToCancel, maxHeight, initialValue: initialValue);
+            return d.Promise;
         }
 
         public static void ShowTextInput(ConsoleString message, Action<ConsoleString> resultCallback, Action cancelCallback = null, bool allowEscapeToCancel = true, int maxHeight = 12)

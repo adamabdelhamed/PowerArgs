@@ -24,6 +24,13 @@ namespace PowerArgs.Games
         private int port;
         private IPHostEntry ipHostInfo;
         private IPEndPoint localEP;
+
+        public ServerInfo ServerInfo => new ServerInfo()
+        {
+            Server = ipHostInfo.AddressList[0].ToString(),
+            Port = port,
+        };
+
         public SocketServerNetworkProvider(int port)
         {
             this.port = port;

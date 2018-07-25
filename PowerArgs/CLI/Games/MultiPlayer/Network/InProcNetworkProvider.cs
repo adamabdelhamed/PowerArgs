@@ -18,9 +18,9 @@ namespace PowerArgs.Games
         private Dictionary<string, InProcClientNetworkProvider> inProcClients = new Dictionary<string, InProcClientNetworkProvider>();
         private bool allowNewConnections;
 
-        public InProcServerNetworkProvider(string serverId)
+        public InProcServerNetworkProvider(ServerInfo info)
         {
-            this.ServerId = serverId;
+            this.ServerId = info.Server+":"+info.Port;
             lock(servers)
             {
                 servers.Add(this.ServerId, this);
@@ -75,12 +75,12 @@ namespace PowerArgs.Games
             }
         }
 
-        internal static Promise AcceptConnection(InProcClientNetworkProvider inProcClient, string serverId)
+        internal static Promise AcceptConnection(InProcClientNetworkProvider inProcClient, ServerInfo serverInfo)
         {
             var d = Deferred.Create();
             try
             {
-                var server = servers[serverId];
+                var server = servers[serverInfo.Server+":"+serverInfo.Port];
                 if (server.allowNewConnections)
                 {
                     server.inProcClients.Add(inProcClient.ClientId, inProcClient);
@@ -110,7 +110,7 @@ namespace PowerArgs.Games
         }
 
         public Event<string> MessageReceived { get; private set; } = new Event<string>();
-        public Promise Connect(string server) => InProcServerNetworkProvider.AcceptConnection(this, server);
+        public Promise Connect(ServerInfo server) => InProcServerNetworkProvider.AcceptConnection(this, server);
         public void SendMessage(string message) => InProcServerNetworkProvider.AcceptMessage(this.ClientId, message);
         protected override void DisposeManagedResources() { }
     }

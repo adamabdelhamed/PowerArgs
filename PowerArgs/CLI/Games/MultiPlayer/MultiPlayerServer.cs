@@ -8,6 +8,7 @@ namespace PowerArgs.Games
     public class MultiPlayerClientConnection : Lifetime
     {
         public string ClientId { get; set; }
+        public string DisplayName { get; set; }
     }
 
     public class UndeliverableEvent
@@ -43,6 +44,7 @@ namespace PowerArgs.Games
             this.OnDisposed(this.serverNetworkProvider.Dispose);
 
             this.MessageRouter.Register<PingMessage>(Ping, this);
+            this.MessageRouter.Register<UserInfoMessage>(SetUserInfo, this);
             this.MessageRouter.NotFound.SubscribeForLifetime(NotFound, this);
         }
 
@@ -78,6 +80,13 @@ namespace PowerArgs.Games
             }
             var requester = GetClient(pingMessage.Sender);
             Respond(new Ack() { Recipient = pingMessage.Sender, RequestId = pingMessage.RequestId });
+        }
+
+        private void SetUserInfo(UserInfoMessage message)
+        {
+            var requester = GetClient(message.Sender);
+            requester.DisplayName = message.DisplayName;
+            Respond(new Ack() { Recipient = message.Sender, RequestId = message.RequestId });
         }
 
         private void NotFound(MultiPlayerMessage message)
@@ -131,6 +140,8 @@ namespace PowerArgs.Games
     public class NewUserMessage : MultiPlayerMessage { public string NewUserId { get; set; } }
 
     public class PingMessage : MultiPlayerMessage { public int Delay { get; set; } }
+
+    public class UserInfoMessage : MultiPlayerMessage { public string DisplayName { get; set; } }
 
     public class NotFoundMessage : MultiPlayerMessage { }
 
