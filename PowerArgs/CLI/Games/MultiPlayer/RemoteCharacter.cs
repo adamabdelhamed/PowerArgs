@@ -7,7 +7,7 @@ namespace PowerArgs.Games
 {
     public class RemoteCharacter : Character
     {
-        private EventRouter<MultiPlayerMessage> Router => this.MultiPlayerClient.EventRouter;
+        private MultiPlayerMessageRouter Router => this.MultiPlayerClient.EventRouter;
         private string remoteClientId;
         private SpaceTime spaceTime;
 
@@ -19,7 +19,7 @@ namespace PowerArgs.Games
             this.MultiPlayerClient = client;
 
             this.Damaged.SubscribeForLifetime(ReportDamageToServer, this.Lifetime);
-            Router.Register(nameof(RPGFireMessage), RemoteFireRPG, this.Lifetime);
+            Router.Register<RPGFireMessage>(RemoteFireRPG, this.Lifetime);
         }
 
         private void ReportDamageToServer()
@@ -31,11 +31,11 @@ namespace PowerArgs.Games
             });
         }
 
-        private void RemoteFireRPG(RoutedEvent<MultiPlayerMessage> args)
+        private void RemoteFireRPG(RPGFireMessage message)
         {
             if (Inventory.ExplosiveWeapon is RPGLauncher)
             {
-                this.spaceTime.QueueAction(() => (Inventory.ExplosiveWeapon as IMultiPlayerWeapon).RemoteFire(args.Data));
+                this.spaceTime.QueueAction(() => (Inventory.ExplosiveWeapon as IMultiPlayerWeapon).RemoteFire(message));
             }
         }
     }

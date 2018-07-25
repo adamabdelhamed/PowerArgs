@@ -65,11 +65,11 @@ namespace ArgsTests.CLI.Games
             deathmatch.Start();
             await Task.Delay(delayMs);
             // both clients start waiting for the start of the game
-            var client1StartTask = client1.EventRouter.Await(nameof(StartGameMessage));
-            var client2StartTask = client2.EventRouter.Await(nameof(StartGameMessage));
+            var client1StartTask = client1.EventRouter.Await<StartGameMessage>();
+            var client2StartTask = client2.EventRouter.Await<StartGameMessage>();
 
-            var client1SeesClient2Task = client1.EventRouter.Await(nameof(NewUserMessage));
-            var client2SeesClient1Task = client2.EventRouter.Await(nameof(NewUserMessage));
+            var client1SeesClient2Task = client1.EventRouter.Await<NewUserMessage>();
+            var client2SeesClient1Task = client2.EventRouter.Await<NewUserMessage>();
 
             // both clients connect, which should trigger the start of the game
             await client1.Connect(server.ServerId).AsAwaitable();
@@ -84,11 +84,11 @@ namespace ArgsTests.CLI.Games
             await client1SeesClient2Task;
             await client2SeesClient1Task;
 
-            Assert.AreEqual(client2.ClientId, (client1SeesClient2Task.Result.Data as NewUserMessage).NewUserId);
-            Assert.AreEqual(client1.ClientId, (client2SeesClient1Task.Result.Data as NewUserMessage).NewUserId);
+            Assert.AreEqual(client2.ClientId, client1SeesClient2Task.Result.NewUserId);
+            Assert.AreEqual(client1.ClientId, client2SeesClient1Task.Result.NewUserId);
 
-            var client1GameOverTask = client1.EventRouter.Await(nameof(GameOverMessage));
-            var client2GameOverTask = client2.EventRouter.Await(nameof(GameOverMessage));
+            var client1GameOverTask = client1.EventRouter.Await<GameOverMessage>();
+            var client2GameOverTask = client2.EventRouter.Await<GameOverMessage>();
 
             var response = await client1.SendRequest(new DamageMessage()
             {
@@ -98,8 +98,8 @@ namespace ArgsTests.CLI.Games
  
             // make sure both clients got the game over event event
             await Task.WhenAll(client1GameOverTask, client2GameOverTask);
-            Assert.AreEqual(client1.ClientId, (client1GameOverTask.Result.Data as GameOverMessage).Winner);
-            Assert.AreEqual(client1.ClientId, (client2GameOverTask.Result.Data as GameOverMessage).Winner);
+            Assert.AreEqual(client1.ClientId, client1GameOverTask.Result.Winner);
+            Assert.AreEqual(client1.ClientId, client2GameOverTask.Result.Winner);
 
             client1.Dispose();
             client2.Dispose();

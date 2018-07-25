@@ -60,28 +60,25 @@ namespace PowerArgs.Games
 
         private void StartListeningForPlayerMovement()
         {
-            Server.MessageRouter.Register(nameof(BoundsMessage), (message) =>
+            Server.MessageRouter.Register< BoundsMessage>((message) =>
             {
-                Server.Broadcast(message.Data);
-            }
-            , this);
+                Server.Broadcast(message);
+            } , this);
         }
 
         private void StartListeningForPlayerFiring()
         {
-            Server.MessageRouter.Register(nameof(RPGFireMessage), (message) =>
+            Server.MessageRouter.Register<RPGFireMessage>((message) =>
             {
-                Server.Broadcast(message.Data);
+                Server.Broadcast(message);
             }
           , this);
         }
 
         private void StartListeningForDamageRequests()
         {
-            Server.MessageRouter.Register(nameof(DamageMessage), (args) =>
+            Server.MessageRouter.Register<DamageMessage>((message) =>
             {
-                var message = args.Data as DamageMessage;
-    
                 playerHealthPoints[message.DamagedClient] = message.NewHP;
                 if(playerHealthPoints[message.DamagedClient] <= 0)
                 {
@@ -99,7 +96,7 @@ namespace PowerArgs.Games
                     Server.Broadcast(new NewHPMessage() { NewHP = message.NewHP, ClientWithNewHP = message.DamagedClient });
                 }
 
-                Server.Respond(new Ack() { RequestId = args.Data.RequestId, Recipient = args.Data.Sender });
+                Server.Respond(new Ack() { RequestId = message.RequestId, Recipient = message.Sender });
             }, this);
         }
     }

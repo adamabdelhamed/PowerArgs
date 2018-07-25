@@ -97,20 +97,20 @@ namespace DemoGame
             await Task.Delay(1000);
 
             client = new MultiPlayerClient(new SocketClientNetworkProvider());
-            client.EventRouter.RegisterOnce(nameof(GameOverMessage), OnGameOver);
+            client.EventRouter.RegisterOnce<GameOverMessage>(OnGameOver);
             MainCharacter.MultiPlayerClient = client;
             await client.Connect(server.ServerId).AsAwaitable();
-            var opponentArrivedEvent = await client.EventRouter.Await(nameof(NewUserMessage)); 
+            var opponentArrivedEvent = await client.EventRouter.Await<NewUserMessage>();
             this.Scene.QueueAction(() =>
             {
-                opponent = new RemoteCharacter(client, (opponentArrivedEvent.Data as NewUserMessage).NewUserId);
+                opponent = new RemoteCharacter(client, opponentArrivedEvent.NewUserId);
                 opponent.Tags.Add("enemy");
                 opponent.ResizeTo(1, 1);
                 opponent.MoveTo(this.LayoutRoot.Width - 2, 0);
                 this.Scene.Add(opponent);
             });
               
-            client.EventRouter.Register(nameof(BoundsMessage), OnBoundsReceived, this);
+            client.EventRouter.Register<BoundsMessage>(OnBoundsReceived, this);
             SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(5));
         }
 
@@ -118,24 +118,24 @@ namespace DemoGame
         {
             MainCharacter.ResizeTo(0, 0);
             client = new MultiPlayerClient(new SocketClientNetworkProvider());
-            client.EventRouter.RegisterOnce(nameof(GameOverMessage), OnGameOver);
+            client.EventRouter.RegisterOnce<GameOverMessage>(OnGameOver);
             MainCharacter.MultiPlayerClient = client;
-            client.EventRouter.RegisterOnce(nameof(NewUserMessage), (userInfoResult) =>
+            client.EventRouter.RegisterOnce<NewUserMessage>((userInfoResult) =>
             {
                 this.Scene.QueueAction(() =>
                 {
                     MainCharacter.ResizeTo(1, 1);
                     MainCharacter.MoveTo(this.LayoutRoot.Width - 2, 0);
-                    opponent = new RemoteCharacter(client, (userInfoResult.Data as NewUserMessage).NewUserId);
+                    opponent = new RemoteCharacter(client, userInfoResult.NewUserId);
                     opponent.Tags.Add("enemy");
                     opponent.ResizeTo(1, 1);
                     this.Scene.Add(opponent);
                 });
             });
 
-            client.EventRouter.RegisterOnce(nameof(StartGameMessage),(args)=>
+            client.EventRouter.RegisterOnce<StartGameMessage>((args)=>
             {
-                client.EventRouter.Register(nameof(BoundsMessage), OnBoundsReceived, this);
+                client.EventRouter.Register<BoundsMessage>(OnBoundsReceived, this);
                 SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(5));
             });
 
@@ -153,23 +153,20 @@ namespace DemoGame
         };
      
 
-        private void OnBoundsReceived(RoutedEvent<MultiPlayerMessage> ev)
+        private void OnBoundsReceived(BoundsMessage m)
         {
             Scene.QueueAction(() =>
             {
-                var m = ev.Data as BoundsMessage;
                 opponent?.MoveTo(m.X, m.Y);
                 opponent?.ResizeTo(m.W, m.H);
             });
         }
 
-        private void OnGameOver(RoutedEvent<MultiPlayerMessage> args)
+        private void OnGameOver(GameOverMessage message)
         {
-            var message = args.Data;
             QueueAction(() =>
             {
-                var winner = (message as GameOverMessage).Winner;
-                Dialog.ShowMessage("And the winner is: ".ToConsoleString() + winner.ToGreen(), () =>
+                Dialog.ShowMessage("And the winner is: ".ToConsoleString() + message.Winner.ToGreen(), () =>
                 {
                     Scene.Stop();
                     ConsoleApp.Current.Stop();

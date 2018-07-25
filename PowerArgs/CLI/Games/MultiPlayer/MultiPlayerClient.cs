@@ -49,7 +49,7 @@ namespace PowerArgs.Games
             }
         }
 
-        public EventRouter<MultiPlayerMessage> EventRouter { get; private set; } = new EventRouter<MultiPlayerMessage>();
+        public MultiPlayerMessageRouter EventRouter { get; private set; } = new MultiPlayerMessageRouter();
         public string ClientId => clientNetworkProvider.ClientId;
 
         private Dictionary<string, PendingRequest> pendingRequests = new Dictionary<string, PendingRequest>();
@@ -117,7 +117,7 @@ namespace PowerArgs.Games
                 this.clientNetworkProvider.Dispose();
             });
 
-            EventRouter.Register(nameof(Ack), OnAck, this);
+            EventRouter.Register<Ack>(OnAck, this);
         }
 
         private void EvaluateTimeouts()
@@ -134,9 +134,8 @@ namespace PowerArgs.Games
             }
         }
 
-        private void OnAck(RoutedEvent<MultiPlayerMessage> ev)
+        private void OnAck(Ack message)
         {
-            var message = ev.Data as Ack;
             var requestId = message.RequestId;
             lock (pendingRequests)
             {

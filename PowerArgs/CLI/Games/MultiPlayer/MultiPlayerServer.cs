@@ -25,7 +25,7 @@ namespace PowerArgs.Games
         public Promise OpenForNewConnections() => serverNetworkProvider.OpenForNewConnections();
         public Promise CloseForNewConnections() => serverNetworkProvider.CloseForNewConnections();
         public ObservableCollection<MultiPlayerClientConnection> Clients { get; private set; } = new ObservableCollection<MultiPlayerClientConnection>();
-        public EventRouter<MultiPlayerMessage> MessageRouter { get; private set; } = new EventRouter<MultiPlayerMessage>();
+        public MultiPlayerMessageRouter MessageRouter { get; private set; } = new MultiPlayerMessageRouter();
         public Event<UndeliverableEvent> Undeliverable { get; private set; } = new Event<UndeliverableEvent>();
 
         private IServerNetworkProvider serverNetworkProvider;
@@ -42,7 +42,7 @@ namespace PowerArgs.Games
             }, this);
             this.OnDisposed(this.serverNetworkProvider.Dispose);
 
-            this.MessageRouter.Register(nameof(PingMessage), Ping, this);
+            this.MessageRouter.Register<PingMessage>(Ping, this);
             this.MessageRouter.NotFound.SubscribeForLifetime(NotFound, this);
         }
 
@@ -70,10 +70,8 @@ namespace PowerArgs.Games
             SendMessageInternal(response, requester);
         }
  
-        private void Ping(RoutedEvent<MultiPlayerMessage> ev)
+        private void Ping(PingMessage pingMessage)
         {
-            var pingMessage = ev.Data as PingMessage;
-   
             if (pingMessage.Delay > 0)
             {
                 Thread.Sleep(pingMessage.Delay);
@@ -82,11 +80,11 @@ namespace PowerArgs.Games
             Respond(new Ack() { Recipient = pingMessage.Sender, RequestId = pingMessage.RequestId });
         }
 
-        private void NotFound(RoutedEvent<MultiPlayerMessage> args)
+        private void NotFound(MultiPlayerMessage message)
         {
-            if (args.Data.RequestId != null)
+            if (message.RequestId != null)
             {
-                Respond(new NotFoundMessage() { Recipient = args.Data.Sender, RequestId = args.Data.RequestId });
+                Respond(new NotFoundMessage() { Recipient = message.Sender, RequestId = message.RequestId });
             }
         }
 
