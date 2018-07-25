@@ -24,14 +24,11 @@ namespace PowerArgs.Games
         public string ServerId => serverNetworkProvider.ServerId;
         public Promise OpenForNewConnections() => serverNetworkProvider.OpenForNewConnections();
         public Promise CloseForNewConnections() => serverNetworkProvider.CloseForNewConnections();
+        public ObservableCollection<MultiPlayerClientConnection> Clients { get; private set; } = new ObservableCollection<MultiPlayerClientConnection>();
+        public EventRouter<MultiPlayerMessage> MessageRouter { get; private set; } = new EventRouter<MultiPlayerMessage>();
+        public Event<UndeliverableEvent> Undeliverable { get; private set; } = new Event<UndeliverableEvent>();
 
         private IServerNetworkProvider serverNetworkProvider;
-
-        public ObservableCollection<MultiPlayerClientConnection> clients = new ObservableCollection<MultiPlayerClientConnection>();
-
-        public EventRouter<MultiPlayerMessage> MessageRouter { get; private set; } = new EventRouter<MultiPlayerMessage>();
-
-        public Event<UndeliverableEvent> Undeliverable { get; private set; } = new Event<UndeliverableEvent>();
 
         public MultiPlayerServer(IServerNetworkProvider networkProvider)
         {
@@ -49,8 +46,6 @@ namespace PowerArgs.Games
             this.MessageRouter.NotFound.SubscribeForLifetime(NotFound, this);
         }
 
-    
-
         public void SendMessage(MultiPlayerMessage message)
         {
             SendMessageInternal(message, GetClient(message.Recipient));
@@ -58,7 +53,7 @@ namespace PowerArgs.Games
 
         public void Broadcast(MultiPlayerMessage message)
         {
-            foreach (var recipient in clients.Where(c => c.ClientId != message.Sender))
+            foreach (var recipient in Clients.Where(c => c.ClientId != message.Sender))
             {
                 SendMessageInternal(message, recipient);
             }
@@ -71,7 +66,7 @@ namespace PowerArgs.Games
                 throw new ArgumentNullException("RequestId cannot be null");
             }
 
-            var requester = clients.Where(c => c.ClientId == response.Recipient).SingleOrDefault();
+            var requester = Clients.Where(c => c.ClientId == response.Recipient).SingleOrDefault();
             SendMessageInternal(response, requester);
         }
  
@@ -96,24 +91,24 @@ namespace PowerArgs.Games
         }
 
 
-        private MultiPlayerClientConnection GetClient(string id) => clients.Where(c => c.ClientId == id).SingleOrDefault();
+        private MultiPlayerClientConnection GetClient(string id) => Clients.Where(c => c.ClientId == id).Single();
 
         private void OnClientConnected(MultiPlayerClientConnection newClient)
         {
-            lock (clients)
+            lock (Clients)
             {
-                foreach (var existingClient in clients)
+                foreach (var existingClient in Clients)
                 {
                     SendMessageInternal(new NewUserMessage() { NewUserId = newClient.ClientId }, existingClient);
                     SendMessageInternal(new NewUserMessage() { NewUserId = existingClient.ClientId }, newClient);
                 }
-                clients.Add(newClient);
+                Clients.Add(newClient);
             }
         }
 
         private void OnConnectionLost(MultiPlayerClientConnection client)
         {
-            clients.Remove(client);
+            Clients.Remove(client);
         }
 
         private void SendMessageInternal(MultiPlayerMessage message, MultiPlayerClientConnection client)
@@ -135,15 +130,11 @@ namespace PowerArgs.Games
         }
     }
 
-    public class NewUserMessage : MultiPlayerMessage
-    {
-        public string NewUserId { get; set; }
-    }
+    public class NewUserMessage : MultiPlayerMessage { public string NewUserId { get; set; } }
 
-    public class PingMessage : MultiPlayerMessage
-    {
-        public int Delay { get; set; }
-    }
+    public class PingMessage : MultiPlayerMessage { public int Delay { get; set; } }
 
     public class NotFoundMessage : MultiPlayerMessage { }
+
+    public class LeftMessage : MultiPlayerMessage { }
 }

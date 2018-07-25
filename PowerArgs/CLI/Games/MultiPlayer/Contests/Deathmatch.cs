@@ -32,9 +32,9 @@ namespace PowerArgs.Games
         private async Task WaitUntilFull()
         {
             var lobbyLifetime = new Lifetime();
-            this.Options.Server.clients.Changed.SubscribeForLifetime(() =>
+            this.Options.Server.Clients.Changed.SubscribeForLifetime(() =>
             {
-                if(Options.Server.clients.Count == Options.MaxPlayers)
+                if(Options.Server.Clients.Count == Options.MaxPlayers)
                 {
                     lobbyLifetime.Dispose();
                 }
@@ -47,7 +47,7 @@ namespace PowerArgs.Games
         private void InitializeHealthPoints()
         {
             playerHealthPoints.Clear();
-            foreach (var client in this.Options.Server.clients)
+            foreach (var client in this.Options.Server.Clients)
             {
                 playerHealthPoints.Add(client.ClientId, 100);
             }

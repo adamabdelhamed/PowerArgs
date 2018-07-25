@@ -160,14 +160,4 @@ namespace PowerArgs.Games
             }
         }
     }
-
-    public class LeftMessage : MultiPlayerMessage
-    {
-
-    }
-
-    public class ErrorMessage : MultiPlayerMessage
-    {
-        public string Error { get; set; }
-    }
 }

@@ -90,27 +90,20 @@ namespace DemoGame
         private async void StartLocalServer()
         {
             var server = new MultiPlayerServer(new SocketServerNetworkProvider(8080));
-            this.OnDisposed(()=>
-            {
-                server.Dispose();
-            });
+            this.OnDisposed(server.Dispose);
 
-            var deathmatch = new Deathmatch(new MultiPlayerContestOptions()
-            {
-                MaxPlayers = 2,
-                Server = server
-            });
-
+            var deathmatch = new Deathmatch(new MultiPlayerContestOptions() { MaxPlayers = 2, Server = server });
             deathmatch.Start();
             await Task.Delay(1000);
+
             client = new MultiPlayerClient(new SocketClientNetworkProvider());
             client.EventRouter.RegisterOnce(nameof(GameOverMessage), OnGameOver);
             MainCharacter.MultiPlayerClient = client;
             await client.Connect(server.ServerId).AsAwaitable();
-            var userResult = await client.EventRouter.Await(nameof(NewUserMessage)); 
+            var opponentArrivedEvent = await client.EventRouter.Await(nameof(NewUserMessage)); 
             this.Scene.QueueAction(() =>
             {
-                opponent = new RemoteCharacter(client, (userResult.Data as NewUserMessage).NewUserId);
+                opponent = new RemoteCharacter(client, (opponentArrivedEvent.Data as NewUserMessage).NewUserId);
                 opponent.Tags.Add("enemy");
                 opponent.ResizeTo(1, 1);
                 opponent.MoveTo(this.LayoutRoot.Width - 2, 0);
@@ -123,24 +116,22 @@ namespace DemoGame
 
         private async void ConnectToRemoteServer()
         {
-             MainCharacter.ResizeTo(0, 0);
-       
-
+            MainCharacter.ResizeTo(0, 0);
             client = new MultiPlayerClient(new SocketClientNetworkProvider());
             client.EventRouter.RegisterOnce(nameof(GameOverMessage), OnGameOver);
             MainCharacter.MultiPlayerClient = client;
-            client.EventRouter.RegisterOnce(nameof(NewUserMessage),(userInfoResult)=>
-             {
-                 this.Scene.QueueAction(() =>
-                 {
-                     MainCharacter.ResizeTo(1, 1);
-                     MainCharacter.MoveTo(this.LayoutRoot.Width - 2, 0);
-                     opponent = new RemoteCharacter(client, (userInfoResult.Data as NewUserMessage).NewUserId);
-                     opponent.Tags.Add("enemy");
-                     opponent.ResizeTo(1, 1);
-                     this.Scene.Add(opponent);
-                 });
-             });
+            client.EventRouter.RegisterOnce(nameof(NewUserMessage), (userInfoResult) =>
+            {
+                this.Scene.QueueAction(() =>
+                {
+                    MainCharacter.ResizeTo(1, 1);
+                    MainCharacter.MoveTo(this.LayoutRoot.Width - 2, 0);
+                    opponent = new RemoteCharacter(client, (userInfoResult.Data as NewUserMessage).NewUserId);
+                    opponent.Tags.Add("enemy");
+                    opponent.ResizeTo(1, 1);
+                    this.Scene.Add(opponent);
+                });
+            });
 
             client.EventRouter.RegisterOnce(nameof(StartGameMessage),(args)=>
             {
@@ -164,13 +155,12 @@ namespace DemoGame
 
         private void OnBoundsReceived(RoutedEvent<MultiPlayerMessage> ev)
         {
-            Scene.QueueAction(() => SyncBounds(ev.Data as BoundsMessage, opponent));
-        }
-
-        private void SyncBounds(BoundsMessage m, SpacialElement localElement)
-        {
-            localElement?.MoveTo(m.X, m.Y);
-            localElement?.ResizeTo(m.W, m.H);
+            Scene.QueueAction(() =>
+            {
+                var m = ev.Data as BoundsMessage;
+                opponent?.MoveTo(m.X, m.Y);
+                opponent?.ResizeTo(m.W, m.H);
+            });
         }
 
         private void OnGameOver(RoutedEvent<MultiPlayerMessage> args)
@@ -187,6 +177,4 @@ namespace DemoGame
             });
         }
     }
-
-    
 }
