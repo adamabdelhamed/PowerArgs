@@ -24,14 +24,14 @@ namespace PowerArgs.Games
         /// Plays the sound associated with the given id immediately and once
         /// </summary>
         /// <param name="soundId">a sound id</param>
-        public static Promise<Lifetime> Play(string soundId) => Provider.Play(soundId);
+        public static Promise<Lifetime> Play(string soundId) => Provider.Play(soundId.ToLower());
 
         /// <summary>
         /// Plays the sound associated with the given id immidiately and in a loop
         /// </summary>
         /// <param name="soundId">a sound id</param>
         /// <returns>a promist to a disposable that can be used to stop the loop</returns>
-        public static Promise<IDisposable> Loop(string soundId) => Provider.Loop(soundId);
+        public static Promise<IDisposable> Loop(string soundId) => Provider.Loop(soundId.ToLower());
         
         /// <summary>
         /// Disposes the current provider and resets the provider to a no op provider

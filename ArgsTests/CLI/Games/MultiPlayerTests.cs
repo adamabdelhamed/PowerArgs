@@ -70,11 +70,11 @@ namespace ArgsTests.CLI.Games
             deathmatch.Start();
             await Task.Delay(delayMs);
             // both clients start waiting for the start of the game
-            var client1StartTask = client1.EventRouter.Await<StartGameMessage>();
-            var client2StartTask = client2.EventRouter.Await<StartGameMessage>();
+            var client1StartTask = client1.EventRouter.GetAwaitable<StartGameMessage>();
+            var client2StartTask = client2.EventRouter.GetAwaitable<StartGameMessage>();
 
-            var client1SeesClient2Task = client1.EventRouter.Await<NewUserMessage>();
-            var client2SeesClient1Task = client2.EventRouter.Await<NewUserMessage>();
+            var client1SeesClient2Task = client1.EventRouter.GetAwaitable<NewUserMessage>();
+            var client2SeesClient1Task = client2.EventRouter.GetAwaitable<NewUserMessage>();
 
             // both clients connect, which should trigger the start of the game
             await client1.Connect(serverInfo).AsAwaitable();
@@ -92,8 +92,8 @@ namespace ArgsTests.CLI.Games
             Assert.AreEqual(client2.ClientId, client1SeesClient2Task.Result.NewUserId);
             Assert.AreEqual(client1.ClientId, client2SeesClient1Task.Result.NewUserId);
 
-            var client1GameOverTask = client1.EventRouter.Await<GameOverMessage>();
-            var client2GameOverTask = client2.EventRouter.Await<GameOverMessage>();
+            var client1GameOverTask = client1.EventRouter.GetAwaitable<GameOverMessage>();
+            var client2GameOverTask = client2.EventRouter.GetAwaitable<GameOverMessage>();
 
             var response = await client1.SendRequest(new DamageMessage()
             {

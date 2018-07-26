@@ -5,6 +5,7 @@ using PowerArgs.Games;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace DemoGame
 {
@@ -12,25 +13,32 @@ namespace DemoGame
     {
         protected override SceneFactory SceneFactory => new SceneFactory(new List<ItemReviver>()
         {
+            new CutSceneReviver(),
+            new TriggerReviver(),
+            new TextEffectReviver(nameof(BurnIn)),
             new MainCharacterReviver(),
+            new LooseWeaponReviver(),
+            new FriendlyReviver(),
+            new EnemyReviver(),
+            new PortalReviver(),
+            new WaypointReviver(),
+            new CeilingReviver(),
+            new DoorReviver(),
+            new WallReviver()
         });
-
         public override Dictionary<string, Level> Levels => new Dictionary<string, Level>()
         {
             {
                 "default",
-                new Level()
-                {
-                    Items = new List<LevelItem>()
-                    {
-                        new LevelItem(){ Width=1, Height=1, Tags = new List<string>(){ "main-character" }  }
-                    }
-                }
+                new GeneratedLevels.MultiPlayerLevel()
             }
         };
 
         private MultiPlayerClient client;
-        private RemoteCharacter opponent;
+        private List<RemoteCharacter> opponents = new List<RemoteCharacter>();
+        private Lifetime gameLifetime;
+        private string server = "adamab2018";
+
         public DemoMultiPlayerGameApp()
         {
             this.RequiredWidth = 102;
@@ -72,129 +80,270 @@ namespace DemoGame
             });
         }
 
-        private Lifetime gameLifetime;
+        private static bool isStartup = true;
+        protected override void AfterLevelLoaded(Level l)
+        {
+            QueueAction(() => this.ScenePanel.IsVisible = false);
+            MainCharacter.ResizeTo(0, 0);
+            MainCharacter.Inventory.Items.Add(new RPGLauncher() { AmmoAmount = 100 });
+            OrchestrateGame();
+        }
 
         private async void OrchestrateGame()
         {
-            gameLifetime = new Lifetime();
-            var username = (await Dialog.ShowRichTextInput("What is your name?".ToConsoleString(), allowEscapeToCancel: false, initialValue: Environment.MachineName.ToConsoleString() ).AsAwaitable()).ToString();
-
-            var choice = await Dialog.ShowMessage("Choose your adventure".ToConsoleString(), allowEscapeToCancel: false, buttons: new DialogButton[]
+            if(isStartup)
             {
-                new DialogButton(){ DisplayText = "Start a server".ToConsoleString() },
-                new DialogButton(){ DisplayText = "Connect to server".ToConsoleString() },
+         //       await ShowLogo();
+                isStartup = false;
+            }
+
+            using (gameLifetime = new Lifetime())
+            {
+                gameLifetime.OnDisposed(()=>Sound.Play("GameOver"));
+
+                if (await IsServerPrompt())
+                {
+                    await OrchestrateServerMode();
+                }
+                else
+                {
+                    var serverInfo = await CollectServerInfoFromUser();
+                    await ConnectToRemoteServer(serverInfo);
+                }
+            }
+        }
+
+        private async Task ShowLogo()
+        {
+            Promise introPromise = null;
+            await QueueAction(() =>
+            {
+                var logo = LayoutRoot.Add(new PowerArgsGamesIntro()).CenterBoth();
+                introPromise = logo.Play();
+                introPromise.Then(() =>
+                {
+                    LayoutRoot.Controls.Remove(logo);
+                });
             }).AsAwaitable();
 
-            if(choice.DisplayText.ToString() == "Start a server")
-            {
-                StartLocalServer(username);
-            }
-            else
-            {
-                var serverInfo = new ServerInfo { Server = "adamab2018", Port = 8080  };
+            await introPromise.AsAwaitable();
+        }
 
+        private async Task OrchestrateServerMode()
+        {
+            var numPlayers = await PromptForNumberOfPlayers();
+
+            // first initialize the server
+            var socketServer = new SocketServerNetworkProvider(8080);
+            var server = new MultiPlayerServer(socketServer);
+            await QueueAction(() => LayoutRoot.Add(new MultiPlayerServerInfoControl(server) { Width = 50 }).DockToRight().FillVertically()).AsAwaitable();
+            this.OnDisposed(server.Dispose);
+            var deathmatch = new Deathmatch(new MultiPlayerContestOptions() { MaxPlayers = numPlayers, Server = server });
+            deathmatch.Start();
+
+            // then give it a moment to spin up
+            await Task.Delay(1000);
+            
+            // then connect to it as a client
+            await ConnectToRemoteServer(socketServer.ServerInfo);
+        }
+
+        private async Task<int> PromptForNumberOfPlayers()
+        {
+            Promise<ConsoleString> p = null;
+            await QueueAction(() =>
+            {
+                p = Dialog.ShowRichTextInput("How many players?".ToConsoleString(), false, 8, "2".ToConsoleString());
+            }).AsAwaitable();
+
+            var ret = (await p.AsAwaitable()).ToString();
+
+            if(int.TryParse(ret, out int numPlayers) == false)
+            {
+                numPlayers = await PromptForNumberOfPlayers();
+            }
+
+            return numPlayers;
+        }
+
+        private async Task ConnectToRemoteServer(ServerInfo serverInfo)
+        {
+            var delayedConnectingDialog = new DelayedWaitingPrompt();
+            var connectingDialogTask = ShowConnectingDialogDelayed(serverInfo, delayedConnectingDialog);
+            Task<StartGameMessage> gameStartSignal;
+
+            try
+            {
+                client = InitializeClient();
+                gameStartSignal = client.EventRouter.GetAwaitable<StartGameMessage>();
+                await client.Connect(serverInfo).AsAwaitable();
+                delayedConnectingDialog.PromptIsStillNeeded = false;
+                await connectingDialogTask;
+                await client.SendRequest(new UserInfoMessage() { DisplayName = Environment.UserName }).AsAwaitable();
+             
+            }
+            catch (Exception ex)
+            {
+                QueueAction(() => Dialog.ShowMessage("Failed to connect".ToRed(), Cleanup));
+                return;
+            }
+            finally
+            {
+                await delayedConnectingDialog.Cleanup();
+            }
+
+            var delayedWaitingForOtherPlayersDialogSignal = new DelayedWaitingPrompt();
+            var waitingForOtherPlayersDialogTask = ShowWaitingMessage("Waiting for other players...".ToConsoleString(), delayedWaitingForOtherPlayersDialogSignal);
+
+            // If we got here then we are connected. Now we wait for the game to start
+            var gameStartInfo = await gameStartSignal;
+            delayedWaitingForOtherPlayersDialogSignal.PromptIsStillNeeded = false;
+            await waitingForOtherPlayersDialogTask;
+            await delayedWaitingForOtherPlayersDialogSignal.Cleanup();
+            await RevealPlayers(gameStartInfo);
+            QueueAction(()=>ScenePanel.IsVisible = true);
+            Sound.Play("Reload");
+            var bgMusicHandle = await Sound.Play("BackgroundMusic").AsAwaitable();
+            gameLifetime.OnDisposed(bgMusicHandle.Dispose);
+            // wait for the game to end
+            var gameOverMessage = await client.EventRouter.GetAwaitable<GameOverMessage>();
+            ShowWinnerAndCleanup(gameOverMessage);
+        }
+
+      
+        private void ShowWinnerAndCleanup(GameOverMessage message)
+        {
+            QueueAction(() =>
+            {
+                ScenePanel.IsVisible = false;
+                Dialog.ShowMessage("And the winner is: ".ToConsoleString() + message.WinnerDisplayName.ToGreen(), Cleanup);
+            });
+        }
+
+        private async Task<ServerInfo> CollectServerInfoFromUser()
+        {
+            var serverInfo = new ServerInfo { Server = "adamab2018", Port = 8080 };
+            Task dialogTask = null;
+            await QueueAction(() =>
+            {
                 var panel = new ConsolePanel() { Height = 10 };
-                var form = panel.Add(new Form(FormOptions.FromObject(serverInfo))).Fill(padding: new Thickness(1,1,1,2));
+                var form = panel.Add(new Form(FormOptions.FromObject(serverInfo))).Fill(padding: new Thickness(1, 1, 1, 2));
                 var okButton = panel.Add(new Button() { X = 1, Text = "OK".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.Enter) }).DockToBottom(padding: 1);
                 var dialog = new Dialog(panel);
                 dialog.MaxHeight = 8;
                 okButton.Pressed.SubscribeOnce(() => LayoutRoot.Controls.Remove(dialog));
-                await dialog.Show().AsAwaitable();
-                Scene.QueueAction(()=>ConnectToRemoteServer(serverInfo, username));
-            }
+                dialogTask = dialog.Show().AsAwaitable();
+            }).AsAwaitable();
+            await dialogTask;
+            return serverInfo;
         }
 
-        protected override void AfterLevelLoaded(Level l)
+        private Task RevealPlayers(StartGameMessage message)
         {
-            MainCharacter.Inventory.Items.Add(new RPGLauncher() { AmmoAmount = 100 });
-            QueueAction(OrchestrateGame);
+            return Scene.QueueAction(() =>
+            {
+                MainCharacter.ResizeTo(1, 1);
+                foreach(var opponent in opponents)
+                {
+                    opponent.ResizeTo(1, 1);
+                }
+
+                var intervalHandle = SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(20));
+                gameLifetime.OnDisposed(intervalHandle.Dispose);
+
+            }).AsAwaitable();
         }
 
-        private async void StartLocalServer(string userDisplayName)
+        private MultiPlayerClient InitializeClient()
         {
-            var socketServer = new SocketServerNetworkProvider(8080);
-            var server = new MultiPlayerServer(socketServer);
-            this.OnDisposed(server.Dispose);
-
-            var deathmatch = new Deathmatch(new MultiPlayerContestOptions() { MaxPlayers = 2, Server = server });
-            deathmatch.Start();
-            await Task.Delay(1000);
-
-            client = new MultiPlayerClient(new SocketClientNetworkProvider());
-            client.EventRouter.RegisterOnce<GameOverMessage>(OnGameOver);
+            var client = new MultiPlayerClient(new SocketClientNetworkProvider());
+            client.EventRouter.Register<NewUserMessage>(OnOpponentArrived, gameLifetime);
+            client.EventRouter.Register<BoundsMessage>(OnBoundsReceived, this);
             MainCharacter.MultiPlayerClient = client;
-            await client.Connect(socketServer.ServerInfo).AsAwaitable();
-            var opponentArrivedEvent = await client.EventRouter.Await<NewUserMessage>();
+            return client;
+        }
+
+        private void OnOpponentArrived(NewUserMessage opponentInfo)
+        {
             this.Scene.QueueAction(() =>
             {
-                opponent = new RemoteCharacter(client, opponentArrivedEvent.NewUserId);
+                var opponent = new RemoteCharacter(client, opponentInfo.NewUserId);
+                opponent.ResizeTo(0, 0);
                 opponent.Tags.Add("enemy");
-                opponent.ResizeTo(1, 1);
-                opponent.MoveTo(this.LayoutRoot.Width - 2, 0);
                 this.Scene.Add(opponent);
+                opponents.Add(opponent);
             });
-
-            await client.SendRequest(new UserInfoMessage() { DisplayName = userDisplayName }).AsAwaitable();
-            client.EventRouter.Register<BoundsMessage>(OnBoundsReceived, this);
-            var intervalHandle = SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(5));
-            gameLifetime.OnDisposed(intervalHandle.Dispose);
         }
 
-        private async void ConnectToRemoteServer(ServerInfo info, string userDisplayName)
+        private async Task ShowConnectingDialogDelayed(ServerInfo info, DelayedWaitingPrompt signal)
         {
-            MainCharacter.ResizeTo(0, 0);
-            client = new MultiPlayerClient(new SocketClientNetworkProvider());
-            client.EventRouter.RegisterOnce<GameOverMessage>(OnGameOver);
-            MainCharacter.MultiPlayerClient = client;
-            client.EventRouter.RegisterOnce<NewUserMessage>((userInfoResult) =>
-            {
-                this.Scene.QueueAction(() =>
-                {
-                    MainCharacter.ResizeTo(1, 1);
-                    MainCharacter.MoveTo(this.LayoutRoot.Width - 2, 0);
-                    opponent = new RemoteCharacter(client, userInfoResult.NewUserId);
-                    opponent.Tags.Add("enemy");
-                    opponent.ResizeTo(1, 1);
-                    this.Scene.Add(opponent);
-                });
-            });
+            await Task.Delay(signal.Delay);
 
-            client.EventRouter.RegisterOnce<StartGameMessage>((args)=>
+            if(signal.PromptIsStillNeeded == false)
             {
-                client.EventRouter.Register<BoundsMessage>(OnBoundsReceived, this);
-                var intervalHandle = SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(5));
-                gameLifetime.OnDisposed(intervalHandle.Dispose);
-            });
-
-            Dialog dialog = null;
-            QueueAction(() =>
-            {
-                dialog = new Dialog(new Label() { Text = $"Connecting to {info.Server}:{info.Port}".ToCyan() });
-                dialog.MaxHeight = 4;
-                dialog.Show();
-            });
-
-            try
-            {
-                await client.Connect(info).AsAwaitable();
-                QueueAction(() => LayoutRoot.Controls.Remove(dialog));
+                return;
             }
-            catch(Exception ex)
+            
+            await QueueAction(() =>
             {
-                QueueAction(() => LayoutRoot.Controls.Remove(dialog));
-                QueueAction(() => Dialog.ShowMessage("Failed to connect".ToRed(), ()=>
-                {
-                    Scene.Stop();
-                    Stop();
-                }));
+                signal.Dialog = new Dialog(new Label() { Text = $"Connecting to {info.Server}:{info.Port}".ToCyan() });
+                signal.Dialog.MaxHeight = 4;
+                signal.Dialog.Show();
+            }).AsAwaitable();
+        }
+
+        private async Task ShowWaitingMessage(ConsoleString message, DelayedWaitingPrompt signal)
+        {
+            await Task.Delay(signal.Delay);
+
+            if (signal.PromptIsStillNeeded == false)
+            {
                 return;
             }
 
-            await client.SendRequest(new UserInfoMessage() { DisplayName = userDisplayName }).AsAwaitable();
+            await QueueAction(() =>
+            {
+                signal.Dialog = new Dialog(new Label() { Text = message });
+                signal.Dialog.MaxHeight = 4;
+                signal.Dialog.Show();
+            }).AsAwaitable();
         }
 
-      
-        private BoundsMessage CreateLocationMessage(string clientId, SpacialElement element) =>  new BoundsMessage()
+        private void OnBoundsReceived(BoundsMessage m)
+        {
+            Scene.QueueAction(() =>
+            {
+                if (m.ClientToUpdate == client.ClientId)
+                {
+                    MainCharacter.MoveTo(m.X, m.Y);
+                }
+                else
+                {
+                    var opponent = opponents.WhereAs<RemoteCharacter>().Where(o => o.RemoteClientId == m.ClientToUpdate).Single();
+                    Scene.QueueAction(() =>
+                    {
+                        opponent?.MoveTo(m.X, m.Y);
+                    });
+                }
+            });
+        }
+
+        private async Task<bool> IsServerPrompt()
+        {
+            Task<DialogButton> dialogTask = null;
+            await QueueAction(() =>
+            {
+                dialogTask = Dialog.ShowMessage("Choose your adventure".ToConsoleString(), allowEscapeToCancel: false, buttons: new DialogButton[]
+                {
+                        new DialogButton(){ DisplayText = "Start a server".ToConsoleString() },
+                        new DialogButton(){ DisplayText = "Connect to server".ToConsoleString() },
+                }).AsAwaitable();
+            }).AsAwaitable();
+
+            return (await dialogTask).DisplayText.ToString() == "Start a server";
+        }
+
+        private BoundsMessage CreateLocationMessage(string clientId, SpacialElement element) => new BoundsMessage()
         {
             X = element.Left,
             Y = element.Top,
@@ -202,28 +351,30 @@ namespace DemoGame
             H = element.Height,
             ClientToUpdate = clientId
         };
-     
 
-        private void OnBoundsReceived(BoundsMessage m)
+        private void Cleanup()
         {
-            Scene.QueueAction(() =>
-            {
-                opponent?.MoveTo(m.X, m.Y);
-                opponent?.ResizeTo(m.W, m.H);
-            });
+            Scene.Stop();
+            ConsoleApp.Current.Stop();
+            Program.Main(new string[0]);
         }
+    }
 
-        private void OnGameOver(GameOverMessage message)
+    public class DelayedWaitingPrompt
+    {
+        public Dialog Dialog { get; set; }
+        public TimeSpan Delay { get; set; } = TimeSpan.FromMilliseconds(1000);
+        public bool PromptIsStillNeeded { get; set; } = true;
+
+        public async Task Cleanup()
         {
-            QueueAction(() =>
+            if (Dialog != null && Dialog.Application != null)
             {
-                gameLifetime.Dispose();
-                Dialog.ShowMessage("And the winner is: ".ToConsoleString() + message.WinnerDisplayName.ToGreen(), () =>
+                await Dialog.Application.QueueAction(() =>
                 {
-                    Scene.Stop();
-                    ConsoleApp.Current.Stop();
-                });
-            });
+                    Dialog.Application.LayoutRoot.Controls.Remove(Dialog);
+                }).AsAwaitable();
+            }
         }
     }
 }

@@ -8,12 +8,12 @@ namespace PowerArgs.Games
     public class RemoteCharacter : Character
     {
         private MultiPlayerMessageRouter Router => this.MultiPlayerClient.EventRouter;
-        private string remoteClientId;
+        public string RemoteClientId { get; private set; }
         private SpaceTime spaceTime;
 
         public RemoteCharacter(MultiPlayerClient client, string remoteId)
         {
-            this.remoteClientId = remoteId;
+            this.RemoteClientId = remoteId;
             this.Added.SubscribeOnce(() => { this.spaceTime = SpaceTime.CurrentSpaceTime; });
             this.Inventory.Items.Add(new RPGLauncher() { AmmoAmount = 100 });
             this.MultiPlayerClient = client;
@@ -26,7 +26,7 @@ namespace PowerArgs.Games
         {
             MultiPlayerClient.SendRequest(new DamageMessage()
             {
-                DamagedClient = this.remoteClientId,
+                DamagedClient = this.RemoteClientId,
                 NewHP = this.HealthPoints
             });
         }

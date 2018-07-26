@@ -27,16 +27,14 @@ namespace PowerArgs.Games
 
         public ServerInfo ServerInfo => new ServerInfo()
         {
-            Server = ipHostInfo.AddressList[0].ToString(),
+            Server = Dns.GetHostName(),
             Port = port,
         };
 
         public SocketServerNetworkProvider(int port)
         {
             this.port = port;
-            ipHostInfo = Dns.Resolve(Dns.GetHostName());
-            localEP = new IPEndPoint(ipHostInfo.AddressList[0], port);
-            this.ServerId = "http://" + localEP.Address + ":" + port;
+            this.ServerId = "http://" + Dns.GetHostName() + ":" + port;
         }
 
         public Promise OpenForNewConnections()
@@ -49,7 +47,7 @@ namespace PowerArgs.Games
             {
                 try
                 {
-                    listener = new TcpListener(localEP.Address, port);
+                    listener = new TcpListener(IPAddress.Any, port);
                     listener.Start();
                 }
                 catch (Exception ex)
@@ -111,12 +109,15 @@ namespace PowerArgs.Games
 
         public void SendMessageToClient(string message, MultiPlayerClientConnection client)
         {
-            var bytes = Encoding.UTF8.GetBytes(message);
-            var lengthBytes = BitConverter.GetBytes(bytes.Length);
-            var sent = (client as RemoteSocketConnection).RemoteSocket.Send(lengthBytes);
-            if (sent != lengthBytes.Length) throw new Exception("WTF");
-            sent = (client as RemoteSocketConnection).RemoteSocket.Send(bytes);
-            if (sent != bytes.Length) throw new Exception("WTF");
+            lock (client)
+            {
+                var bytes = Encoding.UTF8.GetBytes(message);
+                var lengthBytes = BitConverter.GetBytes(bytes.Length);
+                var sent = (client as RemoteSocketConnection).RemoteSocket.Send(lengthBytes);
+                if (sent != lengthBytes.Length) throw new Exception("WTF");
+                sent = (client as RemoteSocketConnection).RemoteSocket.Send(bytes);
+                if (sent != bytes.Length) throw new Exception("WTF");
+            }
         }
 
         protected override void DisposeManagedResources() { }

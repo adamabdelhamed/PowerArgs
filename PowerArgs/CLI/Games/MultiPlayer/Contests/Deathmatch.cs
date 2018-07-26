@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Threading;
 
 namespace PowerArgs.Games
 {
@@ -55,7 +56,29 @@ namespace PowerArgs.Games
 
         private void NotifyPlayersOfGameStart()
         {
-            Server.Broadcast(new StartGameMessage());
+            for(var i = 0; i < Server.Clients.Count; i++)
+            {
+                var client = Server.Clients[i];
+                var x = 5 + (i * 25);
+                var y = 5;
+                Server.SendMessage(new BoundsMessage()
+                {
+                    X = x,
+                    Y = y,
+                    W = 1,
+                    H = 1,
+                    Recipient = client.ClientId,
+                    ClientToUpdate = client.ClientId
+                });
+            }
+
+            for (var i = 0; i < Server.Clients.Count; i++)
+            {
+                var client = Server.Clients[i];
+                var x = 5 + (i * 25);
+                var y = 5;
+                Server.SendMessage(new StartGameMessage() { Recipient = client.ClientId });
+            }
         }
 
         private void StartListeningForPlayerMovement()
@@ -70,6 +93,7 @@ namespace PowerArgs.Games
         {
             Server.MessageRouter.Register<RPGFireMessage>((message) =>
             {
+                Server.Info.Fire($"{message.Sender} fired an RPG");
                 Server.Broadcast(message);
             }
           , this);
@@ -79,6 +103,7 @@ namespace PowerArgs.Games
         {
             Server.MessageRouter.Register<DamageMessage>((message) =>
             {
+                Server.Info.Fire($"Damage to {message.DamagedClient}");
                 playerHealthPoints[message.DamagedClient] = message.NewHP;
                 if(playerHealthPoints[message.DamagedClient] <= 0)
                 {

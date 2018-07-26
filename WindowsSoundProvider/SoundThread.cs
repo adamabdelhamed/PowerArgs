@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using System.Linq;
 using PowerArgs;
+using System.Reflection;
 
 namespace WindowsSoundProvider
 {
@@ -57,9 +58,16 @@ namespace WindowsSoundProvider
 
         private string soundsDir;
 
-        public SoundThread(string soundsDir = @"C:\sfx")
+        public SoundThread(string soundsDir = null)
         {
+            soundsDir = soundsDir ?? Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location),"sfx");
             this.soundsDir = soundsDir;
+
+            if(Directory.Exists(soundsDir) == false)
+            {
+                Directory.CreateDirectory(soundsDir);
+            }
+
             sync = new object();
             soundQueue = new Queue<SoundAction>();
             CurrentlyPlayingSounds = new List<SoundPlaybackLifetime>();
@@ -205,7 +213,7 @@ namespace WindowsSoundProvider
         {
             var ret = new Dictionary<string, MediaPlayer>();
 
-            foreach (var file in Directory.GetFiles(soundsDir))
+            foreach (var file in Directory.GetFiles(soundsDir).Select(f => f.ToLower()))
             {
                 if (file.ToLower().EndsWith(".wav") || file.ToLower().EndsWith(".mp3") || file.ToLower().EndsWith(".m4a"))
                 {

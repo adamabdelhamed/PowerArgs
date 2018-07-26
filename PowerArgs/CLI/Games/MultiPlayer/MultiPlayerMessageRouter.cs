@@ -31,7 +31,7 @@ namespace PowerArgs.Games
             innerRouter.RegisterOnce(typeof(T).Name, (message) => handler((T)message.Data));
         }
 
-        public async Task<T> Await<T>(TimeSpan? timeout = null) where T : MultiPlayerMessage
+        public async Task<T> GetAwaitable<T>(TimeSpan? timeout = null) where T : MultiPlayerMessage
         {
             var innerResult = await innerRouter.Await(typeof(T).Name, timeout);
             return (T)innerResult.Data;

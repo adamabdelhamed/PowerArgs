@@ -22,7 +22,7 @@ namespace PowerArgs.Games
         public MainCharacter MainCharacter { get { return Get<MainCharacter>(); } private set { Set(value); } }
 
         private ConsolePanel disposableRoot;
-        private SpacetimePanel ScenePanel { get; set; }
+        public SpacetimePanel ScenePanel { get;private set; }
 
         public abstract Dictionary<string,Level> Levels { get; }
 
@@ -135,6 +135,9 @@ namespace PowerArgs.Games
             LayoutRoot.Controls.Remove(disposableRoot);
             disposableRoot = LayoutRoot.Add(new ConsolePanel() { Background = ConsoleColor.DarkGray, Width = w + 2, Height = h + 2 }).CenterHorizontally().CenterVertically();
             ScenePanel = disposableRoot.Add(new SpacetimePanel(w, h)).Fill(padding: new Thickness(1, 1, 1, 1));
+            ScenePanel.IsVisible = false;
+            ScenePanel.SynchronizeForLifetime(nameof(ScenePanel.IsVisible), () => disposableRoot.IsVisible = ScenePanel.IsVisible, ScenePanel);
+
             ScenePanel.Background = ConsoleColor.Black;
             Scene.Start();
             LayoutRoot.Add(new FramerateControl(ScenePanel));

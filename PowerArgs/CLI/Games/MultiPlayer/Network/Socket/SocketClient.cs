@@ -23,7 +23,15 @@ namespace PowerArgs.Games
             try
             {
                 client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                client.Connect(server.Server, server.Port);
+
+                if (IPAddress.TryParse(server.Server, out IPAddress ip))
+                {
+                    client.Connect(ip, server.Port);
+                }
+                else
+                {
+                    client.Connect(server.Server, server.Port);
+                }
                 this.ClientId = (client.LocalEndPoint as IPEndPoint).Address + ":"+ (client.LocalEndPoint as IPEndPoint).Port;
                 Thread t = new Thread(ListenForMessages);
                 t.IsBackground = true;

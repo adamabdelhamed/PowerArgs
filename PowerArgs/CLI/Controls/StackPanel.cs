@@ -45,6 +45,7 @@ namespace PowerArgs.Cli
             SubscribeForLifetime(nameof(Bounds), RedoLayout, this);
             SubscribeForLifetime(nameof(Margin), RedoLayout, this);
             Controls.Added.SubscribeForLifetime(Controls_Added, this);
+            Controls.Changed.SubscribeForLifetime(RedoLayout, this);
         }
 
         private void Controls_Added(ConsoleControl obj)

@@ -133,7 +133,7 @@ namespace PowerArgs.Cli
         {
             bool focusedControlIsWithinMe = VisitControlTree((control) =>
             {
-                return control == Application.FocusManager.FocusedControl;
+                return control is Scrollbar == false && control == Application.FocusManager.FocusedControl;
             });
 
             if (focusedControlIsWithinMe)
