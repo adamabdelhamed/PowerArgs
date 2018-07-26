@@ -93,7 +93,7 @@ namespace DemoGame
         {
             if(isStartup)
             {
-         //       await ShowLogo();
+                await ShowLogo();
                 isStartup = false;
             }
 
@@ -122,7 +122,7 @@ namespace DemoGame
                 introPromise = logo.Play();
                 introPromise.Then(() =>
                 {
-                    LayoutRoot.Controls.Remove(logo);
+                    QueueAction(()=>LayoutRoot.Controls.Remove(logo));
                 });
             }).AsAwaitable();
 

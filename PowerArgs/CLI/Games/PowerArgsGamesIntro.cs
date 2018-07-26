@@ -10,7 +10,7 @@ namespace PowerArgs.Games
 {
     public class PowerArgsGamesIntro : SpacetimePanel
     {
-        private Deferred d;
+        private Deferred introDeferred;
         private static readonly Level level = new GeneratedLevels.PowerArgsGameIntroSeed();
         private SceneFactory factory;
         private Character character;
@@ -33,10 +33,10 @@ namespace PowerArgs.Games
         }
         public Promise Play()
         {
-            d = Deferred.Create();
+            introDeferred = Deferred.Create();
             SpaceTime.QueueAction(PlaySceneInternal);
             SpaceTime.Start();
-            return d.Promise;
+            return introDeferred.Promise;
         }
 
         private void PlaySceneInternal()
@@ -94,26 +94,26 @@ namespace PowerArgs.Games
             }));
         }
 
-        private void Cleanup()
+        public void Cleanup()
         {
-            lock (d)
+            if(SpaceTime.IsRunning == false)
             {
-                if(d.IsFulfilled)
+                return;
+            }
+
+            SpaceTime.QueueAction(() =>
+            {
+                if (introDeferred.IsFulfilled)
                 {
                     return;
                 }
 
                 SpaceTime.Elements.ToList().ForEach(e => e.Lifetime.Dispose());
-
-                if (SpaceTime.IsRunning)
-                {
-                    SpaceTime.Stop();
-                }
-
-                d.Resolve();
-                
-                this.Dispose();
-            }
+                SpaceTime.Stop()
+                .Then(introDeferred.Resolve)
+                .Fail((ex=> introDeferred.Reject(ex)))
+                .Finally((p)=> this.Dispose());
+            });
         }
     }
 

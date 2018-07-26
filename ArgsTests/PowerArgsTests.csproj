@@ -106,6 +106,7 @@
     <Compile Include="CLI\CliKeyboardInputQueue.cs" />
     <Compile Include="CLI\CliUnitTestConsole.cs" />
     <Compile Include="CLI\Controls\TextBoxTests.cs" />
+    <Compile Include="CLI\Games\PowerArgsIntroTests.cs" />
     <Compile Include="CLI\Games\MultiPlayerTests.cs" />
     <Compile Include="CLI\GridTests.cs" />
     <Compile Include="CLI\Observability\DeepObservable.cs" />
@@ -128,9 +129,6 @@
     </Compile>
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />
-    <Compile Include="Data\AzureTableDataSource.cs" />
-    <Compile Include="Data\DataSourceTests.cs" />
-    <Compile Include="Data\TestLoadMoreDataSource.cs" />
     <Compile Include="MultipleFactoredOutActionsTests.cs" />
     <Compile Include="NewAwesomeTabCompletionTests.cs" />
     <Compile Include="Pages\PageStackTests.cs" />

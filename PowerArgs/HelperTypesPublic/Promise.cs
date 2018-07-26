@@ -207,21 +207,17 @@ namespace PowerArgs
             }
         }
 
-        public Task AsAwaitable()
+        public async Task AsAwaitable()
         {
-            Func<Task> ret = new Func<Task>(async () =>
+            while (myDeferred.IsFulfilled == false)
             {
-                while (myDeferred.IsFulfilled == false)
-                {
-                    await Task.Delay(1);
-                }
+                await Task.Delay(1);
+            }
 
-                if (myDeferred.Exception != null)
-                {
-                    throw new PromiseWaitException(myDeferred.Exception);
-                }
-            });
-            return ret();
+            if (myDeferred.Exception != null)
+            {
+                throw new PromiseWaitException(myDeferred.Exception);
+            }
         }
 
         public static Promise WhenAll(List<Promise> others)

@@ -201,6 +201,57 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Schedules the given async action for work on the UI thread.
+        /// </summary>
+        /// <param name="asyncAction">the async work to do</param>
+        /// <returns>an async task</returns>
+        public async Task QueueActionAsync(Func<Task> asyncAction)
+        {
+            await QueueActionAsync<bool>(async () =>
+            {
+                await asyncAction();
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// Schedules the given async action for work on the UI thread.
+        /// </summary>
+        /// <typeparam name="T">the expected result of the work</typeparam>
+        /// <param name="asyncAction">the async work to do</param>
+        /// <returns>an async result of type t</returns>
+        public async Task<T> QueueActionAsync<T>(Func<Task<T>> asyncAction)
+        {
+            var done = false;
+            Exception toForward = null;
+            T ret = default(T);
+            await QueueAction(async () =>
+            {
+                try
+                {
+                    ret = await asyncAction();
+                }
+                catch (Exception ex)
+                {
+                    toForward = ex;
+                }
+                done = true;
+            }).AsAwaitable();
+
+            while (done == false)
+            {
+                await Task.Delay(1);
+            }
+
+            if (toForward != null)
+            {
+                throw new PromiseWaitException(toForward);
+            }
+
+            return ret;
+        }
+
+        /// <summary>
         /// Queues the given message for processing on the pump thread
         /// </summary>
         /// <param name="pumpMessage">the message that will be processed in order on the pump thread</param>
@@ -244,39 +295,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        /// <summary>
-        /// Queues up work that is to be scheduled only after the given task completes
-        /// </summary>
-        /// <param name="t">the task to await before scheduling the work</param>
-        /// <param name="action">the work that will be placed in the work queue once the given task has completed</param>
-        /// <returns>A promise that will resolve once the scheduled work completes</returns>
-        public Promise QueueAsyncAction(Task t, Action<Task> action)
-        {
-            var d = Deferred.Create();
-            t.ContinueWith((tPrime) =>
-            {
-                QueueAction(new PumpMessage(() => { action(tPrime); }) { Deferred = d });
-            });
-            return d.Promise;
-        }
-
-        /// <summary>
-        /// Queues up work that is to be scheduled only after the given task completes
-        /// </summary>
-        /// <typeparam name="TResult">The type of object produced by the task to wait for</typeparam>
-        /// <param name="t">the task to await before scheduling the work</param>
-        /// <param name="action">the work that will be placed in the work queue once the given task has completed</param>
-        /// <returns>A promise that will resolve once the scheduled work completes</returns>
-        public Promise QueueAsyncAction<TResult>(Task<TResult> t, Action<Task<TResult>> action)
-        {
-            var d = Deferred.Create();
-            t.ContinueWith((tPrime) =>
-            {
-                QueueAction(new PumpMessage(() => { action(tPrime); }) { Deferred = d });
-            });
-
-            return d.Promise;
-        }
+       
 
         /// <summary>
         /// Schedules the given action for periodic processing by the message pump
