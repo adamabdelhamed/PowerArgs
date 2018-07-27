@@ -19,7 +19,7 @@ namespace PowerArgs.Games
 
             if (Holder.MultiPlayerClient != null && Holder is MainCharacter)
             {
-                Holder.MultiPlayerClient.SendMessage(
+                Holder.MultiPlayerClient.TrySendMessage(
                     new RPGFireMessage() { X = Holder.Left, Y = Holder.Top, Angle = angle });
             }
 

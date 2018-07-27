@@ -23,7 +23,5 @@ namespace PowerArgs.Games
         {
             this.Options = options;
         }
-
-        public abstract void Start();
     }
 }

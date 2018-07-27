@@ -12,7 +12,6 @@ namespace PowerArgs.Games
 
         public string ServerId { get; set; }
         public Event<MultiPlayerClientConnection> ClientConnected { get; private set; } = new Event<MultiPlayerClientConnection>();
-        public Event<MultiPlayerClientConnection> ConnectionLost { get; private set; } = new Event<MultiPlayerClientConnection>();
         public Event<string> MessageReceived { get; private set; } = new Event<string>();
  
         private Dictionary<string, InProcClientNetworkProvider> inProcClients = new Dictionary<string, InProcClientNetworkProvider>();
@@ -100,8 +99,9 @@ namespace PowerArgs.Games
         }
     }
 
-    public class InProcClientNetworkProvider : Disposable, IClientNetworkProvider
+    public class InProcClientNetworkProvider : Lifetime, IClientNetworkProvider
     {
+        public Event<Exception> Disconnected { get; private set; } = new Event<Exception>();
         public string ClientId { get; private set; }
 
         public InProcClientNetworkProvider(string id)

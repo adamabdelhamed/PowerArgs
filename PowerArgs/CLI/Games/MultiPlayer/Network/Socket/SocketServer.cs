@@ -14,7 +14,6 @@ namespace PowerArgs.Games
         public string ServerId { get; private set; }
 
         public Event<MultiPlayerClientConnection> ClientConnected { get; private set; } = new Event<MultiPlayerClientConnection>();
-        public Event<MultiPlayerClientConnection> ConnectionLost { get; private set; } = new Event<MultiPlayerClientConnection>();
         public Event<string> MessageReceived { get; private set; } = new Event<string>();
 
         private Dictionary<string, RemoteSocketConnection> connections = new Dictionary<string, RemoteSocketConnection>();
@@ -125,6 +124,7 @@ namespace PowerArgs.Games
 
     public class RemoteSocketConnection : MultiPlayerClientConnection
     {
+        public Event<Exception> UnexpectedDisconnect { get; private set; } = new Event<Exception>();
         public Socket RemoteSocket { get; set; }
 
         public Event<string> MessageReceived { get; set; }
@@ -147,6 +147,11 @@ namespace PowerArgs.Games
                     var messageText = Encoding.UTF8.GetString(buffer, 0, messageLength);
                     MessageReceived.Fire(messageText);
                 }
+            }
+            catch(Exception ex)
+            {
+                UnexpectedDisconnect.Fire(ex);
+                this.Dispose();
             }
             finally
             {

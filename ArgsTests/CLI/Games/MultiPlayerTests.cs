@@ -55,10 +55,10 @@ namespace ArgsTests.CLI.Games
 
         private async Task TestDeathmatch(MultiPlayerServer server, ServerInfo serverInfo, MultiPlayerClient client1, MultiPlayerClient client2, int delayMs)
         {
-            server.Undeliverable.SubscribeForLifetime((args) =>
-            {
-                Assert.Fail("There was an undeliverable message");
-            }, server);
+            Exception undeliverableException = null;
+            Exception deathmatchException = null;
+
+            server.Undeliverable.SubscribeForLifetime((args) => undeliverableException = args.Exception, server);
 
             var deathmatch = new Deathmatch(new MultiPlayerContestOptions()
             {
@@ -66,13 +66,16 @@ namespace ArgsTests.CLI.Games
                 Server = server
             });
 
+            deathmatch.OrchestrationFailed.SubscribeOnce((ex) => deathmatchException = ex);
+
             // the game starts
-            deathmatch.Start();
-            await Task.Delay(delayMs);
+            await deathmatch.Start();
+
             // both clients start waiting for the start of the game
             var client1StartTask = client1.EventRouter.GetAwaitable<StartGameMessage>();
             var client2StartTask = client2.EventRouter.GetAwaitable<StartGameMessage>();
-
+            
+            // both clients get notified of each other's presence
             var client1SeesClient2Task = client1.EventRouter.GetAwaitable<NewUserMessage>();
             var client2SeesClient1Task = client2.EventRouter.GetAwaitable<NewUserMessage>();
 
@@ -110,6 +113,8 @@ namespace ArgsTests.CLI.Games
             client2.Dispose();
             server.Dispose();
             Assert.IsTrue(deathmatch.IsExpired);
+            Assert.IsNull(undeliverableException);
+            Assert.IsNull(deathmatchException);
         }
 
         private async Task TestRequestResponse(MultiPlayerServer server, ServerInfo serverInfo, MultiPlayerClient client)

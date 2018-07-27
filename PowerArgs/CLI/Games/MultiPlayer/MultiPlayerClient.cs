@@ -57,52 +57,13 @@ namespace PowerArgs.Games
         public MultiPlayerMessageRouter EventRouter { get; private set; } = new MultiPlayerMessageRouter();
         public string ClientId => clientNetworkProvider.ClientId;
 
+        public Event<Exception> Disconnected => clientNetworkProvider.Disconnected;
+
         private Dictionary<string, PendingRequest> pendingRequests = new Dictionary<string, PendingRequest>();
 
         private Timer timeoutChecker;
 
-        public Promise Connect(ServerInfo server)
-        {
-            var ret = clientNetworkProvider.Connect(server);
-            ret.Then(() =>
-            {
-                isConnected = true;
-                timeoutChecker?.Dispose();
-                timeoutChecker = new Timer((o)=> EvaluateTimeouts(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
-                this.OnDisposed(timeoutChecker.Dispose);
-            });
-            return ret;
-        }
-
-        public void SendMessage(MultiPlayerMessage message)
-        {
-            message.Sender = ClientId;
-            clientNetworkProvider.SendMessage(message.Serialize());
-        }
-
       
-        public Promise<MultiPlayerMessage> SendRequest(MultiPlayerMessage message, TimeSpan? timeout = null)  
-        {
-            message.Sender = ClientId;
-            message.RequestId = Guid.NewGuid().ToString();
-            var pendingRequest = new PendingRequest()
-            {
-                Id = message.RequestId,
-                ResponseDeferred = Deferred<MultiPlayerMessage>.Create(),
-            };
-
-            if(timeout.HasValue)
-            {
-                pendingRequest.Timeout = timeout.Value;
-            }
-            lock (pendingRequests)
-            {
-                pendingRequests.Add(message.RequestId, pendingRequest);
-            }
-            SendMessage(message);
-            return pendingRequest.ResponseDeferred.Promise;
-        }
-
         private IClientNetworkProvider clientNetworkProvider;
         private bool isConnected;
         public MultiPlayerClient(IClientNetworkProvider networkProvider)
@@ -117,13 +78,78 @@ namespace PowerArgs.Games
             {
                 if (isConnected)
                 {
-                    SendMessage(new LeftMessage());
+                    TrySendMessage(new LeftMessage() { ClientWhoLeft = this.ClientId });
                 }
                 this.clientNetworkProvider.Dispose();
             });
 
             EventRouter.Register<Ack>(OnAck, this);
         }
+
+        public Promise Connect(ServerInfo server)
+        {
+            var ret = clientNetworkProvider.Connect(server);
+            ret.Then(() =>
+            {
+                isConnected = true;
+                timeoutChecker?.Dispose();
+                timeoutChecker = new Timer((o) => EvaluateTimeouts(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
+                this.OnDisposed(timeoutChecker.Dispose);
+            });
+            return ret;
+        }
+
+        public void SendMessage(MultiPlayerMessage message)
+        {
+            message.Sender = ClientId;
+            clientNetworkProvider.SendMessage(message.Serialize());
+        }
+
+        public bool TrySendMessage(MultiPlayerMessage message)
+        {
+            try
+            {
+                message.Sender = ClientId;
+                clientNetworkProvider.SendMessage(message.Serialize());
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public Promise<MultiPlayerMessage> SendRequest(MultiPlayerMessage message, TimeSpan? timeout = null)
+        {
+            try
+            {
+                message.Sender = ClientId;
+                message.RequestId = Guid.NewGuid().ToString();
+                var pendingRequest = new PendingRequest()
+                {
+                    Id = message.RequestId,
+                    ResponseDeferred = Deferred<MultiPlayerMessage>.Create(),
+                };
+
+                if (timeout.HasValue)
+                {
+                    pendingRequest.Timeout = timeout.Value;
+                }
+                lock (pendingRequests)
+                {
+                    pendingRequests.Add(message.RequestId, pendingRequest);
+                }
+                SendMessage(message);
+                return pendingRequest.ResponseDeferred.Promise;
+            }
+            catch (Exception ex)
+            {
+                var d = Deferred<MultiPlayerMessage>.Create();
+                d.Reject(ex);
+                return d.Promise;
+            }
+        }
+
 
         private void EvaluateTimeouts()
         {

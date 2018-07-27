@@ -1,46 +1,54 @@
 ﻿using PowerArgs.Cli;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
 
     public class Deathmatch : MultiPlayerContest<MultiPlayerContestOptions>
     {
+        public Event<Exception> OrchestrationFailed { get; private set; } = new Event<Exception>();
         private Dictionary<string, float> playerHealthPoints = new Dictionary<string, float>();
 
-        public Deathmatch(MultiPlayerContestOptions options) : base(options)
+        public Deathmatch(MultiPlayerContestOptions options) : base(options) { }
+
+        public Task Start()
         {
- 
+            StartGameInternal();
+            return Options.Server.OpenForNewConnections().AsAwaitable();
         }
+       
 
-        public override void Start() => OrchestrateGameAsync();
-
-        private async void OrchestrateGameAsync()
+        private async void StartGameInternal()
         {
-            await WaitUntilFull();
-            InitializeHealthPoints();
-            NotifyPlayersOfGameStart();
-            StartListeningForPlayerMovement();
-            StartListeningForPlayerFiring();
-            StartListeningForDamageRequests();
+            try
+            {
+                await WaitUntilFull();
+                InitializeHealthPoints();
+                NotifyPlayersOfGameStart();
+                StartListeningForPlayerMovement();
+                StartListeningForPlayerFiring();
+                StartListeningForDamageRequests();
+            }
+            catch (Exception ex)
+            {
+                OrchestrationFailed.Fire(ex);
+            }
         }
-
+   
         private async Task WaitUntilFull()
         {
             var lobbyLifetime = new Lifetime();
-            this.Options.Server.Clients.Changed.SubscribeForLifetime(() =>
+            this.Options.Server.Connections.Changed.SubscribeForLifetime(() =>
             {
-                if(Options.Server.Clients.Count == Options.MaxPlayers)
+                if(Options.Server.Connections.Count == Options.MaxPlayers)
                 {
                     lobbyLifetime.Dispose();
                 }
             }, lobbyLifetime);
-            await Options.Server.OpenForNewConnections().AsAwaitable();
+          
             await lobbyLifetime.AwaitEndOfLifetime();
             await Options.Server.CloseForNewConnections().AsAwaitable();
         }
@@ -48,7 +56,7 @@ namespace PowerArgs.Games
         private void InitializeHealthPoints()
         {
             playerHealthPoints.Clear();
-            foreach (var client in this.Options.Server.Clients)
+            foreach (var client in this.Options.Server.Connections)
             {
                 playerHealthPoints.Add(client.ClientId, 100);
             }
@@ -56,37 +64,30 @@ namespace PowerArgs.Games
 
         private void NotifyPlayersOfGameStart()
         {
-            for(var i = 0; i < Server.Clients.Count; i++)
+            var i = 0;
+            Server.TryBroadcast((connection) =>
             {
-                var client = Server.Clients[i];
-                var x = 5 + (i * 25);
-                var y = 5;
-                Server.SendMessage(new BoundsMessage()
+                i++;
+                return new BoundsMessage()
                 {
-                    X = x,
-                    Y = y,
+                    X = 5 + (i * 25),
+                    Y = 5,
                     W = 1,
                     H = 1,
-                    Recipient = client.ClientId,
-                    ClientToUpdate = client.ClientId
-                });
-            }
+                    Recipient = connection.ClientId,
+                    ClientToUpdate = connection.ClientId
+                };
+            });
 
-            for (var i = 0; i < Server.Clients.Count; i++)
-            {
-                var client = Server.Clients[i];
-                var x = 5 + (i * 25);
-                var y = 5;
-                Server.SendMessage(new StartGameMessage() { Recipient = client.ClientId });
-            }
+            Server.TryBroadcast((connection) => new StartGameMessage() { Recipient = connection.ClientId });
         }
 
         private void StartListeningForPlayerMovement()
         {
-            Server.MessageRouter.Register< BoundsMessage>((message) =>
+            Server.MessageRouter.Register<BoundsMessage>((message) =>
             {
-                Server.Broadcast(message);
-            } , this);
+                Server.TryBroadcast((connection) => message.Sender == connection.ClientId ? null : message);
+            }, this);
         }
 
         private void StartListeningForPlayerFiring()
@@ -94,7 +95,7 @@ namespace PowerArgs.Games
             Server.MessageRouter.Register<RPGFireMessage>((message) =>
             {
                 Server.Info.Fire($"{message.Sender} fired an RPG");
-                Server.Broadcast(message);
+                Server.TryBroadcast((connection) => message.Sender == connection.ClientId ? null : message);
             }
           , this);
         }
@@ -108,22 +109,22 @@ namespace PowerArgs.Games
                 if(playerHealthPoints[message.DamagedClient] <= 0)
                 {
                     playerHealthPoints.Remove(message.DamagedClient);
-                    Server.Broadcast(new DeadMessage() { DeadClient = message.DamagedClient });
+                    Server.Broadcast((connection) => new DeadMessage() { DeadClient = message.DamagedClient });
 
                     if(playerHealthPoints.Count == 1)
                     {
-                        var info = Server.Clients.Where(c => c.ClientId == playerHealthPoints.First().Key).Single();
+                        var info = Server.Connections.Where(c => c.ClientId == playerHealthPoints.First().Key).Single();
 
-                        Server.Broadcast(new GameOverMessage() { WinnerId = info.ClientId, WinnerDisplayName = info.DisplayName });
+                        Server.TryBroadcast((connection) => new GameOverMessage() { WinnerId = info.ClientId, WinnerDisplayName = info.DisplayName });
                         this.Dispose();
                     }
                 }
                 else
                 {
-                    Server.Broadcast(new NewHPMessage() { NewHP = message.NewHP, ClientWithNewHP = message.DamagedClient });
+                    Server.TryBroadcast((connection)=>new NewHPMessage() { NewHP = message.NewHP, ClientWithNewHP = message.DamagedClient });
                 }
 
-                Server.Respond(new Ack() { RequestId = message.RequestId, Recipient = message.Sender });
+                Server.TryRespond(new Ack() { RequestId = message.RequestId, Recipient = message.Sender });
             }, this);
         }
     }

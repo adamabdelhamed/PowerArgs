@@ -11,7 +11,7 @@ namespace PowerArgs.Games
 {
     public class SocketClientNetworkProvider : Lifetime, IClientNetworkProvider
     {
-        public Event<Exception> ListenException { get; private set; } = new Event<Exception>();
+        public Event<Exception> Disconnected { get; private set; } = new Event<Exception>();
         public string ClientId { get; private set; }
 
         public Event<string> MessageReceived { get; private set; } = new Event<string>();
@@ -64,19 +64,27 @@ namespace PowerArgs.Games
             }
             catch(Exception ex)
             {
-                ListenException.Fire(ex);
+                Disconnected.Fire(ex);
                 this.Dispose();
             }
         }
 
         public void SendMessage(string message)
         {
-            var bytes = Encoding.UTF8.GetBytes(message);
-            var lengthBytes = BitConverter.GetBytes(bytes.Length);
-            var sent = client.Send(lengthBytes);
-            if (sent != lengthBytes.Length) throw new Exception("WTF");
-            sent = client.Send(bytes);
-            if (sent != bytes.Length) throw new Exception("WTF");
+            try
+            {
+                var bytes = Encoding.UTF8.GetBytes(message);
+                var lengthBytes = BitConverter.GetBytes(bytes.Length);
+                var sent = client.Send(lengthBytes);
+                if (sent != lengthBytes.Length) throw new Exception("WTF");
+                sent = client.Send(bytes);
+                if (sent != bytes.Length) throw new Exception("WTF");
+            }
+            catch (Exception ex)
+            {
+                Disconnected.Fire(ex);
+                Dispose();
+            }
         }
 
         protected override void DisposeManagedResources()

@@ -1,5 +1,6 @@
 ﻿using PowerArgs.Cli;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -25,8 +26,26 @@ namespace PowerArgs.Games
         public Event<string> Info { get; private set; } = new Event<string>();
         public Event<string> Warning { get; private set; } = new Event<string>();
         public Event<string> Error { get; private set; } = new Event<string>();
-
+        public Event<UndeliverableEvent> Undeliverable { get; private set; } = new Event<UndeliverableEvent>();
         public string ServerId => serverNetworkProvider.ServerId;
+        public ObservableCollection<MultiPlayerClientConnection> Connections { get; private set; } = new ObservableCollection<MultiPlayerClientConnection>();
+        public MultiPlayerMessageRouter MessageRouter { get; private set; } = new MultiPlayerMessageRouter();
+
+        private object connectionsLock = new object();
+        private IServerNetworkProvider serverNetworkProvider;
+
+        public MultiPlayerServer(IServerNetworkProvider networkProvider)
+        {
+            this.serverNetworkProvider = networkProvider;
+            this.OnDisposed(this.serverNetworkProvider.Dispose);
+            this.serverNetworkProvider.ClientConnected.SubscribeForLifetime(OnClientConnected, this);
+            this.serverNetworkProvider.MessageReceived.SubscribeForLifetime(OnRawMessageReceived, this);
+            this.MessageRouter.Register<PingMessage>(OnPing, this);
+            this.MessageRouter.Register<LeftMessage>(OnUserLeftGracefully, this);
+            this.MessageRouter.Register<UserInfoMessage>(OnReceivedUserInfo, this);
+            this.MessageRouter.NotFound.SubscribeForLifetime(OnNotFound, this);
+        }
+
         public Promise OpenForNewConnections()
         {
             Info.Fire("Opening...");
@@ -42,72 +61,169 @@ namespace PowerArgs.Games
             Info.Fire("Closed for connections");
             return ret;
         }
-        public ObservableCollection<MultiPlayerClientConnection> Clients { get; private set; } = new ObservableCollection<MultiPlayerClientConnection>();
-        public MultiPlayerMessageRouter MessageRouter { get; private set; } = new MultiPlayerMessageRouter();
-        public Event<UndeliverableEvent> Undeliverable { get; private set; } = new Event<UndeliverableEvent>();
 
-        private IServerNetworkProvider serverNetworkProvider;
-
-        public MultiPlayerServer(IServerNetworkProvider networkProvider)
+        public bool TrySendMessage(MultiPlayerMessage message)
         {
-            this.serverNetworkProvider = networkProvider;
-            this.serverNetworkProvider.ClientConnected.SubscribeForLifetime(OnClientConnected, this);
-            this.serverNetworkProvider.ConnectionLost.SubscribeForLifetime(OnConnectionLost, this);
-            this.serverNetworkProvider.MessageReceived.SubscribeForLifetime((messageText) =>
+            try
             {
-                var hydratedMessage = MultiPlayerMessage.Deserialize(messageText);
-                MessageRouter.Route(hydratedMessage.GetType().Name, hydratedMessage);
-            }, this);
-            this.OnDisposed(this.serverNetworkProvider.Dispose);
+                SendMessage(message);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
 
-            this.MessageRouter.Register<PingMessage>(Ping, this);
-            this.MessageRouter.Register<UserInfoMessage>(SetUserInfo, this);
-            this.MessageRouter.NotFound.SubscribeForLifetime(NotFound, this);
+        public bool TryBroadcast(Func<MultiPlayerClientConnection, MultiPlayerMessage> messageEval)
+        {
+            var ret = true;
+            foreach (var recipient in Connections)
+            {
+                var message = messageEval(recipient);
+                if (message != null)
+                {
+                    message.Recipient = recipient.ClientId;
+                    if (TrySendMessage(message) == false) ret = false;
+                }
+            }
+            return ret;
+        }
+
+        public bool TryRespond(MultiPlayerMessage response)
+        {
+            if (response.RequestId == null)
+            {
+                throw new ArgumentNullException("RequestId cannot be null");
+            }
+
+            return TrySendMessage(response);
         }
 
         public void SendMessage(MultiPlayerMessage message)
         {
-            SendMessageInternal(message, GetClient(message.Recipient));
+            message.Sender = message.Sender ?? ServerId;
+            lock (connectionsLock)
+            {
+                var client = GetClient(message.Recipient);
+
+                try
+                {
+                    if (client == null)
+                    {
+                        throw new Exception($"The client {message.Recipient} is not connected at the moment");
+                    }
+                    else
+                    {
+                        serverNetworkProvider.SendMessageToClient(message.Serialize(), client);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Error.Fire(ex.ToString());
+                    Undeliverable.Fire(new UndeliverableEvent()
+                    {
+                        Message = message,
+                        Exception = ex
+                    });
+                    throw;
+                }
+            }
         }
 
-        public void Broadcast(MultiPlayerMessage message)
+        public void Broadcast(Func<MultiPlayerClientConnection, MultiPlayerMessage> messageEval)
         {
-            foreach (var recipient in Clients.Where(c => c.ClientId != message.Sender))
+            var exceptions = new List<Exception>();
+            lock (connectionsLock)
             {
-                SendMessageInternal(message, recipient);
+                foreach (var recipient in Connections)
+                {
+                    var message = messageEval(recipient);
+                    if (message == null)
+                    {
+                        continue;
+                    }
+                    message.Recipient = recipient.ClientId;
+                    try
+                    {
+                        SendMessage(message);
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptions.Add(ex);
+                    }
+                }
+            }
+            if (exceptions.Count > 0)
+            {
+                throw new AggregateException(exceptions);
             }
         }
 
         public void Respond(MultiPlayerMessage response)
         {
-            if(response.RequestId == null)
+            if (response.RequestId == null)
             {
                 throw new ArgumentNullException("RequestId cannot be null");
             }
 
-            var requester = Clients.Where(c => c.ClientId == response.Recipient).SingleOrDefault();
-            SendMessageInternal(response, requester);
+            SendMessage(response);
         }
- 
-        private void Ping(PingMessage pingMessage)
+
+        private void OnClientConnected(MultiPlayerClientConnection newClient)
         {
-            Info.Fire("Received ping from "+pingMessage.Sender);
-            if (pingMessage.Delay > 0)
+            lock (connectionsLock)
             {
-                Thread.Sleep(pingMessage.Delay);
+                var existingConnections = Connections.ToArray();
+                Connections.Add(newClient);
+                Info.Fire($"Client {newClient.ClientId} arrived");
+                foreach (var existingClient in existingConnections)
+                {
+                    SendMessage(new NewUserMessage() { NewUserId = newClient.ClientId, Recipient = existingClient.ClientId });
+                    SendMessage(new NewUserMessage() { NewUserId = existingClient.ClientId, Recipient = newClient.ClientId });
+                }
             }
-            var requester = GetClient(pingMessage.Sender);
+
+            newClient.OnDisposed(() =>
+            {
+                lock (connectionsLock)
+                {
+                    if (Connections.Remove(newClient))
+                    {
+                        Warning.Fire($"Client {newClient.ClientId} was disconnected");
+                        TryBroadcast((conn) => new LeftMessage() { ClientWhoLeft = newClient.ClientId });
+                    }
+                }
+            });
+        }
+
+        private void OnRawMessageReceived(string messageText)
+        {
+            var hydratedMessage = MultiPlayerMessage.Deserialize(messageText);
+            MessageRouter.Route(hydratedMessage.GetType().Name, hydratedMessage);
+        }
+
+        private void OnPing(PingMessage pingMessage)
+        {
+            Info.Fire("Received ping from " + pingMessage.Sender);
+            if (pingMessage.Delay > 0) Thread.Sleep(pingMessage.Delay);
             Respond(new Ack() { Recipient = pingMessage.Sender, RequestId = pingMessage.RequestId });
         }
-        private void SetUserInfo(UserInfoMessage message)
+        private void OnReceivedUserInfo(UserInfoMessage message)
         {
             Info.Fire("Received user info from " + message.DisplayName);
-            var requester = GetClient(message.Sender);
-            requester.DisplayName = message.DisplayName;
+            lock (connectionsLock)
+            {
+                var requester = GetClient(message.Sender);
+                if (requester != null)
+                {
+                    requester.DisplayName = message.DisplayName;
+                }
+            }
             Respond(new Ack() { Recipient = message.Sender, RequestId = message.RequestId });
         }
 
-        private void NotFound(MultiPlayerMessage message)
+        private void OnNotFound(MultiPlayerMessage message)
         {
             Warning.Fire($"Message not handled from {message.Sender}: {message.GetType().Name}");
             if (message.RequestId != null)
@@ -116,47 +232,20 @@ namespace PowerArgs.Games
             }
         }
 
-
-        private MultiPlayerClientConnection GetClient(string id) => Clients.Where(c => c.ClientId == id).Single();
-
-        private void OnClientConnected(MultiPlayerClientConnection newClient)
+        private void OnUserLeftGracefully(LeftMessage message)
         {
-            lock (Clients)
+            lock (connectionsLock)
             {
-                foreach (var existingClient in Clients)
+                var client = GetClient(message.Sender);
+                if (client != null && Connections.Remove(client))
                 {
-                    SendMessageInternal(new NewUserMessage() { NewUserId = newClient.ClientId }, existingClient);
-                    SendMessageInternal(new NewUserMessage() { NewUserId = existingClient.ClientId }, newClient);
+                    Warning.Fire($"Client {client.ClientId} left gracefully");
+                    TryBroadcast((conn) => new LeftMessage() { ClientWhoLeft = message.Sender });
                 }
-                Clients.Add(newClient);
-                Info.Fire($"Client {newClient.ClientId} arrived");
             }
         }
 
-        private void OnConnectionLost(MultiPlayerClientConnection client)
-        {
-            Clients.Remove(client);
-            Info.Fire($"Client {client.ClientId} disconnected");
-        }
-
-        private void SendMessageInternal(MultiPlayerMessage message, MultiPlayerClientConnection client)
-        {
-            message.Sender = message.Sender ?? ServerId;
-            message.Recipient = client.ClientId;
-            try
-            {
-                serverNetworkProvider.SendMessageToClient(message.Serialize(), client);
-            }
-            catch (Exception ex)
-            {
-                Error.Fire(ex.ToString());
-                Undeliverable.Fire(new UndeliverableEvent()
-                {
-                    Message = message,
-                    Exception = ex
-                });
-            }
-        }
+        private MultiPlayerClientConnection GetClient(string id) => Connections.Where(c => c.ClientId == id).SingleOrDefault();
     }
 
     public class NewUserMessage : MultiPlayerMessage { public string NewUserId { get; set; } }
@@ -167,5 +256,8 @@ namespace PowerArgs.Games
 
     public class NotFoundMessage : MultiPlayerMessage { }
 
-    public class LeftMessage : MultiPlayerMessage { }
+    public class LeftMessage : MultiPlayerMessage
+    {
+        public string ClientWhoLeft { get; set; }
+    }
 }

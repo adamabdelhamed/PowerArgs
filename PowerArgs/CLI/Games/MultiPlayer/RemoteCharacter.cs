@@ -7,8 +7,11 @@ namespace PowerArgs.Games
 {
     public class RemoteCharacter : Character
     {
+        private ObservableObject observable = new ObservableObject();
         private MultiPlayerMessageRouter Router => this.MultiPlayerClient.EventRouter;
         public string RemoteClientId { get; private set; }
+        public bool IsConnected { get => observable.Get<bool>(); set => observable.Set(value); }
+
         private SpaceTime spaceTime;
 
         public RemoteCharacter(MultiPlayerClient client, string remoteId)
@@ -20,6 +23,8 @@ namespace PowerArgs.Games
 
             this.Damaged.SubscribeForLifetime(ReportDamageToServer, this.Lifetime);
             Router.Register<RPGFireMessage>(RemoteFireRPG, this.Lifetime);
+            IsConnected = true;
+            observable.SynchronizeForLifetime(nameof(IsConnected), ()=> this.SizeOrPositionChanged.Fire(), this.Lifetime);
         }
 
         private void ReportDamageToServer()
@@ -43,6 +48,11 @@ namespace PowerArgs.Games
     [SpacialElementBinding(typeof(RemoteCharacter))]
     public class RemoteCharacterRenderer : SingleStyleRenderer
     {
-        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter('R', ConsoleColor.Red);
+        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter('R', ConsoleColor.White);
+
+        public override void OnRender()
+        {
+            Style = (Element as RemoteCharacter).IsConnected ? new ConsoleCharacter('R', ConsoleColor.Cyan) : new ConsoleCharacter('R', ConsoleColor.DarkGray);
+        }
     }
 }

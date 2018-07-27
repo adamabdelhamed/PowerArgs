@@ -9,7 +9,6 @@ namespace PowerArgs.Games
 
         // connnect / disconnect
         Event<MultiPlayerClientConnection> ClientConnected { get; }
-        Event<MultiPlayerClientConnection> ConnectionLost { get; }
 
         // listen / stop
         Promise OpenForNewConnections();
@@ -20,8 +19,9 @@ namespace PowerArgs.Games
         void SendMessageToClient(string message, MultiPlayerClientConnection client);
     }
 
-    public interface IClientNetworkProvider : IDisposable
+    public interface IClientNetworkProvider : ILifetimeManager, IDisposable
     {
+        Event<Exception> Disconnected { get;  }
         string ClientId { get; }
 
         Promise Connect(ServerInfo server);

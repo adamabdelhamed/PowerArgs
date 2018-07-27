@@ -91,25 +91,35 @@ namespace DemoGame
 
         private async void OrchestrateGame()
         {
-            if(isStartup)
+            try
             {
-                await ShowLogo();
-                isStartup = false;
+                if (isStartup)
+                {
+                    await ShowLogo();
+                    isStartup = false;
+                }
+
+                using (gameLifetime = new Lifetime())
+                {
+                    gameLifetime.OnDisposed(() => Sound.Play("GameOver"));
+
+                    if (await IsServerPrompt())
+                    {
+                        await OrchestrateServerMode();
+                    }
+                    else
+                    {
+                        var serverInfo = await CollectServerInfoFromUser();
+                        await ConnectToRemoteServer(serverInfo);
+                    }
+                }
             }
-
-            using (gameLifetime = new Lifetime())
+            catch (Exception ex)
             {
-                gameLifetime.OnDisposed(()=>Sound.Play("GameOver"));
-
-                if (await IsServerPrompt())
+                QueueAction(() =>
                 {
-                    await OrchestrateServerMode();
-                }
-                else
-                {
-                    var serverInfo = await CollectServerInfoFromUser();
-                    await ConnectToRemoteServer(serverInfo);
-                }
+                    Dialog.ShowMessage("Fatal error: " + ex.ToString().ToRed(), Cleanup);
+                });
             }
         }
 
@@ -139,11 +149,18 @@ namespace DemoGame
             await QueueAction(() => LayoutRoot.Add(new MultiPlayerServerInfoControl(server) { Width = 50 }).DockToRight().FillVertically()).AsAwaitable();
             this.OnDisposed(server.Dispose);
             var deathmatch = new Deathmatch(new MultiPlayerContestOptions() { MaxPlayers = numPlayers, Server = server });
-            deathmatch.Start();
 
-            // then give it a moment to spin up
-            await Task.Delay(1000);
-            
+
+            deathmatch.OrchestrationFailed.SubscribeOnce((ex) =>
+            {
+                QueueAction(() =>
+                {
+                    Dialog.ShowMessage("Fatal error: " + ex.ToString().ToRed(), Cleanup);
+                });
+            });
+
+            await deathmatch.Start();
+
             // then connect to it as a client
             await ConnectToRemoteServer(socketServer.ServerInfo);
         }
@@ -209,8 +226,17 @@ namespace DemoGame
             var gameOverMessage = await client.EventRouter.GetAwaitable<GameOverMessage>();
             ShowWinnerAndCleanup(gameOverMessage);
         }
+         
 
-      
+        private void OnMyClientDisconnected(Exception ex)
+        {
+            QueueAction(() =>
+            {
+                ScenePanel.IsVisible = false;
+                Dialog.ShowMessage("Disconnected from server", Cleanup);
+            });
+        }
+
         private void ShowWinnerAndCleanup(GameOverMessage message)
         {
             QueueAction(() =>
@@ -248,7 +274,10 @@ namespace DemoGame
                     opponent.ResizeTo(1, 1);
                 }
 
-                var intervalHandle = SetInterval(() => client.SendMessage(CreateLocationMessage(client.ClientId, MainCharacter)), TimeSpan.FromMilliseconds(20));
+                var intervalHandle = SetInterval(() =>
+                {
+                    client.TrySendMessage(CreateLocationMessage(client.ClientId, MainCharacter));
+                }, TimeSpan.FromMilliseconds(20));
                 gameLifetime.OnDisposed(intervalHandle.Dispose);
 
             }).AsAwaitable();
@@ -257,7 +286,9 @@ namespace DemoGame
         private MultiPlayerClient InitializeClient()
         {
             var client = new MultiPlayerClient(new SocketClientNetworkProvider());
+            client.Disconnected.SubscribeOnce(OnMyClientDisconnected);
             client.EventRouter.Register<NewUserMessage>(OnOpponentArrived, gameLifetime);
+            client.EventRouter.Register<LeftMessage>(OnOpponentLeft, gameLifetime);
             client.EventRouter.Register<BoundsMessage>(OnBoundsReceived, this);
             MainCharacter.MultiPlayerClient = client;
             return client;
@@ -272,6 +303,15 @@ namespace DemoGame
                 opponent.Tags.Add("enemy");
                 this.Scene.Add(opponent);
                 opponents.Add(opponent);
+            });
+        }
+
+        private void OnOpponentLeft(LeftMessage opponentInfo)
+        {
+            this.Scene.QueueAction(() =>
+            {
+                var opponent = opponents.Where(o => o.RemoteClientId == opponentInfo.ClientWhoLeft).Single();
+                opponent.IsConnected = false;
             });
         }
 
