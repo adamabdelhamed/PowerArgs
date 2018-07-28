@@ -37,8 +37,7 @@ namespace DemoGame
         private MultiPlayerClient client;
         private List<RemoteCharacter> opponents = new List<RemoteCharacter>();
         private Lifetime gameLifetime;
-        private string server = "adamab2018";
-
+ 
         public DemoMultiPlayerGameApp()
         {
             this.RequiredWidth = 102;
@@ -248,7 +247,7 @@ namespace DemoGame
 
         private async Task<ServerInfo> CollectServerInfoFromUser()
         {
-            var serverInfo = new ServerInfo { Server = "adamab2018", Port = 8080 };
+            var serverInfo = new ServerInfo { Server = "192.168.1.16", Port = 8080 };
             Task dialogTask = null;
             await QueueAction(() =>
             {
@@ -266,6 +265,7 @@ namespace DemoGame
 
         private Task RevealPlayers(StartGameMessage message)
         {
+            MainCharacter.TrySendBounds();
             return Scene.QueueAction(() =>
             {
                 MainCharacter.ResizeTo(1, 1);
@@ -273,12 +273,6 @@ namespace DemoGame
                 {
                     opponent.ResizeTo(1, 1);
                 }
-
-                var intervalHandle = SetInterval(() =>
-                {
-                    client.TrySendMessage(CreateLocationMessage(client.ClientId, MainCharacter));
-                }, TimeSpan.FromMilliseconds(20));
-                gameLifetime.OnDisposed(intervalHandle.Dispose);
 
             }).AsAwaitable();
         }
@@ -356,14 +350,21 @@ namespace DemoGame
                 if (m.ClientToUpdate == client.ClientId)
                 {
                     MainCharacter.MoveTo(m.X, m.Y);
+                    MainCharacter.Speed.SpeedX = m.SpeedX;
+                    MainCharacter.Speed.SpeedY = m.SpeedY;
                 }
                 else
                 {
                     var opponent = opponents.WhereAs<RemoteCharacter>().Where(o => o.RemoteClientId == m.ClientToUpdate).Single();
-                    Scene.QueueAction(() =>
+                    if (opponent != null)
                     {
-                        opponent?.MoveTo(m.X, m.Y);
-                    });
+                        Scene.QueueAction(() =>
+                        {
+                            opponent.MoveTo(m.X, m.Y);
+                            opponent.Speed.SpeedX = m.SpeedX;
+                            opponent.Speed.SpeedY = m.SpeedY;
+                        });
+                    }
                 }
             });
         }

@@ -86,6 +86,7 @@ namespace PowerArgs.Games
         {
             Server.MessageRouter.Register<BoundsMessage>((message) =>
             {
+                Server.Info.Fire($"{message.Sender} sent new position and velocity");
                 Server.TryBroadcast((connection) => message.Sender == connection.ClientId ? null : message);
             }, this);
         }
@@ -183,5 +184,7 @@ namespace PowerArgs.Games
         public float Y { get; set; }
         public float W { get; set; }
         public float H { get; set; }
+        public float SpeedX { get; set; }
+        public float SpeedY { get; set; }
     }
 }

@@ -123,7 +123,19 @@ namespace PowerArgs.Games
             .Select(i => i as IInteractable)
             .Where(i => i.InteractionPoint.CalculateDistanceTo(this) <= i.MaxInteractDistance)
             .ForEach(i => i.Interact(this));
-        
+
+
+        public void TrySendBounds()
+        {
+            MultiPlayerClient?.TrySendMessage(new BoundsMessage()
+            {
+                X = Left,
+                Y = Top,
+                SpeedX = Speed.SpeedX,
+                SpeedY = Speed.SpeedY,
+                ClientToUpdate = MultiPlayerClient.ClientId
+            });
+        }
 
         public void MoveLeft()
         {
@@ -143,6 +155,8 @@ namespace PowerArgs.Games
                 Speed.SpeedX = SpaceExtensions.NormalizeQuantity(-PlayerMovementSpeed, 0);
                 Speed.SpeedY = 0;
             }
+
+            TrySendBounds();
         }
 
         public void MoveRight()
@@ -163,6 +177,8 @@ namespace PowerArgs.Games
                 Speed.SpeedX = SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 0);
                 Speed.SpeedY = 0;
             }
+
+            TrySendBounds();
         }
 
         public void MoveDown()
@@ -183,6 +199,8 @@ namespace PowerArgs.Games
                 Speed.SpeedY = SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 90);
                 Speed.SpeedX = 0;
             }
+
+            TrySendBounds();
         }
 
         public void MoveUp()
@@ -203,6 +221,8 @@ namespace PowerArgs.Games
                 Speed.SpeedY = -SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 90);
                 Speed.SpeedX = 0;
             }
+
+            TrySendBounds();
         }
 
         private void EndFreeAim()
