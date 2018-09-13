@@ -75,13 +75,8 @@ namespace PowerArgs
 
             ret += DefaultAlias + " ";
 
-            foreach (var positionArg in (from a in Arguments where a.Position >= 1 select a).OrderBy(a => a.Position))
+            foreach (var positionArg in (from a in UsageArguments where a.Position >= 1 select a).OrderBy(a => a.Position))
             {
-                if(positionArg.OmitFromUsage)
-                {
-                    continue;
-                }
-
                 if (positionArg.IsRequired)
                 {
                     ret += lt + positionArg.DefaultAlias + gt+" ";
@@ -92,7 +87,7 @@ namespace PowerArgs
                 }
             }
 
-            if (Arguments.Where(a => a.Position < 0).Count() > 0)
+            if (UsageArguments.Any(a => a.Position < 0))
             {
                 ret += "-options";
             }
@@ -138,6 +133,15 @@ namespace PowerArgs
             {
                 overrides.Set("IgnoreCase", value);
             }
+        }
+
+        /// <summary>
+        /// Specifies whether this action should be omitted from usage documentation
+        /// </summary>
+        public bool OmitFromUsage
+        {
+            get => overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p => true, false);
+            set => overrides.Set("OmitFromUsage", value);
         }
 
         /// <summary>

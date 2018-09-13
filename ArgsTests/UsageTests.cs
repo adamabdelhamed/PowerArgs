@@ -19,6 +19,11 @@ namespace ArgsTests
         public string StringArgs { get; set; }
         [ArgDescription("An int arg")]
         public int IntArgs { get; set; }
+        [ArgActionMethod, OmitFromUsageDocs, ArgDescription("Displays the help")]
+        public void Help()
+        {
+            ArgUsage.GenerateUsageFromTemplate(typeof(BasicUsageArgs)).WriteLine();
+        }
 
         [OmitFromUsageDocs, ArgDescription("WE SHOULD NEVER SEE THIS")]
         public string SecretArg { get; set; }
@@ -123,6 +128,7 @@ namespace ArgsTests
             var usage = ArgUsage.GenerateUsageFromTemplate(typeof(BasicUsageArgs));
             Assert.IsFalse(usage.Contains("SecretArg"));
             Assert.IsFalse(usage.Contains("WE SHOULD NEVER"));
+            Assert.IsFalse(usage.Contains("help"));
         }
 
         #region Samples

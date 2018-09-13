@@ -31,8 +31,9 @@ Usage - {{ExeName Cyan!}} {{SpecifiedAction.UsageSummary Cyan!}}
 !{{if}}
 {{ifnot HasSpecifiedAction}}
 
+{{if HasUsageActions}}
 Actions
-{{each action in Actions}}
+{{each action in UsageActions}}
 
   {{action.UsageSummary Cyan!}} - {{action.Description!}}
 
@@ -48,6 +49,7 @@ Actions
 
 !{{if}}
 !{{each}}
+!{{if}}
 !{{ifnot}}
 !{{if}}
 {{if HasExamples }}
@@ -105,7 +107,7 @@ Examples{{each example in Examples}}
     {{if HasActions}}
     <h2>Actions</h2>
     <ul>
-        {{each action in Actions}}
+        {{each action in UsageActions}}
         <li>
             <div>
                 <span class='program-specific-content'>{{action.DefaultAlias!}}</span>
@@ -121,8 +123,7 @@ Examples{{each example in Examples}}
                             <td>OPTION</td>
                             <td>DESCRIPTION</td>
                         </tr>
-                        {{each actionArgument in action.Arguments}}
-                        {{if actionArgument.IncludeInUsage}}
+                        {{each actionArgument in action.UsageArguments}}
                         <tr>
                             <td class='option-col program-specific-content'>{{actionArgument.DefaultAlias!}}</td>
                             <td class='desc-col program-specific-content'>-{{actionArgument.Description!}}{{if actionArgument.HasDefaultValue}}<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>{{actionArgument.DefaultValue!}}<span />!{{if}}</td>
@@ -134,7 +135,6 @@ Examples{{each example in Examples}}
                             <td class='defaultValue'> {{enumVal!}}</td>
                         </tr>
                         !{{each}}
-                        !{{if}}
                         !{{if}}
                         !{{each}}
                     </table>

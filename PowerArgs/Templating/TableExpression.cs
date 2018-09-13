@@ -109,7 +109,7 @@ namespace PowerArgs
 
             foreach(var element in collection)
             {
-                if(element is CommandLineArgument && ((CommandLineArgument)element).OmitFromUsage)
+                if((element is CommandLineArgument argument && argument.OmitFromUsage) || (element is CommandLineAction action && action.OmitFromUsage))
                 {
                     continue;
                 }

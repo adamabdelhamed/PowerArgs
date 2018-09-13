@@ -7,7 +7,7 @@ namespace PowerArgs
     /// in the output created by the ArgUsage class (the class that auto generates usage documentation).
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method | AttributeTargets.Parameter)]
-    public class OmitFromUsageDocs : Attribute,  ICommandLineActionMetadata
+    public class OmitFromUsageDocs : Attribute, IArgumentOrActionMetadata
     {
 
     }
