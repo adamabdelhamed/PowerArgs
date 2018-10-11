@@ -133,5 +133,26 @@ Alic...      Two Microsoft     The wife of the author of PowerArgs, the world's 
             Assert.IsTrue(table.Contains("John"));
             Assert.IsTrue(table.Contains("Doe"));
         }
+
+        [TestMethod]
+        public void ConsoleTableTestLongWord()
+        {
+            ConsoleProvider.Current.BufferWidth = 160;
+            ConsoleTableBuilder builder = new ConsoleTableBuilder();
+
+            var columns = new List<ConsoleString>() { new ConsoleString("Word 1"), new ConsoleString("Word 2") };
+            var rows = new List<List<ConsoleString>>()
+            {
+                new List<ConsoleString>(){new ConsoleString(" ThisIsAVeryLongWord"), new ConsoleString("Hello. ThisIsAVeryLongWord ThisIsAnother AnotherVeryLongWord")}
+            };
+
+            var columnOverflowBehaviors = new List<ColumnOverflowBehavior>()
+            {
+                new SmartWrapOverflowBehavior(){DefineMaxWidthBasedOnConsoleWidth = false, MaxWidthBeforeWrapping = 10},
+                new SmartWrapOverflowBehavior(){DefineMaxWidthBasedOnConsoleWidth = false, MaxWidthBeforeWrapping = 10}
+            };
+
+            builder.FormatAsTable(columns, rows, rowPrefix: "", columnOverflowBehaviors: columnOverflowBehaviors);
+        }
     }
 }
