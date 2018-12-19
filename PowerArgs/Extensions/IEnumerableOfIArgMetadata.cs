@@ -16,7 +16,7 @@ namespace PowerArgs
 
             foreach (var invalidMetadata in invalid)
             {
-                throw new InvalidArgDefinitionException("Metadata of type '" + invalidMetadata.GetType().Name + "' does not implement " + typeof(ICommandLineArgumentsDefinitionMetadata).Name);
+                throw new InvalidArgDefinitionException("Metadata of type '" + invalidMetadata.GetType().Name + "' does not implement " + typeof(T).Name);
             }
 
             return valid.ToList();
