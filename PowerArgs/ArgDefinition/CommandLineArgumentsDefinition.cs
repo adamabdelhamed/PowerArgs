@@ -186,6 +186,11 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Returns true if there is at least one action that should be visible in the usage, false otherwise.
+        /// </summary>
+        public bool HasUsageActions => UsageActions.Any();
+
+        /// <summary>
         /// Creates a usage summary string that takes into account actions, positional argument, etc.
         /// </summary>
         public string UsageSummary
@@ -311,6 +316,9 @@ namespace PowerArgs
         /// Actions that are defined for this definition.  If you have at least one action then the end user must specify the action as the first argument to your program.
         /// </summary>
         public List<CommandLineAction> Actions { get; private set; }
+
+        public List<CommandLineAction>  UsageActions =>
+            (from action in Actions where !action.OmitFromUsage select action).ToList();
 
         /// <summary>
         /// Arbitrary metadata that has been added to the definition

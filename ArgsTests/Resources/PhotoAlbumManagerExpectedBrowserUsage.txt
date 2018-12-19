@@ -53,23 +53,23 @@
                             <td>OPTION</td>
                             <td>DESCRIPTION</td>
                         </tr>
-                                                                        <tr>
+                                                <tr>
                             <td class='option-col program-specific-content'>StorageAccountName</td>
                             <td class='desc-col program-specific-content'>-The storage account to connect to</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>StorageAccountKey</td>
                             <td class='desc-col program-specific-content'>-The storage key to use to connect</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>Container</td>
                             <td class='desc-col program-specific-content'>-The storage container to target<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>DefaultAlbum<span /></td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>UseHttps</td>
                             <td class='desc-col program-specific-content'>-Set this flag to use https</td>
                         </tr>
-                                                                                            </table>
+                                                                    </table>
                                     </div>
             </div>
         </li>
@@ -88,15 +88,15 @@
                             <td>OPTION</td>
                             <td>DESCRIPTION</td>
                         </tr>
-                                                                        <tr>
+                                                <tr>
                             <td class='option-col program-specific-content'>BlobFilePath</td>
                             <td class='desc-col program-specific-content'>-The name of a blob to download</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>LocalFile</td>
                             <td class='desc-col program-specific-content'>-The local path to download to.  This description does not really need to be this long, but I need to test to make sure that the new description formatting feature that cleanly wraps long descriptions is working properly.  This long description should be enough to test that out!</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>ConflictPolicy</td>
                             <td class='desc-col program-specific-content'>-What do do if there is a conflict when downloading a file<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>Throw<span /></td>
                         </tr>
@@ -112,23 +112,23 @@
                             <td class='option-col program-specific-content'></td>
                             <td class='defaultValue'> ClientWins</td>
                         </tr>
-                                                                                                                                                <tr>
+                                                                                                <tr>
                             <td class='option-col program-specific-content'>StorageAccountName</td>
                             <td class='desc-col program-specific-content'>-The storage account to connect to</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>StorageAccountKey</td>
                             <td class='desc-col program-specific-content'>-The storage key to use to connect</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>Container</td>
                             <td class='desc-col program-specific-content'>-The storage container to target<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>DefaultAlbum<span /></td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>UseHttps</td>
                             <td class='desc-col program-specific-content'>-Set this flag to use https</td>
                         </tr>
-                                                                                            </table>
+                                                                    </table>
                                         <h4>Examples</h4>
                                         <h3></h3>
                     <p>Downloads a blob called ceremony.png to a temp folder on the local machine</p>
@@ -151,15 +151,15 @@
                             <td>OPTION</td>
                             <td>DESCRIPTION</td>
                         </tr>
-                                                                        <tr>
+                                                <tr>
                             <td class='option-col program-specific-content'>LocalFile</td>
                             <td class='desc-col program-specific-content'>-If specified the single file will be uploaded</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>LocalDirectory</td>
                             <td class='desc-col program-specific-content'>-If specified, all files in the directory will be uploaded</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>ConflictPolicy</td>
                             <td class='desc-col program-specific-content'>-What do do if there is a conflict when uploading a file<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>Throw<span /></td>
                         </tr>
@@ -175,23 +175,23 @@
                             <td class='option-col program-specific-content'></td>
                             <td class='defaultValue'> ClientWins</td>
                         </tr>
-                                                                                                                                                <tr>
+                                                                                                <tr>
                             <td class='option-col program-specific-content'>StorageAccountName</td>
                             <td class='desc-col program-specific-content'>-The storage account to connect to</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>StorageAccountKey</td>
                             <td class='desc-col program-specific-content'>-The storage key to use to connect</td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>Container</td>
                             <td class='desc-col program-specific-content'>-The storage container to target<span class='defaultvalue'> Default<span /><span class='defaultvalue'>=<span /><span class='defaultvalue'>DefaultAlbum<span /></td>
                         </tr>
-                                                                                                                        <tr>
+                                                                        <tr>
                             <td class='option-col program-specific-content'>UseHttps</td>
                             <td class='desc-col program-specific-content'>-Set this flag to use https</td>
                         </tr>
-                                                                                            </table>
+                                                                    </table>
                                         <h4>Examples</h4>
                                         <h3></h3>
                     <p>Uploads all the files in the local directory to the 'wedding' container</p>
