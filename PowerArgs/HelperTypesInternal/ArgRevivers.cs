@@ -43,7 +43,7 @@ namespace PowerArgs
             SearchAssemblyForRevivers(t.Assembly);
 
             var entryAssembly = Assembly.GetEntryAssembly();
-            if (t.Assembly.FullName != entryAssembly.FullName)
+            if (entryAssembly != null && t.Assembly.FullName != entryAssembly.FullName)
             {
                 SearchAssemblyForRevivers(entryAssembly);
             }
