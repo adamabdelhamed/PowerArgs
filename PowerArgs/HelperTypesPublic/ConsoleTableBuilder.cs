@@ -319,7 +319,14 @@ namespace PowerArgs
                 {
                     if (char.IsWhiteSpace(segment[i].Value))
                     {
-                        segment = value.Substring(0, i);
+                        if (i != 0)
+                        {
+                            segment = value.Substring(0, i);
+                        }
+                        else
+                        {
+                            segment = value.Substring(0, smartWrap.MaxWidthBeforeWrapping + 1);
+                        }
                         break;
                     }
                     lookBehindLimit--;
