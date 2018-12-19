@@ -13,7 +13,7 @@ namespace PowerArgs
         /// The default value that was specified on the attribute.  Note that the value will get
         /// converted to a string and then fed into the parser to be revived.
         /// </summary>
-        public object Value { get; private set; }
+        public object Value { get; protected set; }
 
         /// <summary>
         /// Creates a new DefaultValueAttribute with the given value.  Note that the value will get
@@ -23,6 +23,14 @@ namespace PowerArgs
         public DefaultValueAttribute(object value)
         {
             Value = value;
+        }
+
+        /// <summary>
+        /// Creates a new DefaultValueAttribute without value. Value can be specified in derived class.
+        /// Note that the value will get converted to a string and then fed into the parser to be revived.
+        /// </summary>
+        protected DefaultValueAttribute()
+        {
         }
 
         /// <summary>
