@@ -359,6 +359,14 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestNegativeNumber()
+        {
+            var args = new string[] { "-int", "-1" };
+            BasicArgs parsed = Args.Parse<BasicArgs>(args);
+            Assert.AreEqual(-1, parsed.Int);
+        }
+
+        [TestMethod]
         public void TestSingleElementInArray()
         {
             var args = new string[] { "-bytes", "10" };
