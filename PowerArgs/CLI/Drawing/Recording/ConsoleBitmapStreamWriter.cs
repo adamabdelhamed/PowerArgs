@@ -16,6 +16,12 @@ namespace PowerArgs.Cli
         private ConsoleBitmapFrameSerializer serializer;
 
         /// <summary>
+        /// Gets the total number of frames written by the writer. This only counts unique frames
+        /// since calls to write frames with the same image as the previous frame are ignored.
+        /// </summary>
+        public int FramesWritten { get; private set; } = 0;
+
+        /// <summary>
         /// If true then the writer will close the inner stream when it's finished
         /// </summary>
         public bool CloseInnerStream { get; set; } = true;
@@ -53,8 +59,9 @@ namespace PowerArgs.Cli
         /// relative to the wall clock time when the first frame was written.
         /// </summary>
         /// <param name="bitmap">the image to write</param>
+        /// <param name="force">if true, writes the frame even if there are no changes</param>
         /// <returns>the same bitmap that was passed in</returns>
-        public ConsoleBitmap WriteFrame(ConsoleBitmap bitmap)
+        public ConsoleBitmap WriteFrame(ConsoleBitmap bitmap, bool force = false)
         {
             var rawFrame = GetRawFrame(bitmap);
 
@@ -77,18 +84,21 @@ namespace PowerArgs.Cli
                 rawFrame.Timestamp = frameTime;
                 StreamHeader(bitmap);
                 writer.Write(serializer.SerializeFrame(rawFrame));
+                FramesWritten++;
             }
             else
             {
                 var diff = PrepareDiffFrame(bitmap);
                 diff.Timestamp = frameTime;
-                if(diff.Diffs.Count > bitmap.Width * bitmap.Height / 2)
+                if(force || diff.Diffs.Count > bitmap.Width * bitmap.Height / 2)
                 {
                     writer.Write(serializer.SerializeFrame(rawFrame));
+                    FramesWritten++;
                 }
                 else if(diff.Diffs.Count > 0)
                 {
                     writer.Write(serializer.SerializeFrame(diff));
+                    FramesWritten++;
                 }
             }
 

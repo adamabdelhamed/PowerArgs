@@ -140,8 +140,8 @@ namespace ArgsTests.CLI.Games
 
             try
             {
-                await client.SendRequest(new PingMessage() { Delay = 200 }, timeout: TimeSpan.FromSeconds(.1)).AsAwaitable();
-                Assert.Fail("An exception should have been thrown");
+                await client.SendRequest(new PingMessage() { Delay = 300 }, timeout: TimeSpan.FromSeconds(.1)).AsAwaitable();
+                Assert.Fail("A timeout exception should have been thrown");
             }
             catch (PromiseWaitException ex)
             {

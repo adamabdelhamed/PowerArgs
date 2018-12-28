@@ -146,10 +146,13 @@ namespace ArgsTests
             Assert.AreEqual(-1, s.IndexOf("01234567890"));
             Assert.AreEqual(0, s.IndexOf(""));
             Assert.AreEqual(-1, s.IndexOf("A"));
-            Assert.AreEqual(-1, s.IndexOf(null));
+            Assert.AreEqual(-1, s.IndexOf(null as string));
             Assert.AreEqual(0, s.IndexOf("01"));
             Assert.AreEqual(1, s.IndexOf("12"));
             Assert.AreEqual(8, s.IndexOf("89"));
+
+            Assert.AreEqual(0, s.IndexOf(s));
+            Assert.AreEqual(-1, s.IndexOf(s.ToString().ToRed()));
 
             for (int i = 0; i < 1000; i++)
             {

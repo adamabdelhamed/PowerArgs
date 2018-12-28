@@ -146,12 +146,21 @@ namespace PowerArgs.Cli
         public bool TrySeek(TimeSpan destination, out ConsoleBitmap bitmap)
         {
             var i = 0;
-            while(i < Frames.Count && Frames[i].FrameTime <= destination)
+            for (i = 0; i < Frames.Count; i++)
             {
-                i++;
+                var currentFrame = Frames[i];
+
+                if(currentFrame.FrameTime >= destination)
+                {
+                    if(Math.Abs((destination - currentFrame.FrameTime).TotalSeconds) > .05 && i > 0)
+                    {
+                        i--;
+                    }
+                    break;
+                }
             }
 
-            if(i >= Frames.Count)
+            if (i >= Frames.Count)
             {
                 bitmap = null;
                 return false;

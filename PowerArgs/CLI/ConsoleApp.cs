@@ -362,6 +362,7 @@ namespace PowerArgs.Cli
         private void ExitInternal()
         {
             Stopping.Fire();
+            Recorder?.WriteFrame(Bitmap, true);
             Recorder?.Dispose();
             using (var snapshot = Bitmap.CreateSnapshot())
             {

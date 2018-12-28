@@ -9,6 +9,8 @@ namespace ArgsTests.CLI.Controls
     [TestClass]
     public class TextBoxTests
     {
+        public TestContext TestContext { get; set; }
+
         [TestMethod]
         public void Basic()
         {
@@ -34,6 +36,23 @@ namespace ArgsTests.CLI.Controls
 
             Assert.AreEqual(80, result.Length);
             Console.WriteLine(result);
+        }
+
+        [TestMethod]
+        public void TestRenderTextBox()
+        {
+            var app = new CliTestHarness(this.TestContext, 8,1);
+
+            app.QueueAction(() =>
+            {
+                app.LayoutRoot.Add(new TextBox() { Value = "SomeText".ToWhite() }).Fill();
+                app.Stop();
+            });
+
+            app.Start().Wait();
+            Assert.IsTrue(app.Find("SomeText".ToWhite()).HasValue);
+
+            app.AssertThisTestMatchesLKG();
         }
     }
 }

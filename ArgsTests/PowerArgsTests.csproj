@@ -104,6 +104,7 @@
     <Compile Include="CLI\Apps\BasicXmlAppTests.cs" />
     <Compile Include="CLI\Apps\AppLifecycle.cs" />
     <Compile Include="CLI\CliKeyboardInputQueue.cs" />
+    <Compile Include="CLI\CliTestHarness.cs" />
     <Compile Include="CLI\CliUnitTestConsole.cs" />
     <Compile Include="CLI\Controls\TextBoxTests.cs" />
     <Compile Include="CLI\Games\PowerArgsIntroTests.cs" />

@@ -15,13 +15,13 @@ namespace ArgsTests.CLI.Recording
             ConsoleBitmap bitmap = new ConsoleBitmap(4, 2), redBitmap = null, greenBitmap = null, magentaPixelBitmap = null;
             using (var sharedStream = new MemoryStream())
             {
-                using (var bitmapVideoWriter = new ConsoleBitmapStreamWriter(sharedStream) { CloseInnerStream = false })
-                {
-                    bitmap = new ConsoleBitmap(4, 2);
-                    redBitmap = bitmapVideoWriter.WriteFrame(bitmap.FillRect(ConsoleCharacter.RedBG())).Clone();
-                    greenBitmap = bitmapVideoWriter.WriteFrame(bitmap.FillRect(ConsoleCharacter.GreenBG())).Clone();
-                    magentaPixelBitmap = bitmapVideoWriter.WriteFrame(bitmap.DrawPoint(ConsoleCharacter.MagentaBG(), 0, 0)).Clone();
-                }
+                var bitmapVideoWriter = new ConsoleBitmapStreamWriter(sharedStream) { CloseInnerStream = false };
+                
+                bitmap = new ConsoleBitmap(4, 2);
+                redBitmap = bitmapVideoWriter.WriteFrame(bitmap.FillRect(ConsoleCharacter.RedBG())).Clone();
+                greenBitmap = bitmapVideoWriter.WriteFrame(bitmap.FillRect(ConsoleCharacter.GreenBG())).Clone();
+                magentaPixelBitmap = bitmapVideoWriter.WriteFrame(bitmap.DrawPoint(ConsoleCharacter.MagentaBG(), 0, 0)).Clone();
+                bitmapVideoWriter.Dispose();
 
                 sharedStream.Position = 0; // rewind the stream to the beginning to read it back
 

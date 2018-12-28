@@ -718,8 +718,19 @@ namespace PowerArgs
         /// <returns>The first index of the given substring or -1 if the substring was not found.</returns>
         public int IndexOf(string toFind, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            if(toFind == null)return -1;
-            if(toFind == "")return 0;
+            return this.ToString().ToConsoleString().IndexOf(toFind.ToConsoleString(), comparison);
+        }
+
+        /// <summary>
+        /// Finds the index of a given substring in this ConsoleString.
+        /// </summary>
+        /// <param name="toFind">The substring to search for. The styles of the strings must match.</param>
+        /// <param name="comparison">Specifies how characters are compared</param>
+        /// <returns>The first index of the given substring or -1 if the substring was not found.</returns>
+        public int IndexOf(ConsoleString toFind, StringComparison comparison = StringComparison.InvariantCulture)
+        {
+            if (toFind == null) return -1;
+            if (toFind == ConsoleString.Empty) return 0;
 
             int j = 0;
             int k = 0;
@@ -728,7 +739,7 @@ namespace PowerArgs
                 j = 0;
                 k = 0;
 
-                while ((toFind[j]+"").Equals(""+characters[i + k].Value, comparison))
+                while (toFind[j].ForegroundColor == characters[i+k].ForegroundColor && toFind[j].BackgroundColor == characters[i + k].BackgroundColor && (toFind[j] + "").Equals("" + characters[i + k].Value, comparison))
                 {
                     j++;
                     k++;
@@ -769,6 +780,17 @@ namespace PowerArgs
         /// <param name="comparison">Specifies how characters are compared</param>
         /// <returns>True if found, false otherwise.</returns>
         public bool Contains(string substr, StringComparison comparison = StringComparison.InvariantCulture)
+        {
+            return IndexOf(substr, comparison) >= 0;
+        }
+
+        /// <summary>
+        /// Determines if this ConsoleString contains the given substring.
+        /// </summary>
+        /// <param name="substr">The substring to search for.</param>
+        /// <param name="comparison">Specifies how characters are compared</param>
+        /// <returns>True if found, false otherwise.</returns>
+        public bool Contains(ConsoleString substr, StringComparison comparison = StringComparison.InvariantCulture)
         {
             return IndexOf(substr, comparison) >= 0;
         }

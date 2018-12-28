@@ -9,6 +9,8 @@ namespace PowerArgs.Cli
         private int framesInCurrentSecond;
         private int framesInPreviousSecond;
 
+        public int TotalFrames { get; private set; }
+
         public int CurrentFPS
         {
             get
@@ -27,6 +29,7 @@ namespace PowerArgs.Cli
         public void Increment()
         {
             var now = DateTime.UtcNow;
+            TotalFrames++;
 
             if(AreSameSecond(now, currentSecond))
             {

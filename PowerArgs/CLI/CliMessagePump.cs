@@ -118,6 +118,8 @@ namespace PowerArgs.Cli
     /// </summary>
     public class CliMessagePump : ObservableObject
     {
+        private Queue<ConsoleKeyInfo> sendKeys = new Queue<ConsoleKeyInfo>();
+
         private class StopPumpMessage : PumpMessage
         {
             public StopPumpMessage() : base(() => { }, description: "Stops the pump") { }
@@ -147,17 +149,20 @@ namespace PowerArgs.Cli
         private Deferred runDeferred;
         private List<IDisposable> timerHandles = new List<IDisposable>();
 
-        private FrameRateMeter frameRateMeter;
+        private FrameRateMeter cycleRateMeter;
+
+        /// <summary>
+        /// Gets the total number of event loop cycles that have run
+        /// </summary>
+        public int TotalCycles => cycleRateMeter != null ? cycleRateMeter.TotalFrames : 0;
+
+        public int TotalPaints => paintRateMeter != null ? paintRateMeter.TotalFrames : 0;
+
         /// <summary>
         /// Gets the current frame rate for the app
         /// </summary>
-        public int CyclesPerSecond
-        {
-            get
-            {
-                return frameRateMeter != null ? frameRateMeter.CurrentFPS : 0;
-            }
-        }
+        public int CyclesPerSecond => cycleRateMeter != null ? cycleRateMeter.CurrentFPS : 0;
+            
 
         private FrameRateMeter paintRateMeter;
         /// <summary>
@@ -181,6 +186,8 @@ namespace PowerArgs.Cli
             this.lastConsoleWidth = this.console.BufferWidth;
             this.lastConsoleHeight = this.console.WindowHeight;
         }
+
+        public void SendKey(ConsoleKeyInfo key) => QueueAction(() => { sendKeys.Enqueue(key); });
 
         /// <summary>
         /// Handles key input for the message pump
@@ -367,10 +374,11 @@ namespace PowerArgs.Cli
             {
                 SynchronizationContext.SetSynchronizationContext(new CustomSyncContext(this));
                 bool stopRequested = false;
-                frameRateMeter = new FrameRateMeter();
+                cycleRateMeter = new FrameRateMeter();
                 paintRateMeter = new FrameRateMeter();
                 while (true)
                 {
+                    cycleRateMeter.Increment();
                     if ((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight))
                     {
                         DebounceResize();
@@ -424,8 +432,13 @@ namespace PowerArgs.Cli
                         var info = this.console.ReadKey(true);
                         QueueAction(() => HandleKeyInput(info));
                     }
+                    else if(sendKeys.Count > 0)
+                    {
+                        idle = false;
+                        var info = sendKeys.Dequeue();
+                        QueueAction(() => HandleKeyInput(info));
+                    }
 
-                    frameRateMeter.Increment();
                     if (idle)
                     {
                         Thread.Sleep(0);
