@@ -150,12 +150,13 @@ namespace PowerArgs.Cli
             {
                 var currentFrame = Frames[i];
 
-                if(currentFrame.FrameTime >= destination)
+                if(currentFrame.FrameTime == destination)
                 {
-                    if(Math.Abs((destination - currentFrame.FrameTime).TotalSeconds) > .05 && i > 0)
-                    {
-                        i--;
-                    }
+                    break;
+                }
+                else if(currentFrame.FrameTime > destination)
+                {
+                    i = i == 0 ? 0 : i - 1;
                     break;
                 }
             }
