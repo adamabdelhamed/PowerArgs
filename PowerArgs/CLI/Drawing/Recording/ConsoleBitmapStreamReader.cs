@@ -142,11 +142,12 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="destination">the timestamp to seek to</param>
         /// <param name="bitmap">the bitmap reference to update</param>
-        /// <returns>true if we updated the given bitmap with the image data, false if the destination timestamp goes beyond the timestamp of the last loaded frame</returns>
-        public bool TrySeek(TimeSpan destination, out ConsoleBitmap bitmap)
+        /// <param name="startFrameIndex">the first frame index to look into or 0 if starting from the beginning</param>
+        /// <returns>-1 if we updated the given bitmap with the image data, otherwise returns the frame index of the loaded frame</returns>
+        public int TrySeek(TimeSpan destination, out ConsoleBitmap bitmap, int startFrameIndex = 0)
         {
-            var i = 0;
-            for (i = 0; i < Frames.Count; i++)
+            int i;
+            for (i = startFrameIndex; i < Frames.Count; i++)
             {
                 var currentFrame = Frames[i];
 
@@ -164,12 +165,12 @@ namespace PowerArgs.Cli
             if (i >= Frames.Count)
             {
                 bitmap = null;
-                return false;
+                return -1;
             }
             else
             {
                 bitmap = Frames[i].Bitmap;
-                return true;
+                return i;
             }
         }
     }

@@ -86,6 +86,11 @@ namespace PowerArgs.Cli
         private DateTime playStartTime;
 
         /// <summary>
+        /// The most recent frame index received from the reader's TrySeek method
+        /// </summary>
+        private int lastFrameIndex;
+
+        /// <summary>
         /// The error message to show if loading failed
         /// </summary>
         private string failedMessage;
@@ -306,7 +311,7 @@ namespace PowerArgs.Cli
                     {
                         State = PlayerState.Stopped;
                     }
-                    else if(inMemoryVideo.TrySeek(newPlayerPosition, out seekedImage) == false)
+                    else if((lastFrameIndex = inMemoryVideo.TrySeek(newPlayerPosition, out seekedImage, lastFrameIndex >= 0 ? lastFrameIndex : 0)) >= 0)
                     {
                         State = PlayerState.Buffering;
                     }

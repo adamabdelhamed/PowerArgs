@@ -59,9 +59,10 @@ namespace PowerArgs.Cli
         /// relative to the wall clock time when the first frame was written.
         /// </summary>
         /// <param name="bitmap">the image to write</param>
+        /// <param name="desiredFrameTime">if provided, sstamp the frame with this time, otherwise stamp it with the wall clock delta from the first frame time</param>
         /// <param name="force">if true, writes the frame even if there are no changes</param>
         /// <returns>the same bitmap that was passed in</returns>
-        public ConsoleBitmap WriteFrame(ConsoleBitmap bitmap, bool force = false)
+        public ConsoleBitmap WriteFrame(ConsoleBitmap bitmap, bool force = false, TimeSpan? desiredFrameTime = null)
         {
             var rawFrame = GetRawFrame(bitmap);
 
@@ -74,14 +75,11 @@ namespace PowerArgs.Cli
             }
             else
             {
-                rawFrame.Timestamp = now - firstFrameTime.Value;
+                rawFrame.Timestamp = desiredFrameTime.HasValue ? desiredFrameTime.Value : now - firstFrameTime.Value;
             }
-
-            var frameTime = firstFrameTime.HasValue == false ? TimeSpan.Zero : now - firstFrameTime.Value;
-
+            
             if (lastFrame == null)
             {
-                rawFrame.Timestamp = frameTime;
                 StreamHeader(bitmap);
                 writer.Write(serializer.SerializeFrame(rawFrame));
                 FramesWritten++;
@@ -89,7 +87,7 @@ namespace PowerArgs.Cli
             else
             {
                 var diff = PrepareDiffFrame(bitmap);
-                diff.Timestamp = frameTime;
+                diff.Timestamp = rawFrame.Timestamp;
                 if(force || diff.Diffs.Count > bitmap.Width * bitmap.Height / 2)
                 {
                     writer.Write(serializer.SerializeFrame(rawFrame));
