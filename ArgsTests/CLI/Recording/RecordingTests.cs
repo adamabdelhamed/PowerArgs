@@ -11,6 +11,8 @@ namespace ArgsTests.CLI.Recording
     [TestClass]
     public class RecordingTests
     {
+        public TestContext TestContext { get; set; }
+
         [TestMethod]
         public void TestRecordVideoBasic()
         {
@@ -65,7 +67,7 @@ namespace ArgsTests.CLI.Recording
                 var video = reader.ReadToEnd();
                 var lastFrameIndex = 0;
                 var sw = Stopwatch.StartNew();
-                while((lastFrameIndex =  video.TrySeek(destination, out bitmap, lastFrameIndex >= 0 ? lastFrameIndex : 0)) != numFrames - 1)
+                while((lastFrameIndex =  video.Seek(destination, out bitmap, lastFrameIndex >= 0 ? lastFrameIndex : 0)) != numFrames - 1)
                 {
                     destination = destination.Add(TimeSpan.FromMilliseconds(1));
                 }
@@ -73,6 +75,53 @@ namespace ArgsTests.CLI.Recording
                 Assert.IsTrue(sw.ElapsedMilliseconds < 10);
                 Console.WriteLine($"Playback took {sw.ElapsedMilliseconds} ms");
             }
+        }
+
+        [TestMethod]
+        public void TestPlaybackEndToEnd()
+        {
+            int w = 10, h = 1;
+            var temp = Path.GetTempFileName();
+            using (var stream = File.OpenWrite(temp))
+            {
+                var writer = new ConsoleBitmapStreamWriter(stream) {  CloseInnerStream = false};
+                var bitmap = new ConsoleBitmap(w, h);
+
+                for(var i = 0; i < bitmap.Width; i++)
+                {
+                    bitmap.Pen = new ConsoleCharacter(' ');
+                    bitmap.FillRect(0, 0, bitmap.Width, bitmap.Height);
+                    bitmap.Pen = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Red);
+                    bitmap.DrawPoint(i, 0);
+                    writer.WriteFrame(bitmap, true, TimeSpan.FromSeconds(.5*i));
+                }
+                writer.Dispose();
+            }
+
+            var app = new CliTestHarness(this.TestContext, 80, 30);
+
+            app.QueueAction(() =>
+            {
+                var player = app.LayoutRoot.Add(new ConsoleBitmapPlayer()).Fill();
+                player.Load(File.OpenRead(temp));
+                app.SetTimeout(() => app.SendKey(new ConsoleKeyInfo('p', ConsoleKey.P, false, false, false)), TimeSpan.FromMilliseconds(100));
+                var playStarted = false;
+                player.SubscribeForLifetime(nameof(player.State), () =>
+                {
+                    if(player.State == PlayerState.Playing)
+                    {
+                        playStarted = true;
+                    }
+                    else if(player.State == PlayerState.Stopped && playStarted)
+                    {
+                        app.Stop();
+                    }
+                }, app);
+            });
+
+            app.Start().Wait();
+            Thread.Sleep(100);
+            app.AssertThisTestMatchesLKGFirstAndLastFrame();
         }
     }
 }

@@ -287,7 +287,7 @@ namespace PowerArgs.Cli
 
                 playStartPosition = TimeSpan.FromSeconds(playerProgressBar.PlayCursorPosition * duration.Value.TotalSeconds);
                 playStartTime = DateTime.UtcNow;
-
+                lastFrameIndex = 0;
                 // start a play loop for as long as the state remains unchanged
                 this.playLifetime = this.GetPropertyValueLifetime(nameof(State));
                 playLifetime.OnDisposed(Application.SetInterval(() =>
@@ -307,17 +307,19 @@ namespace PowerArgs.Cli
                     playButton.Text = $"Pause".ToConsoleString();
 
                     ConsoleBitmap seekedImage;
-                    if (newPlayerPosition > duration)
-                    {
-                        State = PlayerState.Stopped;
-                    }
-                    else if((lastFrameIndex = inMemoryVideo.TrySeek(newPlayerPosition, out seekedImage, lastFrameIndex >= 0 ? lastFrameIndex : 0)) >= 0)
+ 
+                    if((lastFrameIndex = inMemoryVideo.Seek(newPlayerPosition, out seekedImage, lastFrameIndex >= 0 ? lastFrameIndex : 0)) < 0)
                     {
                         State = PlayerState.Buffering;
                     }
                     else
                     {
                         CurrentFrame = seekedImage;
+                    }
+
+                    if (newPlayerPosition > duration)
+                    {
+                        State = PlayerState.Stopped;
                     }
 
                 }, TimeSpan.FromMilliseconds(1)));

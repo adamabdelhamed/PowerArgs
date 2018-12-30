@@ -143,9 +143,16 @@ namespace PowerArgs.Cli
         /// <param name="destination">the timestamp to seek to</param>
         /// <param name="bitmap">the bitmap reference to update</param>
         /// <param name="startFrameIndex">the first frame index to look into or 0 if starting from the beginning</param>
-        /// <returns>-1 if we updated the given bitmap with the image data, otherwise returns the frame index of the loaded frame</returns>
-        public int TrySeek(TimeSpan destination, out ConsoleBitmap bitmap, int startFrameIndex = 0)
+        /// <returns>the frame index of the loaded frame or -1 if the destination has not yet loaded</returns>
+        public int Seek(TimeSpan destination, out ConsoleBitmap bitmap, int startFrameIndex = 0)
         {
+            if (Frames.Count == 0) throw new InvalidOperationException("This video has no frames");
+            if(Frames.Count == 1)
+            {
+                bitmap = Frames[0].Bitmap;
+                return 0;
+            }
+
             int i;
             for (i = startFrameIndex; i < Frames.Count; i++)
             {
@@ -153,25 +160,24 @@ namespace PowerArgs.Cli
 
                 if(currentFrame.FrameTime == destination)
                 {
-                    break;
+                    bitmap = currentFrame.Bitmap;
                 }
                 else if(currentFrame.FrameTime > destination)
                 {
                     i = i == 0 ? 0 : i - 1;
-                    break;
+                    bitmap = Frames[i].Bitmap;
+                    return i;
                 }
             }
-
-            if (i >= Frames.Count)
+            if(LoadProgress < 1)
             {
                 bitmap = null;
                 return -1;
             }
-            else
-            {
-                bitmap = Frames[i].Bitmap;
-                return i;
-            }
+
+            i = Frames.Count - 1;
+            bitmap = Frames[i].Bitmap;
+            return i;
         }
     }
 

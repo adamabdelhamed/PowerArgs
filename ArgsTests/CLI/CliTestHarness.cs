@@ -117,6 +117,21 @@ namespace ArgsTests.CLI
             }
         }
 
+        public void AssertThisTestMatchesLKGFirstAndLastFrame()
+        {
+            if (TryGetLKGMetadata(out CliLKGTestMetadata metadata) && TryGetLKGRecording(out ConsoleBitmapStreamReader reader))
+            {
+                reader.InnerStream.Dispose();
+                AssertLKGRecordingMatchesCurrentTestFirstAndLast();
+                Console.WriteLine("LKG matches");
+                PromoteToLKG();
+            }
+            else
+            {
+                Console.WriteLine("Orignial LKG");
+                PromoteToLKG();
+            }
+        }
         private void AssertLKGRecordingMatchesCurrentTest()
         {
             if(TryGetCurrentRecording(out ConsoleBitmapStreamReader currentReader) &&
@@ -135,6 +150,27 @@ namespace ArgsTests.CLI
 
                     Assert.AreEqual(lkgFrame.Bitmap, currentFrame.Bitmap);
                 }
+            }
+        }
+
+        private void AssertLKGRecordingMatchesCurrentTestFirstAndLast()
+        {
+            if (TryGetCurrentRecording(out ConsoleBitmapStreamReader currentReader) &&
+                TryGetLKGRecording(out ConsoleBitmapStreamReader lkgReader))
+            {
+                var currentVideo = currentReader.ReadToEnd();
+                var lkgVideo = lkgReader.ReadToEnd();
+                currentReader.InnerStream.Close();
+                lkgReader.InnerStream.Close();
+
+                var lkgFirstFrame = lkgVideo.Frames[0];
+                var currentFirstFrame = currentVideo.Frames[0];
+
+                var lkgLastFrame = lkgVideo.Frames[lkgVideo.Frames.Count - 1];
+                var currentLastFrame = currentVideo.Frames[currentVideo.Frames.Count - 1];
+
+                Assert.AreEqual(lkgFirstFrame.Bitmap, currentFirstFrame.Bitmap);
+                Assert.AreEqual(lkgLastFrame.Bitmap, currentLastFrame.Bitmap);
             }
         }
 
