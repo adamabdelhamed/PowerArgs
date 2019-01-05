@@ -114,17 +114,24 @@ namespace PowerArgs.Cli
             }
         }
 
-        public void RegisterKeyPress(ConsoleKeyInfo key)
+        /// <summary>
+        /// Registers a keypress with the editor.
+        /// </summary>
+        /// <param name="key">The key press info</param>
+        /// <param name="prototype">if specified, the foreground and background color will be taken from this prototype, otherwise the system defaults will be used</param>
+        public void RegisterKeyPress(ConsoleKeyInfo key, ConsoleCharacter? prototype = null)
         {
             Context.Reset();
             Context.KeyPressed = key;
-            Context.CharacterToWrite = new ConsoleCharacter(Context.KeyPressed.KeyChar);
+            Context.CharacterToWrite = new ConsoleCharacter(Context.KeyPressed.KeyChar,
+                prototype.HasValue ? prototype.Value.ForegroundColor : ConsoleString.DefaultForegroundColor,
+                prototype.HasValue ? prototype.Value.BackgroundColor : ConsoleString.DefaultBackgroundColor);
 
             IKeyHandler handler = null;
 
             if (KeyHandlers.TryGetValue(Context.KeyPressed.Key, out handler) == false && RichTextCommandLineReader.IsWriteable(Context.KeyPressed))
             {
-                WriteCharacterForPressedKey(Context.KeyPressed);
+                WriteCharacterForPressedKey(Context);
                 DoSyntaxHighlighting(Context);
             }
             else if (handler != null)
@@ -133,7 +140,7 @@ namespace PowerArgs.Cli
 
                 if (Context.Intercept == false && RichTextCommandLineReader.IsWriteable(Context.KeyPressed))
                 {
-                    WriteCharacterForPressedKey(Context.KeyPressed);
+                    WriteCharacterForPressedKey(Context);
                 }
 
                 DoSyntaxHighlighting(Context);
@@ -147,16 +154,15 @@ namespace PowerArgs.Cli
             CursorPosition = 0;
         }
 
-        private void WriteCharacterForPressedKey(ConsoleKeyInfo key)
+        private void WriteCharacterForPressedKey(RichCommandLineContext context)
         {
-            var c = new ConsoleCharacter(key.KeyChar);
             if (CursorPosition == Context.Buffer.Count)
             {
-                Context.Buffer.Add(c);
+                Context.Buffer.Add(context.CharacterToWrite);
             }
             else
             {
-                Context.Buffer.Insert(CursorPosition, c);
+                Context.Buffer.Insert(CursorPosition, context.CharacterToWrite);
             }
 
             CursorPosition++;

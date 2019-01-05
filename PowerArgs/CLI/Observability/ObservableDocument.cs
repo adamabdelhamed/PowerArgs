@@ -36,6 +36,8 @@ namespace PowerArgs.Cli
             public void Do() { } // it already happened, nothing to do
             public void Undo() => property.SetValue(target, previousValue);
             public void Redo() => property.SetValue(target, newValue);
+
+            public override string ToString() => $"{property.Name} from {previousValue} to {newValue}";
         }
 
         private class AddToCollectionAction : IUndoRedoAction
@@ -54,6 +56,8 @@ namespace PowerArgs.Cli
             public void Do() { }
             public void Undo() => target.RemoveAt(index);
             public void Redo() => target.Insert(index, added);
+
+            public override string ToString() => $"'{added}' added to {target}";
         }
 
         private class RemovedFromCollectionAction : IUndoRedoAction
@@ -72,6 +76,8 @@ namespace PowerArgs.Cli
             public void Do() { }
             public void Undo() => target.Insert(index, removed);
             public void Redo() => target.RemoveAt(index);
+
+            public override string ToString() => $"'{removed}' removed from {target}";
         }
 
         private class AssignedToindexCollectionAction : IUndoRedoAction
@@ -92,6 +98,8 @@ namespace PowerArgs.Cli
             public void Do() { }
             public void Undo() => target[index] = oldValue;
             public void Redo() => target[index] = newValue;
+
+            public override string ToString() => $"'{newValue}' assigned to index {index} in {target}";
         }
         private class TrackedObservable
         {

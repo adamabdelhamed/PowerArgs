@@ -14,7 +14,6 @@ namespace ArgsTests.CLI
 {
     public class CliLKGTestMetadata
     {
-        public int Cycles { get; set; }
         public int Paints { get; set; }
         public int Frames { get; set; }
     }
@@ -76,12 +75,10 @@ namespace ArgsTests.CLI
             {
                 var metadata = new CliLKGTestMetadata()
                 {
-                    Cycles = this.TotalCycles,
                     Paints = this.TotalPaints,
                     Frames = this.Recorder.FramesWritten
                 };
 
-                Console.WriteLine("Total cycles: "+metadata.Cycles);
                 Console.WriteLine("Total paints: " + metadata.Paints);
                 Console.WriteLine("Total frames: " + metadata.Frames);
 
@@ -209,8 +206,16 @@ namespace ArgsTests.CLI
             Directory.Move(CurrentTestTempPath, CurrentTestLKGPath);
         }
 
-        public Point? Find(ConsoleString text, StringComparison comparison = StringComparison.InvariantCulture)
+        public Point? Find(ConsoleString text, StringComparison comparison = StringComparison.InvariantCulture) => Find(text, comparison, true);
+        public Point? Find(string text, StringComparison comparison = StringComparison.InvariantCulture) => Find(text.ToConsoleString(), comparison, false);
+
+        private Point? Find(ConsoleString text, StringComparison comparison, bool requireStylesToBeEqual)
         {
+            if(text.Contains("\n") || text.Contains("\r"))
+            {
+                throw new ArgumentException("Text cannot contain newline characters. This function searches the target bitmap line by line.");
+            }
+
             for(var y = 0; y < this.Bitmap.Height; y++)
             {
                 var line = ConsoleString.Empty;
@@ -220,7 +225,16 @@ namespace ArgsTests.CLI
                     line+= (pixel.Value.HasValue ? pixel.Value.Value : new ConsoleCharacter(' ', null, this.Bitmap.Background.BackgroundColor)).ToConsoleString();
                 }
 
-                var index = line.IndexOf(text, comparison);
+                int index;
+
+                if (requireStylesToBeEqual)
+                {
+                    index = line.IndexOf(text, comparison);
+                }
+                else
+                {
+                    index = line.ToString().IndexOf(text.ToString(), comparison);
+                }
 
                 if(index >= 0)
                 {

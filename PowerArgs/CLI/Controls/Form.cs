@@ -49,6 +49,18 @@ namespace PowerArgs.Cli
                     var value = (string)property.GetValue(o);
                     var textBox = new TextBox() { Foreground = ConsoleColor.White, Value = value == null ? ConsoleString.Empty : value.ToString().ToWhite() };
                     textBox.SynchronizeForLifetime(nameof(textBox.Value), () => property.SetValue(o, textBox.Value.ToString()), textBox);
+                    (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () =>
+                    {
+                        var valueRead = property.GetValue(o);
+                        if (valueRead is ICanBeAConsoleString)
+                        {
+                            textBox.Value = (valueRead as ICanBeAConsoleString).ToConsoleString();
+                        }
+                        else
+                        {
+                            textBox.Value = (valueRead + "").ToWhite();
+                        }
+                    }, textBox);
                     editControl = textBox;
                 }
                 else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType == typeof(int))
@@ -64,7 +76,19 @@ namespace PowerArgs.Cli
                         }
                         else if (textBox.Value.Length > 0)
                         {
-                            textBox.Value = property.GetValue(o).ToString().ToConsoleString();
+                            textBox.Value = property.GetValue(o).ToString().ToWhite();
+                        }
+                    }, textBox);
+                    (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () =>
+                    {
+                        var valueRead = property.GetValue(o);
+                        if (valueRead is ICanBeAConsoleString)
+                        {
+                            textBox.Value = (valueRead as ICanBeAConsoleString).ToConsoleString();
+                        }
+                        else
+                        {
+                            textBox.Value = (valueRead + "").ToConsoleString();
                         }
                     }, textBox);
 
@@ -95,11 +119,12 @@ namespace PowerArgs.Cli
                 else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType.IsEnum)
                 {
                     var enumPicker = new PickerControl<object>(new PickerControlClassOptions<object>()
-                    {
+                    { 
                         InitiallySelectedOption = property.GetValue(o),
                         Options = Enums.GetEnumValues(property.PropertyType)
                     });
                     enumPicker.SynchronizeForLifetime(nameof(enumPicker.SelectedItem), () => property.SetValue(o, enumPicker.SelectedItem), enumPicker);
+                    (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => enumPicker.SelectedItem = property.GetValue(o), enumPicker);
                     editControl = enumPicker;
                 }
                 else
@@ -107,6 +132,8 @@ namespace PowerArgs.Cli
                     var value = property.GetValue(o);
                     var valueString = value != null ? value.ToString().ToDarkGray() : "<null>".ToDarkGray();
                     var valueLabel = new Label() { CanFocus = true, Text = valueString + " (read only)".ToDarkGray() };
+                    (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => valueLabel.Text = (property.GetValue(o) + "").ToConsoleString()+" (read only)".ToDarkGray(), valueLabel);
+
                     editControl = valueLabel;
                 }
 
@@ -135,24 +162,6 @@ namespace PowerArgs.Cli
         {
             var labelColumn = Add(new StackPanel() { Orientation = Orientation.Vertical });
             var valueColumn = Add(new StackPanel() { Orientation = Orientation.Vertical });
-
-            Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.DownArrow, null, () =>
-            {
-                if (this.Descendents.Contains(Application.FocusManager.FocusedControl))
-                {
-                    Application.FocusManager.TryMoveFocus();
-                }
-
-            }, this);
-
-            Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.UpArrow, null, () =>
-            {
-                if (this.Descendents.Contains(Application.FocusManager.FocusedControl))
-                {
-                    Application.FocusManager.TryMoveFocus(false);
-                }
-
-            }, this);
 
             this.SynchronizeForLifetime(nameof(this.Bounds), () =>
             {

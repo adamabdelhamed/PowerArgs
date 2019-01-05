@@ -106,6 +106,7 @@
     <Compile Include="CLI\CliKeyboardInputQueue.cs" />
     <Compile Include="CLI\CliTestHarness.cs" />
     <Compile Include="CLI\CliUnitTestConsole.cs" />
+    <Compile Include="CLI\Controls\FormTests.cs" />
     <Compile Include="CLI\Controls\TextBoxTests.cs" />
     <Compile Include="CLI\Games\PowerArgsIntroTests.cs" />
     <Compile Include="CLI\Games\MultiPlayerTests.cs" />
@@ -204,6 +205,9 @@
       <Project>{b321562d-4335-4ee2-9db3-e263b0ddf06a}</Project>
       <Name>PowerArgs</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Playlists\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

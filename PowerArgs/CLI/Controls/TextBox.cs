@@ -56,6 +56,11 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Gets or sets a flag that enables or disables the blinking cursor that appears when the text box has focus
+        /// </summary>
+        public bool BlinkEnabled { get; set; } = true;
+
+        /// <summary>
         /// Creates a new text box
         /// </summary>
         public TextBox()
@@ -123,7 +128,8 @@ namespace PowerArgs.Cli
 
         private void OnKeyInputReceived(ConsoleKeyInfo info)
         {
-            textState.RegisterKeyPress(info);
+            ConsoleCharacter? prototype = this.Value.Length == 0 ? (ConsoleCharacter?)null : this.Value[this.Value.Length - 1];
+            textState.RegisterKeyPress(info, prototype);
             blinkState = true;
             Application.ChangeInterval(blinkTimerHandle, BlinkInterval);
         }
@@ -151,7 +157,7 @@ namespace PowerArgs.Cli
 
             context.DrawString(new ConsoleString(bgTransformed), 0, 0);
 
-            if (blinkState)
+            if (blinkState && BlinkEnabled)
             {
                 char blinkChar = textState.CursorPosition >= toPaint.Length ? ' ' : toPaint[textState.CursorPosition].Value;
                 context.Pen = new ConsoleCharacter(blinkChar, DefaultColors.FocusContrastColor, DefaultColors.FocusColor);
