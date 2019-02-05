@@ -107,6 +107,7 @@
     <Compile Include="CLI\CliTestHarness.cs" />
     <Compile Include="CLI\CliUnitTestConsole.cs" />
     <Compile Include="CLI\Controls\FormTests.cs" />
+    <Compile Include="CLI\Controls\XYChartTests.cs" />
     <Compile Include="CLI\Controls\TextBoxTests.cs" />
     <Compile Include="CLI\Games\PowerArgsIntroTests.cs" />
     <Compile Include="CLI\Games\MultiPlayerTests.cs" />
