@@ -4,19 +4,19 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageVersion>3.5.0</PackageVersion>
+    <PackageVersion>3.6.0</PackageVersion>
     <PackageId>PowerArgs</PackageId>
     <Authors>Adam Abdelhamed</Authors>
     <Description>The ultimate command line application framework</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Ported to .NET Standard 2.0, deprecated query feature</PackageReleaseNotes>
+    <PackageReleaseNotes>Minor fixes and performance improvements to the PowerArgs.Cli namespace</PackageReleaseNotes>
     <Copyright>Copyright 2017 (c) Adam Abdelhamed. All rights reserved.</Copyright>
     <PackageTags>command line arguments parser CLI .NET Core Standard</PackageTags>
     <PackageProjectUrl>https://github.com/adamabdelhamed/powerargs</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/adamabdelhamed/PowerArgs/blob/master/LICENSE.txt</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/adamabdelhamed/powerargs</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
+   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>bin\Debug\netstandard2.0\PowerArgs.xml</DocumentationFile>
