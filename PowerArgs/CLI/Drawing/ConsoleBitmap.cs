@@ -9,17 +9,6 @@ namespace PowerArgs.Cli
     {
         private const double DrawPrecision = .5;
 
-        private object _syncLock;
-
-        public object SyncLock
-        {
-            get
-            {
-                return _syncLock;
-            }
-        }
-
-
         public ConsoleCharacter Background { get; set; }
         public ConsoleCharacter Pen { get; set; }
 
@@ -34,14 +23,11 @@ namespace PowerArgs.Cli
         public int Top { get; private set; }
         public int Left { get; private set; }
 
-        public bool IsLocked { get; private set; }
-
-        public ConsoleBitmap(int x, int y, int w, int h, ConsoleCharacter? bg = null) : this(new Rectangle(x,y,w,h), bg) {}
+        public ConsoleBitmap(int x, int y, int w, int h, ConsoleCharacter? bg = null) : this(new Rectangle(x, y, w, h), bg) { }
         public ConsoleBitmap(int w, int h, ConsoleCharacter? bg = null) : this(new Rectangle(0, 0, w, h), bg) { }
 
         public ConsoleBitmap(Rectangle bounds, ConsoleCharacter? bg = null)
         {
-            _syncLock = new object();
             this.Top = bounds.Y;
             this.Left = bounds.X;
 
@@ -164,22 +150,6 @@ namespace PowerArgs.Cli
             return wiper;
         }
 
-        public void Lock()
-        {
-            IsLocked = true;
-        }
-
-        public void Unlock(bool paint = true)
-        {
-            IsLocked = false;
-            Paint();
-        }
-
-        public IDisposable GetDisposableLock()
-        {
-            return new PaintOnceContext(this);
-        }
-
         public Rectangle GetScope()
         {
             return this.scope;
@@ -232,7 +202,6 @@ namespace PowerArgs.Cli
             DrawLine(x + w - 1, y, x + w - 1, y + h);       // Right, vertical line
             DrawLine(x, y, x + w, y);                       // Top, horizontal line
             DrawLine(x, y + h - 1, x + w, y + h - 1);       // Bottom, horizontal line
-
         }
 
         public void DrawString(ConsoleString str, int x, int y, bool vert = false)
@@ -371,59 +340,115 @@ namespace PowerArgs.Cli
             return ret;
         }
 
-        public void Sync()
+        private class Chunk
         {
-            for (var x = 0; x < Width; x++)
-            {
-                for (var y = 0; y < Height; y++)
-                {
-                    pixels[x][y].Sync();
-                }
-            }
+            public List<ConsoleCharacter> Characters { get; set; } = new List<ConsoleCharacter>();
+            public bool HasChanged { get; set; }
         }
 
         public void Paint()
         {
-            lock (SyncLock)
+            var changed = false;
+            if (lastBufferWidth != this.Console.BufferWidth)
             {
-                if (IsLocked)
-                {
-                    return;
-                }
-
-                bool changed = false;
-                if (lastBufferWidth != this.Console.BufferWidth)
-                {
-                    lastBufferWidth = this.Console.BufferWidth;
-                    Invalidate();
-                    this.Console.Clear();
-                    changed = true;
-                }
-
+                lastBufferWidth = this.Console.BufferWidth;
+                Invalidate();
+                this.Console.Clear();
+                changed = true;
+            }
+            try
+            {
+                var currentChunk = new Chunk();
+                var chunksOnLine = new List<Chunk>();
                 for (int y = scope.Y; y < scope.Y + scope.Height; y++)
                 {
+                    var changeOnLine = false;
                     for (int x = scope.X; x < scope.X + scope.Width; x++)
                     {
                         var pixel = pixels[x][y];
-                        if (pixel.HasChanged)
+                        changeOnLine = changeOnLine || pixel.HasChanged;
+                        var val = pixel.Value.HasValue ? pixel.Value.Value.Value : ' ';
+                        var fg = pixel.Value.HasValue ? pixel.Value.Value.ForegroundColor : ConsoleString.DefaultForegroundColor;
+                        var bg = pixel.Value.HasValue ? pixel.Value.Value.BackgroundColor : ConsoleString.DefaultBackgroundColor;
+                        var character = pixel.Value.HasValue ? pixel.Value.Value : new ConsoleCharacter(val, fg, bg);
+                        if (currentChunk.Characters.Count == 0)
                         {
-                            changed = true;
-                            if (pixel.Value.HasValue)
+                            // first pixel always gets added to the current empty chunk
+                            currentChunk.HasChanged = pixel.HasChanged;
+                            currentChunk.Characters.Add(character);
+                        }
+                        else if (currentChunk.HasChanged == false && pixel.HasChanged == false)
+                        {
+                            // characters that have not changed get chunked even if their styles differ
+                            currentChunk.Characters.Add(character);
+                        }
+                        else if (currentChunk.HasChanged && pixel.HasChanged && fg == currentChunk.Characters[0].ForegroundColor && bg == currentChunk.Characters[0].BackgroundColor)
+                        {
+                            // characters that have changed only get chunked if their styles match to minimize the number of writes
+                            currentChunk.Characters.Add(character);
+                        }
+                        else
+                        {
+                            // either the styles of consecutive changing characters differ or we've gone from a non changed character to a changed one
+                            // in either case we end the current chunk and start a new one
+                            chunksOnLine.Add(currentChunk);
+                            currentChunk = new Chunk();
+                            currentChunk.HasChanged = pixel.HasChanged;
+                            currentChunk.Characters.Add(character);
+                        }
+                        pixel.Sync();
+                    }
+
+                    if (currentChunk.Characters.Count > 0)
+                    {
+                        chunksOnLine.Add(currentChunk);
+                        currentChunk = new Chunk();
+                    }
+
+                    if (changeOnLine)
+                    {
+                        Console.CursorTop = y; // we know there will be a change on this line so move the cursor top
+                        var left = scope.X;
+                        var leftChanged = true;
+                        for (var i = 0; i < chunksOnLine.Count; i++)
+                        {
+                            var chunk = chunksOnLine[i];
+                            if (chunk.HasChanged)
                             {
-                                DrawPixel(x, y, pixel, pixel.Value.Value);
+                                if (leftChanged)
+                                {
+                                    Console.CursorLeft = left;
+                                    leftChanged = false;
+                                }
+
+                                Console.ForegroundColor = chunk.Characters[0].ForegroundColor;
+                                Console.BackgroundColor = chunk.Characters[0].BackgroundColor;
+                                Console.Write((string)(new ConsoleString(chunk.Characters).StringValue));
+                                left += chunk.Characters.Count;
+                                changed = true;
                             }
                             else
                             {
-                                DrawPixel(x, y, null, Background);
+                                left += chunk.Characters.Count;
+                                leftChanged = true;
                             }
                         }
                     }
+                    chunksOnLine.Clear();
                 }
+
                 if (changed)
                 {
                     Console.CursorLeft = Left;
                     Console.CursorTop = Top;
+                    Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
+                    Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
                 }
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                Invalidate();
+                Paint();
             }
         }
 
@@ -436,49 +461,6 @@ namespace PowerArgs.Cli
                     var pixel = pixels[x][y];
                     pixel.Invalidate();
                 }
-            }
-        }
-
-        private void DrawPixel(int x, int y, ConsolePixel pixel, ConsoleCharacter value)
-        {
-            x = Left + x;
-            y = Top + y;
-
-            if(x >= lastBufferWidth)
-            {
-                return;
-            }
-            try
-            {
-                if (Console.CursorLeft != x)
-                {
-                    Console.CursorLeft = x;
-                }
-
-                if (Console.CursorTop != y)
-                {
-                    Console.CursorTop = y;
-                }
-
-                if (Console.ForegroundColor != value.ForegroundColor)
-                {
-                    Console.ForegroundColor = value.ForegroundColor;
-                }
-
-                if (Console.BackgroundColor != value.BackgroundColor)
-                {
-                    Console.BackgroundColor = value.BackgroundColor;
-                }
-
-                Console.Write(value.Value);
-            }catch(ArgumentOutOfRangeException)
-            {
-
-            }
-
-            if(pixel != null)
-            {
-                pixel.Sync();
             }
         }
 
@@ -590,7 +572,7 @@ namespace PowerArgs.Cli
             try
             {
                 this.Pen = character;
-                DrawPoint(x,y);
+                DrawPoint(x, y);
             }
             finally
             {
@@ -598,40 +580,6 @@ namespace PowerArgs.Cli
             }
 
             return this;
-        }
-    }
-
-    public class PaintOnceContext : IDisposable
-    {
-        private ConsoleBitmap bitmap;
-        public PaintOnceContext(ConsoleBitmap bitmap)
-        {
-            this.bitmap = bitmap;
-            bitmap.Lock();
-        }
-
-        ~PaintOnceContext()
-        {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // free managed resources
-                if (bitmap != null)
-                {
-                    bitmap.Unlock();
-                    bitmap = null;
-                }
-            }
         }
     }
 }

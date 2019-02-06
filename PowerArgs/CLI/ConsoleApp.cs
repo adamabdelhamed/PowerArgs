@@ -171,6 +171,17 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Adds the given control to a ConsoleApp, fills the space, and blocks until the app terminates
+        /// </summary>
+        /// <param name="control">the control to show</param>
+        public static void Show(ConsoleControl control)
+        {
+            var app = new ConsoleApp();
+            app.LayoutRoot.Add(control).Fill();
+            app.Start().Wait();
+        }
+
+        /// <summary>
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>

@@ -17,34 +17,41 @@ namespace PowerArgs.Games
         public Fire(TimeSpan duration)
         {
             this.duration = duration;
-            this.Governor.Rate = TimeSpan.FromSeconds(.25);
+            this.Governor.Rate = TimeSpan.FromSeconds(.1);
             this.ResizeTo(1, 1);
             this.Tags.Add("hot");
         }
 
-        public static void BurnIfTouchingSomethingHot<T>(T me, TimeSpan? burnTime = null, char? symbol = null) where T : SpacialElement, IDestructible
+        public static void BurnIfTouchingSomethingHot<T>(T me, TimeSpan? burnTime = null, char? symbol = null, bool disposeOnBurn = false) where T : SpacialElement, IDestructible
         {
             burnTime = burnTime.HasValue ? burnTime.Value : TimeSpan.FromSeconds(3);
             if (SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("hot") && e.CalculateDistanceTo(me) < 2).Count() > 0)
             {
-                var fire = new Fire(burnTime.Value) { SymbolOverride = symbol };
-                fire.MoveTo(me.Left, me.Top, me.ZIndex+1);
-                fire.ResizeTo(me.Width, me.Height);
-                SpaceTime.CurrentSpaceTime.Add(fire);
+                if (SpaceTime.CurrentSpaceTime.Elements.WhereAs<Fire>().Where(f => f.Left == me.Left && f.Top == me.Top).Count() == 0)
+                {
+                    var fire = new Fire(burnTime.Value) { SymbolOverride = symbol };
+                    fire.MoveTo(me.Left, me.Top, me.ZIndex + 1);
+                    fire.ResizeTo(me.Width, me.Height);
+                    SpaceTime.CurrentSpaceTime.Add(fire);
+                    if (disposeOnBurn)
+                    {
+                        me.Lifetime.Dispose();
+                    }
+                }
             }
         }
 
         public override void Initialize()
         {
             initTime = Time.CurrentTime.Now;
-            if(currentSound == null)
+            if (currentSound == null)
             {
                 currentSound = Sound.Play("burn");
             }
 
             this.Lifetime.OnDisposed(() =>
             {
-                if(currentSound != null && SpaceTime.CurrentSpaceTime.Elements.Where(e => e != this && e is Fire).Count() == 0)
+                if (currentSound != null && SpaceTime.CurrentSpaceTime.Elements.Where(e => e != this && e is Fire).Count() == 0)
                 {
                     if (currentSound.Result.IsExpired == false)
                     {
@@ -57,7 +64,7 @@ namespace PowerArgs.Games
 
         public override void Evaluate()
         {
-            if(Time.CurrentTime.Now - initTime >= duration)
+            if (Time.CurrentTime.Now - initTime >= duration)
             {
                 this.Lifetime.Dispose();
                 return;
@@ -67,6 +74,7 @@ namespace PowerArgs.Games
                 .Where(e => e is IDestructible && this.Touches(e))
                 .Select(e => e as IDestructible)
                 .ForEach(d => d.TakeDamage(1));
+            this.SizeOrPositionChanged.Fire();
         }
 
 
@@ -82,23 +90,30 @@ namespace PowerArgs.Games
         public char BurnSymbol2 { get; set; } = '-';
 
         private static Random r = new Random();
-
+        private char symbol;
+        private ConsoleColor color;
         public FireRenderer()
         {
             this.TransparentBackground = true;
         }
 
+        public override void OnRender()
+        {
+            base.OnRender();
+            var primarySymbol = (Element as Fire).SymbolOverride.HasValue ? (Element as Fire).SymbolOverride.Value : BurnSymbol1;
+            if (primarySymbol != BurnSymbol1)
+            {
+                BurnSymbol2 = BurnSymbol1;
+            }
+
+            this.color = r.NextDouble() < .8 ? PrimaryBurnColor : SecondaryBurnColor;
+            this.symbol = r.NextDouble() < .9 ? primarySymbol : BurnSymbol2;
+        }
+
         protected override void OnPaint(ConsoleBitmap context)
         {
-            var primarySymbol = (Element as Fire).SymbolOverride.HasValue ? (Element as Fire).SymbolOverride.Value : BurnSymbol1;
-            if (r.NextDouble() < .9)
-            {
-                var color = r.NextDouble() < .8 ? PrimaryBurnColor : SecondaryBurnColor;
-                var symbol = r.NextDouble() < .65 ? primarySymbol : BurnSymbol2;
-
-                context.Pen = new ConsoleCharacter(symbol, color);
-                context.FillRect(0, 0, Width, Height);
-            }
+            context.Pen = new ConsoleCharacter(symbol, color);
+            context.FillRect(0, 0, Width, Height);
         }
     }
 }

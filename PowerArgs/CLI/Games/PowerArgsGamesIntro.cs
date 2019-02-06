@@ -73,7 +73,7 @@ namespace PowerArgs.Games
                     dropper.FireInternal();
 
                     // eventually he will hit the left wall, remove him when that happens
-                    character.Speed.ImpactOccurred.SubscribeForLifetime((i) =>  character.Lifetime.Dispose(), character.Lifetime);
+                    character.Speed.ImpactOccurred.SubscribeForLifetime((i) => character.Lifetime.Dispose(), character.Lifetime);
 
                     // this watcher has done its job, stop watching the secne 
                     watcher.Lifetime.Dispose();
@@ -96,7 +96,7 @@ namespace PowerArgs.Games
 
         public void Cleanup()
         {
-            if(SpaceTime.IsRunning == false)
+            if (SpaceTime.IsRunning == false)
             {
                 return;
             }
@@ -111,8 +111,8 @@ namespace PowerArgs.Games
                 SpaceTime.Elements.ToList().ForEach(e => e.Lifetime.Dispose());
                 SpaceTime.Stop()
                 .Then(introDeferred.Resolve)
-                .Fail((ex=> introDeferred.Reject(ex)))
-                .Finally((p)=> this.Dispose());
+                .Fail((ex => introDeferred.Reject(ex)))
+                .Finally((p) => this.Dispose());
             });
         }
     }
@@ -121,7 +121,7 @@ namespace PowerArgs.Games
     {
         public bool TryRevive(LevelItem item, List<LevelItem> allItems, out ITimeFunction hydratedElement)
         {
-            if(item.FG != ConsoleColor.Red)
+            if (item.FG != ConsoleColor.Red)
             {
                 hydratedElement = null;
                 return false;
@@ -151,7 +151,7 @@ namespace PowerArgs.Games
 
         public override void Evaluate()
         {
-            Fire.BurnIfTouchingSomethingHot(this, TimeSpan.FromSeconds(.1), this.Symbol.Value);
+            Fire.BurnIfTouchingSomethingHot(this, TimeSpan.FromSeconds(4), this.Symbol.Value, true);
         }
     }
 

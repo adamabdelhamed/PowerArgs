@@ -34,9 +34,9 @@ namespace PowerArgs.Cli
                     {
                         this.Controls.Remove(pixel);
                     }
-                }, TimeSpan.FromMilliseconds(r.Next(20, 100))));
+                }, TimeSpan.FromMilliseconds(r.Next(3, 25))));
 
-            }, TimeSpan.FromMilliseconds(r.Next(10, 15))));
+            }, TimeSpan.FromMilliseconds(r.Next(3, 5))));
         }
     }
 }

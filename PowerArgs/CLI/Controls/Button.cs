@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
@@ -85,86 +80,25 @@ namespace PowerArgs.Cli
             this.Foreground = DefaultColors.ButtonColor;
             this.SynchronizeForLifetime(nameof(Text), UpdateWidth, this);
             this.SynchronizeForLifetime(nameof(Shortcut), UpdateWidth, this);
+
             this.AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
             this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this);
         }
 
-        private void UpdateWidth()
+        private void UpdateWidth() => Width = GetButtonDisplayString().Length;
+
+        private ConsoleString GetButtonDisplayString()
         {
-            int w = Text == null ? 2 : Text.Length + 2;
-
-            if (Shortcut != null && Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Alt)
-            {
-                w += "ALT+".Length;
-            }
-            else if (Shortcut != null && Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Shift)
-            {
-                w += "SHIFT+".Length;
-            }
-            else if (Shortcut != null && Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Control)
-            {
-                w += "CTL+".Length;
-            }
-
-            if (Shortcut != null)
-            {
-                w += Shortcut.Key.ToString().Length + " ()".Length;
-            }
-            Width = w;
-        }
-
-        /// <summary>
-        /// Called when the button is added to an app
-        /// </summary>
-        public void OnAddedToVisualTree()
-        {
-            RegisterShortcutIfPossibleAndNotAlreadyDone();
-        }
-
-        private void RegisterShortcutIfPossibleAndNotAlreadyDone()
-        {
-            if (Shortcut != null && shortcutRegistered == false && Application != null)
-            {
-                shortcutRegistered = true;
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(Shortcut.Key, Shortcut.Modifier, Click, this);
-            }
-        }
-
-        private void OnKeyInputReceived(ConsoleKeyInfo info)
-        {
-            if(info.Key == ConsoleKey.Enter || info.Key == ConsoleKey.Spacebar)
-            {
-                Click();
-            }
-        }
-
-        private void Click()
-        {
-            Pressed.Fire();
-        }
-
-        /// <summary>
-        /// paints the button
-        /// </summary>
-        /// <param name="context">drawing context</param>
-        protected override void OnPaint(ConsoleBitmap context)
-        {
-            var drawState = new ConsoleString();
-
-            drawState = "[".ToConsoleString(CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, Background = Background);
+            var startAnchor = "[".ToConsoleString(HasFocus ? DefaultColors.BackgroundColor : CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, HasFocus ? DefaultColors.FocusColor : Background);
+            var effectiveText = Text ?? ConsoleString.Empty;
+            var shortcut = ConsoleString.Empty;
             if (Text != null)
             {
                 ConsoleColor fg, bg;
 
-                var effectiveText = Text;
                 if (effectiveText.IsUnstyled)
                 {
-                    if (HasFocus)
-                    {
-                        fg = DefaultColors.FocusContrastColor;
-                        bg = DefaultColors.FocusColor;
-                    }
-                    else if (CanFocus)
+                    if (CanFocus)
                     {
                         fg = Foreground;
                         bg = Background;
@@ -176,37 +110,59 @@ namespace PowerArgs.Cli
                     }
                     effectiveText = new ConsoleString(effectiveText.StringValue, fg, bg);
                 }
-                else if (HasFocus)
+            }
+
+            if (Shortcut != null)
+            {
+                if (Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Alt)
                 {
-                    effectiveText = effectiveText.ToDifferentBackground(DefaultColors.FocusColor);
+                    shortcut = new ConsoleString($" (ALT+{Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
                 }
-
-                drawState += effectiveText;
-
-                if(Shortcut != null)
+                else if (Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Shift)
                 {
-                    if(Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Alt)
-                    {
-                        drawState += new ConsoleString($" (ALT+{Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
-                    }
-                    else if (Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Shift)
-                    {
-                        drawState += new ConsoleString($" (SHIFT+{Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
-                    }
-                    else if (Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Control)
-                    {
-                        drawState += new ConsoleString($" (CTL+{Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
-                    }
-                    else
-                    {
-                        drawState += new ConsoleString($" ({Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
-                    }
+                    shortcut = new ConsoleString($" (SHIFT+{Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
+                }
+                else if (Shortcut.Modifier.HasValue && Shortcut.Modifier == ConsoleModifiers.Control)
+                {
+                    shortcut = new ConsoleString($" (CTL+{Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
+                }
+                else
+                {
+                    shortcut = new ConsoleString($" ({Shortcut.Key})", CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor);
                 }
             }
 
-            drawState += "]".ToConsoleString(CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, Background);
-            Width = drawState.Length;
-            context.DrawString(drawState, 0, 0);
+            var endAnchor = "]".ToConsoleString(HasFocus ? DefaultColors.BackgroundColor : CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, HasFocus ? DefaultColors.FocusColor : Background);
+            var ret = startAnchor + effectiveText + shortcut + endAnchor;
+            return ret;
         }
+
+        /// <summary>
+        /// Called when the button is added to an app
+        /// </summary>
+        public void OnAddedToVisualTree() =>  RegisterShortcutIfPossibleAndNotAlreadyDone();
+
+        private void RegisterShortcutIfPossibleAndNotAlreadyDone()
+        {
+            if (Shortcut != null && shortcutRegistered == false && Application != null)
+            {
+                shortcutRegistered = true;
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(Shortcut.Key, Shortcut.Modifier, Pressed.Fire, this);
+            }
+        }
+
+        private void OnKeyInputReceived(ConsoleKeyInfo info)
+        {
+            if(info.Key == ConsoleKey.Enter || info.Key == ConsoleKey.Spacebar)
+            {
+                Pressed.Fire();
+            }
+        }
+
+        /// <summary>
+        /// paints the button
+        /// </summary>
+        /// <param name="context">drawing context</param>
+        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(GetButtonDisplayString(), 0, 0);
     }
 }

@@ -259,12 +259,7 @@ namespace PowerArgs.Cli
         /// Shows the data in a chart via an interactive console app
         /// </summary>
         /// <param name="options">options used to render the chart</param>
-        public static void Show(XYChartOptions options)
-        {
-            var app = new ConsoleApp();
-            var chart = app.LayoutRoot.Add(new XYChart(options)).Fill();
-            app.Start().Wait();
-        }
+        public static void Show(XYChartOptions options) => ConsoleApp.Show(new XYChart(options));
 
         /// <summary>
         /// Re-evaluates the data and re-renders the chart
