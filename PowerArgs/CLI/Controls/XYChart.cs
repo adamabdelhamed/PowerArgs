@@ -503,7 +503,7 @@ namespace PowerArgs.Cli
 
         private static double GetMaxValueAcrossSeries(IEnumerable<Series> seriesCollection, Func<Series, double> maxFunc)
         {
-            double ret = 0;
+            double ret = double.MinValue;
 
             foreach (var series in seriesCollection)
             {
