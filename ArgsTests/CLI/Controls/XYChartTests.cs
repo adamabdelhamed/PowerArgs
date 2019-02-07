@@ -104,6 +104,50 @@ namespace ArgsTests.CLI.Controls
             RenderChartTestCommon(options);
         }
 
+        [TestMethod]
+        public void Parabola()
+        {
+
+            var points = new List<DataPoint>();
+            for(var i = -100; i <= 100; i++)
+            {
+                points.Add(new DataPoint()
+                {
+                    X = i,
+                    Y = i * i
+                });
+            }
+
+            RenderChartTestCommon(new XYChartOptions()
+            {
+                Title = "Parabola".ToRed(),
+                Data = new List<Series>() { new Series() { Points = points } }
+            });
+        }
+
+        [TestMethod]
+        public void Cube()
+        {
+
+            var points = new List<DataPoint>();
+            for (var i = -100; i <= 100; i++)
+            {
+                points.Add(new DataPoint()
+                {
+                    X = i,
+                    Y = i * i * i
+                });
+            }
+
+            RenderChartTestCommon(new XYChartOptions()
+            {
+                Title = "Cube".ToMagenta(),
+                Data = new List<Series>() { new Series() { Points = points } }
+            });
+        }
+
+
+
         public void RenderChartTestCommon(XYChartOptions options, int w = 80, int h = 30)
         {
             var app = new CliTestHarness(this.TestContext, w, h);

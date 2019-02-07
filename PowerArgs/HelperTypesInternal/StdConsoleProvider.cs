@@ -96,13 +96,13 @@ namespace PowerArgs
         public int WindowHeight
         {
             get { return Console.WindowHeight; }
-            set { Console.WindowHeight = value; }
+            set { Console.WindowHeight = Math.Min(Console.LargestWindowHeight, value); }
         }
 
         public int WindowWidth
         {
             get { return Console.WindowWidth; }
-            set { Console.WindowWidth = value; }
+            set { Console.WindowWidth = Math.Min(Console.LargestWindowWidth, value); }
         }
 
         public bool KeyAvailable

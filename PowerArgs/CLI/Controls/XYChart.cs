@@ -98,7 +98,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// The character to use to visually represent a point in this data series
         /// </summary>
-        public ConsoleCharacter PlotCharacter { get; set; } = new ConsoleCharacter('X', ConsoleColor.White);
+        public ConsoleCharacter PlotCharacter { get; set; } = new ConsoleCharacter('+', ConsoleColor.Blue);
 
         /// <summary>
         /// When set to true the user will be able to focus on the data points in this series using the tab and arrow keys.
