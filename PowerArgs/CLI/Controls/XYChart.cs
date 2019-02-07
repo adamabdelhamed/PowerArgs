@@ -173,10 +173,16 @@ namespace PowerArgs.Cli
         private int XAxisWidth => XAxisRight - XAxisLeft;
         private int YAxisHeight => YAxisBottom - YAxisTop;
 
+        private double? cachedMinXValueInPlotArea;
         private double MinXValueInPlotArea
         {
             get
             {
+                if(cachedMinXValueInPlotArea.HasValue)
+                {
+                    return cachedMinXValueInPlotArea.Value;
+                }
+
                 if (options.XMinOverride.HasValue)
                 {
                     return options.XMinOverride.Value;
@@ -187,15 +193,21 @@ namespace PowerArgs.Cli
                 PadZeroRangeIfNeeded(ref trueMin, ref trueMax);
                 var trueRange = trueMax - trueMin;
                 var padding = trueRange * options.XAxisRangePadding;
-                return trueMin - padding / 2.0;
+                cachedMinXValueInPlotArea = trueMin - padding / 2.0;
+                return cachedMinXValueInPlotArea.Value;
             }
         }
 
-
+        private double? cachedMinYValueInPlotArea;
         private double MinYValueInPlotArea
         {
             get
             {
+                if(cachedMinYValueInPlotArea.HasValue)
+                {
+                    return cachedMinYValueInPlotArea.Value;
+                }
+
                 if (options.YMinOverride.HasValue)
                 {
                     return options.YMinOverride.Value;
@@ -206,14 +218,21 @@ namespace PowerArgs.Cli
                 PadZeroRangeIfNeeded(ref trueMin, ref trueMax);
                 var trueRange = trueMax - trueMin;
                 var padding = trueRange * options.YAxisRangePadding;
-                return trueMin - padding / 2.0;
+                cachedMinYValueInPlotArea =  trueMin - padding / 2.0;
+                return cachedMinYValueInPlotArea.Value;
             }
         }
 
+        private double? cachedMaxXValueInPlotArea;
         private double MaxXValueInPlotArea
         {
             get
             {
+                if(cachedMaxXValueInPlotArea.HasValue)
+                {
+                    return cachedMaxXValueInPlotArea.Value;
+                }
+
                 if (options.XMaxOverride.HasValue)
                 {
                     return options.XMaxOverride.Value;
@@ -224,15 +243,21 @@ namespace PowerArgs.Cli
                 PadZeroRangeIfNeeded(ref trueMin, ref trueMax);
                 var trueRange = trueMax - trueMin;
                 var padding = trueRange * options.XAxisRangePadding;
-                return trueMax + padding / 2.0;
+                cachedMaxXValueInPlotArea =  trueMax + padding / 2.0;
+                return cachedMaxXValueInPlotArea.Value;
             }
         }
 
-
+        private double? cachedMaxYValueInPlotArea;
         private double MaxYValueInPlotArea
         {
             get
             {
+                if(cachedMaxYValueInPlotArea.HasValue)
+                {
+                    return cachedMaxYValueInPlotArea.Value;
+                }
+
                 if (options.YMaxOverride.HasValue)
                 {
                     return options.YMaxOverride.Value;
@@ -243,7 +268,8 @@ namespace PowerArgs.Cli
                 PadZeroRangeIfNeeded(ref trueMin, ref trueMax);
                 var trueRange = trueMax - trueMin;
                 var padding = trueRange * options.YAxisRangePadding;
-                return trueMax + padding / 2.0;
+                cachedMaxYValueInPlotArea = trueMax + padding / 2.0;
+                return cachedMaxYValueInPlotArea.Value;
             }
         }
 
@@ -304,7 +330,8 @@ namespace PowerArgs.Cli
         public static void Show(XYChartOptions options) => ConsoleApp.Show(new XYChart(options));
 
         /// <summary>
-        /// Re-evaluates the data and re-renders the chart
+        /// Re-evaluates the data and re-renders the chart. You need to call this method if you have
+        /// modified the data since the last refresh or since calling the chart's constructor
         /// </summary>
         public void Refresh()
         {
@@ -398,6 +425,11 @@ namespace PowerArgs.Cli
 
         private void AddDataPoints()
         {
+            cachedMinXValueInPlotArea = null;
+            cachedMinYValueInPlotArea = null;
+            cachedMaxXValueInPlotArea = null;
+            cachedMaxYValueInPlotArea = null;
+
             this.Controls.Clear();
             foreach (var series in options.Data)
             {
@@ -445,8 +477,18 @@ namespace PowerArgs.Cli
                 {
                     var control = dataPointControls[i];
                     control.Bars.Clear();
-                    control.X = ConvertXValueToPixel(control.DataPoint.X);
-                    control.Y = ConvertYValueToPixel(control.DataPoint.Y);
+                    var newX = ConvertXValueToPixel(control.DataPoint.X);
+                    var newY = ConvertYValueToPixel(control.DataPoint.Y);
+                    if (newX >= 0 && newX < Width && newY >= 0 && newY < Height)
+                    {
+                        control.X = newX;
+                        control.Y = newY;
+                        control.IsVisible = true;
+                    }
+                    else
+                    {
+                        control.IsVisible = false;
+                    }
 
                     if (control.Series.PlotMode == PlotMode.Bars)
                     {
@@ -466,22 +508,28 @@ namespace PowerArgs.Cli
                     else if (control.Series.PlotMode == PlotMode.Lines && i < dataPointControls.Count - 1)
                     {
                         var nextControl = dataPointControls[i + 1];
-                        nextControl.X = ConvertXValueToPixel(nextControl.DataPoint.X);
-                        nextControl.Y = ConvertYValueToPixel(nextControl.DataPoint.Y);
-                        foreach (var point in ConsoleBitmap.DefineLine(control.X, control.Y, nextControl.X, nextControl.Y))
+                        var newX2 = ConvertXValueToPixel(nextControl.DataPoint.X);
+                        var newY2 = ConvertYValueToPixel(nextControl.DataPoint.Y);
+                        if (newX2 >= 0 && newX2 < Width && newY2 >= 0 && newY2 < Height)
                         {
-                            Controls.Add(new BarOrLineControl()
+                            nextControl.X = newX2;
+                            nextControl.Y = newY2;
+
+                            foreach (var point in ConsoleBitmap.DefineLine(control.X, control.Y, nextControl.X, nextControl.Y))
                             {
-                                X = point.X,
-                                Y = point.Y,
-                                ZIndex = LinesAndBarsZIndex,
-                                Value = new ConsoleCharacter('-', control.Series.PlotCharacter.ForegroundColor, control.Series.PlotCharacter.BackgroundColor)
-                            });
+                                Controls.Add(new BarOrLineControl()
+                                {
+                                    X = point.X,
+                                    Y = point.Y,
+                                    ZIndex = LinesAndBarsZIndex,
+                                    Value = new ConsoleCharacter('-', control.Series.PlotCharacter.ForegroundColor, control.Series.PlotCharacter.BackgroundColor)
+                                });
+                            }
                         }
                     }
                 }
             }
-        }
+       }
 
         private void HandleHomeKey()
         {
