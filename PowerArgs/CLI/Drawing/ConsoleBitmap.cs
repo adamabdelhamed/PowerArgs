@@ -5,9 +5,15 @@ using System.Text;
 
 namespace PowerArgs.Cli
 {
-    public class ConsoleBitmap : Rectangular
+    public class ConsoleBitmap
     {
         private const double DrawPrecision = .5;
+
+
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+        public int X { get; private set; }
+        public int Y { get; private set; }
 
         public ConsoleCharacter Background { get; set; }
         public ConsoleCharacter Pen { get; set; }
@@ -33,7 +39,10 @@ namespace PowerArgs.Cli
 
             bounds = new Rectangle(0, 0, bounds.Width, bounds.Height);
 
-            this.Bounds = bounds;
+            this.X = bounds.X;
+            this.Y = bounds.Y;
+            this.Width = bounds.Width;
+            this.Height = bounds.Height;
             this.scope = bounds;
             this.Console = ConsoleProvider.Current;
             this.lastBufferWidth = this.Console.BufferWidth;
@@ -127,8 +136,9 @@ namespace PowerArgs.Cli
             }
 
             pixels = newPixels;
-            this.Size = new Size(w, h);
-            this.Scope(Bounds);
+            this.Width = w;
+            this.Height = h;
+            this.Scope(new Rectangle(X,Y,Width,Height));
             this.Invalidate();
         }
 
@@ -243,16 +253,25 @@ namespace PowerArgs.Cli
             x2 = scope.X + x2;
             y2 = scope.Y + y2;
 
+            foreach (var point in DefineLine(x1, y1, x2, y2))
+            {
+                if (IsInScope(point.X, point.Y))
+                {
+                    pixels[point.X][point.Y].Value = Pen;
+                }
+            }
+        }
+
+        public static List<Point> DefineLine(int x1, int y1, int x2, int y2)
+        {
+            var ret = new List<Point>();
             if (x1 == x2)
             {
                 int yMin = y1 >= y2 ? y2 : y1;
                 int yMax = y1 >= y2 ? y1 : y2;
                 for (int y = yMin; y < yMax; y++)
                 {
-                    if (IsInScope(x1, y))
-                    {
-                        pixels[x1][y].Value = Pen;
-                    }
+                    ret.Add(new Point(x1, y));
                 }
             }
             else if (y1 == y2)
@@ -261,12 +280,8 @@ namespace PowerArgs.Cli
                 int xMax = x1 >= x2 ? x1 : x2;
                 for (int x = xMin; x < xMax; x++)
                 {
-                    if (IsInScope(x, y1))
-                    {
-                        pixels[x][y1].Value = Pen;
-                    }
+                    ret.Add(new Point(x, y1));
                 }
-                return;
             }
             else
             {
@@ -275,60 +290,47 @@ namespace PowerArgs.Cli
                 int dx = Math.Abs(x1 - x2);
                 int dy = Math.Abs(y1 - y2);
 
-                if (dy > dx)
-                {
-                    for (double x = x1; x < x2; x += DrawPrecision)
-                    {
-                        double y = slope + (x - x1) + y1;
-                        int xInt = (int)x;
-                        int yInt = (int)y;
-                        if (IsInScope(xInt, yInt))
-                        {
-                            pixels[xInt][yInt].Value = Pen;
-                        }
-                    }
 
-                    for (double x = x2; x < x1; x += DrawPrecision)
-                    {
-                        double y = slope + (x - x1) + y1;
-                        int xInt = (int)x;
-                        int yInt = (int)y;
-                        if (IsInScope(xInt, yInt))
-                        {
-                            pixels[xInt][yInt].Value = Pen;
-                        }
-                    }
-                }
-                else
+                for (double x = x1; x < x2; x += DrawPrecision)
                 {
-                    for (double y = y1; y < y2; y += DrawPrecision)
-                    {
-                        double x = ((y - y1) / slope) + x1;
-                        int xInt = (int)x;
-                        int yInt = (int)y;
-                        if (IsInScope(xInt, yInt))
-                        {
-                            pixels[xInt][yInt].Value = Pen;
-                        }
-                    }
-
-                    for (double y = y2; y < y1; y += DrawPrecision)
-                    {
-                        double x = ((y - y1) / slope) + x1;
-                        int xInt = (int)x;
-                        int yInt = (int)y;
-                        if (IsInScope(xInt, yInt))
-                        {
-                            pixels[xInt][yInt].Value = Pen;
-                        }
-                    }
+                    double y = slope + (x - x1) + y1;
+                    int xInt = (int)Math.Round(x);
+                    int yInt = (int)Math.Round(y);
+                    ret.Add(new Point(xInt, yInt));
                 }
+
+                for (double x = x2; x < x1; x += DrawPrecision)
+                {
+                    double y = slope + (x - x1) + y1;
+                    int xInt = (int)Math.Round(x);
+                    int yInt = (int)Math.Round(y);
+                    ret.Add(new Point(xInt, yInt));
+                }
+
+                for (double y = y1; y < y2; y += DrawPrecision)
+                {
+                    double x = ((y - y1) / slope) + x1;
+                    int xInt = (int)Math.Round(x);
+                    int yInt = (int)Math.Round(y);
+                    ret.Add(new Point(xInt, yInt));
+                }
+
+                for (double y = y2; y < y1; y += DrawPrecision)
+                {
+                    double x = ((y - y1) / slope) + x1;
+                    int xInt = (int)Math.Round(x);
+                    int yInt = (int)Math.Round(y);
+                    ret.Add(new Point(xInt, yInt));
+                }
+
             }
+
+            return ret.Distinct().ToList();
         }
 
         public ConsoleBitmap Clone()
         {
-            var ret = new ConsoleBitmap(this.Bounds, this.Background);
+            var ret = new ConsoleBitmap(X,Y,Width,Height, this.Background);
             for (var x = 0; x < Width; x++)
             {
                 for (var y = 0; y < Height; y++)

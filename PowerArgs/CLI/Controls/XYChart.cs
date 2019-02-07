@@ -67,6 +67,25 @@ namespace PowerArgs.Cli
     }
 
     /// <summary>
+    /// Mode for rendering plots
+    /// </summary>
+    public enum PlotMode
+    {
+        /// <summary>
+        /// Renders each data point as a single character
+        /// </summary>
+        Points,
+        /// <summary>
+        /// Renders bars underneath each data point
+        /// </summary>
+        Bars,
+        /// <summary>
+        /// Connects sequential data points with lines
+        /// </summary>
+        Lines,
+    }
+
+    /// <summary>
     /// A model for a series of data that can be plotted on an XYChart
     /// </summary>
     public class Series
@@ -90,6 +109,11 @@ namespace PowerArgs.Cli
         /// The data points in this series
         /// </summary>
         public List<DataPoint> Points { get; set; }
+
+        /// <summary>
+        /// The plot mode, default to points
+        /// </summary>
+        public PlotMode PlotMode { get; set; } = PlotMode.Points;
     }
 
     /// <summary>
@@ -123,7 +147,19 @@ namespace PowerArgs.Cli
         {
             public DataPoint DataPoint { get; set; }
             public Series Series { get; set; }
+
+            public List<BarOrLineControl> Bars { get; set; } = new List<BarOrLineControl>();
         }
+
+        private class BarOrLineControl : PixelControl
+        {
+            public BarOrLineControl() { this.CanFocus = false; }
+        }
+
+        private const int TitleZIndex = 1;
+        private const int LinesAndBarsZIndex = 2;
+        private const int DataPointsZIndex = 3;
+        private const int FocusedDataPointZIndex = 4;
 
         private const int MaxXAxisLabelLength = 10;
         private const int XAxisBottomOffset = 2;
@@ -154,7 +190,7 @@ namespace PowerArgs.Cli
                 return trueMin - padding / 2.0;
             }
         }
-       
+
 
         private double MinYValueInPlotArea
         {
@@ -214,6 +250,10 @@ namespace PowerArgs.Cli
         private Label chartTitleLabel;
         private Label seriesTitleLabel;
 
+        private List<AxisLabelInfo> cachedXAxisLabels;
+        private List<AxisLabelInfo> cachedYAxisLabels;
+
+
         private XYChartOptions options;
 
         /// <summary>
@@ -225,8 +265,8 @@ namespace PowerArgs.Cli
             this.options = options;
             AddDataPoints();
             this.SubscribeForLifetime(nameof(Bounds), PositionDataPoints, this);
-            chartTitleLabel = Add(new Label() { Text = options.Title }).CenterHorizontally().DockToTop(padding: 2);
-            seriesTitleLabel = Add(new Label() { Text = "Series1".ToConsoleString() }).CenterHorizontally().DockToTop(padding: 3);
+            chartTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = options.Title }).CenterHorizontally().DockToTop(padding: 2);
+            seriesTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = "Series1".ToConsoleString() }).CenterHorizontally().DockToTop(padding: 3);
 
             this.AddedToVisualTree.SubscribeOnce(() =>
             {
@@ -234,6 +274,8 @@ namespace PowerArgs.Cli
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.DownArrow, null, HandleDownArrow, this);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.LeftArrow, null, HandleLeftArrow, this);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.RightArrow, null, HandleRightArrow, this);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Home, null, HandleHomeKey, this);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.End, null, HandleEndKey, this);
             });
         }
 
@@ -253,7 +295,7 @@ namespace PowerArgs.Cli
         /// Shows the data in a chart via an interactive console app
         /// </summary>
         /// <param name="data">the data points to plot</param>
-        public static void Show(IEnumerable<DataPoint> data) => Show(new XYChartOptions() { Data = new List<Series>() { new Series(){ Points = data.ToList() } } });
+        public static void Show(IEnumerable<DataPoint> data) => Show(new XYChartOptions() { Data = new List<Series>() { new Series() { Points = data.ToList() } } });
 
         /// <summary>
         /// Shows the data in a chart via an interactive console app
@@ -280,7 +322,7 @@ namespace PowerArgs.Cli
             PaintXAxis(context);
             base.OnPaint(context);
         }
-        
+
         private void PaintXAxis(ConsoleBitmap context)
         {
             context.Pen = new ConsoleCharacter('-', Foreground, Background);
@@ -289,23 +331,28 @@ namespace PowerArgs.Cli
             var minSpaceBetweenLabels = 1;
             var maxNumberOfLabels = XAxisWidth / (MaxXAxisLabelLength + minSpaceBetweenLabels);
 
-            foreach (var labelValue in options.XAxisFormatter.GetOptimizedAxisLabelValues(MinXValueInPlotArea, MaxXValueInPlotArea, maxNumberOfLabels))
-            {
-                var label = options.XAxisFormatter.FormatValue(MinXValueInPlotArea, MaxXValueInPlotArea, labelValue);
-
-                if (label.Length > MaxXAxisLabelLength)
+            cachedXAxisLabels = cachedXAxisLabels ??
+                options.XAxisFormatter.GetOptimizedAxisLabelValues(MinXValueInPlotArea, MaxXValueInPlotArea, maxNumberOfLabels).Select(d =>
                 {
-                    label = label.Substring(0, MaxXAxisLabelLength);
-                }
+                    var label = options.XAxisFormatter.FormatValue(MinXValueInPlotArea, MaxXValueInPlotArea, d);
 
-                var x = ConvertXValueToPixel(labelValue);
+                    if (label.Length > MaxXAxisLabelLength)
+                    {
+                        label = label.Substring(0, MaxXAxisLabelLength);
+                    }
+                    return new AxisLabelInfo() { Label = label, Value = d };
+                }).ToList();
+
+            foreach (var labelInfo in cachedXAxisLabels)
+            {
+                var x = ConvertXValueToPixel(labelInfo.Value);
                 var y = XAxisYValue + 1;
 
-                if (x + label.Length <= Width)
+                if (x + labelInfo.Label.Length <= Width)
                 {
                     context.Pen = new ConsoleCharacter('^', Foreground, Background);
                     context.DrawPoint(x, y - 1);
-                    context.DrawString(label, x, y);
+                    context.DrawString(labelInfo.Label, x, y);
                 }
             }
         }
@@ -318,6 +365,7 @@ namespace PowerArgs.Cli
         /// <returns>the label info for the y axis</returns>
         private List<AxisLabelInfo> DetermineYAxisLabels()
         {
+            if (cachedYAxisLabels != null) return cachedYAxisLabels;
             var maxNumberOfLabels = YAxisHeight / 3;
             maxYAxisLabelLength = 0;
             var labels = new List<AxisLabelInfo>();
@@ -327,6 +375,7 @@ namespace PowerArgs.Cli
                 labels.Add(new AxisLabelInfo() { Label = label, Value = labelValue });
                 maxYAxisLabelLength = Math.Max(maxYAxisLabelLength, label.Length);
             }
+            cachedYAxisLabels = labels;
             return labels;
         }
 
@@ -343,7 +392,7 @@ namespace PowerArgs.Cli
                 var y = ConvertYValueToPixel(label.Value);
                 context.DrawString(label.Label, x, y);
                 context.Pen = new ConsoleCharacter('>', Foreground, Background);
-                context.DrawPoint(maxYAxisLabelLength,y);
+                context.DrawPoint(maxYAxisLabelLength, y);
             }
         }
 
@@ -354,17 +403,27 @@ namespace PowerArgs.Cli
             {
                 for (int i = 0; i < series.Points.Count; i++)
                 {
-                    var pixel = new DataPointControl() { CanFocus = series.AllowInteractivity, DataPoint = series.Points[i], Series = series, Value = series.PlotCharacter };
+                    var pixel = new DataPointControl() { ZIndex = DataPointsZIndex, CanFocus = series.AllowInteractivity, DataPoint = series.Points[i], Series = series, Value = series.PlotCharacter };
                     pixel.Focused.SubscribeForLifetime(() =>
                     {
-                        pixel.Value = new ConsoleCharacter(series.PlotCharacter.Value, ConsoleColor.Cyan);
+                        pixel.ZIndex = FocusedDataPointZIndex;
+                        pixel.Value = new ConsoleCharacter(series.PlotCharacter.Value, ConsoleColor.Black, ConsoleColor.Cyan);
+                        pixel.Bars.ForEach(b => b.Value = pixel.Value);
+                        pixel.Bars.ForEach(b => b.ZIndex = pixel.ZIndex);
                         var newTitle = pixel.Series.Title.ToConsoleString(pixel.Series.PlotCharacter.ForegroundColor);
                         var xValue = options.XAxisFormatter.FormatValue(MinXValueInPlotArea, MaxXValueInPlotArea, pixel.DataPoint.X);
                         var yValue = options.YAxisFormatter.FormatValue(MinYValueInPlotArea, MaxYValueInPlotArea, pixel.DataPoint.Y);
-                        newTitle += new ConsoleString(" ( " + xValue + ", " + yValue + " )", series.PlotCharacter.ForegroundColor);
+                        newTitle += new ConsoleString(" ( " + xValue + ", " + yValue + " )", series.PlotCharacter.ForegroundColor, series.PlotCharacter.BackgroundColor);
                         seriesTitleLabel.Text = newTitle;
                     }, pixel);
-                    pixel.Unfocused.SubscribeForLifetime(() => pixel.Value = series.PlotCharacter, pixel);
+
+                    pixel.Unfocused.SubscribeForLifetime(() =>
+                    {
+                        pixel.Value = series.PlotCharacter;
+                        pixel.Bars.ForEach(b => b.Value = pixel.Value);
+                        pixel.Bars.ForEach(b => b.ZIndex = LinesAndBarsZIndex);
+                        pixel.ZIndex = DataPointsZIndex;
+                    }, pixel);
                     this.Controls.Add(pixel);
                 }
             }
@@ -372,12 +431,78 @@ namespace PowerArgs.Cli
 
         private void PositionDataPoints()
         {
+            cachedXAxisLabels = null;
+            cachedYAxisLabels = null;
             DetermineYAxisLabels(); // ensures the y axis is offset properly due to variable label widths
-            foreach (var control in Controls.Where(c => c is DataPointControl).Select(c => c as DataPointControl))
+
+            this.Controls.WhereAs<BarOrLineControl>().ToList().ForEach(c => Controls.Remove(c));
+            var dataPointControlsGroups = Controls.Where(c => c is DataPointControl).Select(c => c as DataPointControl).GroupBy(c => c.Series).ToList();
+
+            foreach (var seriesOfCOntrols in dataPointControlsGroups)
             {
-                control.X = ConvertXValueToPixel(control.DataPoint.X);
-                control.Y = ConvertYValueToPixel(control.DataPoint.Y);
+                var dataPointControls = seriesOfCOntrols.ToList();
+                for (var i = 0; i < dataPointControls.Count; i++)
+                {
+                    var control = dataPointControls[i];
+                    control.Bars.Clear();
+                    control.X = ConvertXValueToPixel(control.DataPoint.X);
+                    control.Y = ConvertYValueToPixel(control.DataPoint.Y);
+
+                    if (control.Series.PlotMode == PlotMode.Bars)
+                    {
+                        for (var y = control.Y + 1; y < YAxisBottom; y++)
+                        {
+                            var barPixel = new BarOrLineControl()
+                            {
+                                X = control.X,
+                                Y = y,
+                                ZIndex = control.HasFocus ? control.ZIndex : LinesAndBarsZIndex,
+                                Value = control.Value
+                            };
+                            Controls.Add(barPixel);
+                            control.Bars.Add(barPixel);
+                        }
+                    }
+                    else if (control.Series.PlotMode == PlotMode.Lines && i < dataPointControls.Count - 1)
+                    {
+                        var nextControl = dataPointControls[i + 1];
+                        nextControl.X = ConvertXValueToPixel(nextControl.DataPoint.X);
+                        nextControl.Y = ConvertYValueToPixel(nextControl.DataPoint.Y);
+                        foreach (var point in ConsoleBitmap.DefineLine(control.X, control.Y, nextControl.X, nextControl.Y))
+                        {
+                            Controls.Add(new BarOrLineControl()
+                            {
+                                X = point.X,
+                                Y = point.Y,
+                                ZIndex = LinesAndBarsZIndex,
+                                Value = new ConsoleCharacter('-', control.Series.PlotCharacter.ForegroundColor, control.Series.PlotCharacter.BackgroundColor)
+                            });
+                        }
+                    }
+                }
             }
+        }
+
+        private void HandleHomeKey()
+        {
+            Controls
+                .WhereAs<DataPointControl>()
+                .Where(p => p.CanFocus)
+                .OrderBy(p => p.X)
+                .ThenByDescending(p => p.Y)
+                .FirstOrDefault()
+                ?.TryFocus();
+        }
+
+        private void HandleEndKey()
+        {
+            Controls
+                .WhereAs<DataPointControl>()
+                .Where(p => p.CanFocus)
+                .OrderByDescending(p => p.X)
+                .ThenBy(p => p.Y)
+                .FirstOrDefault()
+                ?.TryFocus();
         }
 
         private void HandleUpArrow()
@@ -431,7 +556,7 @@ namespace PowerArgs.Cli
                 .FirstOrDefault()
                 ?.TryFocus();
         }
-        
+
         private int ConvertXValueToPixel(double x)
         {
             double xRange = MaxXValueInPlotArea - MinXValueInPlotArea;
