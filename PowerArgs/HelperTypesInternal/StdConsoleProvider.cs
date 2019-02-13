@@ -93,25 +93,28 @@ namespace PowerArgs
             set { Console.BufferWidth = value; }
         }
 
+        /// <summary>
+        /// Gets and sets Console.WindowHeight
+        /// </summary>
         public int WindowHeight
         {
             get { return Console.WindowHeight; }
             set { Console.WindowHeight = Math.Min(Console.LargestWindowHeight, value); }
         }
 
+        /// <summary>
+        /// Gets and sets WindowWidth
+        /// </summary>
         public int WindowWidth
         {
             get { return Console.WindowWidth; }
             set { Console.WindowWidth = Math.Min(Console.LargestWindowWidth, value); }
         }
 
-        public bool KeyAvailable
-        {
-            get
-            {
-                return Console.KeyAvailable;
-            }
-        }
+        /// <summary>
+        /// returns Console.KeyAvailable
+        /// </summary>
+        public bool KeyAvailable => Console.KeyAvailable;
 
         /// <summary>
         /// Used for internal implementation, but marked public for testing, please do not use.

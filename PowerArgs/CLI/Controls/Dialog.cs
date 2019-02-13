@@ -1,33 +1,64 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// Information about a button to be shown on a dialog
+    /// </summary>
     public class DialogButton
     {
+        /// <summary>
+        /// The display text for the button
+        /// </summary>
         public ConsoleString DisplayText { get; set; }
+
+        /// <summary>
+        /// The id of this button's value
+        /// </summary>
         public string Id { get; set; }
+
+        /// <summary>
+        /// An object that this button represents
+        /// </summary>
         public object Value { get; set; }
     }
 
+    /// <summary>
+    /// An object that represetns a dialog option
+    /// </summary>
     public class DialogOption : DialogButton { }
 
-    // todo - restrict the focus system to include only the dialog buttons so the dialog feels more modal
+    /// <summary>
+    /// A console control that shows a dialog as a layer above a ConsoleApp
+    /// </summary>
     public class Dialog : ConsolePanel
     {
+        /// <summary>
+        /// The maximum height of the dialog
+        /// </summary>
         public int MaxHeight { get; set; } 
 
+        /// <summary>
+        /// If true, the escape key can be used to dismiss the dialog
+        /// which should be interpreted as a cancellation
+        /// </summary>
         public bool AllowEscapeToCancel { get; set; }
 
+        /// <summary>
+        /// An event that fires when the user cancelled the dialog
+        /// </summary>
         public Event Cancelled { get; private set; } = new Event();
 
         private Button closeButton;
 
         private int myFocusStackDepth;
 
+        /// <summary>
+        /// Creates a dialog using the given control as its content
+        /// </summary>
+        /// <param name="content">the content of the dialog</param>
         public Dialog(ConsoleControl content)
         {
             Add(content).Fill(padding: new Thickness(0, 0, 1, 1));
@@ -39,6 +70,10 @@ namespace PowerArgs.Cli
             RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this);
         }
 
+        /// <summary>
+        /// Shows the dialog on top of the current app
+        /// </summary>
+        /// <returns>a promise that resolves when this dialog is dismissed</returns>
         public Promise Show()
         {
             var deferred = Deferred.Create();
@@ -89,7 +124,7 @@ namespace PowerArgs.Cli
 
         }
 
-        public void OnRemovedFromVisualTree()
+        private void OnRemovedFromVisualTree()
         {
             Application.FocusManager.Pop();
         }
@@ -103,8 +138,10 @@ namespace PowerArgs.Cli
             }
         }
 
-
-
+        /// <summary>
+        /// Paints the dialog control
+        /// </summary>
+        /// <param name="context">the drawing surface</param>
         protected override void OnPaint(ConsoleBitmap context)
         {
             context.Pen = new ConsoleCharacter(' ', null, myFocusStackDepth == Application.FocusManager.StackDepth ? DefaultColors.H1Color : DefaultColors.DisabledColor);
@@ -113,11 +150,27 @@ namespace PowerArgs.Cli
             base.OnPaint(context);
         }
 
+        /// <summary>
+        /// Prompts the user with the given message and gives the user the option
+        /// of selecting yes or no
+        /// </summary>
+        /// <param name="message">the prompt message</param>
+        /// <param name="yesCallback">the callback to execute if the user selects yes</param>
+        /// <param name="noCallback">the callback to execute if the user selects no or cancels</param>
+        /// <param name="maxHeight">the max height of the dialog</param>
         public static void ConfirmYesOrNo(string message, Action yesCallback, Action noCallback = null, int maxHeight = 10)
         {
             ConfirmYesOrNo(message.ToConsoleString(), yesCallback, noCallback, maxHeight);
         }
 
+        /// <summary>
+        /// Prompts the user with the given message and gives the user the option
+        /// of selecting yes or no
+        /// </summary>
+        /// <param name="message">the prompt message</param>
+        /// <param name="yesCallback">the callback to execute if the user selects yes</param>
+        /// <param name="noCallback">the callback to execute if the user selects no or cancels</param>
+        /// <param name="maxHeight">the max height of the dialog</param>
         public static void ConfirmYesOrNo(ConsoleString message, Action yesCallback, Action noCallback = null, int maxHeight = 10)
         {
             ShowMessage(message, (b) =>
@@ -133,6 +186,15 @@ namespace PowerArgs.Cli
             }, true, maxHeight, new DialogButton() { Id = "y", DisplayText = "Yes".ToConsoleString(), }, new DialogButton() { Id = "n", DisplayText = "No".ToConsoleString() });
         }
 
+        /// <summary>
+        /// Shows the current message and the given options via a dialog on top
+        /// of the current app
+        /// </summary>
+        /// <param name="message">the message to show</param>
+        /// <param name="allowEscapeToCancel">if true then the escape key will be interpreted as a cancel action</param>
+        /// <param name="maxHeight">the max height of the dialog</param>
+        /// <param name="buttons">the buttons to show</param>
+        /// <returns>a promise that will resolve with the selected button or null if the user cancelled</returns>
         public static Promise<DialogButton> ShowMessage(ConsoleString message, bool allowEscapeToCancel = true, int maxHeight = 10, params DialogButton[] buttons)
         {
             var d = Deferred<DialogButton>.Create();

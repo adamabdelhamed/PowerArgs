@@ -23,8 +23,14 @@ namespace PowerArgs
             this.argument = target;
         }
  
+        /// <summary>
+        /// Derived clases will implement this method which can perform completions
+        /// using the provided context
+        /// </summary>
+        /// <param name="context">the tab completion context</param>
+        /// <param name="completion">the completion value</param>
+        /// <returns>true if the completion was successful, false otherwise</returns>
         public abstract bool TryComplete(ArgumentAwareTabCompletionContext context, out string completion);
-
 
         public bool TryComplete(TabCompletionContext context, out string completion)
         {

@@ -1,24 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A wrapper over IDisposable
+    /// </summary>
     public abstract class Disposable : IDisposable
     {
+        /// <summary>
+        /// The deconstructor
+        /// </summary>
         ~Disposable()
         {
             Dispose(false);
         }
 
+        /// <summary>
+        /// The dispose method
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// The protected dispose method
+        /// </summary>
+        /// <param name="disposing">i used to know</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -27,11 +36,20 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Your real cleanup code goes here
+        /// </summary>
         protected abstract void DisposeManagedResources();
     }
 
+    /// <summary>
+    /// An implementation of IDisposable that does nothing
+    /// </summary>
     public class DummyDisposable : Disposable
     {
+        /// <summary>
+        /// Does nothing
+        /// </summary>
         protected override void DisposeManagedResources() { }
     }
 }

@@ -173,7 +173,7 @@ namespace PowerArgs.Cli
         /// Renders the progress bar and shows an indeterminate progress animation. Simultaneously, the work action is started. The bar will animate
         /// as long as the work action is running.
         /// </summary>
-        /// <param name="workTask">the task to wait for</param>
+        /// <param name="workAction">the action to wait for</param>
         public void RenderUntilIndeterminate(Action workAction)
         {
             Task workTask = new Task(workAction);

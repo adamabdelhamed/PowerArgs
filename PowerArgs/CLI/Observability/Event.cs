@@ -81,6 +81,18 @@ namespace PowerArgs.Cli
 
             SubscribeUnmanaged(wrappedAction);
         }
+
+        /// <summary>
+        /// Creates a lifetime that will end the next time this
+        /// event fires
+        /// </summary>
+        /// <returns>a lifetime that will end the next time this event fires</returns>
+        public Lifetime CreateNextFireLifetime()
+        {
+            var lifetime = new Lifetime();
+            this.SubscribeOnce(lifetime.Dispose);
+            return lifetime;
+        }
     }
     
     /// <summary>
@@ -162,6 +174,18 @@ namespace PowerArgs.Cli
             };
 
             SubscribeUnmanaged(wrappedAction);
+        }
+
+        /// <summary>
+        /// Creates a lifetime that will end the next time this
+        /// event fires
+        /// </summary>
+        /// <returns>a lifetime that will end the next time this event fires</returns>
+        public Lifetime CreateNextFireLifetime()
+        {
+            var lifetime = new Lifetime();
+            this.SubscribeOnce(t => lifetime.Dispose());
+            return lifetime;
         }
     }
 }

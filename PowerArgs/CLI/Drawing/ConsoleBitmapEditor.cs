@@ -4,11 +4,32 @@ using System.Collections.Generic;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A console control that can be used to interactively edit a 
+    /// ConsoleBitmap
+    /// </summary>
     public class ConsoleBitmapEditor : ConsolePanel
     {
+        /// <summary>
+        /// An event that fires when the user moves the cursor
+        /// </summary>
         public Event CursorMoved { get; private set; } = new Event();
+
+        /// <summary>
+        /// The bitmap being edited by this control
+        /// </summary>
         public ConsoleBitmap Bitmap { get; private set; }
+
+        /// <summary>
+        /// Gets the current cursor position in terms of which pixel it
+        /// is covering on the target bitmap
+        /// </summary>
         public Point CursorPosition => new Point(cursor.X - 1, cursor.Y - 1);
+
+        /// <summary>
+        /// An event that fires when a change has been made to the bitmap by way
+        /// of a user edit
+        /// </summary>
         public Event BitmapChanged { get; private set; } = new Event();
 
         private PixelControl cursor;
@@ -17,7 +38,17 @@ namespace PowerArgs.Cli
         private ConsoleColor currentFg { get => Get<ConsoleColor>(); set => Set(value); }
         private ConsoleColor currentBg { get => Get<ConsoleColor>(); set => Set(value); }
 
-        public ConsoleBitmapEditor(int w, int h, ConsoleCharacter? bg = null) : this(new ConsoleBitmap(w, h, bg)) { }
+        /// <summary>
+        /// Creates an editor with a new bitmap of the given size
+        /// </summary>
+        /// <param name="w">the width of the empty bitmap to create</param>
+        /// <param name="h">the height of the empty bitmap to create</param>
+        public ConsoleBitmapEditor(int w, int h) : this(new ConsoleBitmap(w, h)) { }
+
+        /// <summary>
+        /// Creates an editor for the given bitmap
+        /// </summary>
+        /// <param name="bitmap">the bitmap to edit</param>
         public ConsoleBitmapEditor(ConsoleBitmap bitmap)
         {
             this.Bitmap = bitmap;
@@ -51,6 +82,10 @@ namespace PowerArgs.Cli
             });
         }
 
+        /// <summary>
+        /// Creates a set of standard buttons that a wrapped control can include.
+        /// </summary>
+        /// <returns>a set of buttons</returns>
         public IEnumerable<Button> CreateStandardButtons()
         {
             var changeFgButton = new Button() { Shortcut = new KeyboardShortcut(ConsoleKey.F, ConsoleModifiers.Alt) };

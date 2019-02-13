@@ -412,7 +412,7 @@ namespace ArgsTests
             {
                 for (var y = 0; y < bmp.Height; y++)
                 {
-                    if (bmp.GetPixel(x, y).Value.HasValue)
+                    if (bmp.GetPixel(x, y).Value.HasValue && bmp.GetPixel(x, y).Value.Value != ' ')
                     {
                         pixelsWithValueCount++;
                         Assert.AreEqual(ConsoleColor.Yellow, bmp.GetPixel(x, y).Value.Value.ForegroundColor);

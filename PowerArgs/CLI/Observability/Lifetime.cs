@@ -29,11 +29,18 @@ namespace PowerArgs.Cli
             }
         }
         
+        /// <summary>
+        /// Creates a new lifetime
+        /// </summary>
         public Lifetime()
         {
             _manager = new LifetimeManager();
         }
 
+        /// <summary>
+        /// Delays until this lifetime is complete
+        /// </summary>
+        /// <returns>an async task</returns>
         public async Task AwaitEndOfLifetime()
         {
             while(IsExpired == false)
@@ -42,6 +49,11 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Registers an action to run when this lifetime ends
+        /// </summary>
+        /// <param name="cleanupCode">code to run when this lifetime ends</param>
+        /// <returns>a promis that will resolve after the cleanup code has run</returns>
         public Promise OnDisposed(Action cleanupCode)
         {
             if (IsExpired == false)
@@ -56,6 +68,12 @@ namespace PowerArgs.Cli
                 return d.Promise;
             }
         }
+
+        /// <summary>
+        /// Registers a disposable to be disposed when this lifetime ends
+        /// </summary>
+        /// <param name="cleanupCode">an object to dispose when this lifetime ends</param>
+        /// <returns>a promise that will resolve when the given object is disposed</returns>
         public Promise OnDisposed(IDisposable cleanupCode)
         {
             if (IsExpired == false)
@@ -71,11 +89,25 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Creates a new lifetime that will end when any of the given
+        /// lifetimes ends
+        /// </summary>
+        /// <param name="others">the lifetimes to use to generate this new lifetime</param>
+        /// <returns>a new lifetime that will end when any of the given
+        /// lifetimes ends</returns>
         public static Lifetime EarliestOf(params Lifetime[] others)
         {
             return EarliestOf((IEnumerable<Lifetime>)others);
         }
 
+        /// <summary>
+        /// Creates a new lifetime that will end when any of the given
+        /// lifetimes ends
+        /// </summary>
+        /// <param name="others">the lifetimes to use to generate this new lifetime</param>
+        /// <returns>a new lifetime that will end when any of the given
+        /// lifetimes ends</returns>
         public static Lifetime EarliestOf(IEnumerable<Lifetime> others)
         {
             Lifetime ret = new Lifetime();
@@ -92,6 +124,11 @@ namespace PowerArgs.Cli
             return ret;
         }
 
+        /// <summary>
+        /// Creates a new lifetime that may be disposed earlier, but will be disposed when this
+        /// lifetime ends
+        /// </summary>
+        /// <returns></returns>
         public Lifetime CreateChildLifetime()
         {
             var ret = new Lifetime();
@@ -105,6 +142,9 @@ namespace PowerArgs.Cli
             return ret;
         }
 
+        /// <summary>
+        /// Runs all the cleanup actions that have been registerd
+        /// </summary>
         protected override void DisposeManagedResources()
         {
             if (!IsExpired)

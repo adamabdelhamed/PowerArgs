@@ -10,11 +10,29 @@ namespace PowerArgs.Cli
     /// </summary>
     public enum PlayerState
     {
+        /// <summary>
+        /// The initial state when there is no video loaded
+        /// </summary>
         NotLoaded,
+        /// <summary>
+        /// A video failed to load
+        /// </summary>
         Failed,
+        /// <summary>
+        /// A video is playing
+        /// </summary>
         Playing,
+        /// <summary>
+        /// A video is buffering
+        /// </summary>
         Buffering,
+        /// <summary>
+        /// A video is paused
+        /// </summary>
         Paused,
+        /// <summary>
+        ///  A video is stopped
+        /// </summary>
         Stopped,
     }
 

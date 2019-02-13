@@ -1,52 +1,90 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A data structure representing a 2d image that can be pained in
+    /// a console window
+    /// </summary>
     public class ConsoleBitmap
     {
-        private const double DrawPrecision = .5;
+        private const double DrawPrecision = .25;
 
 
+        /// <summary>
+        /// The width of the image, in number of character pixels
+        /// </summary>
         public int Width { get; private set; }
+
+        /// <summary>
+        /// The height of the image, in number of character pixels
+        /// </summary>
         public int Height { get; private set; }
+
+        /// <summary>
+        /// The left of the image, in number of character pixels
+        /// </summary>
         public int X { get; private set; }
+
+        /// <summary>
+        /// The top of the image, in number of character pixels
+        /// </summary>
         public int Y { get; private set; }
 
-        public ConsoleCharacter Background { get; set; }
+        /// <summary>
+        /// The character to draw when calling the various Draw methods
+        /// </summary>
         public ConsoleCharacter Pen { get; set; }
 
-        public Rectangle scope { get; private set; }
+        /// <summary>
+        /// The inner rectangle that is used to temporarily
+        /// reduce the drawing area. When a scope is set calls to the draw
+        /// methods will be scoped to this area
+        /// </summary>
+        public Rectangle Scope { get; set; }
 
+        /// <summary>
+        /// The console to target when the Paint method is called 
+        /// </summary>
         public IConsoleProvider Console { get; set; }
 
         private ConsolePixel[][] pixels;
 
         private int lastBufferWidth;
 
-        public int Top { get; private set; }
-        public int Left { get; private set; }
+        /// <summary>
+        /// Creates a new ConsoleBitmap
+        /// </summary>
+        /// <param name="x">the left offset to use when painting</param>
+        /// <param name="y">the top offset to use when painting</param>
+        /// <param name="w">the width of the image</param>
+        /// <param name="h">the height of the image</param>
+        public ConsoleBitmap(int x, int y, int w, int h) : this(new Rectangle(x, y, w, h)) { }
 
-        public ConsoleBitmap(int x, int y, int w, int h, ConsoleCharacter? bg = null) : this(new Rectangle(x, y, w, h), bg) { }
-        public ConsoleBitmap(int w, int h, ConsoleCharacter? bg = null) : this(new Rectangle(0, 0, w, h), bg) { }
+        /// <summary>
+        /// Creates a new ConsoleBitmap
+        /// </summary>
+        /// <param name="w">the width of the image</param>
+        /// <param name="h">the height of the image</param>
+        public ConsoleBitmap(int w, int h) : this(new Rectangle(0, 0, w, h)) { }
 
-        public ConsoleBitmap(Rectangle bounds, ConsoleCharacter? bg = null)
+        /// <summary>
+        /// Creates a new ConsoleBitmap
+        /// </summary>
+        /// <param name="bounds">the area of the image</param>
+        public ConsoleBitmap(Rectangle bounds)
         {
-            this.Top = bounds.Y;
-            this.Left = bounds.X;
-
             bounds = new Rectangle(0, 0, bounds.Width, bounds.Height);
 
             this.X = bounds.X;
             this.Y = bounds.Y;
             this.Width = bounds.Width;
             this.Height = bounds.Height;
-            this.scope = bounds;
+            this.Scope = bounds;
             this.Console = ConsoleProvider.Current;
             this.lastBufferWidth = this.Console.BufferWidth;
-            this.Background = bg.HasValue ? bg.Value : new ConsoleCharacter(' ');
             this.Pen = new ConsoleCharacter('*');
             pixels = new ConsolePixel[this.Width][];
             for (int x = 0; x < this.Width; x++)
@@ -54,7 +92,7 @@ namespace PowerArgs.Cli
                 pixels[x] = new ConsolePixel[this.Height];
                 for (int y = 0; y < pixels[x].Length; y++)
                 {
-                    pixels[x][y] = new ConsolePixel() { Value = bg };
+                    pixels[x][y] = new ConsolePixel() { Value = new ConsoleCharacter(' ') };
                 }
             }
         }
@@ -114,8 +152,11 @@ namespace PowerArgs.Cli
             return true;
         }
 
-
-        // todo - is rectangular, but if you try to set width and height there will be inconsistent state
+        /// <summary>
+        /// Resizes this image, preserving the data in the pixels that remain in the new area
+        /// </summary>
+        /// <param name="w">the new width</param>
+        /// <param name="h">the new height</param>
         public void Resize(int w, int h)
         {
             var newPixels = new ConsolePixel[w][];
@@ -130,7 +171,7 @@ namespace PowerArgs.Cli
                     }
                     else
                     {
-                        newPixels[x][y] = new ConsolePixel() { Value = Background };
+                        newPixels[x][y] = new ConsolePixel() { Value = new ConsoleCharacter(' ') };
                     }
                 }
             }
@@ -138,18 +179,28 @@ namespace PowerArgs.Cli
             pixels = newPixels;
             this.Width = w;
             this.Height = h;
-            this.Scope(new Rectangle(X,Y,Width,Height));
+            this.Scope = new Rectangle(X,Y,Width,Height);
             this.Invalidate();
         }
 
+        /// <summary>
+        /// Gets the pixel at the given location
+        /// </summary>
+        /// <param name="x">the x coordinate</param>
+        /// <param name="y">the y coordinate</param>
+        /// <returns>the pixel at the given location</returns>
         public ConsolePixel GetPixel(int x, int y)
         {
             return pixels[x][y];
         }
 
+        /// <summary>
+        /// Creates a snapshot of the cursor position
+        /// </summary>
+        /// <returns>a snapshot of the cursor positon</returns>
         public ConsoleSnapshot CreateSnapshot()
         {
-            var snapshot = new ConsoleSnapshot(Left, Top, Console);
+            var snapshot = new ConsoleSnapshot(X, Y, Console);
             return snapshot;
         }
 
@@ -160,29 +211,25 @@ namespace PowerArgs.Cli
             return wiper;
         }
 
-        public Rectangle GetScope()
-        {
-            return this.scope;
-        }
-
-        public void Scope(Rectangle bounds)
-        {
-            this.scope = bounds;
-        }
-
+        /// <summary>
+        /// Incrementally adjusts the current scope
+        /// </summary>
+        /// <param name="xIncrement">the x increment</param>
+        /// <param name="yIncrement">the y increment</param>
+        /// <param name="w">the width of the scope</param>
+        /// <param name="h">the height of the scope</param>
         public void Rescope(int xIncrement, int yIncrement, int w, int h)
         {
-            w = Math.Min(w, scope.Width - xIncrement);
-            h = Math.Min(h, scope.Height - yIncrement);
-
-            scope = new Rectangle(scope.X + xIncrement, scope.Y + yIncrement, w, h);
+            w = Math.Min(w, Scope.Width - xIncrement);
+            h = Math.Min(h, Scope.Height - yIncrement);
+            Scope = new Rectangle(Scope.X + xIncrement, Scope.Y + yIncrement, w, h);
         }
 
         private bool IsInScope(int x, int y)
         {
             if (x < 0 || x >= Width) return false;
             if (y < 0 || y >= Height) return false;
-            return scope.Contains(x, y);
+            return Scope.Contains(x, y);
         }
 
         private bool IsInBounds(int x, int y)
@@ -192,12 +239,26 @@ namespace PowerArgs.Cli
             return true;
         }
 
-
+        /// <summary>
+        /// Draws the given string onto the bitmap
+        /// </summary>
+        /// <param name="str">the value to write</param>
+        /// <param name="x">the x coordinate to draw the string's fist character</param>
+        /// <param name="y">the y coordinate to draw the string's first character </param>
+        /// <param name="vert">if true, draw vertically, else draw horizontally</param>
         public void DrawString(string str, int x, int y, bool vert = false)
         {
             DrawString(new ConsoleString(str), x, y, vert);
         }
 
+        /// <summary>
+        /// Draws a filled in rectangle bounded by the given coordinates
+        /// using the current pen
+        /// </summary>
+        /// <param name="x">the left of the rectangle</param>
+        /// <param name="y">the top of the rectangle</param>
+        /// <param name="w">the width of the rectangle</param>
+        /// <param name="h">the height of the rectangle</param>
         public void FillRect(int x, int y, int w, int h)
         {
             for (int xd = x; xd <= x + w; xd++)
@@ -206,6 +267,14 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Draws an unfilled in rectangle bounded by the given coordinates
+        /// using the current pen
+        /// </summary>
+        /// <param name="x">the left of the rectangle</param>
+        /// <param name="y">the top of the rectangle</param>
+        /// <param name="w">the width of the rectangle</param>
+        /// <param name="h">the height of the rectangle</param>
         public void DrawRect(int x, int y, int w, int h)
         {
             DrawLine(x, y, x, y + h);                       // Left, vertical line
@@ -214,17 +283,28 @@ namespace PowerArgs.Cli
             DrawLine(x, y + h - 1, x + w, y + h - 1);       // Bottom, horizontal line
         }
 
+        /// <summary>
+        /// Draws the given string onto the bitmap
+        /// </summary>
+        /// <param name="str">the value to write</param>
+        /// <param name="x">the x coordinate to draw the string's fist character</param>
+        /// <param name="y">the y coordinate to draw the string's first character </param>
+        /// <param name="vert">if true, draw vertically, else draw horizontally</param>
         public void DrawString(ConsoleString str, int x, int y, bool vert = false)
         {
-            var xStart = scope.X + x;
-            x = scope.X + x;
-            y = scope.Y + y;
+            var xStart = Scope.X + x;
+            x = Scope.X + x;
+            y = Scope.Y + y;
             foreach (var character in str)
             {
                 if (character.Value == '\n')
                 {
                     y++;
                     x = xStart;
+                }
+                else if (character.Value == '\r')
+                {
+                    // ignore
                 }
                 else if (IsInScope(x, y))
                 {
@@ -235,23 +315,36 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Draw a single pixel value at the given point using the current pen
+        /// </summary>
+        /// <param name="x">the x coordinate</param>
+        /// <param name="y">the y coordinate</param>
         public void DrawPoint(int x, int y)
         {
-            x = scope.X + x;
-            y = scope.Y + y;
+            x = Scope.X + x;
+            y = Scope.Y + y;
 
             if (IsInScope(x, y))
             {
                 pixels[x][y].Value = Pen;
             }
         }
+
+        /// <summary>
+        /// Draw a line segment between the given points
+        /// </summary>
+        /// <param name="x1">the x coordinate of the first point</param>
+        /// <param name="y1">the y coordinate of the first point</param>
+        /// <param name="x2">the x coordinate of the second point</param>
+        /// <param name="y2">the y coordinate of the second point</param>
         public void DrawLine(int x1, int y1, int x2, int y2)
         {
-            x1 = scope.X + x1;
-            y1 = scope.Y + y1;
+            x1 = Scope.X + x1;
+            y1 = Scope.Y + y1;
 
-            x2 = scope.X + x2;
-            y2 = scope.Y + y2;
+            x2 = Scope.X + x2;
+            y2 = Scope.Y + y2;
 
             foreach (var point in DefineLine(x1, y1, x2, y2))
             {
@@ -262,6 +355,14 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Gets the points that would represent a line between the two given points
+        /// </summary>
+        /// <param name="x1">the x coordinate of the first point</param>
+        /// <param name="y1">the y coordinate of the first point</param>
+        /// <param name="x2">the x coordinate of the second point</param>
+        /// <param name="y2">the y coordinate of the second point</param>
+        /// <returns></returns>
         public static List<Point> DefineLine(int x1, int y1, int x2, int y2)
         {
             var ret = new List<Point>();
@@ -290,47 +391,54 @@ namespace PowerArgs.Cli
                 int dx = Math.Abs(x1 - x2);
                 int dy = Math.Abs(y1 - y2);
 
-
-                for (double x = x1; x < x2; x += DrawPrecision)
+                if (dy > dx)
                 {
-                    double y = slope + (x - x1) + y1;
-                    int xInt = (int)Math.Round(x);
-                    int yInt = (int)Math.Round(y);
-                    ret.Add(new Point(xInt, yInt));
-                }
+                    for (double x = x1; x < x2; x += DrawPrecision)
+                    {
+                        double y = slope + (x - x1) + y1;
+                        int xInt = (int)Math.Round(x);
+                        int yInt = (int)Math.Round(y);
+                        ret.Add(new Point(xInt, yInt));
+                    }
 
-                for (double x = x2; x < x1; x += DrawPrecision)
+                    for (double x = x2; x < x1; x += DrawPrecision)
+                    {
+                        double y = slope + (x - x1) + y1;
+                        int xInt = (int)Math.Round(x);
+                        int yInt = (int)Math.Round(y);
+                        ret.Add(new Point(xInt, yInt));
+                    }
+                }
+                else
                 {
-                    double y = slope + (x - x1) + y1;
-                    int xInt = (int)Math.Round(x);
-                    int yInt = (int)Math.Round(y);
-                    ret.Add(new Point(xInt, yInt));
-                }
+                    for (double y = y1; y < y2; y += DrawPrecision)
+                    {
+                        double x = ((y - y1) / slope) + x1;
+                        int xInt = (int)Math.Round(x);
+                        int yInt = (int)Math.Round(y);
+                        ret.Add(new Point(xInt, yInt));
+                    }
 
-                for (double y = y1; y < y2; y += DrawPrecision)
-                {
-                    double x = ((y - y1) / slope) + x1;
-                    int xInt = (int)Math.Round(x);
-                    int yInt = (int)Math.Round(y);
-                    ret.Add(new Point(xInt, yInt));
+                    for (double y = y2; y < y1; y += DrawPrecision)
+                    {
+                        double x = ((y - y1) / slope) + x1;
+                        int xInt = (int)Math.Round(x);
+                        int yInt = (int)Math.Round(y);
+                        ret.Add(new Point(xInt, yInt));
+                    }
                 }
-
-                for (double y = y2; y < y1; y += DrawPrecision)
-                {
-                    double x = ((y - y1) / slope) + x1;
-                    int xInt = (int)Math.Round(x);
-                    int yInt = (int)Math.Round(y);
-                    ret.Add(new Point(xInt, yInt));
-                }
-
             }
 
             return ret.Distinct().ToList();
         }
 
+        /// <summary>
+        /// Makes a copy of this bitmap
+        /// </summary>
+        /// <returns>a copy of this bitmap</returns>
         public ConsoleBitmap Clone()
         {
-            var ret = new ConsoleBitmap(X,Y,Width,Height, this.Background);
+            var ret = new ConsoleBitmap(X,Y,Width,Height);
             for (var x = 0; x < Width; x++)
             {
                 for (var y = 0; y < Height; y++)
@@ -348,6 +456,9 @@ namespace PowerArgs.Cli
             public bool HasChanged { get; set; }
         }
 
+        /// <summary>
+        /// Paints this image to the current Console
+        /// </summary>
         public void Paint()
         {
             var changed = false;
@@ -362,10 +473,10 @@ namespace PowerArgs.Cli
             {
                 var currentChunk = new Chunk();
                 var chunksOnLine = new List<Chunk>();
-                for (int y = scope.Y; y < scope.Y + scope.Height; y++)
+                for (int y = Scope.Y; y < Scope.Y + Scope.Height; y++)
                 {
                     var changeOnLine = false;
-                    for (int x = scope.X; x < scope.X + scope.Width; x++)
+                    for (int x = Scope.X; x < Scope.X + Scope.Width; x++)
                     {
                         var pixel = pixels[x][y];
                         changeOnLine = changeOnLine || pixel.HasChanged;
@@ -410,7 +521,7 @@ namespace PowerArgs.Cli
                     if (changeOnLine)
                     {
                         Console.CursorTop = y; // we know there will be a change on this line so move the cursor top
-                        var left = scope.X;
+                        var left = Scope.X;
                         var leftChanged = true;
                         for (var i = 0; i < chunksOnLine.Count; i++)
                         {
@@ -441,8 +552,8 @@ namespace PowerArgs.Cli
 
                 if (changed)
                 {
-                    Console.CursorLeft = Left;
-                    Console.CursorTop = Top;
+                    Console.CursorLeft = X;
+                    Console.CursorTop = Y;
                     Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
                     Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
                 }
@@ -454,6 +565,11 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Clears the cached paint state of each pixel so that
+        /// all pixels will forcefully be painted the next time Paint
+        /// is called
+        /// </summary>
         public void Invalidate()
         {
             for (int y = 0; y < Height; y++)
@@ -466,25 +582,19 @@ namespace PowerArgs.Cli
             }
         }
 
-        public override string ToString()
-        {
-            var ret = "";
+        /// <summary>
+        /// Gets a string representation of this image 
+        /// </summary>
+        /// <returns>a string representation of this image</returns>
+        public override string ToString() => ToConsoleString().ToString();
 
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    ret += this.pixels[x][y].Value.HasValue ? this.pixels[x][y].Value.Value.Value : ' ';
-                }
-                if (y < Height - 1)
-                {
-                    ret += Environment.NewLine;
-                }
-            }
-
-            return ret;
-        }
-
+        /// <summary>
+        /// Returns true if the given object is a ConsoleBitmap with
+        /// equivalent values as this bitmap, false otherwise
+        /// </summary>
+        /// <param name="obj">the object to compare</param>
+        /// <returns>true if the given object is a ConsoleBitmap with
+        /// equivalent values as this bitmap, false otherwise</returns>
         public override bool Equals(Object obj)
         {
             var other = obj as ConsoleBitmap;
@@ -512,6 +622,10 @@ namespace PowerArgs.Cli
             return true;
         }
 
+        /// <summary>
+        /// Gets a hashcode for this bitmap
+        /// </summary>
+        /// <returns></returns>
         public override int GetHashCode()
         {
             return base.GetHashCode();
@@ -519,6 +633,15 @@ namespace PowerArgs.Cli
 
         // new style methods that don't require you to set the pen before drawing
 
+        /// <summary>
+        /// Draws a line between the two points using the given character as a pen
+        /// </summary>
+        /// <param name="character">the temporary pen</param>
+        /// <param name="x1">the x coordinate of the first point</param>
+        /// <param name="y1">the y coordinate of the first point</param>
+        /// <param name="x2">the x coordinate of the second point</param>
+        /// <param name="y2">the y coordinate of the second point</param>
+        /// <returns>this ConsoleBitmap</returns>
         public ConsoleBitmap DrawLine(ConsoleCharacter character, int x1, int y1, int x2, int y2)
         {
             var oldPen = this.Pen;
@@ -534,6 +657,16 @@ namespace PowerArgs.Cli
             return this;
         }
 
+        /// <summary>
+        /// Draws an unfilled rectangle at the given coordinates using the specified character
+        /// as a temporary pen
+        /// </summary>
+        /// <param name="character">the temporary character</param>
+        /// <param name="x">the left of the rectangle</param>
+        /// <param name="y">the top of the rectangle</param>
+        /// <param name="w">the width of the rectangle</param>
+        /// <param name="h">the height of the rectangle</param>
+        /// <returns>this ConsoleBitmap</returns>
         public ConsoleBitmap DrawRect(ConsoleCharacter character, int x = 0, int y = 0, int w = -1, int h = -1)
         {
             var oldPen = this.Pen;
@@ -551,6 +684,16 @@ namespace PowerArgs.Cli
             return this;
         }
 
+        /// <summary>
+        /// Draws a filled rectangle at the given coordinates using the specified character
+        /// as a temporary pen
+        /// </summary>
+        /// <param name="character">the temporary character</param>
+        /// <param name="x">the left of the rectangle</param>
+        /// <param name="y">the top of the rectangle</param>
+        /// <param name="w">the width of the rectangle</param>
+        /// <param name="h">the height of the rectangle</param>
+        /// <returns>this ConsoleBitmap</returns>
         public ConsoleBitmap FillRect(ConsoleCharacter character, int x = 0, int y = 0, int w = -1, int h = -1)
         {
             var oldPen = this.Pen;
@@ -568,6 +711,14 @@ namespace PowerArgs.Cli
             return this;
         }
 
+        /// <summary>
+        /// Draws a single pixel at the given coordinates using the specified character
+        /// as a temporary pen
+        /// </summary>
+        /// <param name="character">the temporary pen</param>
+        /// <param name="x">the x coordinate</param>
+        /// <param name="y">the y coordinate</param>
+        /// <returns>this ConsoleBitmap</returns>
         public ConsoleBitmap DrawPoint(ConsoleCharacter character, int x, int y)
         {
             var oldPen = this.Pen;

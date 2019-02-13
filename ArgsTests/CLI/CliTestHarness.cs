@@ -222,7 +222,7 @@ namespace ArgsTests.CLI
                 for(var x = 0; x < this.Bitmap.Width; x++)
                 {
                     var pixel = this.Bitmap.GetPixel(x, y);
-                    line+= (pixel.Value.HasValue ? pixel.Value.Value : new ConsoleCharacter(' ', null, this.Bitmap.Background.BackgroundColor)).ToConsoleString();
+                    line+= (pixel.Value.HasValue ? pixel.Value.Value : new ConsoleCharacter(' ')).ToConsoleString();
                 }
 
                 int index;

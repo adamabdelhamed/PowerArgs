@@ -98,7 +98,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// The character to use to visually represent a point in this data series
         /// </summary>
-        public ConsoleCharacter PlotCharacter { get; set; } = new ConsoleCharacter('+', ConsoleColor.Blue);
+        public ConsoleCharacter PlotCharacter { get; set; } = new ConsoleCharacter('X', ConsoleColor.White);
 
         /// <summary>
         /// When set to true the user will be able to focus on the data points in this series using the tab and arrow keys.
@@ -148,7 +148,7 @@ namespace PowerArgs.Cli
             public DataPoint DataPoint { get; set; }
             public Series Series { get; set; }
 
-            public List<BarOrLineControl> Bars { get; set; } = new List<BarOrLineControl>();
+            public List<BarOrLineControl> BarsOrLines { get; set; } = new List<BarOrLineControl>();
         }
 
         private class BarOrLineControl : PixelControl
@@ -440,8 +440,8 @@ namespace PowerArgs.Cli
                     {
                         pixel.ZIndex = FocusedDataPointZIndex;
                         pixel.Value = new ConsoleCharacter(series.PlotCharacter.Value, ConsoleColor.Black, ConsoleColor.Cyan);
-                        pixel.Bars.ForEach(b => b.Value = pixel.Value);
-                        pixel.Bars.ForEach(b => b.ZIndex = pixel.ZIndex);
+                        pixel.BarsOrLines.ForEach(b => b.Value = pixel.Value);
+                        pixel.BarsOrLines.ForEach(b => b.ZIndex = pixel.ZIndex);
                         var newTitle = pixel.Series.Title.ToConsoleString(pixel.Series.PlotCharacter.ForegroundColor);
                         var xValue = options.XAxisFormatter.FormatValue(MinXValueInPlotArea, MaxXValueInPlotArea, pixel.DataPoint.X);
                         var yValue = options.YAxisFormatter.FormatValue(MinYValueInPlotArea, MaxYValueInPlotArea, pixel.DataPoint.Y);
@@ -452,8 +452,8 @@ namespace PowerArgs.Cli
                     pixel.Unfocused.SubscribeForLifetime(() =>
                     {
                         pixel.Value = series.PlotCharacter;
-                        pixel.Bars.ForEach(b => b.Value = pixel.Value);
-                        pixel.Bars.ForEach(b => b.ZIndex = LinesAndBarsZIndex);
+                        pixel.BarsOrLines.ForEach(b => b.Value = pixel.Value);
+                        pixel.BarsOrLines.ForEach(b => b.ZIndex = LinesAndBarsZIndex);
                         pixel.ZIndex = DataPointsZIndex;
                     }, pixel);
                     this.Controls.Add(pixel);
@@ -476,7 +476,7 @@ namespace PowerArgs.Cli
                 for (var i = 0; i < dataPointControls.Count; i++)
                 {
                     var control = dataPointControls[i];
-                    control.Bars.Clear();
+                    control.BarsOrLines.Clear();
                     var newX = ConvertXValueToPixel(control.DataPoint.X);
                     var newY = ConvertYValueToPixel(control.DataPoint.Y);
                     if (newX >= 0 && newX < Width && newY >= 0 && newY < Height)
@@ -502,7 +502,7 @@ namespace PowerArgs.Cli
                                 Value = control.Value
                             };
                             Controls.Add(barPixel);
-                            control.Bars.Add(barPixel);
+                            control.BarsOrLines.Add(barPixel);
                         }
                     }
                     else if (control.Series.PlotMode == PlotMode.Lines && i < dataPointControls.Count - 1)
@@ -517,13 +517,15 @@ namespace PowerArgs.Cli
 
                             foreach (var point in ConsoleBitmap.DefineLine(control.X, control.Y, nextControl.X, nextControl.Y))
                             {
-                                Controls.Add(new BarOrLineControl()
+                                var line = new BarOrLineControl()
                                 {
                                     X = point.X,
                                     Y = point.Y,
                                     ZIndex = LinesAndBarsZIndex,
                                     Value = new ConsoleCharacter('-', control.Series.PlotCharacter.ForegroundColor, control.Series.PlotCharacter.BackgroundColor)
-                                });
+                                };
+                                control.BarsOrLines.Add(line);
+                                Controls.Add(line);
                             }
                         }
                     }
@@ -992,6 +994,10 @@ namespace PowerArgs.Cli
             }
         }
     }
+
+    /// <summary>
+    /// An axis formatter capable of rendering labels for TimeSpan values
+    /// </summary>
     public class TimeSpanFormatter : IAxisFormatter
     {
         const int MaxLabelsOnAnyChartAssumption = 50;

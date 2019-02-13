@@ -106,6 +106,10 @@ namespace ArgsTests.CLI.Controls
 
         [TestMethod]
         public void Parabola()
+
+
+
+
         {
 
             var points = new List<DataPoint>();
@@ -154,7 +158,7 @@ namespace ArgsTests.CLI.Controls
             app.QueueAction(() => app.LayoutRoot.Add(new XYChart(options)).Fill());
             app.QueueAction(app.Stop);
             app.Start().Wait();
-            app.AssertThisTestMatchesLKG();
+            app.AssertThisTestMatchesLKGFirstAndLastFrame();
         }
     }
 }

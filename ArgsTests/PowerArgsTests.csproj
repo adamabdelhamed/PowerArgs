@@ -130,6 +130,7 @@
     <Compile Include="CLI\WinFormsConsole.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="CLI\DrawingTests.cs" />
     <Compile Include="ConfigurationToolTests.cs" />
     <Compile Include="ComponentModelReviverTest.cs" />
     <Compile Include="MultipleFactoredOutActionsTests.cs" />

@@ -1,16 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// An object that contains information about an event that has been
+    /// routed based on matching a path
+    /// </summary>
+    /// <typeparam name="T">the type of data that thie event will be routing</typeparam>
     public class RoutedEvent<T>
     {
+        /// <summary>
+        /// The path that matched the route
+        /// </summary>
         public string Path { get; set; }
+
+        /// <summary>
+        /// The route pattern
+        /// </summary>
         public string Route { get; set; }
+
+        /// <summary>
+        /// Variables that were extracted from the path
+        /// </summary>
         public IReadOnlyDictionary<string,string> RouteVariables { get; set; }
+
+        /// <summary>
+        /// The data to route
+        /// </summary>
         public T Data { get; set; }
     }
 
@@ -27,6 +46,9 @@ namespace PowerArgs.Cli
         /// </summary>
         public Event<RoutedEvent<T>> NotFound { get; private set; } = new Event<RoutedEvent<T>>();
 
+        /// <summary>
+        /// An event that fires before this routed event is delivered to its proper handler
+        /// </summary>
         public Event<RoutedEvent<T>> BeforeRouteDelivered { get; private set; } = new Event<RoutedEvent<T>>();
 
 

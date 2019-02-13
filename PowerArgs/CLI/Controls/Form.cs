@@ -1,36 +1,82 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using PowerArgs;
+using System;
 using System.Linq;
-using PowerArgs;
-using PowerArgs.Cli;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// An attribute that tells the form generator to ignore this
+    /// property
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class FormIgnoreAttribute : Attribute { }
 
+    /// <summary>
+    /// An attribute that tells the form generator to give this
+    /// property a read only treatment
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class FormReadOnlyAttribute : Attribute { }
 
+    /// <summary>
+    /// An attribute that lets you override the display string 
+    /// on a form element
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class FormLabelAttribute : Attribute
     {
+        /// <summary>
+        /// The label to display on the form element
+        /// </summary>
         public string Label { get; set; }
+
+        /// <summary>
+        /// Initialized the attribute
+        /// </summary>
+        /// <param name="label">The label to display on the form element</param>
         public FormLabelAttribute(string label) { this.Label = label; }
     }
 
+    /// <summary>
+    /// A class that represents a form element
+    /// </summary>
     public class FormElement
     {
+        /// <summary>
+        /// The label for the form element
+        /// </summary>
         public ConsoleString Label { get; set; }
+        /// <summary>
+        /// The control that renders the form element's value
+        /// </summary>
         public ConsoleControl ValueControl { get; set; }
     }
 
+    /// <summary>
+    /// Options for configuring a form
+    /// </summary>
     public class FormOptions
     {
+        /// <summary>
+        /// The percentage of the available width to use for labels
+        /// </summary>
         public double LabelColumnPercentage { get; set; }
-        public ObservableCollection<FormElement> Elements { get; set; }
 
+        /// <summary>
+        /// The form elements to render
+        /// </summary>
+        public ObservableCollection<FormElement> Elements { get; private set; } = new ObservableCollection<FormElement>();
+
+        /// <summary>
+        /// Autogenerates form options for the given object by reflecting on its properties. All public properties with getters 
+        /// and setters will be included in the form unless it has the FormIgnore attribute on it. This method supports strings,
+        /// ints, and enums.
+        /// 
+        /// The form will be configured to two way bind all the form elements to the property values.
+        /// </summary>
+        /// <param name="o">The object to create form options for</param>
+        /// <param name="labelColumnPercentage">the label column percentage to use</param>
+        /// <returns></returns>
         public static FormOptions FromObject(object o, double labelColumnPercentage = .25)
         {
             var properties = o.GetType().GetProperties().Where(p => p.HasAttr<FormIgnoreAttribute>() == false && p.GetSetMethod() != null && p.GetGetMethod() != null).ToList();
@@ -148,9 +194,20 @@ namespace PowerArgs.Cli
         }
     }
 
+    /// <summary>
+    /// A control that lets users edit a set of values as in a form
+    /// </summary>
     public class Form : ConsolePanel
     {
-        public FormOptions Options { get; set; }
+        /// <summary>
+        /// The options that were provided
+        /// </summary>
+        public FormOptions Options { get; private set; }
+
+        /// <summary>
+        /// Creates a form using the given options
+        /// </summary>
+        /// <param name="options">form options</param>
         public Form(FormOptions options)
         {
             this.Options = options;

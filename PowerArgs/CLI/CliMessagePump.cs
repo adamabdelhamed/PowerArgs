@@ -156,6 +156,9 @@ namespace PowerArgs.Cli
         /// </summary>
         public int TotalCycles => cycleRateMeter != null ? cycleRateMeter.TotalFrames : 0;
 
+        /// <summary>
+        /// Gets the total number of times a paint actually happened
+        /// </summary>
         public int TotalPaints => paintRateMeter != null ? paintRateMeter.TotalFrames : 0;
 
         /// <summary>
@@ -187,6 +190,10 @@ namespace PowerArgs.Cli
             this.lastConsoleHeight = this.console.WindowHeight;
         }
 
+        /// <summary>
+        /// Simulates a key press
+        /// </summary>
+        /// <param name="key">the key press info</param>
         public void SendKey(ConsoleKeyInfo key) => QueueAction(() => { sendKeys.Enqueue(key); });
 
         /// <summary>
@@ -267,13 +274,6 @@ namespace PowerArgs.Cli
             lock (pumpMessageQueue)
             {
                 pumpMessageQueue.Add(pumpMessage);
-#if PROFILING
-                CliProfiler.Instance.TotalMessagesQueued++;
-                if(pumpMessage is PaintMessage)
-                {
-                    CliProfiler.Instance.PaintMessagesQueued++;
-                }
-#endif
             }
         }
 
@@ -416,9 +416,6 @@ namespace PowerArgs.Cli
                     {
                         TryWork(iterationPaintMessage);
                         paintRateMeter.Increment();
-#if PROFILING
-                    CliProfiler.Instance.PaintMessagesProcessed++;
-#endif
                     }
 
                     if (stopRequested)
@@ -443,12 +440,6 @@ namespace PowerArgs.Cli
                     {
                         Thread.Sleep(0);
                     }
-#if PROFILING
-                else
-                { 
-                    CliProfiler.Instance.TotalNonIdleIterations++;
-                }
-#endif
                 }
                 runDeferred.Resolve();
             }
@@ -488,9 +479,6 @@ namespace PowerArgs.Cli
                     }
                 }
             }
-#if PROFILING
-            CliProfiler.Instance.TotalMessagesProcessed++;
-#endif
         }
 
         private void DebounceResize()

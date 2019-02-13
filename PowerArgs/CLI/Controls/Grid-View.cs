@@ -20,15 +20,7 @@ namespace PowerArgs.Cli
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-#if PROFILING
-            using (new TimeProfiler("Grid.OnPaint"))
-            {
-#endif
-                PaintInternal(context);
-#if PROFILING
-            }
-#endif
-
+            PaintInternal(context);
         }
 
         private void PaintInternal(ConsoleBitmap context)
@@ -102,14 +94,7 @@ namespace PowerArgs.Cli
 
             ConsoleTableBuilder builder = new ConsoleTableBuilder();
             ConsoleString table;
-#if PROFILING
-            using (new TimeProfiler("Grid.FormatAsTable"))
-            {
-#endif
-                table = builder.FormatAsTable(headers, rows, RowPrefix.ToString(), overflowBehaviors, Gutter);
-#if PROFILING
-            }
-#endif
+            table = builder.FormatAsTable(headers, rows, RowPrefix.ToString(), overflowBehaviors, Gutter);
             
 
             if (FilterText != null)

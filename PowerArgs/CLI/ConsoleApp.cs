@@ -3,18 +3,6 @@ using System;
 
 namespace PowerArgs.Cli
 {
-    // todos before fully supporting the .Cli namespace
-    // 
-    // Theme should be observable and should result in a Paint when changed.  Controls might need to react as well.
-    // Do another refactoring and functionality pass on data sources and caching.  It't not ready. 
-    // Samples for different data sources (e.g. An azure table, a file system)      // Lots of testing
-    // Samples for different data sources (e.g. An azure table, a file system)   
-    // Hook up the 'latest response' debouncer for the grid 
-    // Finish converting events and property changed handlers to Events (with a capital E)   
-    // Lots of testing
-    // Get rid of that time profiler experiment
-    // Final code review and documentation
-
     /// <summary>
     /// A class representing a console application that uses a message pump to synchronize work on a UI thread
     /// </summary>
@@ -39,6 +27,10 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Asserts that the current thread is running a ConsoleApp
+        /// </summary>
+        /// <param name="expectedApp">The specific app that is expected to be running on this thread or null to just check that any app is running</param>
         public static void AssertAppThread(ConsoleApp expectedApp = null)
         {
             if (Current == null)
@@ -51,6 +43,10 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// The writer used to record the contents of the screen while the app
+        /// is running. If not set then recording does not take place
+        /// </summary>
         public ConsoleBitmapStreamWriter Recorder { get; set; }
 
         /// <summary>
@@ -65,10 +61,15 @@ namespace PowerArgs.Cli
         /// </summary>
         public int? RequiredWidth { get; set; }
 
+        /// <summary>
+        /// An event that fires when the size requirements of the window are met
+        /// </summary>
         public Event RequiredSizeMet { get; private set; } = new Event();
+
+        /// <summary>
+        /// An event that fires when the size requirements of the window are not met
+        /// </summary>
         public Event RequiredSizeNotMet { get; private set; } = new Event();
-
-
 
         /// <summary>
         /// An event that fires when the application is about to stop, before the console is wiped
@@ -391,24 +392,10 @@ namespace PowerArgs.Cli
 
             Bitmap.Pen = new ConsoleCharacter(' ', null, DefaultColors.BackgroundColor);
             Bitmap.FillRect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
-#if PROFILING
-            using (new TimeProfiler("LayoutRoot.Paint"))
-            {
-#endif
                 LayoutRoot.Paint(Bitmap);
-#if PROFILING
-            }
-#endif
 
-#if PROFILING
-            using (new TimeProfiler("Bitmap.Paint"))
-            {
-#endif
             Recorder?.WriteFrame(Bitmap);
             Bitmap.Paint();
-#if PROFILING
-            }
-#endif
         }
     }
 }
