@@ -21,6 +21,10 @@ namespace ArgsTests.CLI
     public class CliTestHarness : ConsoleApp
     {
         private TestContext testContext;
+        private ConsoleBitmapStreamWriter keyFrameRecorder;
+        private int keyFrameCount = 0;
+
+        private ConsoleBitmapStreamWriter EffectiveRecorder=> keyFrameRecorder ?? this.Recorder;
 
         public string TestId => $"{testContext.FullyQualifiedTestClassName}.{testContext.TestName}";
 
@@ -49,34 +53,42 @@ namespace ArgsTests.CLI
         public string CurrentTestRecordingLKGFilePath => Path.Combine(CurrentTestLKGPath, "Recording.cv");
         public string CurrentTestMetadataLKGFilePath => Path.Combine(CurrentTestLKGPath, "Metadata.json");
 
-        public CliTestHarness(TestContext testContext, int x, int y, int w, int h) : base(x,y,w,h)
+        public CliTestHarness(TestContext testContext, int x, int y, int w, int h, bool keyframeMode = false) : base(x,y,w,h)
         {
-            Init(testContext);
+            Init(testContext, keyframeMode);
         }
 
-        public CliTestHarness(TestContext testContext, int w, int h) : base(w, h)
+        public CliTestHarness(TestContext testContext, int w, int h, bool keyFrameMode = false) : base(w, h)
         {
-            Init(testContext);
+            Init(testContext, keyFrameMode);
         }
 
-        public CliTestHarness(TestContext testContext) 
+        public CliTestHarness(TestContext testContext, bool keyframeMode = false) 
         {
-            Init(testContext);
+            Init(testContext, keyframeMode);
         }
 
-        private void Init(TestContext testContext)
+        private void Init(TestContext testContext, bool keyframeMode = false)
         {
             this.testContext = testContext;
             if (!Directory.Exists(CurrentTestLKGPath)) Directory.CreateDirectory(CurrentTestLKGPath);
             if (!Directory.Exists(CurrentTestTempPath)) Directory.CreateDirectory(CurrentTestTempPath);
-            this.Recorder = new ConsoleBitmapStreamWriter(File.OpenWrite(CurrentTestRecordingFilePath));
+
+            if (keyframeMode)
+            {
+                this.keyFrameRecorder = new ConsoleBitmapStreamWriter(File.OpenWrite(CurrentTestRecordingFilePath));
+            }
+            else
+            {
+                this.Recorder = new ConsoleBitmapStreamWriter(File.OpenWrite(CurrentTestRecordingFilePath));
+            }
 
             this.Stopped.SubscribeOnce(() =>
             {
                 var metadata = new CliLKGTestMetadata()
                 {
                     Paints = this.TotalPaints,
-                    Frames = this.Recorder.FramesWritten
+                    Frames = this.EffectiveRecorder.FramesWritten
                 };
 
                 Console.WriteLine("Total paints: " + metadata.Paints);
@@ -96,11 +108,18 @@ namespace ArgsTests.CLI
 
         public bool TryGetCurrentRecording(out ConsoleBitmapStreamReader reader) => TryGetRecording(CurrentTestRecordingFilePath, out reader);
 
+        public void RecordKeyFrame() => keyFrameRecorder.WriteFrame(this.Bitmap, true, TimeSpan.FromSeconds(keyFrameCount++));
+
         public void AssertThisTestMatchesLKG()
         {
+            if(this.keyFrameRecorder != null)
+            {
+                this.keyFrameRecorder.Dispose();
+            }
+
             if (TryGetLKGMetadata(out CliLKGTestMetadata metadata) && TryGetLKGRecording(out ConsoleBitmapStreamReader reader))
             {
-                Assert.AreEqual(metadata.Frames, Recorder.FramesWritten);
+                Assert.AreEqual(metadata.Frames, EffectiveRecorder.FramesWritten);
                 Assert.AreEqual(metadata.Paints, TotalPaints);
                 reader.InnerStream.Dispose();
                 AssertLKGRecordingMatchesCurrentTest();
@@ -116,6 +135,12 @@ namespace ArgsTests.CLI
 
         public void AssertThisTestMatchesLKGFirstAndLastFrame()
         {
+            if (this.keyFrameRecorder != null)
+            {
+                this.keyFrameRecorder.Dispose();
+                throw new Exception("You should call the version that checks every frame since you are in keyframe mode");
+            }
+
             if (TryGetLKGMetadata(out CliLKGTestMetadata metadata) && TryGetLKGRecording(out ConsoleBitmapStreamReader reader))
             {
                 reader.InnerStream.Dispose();

@@ -23,6 +23,7 @@ namespace ArgsTests.CLI
                     Console.WriteLine(option);
                     await Task.Factory.StartNew(() => { Thread.Sleep(50); }, option);
                     ConsoleApp.AssertAppThread(app);
+                    Console.WriteLine("App thread confirmed");
                 }
                 app.Stop();
             });

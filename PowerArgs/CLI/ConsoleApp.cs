@@ -136,7 +136,7 @@ namespace PowerArgs.Cli
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
             AutoFillOnConsoleResize = false;
-            FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), Paint, this);
+            FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), ()=> Paint(), this);
             LayoutRoot.Controls.BeforeAdded.SubscribeForLifetime((c) => { c.Application = this; c.BeforeAddedToVisualTreeInternal(); }, this);
             LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, this);
             LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, this);
@@ -279,10 +279,13 @@ namespace PowerArgs.Cli
 
         /// <summary>
         /// Queues up a request to paint the app.  The system will dedupe multiple paint requests when there are multiple in the pump's work queue
+        /// <returns>a promise that resolves after the paint happens</returns>
         /// </summary>
-        public void Paint()
+        public Promise Paint()
         {
-            QueueAction(new PaintMessage(PaintInternal));
+            var d = Deferred.Create();
+            QueueAction(new PaintMessage(PaintInternal) { Deferred = d });
+            return d.Promise;
         }
 
         private void ControlAddedToVisualTree(ConsoleControl c)

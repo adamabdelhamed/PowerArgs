@@ -388,6 +388,7 @@ namespace PowerArgs.Cli
                     bool idle = true;
                     List<PumpMessage> iterationQueue;
                     PaintMessage iterationPaintMessage = null;
+                    var paintDeferreds = new List<Deferred>();
                     lock (pumpMessageQueue)
                     {
                         iterationQueue = new List<PumpMessage>(pumpMessageQueue);
@@ -404,6 +405,10 @@ namespace PowerArgs.Cli
                         }
                         else if (message is PaintMessage)
                         {
+                            if(message.Deferred != null)
+                            {
+                                paintDeferreds.Add(message.Deferred);
+                            }
                             iterationPaintMessage = message as PaintMessage;
                         }
                         else
@@ -415,6 +420,16 @@ namespace PowerArgs.Cli
                     if (iterationPaintMessage != null)
                     {
                         TryWork(iterationPaintMessage);
+
+                        // since we debounce paints, make sure the paints
+                        // that got debounced get resolved
+                        foreach(var deferred in paintDeferreds)
+                        {
+                            if(deferred != iterationPaintMessage.Deferred)
+                            {
+                                deferred.Resolve();
+                            }
+                        }
                         paintRateMeter.Increment();
                     }
 
@@ -459,7 +474,10 @@ namespace PowerArgs.Cli
             try
             {
                 work.Execute();
-                work.Deferred?.Resolve();
+                if (work.Deferred != null)
+                {
+                    work.Deferred.Resolve();
+                }
             }
             catch (Exception ex)
             {

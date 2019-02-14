@@ -196,7 +196,7 @@ namespace PowerArgs.Cli
 
             hasBeenAddedToVisualTree = true;
             AddedToVisualTree.Fire();
-            SubscribeForLifetime(ObservableObject.AnyProperty, Application.Paint, this);
+            SubscribeForLifetime(ObservableObject.AnyProperty, ()=> Application.Paint(), this);
         }
 
         internal void BeforeAddedToVisualTreeInternal()
