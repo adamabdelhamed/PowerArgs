@@ -1,5 +1,4 @@
-﻿using PowerArgs.Cli;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -122,6 +121,14 @@ namespace PowerArgs
     {
         private Deferred myDeferred;
 
+        /// <summary>
+        /// Returns true if the promise has either been resolved or rejected
+        /// </summary>
+        public bool IsFulfilled => myDeferred.IsFulfilled;
+
+        /// <summary>
+        /// Gets the exception if one was provided via the reject call
+        /// </summary>
         public Exception Exception
         {
             get
@@ -207,6 +214,10 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// An async method that delays until this promise is fulfilled
+        /// </summary>
+        /// <returns>an awaitable task</returns>
         public async Task AsAwaitable()
         {
             while (myDeferred.IsFulfilled == false)
@@ -220,6 +231,13 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Creates an aggregate promise that completes after all the given promises complete.
+        /// The aggregate promise resolves only if all inner promises resolves. If any inner promise
+        /// fails then the aggregate promise will fail.
+        /// </summary>
+        /// <param name="others">the promises to aggregate</param>
+        /// <returns>the aggregate promise</returns>
         public static Promise WhenAll(List<Promise> others)
         {
             List<Exception> aggregateExceptions = new List<Exception>();
@@ -333,6 +351,9 @@ namespace PowerArgs
     {
         private Deferred<T> myDeferred;
         private Promise innerPromise;
+
+        public bool IsFulfilled => myDeferred.IsFulfilled;
+
 
         public Exception Exception => myDeferred.Exception;
         public T Result => myDeferred.Result;

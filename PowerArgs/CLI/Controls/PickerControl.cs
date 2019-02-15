@@ -80,7 +80,12 @@ namespace PowerArgs.Cli
             {
                 if (key.Key == ConsoleKey.Enter)
                 {
-                    Dialog.Pick(this.Options.PromptMessage, this.Options.Options.Select(o => new DialogOption() { DisplayText = FormatItem(o), Id = reverseIdMap[o] })).Then((selectedOption) =>
+                    Dialog.ShowMessage(new DialogButtonOptions()
+                    {
+                        Message = this.Options.PromptMessage,
+                        Mode = DialogButtonsPresentationMode.Grid,
+                        Options = this.Options.Options.Select(o => new DialogOption() { DisplayText = FormatItem(o), Id = reverseIdMap[o] }).ToList(),
+                    }).Then((selectedOption) =>
                     {
                         if (selectedOption != null)
                         {

@@ -104,8 +104,7 @@ namespace PowerArgs.Games
             game.Pause(false);
             game.QueueAction(() => 
             {
-                var dialog = new Dialog(new Form(FormOptions.FromObject(this)));
-                dialog.Show().Then(() =>
+                Dialog.Show(new ControlDialogOptions() { Content = new Form(FormOptions.FromObject(this)) }).Then(() =>
                 {
                     game.KeyboardInput.KeyMap = this.ToKeyMap();
                     game.Resume();

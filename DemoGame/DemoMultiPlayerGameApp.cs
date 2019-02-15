@@ -117,7 +117,7 @@ namespace DemoGame
             {
                 QueueAction(() =>
                 {
-                    Dialog.ShowMessage("Fatal error: " + ex.ToString().ToRed(), Cleanup);
+                    Dialog.ShowMessage("Fatal error: " + ex.ToString().ToRed()).Then(Cleanup);
                 });
             }
         }
@@ -154,7 +154,7 @@ namespace DemoGame
             {
                 QueueAction(() =>
                 {
-                    Dialog.ShowMessage("Fatal error: " + ex.ToString().ToRed(), Cleanup);
+                    Dialog.ShowMessage("Fatal error: " + ex.ToString().ToRed()).Then(Cleanup);
                 });
             });
 
@@ -169,7 +169,12 @@ namespace DemoGame
             Promise<ConsoleString> p = null;
             await QueueAction(() =>
             {
-                p = Dialog.ShowRichTextInput("How many players?".ToConsoleString(), false, 8, "2".ToConsoleString());
+                p = Dialog.ShowRichTextInput(new RichTextDialogOptions()
+                {
+                    Message = "How many players?".ToConsoleString(),
+                    MaxHeight = 8,
+                    TextBox = new TextBox() { Value = "2".ToConsoleString() },
+                });
             }).AsAwaitable();
 
             var ret = (await p.AsAwaitable()).ToString();
@@ -200,7 +205,7 @@ namespace DemoGame
             }
             catch (Exception ex)
             {
-                QueueAction(() => Dialog.ShowMessage("Failed to connect".ToRed(), Cleanup));
+                QueueAction(() => Dialog.ShowMessage("Failed to connect".ToRed()).Then(Cleanup));
                 return;
             }
             finally
@@ -232,7 +237,7 @@ namespace DemoGame
             QueueAction(() =>
             {
                 ScenePanel.IsVisible = false;
-                Dialog.ShowMessage("Disconnected from server", Cleanup);
+                Dialog.ShowMessage("Disconnected from server").Then(Cleanup);
             });
         }
 
@@ -241,7 +246,7 @@ namespace DemoGame
             QueueAction(() =>
             {
                 ScenePanel.IsVisible = false;
-                Dialog.ShowMessage("And the winner is: ".ToConsoleString() + message.WinnerDisplayName.ToGreen(), Cleanup);
+                Dialog.ShowMessage("And the winner is: ".ToConsoleString() + message.WinnerDisplayName.ToGreen()).Then(Cleanup);
             });
         }
 
@@ -254,10 +259,9 @@ namespace DemoGame
                 var panel = new ConsolePanel() { Height = 10 };
                 var form = panel.Add(new Form(FormOptions.FromObject(serverInfo))).Fill(padding: new Thickness(1, 1, 1, 2));
                 var okButton = panel.Add(new Button() { X = 1, Text = "OK".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.Enter) }).DockToBottom(padding: 1);
-                var dialog = new Dialog(panel);
-                dialog.MaxHeight = 8;
-                okButton.Pressed.SubscribeOnce(() => LayoutRoot.Controls.Remove(dialog));
-                dialogTask = dialog.Show().AsAwaitable();
+                
+                okButton.Pressed.SubscribeOnce(Dialog.Dismiss);
+                dialogTask = Dialog.Show(new ControlDialogOptions() { Content = panel, MaxHeight = 8 }).AsAwaitable();
             }).AsAwaitable();
             await dialogTask;
             return serverInfo;
@@ -320,8 +324,11 @@ namespace DemoGame
             
             await QueueAction(() =>
             {
-                signal.Dialog = new Dialog(new Label() { Text = $"Connecting to {info.Server}:{info.Port}".ToCyan() });
-                signal.Dialog.MaxHeight = 4;
+                signal.Dialog = new Dialog(new ControlDialogOptions()
+                {
+                    Content = new Label() { Text = $"Connecting to {info.Server}:{info.Port}".ToCyan() },
+                    MaxHeight = 4
+                });
                 signal.Dialog.Show();
             }).AsAwaitable();
         }
@@ -337,9 +344,11 @@ namespace DemoGame
 
             await QueueAction(() =>
             {
-                signal.Dialog = new Dialog(new Label() { Text = message });
-                signal.Dialog.MaxHeight = 4;
-                signal.Dialog.Show();
+                signal.Dialog = new Dialog(new ControlDialogOptions()
+                {
+                    Content = new Label() { Text = message },
+                    MaxHeight = 4
+                });
             }).AsAwaitable();
         }
 
@@ -371,17 +380,23 @@ namespace DemoGame
 
         private async Task<bool> IsServerPrompt()
         {
-            Task<DialogButton> dialogTask = null;
+            Promise<DialogOption> dialogPromise = null;
             await QueueAction(() =>
             {
-                dialogTask = Dialog.ShowMessage("Choose your adventure".ToConsoleString(), allowEscapeToCancel: false, buttons: new DialogButton[]
+                dialogPromise = Dialog.ShowMessage(new DialogButtonOptions()
                 {
-                        new DialogButton(){ DisplayText = "Start a server".ToConsoleString() },
-                        new DialogButton(){ DisplayText = "Connect to server".ToConsoleString() },
-                }).AsAwaitable();
+                    Message = "Choose your adventure".ToConsoleString(),
+                    AllowEscapeToCancel = false,
+                    MaxHeight = 8,
+                    Options = new List<DialogOption>()
+                    {
+                        new DialogOption(){ DisplayText = "Start a server".ToConsoleString() },
+                        new DialogOption(){ DisplayText = "Connect to server".ToConsoleString() },
+                    }
+                });
             }).AsAwaitable();
 
-            return (await dialogTask).DisplayText.ToString() == "Start a server";
+            return (await dialogPromise.AsAwaitable()).DisplayText.ToString() == "Start a server";
         }
 
         private BoundsMessage CreateLocationMessage(string clientId, SpacialElement element) => new BoundsMessage()

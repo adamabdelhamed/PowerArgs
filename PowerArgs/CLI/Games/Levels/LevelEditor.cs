@@ -85,16 +85,20 @@ namespace PowerArgs.Games
 
             saveAsCommand.Pressed.SubscribeForLifetime(() =>
             {
-                Dialog.ShowRichTextInput("Choose a name for this level".ToConsoleString(), (val) =>
+                Dialog.ShowRichTextInput(new RichTextDialogOptions()
+                {
+                    Message = "Choose a name for this level".ToConsoleString(),
+                    TextBox = new TextBox() { Value = currentLevelPath != null ? currentLevelPath.ToConsoleString() : Path.Combine(Environment.CurrentDirectory, "Level1" + LevelFileExtension).ToConsoleString() }
+                }).Then((val) =>
                 {
                     currentLevelPath = val.ToString();
                     saveCommand.Pressed.Fire();
-                }, initialValue: currentLevelPath != null ? currentLevelPath.ToConsoleString() : Path.Combine(Environment.CurrentDirectory, "Level1" + LevelFileExtension).ToConsoleString());
+                });
             }, this);
 
             discardCommand.Pressed.SubscribeForLifetime(() =>
             {
-                Dialog.ConfirmYesOrNo("Are you sure you want to discard your unsaved changed?", () =>
+                Dialog.ShowYesConfirmation("Are you sure you want to discard your unsaved changed?").Then(() =>
                 {
                     if (currentLevelPath != null)
                     {
@@ -105,6 +109,7 @@ namespace PowerArgs.Games
                         ConfigueEditor();
                     }
                 });
+
             }, this);
 
             tagCommand.Pressed.SubscribeForLifetime(() =>
@@ -117,13 +122,16 @@ namespace PowerArgs.Games
 
                 var tagsString = string.Join(";", tagsForPosition);
 
-                Dialog.ShowRichTextInput("Add/edit semi-colon delimited tags. Press enter to cmmmit".ToYellow(), (newString) =>
+                Dialog.ShowRichTextInput(new RichTextDialogOptions()
+                {
+                    Message = "Add/edit semi-colon delimited tags. Press enter to cmmmit".ToYellow(),
+                    TextBox = new TextBox() { Value = tagsString.ToConsoleString() }
+                }).Then((newString) =>
                 {
                     var split = newString.ToString().Split(';').ToList();
                     tagsForPosition.Clear();
                     tagsForPosition.AddRange(split);
-                },
-                initialValue: tagsString.ToConsoleString());
+                });
             }, this);
             tags.Clear();
             if (currentLevelPath == null)
@@ -181,7 +189,16 @@ namespace PowerArgs.Games
 
         private void UnsavedChanges(Action discardAction)
         {
-            Dialog.ShowMessage("You have unsaved changes".ToYellow(), (result) =>
+            Dialog.ShowMessage(new DialogButtonOptions()
+            {
+                Message = "You have unsaved changes".ToYellow(),
+                Options = new List<DialogOption>()
+                {
+                    new DialogOption() { DisplayText = "Save".ToConsoleString(), Id = "save" },
+                    new DialogOption() { DisplayText = "Discard changes".ToConsoleString(), Id="discard" },
+                    new DialogOption() { DisplayText = "Cancel".ToConsoleString(), Id="cancel" },
+                }
+            }).Then((result) =>
             {
                 if (result.Id == "save")
                 {
@@ -199,13 +216,7 @@ namespace PowerArgs.Games
                 {
                     throw new ArgumentOutOfRangeException("Unexpected result: " + result.Id);
                 }
-
-            }, buttons: new DialogButton[]
-                    {
-                        new DialogButton() { DisplayText = "Save".ToConsoleString(), Id = "save" },
-                        new DialogButton() { DisplayText = "Discard changes".ToConsoleString(), Id="discard" },
-                        new DialogButton() { DisplayText = "Cancel".ToConsoleString(), Id="cancel" },
-                    });
+            });
         }
 
         private void Load(string path)
@@ -225,21 +236,29 @@ namespace PowerArgs.Games
 
         private void LoadLevel(Level l)
         {
-            if(l != null)
+            if (l != null)
             {
                 LoadLevelInternal(l);
             }
             else
             {
-                Dialog.ShowRichTextInput("Choose Width".ToConsoleString(), (val) =>
+                Dialog.ShowRichTextInput(new RichTextDialogOptions()
                 {
-                    if(int.TryParse(val.ToString(), out int w) == false)
+                    Message = "Choose Width".ToConsoleString(),
+                    TextBox = new TextBox() { Value = Level.DefaultWidth.ToString().ToConsoleString() }
+                }).Then((val) =>
+                {
+                    if (int.TryParse(val.ToString(), out int w) == false)
                     {
-                        Dialog.ShowMessage("Invalid width: "+val);
+                        Dialog.ShowMessage("Invalid width: " + val);
                     }
                     else
                     {
-                        Dialog.ShowRichTextInput("Choose height".ToConsoleString(), (heightVal) =>
+                        Dialog.ShowRichTextInput(new RichTextDialogOptions()
+                        {
+                            Message = "Choose height".ToConsoleString(),
+                            TextBox = new TextBox() { Value = Level.DefaultHeight.ToString().ToConsoleString() }
+                        }).Then((heightVal) =>
                         {
                             if (int.TryParse(heightVal.ToString(), out int h) == false)
                             {
@@ -249,13 +268,11 @@ namespace PowerArgs.Games
                             {
                                 LoadLevelInternal(new Level() { Width = w, Height = h });
                             }
-
-                        }, initialValue: Level.DefaultHeight.ToString().ToConsoleString());
+                        });
                     }
 
-                }, initialValue: Level.DefaultWidth.ToString().ToConsoleString());
+                });
             }
-
         }
 
         private void LoadLevelInternal(Level l)

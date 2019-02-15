@@ -92,7 +92,7 @@ namespace PowerArgs.Cli
 
             changeFgButton.Pressed.SubscribeForLifetime(() =>
             {
-                Dialog.PickFromEnum<ConsoleColor>("Choose a color".ToConsoleString()).Then((newColor) =>
+                Dialog.ShowEnumOptions<ConsoleColor>("Choose a color".ToConsoleString()).Then((newColor) =>
                 {
                     currentFg = newColor.HasValue ? newColor.Value : currentFg;
                 });
@@ -102,7 +102,7 @@ namespace PowerArgs.Cli
 
             changeBgButton.Pressed.SubscribeForLifetime(() =>
             {
-                Dialog.PickFromEnum<ConsoleColor>("Choose a color".ToConsoleString()).Then((newColor) =>
+                Dialog.ShowEnumOptions<ConsoleColor>("Choose a color".ToConsoleString()).Then((newColor) =>
                 {
                     currentBg = newColor.HasValue ? newColor.Value : currentBg;
                 });

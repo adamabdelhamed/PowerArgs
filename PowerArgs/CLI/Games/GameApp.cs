@@ -115,7 +115,7 @@ namespace PowerArgs.Games
                 Paused.Fire();
                 if (showPauseDialog)
                 {
-                    QueueAction(() => Dialog.ShowMessage("Game paused", Resume));
+                    QueueAction(() => Dialog.ShowMessage("Game paused").Then(Resume));
                 }
             }
         }
@@ -148,10 +148,16 @@ namespace PowerArgs.Games
             this.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, () =>
             {
                 Pause(false);
-                Dialog.ConfirmYesOrNo("Are you sure you want to quit?", Stop, () =>
+                Dialog.ShowMessage(new DialogButtonOptions()
                 {
-                    Resume();
+                    Message = "Are you sure you want to quit?".ToConsoleString(),
+                    Options = new List<DialogOption>() { DialogButtonOptions.Yes, DialogButtonOptions.No }
+                }).Then((button) =>
+                {
+                    if (button.Equals(DialogButtonOptions.Yes)) { Stop(); } else { Resume(); }
                 });
+
+
             }, this);
         }
     }

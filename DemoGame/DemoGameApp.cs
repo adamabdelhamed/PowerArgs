@@ -118,10 +118,7 @@ namespace DemoGame
                 QueueAction(() =>
                 {
                     Sound.Play("gameover");
-                    Dialog.ShowMessage("Game over".ToRed(), ()=>
-                    {
-                        Load("DefaultLevel");
-                    });
+                    Dialog.ShowMessage("Game over".ToRed()).Then(()=>  Load("DefaultLevel"));
                 });
             });
         }
