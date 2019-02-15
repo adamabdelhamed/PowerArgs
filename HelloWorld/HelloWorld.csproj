@@ -82,7 +82,6 @@
     <Compile Include="Samples\Calculator.cs" />
     <Compile Include="Samples\Helpers\PerformanceInfo.cs" />
     <Compile Include="Samples\Search.cs" />
-    <Compile Include="Samples\ProgressBar.cs" />
     <Compile Include="Samples\REPLInvoke.cs" />
     <Compile Include="Samples\HelloWorldInvoke.cs" />
     <Compile Include="Samples\Git.cs" />
