@@ -271,6 +271,13 @@ namespace PowerArgs
             return outerDeferred.Promise;
         }
 
+        /// <summary>
+        /// Creates a promise that resolves when all given promises resolve or rejects as soon
+        /// as any given promise rejects
+        /// </summary>
+        /// <param name="others">the inner promises</param>
+        /// <returns>a promise that resolves when all given promises resolve or rejects as soon
+        /// as any given promise rejects</returns>
         public static Promise WhenAnyFail(List<Promise> others)
         {
             Deferred outerDeferred = Deferred.Create();
@@ -301,11 +308,25 @@ namespace PowerArgs
         }
     }
 
+    /// <summary>
+    /// The callee portion of the promise abstraction
+    /// </summary>
+    /// <typeparam name="T">the type of data returned by this deferred</typeparam>
     public class Deferred<T>
     {
+        /// <summary>
+        /// The promise to be handed to the caller
+        /// </summary>
         public Promise<T> Promise { get; private set; }
+
+        /// <summary>
+        /// The result of the deferred operation
+        /// </summary>
         public T Result { get; private set; }
 
+        /// <summary>
+        /// The exception, populated if the deferred was rejected
+        /// </summary>
         public Exception Exception
         {
             get
@@ -314,13 +335,10 @@ namespace PowerArgs
             }
         }
 
-        public bool IsFulfilled
-        {
-            get
-            {
-                return innerDeferred.IsFulfilled;
-            }
-        }
+        /// <summary>
+        /// Returns true if the deferred has been resolved or rejected
+        /// </summary>
+        public bool IsFulfilled => innerDeferred.IsFulfilled;
 
         private Deferred()
         {
@@ -330,33 +348,58 @@ namespace PowerArgs
 
         internal Deferred innerDeferred;
 
-        public static Deferred<T> Create()
-        {
-            return new Deferred<T>();
-        }
+        /// <summary>
+        /// Returns a new deferred
+        /// </summary>
+        /// <returns>a new deferred</returns>
+        public static Deferred<T> Create() => new Deferred<T>();
 
+        /// <summary>
+        /// Resolves this deferred operation with the given result
+        /// </summary>
+        /// <param name="result"></param>
         public void Resolve(T result)
         {
             this.Result = result;
             innerDeferred.Resolve();
         }
 
-        public void Reject(Exception ex)
-        {
-            innerDeferred.Reject(ex);
-        }
+        /// <summary>
+        /// Rejects this deferred operation with the given exception
+        /// </summary>
+        /// <param name="ex">the rejection exception</param>
+        public void Reject(Exception ex) => innerDeferred.Reject(ex);
     }
 
+
+    /// <summary>
+    /// An abstract protocol for handling async method calls that is decoupled from the actual
+    /// async nature of the operation
+    /// </summary>
+    /// <typeparam name="T">the type of data to be returned when the async operation completes</typeparam>
     public class Promise<T>
     {
         private Deferred<T> myDeferred;
         private Promise innerPromise;
 
+        /// <summary>
+        /// Returns true if the promise has been resolved or rejected
+        /// </summary>
         public bool IsFulfilled => myDeferred.IsFulfilled;
 
-
+        /// <summary>
+        /// The exception provided if the operation was rejected
+        /// </summary>
         public Exception Exception => myDeferred.Exception;
+
+        /// <summary>
+        /// The result of the operation
+        /// </summary>
         public T Result => myDeferred.Result;
+
+        /// <summary>
+        /// Synchronously blocks until this promise completes
+        /// </summary>
         public void Wait() => innerPromise.Wait();
 
         internal Promise(Deferred<T> myDeferred)
@@ -365,24 +408,43 @@ namespace PowerArgs
             this.innerPromise = new Promise(myDeferred.innerDeferred);
         }
 
+        /// <summary>
+        /// Registers an action to run when the promise resolves
+        /// </summary>
+        /// <param name="thenHandler">an action to run when this promise resolves</param>
+        /// <returns>this promise</returns>
         public Promise<T> Then(Action<T> thenHandler)
         {
             innerPromise.Then(() => { thenHandler(myDeferred.Result); });
             return this;
         }
 
+        /// <summary>
+        /// Registers an action to run when this promise is rejected
+        /// </summary>
+        /// <param name="handler">an action to run when this promise is rejected</param>
+        /// <returns>this promise</returns>
         public Promise<T> Fail(Action<Exception> handler)
         {
             innerPromise.Fail(handler);
             return this;
         }
 
+        /// <summary>
+        /// Registers an action to run when this promise completes
+        /// </summary>
+        /// <param name="handler">an action to run when this promise completes</param>
+        /// <returns>this promise</returns>
         public Promise<T> Finally(Action<Promise<T>> handler)
         {
             innerPromise.Finally((promise) => { handler(this); });
             return this;
         }
 
+        /// <summary>
+        /// Creates and runs an async task that delays until this promise completes
+        /// </summary>
+        /// <returns>an awaitable task</returns>
         public Task<T> AsAwaitable()
         {
             Func<Task<T>> ret = new Func<Task<T>>(async () =>
