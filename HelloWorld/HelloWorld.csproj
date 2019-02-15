@@ -78,7 +78,6 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Samples\FileSystemBrowserApp.cs" />
     <Compile Include="Samples\HelloWorldConditionalIf.cs" />
     <Compile Include="Samples\Calculator.cs" />
     <Compile Include="Samples\Helpers\PerformanceInfo.cs" />

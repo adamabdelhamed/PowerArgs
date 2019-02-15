@@ -27,18 +27,6 @@ namespace PowerArgs.Cli
             }
         }
 
-        // these next two properties are used to implement a UX optimization that allows the
-        // backspace key to be used either as text input (since this is a text box) or as a back gesture
-        // in the built in navigation system.  Basically if the text box is empty we will assume the user wants
-        // to navigate rather than clear the already cleared text box.  
-        //
-        // To polish this interaction there is a timer that is used to suppress the navigation gesture in the case
-        // where the user held down the backspace key to clear out the text or pressed the backspace key an extra time
-        // or two when wanting to clear out the text. 
-        // 
-        private bool enableBackspaceNavigationOptimization;
-        private IDisposable backspaceNavigationOptimizationTimerHandle;
-
         /// <summary>
         /// Gets or sets the value in the text box
         /// </summary>
@@ -78,25 +66,10 @@ namespace PowerArgs.Cli
         private void TextValueChanged()
         {
             FirePropertyChanged(nameof(Value));
-
-            if (backspaceNavigationOptimizationTimerHandle != null)
-            {
-                backspaceNavigationOptimizationTimerHandle.Dispose();
-            }
-
-            enableBackspaceNavigationOptimization = false;
-
-            if (Application is ConsolePageApp && (Value == null || Value.Length == 0))
-            {
-                backspaceNavigationOptimizationTimerHandle = Application.SetTimeout(()=> { enableBackspaceNavigationOptimization = true; }, TimeSpan.FromSeconds(1));
-            }
         }
-
-        Subscription backspacceSub;
 
         private void TextBox_Focused()
         {
-            enableBackspaceNavigationOptimization = true;
             blinkState = true;
             blinkTimerHandle = Application.SetInterval(() =>
             {
@@ -104,24 +77,10 @@ namespace PowerArgs.Cli
                 blinkState = !blinkState;
                 Application.Paint();
             }, BlinkInterval);
-
-
-            backspacceSub = Application.FocusManager.GlobalKeyHandlers.PushUnmanaged(ConsoleKey.Backspace, null, (info)=> 
-            {
-                if (enableBackspaceNavigationOptimization == false || Application is ConsolePageApp == false)
-                {
-                    OnKeyInputReceived(info);
-                }
-                else
-                {
-                    (Application as ConsolePageApp).PageStack.TryUp();
-                }
-            });
         }
 
         private void TextBox_Unfocused()
         {
-            backspacceSub.Dispose();
             blinkTimerHandle.Dispose();
             blinkState = false;
         }

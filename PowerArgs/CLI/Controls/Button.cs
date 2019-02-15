@@ -38,7 +38,6 @@ namespace PowerArgs.Cli
     /// <summary>
     /// A button control that can be 'pressed' by the user
     /// </summary>
-    [MarkupIgnoreAttribute("Shortcut-Modifier")]
     public class Button : ConsoleControl
     {
         private bool shortcutRegistered;
@@ -56,7 +55,6 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Gets or sets the keyboard shortcut info for this button.
         /// </summary>
-        [MarkupProperty(typeof(KeyboardShortcutProcessor))]
         public KeyboardShortcut Shortcut
         {
             get

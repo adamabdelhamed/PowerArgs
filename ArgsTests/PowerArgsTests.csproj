@@ -100,8 +100,6 @@
     <Compile Include="BasicTests.cs" />
     <Compile Include="ArgRequiredConditionalTests.cs" />
     <Compile Include="CaseSensitiveTests.cs" />
-    <Compile Include="CLI\Apps\BasicXmlAppViewModel.cs" />
-    <Compile Include="CLI\Apps\BasicXmlAppTests.cs" />
     <Compile Include="CLI\Apps\AppLifecycle.cs" />
     <Compile Include="CLI\CliKeyboardInputQueue.cs" />
     <Compile Include="CLI\CliTestHarness.cs" />
@@ -135,7 +133,6 @@
     <Compile Include="ComponentModelReviverTest.cs" />
     <Compile Include="MultipleFactoredOutActionsTests.cs" />
     <Compile Include="NewAwesomeTabCompletionTests.cs" />
-    <Compile Include="Pages\PageStackTests.cs" />
     <Compile Include="Templating\DocumentRendererTests.cs" />
     <Compile Include="InheritenceTests.cs" />
     <Compile Include="NullableTests.cs" />

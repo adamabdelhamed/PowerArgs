@@ -268,9 +268,6 @@ namespace ArgsTests
                 typeof(ArgActions),
                 typeof(FilterableAttribute),
                 typeof(KeyAttribute),
-                typeof(MarkupPropertyAttribute),
-                typeof(MarkupExtensionAttribute),
-                typeof(MarkupIgnoreAttribute),
                 typeof(SpacialElementBindingAttribute),
                 typeof(IMultiPlayerEventIgnore)
             };

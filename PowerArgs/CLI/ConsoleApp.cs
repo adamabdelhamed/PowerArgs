@@ -152,18 +152,6 @@ namespace PowerArgs.Cli
         public ConsoleApp(int w, int h) : this(0, 0, w, h) { }
 
         /// <summary>
-        /// Creates a ConsoleApp from markup and a view model
-        /// </summary>
-        /// <param name="markup">The xml markup that defines the app's view</param>
-        /// <param name="viewModel">The view model object that defines the code behind the view</param>
-        /// <returns>An app where the view has been bound to the view model</returns>
-        public static ConsoleApp FromMvVm(string markup, object viewModel)
-        {
-            var ret = MarkupParser.Parse(markup, viewModel);
-            return ret;
-        }
-
-        /// <summary>
         /// Creates a full screen console app that will automatically adjust its layout if the window size changes
         /// </summary>
         public ConsoleApp() : this(0,0,ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight-1)
