@@ -324,12 +324,12 @@ namespace DemoGame
             
             await QueueAction(() =>
             {
-                signal.Dialog = new Dialog(new ControlDialogOptions()
+                Dialog.Show(new ControlDialogOptions()
                 {
                     Content = new Label() { Text = $"Connecting to {info.Server}:{info.Port}".ToCyan() },
                     MaxHeight = 4
                 });
-                signal.Dialog.Show();
+                signal.Dialog = Dialog.Current;
             }).AsAwaitable();
         }
 
@@ -344,11 +344,12 @@ namespace DemoGame
 
             await QueueAction(() =>
             {
-                signal.Dialog = new Dialog(new ControlDialogOptions()
+                Dialog.Show(new ControlDialogOptions()
                 {
                     Content = new Label() { Text = message },
                     MaxHeight = 4
                 });
+                signal.Dialog = Dialog.Current;
             }).AsAwaitable();
         }
 

@@ -5,29 +5,29 @@ using System.Linq;
 namespace PowerArgs.Cli
 {
     /// <summary>
-    /// Information about a button to be shown on a dialog
+    /// Information about an option to be presented on a dialog
     /// </summary>
     public class DialogOption
     {
         /// <summary>
-        /// The display text for the button
+        /// The display text for the option
         /// </summary>
         public ConsoleString DisplayText { get; set; }
 
         /// <summary>
-        /// The id of this button's value
+        /// The id of this option's value
         /// </summary>
         public string Id { get; set; }
 
         /// <summary>
-        /// An object that this button represents
+        /// An object that this option represents
         /// </summary>
         public object Value { get; set; }
 
         /// <summary>
-        /// Compares the ids of each button
+        /// Compares the ids of each option
         /// </summary>
-        /// <param name="obj">the other button</param>
+        /// <param name="obj">the other option</param>
         /// <returns>true if the ids match</returns>
         public override bool Equals(object obj)
         {
@@ -50,7 +50,7 @@ namespace PowerArgs.Cli
     {
         /// <summary>
         /// The max height of the dialog. If set to 0 the dialog
-        /// will take up most of the application layout root
+        /// will take up most of the application layout root.
         /// </summary>
         public int MaxHeight { get; set; } = 8;
 
@@ -233,12 +233,11 @@ namespace PowerArgs.Cli
         private int myFocusStackDepth;
 
         /// <summary>
-        /// Create a new Dialog given the options. You should only call this if you have a good
-        /// reason to have a handle to the dialog, which is rare. In most cases you should be calling
-        /// one of the various static Show methods
+        /// Gets the topmost dialog on the current app
         /// </summary>
-        /// <param name="options">Options that configure the dialog's behavior</param>
-        public Dialog(DialogOptions options)
+        public static Dialog Current => ConsoleApp.Current?.LayoutRoot.Controls.WhereAs<Dialog>().LastOrDefault();
+        
+        private Dialog(DialogOptions options)
         {
             this.options = options;
             Add(options.GetContent()).Fill(padding: new Thickness(0, 0, 1, 1));
@@ -253,7 +252,7 @@ namespace PowerArgs.Cli
         /// Shows the dialog on top of the current app
         /// </summary>
         /// <returns>a promise that resolves when this dialog is dismissed. This promise never rejects.</returns>
-        public Promise Show()
+        private Promise Show()
         {
             ConsoleApp.AssertAppThread();
             var deferred = Deferred.Create();
@@ -332,7 +331,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public static void Dismiss()
         {
-            var dialogToDismiss = ConsoleApp.Current.LayoutRoot.Controls.WhereAs<Dialog>().LastOrDefault();
+            var dialogToDismiss = Dialog.Current;
             if (dialogToDismiss == null)
             {
                 throw new InvalidOperationException("There is no dialog to dismiss");
@@ -348,7 +347,7 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="options">the options that configure the dialog's behavior</param>
         /// <returns></returns>
-        public static Promise Show(DialogOptions options) => new Dialog(options).Show();
+        public static Promise Show(ControlDialogOptions options) => new Dialog(options).Show();
 
         /// <summary>
         /// Shows a dialog with a message and a set of options for the user to choose from
@@ -358,7 +357,7 @@ namespace PowerArgs.Cli
         public static Promise<DialogOption> ShowMessage(DialogButtonOptions options)
         {
             var d = Deferred<DialogOption>.Create();
-            var rawPromise = Dialog.Show(options);
+            var rawPromise = new Dialog(options).Show();
             rawPromise.Then(() => d.Resolve(options.SelectedOption));
             return d.Promise;
         }
@@ -472,7 +471,7 @@ namespace PowerArgs.Cli
         public static Promise<ConsoleString> ShowRichTextInput(RichTextDialogOptions options)
         {
             var d = Deferred<ConsoleString>.Create();
-            var rawPromise = Dialog.Show(options);
+            var rawPromise = new Dialog(options).Show();
             rawPromise.Then(() => d.Resolve(options.TextBox.Value));
             return d.Promise;
         }
