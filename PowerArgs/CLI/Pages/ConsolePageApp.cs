@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+// CUT-CANDIDATE
+// and a lot of other untested garbage goes with it (e.g. Progress Operation Control)
 namespace PowerArgs.Cli
 {
     public class ConsolePageApp : ConsoleApp

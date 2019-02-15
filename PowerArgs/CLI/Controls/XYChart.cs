@@ -160,7 +160,6 @@ namespace PowerArgs.Cli
         private const int LinesAndBarsZIndex = 2;
         private const int DataPointsZIndex = 3;
         private const int FocusedDataPointZIndex = 4;
-
         private const int MaxXAxisLabelLength = 10;
         private const int XAxisBottomOffset = 2;
         private const int YAxisTop = 0;
@@ -335,6 +334,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public void Refresh()
         {
+            this.chartTitleLabel.Text = options.Title;
             AddDataPoints();
             PositionDataPoints();
         }
@@ -429,8 +429,8 @@ namespace PowerArgs.Cli
             cachedMinYValueInPlotArea = null;
             cachedMaxXValueInPlotArea = null;
             cachedMaxYValueInPlotArea = null;
-
             this.Controls.Clear();
+
             foreach (var series in options.Data)
             {
                 for (int i = 0; i < series.Points.Count; i++)
@@ -624,6 +624,10 @@ namespace PowerArgs.Cli
             }
         }
 
+        // even though this is not used today it might be if I
+        // ever wanted to have something like focusable axis labels
+        // that show the value at the tick or any arbitrary pixel in
+        // the plot area. This way I don't have to revisit that math later.
         private double ConvertXPixelToValue(int x)
         {
             double delta = x - XAxisLeft;
@@ -659,6 +663,10 @@ namespace PowerArgs.Cli
 
         }
 
+        // even though this is not used today it might be if I
+        // ever wanted to have something like focusable axis labels
+        // that show the value at the tick or any arbitrary pixel in
+        // the plot area. This way I don't have to revisit that math later.
         private double ConvertYPixelToValue(int y)
         {
             double delta = YAxisBottom - y;
@@ -700,6 +708,14 @@ namespace PowerArgs.Cli
             return ret;
         }
 
+        /// <summary>
+        /// In the case where all the values on a given axis are the same then
+        /// we need to choose a reasonable axis range to show the perspective of the
+        /// data. This method will do that by updating the given min and max values
+        /// if they are the same.
+        /// </summary>
+        /// <param name="min">the min value on an axis</param>
+        /// <param name="max">the max value on an axis</param>
         private void PadZeroRangeIfNeeded(ref double min, ref double max)
         {
             if (min == max)
@@ -715,6 +731,13 @@ namespace PowerArgs.Cli
             }
         }
 
+        /// <summary>
+        /// Finds the distance between the given points using the distance
+        /// formula we learn in Algebra class.
+        /// </summary>
+        /// <param name="a">the first point</param>
+        /// <param name="b">the second point</param>
+        /// <returns>the distance between the given points</returns>
         private double CalculateDistanceBetween(DataPoint a, DataPoint b) => Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
     }
 

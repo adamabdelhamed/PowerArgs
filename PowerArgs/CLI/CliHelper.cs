@@ -3,6 +3,9 @@ using System.Linq;
 
 namespace PowerArgs.Cli
 {
+    // TODO - Move to the main PowerArgs namespace since this is not intended to be used
+    // in TUI apps
+
     /// <summary>
     /// A class that provides a framework for building interactive command line interfaces.
     /// </summary>

@@ -1,51 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// A class that manages key input interception for a console app. This is used to handle
+    /// key input that is not tied to a particular control.
+    /// </summary>
     public class KeyboardInterceptionManager
     {
         private class HandlerContext
         {
-            public Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> NakedHandlers {  get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
-            public Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> AltHandlers { get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
-            public Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> ShiftHandlers { get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
-            public Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> ControlHandlers { get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
+            internal Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> NakedHandlers {  get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
+            internal Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> AltHandlers { get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
+            internal Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> ShiftHandlers { get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
+            internal Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> ControlHandlers { get; private set; } = new Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>>();
         }
 
         private Stack<HandlerContext> handlerStack;
 
-        public KeyboardInterceptionManager()
+        internal KeyboardInterceptionManager()
         {
             handlerStack = new Stack<HandlerContext>();
             handlerStack.Push(new HandlerContext());
         }
 
-        public Lifetime Push()
-        {
-            PushInternal();
-            var ret = new Lifetime();
-            ret.OnDisposed(new Subscription(() =>
-            {
-                PopInternal();
-            }));
-            return ret;
-        }
-
-        private void PushInternal()
-        {
-            handlerStack.Push(new HandlerContext());
-        }
-
-        private void PopInternal()
-        {
-            handlerStack.Pop();
-        }
-
-        public bool TryIntercept(ConsoleKeyInfo keyInfo)
+        internal bool TryIntercept(ConsoleKeyInfo keyInfo)
         {
             bool alt = keyInfo.Modifiers.HasFlag(ConsoleModifiers.Alt);
             bool control = keyInfo.Modifiers.HasFlag(ConsoleModifiers.Control);
@@ -82,7 +62,7 @@ namespace PowerArgs.Cli
         }
 
         
-        public Subscription PushUnmanaged(ConsoleKey key, ConsoleModifiers? modifier, Action<ConsoleKeyInfo> handler)
+        internal Subscription PushUnmanaged(ConsoleKey key, ConsoleModifiers? modifier, Action<ConsoleKeyInfo> handler)
         {
             Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> target;
 
@@ -111,17 +91,37 @@ namespace PowerArgs.Cli
             return sub;
         }
 
-
+        /// <summary>
+        /// Pushes this handler onto its appropriate handler stack for the given lifetime
+        /// </summary>
+        /// <param name="key">the key ti handle</param>
+        /// <param name="modifier">the modifier, or null if you want to handle the unmodified keypress</param>
+        /// <param name="handler">the code to run when the key input is intercepted</param>
+        /// <param name="manager">the lifetime of the handlers registration</param>
         public void PushForLifetime(ConsoleKey key, ConsoleModifiers? modifier, Action<ConsoleKeyInfo> handler, ILifetimeManager manager)
         {
            manager.OnDisposed(PushUnmanaged(key, modifier, handler));
         }
 
+        /// <summary>
+        /// Pushes this handler onto the appropriate handler stack
+        /// </summary>
+        /// <param name="key">the key ti handle</param>
+        /// <param name="modifier">the modifier, or null if you want to handle the unmodified keypress</param>
+        /// <param name="handler">the code to run when the key input is intercepted</param>
+        /// <returns>A subscription that you should dispose when you no longer want this interception to happen</returns>
         public Subscription PushUnmanaged(ConsoleKey key, ConsoleModifiers? modifier, Action handler)
         {
             return PushUnmanaged(key, modifier, (k) => { handler(); });
         }
 
+        /// <summary>
+        /// Pushes this handler onto its appropriate handler stack for the given lifetime
+        /// </summary>
+        /// <param name="key">the key ti handle</param>
+        /// <param name="modifier">the modifier, or null if you want to handle the unmodified keypress</param>
+        /// <param name="handler">the code to run when the key input is intercepted</param>
+        /// <param name="manager">the lifetime of the handlers registration</param>
         public void PushForLifetime(ConsoleKey key, ConsoleModifiers? modifier, Action handler, ILifetimeManager manager)
         {
             PushForLifetime(key, modifier, (k) => { handler(); }, manager);

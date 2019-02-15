@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-
+// CUT-CANDIDATE
 namespace PowerArgs.Cli
 {
     /// <summary>

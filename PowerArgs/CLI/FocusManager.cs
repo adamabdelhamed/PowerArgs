@@ -74,6 +74,7 @@ namespace PowerArgs.Cli
                 Set(value);
             }
         }
+
         /// <summary>
         /// Initializes the focus manager
         /// </summary>

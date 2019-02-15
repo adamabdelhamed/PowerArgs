@@ -1,13 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+    /// <summary>
+    /// Helper functions for formatting values in more user friendly terms
+    /// </summary>
     public static class Friendlies
     {
+        /// <summary>
+        /// Returns a string that represents the difference in time between this time and DateTime.Now
+        /// 
+        /// a simple subtraction operator is used. 
+        /// </summary>
+        /// <param name="time">a time in the past</param>
+        /// <returns> A friendly relative time description (e.g. '1 day ago')</returns>
         public static string ToFriendlyPastTimeStamp(this DateTime time)
         {
             var now = DateTime.Now;
@@ -36,32 +42,6 @@ namespace PowerArgs.Cli
             }
         }
 
-        private static int Round(this double number)
-        {
-            return (int)Math.Round(number);
-        }
-
-        public static string ToFriendlyFileSize(long bytes)
-        {
-            if(bytes < 1024)
-            {
-                return bytes + " B";
-            }
-            else if(bytes < 1024 * 1024)
-            {
-                var converted = Math.Round(bytes / 1024.0, 1);
-                return converted + " KB";
-            }
-            else if (bytes < 1024 * 1024 * 1024)
-            {
-                var converted = Math.Round(bytes / (1024.0 * 1024.0) , 1);
-                return converted + " MB";
-            }
-            else
-            {
-                var converted = Math.Round(bytes / (1024.0 * 1024.0 * 1024.0), 1);
-                return converted + " GB";
-            }
-        }
+        private static int Round(this double number) => (int)Math.Round(number);
     }
 }
