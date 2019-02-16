@@ -89,6 +89,11 @@ namespace PowerArgs.Cli
 
             foreach (var property in properties)
             {
+                if (o is IObservableObject && property.Name == nameof(IObservableObject.SuppressEqualChanges))
+                {
+                    continue;
+                }
+
                 ConsoleControl editControl = null;
                 if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType == typeof(string))
                 {

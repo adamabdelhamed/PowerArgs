@@ -154,11 +154,16 @@ namespace ArgsTests.CLI.Controls
 
         public void RenderChartTestCommon(XYChartOptions options, int w = 80, int h = 30)
         {
-            var app = new CliTestHarness(this.TestContext, w, h);
+            var app = new CliTestHarness(this.TestContext, w, h, true);
             app.QueueAction(() => app.LayoutRoot.Add(new XYChart(options)).Fill());
-            app.QueueAction(app.Stop);
+            app.QueueAction(async () =>
+            {
+                await app.Paint().AsAwaitable();
+                app.RecordKeyFrame();
+                app.Stop();
+            });
             app.Start().Wait();
-            app.AssertThisTestMatchesLKGFirstAndLastFrame();
+            app.AssertThisTestMatchesLKG();
         }
     }
 }

@@ -55,24 +55,24 @@ namespace PowerArgs.Games
 
             messageLabel = messagePanel.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Background = ConsoleColor.White, Text = "".ToBlack(bg: ConsoleColor.White) }).Fill(padding: new Thickness(1, 1, 1, 1));
 
-            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.HealthPoints), () =>
+            SynchronizeProxiedForLifetime(app, app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.HealthPoints), () =>
             {
                 var hp = app.MainCharacter?.HealthPoints;
                 hpValue.Text = hp.HasValue ? FormatHPValue(hp.Value) : "unknown".ToRed();
             }, this);
 
 
-            keyMap.SynchronizeProxiedForLifetime(app, nameof(ShooterKeys.MenuKey), () =>
+            SynchronizeProxiedForLifetime(keyMap, app, nameof(ShooterKeys.MenuKey), () =>
             {
                 menuLabel.Text = $"Menu [{keyMap.MenuKey}]".ToYellow();
             }, this);
 
-            keyMap.SynchronizeProxiedForLifetime(app, nameof(ShooterKeys.TogglePauseKey), () =>
+            SynchronizeProxiedForLifetime(keyMap, app, nameof(ShooterKeys.TogglePauseKey), () =>
             {
                 pauseLabel.Text = $"Pause [{keyMap.TogglePauseKey}]".ToYellow();
             }, this);
 
-            keyMap.SynchronizeProxiedForLifetime(app, ObservableObject.AnyProperty, () =>
+            SynchronizeProxiedForLifetime(keyMap, app, ObservableObject.AnyProperty, () =>
             {
                 var primaryWeaponRow = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
                 primaryWeaponRow.Trigger = $"[{keyMap.PrimaryWeaponKey}]".ToWhite();
@@ -84,7 +84,7 @@ namespace PowerArgs.Games
                 aimLabel.Text = $"Aim[{keyMap.AimToggleKey}]".ToGray();
             }, this);
 
-            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(Inventory.PrimaryWeapon), () =>
+            SynchronizeProxiedForLifetime(app, app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(Inventory.PrimaryWeapon), () =>
             {
                 var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[0]);
                 var weaponName = (app.MainCharacter?.Inventory)?.PrimaryWeapon?.GetType().Name;
@@ -95,7 +95,7 @@ namespace PowerArgs.Games
                 }
             }, this);
 
-            app.SynchronizeProxiedForLifetime(app,
+            SynchronizeProxiedForLifetime(app, app,
                 nameof(app.MainCharacter) + "." +
                 nameof(MainCharacter.Inventory) + "." +
                 nameof(Inventory.PrimaryWeapon) + "." +
@@ -106,7 +106,7 @@ namespace PowerArgs.Games
                     row.Amount = ammo.HasValue ? FormatAmmoAmmount(ammo.Value) : "empty".ToRed();
                 }, this);
 
-            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(Inventory.ExplosiveWeapon), () =>
+            SynchronizeProxiedForLifetime(app, app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.Inventory) + "." + nameof(Inventory.ExplosiveWeapon), () =>
             {
                 var row = ((WeaponRow)(middleGrid.DataSource as MemoryDataSource).Items[1]);
                 var weaponName = (app.MainCharacter?.Inventory)?.ExplosiveWeapon?.GetType().Name;
@@ -117,7 +117,7 @@ namespace PowerArgs.Games
                 }
             }, this);
 
-            app.SynchronizeProxiedForLifetime(app,
+            SynchronizeProxiedForLifetime(app, app,
                 nameof(app.MainCharacter) + "." +
                 nameof(MainCharacter.Inventory) + "." +
                 nameof(Inventory.ExplosiveWeapon) + "." +
@@ -130,7 +130,7 @@ namespace PowerArgs.Games
 
 
 
-            app.SynchronizeProxiedForLifetime(app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.AimMode), () =>
+            SynchronizeProxiedForLifetime(app, app, nameof(app.MainCharacter) + "." + nameof(MainCharacter.AimMode), () =>
             {
                 var aimMode = app.MainCharacter?.AimMode;
                 aimValue.Text = aimMode.HasValue ? aimMode.Value.ToString().ToConsoleString(aimMode.Value == AimMode.Auto ? ConsoleColor.White : ConsoleColor.Cyan) : "".ToConsoleString();
@@ -171,6 +171,14 @@ namespace PowerArgs.Games
             {
                 return "empty".ToRed();
             }
+        }
+
+        private static void SynchronizeProxiedForLifetime(IObservableObject obj, ConsoleApp app, string propertyName, Action handler, ILifetimeManager manager)
+        {
+            obj.SynchronizeForLifetime(propertyName, () =>
+            {
+                app.QueueAction(handler);
+            }, manager);
         }
 
         private ConsoleString FormatHPValue(float hp)

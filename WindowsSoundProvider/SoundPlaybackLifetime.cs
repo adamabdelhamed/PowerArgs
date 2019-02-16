@@ -1,4 +1,4 @@
-﻿using PowerArgs.Cli;
+﻿using PowerArgs;
 using System;
 using System.Windows.Media;
 

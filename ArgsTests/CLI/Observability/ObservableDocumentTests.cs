@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerArgs;
 using PowerArgs.Cli;
 using System;
 

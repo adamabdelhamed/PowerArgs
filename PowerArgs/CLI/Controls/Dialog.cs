@@ -59,6 +59,7 @@ namespace PowerArgs.Cli
         /// which should be interpreted as a cancellation
         /// </summary>
         public bool AllowEscapeToCancel { get; set; } = true;
+
         internal abstract ConsoleControl GetContent();
     }
 

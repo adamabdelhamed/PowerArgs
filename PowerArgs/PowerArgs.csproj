@@ -23,7 +23,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="CLI\CliProgressBar.cs" />
-    <Compile Remove="CLI\Helpers\Friendlies.cs" />
+    <Compile Remove="CLI\Theme.cs" />
   </ItemGroup>
 </Project>

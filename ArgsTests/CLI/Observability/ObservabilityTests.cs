@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs.Cli;
 using System.Collections.Generic;
+using PowerArgs;
 
 namespace ArgsTests.CLI.Observability
 {
