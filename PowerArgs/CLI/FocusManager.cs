@@ -37,6 +37,7 @@ namespace PowerArgs.Cli
         }
 
         private Stack<FocusContext> focusStack;
+        private string currentFocusedControlId;
 
         /// <summary>
         /// Gets the number of layers on the stack
@@ -71,6 +72,11 @@ namespace PowerArgs.Cli
             }
             private set
             {
+                if(value != null && value.IsBeingRemoved == false)
+                {
+                    currentFocusedControlId = value.Id;
+                }
+
                 Set(value);
             }
         }
@@ -88,20 +94,33 @@ namespace PowerArgs.Cli
         /// Adds the current control to the current focus context
         /// </summary>
         /// <param name="c">The control to add</param>
-        public void Add(ConsoleControl c)
+        internal void Add(ConsoleControl c)
         {
             if(focusStack.Peek().Controls.Contains(c))
             {
                 throw new InvalidOperationException("Item already being tracked");
             }
             focusStack.Peek().Controls.Add(c);
+
+            if(c.Id  != null && c.Id == currentFocusedControlId)
+            {
+                c.TryFocus();
+            }
+
+            c.SubscribeForLifetime(nameof(c.CanFocus), () => 
+            {
+                if(c.CanFocus == false && c.HasFocus)
+                {
+                    TryMoveFocus();
+                }
+            },c);
         }
 
         /// <summary>
         /// Removes the control from all focus contexts
         /// </summary>
         /// <param name="c">The control to remove</param>
-        public void Remove(ConsoleControl c)
+        internal void Remove(ConsoleControl c)
         {
             foreach(var context in focusStack)
             {
@@ -159,14 +178,20 @@ namespace PowerArgs.Cli
             }
             else
             {
-                if (FocusedControl != null)
+                var oldFocusedControl = FocusedControl;
+                if (oldFocusedControl != null)
                 {
-                    ClearFocus();
+                    oldFocusedControl.HasFocus = false;
                 }
-
                 newFocusControl.HasFocus = true;
                 FocusedControl = newFocusControl;
+
                 focusStack.Peek().FocusIndex = index;
+
+                if (oldFocusedControl != null)
+                {
+                    oldFocusedControl.FireFocused(false);
+                }
 
                 if (FocusedControl != null)
                 {

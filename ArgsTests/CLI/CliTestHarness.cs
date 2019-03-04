@@ -15,7 +15,6 @@ namespace ArgsTests.CLI
     public class CliLKGTestMetadata
     {
         public int Paints { get; set; }
-        public int Frames { get; set; }
     }
 
     public class CliTestHarness : ConsoleApp
@@ -23,7 +22,7 @@ namespace ArgsTests.CLI
         private TestContext testContext;
         private ConsoleBitmapStreamWriter keyFrameRecorder;
         private int keyFrameCount = 0;
-
+        public double SecondsBetweenKeyframes { get; set; } = 1;
         private ConsoleBitmapStreamWriter EffectiveRecorder=> keyFrameRecorder ?? this.Recorder;
 
         public string TestId => $"{testContext.FullyQualifiedTestClassName}.{testContext.TestName}";
@@ -88,11 +87,9 @@ namespace ArgsTests.CLI
                 var metadata = new CliLKGTestMetadata()
                 {
                     Paints = this.TotalPaints,
-                    Frames = this.EffectiveRecorder.FramesWritten
                 };
 
                 Console.WriteLine("Total paints: " + metadata.Paints);
-                Console.WriteLine("Total frames: " + metadata.Frames);
 
                 var json = JsonConvert.SerializeObject(metadata);
                 File.WriteAllText(CurrentTestMetadataFilePath, json);
@@ -108,7 +105,14 @@ namespace ArgsTests.CLI
 
         public bool TryGetCurrentRecording(out ConsoleBitmapStreamReader reader) => TryGetRecording(CurrentTestRecordingFilePath, out reader);
 
-        public void RecordKeyFrame() => keyFrameRecorder.WriteFrame(this.Bitmap, true, TimeSpan.FromSeconds(keyFrameCount++));
+        public void RecordKeyFrame() => keyFrameRecorder.WriteFrame(this.Bitmap, true, TimeSpan.FromSeconds(SecondsBetweenKeyframes*keyFrameCount++));
+
+        public async Task PaintAndRecordKeyFrameAsync()
+        {
+            await Paint().AsAwaitable();
+            await Paint().AsAwaitable();
+            RecordKeyFrame();
+        }
 
         public void AssertThisTestMatchesLKG()
         {
@@ -119,8 +123,6 @@ namespace ArgsTests.CLI
 
             if (TryGetLKGMetadata(out CliLKGTestMetadata metadata) && TryGetLKGRecording(out ConsoleBitmapStreamReader reader))
             {
-                Assert.AreEqual(metadata.Frames, EffectiveRecorder.FramesWritten);
-                Assert.AreEqual(metadata.Paints, TotalPaints);
                 reader.InnerStream.Dispose();
                 AssertLKGRecordingMatchesCurrentTest();
                 Console.WriteLine("LKG matches");
@@ -170,7 +172,10 @@ namespace ArgsTests.CLI
                     var lkgFrame = lkgVideo.Frames[i];
                     var currentFrame = currentVideo.Frames[i];
 
-                    Assert.AreEqual(lkgFrame.Bitmap, currentFrame.Bitmap);
+                    if(lkgFrame.Bitmap.Equals(currentFrame.Bitmap) == false)
+                    {
+                        Assert.Fail("Frames do not match at index "+i);
+                    }
                 }
             }
         }

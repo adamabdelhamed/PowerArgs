@@ -61,7 +61,7 @@ namespace PowerArgs.Cli
                 if(AutoSize)
                 {
                     Height = h;
-                    Width = Controls.Select(c => c.X + c.Width).Max();
+                    Width = Controls.Count == 0 ? 0 : Controls.Select(c => c.X + c.Width).Max();
                 }
             }
             else
@@ -70,7 +70,7 @@ namespace PowerArgs.Cli
                 if(AutoSize)
                 {
                     Width = w;
-                    Height = Controls.Select(c => c.Y + c.Height).Max();
+                    Height = Controls.Count == 0 ? 0 : Controls.Select(c => c.Y + c.Height).Max();
                 }
             }
         }

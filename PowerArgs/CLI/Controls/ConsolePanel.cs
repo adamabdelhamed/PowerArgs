@@ -126,4 +126,49 @@ namespace PowerArgs.Cli
             }
         }
     }
+
+    /// <summary>
+    /// A ConsolePanel that can prevent outside influences from
+    /// adding to its Controls collection. You must use the internal
+    /// Unlock method to add or remove controls.
+    /// </summary>
+    public class ProtectedConsolePanel : ConsolePanel
+    {
+        private int activeModifierCount;
+
+        /// <summary>
+        /// Gets or sets the exception message to use when an invalid add or remove is performed
+        /// </summary>
+        protected string ExceptionMessage { get; set; } = "You cannot add controls to this ConsolePanel";
+
+        /// <summary>
+        /// Creates a new ConsolePanel
+        /// </summary>
+        public ProtectedConsolePanel()
+        {
+            activeModifierCount = 0;
+            Controls.Changed.SubscribeForLifetime(OnChanged, this);
+        }
+
+        private void OnChanged()
+        {
+            if(activeModifierCount == 0)
+            {
+                throw new InvalidOperationException(ExceptionMessage);
+            }
+        }
+
+        /// <summary>
+        /// Enables modification of the Controls connection until the given
+        /// lifetime expires
+        /// </summary>
+        /// <returns>A lifetime that you should dispose when you want to disable controls modification</returns>
+        protected Lifetime Unlock()
+        {
+            var ret = new Lifetime();
+            activeModifierCount++;
+            ret.OnDisposed(() => activeModifierCount--);
+            return ret;
+        }
+    }
 }

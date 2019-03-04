@@ -294,6 +294,7 @@ namespace PowerArgs.Cli
 
         private void ControlRemovedFromVisualTree(ConsoleControl c)
         {
+            c.IsBeingRemoved = true;
             if (ControlRemovedFromVisualTreeRecursive(c))
             {
                 FocusManager.TryRestoreFocus();
@@ -308,6 +309,7 @@ namespace PowerArgs.Cli
             {
                 foreach (var child in (c as ConsolePanel).Controls)
                 {
+                    child.IsBeingRemoved = true;
                     focusChanged = ControlRemovedFromVisualTreeRecursive(child) || focusChanged;
                 }
             }

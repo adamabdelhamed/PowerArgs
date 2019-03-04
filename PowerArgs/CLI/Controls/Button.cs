@@ -145,7 +145,13 @@ namespace PowerArgs.Cli
             if (Shortcut != null && shortcutRegistered == false && Application != null)
             {
                 shortcutRegistered = true;
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(Shortcut.Key, Shortcut.Modifier, Pressed.Fire, this);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(Shortcut.Key, Shortcut.Modifier,()=>
+                {
+                    if (this.CanFocus)
+                    {
+                        Pressed.Fire();
+                    }
+                }, this);
             }
         }
 

@@ -104,6 +104,8 @@
     <Compile Include="CLI\CliKeyboardInputQueue.cs" />
     <Compile Include="CLI\CliTestHarness.cs" />
     <Compile Include="CLI\CliUnitTestConsole.cs" />
+    <Compile Include="CLI\Controls\ListGridTests.cs" />
+    <Compile Include="CLI\Controls\GridLayoutTests.cs" />
     <Compile Include="CLI\Controls\DialogTests.cs" />
     <Compile Include="CLI\Controls\FormTests.cs" />
     <Compile Include="CLI\Controls\XYChartTests.cs" />

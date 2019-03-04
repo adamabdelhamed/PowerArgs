@@ -103,8 +103,17 @@ namespace PowerArgs.Cli
         /// </summary>
         public bool HasFocus { get { return Get<bool>(); } internal set { Set(value); } }
 
+        /// <summary>
+        /// Set to true if the Control is in the process of being removed
+        /// </summary>
+        internal bool IsBeingRemoved { get; set; }
 
         private bool hasBeenAddedToVisualTree;
+
+        /// <summary>
+        /// An event that fires when this control is both added to an app and that app is running
+        /// </summary>
+        public Event Ready { get; private set; } = new Event();
 
         /// <summary>
         /// Creates a new ConsoleControl
@@ -115,6 +124,7 @@ namespace PowerArgs.Cli
             Background = DefaultColors.BackgroundColor;
             this.Foreground = DefaultColors.ForegroundColor;
             this.IsVisible = true;
+            this.Id = GetType().FullName+"-"+ Guid.NewGuid().ToString();
             this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> 
             {
                 if (Application != null && Application.IsRunning)
@@ -123,6 +133,18 @@ namespace PowerArgs.Cli
                     Application.Paint();
                 }
             }, this);
+
+            this.AddedToVisualTree.SubscribeOnce(() =>
+            {
+                if(Application.IsRunning)
+                {
+                    Ready.Fire();
+                }
+                else
+                {
+                    Application.QueueAction(Ready.Fire);
+                }
+            });
         }
 
         /// <summary>

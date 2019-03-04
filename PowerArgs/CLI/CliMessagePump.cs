@@ -194,7 +194,7 @@ namespace PowerArgs.Cli
         /// Simulates a key press
         /// </summary>
         /// <param name="key">the key press info</param>
-        public void SendKey(ConsoleKeyInfo key) => QueueAction(() => { sendKeys.Enqueue(key); });
+        public Promise SendKey(ConsoleKeyInfo key) => QueueAction(() => { sendKeys.Enqueue(key); });
 
         /// <summary>
         /// Handles key input for the message pump
@@ -212,6 +212,27 @@ namespace PowerArgs.Cli
             var pumpMessage = new PumpMessage(a) { Deferred = d };
             QueueAction(pumpMessage);
             return d.Promise;
+        }
+
+        /// <summary>
+        /// Invokes the given action now if we're currently
+        /// on this app's thread or else queues it up
+        /// </summary>
+        /// <param name="a">the action to run</param>
+        /// <returns>A promise that resolves after the action is run</returns>
+        public Promise InvokeSafe(Action a)
+        {
+            if(ConsoleApp.Current == this)
+            {
+                a();
+                var d = Deferred.Create();
+                d.Resolve();
+                return d.Promise;
+            }
+            else
+            {
+                return QueueAction(a);
+            }
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 namespace PowerArgs.Cli
 {
     /// <summary>
@@ -29,14 +29,15 @@ namespace PowerArgs.Cli
         /// <param name="margin"></param>
         /// <param name="controls"></param>
         /// <returns></returns>
-        public static int StackHorizontally(int margin, IEnumerable<ConsoleControl> controls)
+        public static int StackHorizontally(int margin, IList<ConsoleControl> controls)
         {
             int left = 0;
             int width = 0;
-            foreach (var control in controls)
+            for(var i = 0; i < controls.Count; i++)
             {
+                var control = controls[i];
                 control.X = left;
-                width += control.Width;
+                width += control.Width + (i < controls.Count - 1 ? margin : 0);
                 left += control.Width + margin;
             }
             return width;
@@ -44,27 +45,19 @@ namespace PowerArgs.Cli
 
 
 
-        public static int StackVertically(int margin, IEnumerable<ConsoleControl> controls)
+        public static int StackVertically(int margin, IList<ConsoleControl> controls)
         {
             int top = 0;
             int height = 0;
-            foreach (var control in controls)
+            for (var i = 0; i < controls.Count; i++)
             {
+                var control = controls[i];
+
                 control.Y = top;
-                height += control.Height;
+                height += control.Height+ (i < controls.Count - 1 ? margin : 0);
                 top += control.Height + margin;
             }
             return height;
-        }
-
-        public static int StackVertically(int margin, params ConsoleControl[] controls)
-        {
-            return StackVertically(margin, (IEnumerable<ConsoleControl>)controls);
-        }
-
-        public static int StackHorizontally(int margin, params ConsoleControl[] controls)
-        {
-            return StackHorizontally(margin, (IEnumerable<ConsoleControl>)controls);
         }
 
         public static T CenterBoth<T>(this T child, ConsoleControl parent = null) where T : ConsoleControl => child.CenterHorizontally(parent).CenterVertically(parent);
