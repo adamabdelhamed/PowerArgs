@@ -69,7 +69,7 @@ namespace DemoGame
             var app = new ConsoleApp();
             var dataGrid = new ListGrid<Item>(new ListGridOptions<Item>()
             {
-                SelectionMode = DataGridSelectionMode.Cell,
+                SelectionMode = DataGridSelectionMode.Row,
                 DataSource = new SlowList(items),
                 Columns = new List<ListGridColumnDefinition<Item>>()
                 {

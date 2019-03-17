@@ -345,8 +345,10 @@ namespace ArgsTests.CLI.Observability
             var ev = new Event();
             var counter = 0;
             ev.SubscribeOnce(() => counter++);
+            Assert.IsTrue(ev.HasSubscriptions);
             Assert.AreEqual(0, counter);
             ev.Fire();
+            Assert.IsFalse(ev.HasSubscriptions);
             Assert.AreEqual(1, counter);
             ev.Fire();
             Assert.AreEqual(1, counter);

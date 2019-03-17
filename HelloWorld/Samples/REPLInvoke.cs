@@ -87,9 +87,9 @@ namespace HelloWorld.Samples
         }
     }
 
-    public class SingleItemArgs
+    public class SingleItemArgs 
     {
-        [ArgPosition(1), ArgRequired, ArgDescription("The textal value of the item")]
+        [ArgPosition(1), ArgRequired, ArgDescription("The text value of the item")]
         public string Value { get; set; }
     }
 
@@ -103,7 +103,7 @@ namespace HelloWorld.Samples
     {
         // The lambda that is sent to the base constructor will ensure that we get tab completion
         // on the REPL command line for items that are in the list at the time of execution.
-        public ItemNameCompletion() : base(() => { return REPLInvokeArgs.Items; }) 
+        public ItemNameCompletion() : base(() => { return REPLInvokeArgs.Items; })
         {
             MinCharsBeforeCyclingBegins = 0;
         }

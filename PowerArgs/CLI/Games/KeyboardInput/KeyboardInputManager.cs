@@ -14,13 +14,13 @@ namespace PowerArgs.Games
 
     public class KeyboardInputManager : ObservableObject
     {
-        public GameApp App { get; private set; }
+        public ConsoleApp App { get; private set; }
         public KeyMap KeyMap { get => Get<KeyMap>(); set => Set(value); }
 
         private Lifetime currentMappingLifetime;
  
 
-        public KeyboardInputManager(GameApp app)
+        public KeyboardInputManager(ConsoleApp app)
         {
             this.App = app;
             this.KeyMap = new KeyMap();

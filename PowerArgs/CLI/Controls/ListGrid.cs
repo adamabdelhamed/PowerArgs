@@ -140,7 +140,7 @@ namespace PowerArgs.Cli
                     dataException = p.Exception;
                     if (Interlocked.Decrement(ref waitCount) == 0)
                     {
-                        d.Reject(countException);
+                        d.Reject(dataException);
                     }
                 }
             });
@@ -235,7 +235,12 @@ namespace PowerArgs.Cli
         }
 
    
- 
+     /// <summary>
+     /// We could just call presenter.Recompose() when the selected row changes, but it would be slow.
+     /// Instead, we only do this if this selection change caused a page change. In the cases when the 
+     /// selection change is within the current page we will just change the highlighted controls, which
+     /// is much more performant.
+     /// </summary>
         private void SelectedRowChanged()
         {
             if (lastTopOfPageIndex != topOfPageDataIndex)
@@ -287,10 +292,33 @@ namespace PowerArgs.Cli
             presenter.Recompose();
         }
 
+        /// <summary>
+        /// This is our hook into the inner grid presenter's composition pass. We take one of 3 paths here. If all is good
+        /// and our data source can syncronously provide the current page of data then we render that data. If the data must
+        /// be fetched asyncronously then we kick off the data loading process. If the most recent attempt to fetch data failed
+        /// then we render error UX. The point is that we always know what state we're in before this method is called. This results in a clean
+        /// separation between data loading and data visualization.
+        /// </summary>
         private void BeforeRecompose()
         {
-            highlightedControls.Clear();
+            if (dataLoadException != null)
+            {
+                presenter.Options.IsLoading = true;
+                presenter.Options.LoadingMessage = "Failed to load data".ToRed();
+            }
+            else if(options.DataSource.HasDataForRange(topOfPageDataIndex, presenter.MaxRowsThatCanBePresented))
+            {
+                PrepareDataToBeShown();   
+            }
+            else
+            {
+                KickoffDataLoading();   
+            }
+        }
 
+        private void PrepareDataToBeShown()
+        {
+            highlightedControls.Clear();
             // ensure the top of the page is on a proper page boundary
             while (topOfPageDataIndex % presenter.MaxRowsThatCanBePresented != 0)
             {
@@ -300,100 +328,82 @@ namespace PowerArgs.Cli
             if (options.SelectionMode != DataGridSelectionMode.None)
             {
                 // ensure that the selected row is in the viewport
-                while(SelectedRowIndex < topOfPageDataIndex)
+                while (SelectedRowIndex < topOfPageDataIndex)
                 {
                     topOfPageDataIndex -= presenter.MaxRowsThatCanBePresented;
                 }
 
-                while(SelectedRowIndex >= topOfPageDataIndex+presenter.MaxRowsThatCanBePresented)
+                while (SelectedRowIndex >= topOfPageDataIndex + presenter.MaxRowsThatCanBePresented)
                 {
                     topOfPageDataIndex += presenter.MaxRowsThatCanBePresented;
                 }
             }
 
-
-            if (dataLoadException != null)
+            var range = options.DataSource.GetRange(topOfPageDataIndex, presenter.MaxRowsThatCanBePresented);
+            this.listCount = range.TotalCount;
+            presenter.Options.Rows = new List<DataGridPresentationRow>();
+            presenter.Options.IsLoading = false;
+            for (var i = 0; i < range.Items.Count; i++)
             {
-                presenter.Options.IsLoading = true;
-                presenter.Options.LoadingMessage = "Failed to load data".ToRed();
-            }
-            else if(options.DataSource.HasDataForRange(topOfPageDataIndex, presenter.MaxRowsThatCanBePresented))
-            {
-                var range = options.DataSource.GetRange(topOfPageDataIndex, presenter.MaxRowsThatCanBePresented);
-                this.listCount = range.TotalCount;
-                presenter.Options.Rows = new List<DataGridPresentationRow>();
-                presenter.Options.IsLoading = false;
-                for(var i = 0; i < range.Items.Count; i++)
+                var item = range.Items[i];
+                var deepIndex = i + topOfPageDataIndex;
+                var row = new DataGridPresentationRow();
+                presenter.Options.Rows.Add(row);
+                for (var j = 0; j < options.Columns.Count; j++)
                 {
-                    var item = range.Items[i];
-                    var deepIndex = i + topOfPageDataIndex;
-                    var row = new DataGridPresentationRow();
-                    presenter.Options.Rows.Add(row);
-                    for(var j = 0; j < options.Columns.Count; j++)
+                    var col = options.Columns[j];
+
+                    bool shouldBeHighlighted = false;
+
+                    if (options.SelectionMode == DataGridSelectionMode.Row && deepIndex == SelectedRowIndex)
                     {
-                        var col = options.Columns[j];
-
-                        bool shouldBeHighlighted = false;
-
-                        if(options.SelectionMode == DataGridSelectionMode.Row && deepIndex == SelectedRowIndex)
-                        {
-                            shouldBeHighlighted = true;
-                        }
-                        else if(options.SelectionMode == DataGridSelectionMode.Cell && deepIndex == SelectedRowIndex && SelectedColumnIndex == j)
-                        {
-                            shouldBeHighlighted = true;
-                        }
-
-                        row.Cells.Add(() =>
-                        {
-                            var control = col.Formatter(item);
-                            if (shouldBeHighlighted)
-                            {
-                                highlightedControls.Add(control);
-                            }
-                            return control;
-                        });
+                        shouldBeHighlighted = true;
                     }
+                    else if (options.SelectionMode == DataGridSelectionMode.Cell && deepIndex == SelectedRowIndex && SelectedColumnIndex == j)
+                    {
+                        shouldBeHighlighted = true;
+                    }
+
+                    row.Cells.Add(() =>
+                    {
+                        var control = col.Formatter(item);
+                        if (shouldBeHighlighted)
+                        {
+                            highlightedControls.Add(control);
+                        }
+                        return control;
+                    });
                 }
-
-                presenter.Options.PagerState = new PagerState()
-                {
-                    AllowRandomAccess = true,
-                    CanGoBackwards = PageIndex > 0,
-                    CanGoForwards = PageIndex < PageCount - 1,
-                    CurrentPageLabelValue = $"Page {PageIndex + 1} of {PageCount}".ToConsoleString(),
-                };
             }
-            else
+
+            presenter.Options.PagerState = new PagerState()
             {
-                presenter.Options.IsLoading = true;
-                presenter.Options.LoadingMessage = options.LoadingMessage;
-                var myPromise = options.DataSource.LoadRangeAsync(topOfPageDataIndex, presenter.MaxRowsThatCanBePresented);
-
-                myPromise.Then(() => Application.QueueAction(() =>
-                {
-                    if (myPromise == latestLoadingPromise)
-                    {
-                        Application.QueueAction(presenter.Recompose);
-                    }
-                }));
-
-                myPromise.Fail((ex)=> Application.QueueAction(()=>
-                {
-                    if (myPromise == latestLoadingPromise)
-                    {
-                        dataLoadException = ex;
-                        presenter.Recompose();
-                    }
-                }));
-                latestLoadingPromise = myPromise;
-            }
+                AllowRandomAccess = true,
+                CanGoBackwards = PageIndex > 0,
+                CanGoForwards = PageIndex < PageCount - 1,
+                CurrentPageLabelValue = $"Page {PageIndex + 1} of {PageCount}".ToConsoleString(),
+            };
         }
 
-        private void UpdateHighlightedRowsToReflectCurrentFocus()
+        private void KickoffDataLoading()
         {
-            Highlight(highlightedControls);
+            presenter.Options.IsLoading = true;
+            presenter.Options.LoadingMessage = options.LoadingMessage;
+            var myPromise = options.DataSource.LoadRangeAsync(topOfPageDataIndex, presenter.MaxRowsThatCanBePresented);
+
+            myPromise.Finally((p) => Application.QueueAction(() =>
+            {
+                if (myPromise == latestLoadingPromise)
+                {
+                    dataLoadException = p.Exception;
+                    presenter.Recompose();
+                }
+            }));
+
+            latestLoadingPromise = myPromise;
         }
+
+        private void UpdateHighlightedRowsToReflectCurrentFocus() => Highlight(highlightedControls);
 
         private void Highlight(List<ConsoleControl> controls)
         {
