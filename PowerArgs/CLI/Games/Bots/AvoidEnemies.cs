@@ -5,11 +5,10 @@ using System.Linq;
 
 namespace PowerArgs.Games
 {
-    public class AvoidEnemies : IBotStrategy
+    public class AvoidEnemies : IApplicableStrategy
     {
         public Character Me { get; set; }
         public RateGovernor EvalGovernor { get; private set; } 
-        public DecisionSpace DecisionSpace => DecisionSpace.Movement;
 
         public AvoidEnemies()
         {
@@ -44,6 +43,10 @@ namespace PowerArgs.Games
                     return new StrategyEval() { Applicability = threat, Strategy = this };
                 } }
         }
+
+        public bool CanInterrupt => true;
+
+        public void OnInterrupted() { }
 
         public void Work()
         {

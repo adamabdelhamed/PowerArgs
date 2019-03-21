@@ -79,6 +79,15 @@ namespace PowerArgs.Cli.Physics
             this.Height = h;
         }
 
+        public override bool Equals(object obj)
+        {
+            var other = obj as IRectangular;
+            if (other == null) return false;
+            return Left == other.Left && Top == other.Top && Width == other.Width && Height == other.Height;
+        }
+
+        public override string ToString() => $"X={Left}, Y={Top}, W={Width}, H={Height}";
+
         public static IRectangular Create(float x, float y, float w, float h) => new Rectangular(x, y, w, h);
         public static IRectangular Create(ILocation location, ISize size) => new Rectangular(location.Left, location.Top, size.Width, size.Height);
     }
@@ -103,6 +112,11 @@ namespace PowerArgs.Cli.Physics
 
         public static IRectangular CopyBounds(this IRectangular rectangular) => Rectangular.Create(rectangular.Left, rectangular.Top, rectangular.Width, rectangular.Height);
 
+        public static float Hypotenous(this IRectangular rectangular)
+        {
+            return (float)Math.Sqrt(rectangular.Width * rectangular.Width + rectangular.Height + rectangular.Height);
+        }
+
         public static float GetOppositeAngle(float angle)
         {
             float ret;
@@ -123,13 +137,33 @@ namespace PowerArgs.Cli.Physics
 
         public static float NumberOfPixelsThatOverlap(this IRectangular rectangle, IRectangular other)
         {
+            var rectangleRight = rectangle.Right();
+            var otherRight = other.Right();
+
+            var rectangleBottom = rectangle.Bottom();
+            var otherBottom = other.Bottom();
+
             var ret = 
-                Math.Max(0, Math.Min(rectangle.Right(), other.Right()) - Math.Max(rectangle.Left, other.Left)) *
-                Math.Max(0, Math.Min(rectangle.Bottom(), other.Bottom()) - Math.Max(rectangle.Top, other.Top));
+                Math.Max(0, Math.Min(rectangleRight, otherRight) - Math.Max(rectangle.Left, other.Left)) *
+                Math.Max(0, Math.Min(rectangleBottom, otherBottom) - Math.Max(rectangle.Top, other.Top));
+
+            ret = (float)Math.Round(ret, 4);
             return ret;
         }
 
-        public static float OverlapPercentage(this IRectangular rectangle, IRectangular other) => NumberOfPixelsThatOverlap(rectangle, other) / (other.Width * other.Height);
+        public static float OverlapPercentage(this IRectangular rectangle, IRectangular other)
+        {
+            var numerator = NumberOfPixelsThatOverlap(rectangle, other);
+            var denominator = other.Width * other.Height;
+
+            if (numerator == 0) return 0;
+            else if (numerator == denominator) return 1;
+
+            var amount = numerator / denominator;
+            if (amount < 0) amount = 0;
+            else if (amount > 1) amount = 1;
+            return amount;
+        }
         public static bool Contains(this IRectangular rectangle, IRectangular other) => OverlapPercentage(rectangle, other) == 1;
         public static bool Touches(this IRectangular rectangle, IRectangular other) => OverlapPercentage(rectangle, other) > 0;
 

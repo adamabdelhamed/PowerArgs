@@ -114,6 +114,14 @@ namespace ArgsTests.CLI
             RecordKeyFrame();
         }
 
+        public void Abandon()
+        {
+            if (this.keyFrameRecorder != null)
+            {
+                this.keyFrameRecorder.Dispose();
+            }
+        }
+
         public void AssertThisTestMatchesLKG()
         {
             if(this.keyFrameRecorder != null)

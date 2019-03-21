@@ -76,7 +76,8 @@ namespace DemoGame
         private void RenderFriendliesAndZombie()
         {
             var zombie = SpaceTime.CurrentSpaceTime.Add(new Enemy() { Symbol = 'Z' });
-            new Bot(zombie, new List<IBotStrategy>() { new MoveTowardsEnemy() });
+            var zBot = new Bot(zombie);
+            zBot.Strategy = new MoveTowardsEnemy();
             zombie.MoveTo(SpaceTime.CurrentSpaceTime.Width * .5f, SpaceTime.CurrentSpaceTime.Height * .5f);
 
             for (var x = SpaceTime.CurrentSpaceTime.Width * .05f; x < SpaceTime.CurrentSpaceTime.Width * .95f; x += 7)
@@ -88,7 +89,8 @@ namespace DemoGame
                     {
                         Symbol = RandomLetter(),
                     };
-                    new Bot(friendly, new List<IBotStrategy>() { new AvoidEnemies() });
+                    var fBot = new Bot(friendly);
+                    fBot.Strategy = new AvoidEnemies();
                     friendly.MoveTo(x, y);
 
                     SpaceTime.CurrentSpaceTime.Delay(()=> SpaceTime.CurrentSpaceTime.Add(friendly), (int)(x+y));

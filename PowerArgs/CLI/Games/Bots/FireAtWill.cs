@@ -3,12 +3,10 @@ using System;
 using System.Linq;
 namespace PowerArgs.Games
 {
-    public class FireAtWill : IBotStrategy
+    public class FireAtWill : IApplicableStrategy
     {
         public Character Me { get; set; }
         public RateGovernor EvalGovernor { get; } = new RateGovernor(TimeSpan.FromSeconds(1));
-
-        public DecisionSpace DecisionSpace => DecisionSpace.PrimaryWeapon;
 
         public StrategyEval EvaluateApplicability()
         {
@@ -31,6 +29,10 @@ namespace PowerArgs.Games
             else if (d > 10) return new StrategyEval() { Applicability = .5f, Strategy = this };
             else return new StrategyEval() { Applicability = 1f, Strategy = this };
         }
+
+        public bool CanInterrupt => true;
+
+        public void OnInterrupted() { }
 
         public void Work()
         {

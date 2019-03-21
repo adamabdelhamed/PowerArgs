@@ -3,12 +3,10 @@ using System;
 
 namespace PowerArgs.Games
 {
-    public class MoveTowardsEnemy : IBotStrategy
+    public class MoveTowardsEnemy : IApplicableStrategy
     {
         public Character Me { get; set; }
         public RateGovernor EvalGovernor { get; private set; } = new RateGovernor(TimeSpan.FromSeconds(.1f));
-
-        public DecisionSpace DecisionSpace => DecisionSpace.Movement;
 
         public MoveTowardsEnemy()
         {
@@ -25,6 +23,10 @@ namespace PowerArgs.Games
 
             return ret;
         }
+
+        public void OnInterrupted() { }
+
+        public bool CanInterrupt => true;
 
         public void Work()
         {

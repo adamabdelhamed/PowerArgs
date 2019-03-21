@@ -49,7 +49,8 @@ namespace PowerArgs.Games
             var friendly = new Friendly();
             friendly.Inventory.Items.Add(new Pistol() { AmmoAmount = 100, HealthPoints = 10, });
             hydratedElement = friendly;
-            new Bot(friendly, new List<IBotStrategy> {  new AvoidEnemies() });
+            var bot = new Bot(friendly);
+            bot.Strategy = new AvoidEnemies();
             return true;
         }
     }

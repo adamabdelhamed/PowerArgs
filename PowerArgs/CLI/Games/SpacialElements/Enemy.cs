@@ -38,7 +38,8 @@ namespace PowerArgs.Games
                     var myBot = Time.CurrentTime.Functions.WhereAs<Bot>().Where(b => b.Element == this).SingleOrDefault();
                     if (myBot != null)
                     {
-                        new Bot(newEnemy, myBot.Strategies.Select(s => (IBotStrategy)Activator.CreateInstance(s.GetType())));
+                        var bot = new Bot(newEnemy);
+                        bot.Strategy = myBot.Strategy == null ? null : (IBotStrategy)Activator.CreateInstance(myBot.Strategy.GetType());
                     }
                     newEnemy.MoveTo(t.Left, t.Top);
                 }
@@ -97,8 +98,18 @@ namespace PowerArgs.Games
             var enemy = new Enemy();
             enemy.Inventory.Items.Add(new Pistol() { AmmoAmount = 100, HealthPoints = 10, });
             hydratedElement = enemy;
-            new Bot(enemy, new List<IBotStrategy> { new FireAtWill(), new MoveTowardsEnemy() });
+            var bot = new Bot(enemy);
+            bot.Strategy = new CustomStrategy();
             return true;
+        }
+    }
+
+    public class CustomStrategy : BestOfStrategy
+    {
+        public CustomStrategy()
+        {
+            this.Children.Add(() => new FireAtWill());
+            this.Children.Add(() => new MoveTowardsEnemy());
         }
     }
 }
