@@ -9,12 +9,14 @@ namespace PowerArgs.Games
     {
         private Func<IRectangular> sourceEval;
         private Func<SpacialElement, bool> targetFilter;
+        private Func<SpacialElement, bool> obstacleFilter;
 
         public Event<SpacialElement> TargetChanged { get; private set; } = new Event<SpacialElement>();
 
-        public AutoTargetingFunction(Func<IRectangular> sourceEval, Func<SpacialElement, bool> targetFilter)
+        public AutoTargetingFunction(Func<IRectangular> sourceEval, Func<SpacialElement, bool> targetFilter, Func<SpacialElement, bool> obstacleFilter)
         {
             this.sourceEval = sourceEval;
+            this.obstacleFilter = obstacleFilter;
             this.targetFilter = targetFilter;
         }
 
@@ -27,9 +29,9 @@ namespace PowerArgs.Games
 
             foreach (var target in targets)
             {
-                var route = SpaceExtensions.CalculateLineOfSight(sourceEval(), target, 1);
+                var hasLineOfSight = SpaceExtensions.HasLineOfSightRounded(sourceEval(), target,SpaceTime.CurrentSpaceTime.Elements.Where(e => obstacleFilter(e) || targetFilter(e)).Select(e => e as IRectangular).ToList(), 1);
 
-                if (route.Obstacles.Where(o => o is Wall).Count() == 0)
+                if (hasLineOfSight)
                 {
                     TargetChanged.Fire(target);
                     return;

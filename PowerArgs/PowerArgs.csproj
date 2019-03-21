@@ -21,4 +21,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DocumentationFile>bin\Debug\netstandard2.0\PowerArgs.xml</DocumentationFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="CLI\Games\Bots\MoveTowardsEnemy.cs" />
+  </ItemGroup>
 </Project>

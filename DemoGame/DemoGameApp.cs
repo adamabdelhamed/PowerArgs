@@ -18,7 +18,6 @@ namespace DemoGame
             new FriendlyReviver(),
             new EnemyReviver(),
             new PortalReviver(),
-            new WaypointReviver(),
             new CeilingReviver(),
             new DoorReviver(),
             new WallReviver()

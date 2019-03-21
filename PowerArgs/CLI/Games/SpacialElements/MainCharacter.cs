@@ -75,7 +75,7 @@ namespace PowerArgs.Games
 
         private void InitializeTargeting()
         {
-            Targeting = new AutoTargetingFunction(() => this.Bounds, t => t is Enemy || t.HasSimpleTag("enemy"));
+            Targeting = new AutoTargetingFunction(() => this.Bounds, t => t is Enemy || t.HasSimpleTag("enemy"), (t) => this.Speed.HitDetectionTypes.Contains(t.GetType()));
             Added.SubscribeForLifetime(() => { Time.CurrentTime.Add(Targeting); }, this.Lifetime);
             this.Lifetime.OnDisposed(Targeting.Lifetime.Dispose);
 
@@ -86,7 +86,7 @@ namespace PowerArgs.Games
                     this.Target.SizeOrPositionChanged.Fire();
                 }
 
-                this.Target = target as Character;
+                this.Target = target;
 
                 if (this.Target != null && this.Target.Lifetime.IsExpired == false)
                 {

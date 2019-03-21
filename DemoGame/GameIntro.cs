@@ -77,7 +77,6 @@ namespace DemoGame
         {
             var zombie = SpaceTime.CurrentSpaceTime.Add(new Enemy() { Symbol = 'Z' });
             var zBot = new Bot(zombie);
-            zBot.Strategy = new MoveTowardsEnemy();
             zombie.MoveTo(SpaceTime.CurrentSpaceTime.Width * .5f, SpaceTime.CurrentSpaceTime.Height * .5f);
 
             for (var x = SpaceTime.CurrentSpaceTime.Width * .05f; x < SpaceTime.CurrentSpaceTime.Width * .95f; x += 7)

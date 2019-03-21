@@ -109,7 +109,6 @@ namespace PowerArgs.Games
         public CustomStrategy()
         {
             this.Children.Add(() => new FireAtWill());
-            this.Children.Add(() => new MoveTowardsEnemy());
         }
     }
 }

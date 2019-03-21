@@ -1,5 +1,8 @@
 ﻿using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
+using System;
+using System.Collections.Generic;
+
 namespace PowerArgs.Games
 {
     public enum WeaponStyle
@@ -10,6 +13,7 @@ namespace PowerArgs.Games
 
     public abstract class Weapon : ObservableObject, IInventoryItem
     {
+        public List<Type> HitDetectionTypes { get; set; } = new List<Type>();
         public Character Holder { get; set; }
 
         public abstract WeaponStyle Style { get; }

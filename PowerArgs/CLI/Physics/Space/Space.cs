@@ -168,12 +168,62 @@ namespace PowerArgs.Cli.Physics
         public static bool Touches(this IRectangular rectangle, IRectangular other) => OverlapPercentage(rectangle, other) > 0;
 
 
-        public static float CalculateDistanceTo(this IRectangular rectangular, IRectangular other) => rectangular.Center().CalculateDistanceTo(other.Center());
+        public static float CalculateDistanceTo(this IRectangular a, IRectangular b)
+        {
+            var left = b.Right() < a.Left;
+            var right = a.Right() < b.Left;
+            var bottom = b.Bottom() < a.Top;
+            var top = a.Bottom() < b.Top;
+            if (top && left)
+                return Location.Create(a.Left, a.Bottom()).CalculateDistanceTo(Location.Create(b.Right(), b.Top));
+            else if (left && bottom)
+                return Location.Create(a.Left, a.Top).CalculateDistanceTo(Location.Create(b.Right(), b.Bottom()));
+            else if (bottom && right)
+                return Location.Create(a.Right(), a.Top).CalculateDistanceTo(Location.Create(b.Left, b.Bottom()));
+            else if (right && top)
+                return Location.Create(a.Right(), a.Bottom()).CalculateDistanceTo(Location.Create(b.Left, b.Top));
+            else if (left)
+                return a.Left - b.Right();
+            else if (right)
+                return b.Left - a.Right();
+            else if (bottom)
+                return a.Top - b.Bottom();
+            else if (top)
+                return b.Top - a.Bottom();
+            else
+                return 0;
+        }
         
 
         public static float CalculateDistanceTo(this ILocation start, ILocation end)
         {
             return (float)Math.Sqrt(((start.Left - end.Left) * (start.Left - end.Left)) + ((start.Top - end.Top) * (start.Top - end.Top)));
+        }
+
+        public static bool HasLineOfSightRounded(this IRectangular from, IRectangular to, List<IRectangular> obstacles, float increment)
+        {
+            Route ret = new Route();
+            IRectangular current = from;
+            var currentDistance = current.CalculateDistanceTo(to);
+            var firstDistance = currentDistance;
+            while (currentDistance > increment)
+            {
+                current = Rectangular.Create(SpaceExtensions.MoveTowards(current.Center(), to.Center(), increment), from);
+                current = Rectangular.Create((int)Math.Round(current.Left - from.Width / 2), (int)Math.Round(current.Top - from.Height / 2), from.Width, from.Height);
+                ret.Steps.Add(current);
+
+                foreach (var obstacle in obstacles)
+                {
+                    if (obstacle.OverlapPercentage(current) > 0)
+                    {
+                        return false;
+                    }
+                }
+
+                currentDistance = current.CalculateDistanceTo(to);
+            }
+
+            return true;
         }
 
         public static Route CalculateLineOfSight(this IRectangular from, IRectangular to, float increment)
