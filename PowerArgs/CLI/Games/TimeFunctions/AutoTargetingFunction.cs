@@ -21,6 +21,7 @@ namespace PowerArgs.Games
         public AutoTargetingFunction(AutoTargetingOptions options)
         {
             this.options = options;
+            this.Governor = new RateGovernor(TimeSpan.FromSeconds(.5));
         }
 
         public override void Initialize() { }

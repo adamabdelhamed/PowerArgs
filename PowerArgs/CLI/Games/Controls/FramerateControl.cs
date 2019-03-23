@@ -2,18 +2,21 @@
 using System;
 using PowerArgs;
 using PowerArgs.Cli.Physics;
+using System.Linq;
 
 namespace PowerArgs.Games
 {
     public class FramerateControl : StackPanel
     {
-        private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel;
+        private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel, elementsControl, functionsControl;
         private SpacetimePanel scene;
         public FramerateControl(SpacetimePanel scene)
         {
             this.scene = scene;
             this.AutoSize = true;
             nowControl = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
+            elementsControl = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
+            functionsControl = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             sceneFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             renderFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             paintFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
@@ -29,12 +32,26 @@ namespace PowerArgs.Games
                 {
                     return;
                 }
-                nowControl.Text = $"{scene.SpaceTime.Now.TotalSeconds}".ToConsoleString();
+                nowControl.Text = $"Now: {scene.SpaceTime.Now.TotalSeconds}".ToConsoleString();
                 sceneFPSLabel.Text = $"TODO scene frames per second".ToConsoleString();
                 //sceneFPSLabel.Text = FormatFramerateMessage($"{scene.FPS} scene frames per second", scene.FPS);
                 renderFPSLabel.Text = FormatFramerateMessage($"{Application.CyclesPerSecond} UI cycles per second", Application.CyclesPerSecond, true);
                 paintFPSLabel.Text = FormatFramerateMessage($"{Application.PaintRequestsProcessedPerSecond} paint frames per second", Application.PaintRequestsProcessedPerSecond, false);
                 sceneBusyPercentageLabel.Text = FormatSceneBusyPercentage();
+
+                scene.SpaceTime.QueueAction(() =>
+                {
+                    var functionCount = Time.CurrentTime.Functions.Count();
+                    var elementCount = SpaceTime.CurrentSpaceTime.Elements.Count();
+
+                    Application.QueueAction(() =>
+                    {
+                        elementsControl.Text = $"SpacialElements: {elementCount}".ToConsoleString();
+                        functionsControl.Text = $"Time Functions: {functionCount}".ToConsoleString();
+                    });
+                });
+
+
             }, TimeSpan.FromSeconds(1)));
         }
 
