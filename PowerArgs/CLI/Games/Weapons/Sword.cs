@@ -1,8 +1,9 @@
-﻿using PowerArgs;
+﻿using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 namespace PowerArgs.Games
 {
     public class Sword : Weapon
@@ -22,7 +23,7 @@ namespace PowerArgs.Games
             for(var i = 1; i < 1+ SpaceExtensions.NormalizeQuantity(Range, CalculateAngleToTarget()); i++)
             {
                 var location = Holder.Center().MoveTowards(CalculateAngleToTarget(), i);
-                var newBounds = Rectangular.Create(location.Left - .5f, location.Top - .5f, 1, 1);
+                var newBounds = Cli.Physics.Rectangular.Create(location.Left - .5f, location.Top - .5f, 1, 1);
                 if (SpaceTime.CurrentSpaceTime.IsInBounds(newBounds))
                 {
                     var blade = new Blade() { Holder = this.Holder };
@@ -38,7 +39,6 @@ namespace PowerArgs.Games
     public class Blade : SpacialElement
     {
         public Character Holder { get; set; }
-        public float HealthPoints { get; set; } = 1;
 
         private float dx;
         private float dy;
@@ -58,16 +58,20 @@ namespace PowerArgs.Games
 
             this.MoveTo(Holder.Left + dx, Holder.Top + dy);
 
-            SpaceTime.CurrentSpaceTime.Elements
+            DamageBroker.Instance.DamageableElements
                 .Where(e => e != Holder && e.Touches(this))
-                .WhereAs<IDestructible>()
-                .ForEach(d => d.TakeDamage(HealthPoints));
+                .ForEach(d => DamageBroker.Instance.ReportDamage(new DamageEventArgs()
+                {
+                    Damager = this,
+                    Damagee = d
+                }));
         }
     }
 
     [SpacialElementBinding(typeof(Blade))]
-    public class BladeRenderer : SingleStyleRenderer
+    public class BladeRenderer : SpacialElementRenderer
     {
-        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter('=', ConsoleColor.Cyan);
+        private ConsoleString DefaultStyle => new ConsoleString("=", ConsoleColor.Cyan);
+        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(DefaultStyle, 0, 0);
     }
 }

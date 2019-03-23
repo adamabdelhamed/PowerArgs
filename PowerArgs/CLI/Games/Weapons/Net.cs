@@ -28,21 +28,18 @@ namespace PowerArgs.Games
                     matter.MoveTo(matterX, matterY, 1);
                     matterList.Add(matter);
  
-                    matter.Speed.HitDetectionTypes.Add(typeof(Character));
-                    matter.Speed.HitDetectionTypes.Add(typeof(Wall));
-
                     // wraps the character in the net if it hits them
                     matter.Speed.ImpactOccurred.SubscribeForLifetime((i) =>
                     {
-                        if (i.ElementHit != Holder && i.ElementHit is Character)
+                        if (i.ObstacleHit != Holder && i.ObstacleHit is Character)
                         {
                             Sound.Play("wrapped");
                             matterList.ForEach(m => m.Lifetime.Dispose());
                             matterList.Clear();
                             matterIntegrity.Lifetime.Dispose();
-                            for(var newX = i.ElementHit.Left-2; newX <= i.ElementHit.Left+2; newX++ )
+                            for(var newX = i.ObstacleHit.Left-2; newX <= i.ObstacleHit.Left+2; newX++ )
                             {
-                                for (var newY = i.ElementHit.Top - 1; newY <= i.ElementHit.Top+ 1; newY++)
+                                for (var newY = i.ObstacleHit.Top - 1; newY <= i.ObstacleHit.Top+ 1; newY++)
                                 {
                                     var newMatter = new NetMatter();
                                     newMatter.MoveTo(newX, newY);
@@ -71,15 +68,9 @@ namespace PowerArgs.Games
             SpaceTime.CurrentSpaceTime.Add(matterIntegrity);
         }
 
-        public class NetMatter : SpacialElement, IDestructible
+        public class NetMatter : SpacialElement
         {
             internal List<NetMatter> Composite { get; set; }
-
-            public Event Damaged { get; private set; } = new Event();
-
-            public Event Destroyed { get; private set; } = new Event();
-
-            public float HealthPoints { get; set; } = 5;
 
             public SpeedTracker Speed { get; private set; } 
 

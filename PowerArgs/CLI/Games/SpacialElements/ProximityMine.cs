@@ -6,7 +6,7 @@ namespace PowerArgs.Games
     { 
         public override void Evaluate()
         {
-            if(SpaceTime.CurrentSpaceTime.Elements.Where(e => e is Enemy && e.CalculateDistanceTo(this) <= this.Range/2).Count() > 0)
+            if(DamageBroker.Instance.DamageableElements.Where(e => e.CalculateDistanceTo(this) <= this.Range/2).Any())
             {
                 Explode();
             }

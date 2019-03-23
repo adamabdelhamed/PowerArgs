@@ -22,10 +22,10 @@ namespace PowerArgs.Games
             this.Tags.Add("hot");
         }
 
-        public static void BurnIfTouchingSomethingHot<T>(T me, TimeSpan? burnTime = null, char? symbol = null, bool disposeOnBurn = false) where T : SpacialElement, IDestructible
+        public static void BurnIfTouchingSomethingHot<T>(T me, TimeSpan? burnTime = null, char? symbol = null, bool disposeOnBurn = false) where T : SpacialElement
         {
             burnTime = burnTime.HasValue ? burnTime.Value : TimeSpan.FromSeconds(3);
-            if (SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("hot") && e.CalculateDistanceTo(me) < 2).Count() > 0)
+            if (SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("hot") && e.CalculateDistanceTo(me) < 2).Any())
             {
                 if (SpaceTime.CurrentSpaceTime.Elements.WhereAs<Fire>().Where(f => f.Left == me.Left && f.Top == me.Top).Count() == 0)
                 {
@@ -71,9 +71,12 @@ namespace PowerArgs.Games
             }
 
             SpaceTime.CurrentSpaceTime.Elements
-                .Where(e => e is IDestructible && this.Touches(e))
-                .Select(e => e as IDestructible)
-                .ForEach(d => d.TakeDamage(1));
+                .Where(e => e.HasSimpleTag("destructable") && this.Touches(e))
+                .ForEach(d => DamageBroker.Instance.ReportDamage(new DamageEventArgs()
+                {
+                    Damager = this,
+                    Damagee = d
+                }));
             this.SizeOrPositionChanged.Fire();
         }
 
@@ -81,7 +84,7 @@ namespace PowerArgs.Games
     }
 
     [SpacialElementBinding(typeof(Fire))]
-    public class FireRenderer : ThemeAwareSpacialElementRenderer
+    public class FireRenderer : SpacialElementRenderer
     {
         public ConsoleColor PrimaryBurnColor { get; set; } = ConsoleColor.Yellow;
         public ConsoleColor SecondaryBurnColor { get; set; } = ConsoleColor.Red;

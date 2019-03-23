@@ -8,7 +8,7 @@ namespace PowerArgs.Games
 {
 
 
-    public class Character : SpacialElement, IObservableObject, IDestructible
+    public class Character : SpacialElement, IObservableObject
     {
         public MultiPlayerClient MultiPlayerClient { get; set; }
         public char? Symbol { get; set; }
@@ -26,18 +26,12 @@ namespace PowerArgs.Games
 
         public SpeedTracker Speed { get; set; }
 
-        public Event Damaged { get; private set; } = new Event();
-        public Event Destroyed { get; private set; } = new Event();
-        public float HealthPoints { get => observable.Get<float>(); set => observable.Set(value); } 
-
         public Character()
         {
             observable = new ObservableObject(this);
-            HealthPoints = 100;
             this.SubscribeForLifetime(nameof(Inventory), () => this.Inventory.Owner = this, this.Lifetime);
             Inventory = new Inventory();
             Speed = new SpeedTracker(this) { Bounciness = 0 };
-            Speed.HitDetectionTypes.Add(typeof(Wall));
             this.ResizeTo(1, 1);
         }
     }

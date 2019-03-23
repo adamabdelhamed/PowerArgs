@@ -65,12 +65,13 @@ namespace PowerArgs.Games
     }
 
     [SpacialElementBinding(typeof(Ceiling))]
-    public class CeilingRenderer : SingleStyleRenderer
+    public class CeilingRenderer : SpacialElementRenderer
     {
-        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Gray);
+        private ConsoleString DefaultStyle => new ConsoleString(" ", backgroundColor: ConsoleColor.Gray);
         public CeilingRenderer() { this.ZIndex = int.MaxValue-1; }
         public override void OnRender() => this.IsVisible = (Element as Ceiling).IsVisible;
-        
+        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(DefaultStyle, 0, 0);
+
     }
 
     public class CeilingReviver : ItemReviver

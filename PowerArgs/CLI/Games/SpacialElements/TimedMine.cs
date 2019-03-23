@@ -57,13 +57,11 @@ namespace PowerArgs.Games
     }
 
     [SpacialElementBinding(typeof(TimedMine))]
-    public class TimedMineRenderer : SingleStyleRenderer
+    public class TimedMineRenderer : SpacialElementRenderer
     {
-        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter(' ', ConsoleColor.Black, backgroundColor: ConsoleColor.DarkYellow);
-
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = new ConsoleCharacter(Math.Ceiling((Element as TimedMine).SecondsRemaining).ToString()[0], EffectiveStyle.ForegroundColor, EffectiveStyle.BackgroundColor);
+            context.Pen = new ConsoleCharacter(Math.Ceiling((Element as TimedMine).SecondsRemaining).ToString()[0], ConsoleColor.Black, ConsoleColor.DarkYellow);
             context.FillRect(0, 0, Width, Height);
         }
     }

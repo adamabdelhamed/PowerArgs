@@ -134,19 +134,13 @@ namespace PowerArgs.Games
         }
     }
 
-    public class FlammableLetter : SpacialElement, IDestructible
+    public class FlammableLetter : SpacialElement
     {
         public ConsoleCharacter Symbol { get; set; }
 
-        public Event Damaged { get; private set; } = new Event();
-
-        public Event Destroyed { get; private set; } = new Event();
-
-        public float HealthPoints { get; set; }
-
         public override void Initialize()
         {
-            this.HealthPoints = SpaceTime.CurrentSpaceTime.Random.Next(40, 60);
+
         }
 
         public override void Evaluate()

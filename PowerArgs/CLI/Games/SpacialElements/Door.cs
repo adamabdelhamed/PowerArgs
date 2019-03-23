@@ -100,9 +100,10 @@ namespace PowerArgs.Games
     }
 
     [SpacialElementBinding(typeof(Door))]
-    public class DoorRenderer : SingleStyleRenderer
+    public class DoorRenderer : SpacialElementRenderer
     {
-        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Cyan);
+        private ConsoleString DefaultStyle => new ConsoleString(" ", backgroundColor: ConsoleColor.Cyan);
+        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(DefaultStyle, 0, 0);
     }
 
     public class DoorReviver : ItemReviver

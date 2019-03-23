@@ -2,12 +2,13 @@
 using PowerArgs.Cli.Physics;
 using System;
 using PowerArgs.Cli;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PowerArgs.Games
 {
     public class Explosive : SpacialElement
     {
-        public float HealthPointsPerShrapnel { get; set; } = 40;
         public float AngleIncrement { get; set; } = 5;
         public float Range { get; set; } = 6;
 
@@ -22,6 +23,7 @@ namespace PowerArgs.Games
         public void Explode()
         {
             Sound.Play("boom");
+            var shrapnelSet = new List<Projectile>();
             for (float angle = 0; angle < 360; angle += AngleIncrement)
             {
                 var effectiveRange = Range;
@@ -31,9 +33,15 @@ namespace PowerArgs.Games
                     effectiveRange = Range / 3;
                 }
 
-                var shrapnel = new Projectile(this.Left, this.Top, angle) { HealthPoints = HealthPointsPerShrapnel, Range = effectiveRange };
+                var shrapnel = new Projectile(this.Left, this.Top, angle) { Range = effectiveRange };
+                shrapnelSet.Add(shrapnel);
                 shrapnel.Tags.Add("hot");
                 SpaceTime.CurrentSpaceTime.Add(shrapnel);
+            }
+
+            foreach(var shrapnel in shrapnelSet)
+            {
+                shrapnel.Speed.HitDetectionExclusions.AddRange(shrapnelSet.Where(s => s != shrapnel));
             }
 
             Exploded.Fire();
@@ -42,8 +50,9 @@ namespace PowerArgs.Games
     }
 
     [SpacialElementBinding(typeof(Explosive))]
-    public class ExplosiveRenderer : SingleStyleRenderer
+    public class ExplosiveRenderer : SpacialElementRenderer
     {
-        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter(' ', backgroundColor: ConsoleColor.DarkYellow);
+        private ConsoleString DefaultStyle => new ConsoleString(" ", backgroundColor: ConsoleColor.DarkYellow);
+        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(DefaultStyle, 0, 0);
     }
 }

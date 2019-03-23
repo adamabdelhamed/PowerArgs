@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PowerArgs.Cli.Physics
 {
@@ -51,7 +52,6 @@ namespace PowerArgs.Cli.Physics
 
         public float Bounciness { get; set; } // Should be set between 0 and 1
         public float ImpactFriction { get; set; } // Should be set between 0 and 1
-        public List<Type> HitDetectionTypes { get; set; }
 
         public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
         public float Angle { get; private set; }
@@ -69,7 +69,6 @@ namespace PowerArgs.Cli.Physics
 
         public SpeedTracker(SpacialElement t) : base(t)
         {
-            HitDetectionTypes = new List<Type>();
             Bounciness = .4f;
             ImpactFriction = .95f;
         }
@@ -91,15 +90,25 @@ namespace PowerArgs.Cli.Physics
                 return;
             }
 
-            var hitPrediction = HitDetection.PredictHit(SpaceTime.CurrentSpaceTime, Element, HitDetectionTypes, HitDetectionExclusions, dx, dy);
+            var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
+            {
+                Bounds = SpaceTime.CurrentSpaceTime.Bounds,
+                MovingObject = Element,
+                Exclusions = new List<IRectangular>(this.HitDetectionExclusions),
+                Obstacles = new List<IRectangular>(SpaceTime.CurrentSpaceTime
+                    .Elements
+                    .Where(e => e.ZIndex == Element.ZIndex)),
+                Dx = dx,
+                Dy = dy,
+            });
 
             if (hitPrediction.Type != HitType.None)
             {
                 float angle;
 
-                if (hitPrediction.ElementHit != null)
+                if ((hitPrediction.ObstacleHit as SpacialElement) != null)
                 {
-                    angle = Element.Center().CalculateAngleTo(hitPrediction.ElementHit.Center());
+                    angle = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
                 }
                 else if(hitPrediction.Direction == Direction.Left)
                 {
@@ -127,8 +136,9 @@ namespace PowerArgs.Cli.Physics
                     ImpactOccurred.Fire(new Impact()
                     {
                         Angle = angle,
-                        Bounds = hitPrediction.BoundsOfItemBeingHit,
-                        ElementHit = hitPrediction.ElementHit
+                        MovingObject = Element,
+                        ObstacleHit = hitPrediction.ObstacleHit,
+                        HitType = hitPrediction.Type,
                     });
                 }
                 haveMovedSinceLastHitDetection = false;

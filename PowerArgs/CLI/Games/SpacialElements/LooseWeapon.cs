@@ -40,7 +40,7 @@ namespace PowerArgs.Games
     }
 
     [SpacialElementBinding(typeof(LooseWeapon))]
-    public class LooseWeaponRenderer : ThemeAwareSpacialElementRenderer
+    public class LooseWeaponRenderer : SpacialElementRenderer
     {
         public LooseWeaponRenderer()
         {

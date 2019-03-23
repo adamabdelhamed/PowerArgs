@@ -32,18 +32,10 @@ namespace PowerArgs.Games
             var rpg = new TimedMine(TimeSpan.FromSeconds(2)) { Silent = true };
             rpg.MoveTo(x, y);
             var rpgSpeed = new SpeedTracker(rpg);
-            rpgSpeed.HitDetectionTypes.AddRange(this.HitDetectionTypes);
-            rpgSpeed.HitDetectionTypes.Add(typeof(Wall));
-            rpgSpeed.HitDetectionTypes.Add(typeof(Character));
             rpgSpeed.HitDetectionExclusions.Add(Holder);
             rpgSpeed.ImpactOccurred.SubscribeForLifetime((impact) =>
             {
-                if (impact.ElementHit is IDestructible)
-                {
-                    var destructible = impact.ElementHit as IDestructible;
-                    destructible.TakeDamage(5 * rpg.HealthPointsPerShrapnel);
-                }
-
+                DamageBroker.Instance.ReportImpact(impact);
                 rpg.Explode();
             }, rpg.Lifetime);
 
@@ -57,6 +49,4 @@ namespace PowerArgs.Games
             FireDoubleInternal(rpgMessage.X, rpgMessage.Y, rpgMessage.Angle);
         }
     }
-
-
 }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace PowerArgs.Games
 {
-    public class Wall : SpacialElement, IDestructible, IObservableObject
+    public class Wall : SpacialElement, IObservableObject
     {
         protected ObservableObject observable;
         public bool SuppressEqualChanges { get; set; }
@@ -19,24 +19,15 @@ namespace PowerArgs.Games
         public bool ForcePen { get; set; }
         public ConsoleCharacter? Pen { get; set; }
 
-        public Event Damaged { get; private set; } = new Event();
-
-        public Event Destroyed { get; private set; } = new Event();
-
-        public float HealthPoints { get { return observable.Get<float>(); } set { observable.Set(value); } } 
-
         public Wall()
         {
             observable = new ObservableObject(this);
-            HealthPoints = 20;
             ResizeTo(1, 1);
-
-            observable.SubscribeForLifetime(nameof(HealthPoints), this.SizeOrPositionChanged.Fire, this.Lifetime);
         }
     }
 
     [SpacialElementBinding(typeof(Wall))]
-    public class WallRenderer : ThemeAwareSpacialElementRenderer
+    public class WallRenderer : SpacialElementRenderer
     {
         public ConsoleCharacter Style { get; set; } = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.White);
 

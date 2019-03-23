@@ -15,8 +15,9 @@ namespace PowerArgs.Games
     }
 
     [SpacialElementBinding(typeof(Cursor))]
-    public class CursorRenderer : SingleStyleRenderer
+    public class CursorRenderer : SpacialElementRenderer
     {
-        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter('X', ConsoleColor.DarkCyan, ConsoleColor.Cyan);
+        private ConsoleString DefaultStyle => new ConsoleString("X", ConsoleColor.DarkCyan, ConsoleColor.Cyan);
+        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(DefaultStyle, 0, 0);
     }
 }

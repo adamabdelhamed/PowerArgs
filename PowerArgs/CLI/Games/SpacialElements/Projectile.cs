@@ -9,7 +9,6 @@ namespace PowerArgs.Games
     {
         public float Accelleration { get; set; } = 40;
         public float Range { get; set; } = -1;
-        public float HealthPoints { get; set; } = 1;
         public float angle { get; private set; }
         public SpeedTracker Speed { get; private set; }
         public bool PlaySoundOnImpact { get; set; }
@@ -20,8 +19,6 @@ namespace PowerArgs.Games
         {
             this.ResizeTo(1, 1);
             Speed = new SpeedTracker(this);
-            Speed.HitDetectionTypes.Add(typeof(Enemy));
-            Speed.HitDetectionTypes.Add(typeof(Wall));
             Speed.Governor.Rate = TimeSpan.FromSeconds(0);
             Speed.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime);
         }
@@ -57,24 +54,20 @@ namespace PowerArgs.Games
 
         private void Speed_ImpactOccurred(Impact impact)
         {
-            if (impact.ElementHit is IDestructible)
+            if (PlaySoundOnImpact)
             {
-                if (PlaySoundOnImpact)
-                {
-                    Sound.Play("bulletHit");
-                }
-                var destructible = impact.ElementHit as IDestructible;
-
-                destructible.TakeDamage(this.HealthPoints);
+                Sound.Play("bulletHit");
             }
 
+            DamageBroker.Instance.ReportImpact(impact);
             this.Lifetime.Dispose();
         }
     }
 
     [SpacialElementBinding(typeof(Projectile))]
-    public class ProjectileRenderer : SingleStyleRenderer
+    public class ProjectileRenderer : SpacialElementRenderer
     {
-        protected override ConsoleCharacter DefaultStyle => new ConsoleCharacter('*', ConsoleColor.Red);
+        private ConsoleString DefaultStyle => new ConsoleString("*", ConsoleColor.Red);
+        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(DefaultStyle, 0, 0);
     }
 }

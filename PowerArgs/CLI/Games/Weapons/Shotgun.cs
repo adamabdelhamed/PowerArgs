@@ -4,7 +4,6 @@ namespace PowerArgs.Games
     public class Shotgun : Weapon
     {
         public override WeaponStyle Style => WeaponStyle.Primary;
-        public float HealthPoints { get; set; } = 10; 
 
         public override void FireInternal()
         {
@@ -20,13 +19,7 @@ namespace PowerArgs.Games
             {
                 sprayedSoFar += sprayIncrement;
                 var angle = SpaceExtensions.AddToAngle(startAngle, sprayedSoFar);
-                var bullet = new Projectile(Holder.Left, Holder.Top, angle) { Range = SpaceExtensions.NormalizeQuantity(8, angle), HealthPoints = HealthPoints, PlaySoundOnImpact = true };
-                bullet.Speed.HitDetectionTypes.Remove(Holder.GetType());
-
-                if (Holder.Target != null)
-                {
-                    bullet.Speed.HitDetectionTypes.Add(Holder.Target.GetType());
-                }
+                var bullet = new Projectile(Holder.Left, Holder.Top, angle) { Range = SpaceExtensions.NormalizeQuantity(8, angle), PlaySoundOnImpact = true };
                 SpaceTime.CurrentSpaceTime.Add(bullet);
             }
         }

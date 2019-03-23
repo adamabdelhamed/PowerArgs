@@ -64,9 +64,8 @@ namespace PowerArgs.Games
 
         public MainCharacter()
         {
-            HealthPoints = 100;
             InitializeTargeting();
-            this.MoveTo(0, 0, int.MaxValue-2);
+            this.MoveTo(0, 0);
             this.Added.SubscribeForLifetime(() =>
             {
                 Current = this;
@@ -75,7 +74,11 @@ namespace PowerArgs.Games
 
         private void InitializeTargeting()
         {
-            Targeting = new AutoTargetingFunction(() => this.Bounds, t => t is Enemy || t.HasSimpleTag("enemy"), (t) => this.Speed.HitDetectionTypes.Contains(t.GetType()));
+            Targeting = new AutoTargetingFunction(new AutoTargetingOptions()
+            {
+                Source = this,
+                TargetsEval = ()=>SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("enemy")),                
+            });
             Added.SubscribeForLifetime(() => { Time.CurrentTime.Add(Targeting); }, this.Lifetime);
             this.Lifetime.OnDisposed(Targeting.Lifetime.Dispose);
 
@@ -236,7 +239,7 @@ namespace PowerArgs.Games
     }
 
     [SpacialElementBinding(typeof(MainCharacter))]
-    public class MainCharacterRenderer : ThemeAwareSpacialElementRenderer
+    public class MainCharacterRenderer : SpacialElementRenderer
     {
         public ConsoleCharacter Style { get; set; } = new ConsoleCharacter('X', ConsoleColor.Magenta);
 
