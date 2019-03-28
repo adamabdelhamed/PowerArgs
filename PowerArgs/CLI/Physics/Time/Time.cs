@@ -10,10 +10,22 @@ namespace PowerArgs.Cli.Physics
     /// </summary>
     public class Time
     {
+        internal class CustomSyncContext : SynchronizationContext
+        {
+            private Time t;
+            public CustomSyncContext(Time t) { this.t = t; }
+
+            public override void Post(SendOrPostCallback d, object state) => t.QueueAction(() => d.Invoke(state));
+
+            public override void Send(SendOrPostCallback d, object state) => t.QueueAction(() => d.Invoke(state));
+        }
+
         private class StopTimeException : Exception { }
 
 
         public ConsoleApp Application { get; set; }
+
+        public ITimeFunction CurrentlyRunningFunction { get; private set; }
 
         private class WorkItem
         {
@@ -104,6 +116,8 @@ namespace PowerArgs.Cli.Physics
             runDeferred.Promise.Finally((p) => { runDeferred = null; });
             Thread t = new Thread(() =>
             {
+                SynchronizationContext.SetSynchronizationContext(new CustomSyncContext(this));
+
                 IsRunning = true;
                 try
                 {
@@ -121,7 +135,21 @@ namespace PowerArgs.Cli.Physics
 
                         foreach (var syncAction in syncActions)
                         {
-                            syncAction.Work();
+                            try
+                            {
+                                syncAction.Work();
+                            }
+                            catch (Exception ex)
+                            {
+                                if (syncAction.Deferred.HasExceptionListeners)
+                                {
+                                    syncAction.Deferred.Reject(ex);
+                                }
+                                else
+                                {
+                                    throw;
+                                }
+                            }
                             syncAction.Deferred.Resolve();
                         }
 
@@ -162,6 +190,36 @@ namespace PowerArgs.Cli.Physics
             QueueAction(() => { throw new StopTimeException(); });
             return p;
         }
+
+        public Promise Delay(double ms) => Delay(TimeSpan.FromMilliseconds(ms));
+
+        public Promise Delay(TimeSpan timeout)
+        {
+            var startTime = Now;
+            return WaitUntil(() => Now - startTime >= timeout);
+        }
+
+        public Promise WaitUntil(Func<bool> condition, TimeSpan? timeout = null)
+        {
+            var d = Deferred.Create();
+            ITimeFunction inner = null;
+            var startTime = Now;
+            inner = Add(TimeFunction.Create(() =>
+            {
+                if (condition())
+                {
+                    inner.Lifetime.Dispose();
+                    d.Resolve();
+                }
+                else if (timeout.HasValue && Now - startTime >= timeout.Value)
+                {
+                    d.Reject(new TimeoutException("Timeout waiting for condition"));
+                }
+            }));
+
+            return d.Promise;
+        }
+
 
         /// <summary>
         /// Queues an action that will run at the beginning of the next time iteration
@@ -204,24 +262,6 @@ namespace PowerArgs.Cli.Physics
         }
 
         /// <summary>
-        /// Runs the given code after a Time thread delay (not wall time)
-        /// </summary>
-        /// <param name="action">the code to run</param>
-        /// <param name="delayInMilliseconds">The amount of Time thread time (not wall time) to delay</param>
-        /// <returns>A time function that represents your action</returns>
-        public ITimeFunction Delay(Action action, int delayInMilliseconds) 
-        {
-            if (delayInMilliseconds == 0)
-            {
-                return Add(TimeFunction.Create(null, init: action));
-            }
-            else
-            {
-                return Add(TimeFunction.CreateDelayed(delayInMilliseconds, null, init: action));
-            }
-        }
-
-        /// <summary>
         /// Call this method to guard against code running on this model's time thread. It will throw an InvalidOperationException
         /// if the check fails.
         /// </summary>
@@ -251,7 +291,9 @@ namespace PowerArgs.Cli.Physics
             {
                 if (timeFunctions[i].Lifetime.IsExpired == false && timeFunctions[i].Governor.ShouldFire(Now))
                 {
-                    timeFunctions[i].Evaluate();
+                    CurrentlyRunningFunction = timeFunctions[i];
+                    CurrentlyRunningFunction.Evaluate();
+                    CurrentlyRunningFunction = null;
                 }
             }
 
@@ -261,7 +303,9 @@ namespace PowerArgs.Cli.Physics
 
                 if (toAdd[i].Lifetime.IsExpired == false && toAdd[i].Governor.ShouldFire(Now))
                 {
-                    toAdd[i].Evaluate();
+                    CurrentlyRunningFunction = toAdd[i];
+                    CurrentlyRunningFunction.Evaluate();
+                    CurrentlyRunningFunction = null;
                 }
             }
 

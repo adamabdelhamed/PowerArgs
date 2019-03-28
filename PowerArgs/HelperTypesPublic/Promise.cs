@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Linq;
 namespace PowerArgs
 {
     /// <summary>
@@ -44,6 +44,16 @@ namespace PowerArgs
         /// used as the lock key when synchronizing work
         /// </summary>
         public object SyncObject { get; private set; }
+
+        /// <summary>
+        /// returns true if any listeners are attached
+        /// </summary>
+        public bool HasListeners => Thens.Any() || Fails.Any() || Finalies.Any();
+
+        /// <summary>
+        /// returns true if any finalies or fails are attached
+        /// </summary>
+        public bool HasExceptionListeners => Fails.Any() || Finalies.Any();
 
         private Deferred()
         {
@@ -140,6 +150,29 @@ namespace PowerArgs
         internal Promise(Deferred deferred)
         {
             this.myDeferred = deferred;
+        }
+
+        /// <summary>
+        /// Gets a promise that's already compelted
+        /// </summary>
+        public static Promise Done
+        {
+            get
+            {
+                var d = Deferred.Create();
+                d.Resolve();
+                return d.Promise;
+            }
+        }
+
+        /// <summary>
+        /// Gets a promise that's already failed
+        /// </summary>
+        public static Promise Failed(Exception ex)
+        {
+            var d = Deferred.Create();
+            d.Reject(ex);
+            return d.Promise;
         }
 
         /// <summary>
@@ -340,6 +373,17 @@ namespace PowerArgs
         /// </summary>
         public bool IsFulfilled => innerDeferred.IsFulfilled;
 
+        /// <summary>
+        /// returns true if any listeners are attached
+        /// </summary>
+        public bool HasListeners => innerDeferred.HasListeners;
+
+        /// <summary>
+        /// returns true if any finalies or fails are attached
+        /// </summary>
+        public bool HasExceptionListeners => innerDeferred.HasExceptionListeners;
+
+
         private Deferred()
         {
             innerDeferred = Deferred.Create();
@@ -396,6 +440,27 @@ namespace PowerArgs
         /// The result of the operation
         /// </summary>
         public T Result => myDeferred.Result;
+
+
+        /// <summary>
+        /// Gets a promise that's already compelted
+        /// </summary>
+        public static Promise<T> Done(T result)
+        {
+            var d = Deferred<T>.Create();
+            d.Resolve(result);
+            return d.Promise;
+        }
+
+        /// <summary>
+        /// Gets a promise that's already failed
+        /// </summary>
+        public static Promise<T> Failed(Exception ex)
+        {
+            var d = Deferred<T>.Create();
+            d.Reject(ex);
+            return d.Promise;
+        }
 
         /// <summary>
         /// Synchronously blocks until this promise completes

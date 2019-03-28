@@ -152,36 +152,6 @@ namespace PowerArgs.Cli.Physics
             ret.Governor = new RateGovernor(rate.HasValue ? rate.Value : ret.Governor.Rate);
             return ret;
         }
-
-        /// <summary>
-        /// Creates a time function that will not initialzie / evaluate untl after the returned function has been added to Time
-        /// for the delay period
-        /// </summary>
-        /// <param name="delay">The amount of time to wait before creating the function</param>
-        /// <param name="eval">the evaluate method</param>
-        /// <param name="init">the initialize method</param>
-        /// <param name="rate">the rate at which the evaluate function runs</param>
-        /// <returns>A delayed time function</returns>
-        public static ITimeFunction CreateDelayed(TimeSpan delay, Action eval,  Action init = null, TimeSpan? rate = null)
-        {
-            ITimeFunction ret = null;
-            ret = Create(() =>
-            {
-                if(ret.CalculateAge() >= delay)
-                {
-                    ret.Lifetime.Dispose();
-                    Time.CurrentTime.Add(Create(eval, init, rate));
-                }
-
-            });
-            return ret;
-        }
-
-        public static ITimeFunction CreateDelayed(int delayInMilliseconds, Action eval, Action init = null, TimeSpan? rate = null) =>
-            CreateDelayed(TimeSpan.FromMilliseconds(delayInMilliseconds), eval, init, rate);
-
-
-
     }
 
     /// <summary>

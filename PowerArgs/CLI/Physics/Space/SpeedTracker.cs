@@ -97,7 +97,7 @@ namespace PowerArgs.Cli.Physics
                 Exclusions = new List<IRectangular>(this.HitDetectionExclusions),
                 Obstacles = new List<IRectangular>(SpaceTime.CurrentSpaceTime
                     .Elements
-                    .Where(e => e.ZIndex == Element.ZIndex)),
+                    .Where(e => e.ZIndex == Element.ZIndex && e.HasSimpleTag("passthru") == false)),
                 Dx = dx,
                 Dy = dy,
             });

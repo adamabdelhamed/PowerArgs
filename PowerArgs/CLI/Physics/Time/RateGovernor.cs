@@ -18,7 +18,14 @@ namespace PowerArgs.Cli.Physics
         /// Creates a new rate governor
         /// </summary>
         /// <param name="rate">the minimum time between executions</param>
-        public RateGovernor(TimeSpan rate) { Rate = rate; }
+        public RateGovernor(TimeSpan rate, TimeSpan? lastFireTime = null)
+        {
+            Rate = rate;
+            if(lastFireTime.HasValue)
+            {
+                lastFire = lastFireTime.Value;
+            }
+        }
 
         /// <summary>
         /// Determines if enough time has passed per the governor's
