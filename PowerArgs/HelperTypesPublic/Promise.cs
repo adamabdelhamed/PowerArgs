@@ -255,7 +255,7 @@ namespace PowerArgs
         {
             while (myDeferred.IsFulfilled == false)
             {
-                await Task.Delay(1);
+                await Task.Yield();
             }
 
             if (myDeferred.Exception != null)
@@ -516,7 +516,7 @@ namespace PowerArgs
             {
                 while (myDeferred.IsFulfilled == false)
                 {
-                    await Task.Delay(1);
+                    await Task.Yield();
                 }
 
                 if (myDeferred.Exception != null)

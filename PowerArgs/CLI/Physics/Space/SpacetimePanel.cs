@@ -250,7 +250,10 @@ namespace PowerArgs.Cli.Physics
         public SpacialElement Element { get; set; }
         public SpaceTime Spacetime { get; set; }
         public virtual void OnBind() { }
-        public virtual void OnRender() { }
+        public virtual void OnRender()
+        {
+            this.ZIndex = Element.ZIndex;
+        }
 
         public SpacialElementRenderer()
         {

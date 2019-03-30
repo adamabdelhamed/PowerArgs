@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli.Physics
 {
@@ -191,33 +192,56 @@ namespace PowerArgs.Cli.Physics
             return p;
         }
 
-        public Promise Delay(double ms) => Delay(TimeSpan.FromMilliseconds(ms));
+        public async Task DelayAsync(double ms) => await DelayAsync(TimeSpan.FromMilliseconds(ms));
 
-        public Promise Delay(TimeSpan timeout)
+        public async Task DelayAsync(TimeSpan timeout)
         {
             var startTime = Now;
-            return WaitUntil(() => Now - startTime >= timeout);
+            await DelayAsync(() => Now - startTime >= timeout);
         }
 
-        public Promise WaitUntil(Func<bool> condition, TimeSpan? timeout = null)
+        public async Task DelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
         {
-            var d = Deferred.Create();
-            ITimeFunction inner = null;
-            var startTime = Now;
-            inner = Add(TimeFunction.Create(() =>
+            if (await TryDelayAsync(condition, timeout, evalFrequency) == false)
             {
-                if (condition())
+                throw new TimeoutException("Timed out awaiting delay condition");
+            }
+        }
+
+        public async Task<bool> TryDelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
+        {
+            var startTime = Now;
+            var governor = evalFrequency.HasValue ? new RateGovernor(evalFrequency.Value, lastFireTime: startTime) : null;
+            while (true)
+            {
+                if (governor != null && governor.ShouldFire(Now) == false)
                 {
-                    inner.Lifetime.Dispose();
-                    d.Resolve();
+                    await Task.Yield();
+                }
+                else if (condition())
+                {
+                    return true;
                 }
                 else if (timeout.HasValue && Now - startTime >= timeout.Value)
                 {
-                    d.Reject(new TimeoutException("Timeout waiting for condition"));
+                    return false;
                 }
-            }));
+                else
+                {
+                    await Task.Yield();
+                }
+            }
+        }
 
-            return d.Promise;
+        public async Task SetInterval(Action action, TimeSpan interval, ILifetimeManager lifetime)
+        {
+            var shouldRun = true;
+            lifetime.OnDisposed(() => shouldRun = false);
+            while (shouldRun)
+            {
+                await DelayAsync(interval);
+                action();
+            }
         }
 
 
