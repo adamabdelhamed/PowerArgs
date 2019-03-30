@@ -116,6 +116,43 @@ namespace PowerArgs.Cli
         public Event Ready { get; private set; } = new Event();
 
         /// <summary>
+        /// Gets the x coordinate of this control relative to the application root
+        /// </summary>
+        public int AbsoluteX
+        {
+            get
+            {
+                var ret = this.X;
+                var current = this;
+                while (current.Parent != null)
+                {
+                    current = current.Parent;
+                    ret += current.X;
+                }
+                return ret;
+            }
+        }
+
+        /// <summary>
+        /// Gets the y coordinate of this control relative to the application root
+        /// </summary>
+        public int AbsoluteY
+        {
+            get
+            {
+                var ret = this.Y;
+                var current = this;
+                while (current.Parent != null)
+                {
+                    current = current.Parent;
+                    ret += current.Y;
+                }
+                return ret;
+            }
+        }
+
+
+        /// <summary>
         /// Creates a new ConsoleControl
         /// </summary>
         public ConsoleControl()

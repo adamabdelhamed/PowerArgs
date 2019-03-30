@@ -200,6 +200,18 @@ namespace PowerArgs.Cli.Physics
             await DelayAsync(() => Now - startTime >= timeout);
         }
 
+        public async Task DelayAsync(Event ev, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
+        {
+            var fired = false;
+
+            ev.SubscribeOnce(() =>
+            {
+                fired = true;
+            });
+
+            await DelayAsync(() => fired, timeout, evalFrequency);
+        }
+
         public async Task DelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
         {
             if (await TryDelayAsync(condition, timeout, evalFrequency) == false)

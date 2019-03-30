@@ -245,7 +245,7 @@ namespace PowerArgs.Cli.Physics
         }
     }
 
-    public class SpacialElementRenderer : ConsoleControl
+    public class SpacialElementRenderer : ConsolePanel
     {
         public SpacialElement Element { get; set; }
         public SpaceTime Spacetime { get; set; }
