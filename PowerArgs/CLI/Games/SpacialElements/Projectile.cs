@@ -7,6 +7,7 @@ namespace PowerArgs.Games
 {
     public class Projectile : SpacialElement
     {
+        public ConsoleString Pen { get; set; } = new ConsoleString("*", ConsoleColor.Red);
         public float Accelleration { get; set; } = 40;
         public float Range { get; set; } = -1;
         public float angle { get; private set; }
@@ -67,7 +68,6 @@ namespace PowerArgs.Games
     [SpacialElementBinding(typeof(Projectile))]
     public class ProjectileRenderer : SpacialElementRenderer
     {
-        private ConsoleString DefaultStyle => new ConsoleString("*", ConsoleColor.Red);
-        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(DefaultStyle, 0, 0);
+        protected override void OnPaint(ConsoleBitmap context) => context.DrawString((Element as Projectile).Pen, 0, 0);
     }
 }

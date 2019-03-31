@@ -134,6 +134,17 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
+        public static IRectangular Resize(this IRectangular me, float ratio)
+        {
+            var newW = me.Width * ratio;
+            var newH = me.Height * ratio;
+
+            var leftAdjust = (me.Width - newW) / 2;
+            var topAdjust = (me.Height - newH) / 2;
+
+            var ret = Rectangular.Create(me.Left + leftAdjust, me.Top + topAdjust, newW, newH);
+            return ret;
+        }
 
         public static float NumberOfPixelsThatOverlap(this IRectangular rectangle, IRectangular other)
         {

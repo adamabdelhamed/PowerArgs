@@ -10,6 +10,7 @@ namespace PowerArgs.Games
     }
     public class RPGLauncher : Weapon, IMultiPlayerWeapon
     {
+        public ConsoleString ProjectilePen { get; set; }
         public override WeaponStyle Style => WeaponStyle.Explosive;
 
         public override void FireInternal()
@@ -29,7 +30,7 @@ namespace PowerArgs.Games
         private void FireDoubleInternal(float x, float y, float angle) // :)
         {
             Sound.Play("thump");
-            var rpg = new TimedMine(TimeSpan.FromSeconds(2)) { Silent = true };
+            var rpg = new TimedMine(TimeSpan.FromSeconds(2)) { Silent = true, ProjectilePen= ProjectilePen };
             rpg.MoveTo(x, y);
             var rpgSpeed = new SpeedTracker(rpg);
             rpgSpeed.HitDetectionExclusions.Add(Holder);

@@ -13,7 +13,7 @@ namespace PowerArgs.Games
         public float Range { get; set; } = 6;
 
         public Event Exploded { get; private set; } = new Event();
-
+        public ConsoleString ProjectilePen { get; set; }
         public Explosive() 
         {
             this.AngleIncrement = 5;
@@ -34,6 +34,12 @@ namespace PowerArgs.Games
                 }
 
                 var shrapnel = new Projectile(this.Left, this.Top, angle) { Range = effectiveRange };
+
+                if(ProjectilePen != null)
+                {
+                    shrapnel.Pen = ProjectilePen;
+                }
+
                 shrapnelSet.Add(shrapnel);
                 shrapnel.Tags.Add("hot");
                 SpaceTime.CurrentSpaceTime.Add(shrapnel);
