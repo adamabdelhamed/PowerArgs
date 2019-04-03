@@ -94,7 +94,7 @@ namespace PowerArgs.Cli.Physics
         private List<ITimeFunction> toAdd = new List<ITimeFunction>();
         private List<ITimeFunction> toRemove = new List<ITimeFunction>();
         private Deferred runDeferred;
-        private Queue<WorkItem> syncQueue = new Queue<WorkItem>();
+        private List<WorkItem> syncQueue = new List<WorkItem>();
 
         /// <summary>
         /// Creates a new time model, optionally providing a starting time and increment
@@ -130,7 +130,9 @@ namespace PowerArgs.Cli.Physics
                         {
                             while (syncQueue.Count > 0)
                             {
-                                syncActions.Add(syncQueue.Dequeue());
+                                var workItem = syncQueue[0];
+                                syncQueue.RemoveAt(0);
+                                syncActions.Add(workItem);
                             }
                         }
 
@@ -266,7 +268,17 @@ namespace PowerArgs.Cli.Physics
             lock (syncQueue)
             {
                 var workItem = new WorkItem(action);
-                syncQueue.Enqueue(workItem);
+                syncQueue.Add(workItem);
+                return workItem.Deferred.Promise;
+            }
+        }
+
+        public Promise QueueActionInFront(Action action)
+        {
+            lock (syncQueue)
+            {
+                var workItem = new WorkItem(action);
+                syncQueue.Insert(0, workItem);
                 return workItem.Deferred.Promise;
             }
         }
