@@ -34,7 +34,7 @@ namespace PowerArgs.Games
                 }
 
                 var shrapnel = new Projectile(this.Left, this.Top, angle) { Range = effectiveRange };
-
+                shrapnel.MoveTo(shrapnel.Left, shrapnel.Top, this.ZIndex);
                 if(ProjectilePen != null)
                 {
                     shrapnel.Pen = ProjectilePen;

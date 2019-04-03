@@ -11,7 +11,7 @@ namespace PowerArgs.Games
         {
             
             var bullet = new Projectile(Holder.Left, Holder.Top, CalculateAngleToTarget()) { PlaySoundOnImpact = true };
-
+            bullet.MoveTo(bullet.Left, bullet.Top, Holder.ZIndex);
             if(ProjectilePen != null)
             {
                 bullet.Pen = ProjectilePen;

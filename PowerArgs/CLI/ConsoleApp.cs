@@ -209,6 +209,11 @@ namespace PowerArgs.Cli
 
         private void HandleDebouncedResize()
         {
+            if(Bitmap.Console.BufferWidth < 1 || Bitmap.Console.WindowHeight - 1 < 1)
+            {
+                return;
+            }
+
             if(AutoFillOnConsoleResize)
             {
                 Bitmap.Resize(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);

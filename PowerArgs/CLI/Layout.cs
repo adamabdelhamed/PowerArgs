@@ -68,15 +68,17 @@ namespace PowerArgs.Cli
         {
             parent = parent ?? child.Parent;
             
-            parent.SynchronizeForLifetime(nameof(ConsoleControl.Bounds), () =>
+            Action syncAction = () =>
             {
                 if (parent.Height == 0 || child.Height == 0) return;
 
                 var gap = parent.Height - child.Height;
                 var y = gap / 2;
                 child.Y = Math.Max(0, y);
-            }, parent);
+            };
 
+            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             return child;
         }
 

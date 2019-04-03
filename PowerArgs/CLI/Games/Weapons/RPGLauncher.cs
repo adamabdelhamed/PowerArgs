@@ -31,7 +31,7 @@ namespace PowerArgs.Games
         {
             Sound.Play("thump");
             var rpg = new TimedMine(TimeSpan.FromSeconds(2)) { Silent = true, ProjectilePen= ProjectilePen };
-            rpg.MoveTo(x, y);
+            rpg.MoveTo(x, y, Holder.ZIndex);
             var rpgSpeed = new SpeedTracker(rpg);
             rpgSpeed.HitDetectionExclusions.Add(Holder);
             rpgSpeed.ImpactOccurred.SubscribeForLifetime((impact) =>

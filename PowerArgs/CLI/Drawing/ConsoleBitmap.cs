@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace PowerArgs.Cli
@@ -461,6 +462,8 @@ namespace PowerArgs.Cli
         /// </summary>
         public void Paint()
         {
+            if (Console.WindowHeight == 0) return;
+
             var changed = false;
             if (lastBufferWidth != this.Console.BufferWidth)
             {
@@ -557,6 +560,11 @@ namespace PowerArgs.Cli
                     Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
                     Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
                 }
+            }
+            catch(IOException)
+            {
+                Invalidate();
+                Paint();
             }
             catch (ArgumentOutOfRangeException)
             {
