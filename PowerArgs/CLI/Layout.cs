@@ -77,8 +77,8 @@ namespace PowerArgs.Cli
                 child.Y = Math.Max(0, y);
             };
 
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
-            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            parent.SynchronizeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            child.SynchronizeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             return child;
         }
 
@@ -94,8 +94,8 @@ namespace PowerArgs.Cli
                 var x = gap / 2;
                 child.X = Math.Max(0,x);
             };
-            parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
-            child.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            parent.SynchronizeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
+            child.SynchronizeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
 
             return child;

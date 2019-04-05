@@ -54,6 +54,36 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// returns true if this object has a property with the given key
+        /// </summary>
+        /// <param name="key">the property name</param>
+        /// <returns>true if this object has a property with the given key</returns>
+        public bool ContainsKey(string key) => values.ContainsKey(key);
+
+
+        /// <summary>
+        /// returns true if this object has a property with the given key and val was populated
+        /// </summary>
+        /// <typeparam name="T">the type of property to get</typeparam>
+        /// <param name="key">the name of the property</param>
+        /// <param name="val">the output value</param>
+        /// <returns>true if this object has a property with the given key and val was populated</returns>
+        public bool TryGetValue<T>(string key, out T val)
+        {
+            if(values.TryGetValue(key, out object oVal))
+            {
+                val = (T)oVal;
+                return true;
+            }
+            else
+            {
+                val = default(T);
+                return false;
+            }
+        }
+
+
+        /// <summary>
         /// This should be called by a property getter to get the value
         /// </summary>
         /// <typeparam name="T">The type of property to get</typeparam>

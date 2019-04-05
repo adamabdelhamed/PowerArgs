@@ -24,6 +24,11 @@ namespace PowerArgs
         /// <param name="obj">the object to dispose</param>
         /// <returns>a promise that resolves after the object is disposed</returns>
         Promise OnDisposed(IDisposable obj);
+
+        /// <summary>
+        /// returns true if expired
+        /// </summary>
+        bool IsExpired { get;  }
     }
 
     /// <summary>
@@ -32,6 +37,11 @@ namespace PowerArgs
     public class LifetimeManager : ILifetimeManager
     {
         private List<IDisposable> _managedItems;
+
+        /// <summary>
+        /// returns true if expired
+        /// </summary>
+        public bool IsExpired { get; private set; }
 
         internal IReadOnlyCollection<IDisposable> ManagedItems
         {
@@ -71,6 +81,7 @@ namespace PowerArgs
                 cleanupCode();
                 d.Resolve();
             }));
+            IsExpired = true;
             return d.Promise;
         }
     }
