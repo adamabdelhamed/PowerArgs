@@ -34,11 +34,6 @@ namespace PowerArgs.Cli.Physics
         RateGovernor Governor { get; }
 
         /// <summary>
-        /// An initialization function that will be called when the function is added to the model
-        /// </summary>
-        void Initialize();
-
-        /// <summary>
         /// The method that will be called by the time model when it is time for this function to
         /// be evaluated.
         /// </summary>
@@ -54,9 +49,7 @@ namespace PowerArgs.Cli.Physics
     {
         private class ActionTimeFunction : TimeFunction
         {
-            public Action Init { get; set; }
             public Action Eval { get; set; }
-            public override void Initialize() { Init?.Invoke(); }
             public override void Evaluate() { if (Eval == null) { Lifetime.Dispose(); } else { Eval.Invoke(); } }
         }
 
@@ -85,8 +78,8 @@ namespace PowerArgs.Cli.Physics
 
         public List<string> Tags { get; set; } = new List<string>();
 
-        public bool HasSimpleTag(string tag) => Tags.Where(t => t.ToLower().Equals(tag.ToLower())).Count() > 0;
-        public bool HasValueTag(string tag) => Tags.Where(t => t.ToLower().StartsWith(tag.ToLower() + ":")).Count() > 0;
+        public bool HasSimpleTag(string tag) => Tags.Where(t => t.ToLower().Equals(tag.ToLower())).Any();
+        public bool HasValueTag(string tag) => Tags.Where(t => t.ToLower().StartsWith(tag.ToLower() + ":")).Any();
 
         public string GetTagValue(string key)
         {
@@ -128,11 +121,6 @@ namespace PowerArgs.Cli.Physics
 
 
         /// <summary>
-        /// An initialization function that will be called when the function is added to the model
-        /// </summary>
-        public abstract void Initialize();
-
-        /// <summary>
         /// Gets the rate governor that determines how frequently this function should be evaluated. 
         /// The actual evaulation interval will be either the governor value or the time model's increment value, 
         /// whichever is largest.
@@ -143,12 +131,11 @@ namespace PowerArgs.Cli.Physics
         /// Creates a time function given action code to run
         /// </summary>
         /// <param name="eval">The evaluation action to run</param>
-        /// <param name="init">An optional initialization function</param>
         /// <param name="rate">The governor rate for the function</param>
         /// <returns>A time function that can be added into a time model</returns>
-        public static ITimeFunction Create(Action eval, Action init = null, TimeSpan? rate = null)
+        public static ITimeFunction Create(Action eval, TimeSpan? rate = null)
         {
-            var ret = new ActionTimeFunction() { Eval = eval, Init = init };
+            var ret = new ActionTimeFunction() { Eval = eval };
             ret.Governor = new RateGovernor(rate.HasValue ? rate.Value : ret.Governor.Rate);
             return ret;
         }
@@ -164,14 +151,14 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         /// <param name="function">the function to target</param>
         /// <returns>The age, as a time span</returns>
-        public static TimeSpan CalculateAge(this ITimeFunction function) => Time.CurrentTime.Now - function.InternalState.AddedTime;
+        public static TimeSpan CalculateAge(this ITimeFunction function) => function.InternalState == null ? TimeSpan.Zero : Time.CurrentTime.Now - function.InternalState.AddedTime;
 
         /// <summary>
         /// Determines if the given function is currently attached to a time simulation
         /// </summary>
         /// <param name="function">the function to target</param>
         /// <returns>true if attached to a time model, false otherwise</returns>
-        public static bool IsAttached(this ITimeFunction function) => function.InternalState.AttachedTime != null;
+        public static bool IsAttached(this ITimeFunction function) => function.InternalState != null && function.InternalState.AttachedTime != null;
     }
 
     /// <summary>

@@ -80,10 +80,6 @@ namespace PowerArgs.Games
             public NetMatter()
             {
                 Speed = new SpeedTracker(this);
-            }
-
-            public override void Initialize()
-            {
                 this.initialBonds = this.CopyBounds();
                 this.initialTime = Time.CurrentTime.Now;
             }

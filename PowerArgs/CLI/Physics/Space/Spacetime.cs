@@ -34,7 +34,6 @@ namespace PowerArgs.Cli.Physics
             this.InternalState = new SpacialElementInternalState();
         }
 
-        public override void Initialize() { }
         public override void Evaluate() { }
 
         public bool IsOneOfThese(List<Type> these)

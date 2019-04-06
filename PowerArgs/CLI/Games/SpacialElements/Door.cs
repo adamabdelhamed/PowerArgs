@@ -112,8 +112,8 @@ namespace PowerArgs.Games
         {
             if (item.Symbol == 'd' && item.HasSimpleTag("door"))
             {
-                var isDoorAboveMe = allItems.Where(i => i != item && i.Symbol == 'd' && i.Y == item.Y - 1 && item.X == item.X).Count() > 0;
-                var isDoorToLeftOfMe = allItems.Where(i => i != item && i.Symbol == 'd' && i.X == item.X - 1 && item.Y == item.Y).Count() > 0;
+                var isDoorAboveMe = allItems.Where(i => i != item && i.Symbol == 'd' && i.Y == item.Y - 1 && item.X == item.X).Any();
+                var isDoorToLeftOfMe = allItems.Where(i => i != item && i.Symbol == 'd' && i.X == item.X - 1 && item.Y == item.Y).Any();
 
                 if (isDoorAboveMe == false && isDoorToLeftOfMe == false)
                 {

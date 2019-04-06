@@ -34,6 +34,7 @@ namespace PowerArgs.Games
             rpg.MoveTo(x, y, Holder.ZIndex);
             var rpgSpeed = new SpeedTracker(rpg);
             rpgSpeed.HitDetectionExclusions.Add(Holder);
+            Holder.Speed.HitDetectionExclusions.Add(rpg);
             rpgSpeed.ImpactOccurred.SubscribeForLifetime((impact) =>
             {
                 DamageBroker.Instance.ReportImpact(impact);

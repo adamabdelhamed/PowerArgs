@@ -24,8 +24,6 @@ namespace PowerArgs.Games
             this.Governor = new RateGovernor(TimeSpan.FromSeconds(.1));
         }
 
-        public override void Initialize() { }
-
         public override void Evaluate()
         {
             var targets = options.TargetsEval()
@@ -33,9 +31,9 @@ namespace PowerArgs.Games
                 {
                     var angle = options.Source.Element.CalculateAngleTo(z);
                     var delta = Math.Abs(options.Source.Angle - angle);
-                    if(angle > 180)
+                    if(delta > 180)
                     {
-                        angle -= 180;
+                  //      delta -= 180;
                     }
 
                     return delta < 90;
@@ -56,7 +54,7 @@ namespace PowerArgs.Games
 
             foreach (var target in targets)
             {
-                var hasLineOfSight = SpaceExtensions.HasLineOfSightRounded(options.Source.Element, target, obstacles.ToList(), 1);
+                var hasLineOfSight = SpaceExtensions.HasLineOfSight(options.Source.Element, target, obstacles.ToList(), 1);
 
                 if (hasLineOfSight)
                 {

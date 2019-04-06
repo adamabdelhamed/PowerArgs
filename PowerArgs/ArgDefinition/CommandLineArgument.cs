@@ -489,7 +489,7 @@ namespace PowerArgs
 
         internal void Validate(ref string commandLineValue)
         {
-            if (ArgumentType == typeof(SecureStringArgument) && Validators.Count() > 0)
+            if (ArgumentType == typeof(SecureStringArgument) && Validators.Any())
             {
                 throw new InvalidArgDefinitionException("Properties of type SecureStringArgument cannot be validated.  If your goal is to make the argument required then the[ArgRequired] attribute is not needed.  The SecureStringArgument is designed to prompt the user for a value only if your code asks for it after parsing.  If your code never reads the SecureString property then the user is never prompted and it will be treated as an optional parameter.  Although discouraged, if you really, really need to run custom logic against the value before the rest of your program runs then you can implement a custom ArgHook, override RunAfterPopulateProperty, and add your custom attribute to the SecureStringArgument property.");
             }
@@ -573,7 +573,7 @@ namespace PowerArgs
 
         internal bool IsMatch(string key)
         {
-            var ret = Aliases.Where(a => a.Equals(key, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Count() > 0;
+            var ret = Aliases.Where(a => a.Equals(key, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Any();
             return ret;
         }
 
@@ -639,7 +639,7 @@ namespace PowerArgs
         {
             List<string> ret = new List<string>();
 
-            bool excludeName = info.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Count() > 0;
+            bool excludeName = info.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Any();
 
             if (excludeName == false)
             {

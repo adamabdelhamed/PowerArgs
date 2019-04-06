@@ -20,6 +20,24 @@ namespace PowerArgs.Games
             this.Governor.Rate = TimeSpan.FromSeconds(.1);
             this.ResizeTo(1, 1);
             this.Tags.Add("hot");
+
+            initTime = Time.CurrentTime.Now;
+            if (currentSound == null)
+            {
+                currentSound = Sound.Play("burn");
+            }
+
+            this.Lifetime.OnDisposed(() =>
+            {
+                if (currentSound != null && SpaceTime.CurrentSpaceTime.Elements.Where(e => e != this && e is Fire).Count() == 0)
+                {
+                    if (currentSound.Result.IsExpired == false)
+                    {
+                        currentSound?.Result.Dispose();
+                    }
+                    currentSound = null;
+                }
+            });
         }
 
         public static void BurnIfTouchingSomethingHot<T>(T me, TimeSpan? burnTime = null, char? symbol = null, bool disposeOnBurn = false) where T : SpacialElement
@@ -41,26 +59,7 @@ namespace PowerArgs.Games
             }
         }
 
-        public override void Initialize()
-        {
-            initTime = Time.CurrentTime.Now;
-            if (currentSound == null)
-            {
-                currentSound = Sound.Play("burn");
-            }
-
-            this.Lifetime.OnDisposed(() =>
-            {
-                if (currentSound != null && SpaceTime.CurrentSpaceTime.Elements.Where(e => e != this && e is Fire).Count() == 0)
-                {
-                    if (currentSound.Result.IsExpired == false)
-                    {
-                        currentSound?.Result.Dispose();
-                    }
-                    currentSound = null;
-                }
-            });
-        }
+  
 
         public override void Evaluate()
         {

@@ -14,10 +14,7 @@ namespace PowerArgs.Cli.Physics
             this.RoamerSpeed = roamerSpeed;
             this.accelleration = accelleration;
             Governor.Rate = TimeSpan.FromSeconds(.1);
-         }
 
-        public override void Initialize()
-        {
             if (IsRoaming)
             {
                 currentForce = new Force(RoamerSpeed, accelleration, NextAngle());

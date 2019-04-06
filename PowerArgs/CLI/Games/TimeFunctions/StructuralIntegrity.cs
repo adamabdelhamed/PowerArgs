@@ -10,13 +10,9 @@ namespace PowerArgs.Games
         public StructuralIntegrity(List<T> matter)
         {
             this.matter = matter;
-        }
-
-        public override void Initialize()
-        {
             structure.Add(matter[0], Location.Create(0, 0));
 
-            for(var i = 1; i < matter.Count; i++)
+            for (var i = 1; i < matter.Count; i++)
             {
                 var xDelta = matter[i].Left - matter[0].Left;
                 var yDelta = matter[i].Top - matter[0].Top;

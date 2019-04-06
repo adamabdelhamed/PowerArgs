@@ -67,14 +67,12 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        public IEnumerable<SpacialElement> GetObstacles() => Element.GetObstacles(HitDetectionExclusions);
+
         public SpeedTracker(SpacialElement t) : base(t)
         {
             Bounciness = .4f;
             ImpactFriction = .95f;
-        }
-        public override void Initialize()
-        {
-
         }
 
         public override void Evaluate()
@@ -85,14 +83,10 @@ namespace PowerArgs.Cli.Physics
             float dx = SpeedX * dt;
             float dy = SpeedY * dt;
 
-            var obstacles = new List<IRectangular>(SpaceTime.CurrentSpaceTime
-                    .Elements
-                    .Where(e => e == Element == false && HitDetectionExclusions.Contains(e) == false && e.ZIndex == Element.ZIndex && e.HasSimpleTag("passthru") == false));
-
-
+            var obstacles = GetObstacles().ToList();
             if (obstacles.Where(o => o.Touches(Element)).Any())
             {
-                Element.TryNudgeFreeOFObstacles(obstacles);
+                Element.TryNudgeFreeOFObstacles(obstacles.As<IRectangular>().ToList());
             }
 
             if (dx == 0 && dy == 0)
@@ -105,7 +99,7 @@ namespace PowerArgs.Cli.Physics
                 Bounds = SpaceTime.CurrentSpaceTime.Bounds,
                 MovingObject = Element,
                 Exclusions = new List<IRectangular>(this.HitDetectionExclusions),
-                Obstacles = obstacles,
+                Obstacles = obstacles.As<IRectangular>().ToList(),
                 Dx = dx,
                 Dy = dy,
             });

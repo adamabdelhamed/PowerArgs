@@ -43,7 +43,7 @@ namespace PowerArgs.Games
         private float dx;
         private float dy;
 
-        public override void Initialize()
+        public Blade()
         {
             dx = Holder.Left - this.Left;
             dy = Holder.Top - this.Top;

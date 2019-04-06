@@ -377,7 +377,7 @@ namespace PowerArgs
 
         internal bool IsMatch(string actionString)
         {
-            var ret = Aliases.Where(a => a.Equals(actionString, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Count() > 0;
+            var ret = Aliases.Where(a => a.Equals(actionString, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Any();
             return ret;
         }
 

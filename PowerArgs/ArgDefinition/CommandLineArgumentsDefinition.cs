@@ -247,7 +247,7 @@ namespace PowerArgs
                 }
             }
 
-            if (Arguments.Where(a => a.Position < 0).Count() > 0)
+            if (Arguments.Where(a => a.Position < 0).Any())
             {
                 ret += "-options";
             }

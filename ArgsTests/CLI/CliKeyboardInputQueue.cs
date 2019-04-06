@@ -69,7 +69,7 @@ namespace ArgsTests.CLI
             {
                 lock (visibleQueue)
                 {
-                    return visibleQueue.Where(i => i.Key.KeyChar != '\u0000' || i.Key.Key != ConsoleKey.NoName).Count() > 0;
+                    return visibleQueue.Where(i => i.Key.KeyChar != '\u0000' || i.Key.Key != ConsoleKey.NoName).Any();
                 }
             }
         }

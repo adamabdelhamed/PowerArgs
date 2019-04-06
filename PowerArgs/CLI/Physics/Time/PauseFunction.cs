@@ -8,10 +8,7 @@ namespace PowerArgs.Cli.Physics
     /// </summary>
     public class PauseFunction : TimeFunction
     {
-        /// <summary>
-        /// This method sleeps until the function is removed from the time simulation
-        /// </summary>
-        public override void Initialize()
+        public PauseFunction()
         {
             while (Lifetime.IsExpired == false)
             {

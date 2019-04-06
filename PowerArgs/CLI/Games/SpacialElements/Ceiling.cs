@@ -24,10 +24,7 @@ namespace PowerArgs.Games
             IsVisible = true;
             this.SubscribeForLifetime(nameof(IsVisible), this.SizeOrPositionChanged.Fire, this.Lifetime);
             Tags.Add("passthru");
-        }
 
-        public override void Initialize()
-        {
             if (Seed)
             {
                 var walls = SpaceTime.CurrentSpaceTime.Elements.WhereAs<Wall>().ToList();

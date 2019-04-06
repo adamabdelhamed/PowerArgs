@@ -138,11 +138,6 @@ namespace PowerArgs.Games
     {
         public ConsoleCharacter Symbol { get; set; }
 
-        public override void Initialize()
-        {
-
-        }
-
         public override void Evaluate()
         {
             Fire.BurnIfTouchingSomethingHot(this, TimeSpan.FromSeconds(4), this.Symbol.Value, true);

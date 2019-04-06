@@ -181,6 +181,11 @@ namespace PowerArgs.Cli.Physics
 
         public static float CalculateDistanceTo(this IRectangular a, IRectangular b)
         {
+            return NormalizeQuantity(CalculateDistanceToRaw(a, b), a.CalculateAngleTo(b));
+        }
+
+        private static float CalculateDistanceToRaw(this IRectangular a, IRectangular b)
+        {
             var left = b.Right() < a.Left;
             var right = a.Right() < b.Left;
             var bottom = b.Bottom() < a.Top;
@@ -211,7 +216,7 @@ namespace PowerArgs.Cli.Physics
             return (float)Math.Sqrt(((start.Left - end.Left) * (start.Left - end.Left)) + ((start.Top - end.Top) * (start.Top - end.Top)));
         }
 
-        public static bool HasLineOfSightRounded(this IRectangular from, IRectangular to, List<IRectangular> obstacles, float increment)
+        public static bool HasLineOfSight(this IRectangular from, IRectangular to, List<IRectangular> obstacles, float increment)
         {
             Route ret = new Route();
             IRectangular current = from;
@@ -219,13 +224,16 @@ namespace PowerArgs.Cli.Physics
             var firstDistance = currentDistance;
             while (currentDistance > increment)
             {
-                current = Rectangular.Create(SpaceExtensions.MoveTowards(current.Center(), to.Center(), increment), from);
-                current = Rectangular.Create((int)Math.Round(current.Left - from.Width / 2), (int)Math.Round(current.Top - from.Height / 2), from.Width, from.Height);
-                ret.Steps.Add(current);
+                current = Rectangular.Create(SpaceExtensions.MoveTowards(current.Center(), to.Center(), 1), current);
+                current = Rectangular.Create(current.Left - current.Width / 2, current.Top - current.Height / 2, current.Width, current.Height);
 
                 foreach (var obstacle in obstacles)
                 {
-                    if (obstacle.OverlapPercentage(current) > 0)
+                    if(obstacle == to || obstacle == from)
+                    {
+                        continue;
+                    }
+                    else if (obstacle.OverlapPercentage(current) > 0)
                     {
                         return false;
                     }
@@ -235,42 +243,6 @@ namespace PowerArgs.Cli.Physics
             }
 
             return true;
-        }
-
-        public static Route CalculateLineOfSight(this IRectangular from, IRectangular to, float increment)
-        {
-            Route ret = new Route();
-            IRectangular current = from;
-            var currentDistance = current.CalculateDistanceTo(to);
-            var firstDistance = currentDistance;
-            while (currentDistance > increment)
-            {
-#if DEBUG
-                if(currentDistance > firstDistance)
-                {
-                    throw new Exception("Bug, we got farther away");
-                }
-#endif
-
-                current = Rectangular.Create(MoveTowards(current.Center(), to.Center(), increment), from);
-                current = Rectangular.Create(current.Left - from.Width / 2, current.Top - from.Height / 2, from.Width, from.Height);
-                ret.Steps.Add(current);
-
-                var obstacles = SpaceTime.CurrentSpaceTime.Elements
-                    .Where(el => el != from && el != to &&  el.NumberOfPixelsThatOverlap(current) > 0);
-
-                foreach (var obstacle in obstacles)
-                {
-                    if (ret.Obstacles.Contains(obstacle) == false)
-                    {
-                        ret.Obstacles.Add(obstacle);
-                    }
-                }
-
-                currentDistance = current.CalculateDistanceTo(to);
-            }
-
-            return ret;
         }
 
         public static float CalculateAngleTo(this IRectangular from, IRectangular to) => CalculateAngleTo(from.Center(), to.Center());
@@ -384,6 +356,14 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
+        public static IEnumerable<SpacialElement> GetObstacles(this SpacialElement element, IEnumerable<SpacialElement> exclusions = null) => SpaceTime.CurrentSpaceTime
+                   .Elements
+                   .Where(e => e == element == false &&
+                           (exclusions == null ||  exclusions.Contains(e) == false) &&
+                           e.ZIndex == element.ZIndex &&
+                           e.HasSimpleTag("passthru") == false);
+        
+
         /// <summary>
         /// In most consoles the recrtangles allocated to characters are about twice as tall as they
         /// are wide. Since we want to treat the console like a uniform grid we'll have to account for that.
@@ -425,8 +405,13 @@ namespace PowerArgs.Cli.Physics
         }
 
         public static bool TryNudgeFreeOFObstacles(this SpacialElement element, List<IRectangular> obstacles, float range = 3.5f)
-        {       
-            for(var x = element.Left - range/2; x < element.Left + range / 2; x++)
+        {
+            if (obstacles.Where(o => o.Touches(element)).Any() == false)
+            {
+                return true;
+            }
+
+            for (var x = element.Left - range/2; x < element.Left + range / 2; x++)
             {
                 for (var y = element.Top - range / 2; y < element.Top + range / 2; y++)
                 {
@@ -445,4 +430,6 @@ namespace PowerArgs.Cli.Physics
             return false;
         }
     }
+
+     
 }

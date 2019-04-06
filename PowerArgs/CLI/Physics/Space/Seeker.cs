@@ -20,15 +20,14 @@ namespace PowerArgs.Cli.Physics
             IsSeeking = true;
             Governor.Rate = TimeSpan.FromSeconds(.1);
             Seekee.Lifetime.OnDisposed(() => { this.Lifetime.Dispose(); });
-        }
 
-        public override void Initialize()
-        {
             if (IsSeeking)
             {
                 currentForce = new Force(SeekerSpeed, accelleration, Element.Center().CalculateAngleTo(Seekee.Center()));
             }
         }
+
+ 
 
         public override void Evaluate()
         {

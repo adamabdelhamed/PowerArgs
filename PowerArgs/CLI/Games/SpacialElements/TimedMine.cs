@@ -19,11 +19,6 @@ namespace PowerArgs.Games
             this.Tags.Add(Weapon.WeaponTag);
             this.timeToDetinate = timeToDetinate;
             this.Governor.Rate = TimeSpan.Zero;
-        }
-
-        public override void Initialize()
-        {
-            base.Initialize();
             this.SecondsRemaining = timeToDetinate.TotalSeconds;
         }
 

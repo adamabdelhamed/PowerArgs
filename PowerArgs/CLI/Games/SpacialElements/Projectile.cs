@@ -16,7 +16,7 @@ namespace PowerArgs.Games
 
         private IRectangular startLocation;
         private Force force;
-        public Projectile()
+        private Projectile()
         {
             this.ResizeTo(1, 1);
             this.Tags.Add(Weapon.WeaponTag);
@@ -29,22 +29,20 @@ namespace PowerArgs.Games
         {
             this.MoveTo(x, y);
             this.angle = angle;
+            startLocation = this.Bounds;
+            // todo - replace with bullet speed from config
+            force = new Force(Speed, SpaceExtensions.NormalizeQuantity(Accelleration, angle), angle);
         }
 
         public Projectile(float x, float y, IRectangular target) : this()
         {
             this.MoveTo(x, y);
             this.angle = this.CalculateAngleTo(target);
-        }
-
-
-        public override void Initialize()
-        {
             startLocation = this.Bounds;
             // todo - replace with bullet speed from config
             force = new Force(Speed, SpaceExtensions.NormalizeQuantity(Accelleration, angle), angle);
         }
-   
+
 
         public override void Evaluate()
         {

@@ -31,8 +31,8 @@ namespace PowerArgs.Games
         public ConsoleColor? BG { get; set; }
         public List<String> Tags { get; set; } = new List<string>();
 
-        public bool HasSimpleTag(string tag) => Tags.Where(t => t.ToLower().Equals(tag.ToLower())).Count() > 0;
-        public bool HasValueTag(string tag) => Tags.Where(t => t.ToLower().StartsWith(tag.ToLower() + ":")).Count() > 0;
+        public bool HasSimpleTag(string tag) => Tags.Where(t => t.ToLower().Equals(tag.ToLower())).Any();
+        public bool HasValueTag(string tag) => Tags.Where(t => t.ToLower().StartsWith(tag.ToLower() + ":")).Any();
 
         public string GetTagValue(string key)
         {

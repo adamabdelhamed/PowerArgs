@@ -303,7 +303,6 @@ namespace PowerArgs.Cli.Physics
                 timeFunction.InternalState.AttachedTime = null;
             });
 
-            timeFunction.Initialize();
             TimeFunctionAdded.Fire(timeFunction);
             timeFunction.Added.Fire();
             return timeFunction;

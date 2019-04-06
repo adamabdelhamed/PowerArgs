@@ -16,10 +16,6 @@ namespace PowerArgs.Cli.Physics
             this.tracker = tracker;
         }
 
-        public override void Initialize()
-        {
-        }
-
         public override void Evaluate()
         {
             float dX = ((float)(rand.NextDouble())) * MaxFloat;

@@ -17,10 +17,7 @@ namespace PowerArgs.Cli.Physics
             this.Angle = angle;
             this.tracker = tracker ?? throw new ArgumentNullException();
             this.Duration = duration.HasValue ? duration.Value : TimeSpan.Zero;
-        }
 
-        public override void Initialize()
-        {
             if (Duration < TimeSpan.Zero)
             {
                 this.IsPermanentForce = true;
@@ -39,7 +36,7 @@ namespace PowerArgs.Cli.Physics
                 this.Lifetime.Dispose();
             }
         }
-
+ 
         public override void Evaluate()
         {
             if (!IsPermanentForce && Time.CurrentTime.Now >= EndTime)
