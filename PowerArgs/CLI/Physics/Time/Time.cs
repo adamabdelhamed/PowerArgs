@@ -9,7 +9,7 @@ namespace PowerArgs.Cli.Physics
     /// A model of time that lets you plug time functions and play them out on a thread. Each iteration of the time loop processes queued actions,
     /// executes time functions in order, and then increments the Now value.
     /// </summary>
-    public class Time
+    public class Time : IDelayProvider
     {
         internal class CustomSyncContext : SynchronizationContext
         {
@@ -213,6 +213,8 @@ namespace PowerArgs.Cli.Physics
 
             await DelayAsync(() => fired, timeout, evalFrequency);
         }
+
+        public async Task YieldAsync() => await Task.Yield();
 
         public async Task DelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
         {

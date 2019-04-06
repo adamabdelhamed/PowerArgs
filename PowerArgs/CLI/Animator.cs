@@ -38,6 +38,11 @@ namespace PowerArgs.Cli
         public ILifetimeManager Loop { get; set; }
 
         /// <summary>
+        /// The provider to use for delaying between animation frames
+        /// </summary>
+        public IDelayProvider DelayProvider { get; set; } = new WallClockDelayProvider();
+
+        /// <summary>
         /// If auto reverse is enabled, this is the pause, in milliseconds, after the forward animation
         /// finishes, to wait before reversing
         /// </summary>
@@ -130,7 +135,7 @@ namespace PowerArgs.Cli
                     {
                         if (options.AutoReverseDelay > 0)
                         {
-                            await Task.Delay(TimeSpan.FromMilliseconds(options.AutoReverseDelay));
+                            await options.DelayProvider.DelayAsync(TimeSpan.FromMilliseconds(options.AutoReverseDelay));
                         }
 
                         var temp = options.From;
@@ -141,7 +146,7 @@ namespace PowerArgs.Cli
 
                         if (options.Loop != null && options.AutoReverseDelay > 0)
                         {
-                            await Task.Delay(TimeSpan.FromMilliseconds(options.AutoReverseDelay));
+                            await options.DelayProvider.DelayAsync(TimeSpan.FromMilliseconds(options.AutoReverseDelay));
                             options.From = originalFrom;
                             options.To = originalTo;
                         }
@@ -207,11 +212,11 @@ namespace PowerArgs.Cli
 #endif
                 if (delayTime == TimeSpan.Zero)
                 {
-                    await Task.Yield();
+                    await options.DelayProvider.YieldAsync();
                 }
                 else
                 {
-                    await Task.Delay(delayTime);
+                    await options.DelayProvider.DelayAsync(delayTime);
                 }
             }
         }
