@@ -423,5 +423,26 @@ namespace PowerArgs.Cli.Physics
             }
             return ret;
         }
+
+        public static bool TryNudgeFreeOFObstacles(this SpacialElement element, List<IRectangular> obstacles, float range = 3.5f)
+        {       
+            for(var x = element.Left - range/2; x < element.Left + range / 2; x++)
+            {
+                for (var y = element.Top - range / 2; y < element.Top + range / 2; y++)
+                {
+                    var testArea = Rectangular.Create(x, y, element.Width * 1.1f, element.Height * 1.1f);
+                    if(obstacles.Where(o => o.Touches(testArea)).Any())
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        element.MoveTo(x, y);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     }
 }

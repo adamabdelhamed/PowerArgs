@@ -19,6 +19,7 @@ namespace PowerArgs.Games
         public Projectile()
         {
             this.ResizeTo(1, 1);
+            this.Tags.Add(Weapon.WeaponTag);
             Speed = new SpeedTracker(this);
             Speed.Governor.Rate = TimeSpan.FromSeconds(0);
             Speed.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime);

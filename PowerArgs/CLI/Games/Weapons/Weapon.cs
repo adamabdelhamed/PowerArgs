@@ -13,6 +13,7 @@ namespace PowerArgs.Games
 
     public abstract class Weapon : ObservableObject, IInventoryItem
     {
+        public const string WeaponTag = "Weapon";
         public Character Holder { get; set; }
 
         public abstract WeaponStyle Style { get; }

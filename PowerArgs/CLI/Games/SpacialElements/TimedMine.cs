@@ -16,6 +16,7 @@ namespace PowerArgs.Games
 
         public TimedMine(TimeSpan timeToDetinate)
         {
+            this.Tags.Add(Weapon.WeaponTag);
             this.timeToDetinate = timeToDetinate;
             this.Governor.Rate = TimeSpan.Zero;
         }

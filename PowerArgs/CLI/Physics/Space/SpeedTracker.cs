@@ -85,7 +85,17 @@ namespace PowerArgs.Cli.Physics
             float dx = SpeedX * dt;
             float dy = SpeedY * dt;
 
-            if(dx == 0 && dy == 0)
+            var obstacles = new List<IRectangular>(SpaceTime.CurrentSpaceTime
+                    .Elements
+                    .Where(e => e == Element == false && HitDetectionExclusions.Contains(e) == false && e.ZIndex == Element.ZIndex && e.HasSimpleTag("passthru") == false));
+
+
+            if (obstacles.Where(o => o.Touches(Element)).Any())
+            {
+                Element.TryNudgeFreeOFObstacles(obstacles);
+            }
+
+            if (dx == 0 && dy == 0)
             {
                 return;
             }
@@ -95,9 +105,7 @@ namespace PowerArgs.Cli.Physics
                 Bounds = SpaceTime.CurrentSpaceTime.Bounds,
                 MovingObject = Element,
                 Exclusions = new List<IRectangular>(this.HitDetectionExclusions),
-                Obstacles = new List<IRectangular>(SpaceTime.CurrentSpaceTime
-                    .Elements
-                    .Where(e => e.ZIndex == Element.ZIndex && e.HasSimpleTag("passthru") == false)),
+                Obstacles = obstacles,
                 Dx = dx,
                 Dy = dy,
             });

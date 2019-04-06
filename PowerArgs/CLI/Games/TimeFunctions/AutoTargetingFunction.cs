@@ -48,7 +48,7 @@ namespace PowerArgs.Games
                 obstacles.Add(target);
             }
 
-            foreach(var element in SpaceTime.CurrentSpaceTime.Elements.Where(e => e.ZIndex == options.Source.Element.ZIndex))
+            foreach(var element in SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag(Weapon.WeaponTag) == false && e.ZIndex == options.Source.Element.ZIndex))
             {
                 obstacles.Add(element);
             }
