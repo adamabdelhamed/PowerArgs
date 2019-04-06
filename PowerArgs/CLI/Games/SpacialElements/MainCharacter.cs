@@ -76,7 +76,7 @@ namespace PowerArgs.Games
         {
             Targeting = new AutoTargetingFunction(new AutoTargetingOptions()
             {
-                Source = this,
+                Source = this.Speed,
                 TargetsEval = ()=>SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("enemy")),                
             });
             Added.SubscribeForLifetime(() => { Time.CurrentTime.Add(Targeting); }, this.Lifetime);
@@ -241,11 +241,32 @@ namespace PowerArgs.Games
     [SpacialElementBinding(typeof(MainCharacter))]
     public class MainCharacterRenderer : SpacialElementRenderer
     {
-        public ConsoleCharacter Style { get; set; } = new ConsoleCharacter('X', ConsoleColor.Magenta);
+        public MainCharacter Character => Element as MainCharacter;
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = Style;
+            char c;
+
+            var angle = Character.Speed.Angle;
+
+            if (angle >= 315 || angle < 45)
+            {
+                c = '>';
+            }
+            else if (angle >= 45 && angle < 135)
+            {
+                c = 'v';
+            }
+            else if (angle >= 135 && angle < 225)
+            {
+                c = '<';
+            }
+            else
+            {
+                c = '^';
+            }
+
+            context.Pen = new ConsoleCharacter(c, ConsoleColor.Magenta);
             context.FillRect(0, 0, Width, Height);
         }
     }

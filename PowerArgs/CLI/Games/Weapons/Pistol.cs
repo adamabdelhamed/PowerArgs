@@ -1,6 +1,4 @@
-﻿using PowerArgs.Cli;
-using PowerArgs.Cli.Physics;
-using System;
+﻿using PowerArgs.Cli.Physics;
 namespace PowerArgs.Games
 {
     public class Pistol : Weapon
@@ -11,6 +9,9 @@ namespace PowerArgs.Games
         {
             
             var bullet = new Projectile(Holder.Left, Holder.Top, CalculateAngleToTarget()) { PlaySoundOnImpact = true };
+            bullet.Speed.HitDetectionExclusions.Add(Holder);
+            Holder.Speed.HitDetectionExclusions.Add(bullet);
+            bullet.Lifetime.OnDisposed(()=> Holder.Speed.HitDetectionExclusions.Remove(bullet));
             bullet.MoveTo(bullet.Left, bullet.Top, Holder.ZIndex);
             if(ProjectilePen != null)
             {

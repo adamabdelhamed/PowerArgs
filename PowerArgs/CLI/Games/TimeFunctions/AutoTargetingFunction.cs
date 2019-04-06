@@ -8,7 +8,7 @@ namespace PowerArgs.Games
 {
     public class AutoTargetingOptions
     {
-        public SpacialElement Source { get; set; }
+        public SpeedTracker Source { get; set; }
         public Func<IEnumerable<SpacialElement>> TargetsEval { get; set; }
 
     }
@@ -21,14 +21,26 @@ namespace PowerArgs.Games
         public AutoTargetingFunction(AutoTargetingOptions options)
         {
             this.options = options;
-            this.Governor = new RateGovernor(TimeSpan.FromSeconds(.5));
+            this.Governor = new RateGovernor(TimeSpan.FromSeconds(.1));
         }
 
         public override void Initialize() { }
 
         public override void Evaluate()
         {
-            var targets = options.TargetsEval().OrderBy(z => options.Source.CalculateDistanceTo(z));
+            var targets = options.TargetsEval()
+                .Where(z=>
+                {
+                    var angle = options.Source.Element.CalculateAngleTo(z);
+                    var delta = Math.Abs(options.Source.Angle - angle);
+                    if(angle > 180)
+                    {
+                        angle -= 180;
+                    }
+
+                    return delta < 90;
+                })
+                .OrderBy(z => options.Source.Element.CalculateDistanceTo(z));
             var obstacles = new HashSet<IRectangular>();
 
             foreach(var target in options.TargetsEval())
@@ -36,7 +48,7 @@ namespace PowerArgs.Games
                 obstacles.Add(target);
             }
 
-            foreach(var element in SpaceTime.CurrentSpaceTime.Elements.Where(e => e.ZIndex == options.Source.ZIndex))
+            foreach(var element in SpaceTime.CurrentSpaceTime.Elements.Where(e => e.ZIndex == options.Source.Element.ZIndex))
             {
                 obstacles.Add(element);
             }
@@ -44,7 +56,7 @@ namespace PowerArgs.Games
 
             foreach (var target in targets)
             {
-                var hasLineOfSight = SpaceExtensions.HasLineOfSightRounded(options.Source, target, obstacles.ToList(), 1);
+                var hasLineOfSight = SpaceExtensions.HasLineOfSightRounded(options.Source.Element, target, obstacles.ToList(), 1);
 
                 if (hasLineOfSight)
                 {
