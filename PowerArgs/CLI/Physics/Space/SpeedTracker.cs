@@ -210,6 +210,15 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        public bool IsComingTowards(IRectangular target)
+        {
+            var d = Element.CalculateDistanceTo(target);
+            var projectedLocation = this.Element.TopLeft().MoveTowards(this.Angle, d);
+            var projectedRect = Rectangular.Create(projectedLocation.Left, projectedLocation.Top, Element.Width, Element.Height);
+            var ret = projectedRect.CalculateDistanceTo(target);
+            return ret < .5;
+        }
+
         private static void FindDeltas(float angle, float hyp, out float adj, out float opp)
         {
             float radians = 3.1415926535897932f * angle / 180.0f;

@@ -1,3 +1,4 @@
+using PowerArgs.Cli.Physics;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// The provider to use for delaying between animation frames
         /// </summary>
-        public IDelayProvider DelayProvider { get; set; } = new WallClockDelayProvider();
+        public IDelayProvider DelayProvider { get; set; }  
 
         /// <summary>
         /// If auto reverse is enabled, this is the pause, in milliseconds, after the forward animation
@@ -121,6 +122,15 @@ namespace PowerArgs.Cli
         /// <returns>an async task</returns>
         public static async Task AnimateAsync(AnimatorOptions options)
         {
+            if(options.DelayProvider == null && Time.CurrentTime != null)
+            {
+                options.DelayProvider = Time.CurrentTime;
+            }
+            else if(options.DelayProvider == null)
+            {
+                options.DelayProvider = new WallClockDelayProvider();
+            }
+
             var originalFrom = options.From;
             var originalTo = options.To;
             try

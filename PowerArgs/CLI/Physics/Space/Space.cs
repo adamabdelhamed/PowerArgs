@@ -339,8 +339,8 @@ namespace PowerArgs.Cli.Physics
 
         public static ILocation MoveTowards(this ILocation a, float angle, float distance)
         {
-
-            var forward = !(angle > 270 || angle < 90);
+            distance = NormalizeQuantity(distance, angle, reverse: true);
+            var forward = angle > 270 || angle < 90;
             var up = angle > 180;
 
             // convert to radians
@@ -348,9 +348,8 @@ namespace PowerArgs.Cli.Physics
             float dy = (float)Math.Abs(distance * Math.Sin(angle));
             float dx = (float)Math.Sqrt((distance * distance) - (dy * dy));
 
-
             float x2 = forward ? a.Left + dx : a.Left - dx;
-            float y2 = up ? a.Top + dy : a.Top - dy;
+            float y2 = up ? a.Top - dy : a.Top + dy;
 
             var ret = Location.Create(x2, y2);
             return ret;
@@ -391,6 +390,16 @@ namespace PowerArgs.Cli.Physics
             var skewPercentage = 1+(degreesFromFlat / 90);
 
             return reverse ? quantity * skewPercentage :  quantity / skewPercentage;
+        }
+
+        public static float AngleDiff(float a, float b)
+        {
+            var c = Math.Abs(a - b);
+            if(c > 180)
+            {
+                c = Math.Abs(360 - c);
+            }
+            return c;
         }
 
         public static float AddToAngle(float angle, float toAdd)

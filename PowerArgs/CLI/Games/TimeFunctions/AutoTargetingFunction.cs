@@ -27,14 +27,11 @@ namespace PowerArgs.Games
         public override void Evaluate()
         {
             var targets = options.TargetsEval()
-                .Where(z=>
+                .Where(z =>
                 {
                     var angle = options.Source.Element.CalculateAngleTo(z);
-                    var delta = Math.Abs(options.Source.Angle - angle);
-                    if(delta > 180)
-                    {
-                  //      delta -= 180;
-                    }
+                    var delta = SpaceExtensions.AngleDiff(options.Source.Angle, angle);
+          
 
                     return delta < 90;
                 })

@@ -56,6 +56,22 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        ///  narrows the IEnumerable type to TOut
+        /// </summary>
+        /// <typeparam name="TOut">The type to narrow to</typeparam>
+        /// <param name="enumerable">the collection to narrow</param>
+        /// <returns>the narrowed enumerable</returns>
+        public static List<TOut> AsList<TOut>(this IEnumerable enumerable)
+        {
+            var ret = new List<TOut>();
+            foreach (var item in enumerable)
+            {
+                ret.Add((TOut)item);
+            }
+            return ret;
+        }
+
         private static T FoolTheCompilerCast<T>(object o) => (T)o;
     }
 }
