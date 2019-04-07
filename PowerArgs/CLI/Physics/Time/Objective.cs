@@ -26,7 +26,7 @@ namespace PowerArgs.Cli.Physics
         {
             this.options = options;
         }
-
+        public bool IsInterjecting => Focus == null ? false : Focus.IsInterjecting;
         public Task DelayAsync(double ms) => Focus.DelayAsync(ms);
         public Task DelayAsync(TimeSpan timeout) => DelayAsync(timeout.TotalMilliseconds);
         public Task DelayAsync(Event ev, TimeSpan? timeout = null, TimeSpan? evalFrequency = null) => Focus.DelayAsync(ev, timeout, evalFrequency);
@@ -37,17 +37,25 @@ namespace PowerArgs.Cli.Physics
 
         public void Evaluate()
         {
+            if(Focus != null && Focus.IsInterjecting)
+            {
+                return;
+            }
+
             GetFocused();
             if (Focus != null && Focus.HasStarted == false)
             {
                 Focus.Start();
             }
 
-            if (options.Watches != null)
+            if (options.Watches != null && Focus.IsInterjecting == false)
             {
                 foreach (var watcher in options.Watches)
                 {
-                    watcher.Invoke(this);
+                    if (Focus.IsInterjecting == false)
+                    {
+                        watcher.Invoke(this);
+                    }
                 }
             }
         }
@@ -91,7 +99,7 @@ namespace PowerArgs.Cli.Physics
             private Task task;
             private Func<Task> mainProcess;
             private Queue<Func<Task>> interjections = new Queue<Func<Task>>();
-
+            public bool IsInterjecting { get; private set; }
             public bool HasStarted => task != null;
             public bool IsComplete => task == null ? false : task.IsCompleted;
             public AggregateException Exception => task == null ? null : task.Exception;
@@ -189,7 +197,16 @@ namespace PowerArgs.Cli.Physics
                 {
                     foreach (var interjection in interjectionsBeforeYield)
                     {
-                        await interjection();
+                        IsInterjecting = true;
+                        try
+                        {
+                            var t = interjection();
+                            await t;
+                        }
+                        finally
+                        {
+                            IsInterjecting = false;
+                        }
                     }
                 }
             }
