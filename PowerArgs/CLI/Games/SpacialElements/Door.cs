@@ -10,11 +10,11 @@ namespace PowerArgs.Games
     public class Door : Wall, IInteractable
     {
         private bool isOpen;
-        internal IRectangular ClosedBounds;
-        internal IRectangular OpenBounds;
+        internal IRectangularF ClosedBounds;
+        internal IRectangularF OpenBounds;
 
         public float MaxInteractDistance => 5;
-        public IRectangular InteractionPoint => ClosedBounds;
+        public IRectangularF InteractionPoint => ClosedBounds;
         public bool IsOpen
         {
             get
@@ -126,14 +126,14 @@ namespace PowerArgs.Games
                     if (rightCount > 0)
                     {
                         item.Width = rightCount + 1;
-                        bigDoor.ClosedBounds = PowerArgs.Cli.Physics.Rectangular.Create(item.X, item.Y, item.Width, item.Height);
-                        bigDoor.OpenBounds = PowerArgs.Cli.Physics.Rectangular.Create(bigDoor.ClosedBounds.Left + item.Width, bigDoor.ClosedBounds.Top, item.Width, item.Height);
+                        bigDoor.ClosedBounds = PowerArgs.Cli.Physics.RectangularF.Create(item.X, item.Y, item.Width, item.Height);
+                        bigDoor.OpenBounds = PowerArgs.Cli.Physics.RectangularF.Create(bigDoor.ClosedBounds.Left + item.Width, bigDoor.ClosedBounds.Top, item.Width, item.Height);
                     }
                     else if(belowCount > 0)
                     {
                         item.Height = belowCount + 1;
-                        bigDoor.ClosedBounds = PowerArgs.Cli.Physics.Rectangular.Create(item.X, item.Y, item.Width, item.Height);
-                        bigDoor.OpenBounds = PowerArgs.Cli.Physics.Rectangular.Create(bigDoor.ClosedBounds.Left, bigDoor.ClosedBounds.Top+item.Height, item.Width, item.Height);
+                        bigDoor.ClosedBounds = PowerArgs.Cli.Physics.RectangularF.Create(item.X, item.Y, item.Width, item.Height);
+                        bigDoor.OpenBounds = PowerArgs.Cli.Physics.RectangularF.Create(bigDoor.ClosedBounds.Left, bigDoor.ClosedBounds.Top+item.Height, item.Width, item.Height);
                     }
                     else
                     {

@@ -7,22 +7,7 @@ namespace PowerArgs.Cli
     /// Helpers for doing 2d layout
     /// </summary>
     public static class Layout
-    {
-        private static List<ConsoleControl> GetDescendents(ConsolePanel toTraverse)
-        {
-            List<ConsoleControl> ret = new List<ConsoleControl>();
-            foreach (var control in toTraverse.Controls)
-            {
-                if (control is ConsolePanel)
-                {
-                    ret.AddRange(GetDescendents(control as ConsolePanel));
-                }
-                ret.Add(control);
-
-            }
-            return ret;
-        }
-        
+    {   
         /// <summary>
         /// Positions the given controls in a horizontal stack
         /// </summary>

@@ -111,7 +111,15 @@ namespace ArgsTests.CLI
         {
             await Paint().AsAwaitable();
             await Paint().AsAwaitable();
-            RecordKeyFrame();
+
+            if (ConsoleApp.Current == this)
+            {
+                RecordKeyFrame();
+            }
+            else
+            {
+                await QueueAction(RecordKeyFrame).AsAwaitable();
+            }
         }
 
         public void Abandon()

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace PowerArgs.Cli.Physics
 {
-    public class SpacialElement : TimeFunction, IRectangular
+    public class SpacialElement : TimeFunction, IRectangularF
     {
         public Event SizeOrPositionChanged { get; private set; } = new Event();
         public float Left { get; private set; }
@@ -18,7 +18,7 @@ namespace PowerArgs.Cli.Physics
 
         public SpacialElementRenderer Renderer { get; set; }
 
-        public IRectangular Bounds => Rectangular.Create(Left, Top, Width, Height);
+        public IRectangularF Bounds => RectangularF.Create(Left, Top, Width, Height);
 
         public float CenterX => Left + (Width / 2);
         public float CenterY => Top + (Height / 2);
@@ -127,7 +127,7 @@ namespace PowerArgs.Cli.Physics
         public Event<SpacialElement> SpacialElementRemoved { get; private set; } = new Event<SpacialElement>();
         public float Width { get; private set; }
         public float Height { get; private set; }
-        public IRectangular Bounds { get; private set; }
+        public IRectangularF Bounds { get; private set; }
         public void ClearChanges() => ChangeTracker.ClearChanges();
         public bool ChangeTrackingEnabled { get => ChangeTracker.Enabled; set => ChangeTracker.Enabled = value; }
         public IEnumerable<SpacialElement> ChangedElements => ChangeTracker.ChangedElements;
@@ -142,7 +142,7 @@ namespace PowerArgs.Cli.Physics
         {
             this.Width = width;
             this.Height = height;
-            this.Bounds = Rectangular.Create(0, 0, Width, Height);
+            this.Bounds = RectangularF.Create(0, 0, Width, Height);
             addedSub = this.TimeFunctionAdded.SubscribeUnmanaged((f) =>
             {
                 if (f is SpacialElement)
@@ -167,7 +167,7 @@ namespace PowerArgs.Cli.Physics
 
         public bool IsEmpty(float x, float y, float w, float h)
         {
-            var myRect = Rectangular.Create(0, 0, Width, Height);
+            var myRect = RectangularF.Create(0, 0, Width, Height);
             foreach (var element in Elements)
             {
                 if (myRect.NumberOfPixelsThatOverlap(element) > 0)
@@ -178,12 +178,12 @@ namespace PowerArgs.Cli.Physics
             return true;
         }
 
-        public bool IsInBounds(IRectangular bounds) => !IsOutOfBounds(bounds);
+        public bool IsInBounds(IRectangularF bounds) => !IsOutOfBounds(bounds);
       
 
-        public bool IsOutOfBounds(IRectangular bounds)
+        public bool IsOutOfBounds(IRectangularF bounds)
         {
-            var testBounds = Rectangular.Create(0, 0, Width, Height);
+            var testBounds = RectangularF.Create(0, 0, Width, Height);
             var overlap = testBounds.OverlapPercentage(bounds);
             return overlap < 1;
         }
@@ -195,7 +195,7 @@ namespace PowerArgs.Cli.Physics
             {
                 x = Random.Next(0, (int)Width);
                 y = Random.Next(0, (int)Height);
-                var testBounds = Rectangular.Create(x, y, 1, 1);
+                var testBounds = RectangularF.Create(x, y, 1, 1);
                 if (Elements.Where(t => t.Contains(testBounds)).Count() == 0)
                 {
                     return true;

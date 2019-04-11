@@ -171,6 +171,17 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Starts a new ConsoleApp and waits for it to finish
+        /// </summary>
+        /// <param name="init">the function that initializes the app</param>
+        public static void Show(Action<ConsoleApp> init)
+        {
+            var app = new ConsoleApp();
+            app.QueueAction(()=>init(app));
+            app.Start().Wait();
+        }
+
+        /// <summary>
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>

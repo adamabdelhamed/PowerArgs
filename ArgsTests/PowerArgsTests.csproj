@@ -117,6 +117,9 @@
     <Compile Include="CLI\Observability\ObservabilityTests.cs" />
     <Compile Include="CLI\Observability\ObservableDocumentTests.cs" />
     <Compile Include="CLI\Observability\RoutedEventTests.cs" />
+    <Compile Include="CLI\Physics\GeometryTests.cs" />
+    <Compile Include="CLI\Physics\AnimatorTests.cs" />
+    <Compile Include="CLI\Physics\TimeTests.cs" />
     <Compile Include="CLI\Physics\MathTests.cs" />
     <Compile Include="CLI\Physics\E2EPhysicsTests.cs" />
     <Compile Include="CLI\Physics\ConsoleAppTestHarness.cs" />

@@ -15,10 +15,10 @@ namespace ArgsTests.CLI.Physics
         [TestMethod]
         public void TestAngleMath()
         {
-            Assert.AreEqual(45, SpaceExtensions.AddToAngle(0, 45));
-            Assert.AreEqual(1, SpaceExtensions.AddToAngle(360, 1));
-            Assert.AreEqual(359, SpaceExtensions.AddToAngle(0, -1));
-            Assert.AreEqual(359, SpaceExtensions.AddToAngle(360, -1));
+            Assert.AreEqual(45, 0.AddToAngle(45));
+            Assert.AreEqual(1, 360.AddToAngle(1));
+            Assert.AreEqual(359,  0.AddToAngle(-1));
+            Assert.AreEqual(359, 360.AddToAngle(-1));
             
         }
     }

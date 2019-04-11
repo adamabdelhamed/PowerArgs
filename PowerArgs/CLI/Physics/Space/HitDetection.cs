@@ -15,7 +15,7 @@ namespace PowerArgs.Cli.Physics
     {
         public float Angle { get; set; }
         public SpacialElement MovingObject { get; set; }
-        public IRectangular ObstacleHit { get; set; }
+        public IRectangularF ObstacleHit { get; set; }
         public HitType HitType { get; set; }
     }
 
@@ -23,15 +23,15 @@ namespace PowerArgs.Cli.Physics
     {
         public HitType Type { get; set; }
         public Direction Direction { get; set; }
-        public IRectangular ObstacleHit { get; set; }
+        public IRectangularF ObstacleHit { get; set; }
     }
 
     public class HitDetectionOptions
     {
-        public IRectangular Bounds { get; set; }
-        public IRectangular MovingObject { get; set; }
-        public List<IRectangular> Obstacles { get; set; }
-        public List<IRectangular> Exclusions { get; set; }
+        public IRectangularF Bounds { get; set; }
+        public IRectangularF MovingObject { get; set; }
+        public List<IRectangularF> Obstacles { get; set; }
+        public List<IRectangularF> Exclusions { get; set; }
         public float Dx { get; set; }
         public float Dy { get; set; }
         public int Precision { get; set; } = 5;
@@ -105,32 +105,32 @@ namespace PowerArgs.Cli.Physics
             {
                 prediction.Direction = Direction.Down;
                 prediction.Type = HitType.Boundary;
-                prediction.ObstacleHit = Rectangular.Create(options.MovingObject.Left + options.Dx, options.Bounds.Height + options.Dy, 1, 1);
+                prediction.ObstacleHit = RectangularF.Create(options.MovingObject.Left + options.Dx, options.Bounds.Height + options.Dy, 1, 1);
                 return prediction;
             }
             else if (options.Dx < 0 && options.MovingObject.Left + options.Dx <= 0)
             {
                 prediction.Direction = Direction.Left;
                 prediction.Type = HitType.Boundary;
-                prediction.ObstacleHit = Rectangular.Create(-options.Dx, options.MovingObject.Top + options.Dy, 1, 1);
+                prediction.ObstacleHit = RectangularF.Create(-options.Dx, options.MovingObject.Top + options.Dy, 1, 1);
                 return prediction;
             }
             else if (options.Dy < 0 && options.MovingObject.Top + options.Dy <= 0)
             {
                 prediction.Direction = Direction.Up;
                 prediction.Type = HitType.Boundary;
-                prediction.ObstacleHit = Rectangular.Create(options.MovingObject.Left + options.Dx, -options.Dy, 1, 1);
+                prediction.ObstacleHit = RectangularF.Create(options.MovingObject.Left + options.Dx, -options.Dy, 1, 1);
                 return prediction;
             }
             else if (options.Dx > 0 && options.MovingObject.Right() + options.Dx >= options.Bounds.Width)
             {
                 prediction.Direction = Direction.Right;
                 prediction.Type = HitType.Boundary;
-                prediction.ObstacleHit = Rectangular.Create(options.Bounds.Width + options.Dx, options.MovingObject.Top + options.Dy, 1, 1);
+                prediction.ObstacleHit = RectangularF.Create(options.Bounds.Width + options.Dx, options.MovingObject.Top + options.Dy, 1, 1);
                 return prediction;
             }
 
-            var testArea = Rectangular.Create(options.MovingObject.Left + options.Dx, options.MovingObject.Top + options.Dy, options.MovingObject.Width, options.MovingObject.Height);
+            var testArea = RectangularF.Create(options.MovingObject.Left + options.Dx, options.MovingObject.Top + options.Dy, options.MovingObject.Width, options.MovingObject.Height);
 
 
             var obstacleToBeHit = options.Obstacles

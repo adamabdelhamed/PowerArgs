@@ -22,7 +22,7 @@ namespace PowerArgs.Games
                 {
                     var matter = new NetMatter();
 
-                    var force = new Force(matter.Speed, SpaceExtensions.NormalizeQuantity(45, CalculateAngleToTarget()), CalculateAngleToTarget());
+                    var force = new Force(matter.Speed, 45f.NormalizeQuantity(CalculateAngleToTarget()), CalculateAngleToTarget());
                     var matterX = this.Holder.Left + 1 + x;
                     var matterY = this.Holder.Top - 1 + y;
                     matter.MoveTo(matterX, matterY, 1);
@@ -74,7 +74,7 @@ namespace PowerArgs.Games
 
             public SpeedTracker Speed { get; private set; } 
 
-            private IRectangular initialBonds;
+            private IRectangularF initialBonds;
             private TimeSpan initialTime;
 
             public NetMatter()

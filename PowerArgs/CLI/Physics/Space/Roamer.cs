@@ -32,7 +32,7 @@ namespace PowerArgs.Cli.Physics
         {
             if (currentForce != null)
             {
-                new Force(RoamerSpeed, 1, SpaceExtensions.GetOppositeAngle(currentForce.Angle));
+                new Force(RoamerSpeed, 1,  currentForce.Angle.GetOppositeAngle());
                 currentForce = null;
             }
 

@@ -192,7 +192,7 @@ namespace PowerArgs.Cli
 #if DEBUG
             options.Debug?.Invoke($"Time between frames: {timeBetweenFrames.TotalMilliseconds} ms");
 #endif
-            var initialValue = options.From;
+              var initialValue = options.From;
             options.Set(initialValue);
 #if DEBUG
             options.Debug?.Invoke($"InitialValue: {initialValue}");
@@ -216,7 +216,7 @@ namespace PowerArgs.Cli
 #if DEBUG
                 options.Debug?.Invoke($"Set value to {newValue} at percentage {percentageDone}");
 #endif
-                var delayTime = TimeSpan.FromMilliseconds(Math.Max(0, scheduledTimeAfterThisFrame.TotalMilliseconds - workSw.Elapsed.TotalMilliseconds));
+                var delayTime = options.DelayProvider is WallClockDelayProvider ? TimeSpan.FromMilliseconds(Math.Max(0, scheduledTimeAfterThisFrame.TotalMilliseconds - workSw.Elapsed.TotalMilliseconds)) : timeBetweenFrames;
 #if DEBUG
                 options.Debug?.Invoke($"Delayed for {delayTime.TotalMilliseconds} ms at percentage {percentageDone}");
 #endif

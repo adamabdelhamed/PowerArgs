@@ -35,7 +35,7 @@ namespace PowerArgs.Games
                     {
                         if (x == Left && y == Top) continue;
 
-                        var canPlaceCeiling = walls.Where(w => w.Touches(PowerArgs.Cli.Physics.Rectangular.Create(x, y, 1, 1))).Count() == 0;
+                        var canPlaceCeiling = walls.Where(w => w.Touches(PowerArgs.Cli.Physics.RectangularF.Create(x, y, 1, 1))).Count() == 0;
 
                         if (canPlaceCeiling == false)
                         {

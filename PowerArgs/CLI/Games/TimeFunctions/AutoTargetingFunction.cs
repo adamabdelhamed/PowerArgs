@@ -30,13 +30,11 @@ namespace PowerArgs.Games
                 .Where(z =>
                 {
                     var angle = options.Source.Element.CalculateAngleTo(z);
-                    var delta = SpaceExtensions.AngleDiff(options.Source.Angle, angle);
-          
-
+                    var delta = options.Source.Angle.DiffAngle(angle);
                     return delta < 90;
                 })
-                .OrderBy(z => options.Source.Element.CalculateDistanceTo(z));
-            var obstacles = new HashSet<IRectangular>();
+                .OrderBy(z => Geometry.NormalizeQuantity(options.Source.Element.CalculateDistanceTo(z), options.Source.Element.CalculateAngleTo(z)));
+            var obstacles = new HashSet<IRectangularF>();
 
             foreach(var target in options.TargetsEval())
             {
@@ -51,7 +49,7 @@ namespace PowerArgs.Games
 
             foreach (var target in targets)
             {
-                var hasLineOfSight = SpaceExtensions.HasLineOfSight(options.Source.Element, target, obstacles.ToList(), 1);
+                var hasLineOfSight = SpacialAwareness.HasLineOfSight(options.Source.Element, target, obstacles.ToList(), 1);
 
                 if (hasLineOfSight)
                 {

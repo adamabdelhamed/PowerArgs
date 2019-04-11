@@ -138,7 +138,7 @@ namespace PowerArgs.Cli
             RewindAndFastForwardIncrement = TimeSpan.FromSeconds(10);
             pictureFrame = Add(new Border()).Fill(padding: new Thickness(0,0,0,1));
             pictureFrame.Background = ConsoleColor.DarkGray;
-            pictureInTheFrame = pictureFrame.Add(new BitmapControl() { AutoSize = true, CanFocus = false });
+            pictureInTheFrame = pictureFrame.Add(new BitmapControl() { AutoSize = true, CanFocus = false }).CenterBoth();
             playerProgressBar = Add(new PlayerProgressBar() { ShowPlayCursor = false }).FillHorizontally(padding: new Thickness(0,0,0,0)).DockToBottom(padding: 1);
 
             var buttonBar = Add(new StackPanel() { CanFocus =false, Height=1, Orientation = Orientation.Horizontal }).FillHorizontally().DockToBottom();
@@ -290,7 +290,6 @@ namespace PowerArgs.Cli
         /// </summary>
         private void StateChanged()
         {
-            pictureInTheFrame.CenterHorizontally().CenterVertically();
             if (State != PlayerState.Playing)
             {
                 playLifetime = null;
@@ -314,8 +313,6 @@ namespace PowerArgs.Cli
                     {
                         return;
                     }
-
-                    pictureInTheFrame.CenterHorizontally().CenterVertically();
                     var now = DateTime.UtcNow;
                     var delta = now - playStartTime;
                     var newPlayerPosition = playStartPosition + delta;

@@ -16,7 +16,7 @@ namespace PowerArgs.Games
     public interface IInteractable
     {
         float MaxInteractDistance { get;  } 
-        IRectangular InteractionPoint { get; }
+        IRectangularF InteractionPoint { get; }
         void Interact(MainCharacter character);
     }
 
@@ -155,7 +155,7 @@ namespace PowerArgs.Games
             }
             else
             {
-                Speed.SpeedX = SpaceExtensions.NormalizeQuantity(-PlayerMovementSpeed, 0);
+                Speed.SpeedX = -PlayerMovementSpeed.NormalizeQuantity(0);
                 Speed.SpeedY = 0;
             }
 
@@ -177,7 +177,7 @@ namespace PowerArgs.Games
             }
             else
             {
-                Speed.SpeedX = SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 0);
+                Speed.SpeedX = PlayerMovementSpeed.NormalizeQuantity(0);
                 Speed.SpeedY = 0;
             }
 
@@ -199,7 +199,7 @@ namespace PowerArgs.Games
             }
             else
             {
-                Speed.SpeedY = SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 90);
+                Speed.SpeedY = PlayerMovementSpeed.NormalizeQuantity(90);
                 Speed.SpeedX = 0;
             }
 
@@ -221,7 +221,7 @@ namespace PowerArgs.Games
             }
             else
             {
-                Speed.SpeedY = -SpaceExtensions.NormalizeQuantity(PlayerMovementSpeed, 90);
+                Speed.SpeedY = -PlayerMovementSpeed.NormalizeQuantity(90);
                 Speed.SpeedX = 0;
             }
 

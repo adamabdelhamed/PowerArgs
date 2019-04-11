@@ -8,9 +8,9 @@ namespace PowerArgs.Games
         public override void FireInternal()
         {
             var targetAngle = CalculateAngleToTarget();
-            var sprayAngle = SpaceExtensions.NormalizeQuantity(30.0f, targetAngle, true);
+            var sprayAngle =  30.0f.NormalizeQuantity(targetAngle, true);
             var sprayIncrement = 5;
-            var startAngle = SpaceExtensions.AddToAngle(targetAngle,-sprayAngle/2);
+            var startAngle = targetAngle.AddToAngle(-sprayAngle/2);
             var sprayedSoFar = 0;
 
             Sound.Play("pistol");
@@ -18,8 +18,8 @@ namespace PowerArgs.Games
             while (sprayedSoFar < sprayAngle)
             {
                 sprayedSoFar += sprayIncrement;
-                var angle = SpaceExtensions.AddToAngle(startAngle, sprayedSoFar);
-                var bullet = new Projectile(Holder.Left, Holder.Top, angle) { Range = SpaceExtensions.NormalizeQuantity(8, angle), PlaySoundOnImpact = true };
+                var angle = startAngle.AddToAngle(sprayedSoFar);
+                var bullet = new Projectile(Holder.Left, Holder.Top, angle) { Range = 8.NormalizeQuantity(angle), PlaySoundOnImpact = true };
                 SpaceTime.CurrentSpaceTime.Add(bullet);
             }
         }

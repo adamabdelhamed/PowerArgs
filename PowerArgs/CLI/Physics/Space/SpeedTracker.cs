@@ -86,7 +86,7 @@ namespace PowerArgs.Cli.Physics
             var obstacles = GetObstacles().ToList();
             if (obstacles.Where(o => o.Touches(Element)).Any())
             {
-                Element.TryNudgeFreeOFObstacles(obstacles.As<IRectangular>().ToList());
+                Element.TryNudgeFreeOFObstacles(obstacles.As<IRectangularF>().ToList());
             }
 
             if (dx == 0 && dy == 0)
@@ -98,8 +98,8 @@ namespace PowerArgs.Cli.Physics
             {
                 Bounds = SpaceTime.CurrentSpaceTime.Bounds,
                 MovingObject = Element,
-                Exclusions = new List<IRectangular>(this.HitDetectionExclusions),
-                Obstacles = obstacles.As<IRectangular>().ToList(),
+                Exclusions = new List<IRectangularF>(this.HitDetectionExclusions),
+                Obstacles = obstacles.As<IRectangularF>().ToList(),
                 Dx = dx,
                 Dy = dy,
             });
@@ -144,7 +144,7 @@ namespace PowerArgs.Cli.Physics
                     });
                 }
                 haveMovedSinceLastHitDetection = false;
-                var testArea = Rectangular.Create(Element.Left + dx, Element.Top + dy, Element.Width, Element.Height);
+                var testArea = RectangularF.Create(Element.Left + dx, Element.Top + dy, Element.Width, Element.Height);
 
                 if (hitPrediction.Direction == Direction.Down || hitPrediction.Direction == Direction.Up)
                 {
@@ -210,11 +210,11 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public bool IsComingTowards(IRectangular target)
+        public bool IsComingTowards(IRectangularF target)
         {
             var d = Element.CalculateDistanceTo(target);
             var projectedLocation = this.Element.TopLeft().MoveTowards(this.Angle, d);
-            var projectedRect = Rectangular.Create(projectedLocation.Left, projectedLocation.Top, Element.Width, Element.Height);
+            var projectedRect = RectangularF.Create(projectedLocation.Left, projectedLocation.Top, Element.Width, Element.Height);
             var ret = projectedRect.CalculateDistanceTo(target);
             return ret < .5;
         }

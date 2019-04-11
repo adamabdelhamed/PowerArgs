@@ -14,7 +14,7 @@ namespace PowerArgs.Games
         public SpeedTracker Speed { get; private set; }
         public bool PlaySoundOnImpact { get; set; }
 
-        private IRectangular startLocation;
+        private IRectangularF startLocation;
         private Force force;
         private Projectile()
         {
@@ -31,16 +31,16 @@ namespace PowerArgs.Games
             this.angle = angle;
             startLocation = this.Bounds;
             // todo - replace with bullet speed from config
-            force = new Force(Speed, SpaceExtensions.NormalizeQuantity(Accelleration, angle), angle);
+            force = new Force(Speed, Accelleration.NormalizeQuantity(angle), angle);
         }
 
-        public Projectile(float x, float y, IRectangular target) : this()
+        public Projectile(float x, float y, IRectangularF target) : this()
         {
             this.MoveTo(x, y);
             this.angle = this.CalculateAngleTo(target);
             startLocation = this.Bounds;
             // todo - replace with bullet speed from config
-            force = new Force(Speed, SpaceExtensions.NormalizeQuantity(Accelleration, angle), angle);
+            force = new Force(Speed, Accelleration.NormalizeQuantity(angle), angle);
         }
 
 

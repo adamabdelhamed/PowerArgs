@@ -1,11 +1,12 @@
-﻿using System;
+﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace PowerArgs.Cli
 {
-    public class Rectangular : ObservableObject
+    public class Rectangular : ObservableObject, IRectangularF
     {
         public Rectangle Bounds
         {
@@ -89,5 +90,17 @@ namespace PowerArgs.Cli
                 Bounds = new Rectangle(value, Bounds.Size);
             }
         }
+
+        public float Left => X;
+
+        public float Top => Y;
+
+        float IRectangularF.Width => Width;
+
+        float ISizeF.Width => Width;
+
+        float IRectangularF.Height => Height;
+
+        float ISizeF.Height => Height;
     }
 }

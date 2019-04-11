@@ -20,10 +20,10 @@ namespace PowerArgs.Games
             activeBlades.Clear();
 
             Sound.Play("sword");
-            for(var i = 1; i < 1+ SpaceExtensions.NormalizeQuantity(Range, CalculateAngleToTarget()); i++)
+            for(var i = 1; i < 1+  Range.NormalizeQuantity(CalculateAngleToTarget()); i++)
             {
                 var location = Holder.Center().MoveTowards(CalculateAngleToTarget(), i);
-                var newBounds = Cli.Physics.Rectangular.Create(location.Left - .5f, location.Top - .5f, 1, 1);
+                var newBounds = Cli.Physics.RectangularF.Create(location.Left - .5f, location.Top - .5f, 1, 1);
                 if (SpaceTime.CurrentSpaceTime.IsInBounds(newBounds))
                 {
                     var blade = new Blade() { Holder = this.Holder };
