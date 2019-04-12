@@ -11,7 +11,10 @@ namespace PowerArgs
     /// </summary>
     public static class MemberInfoEx
     {
-        internal static Dictionary<string, object> cachedAttributes = new Dictionary<string, object>();
+        /// <summary>
+        /// A cache of all attributes that have been queried via reflection
+        /// </summary>
+        public static Dictionary<string, object> CachedAttributes { get; private set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Returns true if the given member has an attribute of the given type (including inherited types).
@@ -60,11 +63,11 @@ namespace PowerArgs
         {
             string cacheKey = (info is Type ? ((Type)info).FullName : info.DeclaringType.FullName + "." + info.Name) + "<" + typeof(T).FullName + ">";
 
-            lock(cachedAttributes)
+            lock(CachedAttributes)
             {
-                if (cachedAttributes.ContainsKey(cacheKey))
+                if (CachedAttributes.ContainsKey(cacheKey))
                 {
-                    var cachedValue = cachedAttributes[cacheKey] as List<T>;
+                    var cachedValue = CachedAttributes[cacheKey] as List<T>;
                     if (cachedValue != null) return cachedValue;
                 }
 
@@ -74,13 +77,13 @@ attr.GetType().IsSubclassOf(typeof(T)) ||
 attr.GetType().GetInterfaces().Contains(typeof(T))
                                   select (T)attr).ToList();
 
-                if (cachedAttributes.ContainsKey(cacheKey))
+                if (CachedAttributes.ContainsKey(cacheKey))
                 {
-                    cachedAttributes[cacheKey] = freshValue;
+                    CachedAttributes[cacheKey] = freshValue;
                 }
                 else
                 {
-                    cachedAttributes.Add(cacheKey, freshValue);
+                    CachedAttributes.Add(cacheKey, freshValue);
                 }
 
                 return freshValue;

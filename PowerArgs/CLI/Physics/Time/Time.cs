@@ -110,8 +110,9 @@ namespace PowerArgs.Cli.Physics
         /// <summary>
         /// Starts the time simulation thread
         /// </summary>
+        /// <param name="name">the name of the thread to start. This is useful when debugging.</param>
         /// <returns>A promise that represents the end of the time simulation</returns>
-        public Promise Start()
+        public Promise Start(string name = "TimeThread")
         {
             runDeferred = Deferred.Create();
             runDeferred.Promise.Finally((p) => { runDeferred = null; });
@@ -172,7 +173,7 @@ namespace PowerArgs.Cli.Physics
                     runDeferred.Reject(ex);
                 }
             })
-            { Name = "TimeThread" };
+            { Name = name };
             t.Start();
 
             return runDeferred.Promise;

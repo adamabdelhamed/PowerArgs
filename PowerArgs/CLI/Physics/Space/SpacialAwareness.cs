@@ -79,12 +79,28 @@ namespace PowerArgs.Cli.Physics
         
 
 
-        public static bool TryNudgeFreeOFObstacles(this SpacialElement element, List<IRectangularF> obstacles, float range = 3.5f)
+        public static bool TryNudgeFreeOFObstacles(this SpacialElement element, List<IRectangularF> obstacles, float range = 3.5f, int skip = 0)
         {
-            for (var x = element.Left - range/2; x < element.Left + range / 2; x++)
+            var minX = element.Left - range / 2;
+            var maxX = element.Left + range / 2;
+            var numX = maxX - minX;
+
+            var minY = element.Top - range / 2;
+            var maxY = element.Top + range / 2;
+            var numY = maxY - minY;
+
+            var n = (int)Math.Floor(numX * numY);
+            skip = skip % n;
+            for (var x = minX; x < maxX; x++)
             {
-                for (var y = element.Top - range / 2; y < element.Top + range / 2; y++)
+                for (var y = minY; y < maxY; y++)
                 {
+                    if(skip > 0)
+                    {
+                        skip--;
+                        continue;
+                    }
+
                     var testArea = RectangularF.Create(x, y, element.Width * 1.1f, element.Height * 1.1f);
                     if(obstacles.Where(o => o.Touches(testArea)).Any())
                     {

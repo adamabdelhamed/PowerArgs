@@ -35,7 +35,7 @@ namespace PowerArgs.Games
         {
             introDeferred = Deferred.Create();
             SpaceTime.QueueAction(PlaySceneInternal);
-            SpaceTime.Start();
+            SpaceTime.Start("PowerArgsGameIntro");
             return introDeferred.Promise;
         }
 

@@ -252,12 +252,8 @@ namespace PowerArgs.Cli.Physics
         public virtual void OnBind() { }
         public virtual void OnRender()
         {
+            Background = Element.BackgroundColor;
             this.ZIndex = Element.ZIndex;
-        }
-
-        public SpacialElementRenderer()
-        {
-            Background = ConsoleColor.Red;
         }
     }
 }

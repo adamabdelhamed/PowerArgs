@@ -230,7 +230,12 @@ namespace PowerArgs
             SetReviver(typeof(T), (k, v) => { return reviverFunc(k, v); });
         }
 
-        internal static Func<string,string,object> GetReviver(Type t)
+        /// <summary>
+        /// Gets the reviver for a given type
+        /// </summary>
+        /// <param name="t">the type to revive</param>
+        /// <returns>the reviver function</returns>
+        public static Func<string,string,object> GetReviver(Type t)
         {
             if (ArgRevivers.Revivers.ContainsKey(t))
             {

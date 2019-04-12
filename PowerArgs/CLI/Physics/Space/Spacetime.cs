@@ -14,7 +14,7 @@ namespace PowerArgs.Cli.Physics
         public float Width { get; private set; }
         public float Height { get; private set; }
 
-       
+        public ConsoleColor BackgroundColor { get; set; } = ConsoleColor.Red;
 
         public SpacialElementRenderer Renderer { get; set; }
 
