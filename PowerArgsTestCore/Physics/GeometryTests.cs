@@ -36,5 +36,33 @@ namespace ArgsTests.CLI.Physics
             await app.Start().AsAwaitable();
             app.AssertThisTestMatchesLKG();
         }
+
+        [TestMethod]
+        public void TestAngleGeometry()
+        {
+            Assert.AreEqual(45, 0.AddToAngle(45));
+            Assert.AreEqual(1, 360.AddToAngle(1));
+            Assert.AreEqual(359, 0.AddToAngle(-1));
+            Assert.AreEqual(359, 360.AddToAngle(-1));
+            Assert.AreEqual(0, 0.DiffAngle(360));
+            Assert.AreEqual(1, 1.DiffAngle(360));
+            Assert.AreEqual(45, 0.DiffAngle(45));
+            Assert.AreEqual(0, RectangularF.Create(0, 0, 1, 1).CalculateAngleTo(RectangularF.Create(1, 0, 1, 1)));
+            Assert.AreEqual(45, RectangularF.Create(0, 0, 1, 1).CalculateAngleTo(RectangularF.Create(1, 1, 1, 1)));
+            Assert.AreEqual(90, RectangularF.Create(0, 0, 1, 1).CalculateAngleTo(RectangularF.Create(0, 1, 1, 1)));
+            Assert.AreEqual(135, RectangularF.Create(1, 0, 1, 1).CalculateAngleTo(RectangularF.Create(0, 1, 1, 1)));
+            Assert.AreEqual(180, RectangularF.Create(1, 0, 1, 1).CalculateAngleTo(RectangularF.Create(0, 0, 1, 1)));
+            Assert.AreEqual(225, RectangularF.Create(1, 1, 1, 1).CalculateAngleTo(RectangularF.Create(0, 0, 1, 1)));
+            Assert.AreEqual(270, RectangularF.Create(1, 1, 1, 1).CalculateAngleTo(RectangularF.Create(1, 0, 1, 1)));
+            Assert.AreEqual(315, RectangularF.Create(0, 1, 1, 1).CalculateAngleTo(RectangularF.Create(1, 0, 1, 1)));
+        }
+
+        [TestMethod]
+        public void TestDistanceGeometry()
+        {
+            Assert.AreEqual(0, RectangularF.Create(0, 0, 1, 1).CalculateDistanceTo(RectangularF.Create(0, 0, 1, 1)));
+            Assert.AreEqual(0, RectangularF.Create(0, 0, 1, 1).CalculateDistanceTo(RectangularF.Create(1, 1, 1, 1)));
+            Assert.AreEqual(1, RectangularF.Create(0, 0, 1, 1).CalculateDistanceTo(RectangularF.Create(2, 0, 1, 1)));
+        }
     }
 }

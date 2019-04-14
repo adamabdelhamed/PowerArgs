@@ -114,6 +114,7 @@ namespace PowerArgs.Cli.Physics
         public static float CenterX(this IRectangularF rectangular) => rectangular.Left + (rectangular.Width / 2);
         public static float CenterY(this IRectangularF rectangular) => rectangular.Top + (rectangular.Height / 2);
         public static ILocationF Center(this IRectangularF rectangular) => LocationF.Create(rectangular.CenterX(), rectangular.CenterY());
+        public static IRectangularF CenterRect(this IRectangularF rectangular) => RectangularF.Create(rectangular.CenterX(), rectangular.CenterY(), 0,0);
         public static ILocationF TopLeft(this IRectangularF rectangular) => LocationF.Create(rectangular.Left, rectangular.Top);
         public static IRectangularF CopyBounds(this IRectangularF rectangular) => RectangularF.Create(rectangular.Left, rectangular.Top, rectangular.Width, rectangular.Height);
         public static float Hypotenous(this IRectangularF rectangular) => (float)Math.Sqrt(rectangular.Width * rectangular.Width + rectangular.Height + rectangular.Height);
