@@ -255,5 +255,17 @@ namespace PowerArgs.Cli.Physics
             Background = Element.BackgroundColor;
             this.ZIndex = Element.ZIndex;
         }
+
+        protected override void OnPaint(ConsoleBitmap context)
+        {
+            if(Element.Pen.HasValue)
+            {
+                context.FillRect(Element.Pen.Value, 0, 0, Width, Height);
+            }
+            else
+            {
+                base.OnPaint(context);
+            }
+        }
     }
 }

@@ -16,6 +16,8 @@ namespace PowerArgs.Cli.Physics
 
         public ConsoleColor BackgroundColor { get; set; } = ConsoleColor.Red;
 
+        public ConsoleCharacter? Pen { get; set; }
+
         public SpacialElementRenderer Renderer { get; set; }
 
         public IRectangularF Bounds => RectangularF.Create(Left, Top, Width, Height);
