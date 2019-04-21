@@ -84,10 +84,6 @@ namespace PowerArgs.Cli.Physics
             float dy = SpeedY * dt;
 
             var obstacles = GetObstacles().ToList();
-            if (obstacles.Where(o => o.Touches(Element)).Any())
-            {
-                Element.TryNudgeFreeOFObstacles(obstacles.As<IRectangularF>().ToList());
-            }
 
             if (dx == 0 && dy == 0)
             {

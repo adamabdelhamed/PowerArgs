@@ -157,6 +157,7 @@ namespace PowerArgs.Games
             {
                 Speed.SpeedX = -PlayerMovementSpeed.NormalizeQuantity(0);
                 Speed.SpeedY = 0;
+                RoundOff();
             }
 
             TrySendBounds();
@@ -179,6 +180,7 @@ namespace PowerArgs.Games
             {
                 Speed.SpeedX = PlayerMovementSpeed.NormalizeQuantity(0);
                 Speed.SpeedY = 0;
+                RoundOff();
             }
 
             TrySendBounds();
@@ -201,6 +203,7 @@ namespace PowerArgs.Games
             {
                 Speed.SpeedY = PlayerMovementSpeed.NormalizeQuantity(90);
                 Speed.SpeedX = 0;
+                RoundOff();
             }
 
             TrySendBounds();
@@ -223,9 +226,17 @@ namespace PowerArgs.Games
             {
                 Speed.SpeedY = -PlayerMovementSpeed.NormalizeQuantity(90);
                 Speed.SpeedX = 0;
+                RoundOff();
             }
 
             TrySendBounds();
+        }
+
+        private void RoundOff()
+        {
+            var newLeft = (float)Math.Round(this.Left);
+            var newTop = (float)Math.Round(this.Top);
+            this.MoveTo(newLeft, newTop);
         }
 
         private void EndFreeAim()

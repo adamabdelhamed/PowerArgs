@@ -43,8 +43,8 @@ namespace PowerArgs.Cli.Physics
         }
 
         private DebounceableSignal behindSignal;
-        private DateTime wallClockTimeAdded;
-        private TimeSpan timeAdded;
+        private DateTime wallClockSample;
+        private TimeSpan simulationTimeSample;
         private Time t;
         private ITimeFunction impl;
 
@@ -68,8 +68,8 @@ namespace PowerArgs.Cli.Physics
 
         private void Enable()
         {
-            wallClockTimeAdded = DateTime.UtcNow;
-            timeAdded = t.Now;
+            wallClockSample = DateTime.UtcNow;
+            simulationTimeSample = t.Now;
             impl = TimeFunction.Create(Evaluate);
             impl.Lifetime.OnDisposed(() => { impl = null; });
             t.Add(impl);
@@ -77,8 +77,8 @@ namespace PowerArgs.Cli.Physics
 
         public void ReSync()
         {
-            wallClockTimeAdded = DateTime.UtcNow;
-            timeAdded = t.Now;
+            wallClockSample = DateTime.UtcNow;
+            simulationTimeSample = t.Now;
         }
 
         private void Disable()
@@ -91,17 +91,17 @@ namespace PowerArgs.Cli.Physics
         {
             var realTimeNow = DateTime.UtcNow;
             // while the simulation time is ahead of the wall clock, spin
-            var wallClockTimeElapsed = realTimeNow - wallClockTimeAdded;
-            var age = t.Now - timeAdded;
+            var wallClockTimeElapsed = realTimeNow - wallClockSample;
+            var age = t.Now - simulationTimeSample;
             while (Enabled && age > wallClockTimeElapsed)
             {
-                wallClockTimeElapsed = DateTime.UtcNow - wallClockTimeAdded;
+                wallClockTimeElapsed = DateTime.UtcNow - wallClockSample;
             }
 
             var idleTime = DateTime.UtcNow - realTimeNow;
             busyPercentageAverage.AddSample(1 - (idleTime.TotalSeconds / t.Increment.TotalSeconds));
             sleepTimeAverage.AddSample(idleTime.TotalMilliseconds);
-            age = t.Now - timeAdded;
+            age = t.Now - simulationTimeSample;
 
             // At this point, we're sure that the wall clock is equal to or ahead of the simulation time.
 
@@ -110,6 +110,7 @@ namespace PowerArgs.Cli.Physics
 
             // Send the latest behind amount to the behind signal debouncer.
             behindSignal.Update(behindAmount.TotalMilliseconds);
+            ReSync();
         }
     }
 }
