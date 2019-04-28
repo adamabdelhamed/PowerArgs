@@ -103,6 +103,9 @@ namespace PowerArgs.Cli
                 newBounds.Height -= effectivePadding.Top;
                 newBounds.Height -= effectivePadding.Bottom;
 
+                if (newBounds.Width < 0) newBounds.Width = 0;
+                if (newBounds.Height < 0) newBounds.Height = 0;
+
                 child.Bounds = newBounds;
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);

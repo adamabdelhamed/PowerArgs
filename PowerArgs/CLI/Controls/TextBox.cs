@@ -100,6 +100,14 @@ namespace PowerArgs.Cli
         protected override void OnPaint(ConsoleBitmap context)
         {
             var toPaint = textState.CurrentValue;
+
+            var offset = 0;
+            if(toPaint.Length >= Width && textState.CursorPosition > Width-1)
+            {
+                offset = (textState.CursorPosition + 1) - Width;
+                toPaint = toPaint.Substring(offset);
+            }
+
             var bgTransformed = new List<ConsoleCharacter>();
 
             foreach(var c in toPaint)
@@ -120,7 +128,7 @@ namespace PowerArgs.Cli
             {
                 char blinkChar = textState.CursorPosition >= toPaint.Length ? ' ' : toPaint[textState.CursorPosition].Value;
                 context.Pen = new ConsoleCharacter(blinkChar, DefaultColors.FocusContrastColor, DefaultColors.FocusColor);
-                context.DrawPoint(textState.CursorPosition, 0);
+                context.DrawPoint(textState.CursorPosition - offset, 0);
             }
         }
     }

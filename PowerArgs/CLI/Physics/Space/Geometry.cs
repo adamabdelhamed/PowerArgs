@@ -158,6 +158,7 @@ namespace PowerArgs.Cli.Physics
             var ret = angle + toAdd;
             ret = ret % 360;
             ret = ret >= 0 ? ret : ret + 360;
+            if (ret == 360) ret = 0;
             return ret;
         }
 
@@ -263,6 +264,12 @@ namespace PowerArgs.Cli.Physics
             var amount = numerator / denominator;
             if (amount < 0) amount = 0;
             else if (amount > 1) amount = 1;
+
+            if(amount > .999)
+            {
+                amount = 1;
+            }
+
             return amount;
         }
 

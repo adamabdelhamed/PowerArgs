@@ -85,7 +85,10 @@ namespace PowerArgs.Cli
             lines.Clear();
             if(Mode == LabelRenderMode.ManualSizing)
             {
-                lines.Add(CleanText.ToList());
+                foreach(var line in CleanText.Split("\n".ToConsoleString()))
+                {
+                    lines.Add(new List<ConsoleCharacter>(line));
+                }
             }
             else if(Mode == LabelRenderMode.SingleLineAutoSize)
             {

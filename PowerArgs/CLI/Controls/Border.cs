@@ -22,4 +22,15 @@ namespace PowerArgs.Cli
             base.OnPaint(context);
         }
     }
+
+    public class Border2 : ConsolePanel
+    {
+        public ConsolePanel Content { get; private set; }
+
+        public Border2(ConsolePanel content = null)
+        {
+            this.Content= content ?? new ConsolePanel();
+            this.Add(Content).Fill(padding: new Thickness(2, 2, 1, 1));
+        }
+    }
 }

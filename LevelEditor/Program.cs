@@ -6,7 +6,6 @@ namespace LevelEditor
 {
     class Program
     {
-        [ArgDefaultValue(@"C:\Users\adamab\source\repos\PowerArgs\LevelEditor\bin\Debug\Level1.lvl")]
         [ArgPosition(0)]
         [ArgExistingFile]
         public string InitialFile { get; set; }

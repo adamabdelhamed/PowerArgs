@@ -75,6 +75,12 @@ namespace PowerArgs.Cli.Physics
             ImpactFriction = .95f;
         }
 
+        public void Stop()
+        {
+            SpeedX = 0;
+            SpeedY = 0;
+        }
+
         public override void Evaluate()
         {
             float dt = (float)Governor.Rate.TotalSeconds;

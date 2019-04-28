@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli.Physics
 {
     public static class SpacialAwareness
     {
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment)
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = 1)
         {
             IRectangularF current = from;
             var currentDistance = current.CalculateDistanceTo(to);
@@ -18,7 +19,7 @@ namespace PowerArgs.Cli.Physics
 
                 foreach (var obstacle in obstacles)
                 {
-                    if(obstacle == to || obstacle == from)
+                    if (obstacle == to || obstacle == from)
                     {
                         continue;
                     }
@@ -33,7 +34,24 @@ namespace PowerArgs.Cli.Physics
 
             return true;
         }
-        
+
+        public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = 1)
+        {
+            for (var d = increment; d < range; d += increment)
+            {
+                var testLocation = from.MoveTowards(angle, d);
+                var testRect = RectangularF.Create(testLocation.Left, testLocation.Top, from.Width, from.Height);
+                if (obstacles.Where(o => o.Touches(testRect)).Any() || SpaceTime.CurrentSpaceTime.Bounds.Contains(testRect) == false)
+                {
+                    return d;
+                }
+            }
+
+            return range;
+        }
+
+
+
         public static ILocationF MoveTowards(this ILocationF a, ILocationF b, float distance)
         {
             float slope = (a.Top - b.Top) / (a.Left - b.Left);
@@ -73,11 +91,95 @@ namespace PowerArgs.Cli.Physics
         public static IEnumerable<SpacialElement> GetObstacles(this SpacialElement element, IEnumerable<SpacialElement> exclusions = null) => SpaceTime.CurrentSpaceTime
                    .Elements
                    .Where(e => e == element == false &&
-                           (exclusions == null ||  exclusions.Contains(e) == false) &&
+                           (exclusions == null || exclusions.Contains(e) == false) &&
                            e.ZIndex == element.ZIndex &&
                            e.HasSimpleTag("passthru") == false);
-        
 
 
-      }
+
+        public static async Task AnimateAsync(this IRectangularF rectangular, RectangularAnimationOptions options)
+        {
+            var startX = rectangular.Left;
+            var startY = rectangular.Top;
+            var startW = rectangular.Width;
+            var startH = rectangular.Height;
+
+            var xDelta = options.Destination.Left - startX;
+            var yDelta = options.Destination.Top - startY;
+            var wDelta = options.Destination.Width - startW;
+            var hDelta = options.Destination.Height - startH;
+
+            await Animator.AnimateAsync(new FloatAnimatorOptions()
+            {
+                Duration = options.Duration,
+                AutoReverse = options.AutoReverse,
+                AutoReverseDelay = options.AutoReverseDelay,
+                DelayProvider = options.DelayProvider,
+                Loop = options.Loop,
+                EasingFunction = options.EasingFunction,
+                From = 0,
+                To = 1,
+                Setter = v =>
+                {
+                    var frameX = startX + (v * xDelta);
+                    var frameY = startY + (v * yDelta);
+                    var frameW = startW + (v * wDelta);
+                    var frameH = startH + (v * hDelta);
+                    var frameBounds = RectangularF.Create(frameX, frameY, frameW, frameH);
+                    options.Setter(rectangular, frameBounds);
+                }
+            });
+        }
+    }
+
+    public class SpacialElementAnimationOptions : RectangularAnimationOptions
+    {
+        public override void Setter(IRectangularF target, IRectangularF bounds)
+        {
+            (target as SpacialElement).MoveTo(bounds.Left, bounds.Top);
+            (target as SpacialElement).ResizeTo(bounds.Width, bounds.Height);
+        }
+    }
+
+    public class ConsoleControlAnimationOptions : RectangularAnimationOptions
+    {
+        public override void Setter(IRectangularF target, IRectangularF bounds)
+        {
+            (target as ConsoleControl).X = (int)Math.Round(bounds.Left);
+            (target as ConsoleControl).Y = (int)Math.Round(bounds.Top);
+            (target as ConsoleControl).Width = (int)Math.Round(bounds.Width);
+            (target as ConsoleControl).Height = (int)Math.Round(bounds.Height);
+        }
+    }
+
+    public abstract class RectangularAnimationOptions
+    {
+        public IRectangularF Destination { get; set; }
+
+        public abstract void Setter(IRectangularF target, IRectangularF bounds);
+
+        public Func<float, float> EasingFunction { get; set; } = new FloatAnimatorOptions().EasingFunction;
+        public double Duration { get; set; } = new FloatAnimatorOptions().Duration;
+ 
+        /// <summary>
+        /// If true then the animation will automatically reverse itself when done
+        /// </summary>
+        public bool AutoReverse { get; set; }
+
+        /// <summary>
+        /// When specified, the animation will loop until this lifetime completes
+        /// </summary>
+        public ILifetimeManager Loop { get; set; }
+
+        /// <summary>
+        /// The provider to use for delaying between animation frames
+        /// </summary>
+        public IDelayProvider DelayProvider { get; set; }
+
+        /// <summary>
+        /// If auto reverse is enabled, this is the pause, in milliseconds, after the forward animation
+        /// finishes, to wait before reversing
+        /// </summary>
+        public float AutoReverseDelay { get; set; } = 0;
+    }
 }

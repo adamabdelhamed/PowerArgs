@@ -11,12 +11,12 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Column definitions
         /// </summary>
-        public List<GridColumnDefinition> Columns { get; set; }
+        public List<GridColumnDefinition> Columns { get; set; } = new List<GridColumnDefinition>();
 
         /// <summary>
         /// Row definitions
         /// </summary>
-        public List<GridRowDefinition> Rows { get; set; }
+        public List<GridRowDefinition> Rows { get; set; } = new List<GridRowDefinition>();
     }
 
     /// <summary>
