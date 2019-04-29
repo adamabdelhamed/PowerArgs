@@ -42,7 +42,7 @@ namespace ArgsTests.CLI.Controls
         [TestMethod]
         public void TestRenderTextBox()
         {
-            var app = new CliTestHarness(this.TestContext, 8, 1);
+            var app = new CliTestHarness(this.TestContext, 9, 1);
 
             app.QueueAction(() =>
             {
