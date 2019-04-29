@@ -96,9 +96,9 @@ namespace PowerArgs
         /// <param name="others">the lifetimes to use to generate this new lifetime</param>
         /// <returns>a new lifetime that will end when any of the given
         /// lifetimes ends</returns>
-        public static Lifetime EarliestOf(params Lifetime[] others)
+        public static Lifetime EarliestOf(params ILifetimeManager[] others)
         {
-            return EarliestOf((IEnumerable<Lifetime>)others);
+            return EarliestOf((IEnumerable<ILifetimeManager>)others);
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace PowerArgs
         /// <param name="others">the lifetimes to use to generate this new lifetime</param>
         /// <returns>a new lifetime that will end when any of the given
         /// lifetimes ends</returns>
-        public static Lifetime EarliestOf(IEnumerable<Lifetime> others)
+        public static Lifetime EarliestOf(IEnumerable<ILifetimeManager> others)
         {
             Lifetime ret = new Lifetime();
             foreach (var other in others)

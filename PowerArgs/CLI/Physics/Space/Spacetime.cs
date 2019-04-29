@@ -55,19 +55,6 @@ namespace PowerArgs.Cli.Physics
         {
             Time.AssertTimeThread();
 
-            x = x < 0 ? 0 : x;
-            y = y < 0 ? 0 : y;
-
-            if(x+Width > SpaceTime.CurrentSpaceTime.Width)
-            {
-                x = SpaceTime.CurrentSpaceTime.Width - Width;
-            }
-
-            if (y + Height> SpaceTime.CurrentSpaceTime.Height)
-            {
-                y = SpaceTime.CurrentSpaceTime.Height - Height;
-            }
-
             if(float.IsNaN(x))
             {
                 x = 0;
