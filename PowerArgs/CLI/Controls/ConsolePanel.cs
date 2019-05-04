@@ -110,10 +110,12 @@ namespace PowerArgs.Cli
         {
             foreach (var control in GetPaintOrderedControls())
             {
-                Rectangle scope = context.Scope;
+                Rectangle myScope = context.Scope;
                 try
                 {
-                    context.Rescope(control.X, control.Y, control.Width, control.Height);
+                    var w = control.X >= 0 ? control.Width : control.Width + control.X;
+                    var h = control.Y >= 0 ? control.Height: control.Height + control.Y;
+                    context.NarrowScope(control.X, control.Y, w, h);
                     if (control.Width > 0 && control.Height > 0)
                     {
                         control.Paint(context);
@@ -121,7 +123,7 @@ namespace PowerArgs.Cli
                 }
                 finally
                 {
-                    context.Scope = scope;
+                    context.Scope = myScope;
                 }
             }
         }

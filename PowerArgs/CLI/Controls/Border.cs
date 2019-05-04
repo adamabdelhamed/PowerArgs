@@ -18,7 +18,7 @@ namespace PowerArgs.Cli
             // I'll need to investigate at some point. If I end up fixing that bug then it's likely this line
             // will stop working.  So if it ever looks like the content of this panel is not having it's last line
             // painted then it's likely that I fixed the other bug and this this.Height - 3 needs to be changed to a this.Height - 2.
-            context.Rescope(2, 1, this.Width - 4, this.Height - 3); 
+            context.NarrowScope(2, 1, this.Width - 4, this.Height - 3); 
             base.OnPaint(context);
         }
     }

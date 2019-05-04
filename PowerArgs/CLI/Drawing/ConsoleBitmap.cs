@@ -219,7 +219,7 @@ namespace PowerArgs.Cli
         /// <param name="yIncrement">the y increment</param>
         /// <param name="w">the width of the scope</param>
         /// <param name="h">the height of the scope</param>
-        public void Rescope(int xIncrement, int yIncrement, int w, int h)
+        public void NarrowScope(int xIncrement, int yIncrement, int w, int h)
         {
             w = Math.Min(w, Scope.Width - xIncrement);
             h = Math.Min(h, Scope.Height - yIncrement);
