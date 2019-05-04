@@ -31,7 +31,7 @@ namespace PowerArgs.Cli.Physics
             {
                 RealTimeViewing = new RealTimeViewingFunction(this.SpaceTime) { Enabled = true };
                 this.SpaceTime.ChangeTrackingEnabled = true;
-                this.SpaceTime.AfterTick.SubscribeForLifetime(() => UpdateView(false), this);
+                this.SpaceTime.AfterTick.SubscribeForLifetime(() => UpdateViewInternal(), this);
             });
 
             this.AddedToVisualTree.SubscribeForLifetime(() =>
@@ -54,28 +54,26 @@ namespace PowerArgs.Cli.Physics
             this.SubscribeForLifetime(nameof(Bounds), () => { resizedSinceLastRender = false; }, this);
         }
 
-        public void UpdateView(bool force)
+        private void UpdateViewInternal()
         {
-            UpdateViewInternal(force);
-        }
-
-        private void UpdateViewInternal(bool force)
-        {
-            foreach (var element in SpaceTime.AddedElements)
+            var uiActions = new List<Action>();
+            foreach (var e in SpaceTime.AddedElements)
             {
-                Application?.QueueAction(() =>
+                var t = e;
+                uiActions.Add(() =>
                 {
-                    var renderer = thingBinder.Bind(element, SpaceTime);
-                    renderers.Add(element, renderer);
+                    var renderer = thingBinder.Bind(t, SpaceTime);
+                    renderers.Add(t, renderer);
                     this.Controls.Add(renderer);
                     SizeAndLocate(renderer);
                     renderer.OnRender();
                 });
             }
 
-            foreach (var t in SpaceTime.ChangedElements)
+            foreach (var e in SpaceTime.ChangedElements)
             {
-                Application?.QueueAction(() =>
+                var t = e;
+                uiActions.Add(() =>
                 {
                     var renderer = renderers[t];
                     SizeAndLocate(renderer);
@@ -83,9 +81,10 @@ namespace PowerArgs.Cli.Physics
                 });
             }
 
-            foreach (var t in SpaceTime.RemovedElements)
+            foreach (var e in SpaceTime.RemovedElements)
             {
-                Application?.QueueAction(() =>
+                var t = e;
+                uiActions.Add(() =>
                 {
                     var renderer = renderers[t];
                     renderers.Remove(t);
@@ -93,20 +92,28 @@ namespace PowerArgs.Cli.Physics
                 });
             }
 
-            if (force || resizedSinceLastRender)
+            if (resizedSinceLastRender)
             {
-                foreach (var renderer in renderers.Values)
+                foreach (var r in renderers.Values)
                 {
-                    Application?.QueueAction(() =>
+                    var renderer = r;
+                    uiActions.Add(() =>
                     {
                         SizeAndLocate(renderer);
                     });
                 }
             }
 
+            Application?.QueueAction(() =>
+            {
+                foreach(var uiAction in uiActions)
+                {
+                    uiAction.Invoke();
+                }
+            }).Wait(0);
+
             resizedSinceLastRender = false;
             SpaceTime.ClearChanges();
-            Application?.Paint();
         }
 
         private bool SizeAndLocate(SpacialElementRenderer r)
