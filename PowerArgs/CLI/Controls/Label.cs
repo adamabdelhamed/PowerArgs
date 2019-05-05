@@ -41,7 +41,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Gets or sets the max width.  This is only used in the single line auto size mode.
         /// </summary>
-        public int? MaxWidth{ get { return Get<int?>(); } set { Set(value); } }
+        public int? MaxWidth { get { return Get<int?>(); } set { Set(value); } }
 
         /// <summary>
         /// Gets or sets the max height.  This is only used in the multi line smart wrap mode.
@@ -62,7 +62,7 @@ namespace PowerArgs.Cli
         public LabelRenderMode Mode { get { return Get<LabelRenderMode>(); } set { Set(value); } }
 
         private List<List<ConsoleCharacter>> lines;
-        
+
         /// <summary>
         /// Creates a new label
         /// </summary>
@@ -83,14 +83,22 @@ namespace PowerArgs.Cli
         private void HandleTextChanged()
         {
             lines.Clear();
-            if(Mode == LabelRenderMode.ManualSizing)
+            if (Mode == LabelRenderMode.ManualSizing)
             {
-                foreach(var line in CleanText.Split("\n".ToConsoleString()))
+                lines.Add(new List<ConsoleCharacter>());
+                foreach (var c in CleanText)
                 {
-                    lines.Add(new List<ConsoleCharacter>(line));
+                    if (c.Value == '\n')
+                    {
+                        lines.Add(new List<ConsoleCharacter>());
+                    }
+                    else
+                    {
+                        lines.Last().Add(c);
+                    }
                 }
             }
-            else if(Mode == LabelRenderMode.SingleLineAutoSize)
+            else if (Mode == LabelRenderMode.SingleLineAutoSize)
             {
                 Height = 1;
 
@@ -178,16 +186,16 @@ namespace PowerArgs.Cli
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            for(int y = 0; y < lines.Count; y++)
+            for (int y = 0; y < lines.Count; y++)
             {
-                if(y >= Height)
+                if (y >= Height)
                 {
                     break;
                 }
 
                 var line = lines[y];
 
-                for(int x = 0; x < line.Count && x < Width; x++)
+                for (int x = 0; x < line.Count && x < Width; x++)
                 {
                     context.Pen = HasFocus ? new ConsoleCharacter(line[x].Value, DefaultColors.FocusContrastColor, DefaultColors.FocusColor) : line[x];
                     context.DrawPoint(x, y);
