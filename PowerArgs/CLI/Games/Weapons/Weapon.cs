@@ -1,7 +1,4 @@
-﻿using PowerArgs.Cli;
-using PowerArgs.Cli.Physics;
-using System;
-using System.Collections.Generic;
+﻿using PowerArgs.Cli.Physics;
 
 namespace PowerArgs.Games
 {
@@ -18,9 +15,16 @@ namespace PowerArgs.Games
 
         public abstract WeaponStyle Style { get; }
 
+        public ConsoleString DisplayName { get; set; }
+
         public int AmmoAmount
         {
             get { return Get<int>(); } set { Set(value); }
+        }
+
+        public Weapon()
+        {
+            DisplayName = GetType().Name.ToConsoleString();
         }
 
         public float CalculateAngleToTarget()

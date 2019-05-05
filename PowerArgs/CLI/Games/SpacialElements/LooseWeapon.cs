@@ -11,8 +11,13 @@ namespace PowerArgs.Games
     {
         public Weapon InnerWeapon { get; private set; }
 
-        public LooseWeapon(Weapon weapon)
+        public ConsoleString DisplayString { get; private set; } 
+
+        public LooseWeapon(Weapon weapon, ConsoleString displayName)
         {
+            this.DisplayString = displayName;
+            weapon.DisplayName = displayName;
+            this.ResizeTo(displayName.Length, 1);
             this.InnerWeapon = weapon;
         }
 
@@ -50,9 +55,8 @@ namespace PowerArgs.Games
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            var indicator = (Element as LooseWeapon).InnerWeapon.GetType().Name[0];
-            context.Pen = new PowerArgs.ConsoleCharacter(indicator, Foreground, Background);
-            context.DrawPoint(0, 0);
+            var indicator = (Element as LooseWeapon).DisplayString;
+            context.DrawString(indicator, 0, 0);
         }
     }
 
@@ -89,7 +93,7 @@ namespace PowerArgs.Games
             var weapon = Activator.CreateInstance(weaponType) as Weapon;
             weapon.AmmoAmount = amount;
 
-            hydratedElement = new LooseWeapon(weapon);
+            hydratedElement = new LooseWeapon(weapon, weapon.GetType().Name.ToConsoleString());
             return true;
         }
     }
