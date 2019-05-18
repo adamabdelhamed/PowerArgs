@@ -42,7 +42,8 @@ namespace PowerArgs
         /// </summary>
         /// <param name="definition">The definition to use to configure the reader</param>
         /// <param name="history">previous command line values that the end user will be able to cycle through using the up and down arrows</param>
-        public PowerArgsRichCommandLineReader(CommandLineArgumentsDefinition definition, List<ConsoleString> history)
+        /// <param name="enableFileSystemTabCompletion">if set to false will disable file system tab completion</param>
+        public PowerArgsRichCommandLineReader(CommandLineArgumentsDefinition definition, List<ConsoleString> history, bool enableFileSystemTabCompletion = true)
         {
             this.Console = ConsoleProvider.Current;
             this.HistoryManager.Values.AddRange(history);
@@ -55,7 +56,7 @@ namespace PowerArgs
             this.StringLiteralForeground = ConsoleColor.Yellow;
             this.ActionForeground = ConsoleColor.Magenta;
 
-            this.newHooks = FindNewTabCompletionHooks(this.Definition);
+            this.newHooks = FindNewTabCompletionHooks(this.Definition, enableFileSystemTabCompletion);
             InitHighlighters();
         }
 
@@ -142,7 +143,7 @@ namespace PowerArgs
             return context;
         }
 
-        private static IEnumerable<ITabCompletionSource> FindNewTabCompletionHooks(CommandLineArgumentsDefinition definition)
+        private static IEnumerable<ITabCompletionSource> FindNewTabCompletionHooks(CommandLineArgumentsDefinition definition, bool enableFs)
         {
             List<ITabCompletionSource> completionSources = new List<ITabCompletionSource>();
 
@@ -168,8 +169,10 @@ namespace PowerArgs
                 }
             }
             completionSources.Add(new ActionAndArgumentSmartTabCompletionSource());
-            completionSources.Add(new FileSystemTabCompletionSource());
-
+            if (enableFs)
+            {
+                completionSources.Add(new FileSystemTabCompletionSource());
+            }
             return completionSources;
         }
 

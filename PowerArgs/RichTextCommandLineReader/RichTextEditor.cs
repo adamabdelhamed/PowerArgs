@@ -274,17 +274,18 @@ namespace PowerArgs
 
             public void Write(ConsoleCharacter consoleCharacter)
             {
-                throw new NotImplementedException();
+                state.CursorPosition++;
             }
 
             public void Write(ConsoleString consoleString)
             {
-                throw new NotImplementedException();
+                state.CursorPosition+=consoleString.Length;
             }
 
             public void Write(object output)
             {
-                throw new NotImplementedException();
+                output = output ?? "";
+                Write(output.ToString().ToConsoleString());
             }
 
             public void WriteLine()

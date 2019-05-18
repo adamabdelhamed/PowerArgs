@@ -49,7 +49,7 @@ namespace PowerArgs.Games
 
             foreach (var target in targets)
             {
-                var hasLineOfSight = SpacialAwareness.HasLineOfSight(options.Source.Element, target, obstacles.ToList(), 1);
+                var hasLineOfSight = SpacialAwareness.HasLineOfSight(options.Source.Element, target, obstacles.ToList());
 
                 if (hasLineOfSight)
                 {

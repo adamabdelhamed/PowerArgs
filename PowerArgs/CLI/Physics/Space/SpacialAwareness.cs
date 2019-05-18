@@ -7,7 +7,7 @@ namespace PowerArgs.Cli.Physics
 {
     public static class SpacialAwareness
     {
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = 1)
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .1f)
         {
             IRectangularF current = from;
             var currentDistance = current.CalculateDistanceTo(to);
@@ -35,7 +35,7 @@ namespace PowerArgs.Cli.Physics
             return true;
         }
 
-        public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = 1)
+        public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = .1f)
         {
             for (var d = increment; d < range; d += increment)
             {
