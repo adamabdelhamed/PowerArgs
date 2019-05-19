@@ -105,6 +105,7 @@ namespace PowerArgs
                 else if (c == '\\' && i < commandLine.Length - 1 && commandLine[i + 1] == '"')
                 {
                     currentArg += '"';
+                    i++;
                 }
                 else
                 {

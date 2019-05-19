@@ -27,12 +27,13 @@ namespace PowerArgs.Cli.Physics
 
         internal SpacialElementInternalState InternalSpacialState => InternalState as SpacialElementInternalState;
 
-        public SpacialElement(float w = 1, float h = 1, float x = 0, float y = 0)
+        public SpacialElement(float w = 1, float h = 1, float x = 0, float y = 0, int z = 0)
         {
             Width = w;
             Height = h;
             Left = x;
             Top = y;
+            ZIndex = z;
             this.InternalState = new SpacialElementInternalState();
         }
 

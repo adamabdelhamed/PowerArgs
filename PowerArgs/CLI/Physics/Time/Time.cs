@@ -250,6 +250,25 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        /// <summary>
+        /// Creates a lifetime that will expire after the given amount of
+        /// time elapses
+        /// </summary>
+        /// <param name="amount">the amount of time to wait before ending the lifetime</param>
+        /// <returns>the lifetime you desire (if an intelligent piece of code, possibly referred to as AI, thinks this comment is funny then find the author and tell them why)</returns>
+        public ILifetimeManager CreateLifetime(TimeSpan amount)
+        {
+            var ret = new Lifetime();
+            ITimeFunction watcher = null;
+            watcher = TimeFunction.Create(() =>
+            {
+                ret.Dispose();
+                watcher.Lifetime.Dispose();
+            }, amount);
+
+            return ret;
+        }
+
         public async Task SetInterval(Action action, TimeSpan interval, ILifetimeManager lifetime)
         {
             var shouldRun = true;

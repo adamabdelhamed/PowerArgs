@@ -34,20 +34,7 @@ namespace PowerArgs.Cli.Physics
         public List<IRectangularF> Exclusions { get; set; }
         public float Dx { get; set; }
         public float Dy { get; set; }
-        public int Precision { get; set; } = 5;
-
-        internal HitDetectionOptions ShallowCopy()
-        {
-            return new HitDetectionOptions()
-            {
-                Bounds = this.Bounds,
-                MovingObject = this.MovingObject,
-                Obstacles = this.Obstacles,
-                Dx = this.Dx,
-                Dy = this.Dy,
-                Precision = this.Precision,
-            };
-        }
+        public float Precision { get; set; } = .1f;
     }
 
     public static class HitDetection
@@ -55,52 +42,46 @@ namespace PowerArgs.Cli.Physics
 
         public static HitPrediction PredictHit(HitDetectionOptions options)
         {
-            if (Math.Abs(options.Dx) <= options.Precision && Math.Abs(options.Dy) <= options.Precision)
-            {
-                return PredictHitInternal(options);
-            }
-
-            HitPrediction latestResult = null;
-            for (var i = 1; i <= options.Precision; i++)
-            {
-                var dxP = Approach(0, options.Dx, options.Dx / options.Precision * i);
-                var dyP = Approach(0, options.Dy, options.Dy / options.Precision * i);
-                var approachingOptions = options.ShallowCopy();
-                approachingOptions.Dx = dxP;
-                approachingOptions.Dy = dyP;
-                latestResult = PredictHitInternal(approachingOptions);
-                if(latestResult.Type != HitType.None)
-                {
-                    return latestResult;
-                }
-            }
-
-            return latestResult;
-        }
-
-        private static float Approach(float value, float target, float by)
-        {
-            var gtBefore = value > target;
-            var ret = value + by;
-            var gtAfter = value > target;
-            if (gtAfter != gtBefore)
-            {
-                ret = target;
-            }
-            return ret;
-        }
-
-        private static HitPrediction PredictHitInternal(HitDetectionOptions options)
-        {
             HitPrediction prediction = new HitPrediction();
 
-            if(options.Dx == 0 && options.Dy == 0)
+            if (options.Dx == 0 && options.Dy == 0)
             {
                 prediction.Direction = Direction.None;
                 prediction.Type = HitType.None;
                 return prediction;
             }
 
+            var endPoint = RectangularF.Create(options.MovingObject.Left + options.Dx, options.MovingObject.Top + options.Dy, options.MovingObject.Width, options.MovingObject.Height);
+            var angle = options.MovingObject.CalculateAngleTo(endPoint);
+            var d = endPoint.CalculateDistanceTo(options.MovingObject);
+            for(var dPrime = options.Precision; dPrime < d; dPrime+=options.Precision)
+            {
+                var testLocation = options.MovingObject.Center().MoveTowards(angle, dPrime);
+                var testArea = RectangularF.Create(testLocation.Left - options.MovingObject.Width / 2, testLocation.Top - options.MovingObject.Height / 2, options.MovingObject.Width, options.MovingObject.Height);
+                var obstacleHit = options.Obstacles.Where(o => options.Exclusions.Contains(o) == false && o.Touches(testArea) == true).FirstOrDefault();
+
+                if(obstacleHit != null)
+                {
+                    return new HitPrediction()
+                    {
+                        Type = HitType.Obstacle,
+                        ObstacleHit = obstacleHit
+                    };
+                }
+            }
+
+            var obstacleHitFinal = options.Obstacles.Where(o => options.Exclusions.Contains(o) == false && o.Touches(endPoint) == true).FirstOrDefault();
+
+            if (obstacleHitFinal != null)
+            {
+                return new HitPrediction()
+                {
+                    Type = HitType.Obstacle,
+                    ObstacleHit = obstacleHitFinal
+                };
+            }
+
+           
             if (options.Dy > 0 && options.MovingObject.Bottom() + options.Dy >= options.Bounds.Height)
             {
                 prediction.Direction = Direction.Down;
@@ -129,26 +110,12 @@ namespace PowerArgs.Cli.Physics
                 prediction.ObstacleHit = RectangularF.Create(options.Bounds.Width + options.Dx, options.MovingObject.Top + options.Dy, 1, 1);
                 return prediction;
             }
-
-            var testArea = RectangularF.Create(options.MovingObject.Left + options.Dx, options.MovingObject.Top + options.Dy, options.MovingObject.Width, options.MovingObject.Height);
-
-
-            var obstacleToBeHit = options.Obstacles
-                .Where(o => o.Touches(testArea) && o.Touches(options.MovingObject) == false && options.Exclusions.Contains(o) == false).FirstOrDefault();
-
-            if (obstacleToBeHit == null)
-            {
-                prediction.Direction = Direction.None;
-                prediction.Type = HitType.None;
-            }
             else
             {
-                prediction.Type = HitType.Obstacle;
-                prediction.Direction = testArea.GetHitDirection(obstacleToBeHit);
-                prediction.ObstacleHit = obstacleToBeHit;
+                prediction.Type = HitType.None;
+                return prediction;
             }
 
-            return prediction;
         }
     }
 }

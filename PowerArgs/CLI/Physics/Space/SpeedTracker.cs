@@ -67,7 +67,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public IEnumerable<SpacialElement> GetObstacles() => Element.GetObstacles(HitDetectionExclusions);
+        public IEnumerable<SpacialElement> GetObstacles() => Element.GetObstacles(HitDetectionExclusions).As<SpacialElement>();
 
         public SpeedTracker(SpacialElement t) : base(t)
         {
@@ -135,35 +135,36 @@ namespace PowerArgs.Cli.Physics
                     throw new NotSupportedException($"Unsupported direction: {hitPrediction.Direction}");
                 }
 
-                if (ImpactOccurred != null && haveMovedSinceLastHitDetection)
+                if (haveMovedSinceLastHitDetection)
                 {
-                    ImpactOccurred.Fire(new Impact()
+                    ImpactOccurred?.Fire(new Impact()
                     {
                         Angle = angle,
                         MovingObject = Element,
                         ObstacleHit = hitPrediction.ObstacleHit,
                         HitType = hitPrediction.Type,
                     });
-                }
-                haveMovedSinceLastHitDetection = false;
-                var testArea = RectangularF.Create(Element.Left + dx, Element.Top + dy, Element.Width, Element.Height);
 
-                if (hitPrediction.Direction == Direction.Down || hitPrediction.Direction == Direction.Up)
-                {
-                    SpeedY = -SpeedY * Bounciness;
-                    SpeedX = SpeedX * ImpactFriction;
+                    haveMovedSinceLastHitDetection = false;
+                    var testArea = RectangularF.Create(Element.Left + dx, Element.Top + dy, Element.Width, Element.Height);
+
+                    if (hitPrediction.Direction == Direction.Down || hitPrediction.Direction == Direction.Up)
+                    {
+                        SpeedY = -SpeedY * Bounciness;
+                        SpeedX = SpeedX * ImpactFriction;
+                    }
+                    else if (hitPrediction.Direction == Direction.Left || hitPrediction.Direction == Direction.Right)
+                    {
+                        SpeedX = -SpeedX * Bounciness;
+                        SpeedY = SpeedY * ImpactFriction;
+                    }
+                    else
+                    {
+                        SpeedX = -SpeedX * Bounciness;
+                        SpeedY = -SpeedY * Bounciness;
+                    }
+                    Element.SizeOrPositionChanged.Fire();
                 }
-                else if (hitPrediction.Direction == Direction.Left || hitPrediction.Direction == Direction.Right)
-                {
-                    SpeedX = -SpeedX * Bounciness;
-                    SpeedY = SpeedY * ImpactFriction;
-                }
-                else
-                {
-                    SpeedX = -SpeedX * Bounciness;
-                    SpeedY = -SpeedY * Bounciness;
-                }
-                Element.SizeOrPositionChanged.Fire();
             }
             else
             {

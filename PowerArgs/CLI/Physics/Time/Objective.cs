@@ -6,7 +6,7 @@ namespace PowerArgs.Cli.Physics
 {
     public class ObjectiveOptions
     {
-        public Func<Task> Main { get; set; }
+        public Func<Objective,Task> Main { get; set; }
         public List<Action<Objective>> Watches { get; set; }
         public Action<AggregateException> OnException { get; set; }
         public Action<string> OnAbort { get; set; }
@@ -64,7 +64,7 @@ namespace PowerArgs.Cli.Physics
         {
             if (Focus == null)
             {
-                Focus = new InterjectableProcess(options.Main);
+                Focus = new InterjectableProcess(this, options.Main);
                 options.Log?.Fire("Starting main objective");
             }
             else if(Focus.IsComplete == false)
@@ -75,13 +75,13 @@ namespace PowerArgs.Cli.Physics
             {
                 options.OnAbort(Focus.Exception.InnerException.Message);
                 options.Log?.Fire("Refocusing after "+ Focus.Exception.InnerException.Message);
-                Focus = new InterjectableProcess(options.Main);
+                Focus = new InterjectableProcess(this, options.Main);
             }
             else if (Focus.Exception != null && options.OnException != null)
             {
                 options.OnException.Invoke(Focus.Exception);
                 options.Log?.Fire("Refocusing after handled exception");
-                Focus = new InterjectableProcess(options.Main);
+                Focus = new InterjectableProcess(this, options.Main);
             }
             else if(Focus.Exception != null)
             {
@@ -89,7 +89,7 @@ namespace PowerArgs.Cli.Physics
             }
             else
             {
-                Focus = new InterjectableProcess(options.Main);
+                Focus = new InterjectableProcess(this, options.Main);
                 options.Log?.Fire("Objective met, refocusing on main objective");
             }
         }
@@ -97,15 +97,16 @@ namespace PowerArgs.Cli.Physics
         private class InterjectableProcess
         {
             private Task task;
-            private Func<Task> mainProcess;
+            private Func<Objective,Task> mainProcess;
             private Queue<Func<Task>> interjections = new Queue<Func<Task>>();
             public bool IsInterjecting { get; private set; }
             public bool HasStarted => task != null;
             public bool IsComplete => task == null ? false : task.IsCompleted;
             public AggregateException Exception => task == null ? null : task.Exception;
-
-            public InterjectableProcess(Func<Task> mainProcess)
+            private Objective o;
+            public InterjectableProcess(Objective o, Func<Objective,Task> mainProcess)
             {
+                this.o = o;
                 this.mainProcess = mainProcess;
             }
 
@@ -119,7 +120,7 @@ namespace PowerArgs.Cli.Physics
 
             public void Start()
             {
-                task = mainProcess();
+                task = mainProcess(o);
             }
 
             public async Task YieldAsync()
