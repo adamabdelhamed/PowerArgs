@@ -23,7 +23,7 @@ namespace PowerArgs.Games
             observable = new ObservableObject(this);
             IsVisible = true;
             this.SubscribeForLifetime(nameof(IsVisible), this.SizeOrPositionChanged.Fire, this.Lifetime);
-            Tags.Add("passthru");
+            Tags.Add(SpacialAwareness.PassThruTag);
 
             if (Seed)
             {

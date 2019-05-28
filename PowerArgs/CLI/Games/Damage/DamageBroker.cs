@@ -13,6 +13,8 @@ namespace PowerArgs.Games
     public interface IDamageEnforcer
     {
         void EnforceDamage(DamageEventArgs args);
+        float GetHP(SpacialElement element);
+        void RegisterHPChangedForLifetime(SpacialElement element, Action<float> hpChangedHandler, ILifetimeManager lifetime);
     }
 
     public class DamageBroker

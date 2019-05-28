@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PowerArgs
@@ -99,6 +100,29 @@ namespace PowerArgs
         public static Lifetime EarliestOf(params ILifetimeManager[] others)
         {
             return EarliestOf((IEnumerable<ILifetimeManager>)others);
+        }
+
+        /// <summary>
+        /// Creates a new lifetime that will end when all of the given lifetimes end
+        /// </summary>
+        /// <param name="others">the lifetimes to use to generate this new lifetime</param>
+        /// <returns>a new lifetime that will end when all of the given lifetimes end</returns>
+        public static Lifetime WhenAll(params ILifetimeManager[] others)
+        {
+            var togo = others.Length;
+            var ret = new Lifetime();
+            foreach (var lifetime in others)
+            {
+                lifetime.OnDisposed(() =>
+                {
+                    if(Interlocked.Decrement(ref togo) == 0)
+                    {
+                        ret.Dispose();
+                    }
+                });
+            }
+
+            return ret;
         }
 
         /// <summary>

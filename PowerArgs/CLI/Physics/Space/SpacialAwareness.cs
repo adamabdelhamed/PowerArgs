@@ -7,6 +7,8 @@ namespace PowerArgs.Cli.Physics
 {
     public static class SpacialAwareness
     {
+        public const string PassThruTag = "passthru";
+
         public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .1f)
         {
             IRectangularF current = from;
@@ -93,7 +95,7 @@ namespace PowerArgs.Cli.Physics
                    .Where(e => e == element == false &&
                            (exclusions == null || exclusions.Contains(e) == false) &&
                            e.ZIndex == element.ZIndex &&
-                           e.HasSimpleTag("passthru") == false)
+                           e.HasSimpleTag(PassThruTag) == false)
                            .AsList<IRectangularF>();
 
 
