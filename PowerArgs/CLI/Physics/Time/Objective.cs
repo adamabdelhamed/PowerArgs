@@ -22,6 +22,9 @@ namespace PowerArgs.Cli.Physics
     {
         private InterjectableProcess Focus { get; set; }
         private ObjectiveOptions options;
+
+        public int InterjectionCount { get; private set; }
+
         public Objective(ObjectiveOptions options)
         {
             this.options = options;
@@ -203,6 +206,7 @@ namespace PowerArgs.Cli.Physics
                         {
                             var t = interjection();
                             await t;
+                            this.o.InterjectionCount++;
                         }
                         finally
                         {
