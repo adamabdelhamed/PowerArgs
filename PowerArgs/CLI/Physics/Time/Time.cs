@@ -95,7 +95,7 @@ namespace PowerArgs.Cli.Physics
         private List<ITimeFunction> toRemove = new List<ITimeFunction>();
         private Deferred runDeferred;
         private List<WorkItem> syncQueue = new List<WorkItem>();
-
+        private CustomSyncContext syncContext;
         /// <summary>
         /// Creates a new time model, optionally providing a starting time and increment
         /// </summary>
@@ -105,6 +105,7 @@ namespace PowerArgs.Cli.Physics
         {
             Increment = increment.HasValue ? increment.Value : TimeSpan.FromTicks(1);
             Now = now.HasValue ? now.Value : TimeSpan.Zero;
+            syncContext = new CustomSyncContext(this);
         }
 
         /// <summary>
@@ -118,7 +119,7 @@ namespace PowerArgs.Cli.Physics
             runDeferred.Promise.Finally((p) => { runDeferred = null; });
             Thread t = new Thread(() =>
             {
-                SynchronizationContext.SetSynchronizationContext(new CustomSyncContext(this));
+                SynchronizationContext.SetSynchronizationContext(syncContext);
 
                 IsRunning = true;
                 try
