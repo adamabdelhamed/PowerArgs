@@ -22,6 +22,11 @@ namespace PowerArgs.Games
             get { return Get<int>(); } set { Set(value); }
         }
 
+        /// <summary>
+        /// If a weapon is picked up and it's the highest ranking in the inventory then it will automatically be put into use
+        /// </summary>
+        public int PowerRanking { get; set; }
+
         public Weapon()
         {
             DisplayName = GetType().Name.ToConsoleString();

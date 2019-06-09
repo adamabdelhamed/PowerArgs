@@ -99,18 +99,24 @@ namespace PowerArgs.Games
         {
             if (item is Weapon)
             {
+                var priorWeapons = Items.WhereAs<Weapon>().Where(w => w != item);
+                var priorPrimaryWeapons = priorWeapons.Where(w => w.Style == WeaponStyle.Primary);
+                var priorExplosiveWeapons = priorWeapons.Where(w => w.Style == WeaponStyle.Explosive);
+                var highestPrimaryWeapon = priorPrimaryWeapons.Any() ? priorPrimaryWeapons.OrderByDescending(w => w.PowerRanking).First() : null;
+                var highestExplosiveWeapon = priorExplosiveWeapons.Any() ? priorExplosiveWeapons.OrderByDescending(w => w.PowerRanking).First() : null;
+
                 var weapon = item as Weapon;
                 weapon.Holder = this.Owner;
                 if (weapon.Style == WeaponStyle.Primary)
                 {
-                    if (PrimaryWeapon == null || PrimaryWeapon.AmmoAmount == 0)
+                    if (PrimaryWeapon == null || PrimaryWeapon.AmmoAmount == 0 || weapon.PowerRanking > highestPrimaryWeapon.PowerRanking)
                     {
                         PrimaryWeapon = weapon;
                     }
                 }
                 else
                 {
-                    if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0)
+                    if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0 || weapon.PowerRanking > highestPrimaryWeapon.PowerRanking)
                     {
                         ExplosiveWeapon = weapon;
                     }

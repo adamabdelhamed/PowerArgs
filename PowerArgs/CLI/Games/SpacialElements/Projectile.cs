@@ -7,6 +7,9 @@ namespace PowerArgs.Games
 {
     public class Projectile : SpacialElement
     {
+        public const float StandardWidth = 1f;
+        public const float StandardHeight = 1f;
+
         public ConsoleString Pen { get; set; } = new ConsoleString("*", ConsoleColor.Red);
         public float Accelleration { get; set; } = 40;
         public float Range { get; set; } = -1;
@@ -18,7 +21,7 @@ namespace PowerArgs.Games
         private Force force;
         private Projectile()
         {
-            this.ResizeTo(1, 1);
+            this.ResizeTo(StandardWidth, StandardHeight);
             this.Tags.Add(Weapon.WeaponTag);
             Speed = new SpeedTracker(this);
             Speed.Governor.Rate = TimeSpan.FromSeconds(0);
@@ -67,6 +70,9 @@ namespace PowerArgs.Games
     [SpacialElementBinding(typeof(Projectile))]
     public class ProjectileRenderer : SpacialElementRenderer
     {
-        protected override void OnPaint(ConsoleBitmap context) => context.DrawString((Element as Projectile).Pen, 0, 0);
+        protected override void OnPaint(ConsoleBitmap context)
+        {
+            context.DrawString((Element as Projectile).Pen, 0, 0);
+        }
     }
 }
