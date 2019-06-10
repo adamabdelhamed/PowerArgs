@@ -33,8 +33,6 @@ namespace PowerArgs.Games
             this.MoveTo(x, y);
             this.angle = angle;
             startLocation = this.Bounds;
-            // todo - replace with bullet speed from config
-            force = new Force(Speed, Accelleration.NormalizeQuantity(angle), angle);
         }
 
         public Projectile(float x, float y, IRectangularF target) : this()
@@ -42,13 +40,12 @@ namespace PowerArgs.Games
             this.MoveTo(x, y);
             this.angle = this.CalculateAngleTo(target);
             startLocation = this.Bounds;
-            // todo - replace with bullet speed from config
-            force = new Force(Speed, Accelleration.NormalizeQuantity(angle), angle);
         }
 
 
         public override void Evaluate()
         {
+            force = force ?? new Force(Speed, Accelleration.NormalizeQuantity(angle), angle);
             if (Range > 0 && this.CalculateDistanceTo(startLocation) > Range)
             {
                 this.Lifetime.Dispose();
