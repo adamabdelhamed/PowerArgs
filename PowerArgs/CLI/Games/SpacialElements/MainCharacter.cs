@@ -22,6 +22,7 @@ namespace PowerArgs.Games
 
     public class MainCharacter : Character
     {
+        public ConsoleColor Color { get; set; } = ConsoleColor.Magenta;
         public float MaxMovementSpeed { get; set; } = 25;
         public float CurrentSpeedPercentage { get; set; } = .8f;
         public float PlayerMovementSpeed => MaxMovementSpeed * CurrentSpeedPercentage;
@@ -277,7 +278,7 @@ namespace PowerArgs.Games
                 c = '^';
             }
 
-            context.Pen = new ConsoleCharacter(c, ConsoleColor.Magenta);
+            context.Pen = new ConsoleCharacter(c, Character.Color);
             context.FillRect(0, 0, Width, Height);
         }
     }
