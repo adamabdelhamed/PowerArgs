@@ -24,14 +24,14 @@ namespace PowerArgs.Games
         /// Plays the sound associated with the given id immediately and once
         /// </summary>
         /// <param name="soundId">a sound id</param>
-        public static Promise<Lifetime> Play(string soundId) => Provider.Play(soundId.ToLower());
+        public static Promise<Lifetime> Play(string soundId, float volume = 1) => Provider.Play(soundId.ToLower(), volume);
 
         /// <summary>
         /// Plays the sound associated with the given id immidiately and in a loop
         /// </summary>
         /// <param name="soundId">a sound id</param>
         /// <returns>a promist to a disposable that can be used to stop the loop</returns>
-        public static Promise<IDisposable> Loop(string soundId) => Provider.Loop(soundId.ToLower());
+        public static Promise<IDisposable> Loop(string soundId, float volume = .1f) => Provider.Loop(soundId.ToLower(), volume);
         
         /// <summary>
         /// Disposes the current provider and resets the provider to a no op provider
@@ -52,14 +52,14 @@ namespace PowerArgs.Games
         /// Plays the sound associated with the given id immediately and once
         /// </summary>
         /// <param name="soundId">a sound id</param>
-        Promise<Lifetime> Play(string soundId);
+        Promise<Lifetime> Play(string soundId, float volume);
 
         /// <summary>
         /// Plays the sound associated with the given id immidiately and in a loop
         /// </summary>
         /// <param name="soundId">a sound id</param>
         /// <returns>a promist to a disposable that can be used to stop the loop</returns>
-        Promise<IDisposable> Loop(string soundId);
+        Promise<IDisposable> Loop(string soundId, float volume);
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ namespace PowerArgs.Games
         /// Does nothing
         /// </summary>
         /// <param name="soundId">unused</param>
-        public Promise<Lifetime> Play(string soundId)
+        public Promise<Lifetime> Play(string soundId, float volume)
         {
             var d = Deferred<Lifetime>.Create();
             var l = new Lifetime();
@@ -90,7 +90,7 @@ namespace PowerArgs.Games
         /// </summary>
         /// <param name="soundId">unused</param>
         /// <returns>a promise that resolves immediately to a dummy disposable</returns>
-        public Promise<IDisposable> Loop(string soundId)
+        public Promise<IDisposable> Loop(string soundId, float volume)
         {
             var d = Deferred<IDisposable>.Create();
             d.Resolve(new DummyDisposable());

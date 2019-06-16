@@ -29,7 +29,6 @@ namespace PowerArgs.Games
 
         private void FireDoubleInternal(float x, float y, float angle) // :)
         {
-            Sound.Play("thump");
             var rpg = new TimedMine(TimeSpan.FromSeconds(2)) { Silent = true, ProjectilePen= ProjectilePen };
             rpg.MoveTo(x, y, Holder.ZIndex);
             var rpgSpeed = new SpeedTracker(rpg);

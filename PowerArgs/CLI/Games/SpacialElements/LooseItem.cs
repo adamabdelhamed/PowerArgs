@@ -5,6 +5,8 @@ namespace PowerArgs.Games
 {
     public abstract class LooseItem : SpacialElement
     {
+        public static Event<LooseItem> OnIncorporated { get; private set; } = new Event<LooseItem>();
+
         public Event Incorporated { get; private set; } = new Event();
         public override void Evaluate()
         {
@@ -18,7 +20,7 @@ namespace PowerArgs.Games
             if (target != null)
             {
                 Incorporate(target);
-                Sound.Play("collect");
+                OnIncorporated.Fire(this);
                 this.Lifetime.Dispose();
                 Incorporated?.Fire();
             }

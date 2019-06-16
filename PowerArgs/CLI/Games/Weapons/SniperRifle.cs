@@ -5,12 +5,21 @@ using System.Collections.Generic;
 
 namespace PowerArgs.Games
 {
+
+    public class SniperRifleHitEventArgs
+    {
+        public SniperRifle Rifle { get; set; }
+        public SpacialElement ElementHit { get; set; }
+    }
+
     public class SniperRifle : Weapon
     {
+        public static Event<SniperRifle> OnMiss { get; private set; } = new Event<SniperRifle>();
+        public static Event<SniperRifleHitEventArgs> OnHit { get; private set; } = new Event<SniperRifleHitEventArgs>();
+
         public override WeaponStyle Style => WeaponStyle.Primary;
         public override void FireInternal()
         {
-            Sound.Play("pistol");
             if (Holder.Target != null)
             {
                 DamageBroker.Instance.ReportImpact(new Impact()
@@ -20,10 +29,11 @@ namespace PowerArgs.Games
                     MovingObject= Holder,
                     Angle = Holder.CalculateAngleTo(Holder.Target)
                 });
+                OnHit.Fire(new SniperRifleHitEventArgs() { Rifle = this, ElementHit = Holder.Target });
             }
             else
             {
-                Sound.Play("miss");
+                OnMiss.Fire(this);
             }
         }
     }

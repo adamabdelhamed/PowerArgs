@@ -19,7 +19,6 @@ namespace PowerArgs.Games
             }
 
             SpaceTime.CurrentSpaceTime.Add(bullet);
-            Sound.Play("pistol");
         }
     }
 }

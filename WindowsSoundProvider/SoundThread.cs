@@ -99,7 +99,7 @@ namespace WindowsSoundProvider
             }
         }
 
-        public Promise<Lifetime> Play(string name)
+        public Promise<Lifetime> Play(string name, float volume)
         {
             var d = Deferred<Lifetime>.Create();
             if (players.ContainsKey(name))
@@ -108,7 +108,7 @@ namespace WindowsSoundProvider
                 {
                     var player = players[name];
                     players[name] = PreLoad(name);
-                    var soundLifetime = new SoundPlaybackLifetime(player, false, this);
+                    var soundLifetime = new SoundPlaybackLifetime(player, false, this, volume);
                     CurrentlyPlayingSounds.Add(soundLifetime);
                     d.Resolve(soundLifetime);
                 });
@@ -123,7 +123,7 @@ namespace WindowsSoundProvider
             return d.Promise;
         }
 
-        public Promise<IDisposable> Loop(string name)
+        public Promise<IDisposable> Loop(string name, float volume)
         {
             var d = Deferred<IDisposable>.Create();
             if (players.ContainsKey(name))
@@ -132,7 +132,7 @@ namespace WindowsSoundProvider
                 {
                     var player = players[name];
                     players[name] = PreLoad(name);
-                    var soundLifetime = new SoundPlaybackLifetime(player, true, this);
+                    var soundLifetime = new SoundPlaybackLifetime(player, true, this, volume);
                     CurrentlyPlayingSounds.Add(soundLifetime);
                     d.Resolve(soundLifetime);
                 });

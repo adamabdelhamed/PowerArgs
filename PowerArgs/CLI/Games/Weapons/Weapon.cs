@@ -10,6 +10,9 @@ namespace PowerArgs.Games
 
     public abstract class Weapon : ObservableObject, IInventoryItem
     {
+        public static Event<Weapon> OnFireEmpty { get; private set; } = new Event<Weapon>();
+        public static Event<Weapon> OnFire { get; private set; } = new Event<Weapon>();
+
         public const string WeaponTag = "Weapon";
         public Character Holder { get; set; }
 
@@ -50,11 +53,16 @@ namespace PowerArgs.Games
         {
             if ((AmmoAmount > 0 || AmmoAmount == -1) && Holder != null)
             {
+                OnFire.Fire(this);
                 FireInternal();
                 if (AmmoAmount > 0)
                 {
                     AmmoAmount--;
                 }
+            }
+            else
+            {
+                OnFireEmpty.Fire(this);
             }
         }
 

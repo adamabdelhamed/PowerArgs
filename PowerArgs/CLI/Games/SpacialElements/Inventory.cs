@@ -85,12 +85,10 @@ namespace PowerArgs.Games
             }
             else if(match.Style == WeaponStyle.Primary && match.AmmoAmount > 0)
             {
-                Sound.Play("switchweapon");
                 PrimaryWeapon = match;
             }
             else if(match.Style == WeaponStyle.Explosive && match.AmmoAmount > 0)
             {
-                Sound.Play("switchweapon");
                 ExplosiveWeapon = match;
             }
         }

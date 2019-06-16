@@ -7,6 +7,8 @@ namespace PowerArgs.Games
 {
     public class TimedMine : Explosive
     {
+        public static Event<TimedMine> OnAudibleTick { get; private set; } = new Event<TimedMine>();
+
         private TimeSpan timeToDetinate;
         public double SecondsRemaining { get; private set; }
 
@@ -38,8 +40,8 @@ namespace PowerArgs.Games
                 {
                     if (Silent == false)
                     {
-                        Sound.Play("tick");
-                        var d = SpaceTime.CurrentSpaceTime.Application.SetInterval(() => Sound.Play("tick"), TimeSpan.FromSeconds(1));
+                        OnAudibleTick.Fire(this);
+                        var d = SpaceTime.CurrentSpaceTime.Application.SetInterval(() => OnAudibleTick.Fire(this), TimeSpan.FromSeconds(1));
                         this.Lifetime.OnDisposed(()=>
                         {
                             d.Dispose();

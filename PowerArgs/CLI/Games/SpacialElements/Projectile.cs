@@ -7,6 +7,8 @@ namespace PowerArgs.Games
 {
     public class Projectile : SpacialElement
     {
+        public static Event<Impact> OnAudibleImpact { get; private set; } = new Event<Impact>();
+
         public const float StandardWidth = 1f;
         public const float StandardHeight = 1f;
 
@@ -56,7 +58,7 @@ namespace PowerArgs.Games
         {
             if (PlaySoundOnImpact)
             {
-                Sound.Play("bulletHit");
+                OnAudibleImpact.Fire(impact);
             }
 
             DamageBroker.Instance.ReportImpact(impact);

@@ -18,8 +18,6 @@ namespace PowerArgs.Games
             var startAngle = targetAngle.AddToAngle(-sprayAngle/2);
             var sprayedSoFar = 0;
 
-            Sound.Play("pistol");
-
             var bullets = new List<Projectile>();
             while (sprayedSoFar <= sprayAngle)
             {

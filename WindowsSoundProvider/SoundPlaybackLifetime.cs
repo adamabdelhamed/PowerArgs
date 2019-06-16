@@ -9,21 +9,14 @@ namespace WindowsSoundProvider
         public MediaPlayer Player { get; private set; }
         private bool loop;
         private SoundThread soundThread;
-        public SoundPlaybackLifetime(MediaPlayer player, bool loop, SoundThread soundThread)
+        public SoundPlaybackLifetime(MediaPlayer player, bool loop, SoundThread soundThread, float volume)
         {
             this.Player = player;
             this.loop = loop;
             this.soundThread = soundThread;
 
             player.MediaEnded += Player_MediaEnded;
-            if(loop)
-            {
-                player.Volume = .1;
-            }
-            else
-            {
-                player.Volume = 1;
-            }
+            player.Volume = volume;
             player.Play();
 
             /*

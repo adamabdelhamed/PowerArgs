@@ -6,14 +6,19 @@ using PowerArgs.Cli;
 
 namespace PowerArgs.Games
 {
+    public class NetWrappedEventArgs
+    {
+        public Net Net { get; set; }
+        public Character Wrapped { get; set; }
+    }
+
     public class Net : Weapon
     {
+        public static Event<NetWrappedEventArgs> OnWrappedCharacter { get; private set; } = new Event<NetWrappedEventArgs>();
         public override WeaponStyle Style => WeaponStyle.Primary;
 
         public override void FireInternal()
         {
-            Sound.Play("thrownet");
-
             var matterList = new List<NetMatter>();
             StructuralIntegrity<NetMatter> matterIntegrity = null;
             for (var y = 0; y < 3; y++)
@@ -33,7 +38,7 @@ namespace PowerArgs.Games
                     {
                         if (i.ObstacleHit != Holder && i.ObstacleHit is Character)
                         {
-                            Sound.Play("wrapped");
+                            OnWrappedCharacter.Fire(new NetWrappedEventArgs() { Net = this, Wrapped = i.ObstacleHit as Character });
                             matterList.ForEach(m => m.Lifetime.Dispose());
                             matterList.Clear();
                             matterIntegrity.Lifetime.Dispose();

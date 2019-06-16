@@ -9,6 +9,8 @@ namespace PowerArgs.Games
 {
     public class Explosive : SpacialElement
     {
+        public static Event<Explosive> OnExplode { get; private set; } = new Event<Explosive>();
+
         public float AngleIncrement { get; set; } = 5;
         public float Range { get; set; } = 6;
 
@@ -22,7 +24,6 @@ namespace PowerArgs.Games
 
         public void Explode()
         {
-            Sound.Play("boom");
             var shrapnelSet = new List<Projectile>();
             for (float angle = 0; angle < 360; angle += AngleIncrement)
             {
@@ -51,6 +52,7 @@ namespace PowerArgs.Games
             }
 
             Exploded.Fire();
+            OnExplode.Fire(this);
             this.Lifetime.Dispose();
         }
     }

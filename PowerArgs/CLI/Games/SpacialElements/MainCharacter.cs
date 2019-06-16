@@ -22,6 +22,8 @@ namespace PowerArgs.Games
 
     public class MainCharacter : Character
     {
+        public static Event<Weapon> OnEquipWeapon { get; private set; } = new Event<Weapon>();
+
         public ConsoleColor Color { get; set; } = ConsoleColor.Magenta;
         public float MaxMovementSpeed { get; set; } = 25;
         public float CurrentSpeedPercentage { get; set; } = .8f;
@@ -71,6 +73,17 @@ namespace PowerArgs.Games
             {
                 Current = this;
             }, this.Lifetime);
+
+            this.Inventory.SubscribeForLifetime(nameof(Inventory.PrimaryWeapon), ()=> 
+            {
+                if (Inventory.PrimaryWeapon != null) OnEquipWeapon.Fire(Inventory.PrimaryWeapon);
+            }, this.Lifetime);
+
+            this.Inventory.SubscribeForLifetime(nameof(Inventory.ExplosiveWeapon), () =>
+            {
+                if (Inventory.PrimaryWeapon != null) OnEquipWeapon.Fire(Inventory.ExplosiveWeapon);
+            }, this.Lifetime);
+
         }
 
         private void InitializeTargeting()

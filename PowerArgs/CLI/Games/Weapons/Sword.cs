@@ -18,8 +18,6 @@ namespace PowerArgs.Games
         {
             activeBlades.ForEach(b => { if (b.Lifetime.IsExpired == false) b.Lifetime.Dispose(); });
             activeBlades.Clear();
-
-            Sound.Play("sword");
             for(var i = 1; i < 1+  Range.NormalizeQuantity(CalculateAngleToTarget()); i++)
             {
                 var location = Holder.Center().MoveTowards(CalculateAngleToTarget(), i);
