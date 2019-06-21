@@ -58,7 +58,7 @@ namespace PowerArgs.Cli.Physics
             {
                 var testLocation = options.MovingObject.Center().MoveTowards(angle, dPrime);
                 var testArea = RectangularF.Create(testLocation.Left - options.MovingObject.Width / 2, testLocation.Top - options.MovingObject.Height / 2, options.MovingObject.Width, options.MovingObject.Height);
-                var obstacleHit = options.Obstacles.Where(o => options.Exclusions.Contains(o) == false && o.Touches(testArea) == true).FirstOrDefault();
+                var obstacleHit = options.Obstacles.Where(o => IsIncluded(options,o) && o.Touches(testArea) == true).FirstOrDefault();
 
                 if(obstacleHit != null)
                 {
@@ -70,7 +70,7 @@ namespace PowerArgs.Cli.Physics
                 }
             }
 
-            var obstacleHitFinal = options.Obstacles.Where(o => options.Exclusions.Contains(o) == false && o.Touches(endPoint) == true).FirstOrDefault();
+            var obstacleHitFinal = options.Obstacles.Where(o => IsIncluded(options, o) && o.Touches(endPoint) == true).FirstOrDefault();
 
             if (obstacleHitFinal != null)
             {
@@ -116,6 +116,12 @@ namespace PowerArgs.Cli.Physics
                 return prediction;
             }
 
+        }
+
+        private static bool IsIncluded(HitDetectionOptions options, IRectangularF obj)
+        {
+            if (options.Exclusions == null) return true;
+            else return options.Exclusions.Contains(obj) == false;
         }
     }
 }

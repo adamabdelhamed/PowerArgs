@@ -54,9 +54,11 @@ namespace PowerArgs.Cli.Physics
         public float ImpactFriction { get; set; } // Should be set between 0 and 1
 
         public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
+        public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
+
         public float Angle { get; private set; }
 
-        bool haveMovedSinceLastHitDetection;
+        bool haveMovedSinceLastHitDetection = true;
         public float Speed
         {
             get
@@ -100,7 +102,8 @@ namespace PowerArgs.Cli.Physics
             {
                 Bounds = SpaceTime.CurrentSpaceTime.Bounds,
                 MovingObject = Element,
-                Exclusions = new List<IRectangularF>(this.HitDetectionExclusions),
+                Exclusions = HitDetectionExclusionTypes.Count > 0 || HitDetectionExclusions.Count == 0 ? 
+                new List<IRectangularF>(this.HitDetectionExclusions.Union(SpaceTime.CurrentSpaceTime.Elements.Where(e=> HitDetectionExclusionTypes.Contains(e.GetType())))) : null,
                 Obstacles = obstacles.As<IRectangularF>().ToList(),
                 Dx = dx,
                 Dy = dy,

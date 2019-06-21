@@ -23,6 +23,8 @@ namespace PowerArgs.Cli.Physics
         private InterjectableProcess Focus { get; set; }
         private ObjectiveOptions options;
 
+        private Stack<IDisposable> exclusivityHandles = new Stack<IDisposable>();
+
         public int InterjectionCount { get; private set; }
 
         public Objective(ObjectiveOptions options)
@@ -51,7 +53,7 @@ namespace PowerArgs.Cli.Physics
                 Focus.Start();
             }
 
-            if (options.Watches != null && Focus.IsInterjecting == false)
+            if (options.Watches != null && Focus.IsInterjecting == false && exclusivityHandles.Count == 0)
             {
                 foreach (var watcher in options.Watches)
                 {
@@ -61,6 +63,14 @@ namespace PowerArgs.Cli.Physics
                     }
                 }
             }
+        }
+
+        public IDisposable GoExclusive()
+        {
+            var ret = new Lifetime();
+            exclusivityHandles.Push(ret);
+            ret.OnDisposed(()=> exclusivityHandles.Pop());
+            return ret;
         }
 
         private void GetFocused()

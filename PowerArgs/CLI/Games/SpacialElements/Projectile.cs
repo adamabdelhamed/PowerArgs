@@ -28,6 +28,7 @@ namespace PowerArgs.Games
             Speed = new SpeedTracker(this);
             Speed.Governor.Rate = TimeSpan.FromSeconds(0);
             Speed.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime);
+            this.Speed.HitDetectionExclusionTypes.Add(typeof(Projectile));
         }
 
         public Projectile(float x, float y, float angle) : this()
