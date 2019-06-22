@@ -15,8 +15,7 @@ namespace PowerArgs.Games
         public override void FireInternal()
         {
             var mine = new TimedMine(Delay);
-            mine.MoveTo(Holder.Left, Holder.Top);
-            mine.MoveTo(mine.Left, mine.Top, Holder.ZIndex);
+            ProximityMineDropper.PlaceMineSafe(mine, Holder);
             SpaceTime.CurrentSpaceTime.Add(mine);
             mine.Exploded.SubscribeOnce(this.Exploded.Fire);
         }

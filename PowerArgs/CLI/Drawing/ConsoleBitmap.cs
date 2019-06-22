@@ -720,6 +720,19 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Draws a filled rectangle at the given coordinates using a space
+        /// as a temporary pen
+        /// </summary>
+        /// <param name="color">the background color of the space character</param>
+        /// <param name="x">the left of the rectangle</param>
+        /// <param name="y">the top of the rectangle</param>
+        /// <param name="w">the width of the rectangle</param>
+        /// <param name="h">the height of the rectangle</param>
+        /// <returns>this ConsoleBitmap</returns>
+        public ConsoleBitmap FillRect(ConsoleColor color, int x = 0, int y = 0, int w = -1, int h = -1) =>
+            FillRect(new ConsoleCharacter(' ', null, color), x, y, w, h);
+
+        /// <summary>
         /// Draws a single pixel at the given coordinates using the specified character
         /// as a temporary pen
         /// </summary>

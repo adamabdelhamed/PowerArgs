@@ -17,7 +17,7 @@ namespace PowerArgs.Games
             else
             {
                 activeMine = new Explosive();
-                activeMine.MoveTo(Holder.Left, Holder.Top);
+                ProximityMineDropper.PlaceMineSafe(activeMine, Holder);
                 SpaceTime.CurrentSpaceTime.Add(activeMine);
             }
         }
