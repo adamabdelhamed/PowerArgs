@@ -23,7 +23,6 @@ namespace PowerArgs.Games
     public class MainCharacter : Character
     {
         public static Event<Weapon> OnEquipWeapon { get; private set; } = new Event<Weapon>();
-
         public ConsoleColor Color { get; set; } = ConsoleColor.Magenta;
         public float MaxMovementSpeed { get; set; } = 25;
         public float CurrentSpeedPercentage { get; set; } = .8f;
@@ -268,8 +267,14 @@ namespace PowerArgs.Games
     {
         public MainCharacter Character => Element as MainCharacter;
 
+        public MainCharacterRenderer()
+        {
+            TransparentBackground = true;
+        }
+
         protected override void OnPaint(ConsoleBitmap context)
         {
+            if (Character.IsVisible == false) return;
             char c;
 
             var angle = Character.Speed.Angle;

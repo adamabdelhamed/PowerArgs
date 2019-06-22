@@ -1,8 +1,5 @@
-﻿using PowerArgs.Cli;
-using PowerArgs.Cli.Physics;
+﻿using PowerArgs.Cli.Physics;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PowerArgs.Games
 {
@@ -10,6 +7,7 @@ namespace PowerArgs.Games
 
     public class Character : SpacialElement, IObservableObject
     {
+        public bool IsVisible { get; set; } = true;
         public MultiPlayerClient MultiPlayerClient { get; set; }
         public char? Symbol { get; set; }
         public Inventory Inventory { get => observable.Get<Inventory>(); set => observable.Set(value); }  
