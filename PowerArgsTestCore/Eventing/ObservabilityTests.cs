@@ -92,6 +92,19 @@ namespace ArgsTests.CLI.Observability
         }
 
         [TestMethod]
+        public void SubscribeOnceToProperty()
+        {
+            var observable = new SomeObservable();
+            var triggerCount = 0;
+            observable.SubscribeOnce(nameof(SomeObservable.Name), () => { triggerCount++; });
+            Assert.AreEqual(0, triggerCount);
+            observable.Name = "Some value";
+            Assert.AreEqual(1, triggerCount);
+            observable.Name = "Some new value again";
+            Assert.AreEqual(1, triggerCount);
+        }
+
+        [TestMethod]
         public void SubscribeToAllProperties()
         {
             var observable = new SomeObservable();

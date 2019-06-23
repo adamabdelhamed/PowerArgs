@@ -23,6 +23,9 @@ namespace PowerArgs.Games
     public class MainCharacter : Character
     {
         public static Event<Weapon> OnEquipWeapon { get; private set; } = new Event<Weapon>();
+
+        public Event OnMove { get; private set; } = new Event();
+
         public ConsoleColor Color { get; set; } = ConsoleColor.Magenta;
         public float MaxMovementSpeed { get; set; } = 25;
         public float CurrentSpeedPercentage { get; set; } = .8f;
@@ -174,6 +177,7 @@ namespace PowerArgs.Games
             }
 
             TrySendBounds();
+            OnMove.Fire();
         }
 
         public void MoveRight()
@@ -197,6 +201,7 @@ namespace PowerArgs.Games
             }
 
             TrySendBounds();
+            OnMove.Fire();
         }
 
         public void MoveDown()
@@ -220,6 +225,7 @@ namespace PowerArgs.Games
             }
 
             TrySendBounds();
+            OnMove.Fire();
         }
 
         public void MoveUp()
@@ -243,6 +249,7 @@ namespace PowerArgs.Games
             }
 
             TrySendBounds();
+            OnMove.Fire();
         }
 
         private void RoundOff()

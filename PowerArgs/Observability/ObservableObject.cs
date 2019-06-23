@@ -256,6 +256,31 @@ namespace PowerArgs
         }
 
         /// <summary>
+        ///  Subscribes to be notified once when the given property changes.   
+        /// </summary>
+        /// <param name="propertyName">The name of the property to subscribe to or ObservableObject.AnyProperty if you want to be notified of any property change.</param>
+        /// <param name="handler">The action to call for notifications</param>
+        public void SubscribeOnce(string propertyName, Action handler)
+        {
+            Action wrappedAction = null;
+            IDisposable sub = null;
+            wrappedAction = () =>
+            {
+                handler();
+                sub.Dispose();
+            };
+
+            sub = SubscribeUnmanaged(propertyName, wrappedAction);
+        }
+
+        /// <summary>
+        ///  Subscribes to be notified once when the given property changes.   
+        /// </summary>
+        /// <param name="propertyName">The name of the property to subscribe to or ObservableObject.AnyProperty if you want to be notified of any property change.</param>
+        /// <param name="toCleanup">The disposable to cleanup the next time the property changes</param>
+        public void SubscribeOnce(string propertyName, IDisposable toCleanup) => SubscribeOnce(propertyName, toCleanup.Dispose);
+
+        /// <summary>
         /// Subscribes to be notified when the given property changes and also fires an initial notification immediately.
         /// </summary>
         /// <param name="propertyName">The name of the property to subscribe to or ObservableObject.AnyProperty if you want to be notified of any property change.</param>
