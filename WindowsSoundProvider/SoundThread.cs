@@ -26,6 +26,8 @@ namespace WindowsSoundProvider
 
     internal class SoundThread : Lifetime
     {
+        public bool IsReady => startDeferred.IsFulfilled;
+
         private Deferred startDeferred = Deferred.Create();
         public Promise StartPromise => startDeferred.Promise;
  

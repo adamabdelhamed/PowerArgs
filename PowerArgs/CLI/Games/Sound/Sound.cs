@@ -48,6 +48,7 @@ namespace PowerArgs.Games
     /// </summary>
     public interface ISoundProvider : IDisposable
     {
+        bool IsReady { get; }
         /// <summary>
         /// Plays the sound associated with the given id immediately and once
         /// </summary>
@@ -67,6 +68,8 @@ namespace PowerArgs.Games
     /// </summary>
     public class NoOpSoundProvider : DummyDisposable, ISoundProvider
     {
+        public bool IsReady => true;
+
         /// <summary>
         /// Does nothing
         /// </summary>

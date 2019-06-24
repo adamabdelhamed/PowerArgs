@@ -291,7 +291,7 @@ namespace PowerArgs.Cli
             AddDataPoints();
             this.SubscribeForLifetime(nameof(Bounds), PositionDataPoints, this);
             chartTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = options.Title }).CenterHorizontally().DockToTop(padding: 2);
-            seriesTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = "Series1".ToConsoleString() }).CenterHorizontally().DockToTop(padding: 3);
+            seriesTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = options.Data.First().Title.ToConsoleString(options.Data.First().PlotCharacter.ForegroundColor, options.Data.First().PlotCharacter.BackgroundColor) }).CenterHorizontally().DockToTop(padding: 3);
 
             this.AddedToVisualTree.SubscribeOnce(() =>
             {
