@@ -155,22 +155,17 @@ namespace PowerArgs.Cli
             app.Start().Wait();
         }
 
+        protected override void OnThredStart()
+        {
+            _current = this;
+        }
+
         /// <summary>
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>
         public override Promise Start()
         {
-            QueueActionInFront(() =>
-            {
-                if (_current != null)
-                {
-                    throw new NotSupportedException("An application is already running on this thread.");
-                }
-                // ensures that the current app is set on the message pump thread
-                _current = this;
-            });
-
             if (SetFocusOnStart)
             {
                 QueueAction(() => 

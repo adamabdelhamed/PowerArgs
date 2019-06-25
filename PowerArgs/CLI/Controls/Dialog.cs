@@ -60,6 +60,12 @@ namespace PowerArgs.Cli
         /// </summary>
         public bool AllowEscapeToCancel { get; set; } = true;
 
+        public Action<Dialog> OnPosition { get; set; } = (d) =>
+        {
+            d.FillHorizontally();
+            d.CenterVertically();
+        };
+
         internal abstract ConsoleControl GetContent();
     }
 
@@ -285,8 +291,7 @@ namespace PowerArgs.Cli
                 this.Height = Application.LayoutRoot.Height - 2;
             }
 
-            this.CenterVertically();
-            this.FillHorizontally();
+            this.options.OnPosition(this);
             ConsoleApp.Current.FocusManager.TryMoveFocus();
             Application.FocusManager.SubscribeForLifetime(nameof(FocusManager.StackDepth), () =>
             {

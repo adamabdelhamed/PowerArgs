@@ -325,6 +325,11 @@ namespace PowerArgs
 				if (System.Net.IPAddress.TryParse(val, out ret) == false) throw new FormatException("value must be a valid IP address: " + val);
 				return ret;
             });
+
+            revivers.Add(typeof(ConsoleString), (prop, val) =>
+            {
+                return ConsoleString.Parse(val);
+            });
         }
     }
 }

@@ -389,10 +389,16 @@ namespace PowerArgs.Cli
             }
         }
 
+        protected virtual void OnThredStart()
+        {
+
+        }
+
         private void Pump()
         {
             try
             {
+                OnThredStart();
                 SynchronizationContext.SetSynchronizationContext(new CustomSyncContext(this));
                 bool stopRequested = false;
                 cycleRateMeter = new FrameRateMeter();
