@@ -806,6 +806,28 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Returns a new string that has had all leading whitespace removed
+        /// </summary>
+        /// <returns></returns>
+        public ConsoleString TrimStart()
+        {
+            var toTrim = 0;
+            for(var i = 0; i < Length; i++)
+            {
+                if(char.IsWhiteSpace(characters[i].Value))
+                {
+                    toTrim++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return Substring(toTrim);
+        }
+
+        /// <summary>
         /// Get a substring of this ConsoleString starting at the given index and with the given length.
         /// </summary>
         /// <param name="start">the start index.</param>

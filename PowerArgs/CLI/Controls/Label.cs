@@ -155,7 +155,7 @@ namespace PowerArgs.Cli
                 {
                     SmartWrapNewLine(lines, ref currentLine);
 
-                    var toAdd = cleaned.Substring(token.StartIndex, token.Value.Length);
+                    var toAdd = cleaned.Substring(token.StartIndex, token.Value.Length).TrimStart();
 
                     foreach (var c in toAdd)
                     {
