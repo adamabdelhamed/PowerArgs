@@ -126,6 +126,24 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// True by default. When true, discards key presses that come in too fast
+        /// likely because the user is holding the key down. You can set the
+        /// MinTimeBetweenKeyPresses property to suit your needs.
+        /// </summary>
+        public bool KeyThrottlingEnabled { get; set; } = true;
+
+        /// <summary>
+        /// When key throttling is enabled this lets you set the minimum time that must
+        /// elapse before we forward a key press to the app, provided it is the same key
+        /// that was most recently clicked.
+        /// </summary>
+        public TimeSpan MinTimeBetweenKeyPresses { get; set; } = TimeSpan.FromMilliseconds(125);
+
+        
+        private ConsoleKey lastKey;
+        private DateTime lastKeyPressTime = DateTime.MinValue;
+
+        /// <summary>
         /// An event that fires when a pump message throws an exception while executing.  Handlers can mark the exception as handled
         /// if they want to keep the pump running.  If no handler is registered or no handler marks the exception as handled then the
         /// pump thread will throw and the process will crash.
@@ -469,7 +487,18 @@ namespace PowerArgs.Cli
                     {
                         idle = false;
                         var info = this.console.ReadKey(true);
-                        QueueAction(() => HandleKeyInput(info));
+
+                        var effectiveMinTimeBetweenKeyPresses = MinTimeBetweenKeyPresses;
+                        if (KeyThrottlingEnabled && info.Key == lastKey && DateTime.UtcNow - lastKeyPressTime < effectiveMinTimeBetweenKeyPresses)
+                        {
+                            // the user is holding the key down and throttling is enabled
+                        }
+                        else
+                        {
+                            lastKeyPressTime = DateTime.UtcNow;
+                            lastKey = info.Key;
+                            QueueAction(() => HandleKeyInput(info));
+                        }
                     }
                     else if(sendKeys.Count > 0)
                     {
