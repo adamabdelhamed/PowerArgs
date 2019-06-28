@@ -8,6 +8,7 @@ namespace PowerArgs
     /// <summary>
     /// Argument metadata that lets you declare that a particular argument is not allowed if one or more other arguments are specified by the user.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple =true)]
     public class ArgCantBeCombinedWith : ArgHook
     {
         private IBooleanExpression Expression { get;  set; }

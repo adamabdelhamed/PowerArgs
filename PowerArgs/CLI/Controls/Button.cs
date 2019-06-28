@@ -157,7 +157,7 @@ namespace PowerArgs.Cli
 
         private void OnKeyInputReceived(ConsoleKeyInfo info)
         {
-            if(info.Key == ConsoleKey.Enter || info.Key == ConsoleKey.Spacebar)
+            if(info.Key == ConsoleKey.Enter)
             {
                 Pressed.Fire();
             }

@@ -56,7 +56,7 @@ namespace PowerArgs.Cli.Physics
         public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
 
-        public float Angle { get; private set; }
+        public float Angle { get; set; }
 
         bool haveMovedSinceLastHitDetection = true;
         public float Speed

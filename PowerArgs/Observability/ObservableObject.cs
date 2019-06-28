@@ -131,7 +131,7 @@ namespace PowerArgs
         /// <param name="name">The name of the property to set</param>
         public void Set<T>(T value,[CallerMemberName] string name = "")
         {
-            var current = Get<T>(name);
+            var current = Get<object>(name);
             var isEqualChange = EqualsSafe(current, value);
 
             if (values.ContainsKey(name))

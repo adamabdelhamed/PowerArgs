@@ -290,8 +290,28 @@ namespace PowerArgs.Cli
             this.options = options;
             AddDataPoints();
             this.SubscribeForLifetime(nameof(Bounds), PositionDataPoints, this);
+
+            var defaultSeriesTitle = ConsoleString.Empty;
+
+            if (options.Data.First().AllowInteractivity == false || options.Data.Count == 1)
+            {
+                defaultSeriesTitle = options.Data.First().Title.ToConsoleString(options.Data.First().PlotCharacter.ForegroundColor, options.Data.First().PlotCharacter.BackgroundColor);
+            }
+
+            Ready.SubscribeOnce(() =>
+            {
+                ConsoleApp.Current.FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), () =>
+                 {
+                     if(ConsoleApp.Current.FocusManager.FocusedControl is DataPointControl == false)
+                     {
+                         seriesTitleLabel.Text = ConsoleString.Empty;
+                     }
+
+                 }, this);
+            });
+
             chartTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = options.Title }).CenterHorizontally().DockToTop(padding: 2);
-            seriesTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = options.Data.First().Title.ToConsoleString(options.Data.First().PlotCharacter.ForegroundColor, options.Data.First().PlotCharacter.BackgroundColor) }).CenterHorizontally().DockToTop(padding: 3);
+            seriesTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = defaultSeriesTitle }).CenterHorizontally().DockToTop(padding: 3);
 
             this.AddedToVisualTree.SubscribeOnce(() =>
             {
