@@ -57,11 +57,7 @@ namespace PowerArgs
                 overrideIsDifferentFromAttributeVal = overrideVal.Equals(attributeVal) == false;
             }
 
-            if (hasOverride && hasMatchingAttribute && overrideIsDifferentFromAttributeVal)
-            {
-                throw new InvalidArgDefinitionException(string.Format("The property '{0}' has been manually set, and the manual override value of '{2}' conflicts with the value '{3}' retrieved from attribute '{1}'", hostingType.Name + "." + propertyName, typeof(T1).Name, overrideVal, attributeVal));
-            }
-            else if (hasOverride)
+            if (hasOverride)
             {
                 return (T2)overrideVal;
             }

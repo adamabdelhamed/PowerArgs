@@ -29,7 +29,11 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         public override void Evaluate()
         {
-            if (task.Status == TaskStatus.RanToCompletion || task.Status == TaskStatus.Canceled)
+            if(task == null)
+            {
+                // wait
+            }
+            else if (task.Status == TaskStatus.RanToCompletion || task.Status == TaskStatus.Canceled)
             {
                 if (this.Lifetime.IsExpired == false)
                 {

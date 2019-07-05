@@ -283,7 +283,10 @@ namespace PowerArgs.Cli
             }
             else if (FocusManager.FocusedControl != null)
             {
-                FocusManager.FocusedControl.HandleKeyInput(info);
+                if (FocusManager.FocusedControl.IsExpired == false)
+                {
+                    FocusManager.FocusedControl.HandleKeyInput(info);
+                }
             }
             else
             {

@@ -155,7 +155,10 @@ namespace PowerArgs.Cli.Physics
                                     throw;
                                 }
                             }
-                            syncAction.Deferred.Resolve();
+                            if (syncAction.Deferred.IsFulfilled == false)
+                            {
+                                syncAction.Deferred.Resolve();
+                            }
                         }
 
                         Tick();

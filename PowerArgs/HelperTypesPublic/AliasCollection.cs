@@ -26,6 +26,14 @@ namespace PowerArgs
                 List<string> completeList = new List<string>();
                 completeList.AddRange(c.overrides);
                 completeList.AddRange(c.metadataEval());
+
+                int i;
+                if(c._defaultAlias != null && (i = completeList.IndexOf(c._defaultAlias)) != 0)
+                {
+                    completeList.RemoveAt(i);
+                    completeList.Insert(0, c._defaultAlias);
+                }
+
                 wrapped = completeList.GetEnumerator();
             }
 
@@ -52,6 +60,31 @@ namespace PowerArgs
             public void Reset()
             {
                 wrapped.Reset();
+            }
+        }
+
+        private string _defaultAlias;
+
+        public string DefaultAlias
+        {
+            get
+            {
+                if (_defaultAlias != null && this.Contains(_defaultAlias) == false)
+                {
+                    _defaultAlias = null;
+                }
+
+                return _defaultAlias ?? this.First();
+            }
+            set
+            {
+                if (this.Contains(value) == false)
+                {
+                    throw new InvalidOperationException($"{value} is not in the collection");
+                }
+
+                _defaultAlias = value;
+
             }
         }
 

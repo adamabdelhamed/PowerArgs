@@ -52,7 +52,8 @@ namespace PowerArgs.Cli
                     new GridRowDefinition(){ Type = GridValueType.RemainderValue, Height = 1, },// 5 output
                     new GridRowDefinition(){ Type = GridValueType.Pixels, Height = 1, },        // 6 empty
                 }
-            })).Fill();
+            }));
+            gridLayout.Fill();
             gridLayout.RefreshLayout();
             var welcomePanel = gridLayout.Add(new ConsolePanel(), 1, 1);
             welcomePanel.Add(new Label() { Text = "Welcome to the console".ToWhite() }).CenterHorizontally();
@@ -99,7 +100,10 @@ namespace PowerArgs.Cli
                 }
                 finally
                 {
-                    HardRefresh(output);
+                    if (IsExpired == false)
+                    {
+                        HardRefresh(output);
+                    }
                 }
             }
             else if (keyInfo.Key == ConsoleKey.Tab)
