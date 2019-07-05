@@ -137,6 +137,7 @@ namespace PowerArgs.Cli
             if (tb.Value.Length > 0)
             {
                 var command = tb.Value.Split(" ".ToConsoleString()).FirstOrDefault();
+                command = command ?? ConsoleString.Empty;
                 candidates = def.Actions.Where(a => a.DefaultAlias.StartsWith(command.StringValue, StringComparison.OrdinalIgnoreCase)).ToList();
 
                 if (candidates.Count == 0)

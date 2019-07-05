@@ -90,13 +90,34 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static List<IRectangularF> GetObstacles(this SpacialElement element, IEnumerable<SpacialElement> exclusions = null) => SpaceTime.CurrentSpaceTime
-                   .Elements
-                   .Where(e => e == element == false &&
-                           (exclusions == null || exclusions.Contains(e) == false) &&
-                           e.ZIndex == element.ZIndex &&
-                           e.HasSimpleTag(PassThruTag) == false)
-                           .AsList<IRectangularF>();
+        public static List<IRectangularF> GetObstacles(this SpacialElement element, IEnumerable<SpacialElement> exclusions = null)
+        {
+            var ret = new List<IRectangularF>();
+            foreach (var e in SpaceTime.CurrentSpaceTime.Elements)
+            {
+                if(e == element)
+                {
+                    continue;
+                }
+                else if(exclusions != null && exclusions.Contains(e))
+                {
+                    continue;
+                }
+                else if(e.ZIndex != element.ZIndex)
+                {
+                    continue;
+                }
+                else if(e.HasSimpleTag(PassThruTag))
+                {
+                    continue;
+                }
+                else
+                {
+                    ret.Add(e);
+                }
+            }
+            return ret;
+        }
 
 
 
