@@ -116,6 +116,7 @@ namespace PowerArgs.Cli
                 if (HasHistory())
                 {
                     tb.Value = GetHistoryPrevious();
+                    outputLabel.Text = UpdateAssistiveText();
                 }
             }
             else if (keyInfo.Key == ConsoleKey.DownArrow)
@@ -123,6 +124,7 @@ namespace PowerArgs.Cli
                 if (HasHistory())
                 {
                     tb.Value = GetHistoryNext();
+                    outputLabel.Text = UpdateAssistiveText();
                 }
             }
             else if (RichTextCommandLineReader.IsWriteable(keyInfo))

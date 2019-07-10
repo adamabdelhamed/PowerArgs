@@ -137,7 +137,7 @@ namespace PowerArgs.Cli
         /// elapse before we forward a key press to the app, provided it is the same key
         /// that was most recently clicked.
         /// </summary>
-        public TimeSpan MinTimeBetweenKeyPresses { get; set; } = TimeSpan.FromMilliseconds(125);
+        public TimeSpan MinTimeBetweenKeyPresses { get; set; } = TimeSpan.FromMilliseconds(35);
 
         
         private ConsoleKey lastKey;
