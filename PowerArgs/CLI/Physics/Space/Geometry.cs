@@ -120,8 +120,8 @@ namespace PowerArgs.Cli.Physics
         public static float Hypotenous(this IRectangularF rectangular) => (float)Math.Sqrt(rectangular.Width * rectangular.Width + rectangular.Height + rectangular.Height);
         public static float DiffAngle(this int a, float b) => DiffAngle((float)a, b);
         public static float AddToAngle(this int a, float b) => AddToAngle((float)a, b);
-        public static float CalculateNormalizedDistanceTo(ILocationF a, ILocationF b) => NormalizeQuantity(a.CalculateDistanceTo(b), a.CalculateAngleTo(b));
-        public static float CalculateNormalizedDistanceTo(IRectangularF a, IRectangularF b) => NormalizeQuantity(a.CalculateDistanceTo(b), a.CalculateAngleTo(b));
+        public static float CalculateNormalizedDistanceTo(ILocationF a, ILocationF b) => NormalizeQuantity(a.CalculateDistanceTo(b), a.CalculateAngleTo(b), true);
+        public static float CalculateNormalizedDistanceTo(IRectangularF a, IRectangularF b) => NormalizeQuantity(a.CalculateDistanceTo(b), a.CalculateAngleTo(b), true);
         public static float CalculateDistanceTo(this ILocationF start, ILocationF end) => (float)Math.Sqrt(((start.Left - end.Left) * (start.Left - end.Left)) + ((start.Top - end.Top) * (start.Top - end.Top)));
         public static Direction GetDirection(float a) => Enums.GetEnumValues<Direction>().OrderBy(slice => ((float)slice + 15).DiffAngle(a)).First();
         public static Direction GetHitDirection(this IRectangularF rectangle, IRectangularF other) => GetDirection(rectangle.CalculateAngleTo(other));

@@ -33,7 +33,7 @@ namespace PowerArgs.Games
                     var delta = options.Source.Angle.DiffAngle(angle);
                     return delta < 90;
                 })
-                .OrderBy(z => Geometry.NormalizeQuantity(options.Source.Element.CalculateDistanceTo(z), options.Source.Element.CalculateAngleTo(z)));
+                .OrderBy(z => Geometry.CalculateNormalizedDistanceTo( options.Source.Element,z));
             var obstacles = new HashSet<IRectangularF>();
 
             foreach(var target in options.TargetsEval())

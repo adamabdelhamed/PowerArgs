@@ -60,7 +60,7 @@ namespace PowerArgs.Cli.Physics
             bool forward = a.Left <= b.Left;
             bool up = a.Top <= b.Top;
 
-            float abDistance = a.CalculateDistanceTo(b);
+            float abDistance = Geometry.CalculateNormalizedDistanceTo(a,b);
             double angle = Math.Asin(Math.Abs(b.Top - a.Top) / abDistance);
             float dy = (float)Math.Abs(distance * Math.Sin(angle));
             float dx = (float)Math.Sqrt((distance * distance) - (dy * dy));
@@ -74,7 +74,7 @@ namespace PowerArgs.Cli.Physics
 
         public static ILocationF MoveTowards(this ILocationF a, float angle, float distance)
         {
-            distance = Geometry.NormalizeQuantity(distance, angle, reverse: true);
+            distance = Geometry.NormalizeQuantity(distance, angle);
             var forward = angle > 270 || angle < 90;
             var up = angle > 180;
 
