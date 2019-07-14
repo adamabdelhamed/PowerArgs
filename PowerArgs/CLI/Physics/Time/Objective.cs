@@ -134,6 +134,10 @@ namespace PowerArgs.Cli.Physics
             public void Start()
             {
                 task = mainProcess(o);
+                task.ContinueWith((t) =>
+                {
+                    task = DrainInterjections();
+                }, TaskScheduler.FromCurrentSynchronizationContext());
             }
 
             public async Task YieldAsync()
