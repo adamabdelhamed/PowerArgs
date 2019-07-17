@@ -15,6 +15,23 @@ namespace PowerArgs.Cli
         private StreamWriter writer;
         private ConsoleBitmapFrameSerializer serializer;
 
+        private TimeSpan TotalPauseTime = TimeSpan.Zero;
+        private DateTime? pausedAt = null;
+
+        public void Pause()
+        {
+            if (pausedAt.HasValue) return;
+            pausedAt = DateTime.UtcNow;
+        }
+
+        public void Resume()
+        {
+            if (pausedAt.HasValue == false) return;
+            var now = DateTime.UtcNow;
+            TotalPauseTime += now - pausedAt.Value;
+            pausedAt = null;
+        }
+
         /// <summary>
         /// Gets the total number of frames written by the writer. This only counts unique frames
         /// since calls to write frames with the same image as the previous frame are ignored.
@@ -64,9 +81,11 @@ namespace PowerArgs.Cli
         /// <returns>the same bitmap that was passed in</returns>
         public ConsoleBitmap WriteFrame(ConsoleBitmap bitmap, bool force = false, TimeSpan? desiredFrameTime = null)
         {
+            if (pausedAt.HasValue) return bitmap;
+
             var rawFrame = GetRawFrame(bitmap);
 
-            var now = DateTime.UtcNow;
+            var now = DateTime.UtcNow - TotalPauseTime;
 
             if(firstFrameTime.HasValue == false)
             {
@@ -86,7 +105,7 @@ namespace PowerArgs.Cli
             }
             else
             {
-                var diff = PrepareDiffFrame(bitmap);
+                var diff = PrepareDiffFrame(lastFrame, bitmap);
                 diff.Timestamp = rawFrame.Timestamp;
                 if(force || diff.Diffs.Count > bitmap.Width * bitmap.Height / 2)
                 {
@@ -145,7 +164,7 @@ namespace PowerArgs.Cli
             return rawFrame;
         }
 
-        private ConsoleBitmapDiffFrame PrepareDiffFrame(ConsoleBitmap bitmap)
+        private ConsoleBitmapDiffFrame PrepareDiffFrame(ConsoleBitmapRawFrame previous, ConsoleBitmap bitmap)
         {
             ConsoleBitmapDiffFrame diff = new ConsoleBitmapDiffFrame();
             diff.Diffs = new List<ConsoleBitmapPixelDiff>();
@@ -155,7 +174,10 @@ namespace PowerArgs.Cli
                 for (int x = 0; x < bitmap.Width; x++)
                 {
                     var pixel = bitmap.GetPixel(x, y);
-                    if (pixel.HasChanged)
+                    var hasPreviousPixel = previous.Pixels.Length == bitmap.Width && previous.Pixels[0].Length == bitmap.Height;
+                    var previousPixel = hasPreviousPixel ? previous.Pixels[x][y] : default(ConsoleCharacter);
+
+                    if (pixel.HasChanged || hasPreviousPixel == false || (pixel.Value.HasValue && pixel.Value.Value.Equals(previousPixel) == false))
                     {
                         changes++;
                         if (pixel.Value.HasValue)

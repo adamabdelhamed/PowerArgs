@@ -47,6 +47,10 @@ namespace PowerArgs.Cli
                     Application.FocusManager.Pop();
                     options.OnMinimumSizeMet();
                 }
+                else
+                {
+                    options.OnMinimumSizeMet();
+                }
             }
         }
 
