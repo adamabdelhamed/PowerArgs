@@ -9,6 +9,7 @@ namespace PowerArgs.Cli
     /// </summary>
     public class ConsoleBitmapStreamWriter : Lifetime
     {
+        public const int DurationLineLength = 30;
         private DateTime? firstFrameTime;
         private ConsoleBitmapRawFrame lastFrame;
         private Stream outputStream;
@@ -17,6 +18,14 @@ namespace PowerArgs.Cli
 
         private TimeSpan TotalPauseTime = TimeSpan.Zero;
         private DateTime? pausedAt = null;
+
+        public Rectangle? Window { get; set; }
+
+        private int GetEffectiveLeft => Window.HasValue ? Window.Value.Left : 0;
+        private int GetEffectiveTop => Window.HasValue ? Window.Value.Top : 0;
+        private int GetEffectiveWidth(ConsoleBitmap bitmap) =>  Window.HasValue ? Window.Value.Width : bitmap.Width;
+        private int GetEffectiveHeight(ConsoleBitmap bitmap) => Window.HasValue ? Window.Value.Height : bitmap.Height;
+
 
         public void Pause()
         {
@@ -62,7 +71,7 @@ namespace PowerArgs.Cli
             {
                 throw new ArgumentOutOfRangeException("Stream must be able to seek");
             }
-            s.Write(new byte[sizeof(long)], 0, sizeof(long)); // write an empty space for the total time
+            s.Write(new byte[DurationLineLength], 0, DurationLineLength); // write an empty space for the total time + newline
 
 
             this.OnDisposed(this.WriteEnd);
@@ -107,7 +116,9 @@ namespace PowerArgs.Cli
             {
                 var diff = PrepareDiffFrame(lastFrame, bitmap);
                 diff.Timestamp = rawFrame.Timestamp;
-                if(force || diff.Diffs.Count > bitmap.Width * bitmap.Height / 2)
+
+                var numPixels = GetEffectiveWidth(bitmap) * GetEffectiveHeight(bitmap);
+                if (force || diff.Diffs.Count > numPixels / 2)
                 {
                     writer.Write(serializer.SerializeFrame(rawFrame));
                     FramesWritten++;
@@ -132,9 +143,16 @@ namespace PowerArgs.Cli
             writer.Flush();
             outputStream.Position = 0;
             var recordingTicks = lastFrame.Timestamp.Ticks;
-            var bytes = BitConverter.GetBytes(recordingTicks);
+            var ticksString = recordingTicks.ToString() + writer.NewLine;
+
+            while(ticksString.Length < DurationLineLength)
+            {
+                ticksString = "0" + ticksString;
+            }
+
+            var bytes = writer.Encoding.GetBytes(ticksString);
+            if (bytes.Length != DurationLineLength) throw new InvalidDataException("Duration header error");
             outputStream.Write(bytes, 0, bytes.Length);
-            writer.Flush();
 
             if (CloseInnerStream)
             {
@@ -145,17 +163,17 @@ namespace PowerArgs.Cli
         
         private void StreamHeader(ConsoleBitmap initialFrame)
         {
-            writer.WriteLine($"{initialFrame.Width}x{initialFrame.Height}");
+            writer.WriteLine($"{GetEffectiveWidth(initialFrame)}x{GetEffectiveHeight(initialFrame)}");
         }
 
         private ConsoleBitmapRawFrame GetRawFrame(ConsoleBitmap bitmap)
         {
             var rawFrame = new ConsoleBitmapRawFrame();
-            rawFrame.Pixels = new ConsoleCharacter[bitmap.Width][];
-            for (int x = 0; x < bitmap.Width; x++)
+            rawFrame.Pixels = new ConsoleCharacter[GetEffectiveWidth(bitmap)][];
+            for (int x = GetEffectiveLeft; x < GetEffectiveWidth(bitmap); x++)
             {
-                rawFrame.Pixels[x] = new ConsoleCharacter[bitmap.Height];
-                for (int y = 0; y < bitmap.Height; y++)
+                rawFrame.Pixels[x] = new ConsoleCharacter[GetEffectiveHeight(bitmap)];
+                for (int y = GetEffectiveTop; y < GetEffectiveHeight(bitmap); y++)
                 {
                     var pixelValue = bitmap.GetPixel(x, y).Value.HasValue ? bitmap.GetPixel(x, y).Value.Value : new ConsoleCharacter(' ');
                     rawFrame.Pixels[x][y] = pixelValue;
@@ -169,12 +187,12 @@ namespace PowerArgs.Cli
             ConsoleBitmapDiffFrame diff = new ConsoleBitmapDiffFrame();
             diff.Diffs = new List<ConsoleBitmapPixelDiff>();
             int changes = 0;
-            for (int y = 0; y < bitmap.Height; y++)
+            for (int y = GetEffectiveTop; y < GetEffectiveHeight(bitmap); y++)
             {
-                for (int x = 0; x < bitmap.Width; x++)
+                for (int x = GetEffectiveLeft; x < GetEffectiveWidth(bitmap); x++)
                 {
                     var pixel = bitmap.GetPixel(x, y);
-                    var hasPreviousPixel = previous.Pixels.Length == bitmap.Width && previous.Pixels[0].Length == bitmap.Height;
+                    var hasPreviousPixel = previous.Pixels.Length == GetEffectiveWidth(bitmap) && previous.Pixels[0].Length == GetEffectiveHeight(bitmap);
                     var previousPixel = hasPreviousPixel ? previous.Pixels[x][y] : default(ConsoleCharacter);
 
                     if (pixel.HasChanged || hasPreviousPixel == false || (pixel.Value.HasValue && pixel.Value.Value.Equals(previousPixel) == false))

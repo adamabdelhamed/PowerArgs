@@ -88,12 +88,8 @@ namespace PowerArgs.Cli
         {
             if (duration.HasValue == false)
             {
-                var lengthbuffer = new byte[sizeof(long)];
-                var read = inputStream.Read(lengthbuffer, 0, lengthbuffer.Length);
-                if (read != lengthbuffer.Length) throw new FormatException("Could not read length");
-
-                var ticks = BitConverter.ToInt64(lengthbuffer, 0);
-                duration = new TimeSpan(ticks);
+                var lengthHeader = reader.ReadLine();
+                duration = new TimeSpan(long.Parse(lengthHeader));
 
                 var sizeHeader = reader.ReadLine();
                 var match = Regex.Match(sizeHeader, @"(?<width>\d+)x(?<height>\d+)");
