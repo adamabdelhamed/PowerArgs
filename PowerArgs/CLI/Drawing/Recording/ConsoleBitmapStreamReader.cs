@@ -75,7 +75,8 @@ namespace PowerArgs.Cli
                 ret.Duration = Duration.Value; // proxy the known duration to the video object so the progress callback can get at it
                 progressCallback?.Invoke(ret);
             }
-
+            ret.LoadProgress = 1;
+            progressCallback?.Invoke(ret);
             return ret;
         }
 

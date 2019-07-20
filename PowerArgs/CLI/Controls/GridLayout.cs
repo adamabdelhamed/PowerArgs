@@ -174,6 +174,14 @@ namespace PowerArgs.Cli
             }
         }
 
+        public void Clear()
+        {
+            using (var modifyLock = Unlock())
+            {
+                Controls.Clear();
+            }
+        }
+
         private void HandleControlRemoved(ConsoleControl c)
         {
             var toRemove = layoutAssignments
