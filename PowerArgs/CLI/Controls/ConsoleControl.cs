@@ -104,6 +104,11 @@ namespace PowerArgs.Cli
         public bool HasFocus { get { return Get<bool>(); } internal set { Set(value); } }
 
         /// <summary>
+        /// The writer used to record the visual state of the control
+        /// </summary>
+        public ConsoleBitmapStreamWriter Recorder { get; private set; }
+
+        /// <summary>
         /// Set to true if the Control is in the process of being removed
         /// </summary>
         internal bool IsBeingRemoved { get; set; }
@@ -180,6 +185,38 @@ namespace PowerArgs.Cli
                 else
                 {
                     Application.QueueAction(Ready.Fire);
+                }
+            });
+
+        }
+
+        /// <summary>
+        /// Enables recording the visual content of the control using the specified writer
+        /// </summary>
+        /// <param name="recorder">the writer to use</param>
+        public void EnableRecording(ConsoleBitmapStreamWriter recorder)
+        {
+            if(Recorder != null)
+            {
+                throw new InvalidOperationException("This control is already being recorded");
+            }
+            var h = this.Height;
+            var w = this.Width;
+            this.SubscribeForLifetime(nameof(Bounds), () => 
+            {
+                if(Width != w || Height != h)
+                {
+                    throw new InvalidOperationException("You cannot resize a control that has recording enabled");
+                }
+            }, this);
+            this.Recorder = recorder;
+
+
+            this.OnDisposed(() =>
+            {
+                if (Recorder.IsExpired == false)
+                {
+                    Recorder.Dispose();
                 }
             });
         }
@@ -287,6 +324,11 @@ namespace PowerArgs.Cli
             }
 
             OnPaint(context);
+            if (Recorder != null && Recorder.IsExpired == false && Width == context.Scope.Width && context.Scope.Height == Height)
+            {
+                Recorder.Window = context.Scope;
+                Recorder.WriteFrame(context);
+            }
         }
 
         internal void PaintTo(ConsoleBitmap context)

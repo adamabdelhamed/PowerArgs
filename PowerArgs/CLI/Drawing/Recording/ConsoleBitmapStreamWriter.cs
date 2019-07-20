@@ -114,6 +114,11 @@ namespace PowerArgs.Cli
             }
             else
             {
+                if(GetEffectiveWidth(bitmap) != lastFrame.Pixels.Length || GetEffectiveHeight(bitmap) != lastFrame.Pixels[0].Length)
+                {
+                    throw new InvalidOperationException("Video frame has changed size");
+                }
+
                 var diff = PrepareDiffFrame(lastFrame, bitmap);
                 diff.Timestamp = rawFrame.Timestamp;
 
@@ -170,12 +175,12 @@ namespace PowerArgs.Cli
         {
             var rawFrame = new ConsoleBitmapRawFrame();
             rawFrame.Pixels = new ConsoleCharacter[GetEffectiveWidth(bitmap)][];
-            for (int x = GetEffectiveLeft; x < GetEffectiveWidth(bitmap); x++)
+            for (int x = 0; x < GetEffectiveWidth(bitmap); x++)
             {
                 rawFrame.Pixels[x] = new ConsoleCharacter[GetEffectiveHeight(bitmap)];
-                for (int y = GetEffectiveTop; y < GetEffectiveHeight(bitmap); y++)
+                for (int y = 0; y < GetEffectiveHeight(bitmap); y++)
                 {
-                    var pixelValue = bitmap.GetPixel(x, y).Value.HasValue ? bitmap.GetPixel(x, y).Value.Value : new ConsoleCharacter(' ');
+                    var pixelValue = bitmap.GetPixel(GetEffectiveLeft + x, GetEffectiveTop + y).Value.HasValue ? bitmap.GetPixel(GetEffectiveLeft + x, GetEffectiveTop + y).Value.Value : new ConsoleCharacter(' ');
                     rawFrame.Pixels[x][y] = pixelValue;
                 }
             }
@@ -187,11 +192,11 @@ namespace PowerArgs.Cli
             ConsoleBitmapDiffFrame diff = new ConsoleBitmapDiffFrame();
             diff.Diffs = new List<ConsoleBitmapPixelDiff>();
             int changes = 0;
-            for (int y = GetEffectiveTop; y < GetEffectiveHeight(bitmap); y++)
+            for (int y = 0; y < GetEffectiveHeight(bitmap); y++)
             {
-                for (int x = GetEffectiveLeft; x < GetEffectiveWidth(bitmap); x++)
+                for (int x = 0; x < GetEffectiveWidth(bitmap); x++)
                 {
-                    var pixel = bitmap.GetPixel(x, y);
+                    var pixel = bitmap.GetPixel(GetEffectiveLeft + x, GetEffectiveTop + y);
                     var hasPreviousPixel = previous.Pixels.Length == GetEffectiveWidth(bitmap) && previous.Pixels[0].Length == GetEffectiveHeight(bitmap);
                     var previousPixel = hasPreviousPixel ? previous.Pixels[x][y] : default(ConsoleCharacter);
 
