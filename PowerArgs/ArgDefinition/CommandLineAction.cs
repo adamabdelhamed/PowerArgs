@@ -79,7 +79,7 @@ namespace PowerArgs
             {
                 if (positionArg.IsRequired)
                 {
-                    ret += lt + positionArg.DefaultAlias + gt+" ";
+                    ret += lt + positionArg.DefaultAlias + gt + " ";
                 }
                 else
                 {
@@ -109,7 +109,7 @@ namespace PowerArgs
                 overrides.Set("Description", value);
             }
         }
-        
+
         /// <summary>
         /// The method or property that was used to define this action.
         /// </summary>
@@ -257,7 +257,7 @@ namespace PowerArgs
         internal CommandLineAction()
         {
             overrides = new AttrOverride(GetType());
-            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);
+            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; }, stripLeadingArgInticatorsOnAttributeValues: false);
             PropertyInitializer.InitializeFields(this, 1);
             IgnoreCase = true;
         }
@@ -294,9 +294,26 @@ namespace PowerArgs
         {
             var ret = PropertyInitializer.CreateInstance<CommandLineAction>();
             ret.ActionMethod = actionMethod;
-
             ret.Source = actionMethod;
-            ret.Aliases.Add(actionMethod.Name);
+
+            string actionName;
+
+            if (actionMethod.HasAttr<ArgDisplayName>())
+            {
+                var displayName = actionMethod.Attrs<ArgDisplayName>();
+                if (displayName.Count > 1)
+                {
+                    throw new DuplicateArgException("Argument specified more than once: " + displayName[0].DisplayName);
+                }
+
+                actionName = displayName[0].DisplayName;
+            }
+            else
+            {
+                actionName = actionMethod.Name;
+            }
+
+            ret.Aliases.Add(actionName);
 
             ret.Metadata.AddRange(actionMethod.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineActionMetadata>());
 
@@ -388,7 +405,7 @@ namespace PowerArgs
 
         internal static bool IsActionImplementation(PropertyInfo property)
         {
-            return property.Name.EndsWith(Constants.ActionArgConventionSuffix) && 
+            return property.Name.EndsWith(Constants.ActionArgConventionSuffix) &&
                    property.HasAttr<ArgIgnoreAttribute>() == false &&
                 ArgAction.GetActionProperty(property.DeclaringType) != null;
         }
