@@ -12,7 +12,19 @@ namespace PowerArgs
     {
         private LifetimeManager _manager;
 
-        private static Lifetime forever = new Lifetime();
+        private static Lifetime forever = CreateForeverLifetime();
+
+        private static Lifetime CreateForeverLifetime()
+        {
+            var ret = new Lifetime();
+
+            ret.OnDisposed(() =>
+            {
+                throw new Exception("Forever lifetime expired");
+            });
+
+            return ret;
+        }
 
         /// <summary>
         /// The forever lifetime manager that will never end. Any subscriptions you intend to keep forever should use this lifetime so it's easy to spot leaks.
@@ -36,6 +48,7 @@ namespace PowerArgs
         public Lifetime()
         {
             _manager = new LifetimeManager();
+            OnDisposed(() => _manager.IsExpired = true);
         }
 
         /// <summary>

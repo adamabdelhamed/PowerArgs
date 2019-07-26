@@ -41,7 +41,7 @@ namespace PowerArgs
         /// <summary>
         /// returns true if expired
         /// </summary>
-        public bool IsExpired { get; private set; }
+        public bool IsExpired { get; internal set; }
 
         internal IReadOnlyCollection<IDisposable> ManagedItems
         {
@@ -81,7 +81,6 @@ namespace PowerArgs
                 cleanupCode();
                 d.Resolve();
             }));
-            IsExpired = true;
             return d.Promise;
         }
     }
