@@ -96,7 +96,14 @@ namespace PowerArgs.Cli
                 }
                 catch (Exception ex)
                 {
-                    output = ex.Message.ToRed();
+
+                    var inner = ex;
+                    if(ex is AggregateException && (ex as AggregateException).InnerExceptions.Count == 1)
+                    {
+                        inner = ex.InnerException;
+                    }
+
+                    output = inner.Message.ToRed();
                 }
                 finally
                 {
