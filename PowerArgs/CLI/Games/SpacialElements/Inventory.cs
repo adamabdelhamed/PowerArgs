@@ -5,7 +5,10 @@ using System;
 
 namespace PowerArgs.Games
 {
-    public interface IInventoryItem { }
+    public interface IInventoryItem
+    {
+        ConsoleString DisplayName { get; }
+    }
 
     public class Inventory : ObservableObject
     {

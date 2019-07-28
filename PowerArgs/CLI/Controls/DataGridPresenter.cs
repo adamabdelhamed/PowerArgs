@@ -7,6 +7,7 @@ namespace PowerArgs.Cli
     internal class DataGridCoreOptions
     {
         public bool ShowColumnHeaders { get; set; } = true;
+        public bool ShowPager { get; set; } = true;
         public List<DataGridColumnDefinition> Columns { get; set; }
         public List<DataGridPresentationRow> Rows { get; set; }
         public PagerState PagerState { get; set; }
@@ -183,6 +184,7 @@ namespace PowerArgs.Cli
             pagerContainer = gridLayout.Add(new ConsolePanel(), 0, Height-1, gridLayout.Options.Columns.Count, 1);
             recomposableControls.Add(pagerContainer);
             pager = pagerContainer.Add(new RandomAccessPager()).CenterHorizontally();
+            pager.IsVisible = Options.ShowPager;
             pager.FirstPageButton.Pressed.SubscribeForLifetime(FirstPageClicked.Fire, pager);
             pager.PreviousPageButton.Pressed.SubscribeForLifetime(PreviousPageClicked.Fire, pager);
             pager.NextPageButton.Pressed.SubscribeForLifetime(NextPageClicked.Fire, pager);

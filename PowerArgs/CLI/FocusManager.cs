@@ -12,19 +12,19 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Data object used to capture the focus context on the stack
         /// </summary>
-        private class FocusContext
+        public class FocusContext
         {
             public KeyboardInterceptionManager Interceptors { get; private set; } = new KeyboardInterceptionManager();
 
             /// <summary>
             /// The controls being managed by this context
             /// </summary>
-            public List<ConsoleControl> Controls { get; set; }
+            public List<ConsoleControl> Controls { get; internal set; }
 
             /// <summary>
             /// The current focus index within this context
             /// </summary>
-            public int FocusIndex { get; set; }
+            public int FocusIndex { get; internal set; }
 
             /// <summary>
             /// Creates a new focus context
@@ -38,6 +38,8 @@ namespace PowerArgs.Cli
 
         private Stack<FocusContext> focusStack;
         private string currentFocusedControlId;
+
+        public Stack<FocusContext> Stack => focusStack;
 
         /// <summary>
         /// Gets the number of layers on the stack

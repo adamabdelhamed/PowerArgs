@@ -40,7 +40,6 @@ namespace PowerArgs.Games
 
         public bool IsDamageable(IRectangularF el) => el is SpacialElement && (el as SpacialElement).HasSimpleTag(DamageableTag);
 
-        public IEnumerable<SpacialElement> DamageableElements =
-            SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag(DamageableTag));
+        public IEnumerable<SpacialElement> DamageableElements => SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag(DamageableTag));
     }
 }
