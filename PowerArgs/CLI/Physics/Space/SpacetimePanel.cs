@@ -116,7 +116,15 @@ namespace PowerArgs.Cli.Physics
 
             while (syncOperation.IsFulfilled == false)
             {
-                if(Application == null || Application.IsExpired || SpaceTime.IsRunning == false)
+                // todo - improve this multithreading hack because Application can be null after the null check
+                try
+                {
+                    if (Application == null || Application.IsExpired || SpaceTime.IsRunning == false)
+                    {
+                        return;
+                    }
+                }
+                catch (NullReferenceException)
                 {
                     return;
                 }
