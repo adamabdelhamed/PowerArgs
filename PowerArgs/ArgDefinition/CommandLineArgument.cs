@@ -338,23 +338,6 @@ namespace PowerArgs
             }
         }
 
-        /// <summary>
-        /// A customized argument name to display.
-        /// </summary>
-        /*
-        public string DisplayName
-        {
-            get
-            {
-                return overrides.Get<ArgDisplayName, string>("DisplayName", Metadata, d => d.DisplayName, string.Empty);
-            }
-            set
-            {
-                overrides.Set("DisplayName", value);
-            }
-        }
-        */
-
         internal CommandLineArgument()
         {
             MustBeRevivable = true;
