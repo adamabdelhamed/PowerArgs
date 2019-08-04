@@ -8,7 +8,6 @@ namespace PowerArgs.Cli.Physics
     {
         None = 0,
         Obstacle = 1,
-        Boundary = 2,
     }
 
     public class Impact
@@ -81,41 +80,8 @@ namespace PowerArgs.Cli.Physics
                 };
             }
 
-           
-            if (options.Dy > 0 && options.MovingObject.Bottom() + options.Dy >= options.Bounds.Height)
-            {
-                prediction.Direction = Direction.Down;
-                prediction.Type = HitType.Boundary;
-                prediction.ObstacleHit = RectangularF.Create(options.MovingObject.Left + options.Dx, options.Bounds.Height + options.Dy, 1, 1);
-                return prediction;
-            }
-            else if (options.Dx < 0 && options.MovingObject.Left + options.Dx <= 0)
-            {
-                prediction.Direction = Direction.Left;
-                prediction.Type = HitType.Boundary;
-                prediction.ObstacleHit = RectangularF.Create(-options.Dx, options.MovingObject.Top + options.Dy, 1, 1);
-                return prediction;
-            }
-            else if (options.Dy < 0 && options.MovingObject.Top + options.Dy <= 0)
-            {
-                prediction.Direction = Direction.Up;
-                prediction.Type = HitType.Boundary;
-                prediction.ObstacleHit = RectangularF.Create(options.MovingObject.Left + options.Dx, -options.Dy, 1, 1);
-                return prediction;
-            }
-            else if (options.Dx > 0 && options.MovingObject.Right() + options.Dx >= options.Bounds.Width)
-            {
-                prediction.Direction = Direction.Right;
-                prediction.Type = HitType.Boundary;
-                prediction.ObstacleHit = RectangularF.Create(options.Bounds.Width + options.Dx, options.MovingObject.Top + options.Dy, 1, 1);
-                return prediction;
-            }
-            else
-            {
-                prediction.Type = HitType.None;
-                return prediction;
-            }
-
+            prediction.Type = HitType.None;
+            return prediction;
         }
 
         private static bool IsIncluded(HitDetectionOptions options, IRectangularF obj)

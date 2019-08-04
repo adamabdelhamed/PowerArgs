@@ -69,7 +69,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public IEnumerable<SpacialElement> GetObstacles() => Element.GetObstacles(HitDetectionExclusions).As<SpacialElement>();
+        public IEnumerable<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions);
 
         public SpeedTracker(SpacialElement t) : base(t)
         {
@@ -112,32 +112,7 @@ namespace PowerArgs.Cli.Physics
 
             if (hitPrediction.Type != HitType.None)
             {
-                float angle;
-
-                if ((hitPrediction.ObstacleHit as SpacialElement) != null)
-                {
-                    angle = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
-                }
-                else if(hitPrediction.Direction == Direction.Left)
-                {
-                    angle = 180;
-                }
-                else if(hitPrediction.Direction == Direction.Right)
-                {
-                    angle = 0;
-                }
-                else if(hitPrediction.Direction == Direction.Up)
-                {
-                    angle = 270;
-                }
-                else if(hitPrediction.Direction == Direction.Down)
-                {
-                    angle = 90;
-                }
-                else
-                {
-                    throw new NotSupportedException($"Unsupported direction: {hitPrediction.Direction}");
-                }
+                float angle  = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
 
                 if (haveMovedSinceLastHitDetection)
                 {
