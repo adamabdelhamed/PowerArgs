@@ -7,7 +7,7 @@ namespace PowerArgs.Games
 
     public class Character : SpacialElement, IObservableObject
     {
-        public bool IsVisible { get; set; } = true;
+        public bool IsVisible { get => observable.Get<bool>(); set => observable.Set(value); } 
         public MultiPlayerClient MultiPlayerClient { get; set; }
         public char? Symbol { get; set; }
         public Inventory Inventory { get => observable.Get<Inventory>(); set => observable.Set(value); }  
@@ -27,6 +27,7 @@ namespace PowerArgs.Games
         public Character()
         {
             observable = new ObservableObject(this);
+            IsVisible = true;
             this.SubscribeForLifetime(nameof(Inventory), () => this.Inventory.Owner = this, this.Lifetime);
             Inventory = new Inventory();
             Speed = new SpeedTracker(this) { Bounciness = 0 };
