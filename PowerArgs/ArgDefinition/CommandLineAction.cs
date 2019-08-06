@@ -301,11 +301,6 @@ namespace PowerArgs
             if (actionMethod.HasAttr<ArgDisplayName>())
             {
                 var displayName = actionMethod.Attrs<ArgDisplayName>();
-                if (displayName.Count > 1)
-                {
-                    throw new DuplicateArgException("Argument specified more than once: " + displayName[0].DisplayName);
-                }
-
                 actionName = displayName[0].DisplayName;
             }
             else

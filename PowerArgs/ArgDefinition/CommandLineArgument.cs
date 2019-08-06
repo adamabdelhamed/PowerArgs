@@ -650,11 +650,6 @@ namespace PowerArgs
                 if (info.HasAttr<ArgDisplayName>())
                 {
                     var displayName = info.Attrs<ArgDisplayName>();
-                    if (displayName.Count > 1)
-                    {
-                        throw new DuplicateArgException("Argument specified more than once: " + displayName[0].DisplayName);
-                    }
-
                     knownShortcutsAlias = displayName[0].DisplayName;
                     retAlias = displayName[0].DisplayName;
                 }
