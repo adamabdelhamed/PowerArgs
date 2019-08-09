@@ -27,6 +27,8 @@ namespace PowerArgs
             }
         }
 
+        private static List<Type> cachedConvertibleTypes = new List<Type>();
+        
         /// <summary>
         /// Returns true if the given type can be revived, false otherwise
         /// </summary>
@@ -36,10 +38,11 @@ namespace PowerArgs
         {
             if (Revivers.ContainsKey(t) ||
                 t.IsEnum ||
+                cachedConvertibleTypes.Contains(t) ||
                 (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
                 (t.IsArray && CanRevive(t.GetElementType())))
                 return true;
-            
+
             SearchAssemblyForRevivers(t.Assembly);
 
             var entryAssembly = Assembly.GetEntryAssembly();
@@ -48,7 +51,11 @@ namespace PowerArgs
                 SearchAssemblyForRevivers(entryAssembly);
             }
 
-            if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string))) return true;
+            if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string)))
+            {
+                cachedConvertibleTypes.Add(t);
+                return true;
+            }
 
             return Revivers.ContainsKey(t);
         }
