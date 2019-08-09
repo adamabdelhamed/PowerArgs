@@ -8,7 +8,7 @@ namespace PowerArgs.Games
 {
     public class FramerateControl : StackPanel
     {
-        private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel, elementsControl, functionsControl;
+        private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel, sleepTimeLabel, elementsControl, functionsControl;
         private SpacetimePanel scene;
         public FramerateControl(SpacetimePanel scene)
         {
@@ -20,6 +20,7 @@ namespace PowerArgs.Games
             sceneFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             renderFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             paintFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
+            sleepTimeLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             sceneBusyPercentageLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             AddedToVisualTree.SubscribeForLifetime(SetupPolling, this);
         }
@@ -38,7 +39,7 @@ namespace PowerArgs.Games
                 renderFPSLabel.Text = FormatFramerateMessage($"{Application.CyclesPerSecond} UI cycles per second", Application.CyclesPerSecond, true);
                 paintFPSLabel.Text = FormatFramerateMessage($"{Application.PaintRequestsProcessedPerSecond} paint frames per second", Application.PaintRequestsProcessedPerSecond, false);
                 sceneBusyPercentageLabel.Text = FormatSceneBusyPercentage();
-
+                sleepTimeLabel.Text = (Math.Round(scene.RealTimeViewing.SleepTime)+" ms").ToConsoleString();
                 scene.SpaceTime.QueueAction(() =>
                 {
                     var functionCount = Time.CurrentTime.Functions.Count();

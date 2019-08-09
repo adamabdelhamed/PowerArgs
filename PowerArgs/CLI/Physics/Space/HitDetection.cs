@@ -33,7 +33,7 @@ namespace PowerArgs.Cli.Physics
         public List<IRectangularF> Exclusions { get; set; }
         public float Dx { get; set; }
         public float Dy { get; set; }
-        public float Precision { get; set; } = .1f;
+        public float Precision { get; set; } = .02f;
     }
 
     public static class HitDetection
@@ -42,6 +42,14 @@ namespace PowerArgs.Cli.Physics
         public static HitPrediction PredictHit(HitDetectionOptions options)
         {
             HitPrediction prediction = new HitPrediction();
+
+            var left = Math.Min(options.MovingObject.Left, options.MovingObject.Left + options.Dx);
+            var top = Math.Min(options.MovingObject.Top, options.MovingObject.Top + options.Dy);
+            var right = Math.Max(options.MovingObject.Left + options.MovingObject.Width, options.MovingObject.Left + options.MovingObject.Width + options.Dx);
+            var bottom = Math.Max(options.MovingObject.Top + options.MovingObject.Height, options.MovingObject.Top + options.MovingObject.Height + options.Dy);
+            var relevantArea = RectangularF.Create(left, top, right - left, bottom - top);
+
+            var effectiveObstacles =  options.Obstacles.Where(o => o.Touches(relevantArea)).ToList();
 
             if (options.Dx == 0 && options.Dy == 0)
             {
@@ -57,7 +65,7 @@ namespace PowerArgs.Cli.Physics
             {
                 var testLocation = options.MovingObject.Center().MoveTowards(angle, dPrime);
                 var testArea = RectangularF.Create(testLocation.Left - options.MovingObject.Width / 2, testLocation.Top - options.MovingObject.Height / 2, options.MovingObject.Width, options.MovingObject.Height);
-                var obstacleHit = options.Obstacles.Where(o => IsIncluded(options,o) && o.Touches(testArea) == true).FirstOrDefault();
+                var obstacleHit = effectiveObstacles.Where(o => IsIncluded(options,o) && o.Touches(testArea) == true).FirstOrDefault();
 
                 if(obstacleHit != null)
                 {
@@ -69,7 +77,7 @@ namespace PowerArgs.Cli.Physics
                 }
             }
 
-            var obstacleHitFinal = options.Obstacles.Where(o => IsIncluded(options, o) && o.Touches(endPoint) == true).FirstOrDefault();
+            var obstacleHitFinal = effectiveObstacles.Where(o => IsIncluded(options, o) && o.Touches(endPoint) == true).FirstOrDefault();
 
             if (obstacleHitFinal != null)
             {

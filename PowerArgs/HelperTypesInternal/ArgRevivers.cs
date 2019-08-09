@@ -53,7 +53,10 @@ namespace PowerArgs
 
             if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string)))
             {
-                cachedConvertibleTypes.Add(t);
+                lock (cachedConvertibleTypes)
+                {
+                    cachedConvertibleTypes.Add(t);
+                }
                 return true;
             }
 
