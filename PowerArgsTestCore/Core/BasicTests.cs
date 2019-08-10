@@ -238,7 +238,7 @@ namespace ArgsTests
         public void TestManualReviverRegistration()
         {
             // A little bit of reflection magic to ensure that no other test has registered this reviver
-            var reviverType = (from a in typeof(Args).Assembly.GetTypes() where a.Name == "ArgRevivers" select a).Single();
+            var reviverType = (from a in typeof(Args).Assembly.GetTypes() where a.Name == nameof(ArgRevivers) select a).Single();
             var prop = reviverType.GetProperty("Revivers", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
             var reviverDictionary = prop.GetValue(null,null) as Dictionary<Type, Func<string, string, object>>;
             reviverDictionary.Remove(typeof(MailAddress));

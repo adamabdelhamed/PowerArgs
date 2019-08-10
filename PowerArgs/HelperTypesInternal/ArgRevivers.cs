@@ -28,6 +28,7 @@ namespace PowerArgs
         }
 
         private static List<Type> cachedConvertibleTypes = new List<Type>();
+        private static List<Assembly> alreadySearched = new List<Assembly>();
         
         /// <summary>
         /// Returns true if the given type can be revived, false otherwise
@@ -188,8 +189,13 @@ namespace PowerArgs
             }
         }
 
-        internal static void SearchAssemblyForRevivers(Assembly a)
+        internal static void SearchAssemblyForRevivers(Assembly a, bool force = false)
         {
+            if(alreadySearched.Contains(a) && force == false)
+            {
+                return;
+            }
+
             foreach (var type in a.GetTypes())
             {
                 var revivers = from m in type.GetMethods(BindingFlags.Static | BindingFlags.Public)
@@ -204,6 +210,10 @@ namespace PowerArgs
                 {
                     SetReviver(reviver);
                 }
+            }
+            if(alreadySearched.Contains(a) == false)
+            {
+                alreadySearched.Add(a);
             }
         }
 

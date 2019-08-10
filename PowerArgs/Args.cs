@@ -65,7 +65,7 @@ namespace PowerArgs
         public static void SearchAssemblyForRevivers(Assembly a = null)
         {
             a = a ?? Assembly.GetCallingAssembly();
-            ArgRevivers.SearchAssemblyForRevivers(a);
+            ArgRevivers.SearchAssemblyForRevivers(a, true);
         }
 
         /// <summary>
