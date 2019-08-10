@@ -22,24 +22,24 @@ namespace ArgsTests.CLI.Controls
                 YMinOverride = 0,
                 YMaxOverride = 100,
                 Data = new List<Series>()
+                {
+                    new Series()
                     {
-                        new Series()
+                        Title = "",
+                        Points = new List<DataPoint>()
                         {
-                            Title = "",
-                            Points = new List<DataPoint>()
-                            {
-                                new DataPoint(){ X = new DateTime(2000,1,1).Ticks, Y = 50 },
-                                new DataPoint(){ X = new DateTime(2000,1,1).AddHours(3).Ticks, Y = 45 },
-                                new DataPoint(){ X = new DateTime(2000,1,1).AddHours(6).Ticks, Y = 50 },
-                                new DataPoint(){ X = new DateTime(2000,1,1).AddHours(9).Ticks, Y = 55 },
-                                new DataPoint(){ X = new DateTime(2000,1,1).AddHours(12).Ticks, Y = 50 },
-                                new DataPoint(){ X = new DateTime(2000,1,1).AddHours(15).Ticks, Y = 45 },
-                                new DataPoint(){ X = new DateTime(2000,1,1).AddHours(18).Ticks, Y = 50 },
-                                new DataPoint(){ X = new DateTime(2000,1,1).AddHours(21).Ticks, Y = 55 },
-                                new DataPoint(){ X = new DateTime(2000,1,1).AddHours(24).Ticks, Y = 50 },
-                            }
+                            new DataPoint(){ X = new DateTime(2000,1,1).Ticks, Y = 50 },
+                            new DataPoint(){ X = new DateTime(2000,1,1).AddHours(3).Ticks, Y = 45 },
+                            new DataPoint(){ X = new DateTime(2000,1,1).AddHours(6).Ticks, Y = 50 },
+                            new DataPoint(){ X = new DateTime(2000,1,1).AddHours(9).Ticks, Y = 55 },
+                            new DataPoint(){ X = new DateTime(2000,1,1).AddHours(12).Ticks, Y = 50 },
+                            new DataPoint(){ X = new DateTime(2000,1,1).AddHours(15).Ticks, Y = 45 },
+                            new DataPoint(){ X = new DateTime(2000,1,1).AddHours(18).Ticks, Y = 50 },
+                            new DataPoint(){ X = new DateTime(2000,1,1).AddHours(21).Ticks, Y = 55 },
+                            new DataPoint(){ X = new DateTime(2000,1,1).AddHours(24).Ticks, Y = 50 },
                         }
                     }
+                }
             };
 
             RenderChartTestCommon(options);
@@ -107,10 +107,6 @@ namespace ArgsTests.CLI.Controls
 
         [TestMethod]
         public void Parabola()
-
-
-
-
         {
 
             var points = new List<DataPoint>();
@@ -133,7 +129,6 @@ namespace ArgsTests.CLI.Controls
         [TestMethod]
         public void Cube()
         {
-
             var points = new List<DataPoint>();
             for (var i = -100; i <= 100; i++)
             {

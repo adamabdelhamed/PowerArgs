@@ -269,21 +269,23 @@ namespace PowerArgs
         /// The aggregate promise resolves only if all inner promises resolves. If any inner promise
         /// fails then the aggregate promise will fail.
         /// </summary>
-        /// <param name="others">the promises to aggregate</param>
+        /// <param name="promises">the promises to aggregate</param>
         /// <returns>the aggregate promise</returns>
-        public static Promise WhenAll(List<Promise> others)
+        public static Promise WhenAll(List<Promise> promises)
         {
             List<Exception> aggregateExceptions = new List<Exception>();
             Deferred outerDeferred = Deferred.Create();
-
-            int waitCount = others.Count;
-            foreach (var promise in others)
+            int waitCount = promises.Count;
+            foreach (var promise in promises)
             {
                 promise.Finally((p) =>
                 {
                     if (p.Exception != null)
                     {
-                        aggregateExceptions.Add(p.Exception);
+                        lock (aggregateExceptions)
+                        {
+                            aggregateExceptions.Add(p.Exception);
+                        }
                     }
 
                     var decrementResult = Interlocked.Decrement(ref waitCount);

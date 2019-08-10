@@ -1141,25 +1141,81 @@ namespace PowerArgs.Cli
         public ConsoleString FormatValue(double min, double max, double value)
         {
             var t = new TimeSpan((long)value);
+            var minTime = new TimeSpan((long)min);
+            var maxTime = new TimeSpan((long)max);
+            var range = maxTime - minTime;
+
             // we have an even day
             if (t.Round(TimeSpan.FromDays(1)) == t)
             {
-                return (t.TotalDays + "d").ToConsoleString();
+                if (t.TotalDays == 0 && range < TimeSpan.FromSeconds(1))
+                {
+                    return "0ms".ToConsoleString();
+                }
+                else if (t.TotalDays == 0 && range < TimeSpan.FromMinutes(1))
+                {
+                    return "0s".ToConsoleString();
+                }
+                else if(t.TotalDays == 0 && range < TimeSpan.FromHours(1))
+                {
+                    return "0m".ToConsoleString();
+                }
+                else if (t.TotalDays == 0 && range < TimeSpan.FromHours(24))
+                {
+                    return "0h".ToConsoleString();
+                }
+                else
+                {
+                    return (t.TotalDays + "d").ToConsoleString();
+                }
             }
             // we have an even hour that is not on a day boundary
             else if (t.Round(TimeSpan.FromHours(1)) == t)
             {
-                return (t.TotalHours + "h").ToConsoleString();
+                if (t.TotalHours == 0 && range < TimeSpan.FromSeconds(1))
+                {
+                    return "0ms".ToConsoleString();
+                }
+                else if (t.TotalHours == 0 && range < TimeSpan.FromMinutes(1))
+                {
+                    return "0s".ToConsoleString();
+                }
+                else if (t.TotalHours == 0 && range < TimeSpan.FromHours(1))
+                {
+                    return "0m".ToConsoleString();
+                }
+                else
+                {
+                    return (t.TotalHours + "h").ToConsoleString();
+                }
             }
             // we have an even minute that is not on an hour boundary
             else if (t.Round(TimeSpan.FromMinutes(1)) == t)
             {
-                return (t.TotalMinutes + "m").ToConsoleString();
+                if (t.TotalMinutes == 0 && range < TimeSpan.FromSeconds(1))
+                {
+                    return "0ms".ToConsoleString();
+                }
+                else if (t.TotalMinutes == 0 && range < TimeSpan.FromMinutes(1))
+                {
+                    return "0s".ToConsoleString();
+                }
+                else
+                {
+                    return (t.TotalMinutes + "m").ToConsoleString();
+                }
             }
             // we have an even second that is not on a minute boundary
             else if (t.Round(TimeSpan.FromSeconds(1)) == t)
             {
-                return (t.TotalSeconds + "s").ToConsoleString();
+                if (t.TotalSeconds == 0 && range < TimeSpan.FromSeconds(1))
+                {
+                    return "0ms".ToConsoleString();
+                }
+                else
+                {
+                    return (t.TotalSeconds + "s").ToConsoleString();
+                }
             }
             else
             {
