@@ -392,6 +392,7 @@ namespace PowerArgs.Cli
                 int dx = Math.Abs(x1 - x2);
                 int dy = Math.Abs(y1 - y2);
 
+                Point last = new Point();
                 if (dy > dx)
                 {
                     for (double x = x1; x < x2; x += DrawPrecision)
@@ -399,7 +400,12 @@ namespace PowerArgs.Cli
                         double y = slope + (x - x1) + y1;
                         int xInt = (int)Math.Round(x);
                         int yInt = (int)Math.Round(y);
-                        ret.Add(new Point(xInt, yInt));
+                        var p = new Point(xInt, yInt);
+                        if (p.Equals(last) == false)
+                        {
+                            ret.Add(p);
+                            last = p;
+                        }
                     }
 
                     for (double x = x2; x < x1; x += DrawPrecision)
@@ -407,7 +413,12 @@ namespace PowerArgs.Cli
                         double y = slope + (x - x1) + y1;
                         int xInt = (int)Math.Round(x);
                         int yInt = (int)Math.Round(y);
-                        ret.Add(new Point(xInt, yInt));
+                        var p = new Point(xInt, yInt);
+                        if (p.Equals(last) == false)
+                        {
+                            ret.Add(p);
+                            last = p;
+                        }
                     }
                 }
                 else
@@ -417,7 +428,12 @@ namespace PowerArgs.Cli
                         double x = ((y - y1) / slope) + x1;
                         int xInt = (int)Math.Round(x);
                         int yInt = (int)Math.Round(y);
-                        ret.Add(new Point(xInt, yInt));
+                        var p = new Point(xInt, yInt);
+                        if (p.Equals(last) == false)
+                        {
+                            ret.Add(p);
+                            last = p;
+                        }
                     }
 
                     for (double y = y2; y < y1; y += DrawPrecision)
@@ -425,12 +441,17 @@ namespace PowerArgs.Cli
                         double x = ((y - y1) / slope) + x1;
                         int xInt = (int)Math.Round(x);
                         int yInt = (int)Math.Round(y);
-                        ret.Add(new Point(xInt, yInt));
+                        var p = new Point(xInt, yInt);
+                        if (p.Equals(last) == false)
+                        {
+                            ret.Add(p);
+                            last = p;
+                        }
                     }
                 }
             }
 
-            return ret.Distinct().ToList();
+            return ret;
         }
 
         /// <summary>

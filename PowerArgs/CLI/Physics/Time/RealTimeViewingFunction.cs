@@ -99,7 +99,7 @@ namespace PowerArgs.Cli.Physics
             var age = t.Now - simulationTimeSample;
             var slept = false;
 
-            while (Enabled && age > wallClockTimeElapsed)
+            if (Enabled && age > wallClockTimeElapsed)
             {
                 var sleepTime = age - wallClockTimeElapsed;
                 Thread.Sleep(sleepTime);
