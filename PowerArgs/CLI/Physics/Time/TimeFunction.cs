@@ -78,8 +78,8 @@ namespace PowerArgs.Cli.Physics
 
         public List<string> Tags { get; set; } = new List<string>();
 
-        public bool HasSimpleTag(string tag) => Tags.Where(t => t.ToLower().Equals(tag.ToLower())).Any();
-        public bool HasValueTag(string tag) => Tags.Where(t => t.ToLower().StartsWith(tag.ToLower() + ":")).Any();
+        public bool HasSimpleTag(string tag) => Tags.Where(t => t.Equals(tag, StringComparison.OrdinalIgnoreCase)).Any();
+        public bool HasValueTag(string tag) => Tags.Where(t => t.StartsWith(tag + ":", StringComparison.OrdinalIgnoreCase)).Any();
 
         public string GetTagValue(string key)
         {

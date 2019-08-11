@@ -9,7 +9,7 @@ namespace PowerArgs.Cli.Physics
     {
         public const string PassThruTag = "passthru";
 
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .1f)
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .2f)
         {
             IRectangularF current = from;
             var currentDistance = current.CalculateDistanceTo(to);
@@ -37,7 +37,7 @@ namespace PowerArgs.Cli.Physics
             return true;
         }
 
-        public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = .1f)
+        public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = .2f)
         {
             for (var d = increment; d < range; d += increment)
             {
