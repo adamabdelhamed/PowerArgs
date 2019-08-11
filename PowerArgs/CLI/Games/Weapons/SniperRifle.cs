@@ -81,11 +81,11 @@ namespace PowerArgs.Games
         {
             var aimLineSegments = new List<AimLineSegment>();
 
-            var d = options.From.CalculateDistanceTo(options.To)-1;
+            var d = Geometry.CalculateDistanceTo(options.From, options.To) - 1;
             var angle = options.From.CalculateAngleTo(options.To);
             for (var i = 1; i < d; i++)
             {
-                var location = options.From.MoveTowards(angle, i);
+                var location = options.From.MoveTowards(angle, Geometry.NormalizeQuantity(i,angle,true));
                 var segment = SpaceTime.CurrentSpaceTime.Add(new AimLineSegment(options.Z, new ConsoleCharacter(DefaultWireChar, ConsoleColor.Cyan)));
                 segment.MoveTo(location.Left, location.Top);
                 aimLineSegments.Add(segment);
