@@ -10,7 +10,10 @@ namespace PowerArgs
     /// <typeparam name="T"></typeparam>
     public class TokenReader<T> where T : Token
     {
-        private List<T> tokens;
+        /// <summary>
+        /// Gets the tokens that were passed into the reader as a list
+        /// </summary>
+        public List<T> Tokens { get; private set; }
         private int currentIndex;
 
         /// <summary>
@@ -20,7 +23,7 @@ namespace PowerArgs
         public TokenReader(IEnumerable<T> tokens)
         {
             if (tokens == null) throw new ArgumentNullException("tokens cannot be null");
-            this.tokens = tokens.ToList();
+            this.Tokens = tokens.ToList();
             currentIndex = -1;
         }
 
@@ -40,7 +43,7 @@ namespace PowerArgs
         {
             get
             {
-                return tokens[Position];
+                return Tokens[Position];
             }
         }
 
@@ -176,16 +179,16 @@ namespace PowerArgs
             do
             {
                 peekIndex++;
-                if (peekIndex >= tokens.Count)
+                if (peekIndex >= Tokens.Count)
                 {
                     ret = null;
                     lastPeekIndex = -1;
                     return false;
                 }
             }
-            while (skipWhitespace && string.IsNullOrWhiteSpace(tokens[peekIndex].Value));
+            while (skipWhitespace && string.IsNullOrWhiteSpace(Tokens[peekIndex].Value));
 
-            ret = tokens[peekIndex];
+            ret = Tokens[peekIndex];
             lastPeekIndex = peekIndex;
             return true;
         }
@@ -208,7 +211,7 @@ namespace PowerArgs
         public string ToString(bool skipWhitespace = false)
         {
             var ret = "";
-            foreach (var token in tokens)
+            foreach (var token in Tokens)
             {
                 if (skipWhitespace == true && string.IsNullOrWhiteSpace(token.Value))
                 {
