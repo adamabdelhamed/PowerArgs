@@ -8,7 +8,7 @@ namespace PowerArgs.Games
 {
     public class FramerateControl : StackPanel
     {
-        private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel, sleepTimeLabel, elementsControl, functionsControl;
+        private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel, sleepTimeLabel,zeroSpinsLabel, nonZeroSpinsLabel, elementsControl, functionsControl;
         private SpacetimePanel scene;
         public FramerateControl(SpacetimePanel scene)
         {
@@ -21,6 +21,8 @@ namespace PowerArgs.Games
             renderFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             paintFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             sleepTimeLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
+            zeroSpinsLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
+            nonZeroSpinsLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             sceneBusyPercentageLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             AddedToVisualTree.SubscribeForLifetime(SetupPolling, this);
         }
@@ -40,6 +42,8 @@ namespace PowerArgs.Games
                 paintFPSLabel.Text = FormatFramerateMessage($"{Application.PaintRequestsProcessedPerSecond} paint frames per second", Application.PaintRequestsProcessedPerSecond, false);
                 sceneBusyPercentageLabel.Text = FormatSceneBusyPercentage();
                 sleepTimeLabel.Text = (Math.Round(scene.RealTimeViewing.SleepTime)+" ms").ToConsoleString();
+                zeroSpinsLabel.Text = (scene.RealTimeViewing.ZeroSleepCycles + " zero spin cycles").ToConsoleString();
+                nonZeroSpinsLabel.Text = (scene.RealTimeViewing.SleepCycles + " non-zero spin cycles").ToConsoleString();
                 scene.SpaceTime.QueueAction(() =>
                 {
                     var functionCount = Time.CurrentTime.Functions.Count();

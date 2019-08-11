@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace PowerArgs.Cli.Physics
 {
@@ -13,6 +14,9 @@ namespace PowerArgs.Cli.Physics
 
         private RollingAverage sleepTimeAverage = new RollingAverage(30);
         public double SleepTime => sleepTimeAverage.Average;
+
+        public int ZeroSleepCycles { get; private set; }
+        public int SleepCycles { get; private set; }
 
         /// <summary>
         /// An event that fires when the target time simulation falls behind or catches up to
@@ -93,9 +97,24 @@ namespace PowerArgs.Cli.Physics
             // while the simulation time is ahead of the wall clock, spin
             var wallClockTimeElapsed = realTimeNow - wallClockSample;
             var age = t.Now - simulationTimeSample;
+            var slept = false;
+
             while (Enabled && age > wallClockTimeElapsed)
             {
-                wallClockTimeElapsed = DateTime.UtcNow - wallClockSample;
+                var sleepTime = age - wallClockTimeElapsed;
+                Thread.Sleep(sleepTime);
+                slept = true;
+            }
+
+            wallClockTimeElapsed = DateTime.UtcNow - wallClockSample;
+
+            if (slept == false)
+            {
+                ZeroSleepCycles++;
+            }
+            else
+            {
+                SleepCycles++;
             }
 
             var idleTime = DateTime.UtcNow - realTimeNow;

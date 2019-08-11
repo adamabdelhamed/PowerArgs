@@ -105,31 +105,34 @@ namespace PowerArgs.Cli.Physics
             }
 
             if (Application == null) return;
-          
-            var syncOperation = Application.QueueAction(() =>
-            {
-                foreach (var uiAction in uiActions)
-                {
-                    uiAction.Invoke();
-                }
-            });
 
-            while (syncOperation.IsFulfilled == false)
+            if (uiActions.Count > 0)
             {
-                // todo - improve this multithreading hack because Application can be null after the null check
-                try
+                var syncOperation = Application.QueueAction(() =>
                 {
-                    if (Application == null || Application.IsExpired || SpaceTime.IsRunning == false)
+                    foreach (var uiAction in uiActions)
+                    {
+                        uiAction.Invoke();
+                    }
+                });
+
+                while (syncOperation.IsFulfilled == false)
+                {
+                    // todo - improve this multithreading hack because Application can be null after the null check
+                    try
+                    {
+                        if (Application == null || Application.IsExpired || SpaceTime.IsRunning == false)
+                        {
+                            return;
+                        }
+                    }
+                    catch (NullReferenceException)
                     {
                         return;
                     }
                 }
-                catch (NullReferenceException)
-                {
-                    return;
-                }
             }
-                 
+
             resizedSinceLastRender = false;
             SpaceTime.ClearChanges();
         }

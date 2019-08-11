@@ -178,6 +178,7 @@ namespace PowerArgs.Cli.Physics
                 }
             })
             { Name = name };
+            t.Priority = ThreadPriority.AboveNormal;
             t.Start();
 
             return runDeferred.Promise;

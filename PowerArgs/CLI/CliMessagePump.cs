@@ -509,7 +509,7 @@ namespace PowerArgs.Cli
 
                     if (idle)
                     {
-                        Thread.Sleep(0);
+                        Thread.Sleep(1);
                     }
                 }
                 runDeferred.Resolve();
