@@ -1699,7 +1699,7 @@ namespace PowerArgs
         /// <summary>
         /// The default equality comparer that will require styles to be equal and will simply call string.Equals for string equality
         /// </summary>
-        public static ConsoleStringEqualityComparer Default { get; } = new ConsoleStringEqualityComparer();
+        public static readonly ConsoleStringEqualityComparer Default = new ConsoleStringEqualityComparer();
 
         /// <summary>
         /// Gets the string euquality comparer used for string evaluations
