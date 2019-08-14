@@ -9,11 +9,10 @@ namespace PowerArgs.Cli.Physics
     public class SpacetimePanel : ConsolePanel
     {
         public SpaceTime SpaceTime { get; private set; }
-
         private bool resizedSinceLastRender;
         private Dictionary<SpacialElement, SpacialElementRenderer> renderers;
         private SpacialElementBinder thingBinder;
-
+        private AutoResetEvent resetHandle;
         public RealTimeViewingFunction RealTimeViewing { get; private set; }
 
         public SpacetimePanel(int w, int h, SpaceTime time = null)
@@ -23,7 +22,7 @@ namespace PowerArgs.Cli.Physics
             Background = ConsoleColor.White;
             renderers = new Dictionary<SpacialElement, SpacialElementRenderer>();
             thingBinder = new SpacialElementBinder();
-
+            resetHandle = new AutoResetEvent(false);
             this.SpaceTime = time ?? new SpaceTime(w, h, increment: TimeSpan.FromSeconds(.05));
             this.SpaceTime.QueueAction(() =>
             {
@@ -39,10 +38,12 @@ namespace PowerArgs.Cli.Physics
                 {
                     RealTimeViewing?.Evaluate();
                 }, TimeSpan.FromSeconds(.1)));
+                this.OnDisposed(()=> resetHandle.Set());
             }, this);
 
             this.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>
             {
+                resetHandle.Set();
                 Application?.QueueAction(() =>
                 {
                     throw new AggregateException(ex);
@@ -59,7 +60,7 @@ namespace PowerArgs.Cli.Physics
                 return;
             }
 
-            var syncOperation = Application.QueueAction(() =>
+            Application.QueueAction(() =>
             {
                 foreach (var e in SpaceTime.AddedElements)
                 {
@@ -90,25 +91,10 @@ namespace PowerArgs.Cli.Physics
                         SizeAndLocate(r);
                     }
                 }
+                resetHandle.Set();
             });
 
-            while (syncOperation.IsFulfilled == false)
-            {
-                Thread.Sleep(1);
-                // todo - improve this multithreading hack because Application can be null after the null check
-                try
-                {
-                    if (Application == null || Application.IsExpired || SpaceTime.IsRunning == false)
-                    {
-                        return;
-                    }
-                }
-                catch (NullReferenceException)
-                {
-                    return;
-                }
-            }
-
+            resetHandle.WaitOne();
             resizedSinceLastRender = false;
             SpaceTime.ClearChanges();
         }
