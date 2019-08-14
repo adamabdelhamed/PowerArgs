@@ -9,6 +9,7 @@ namespace PowerArgs.Cli
     /// </summary>
     public class ConsoleBitmapStreamWriter : Lifetime
     {
+        private static readonly ConsoleCharacter defaultChar = new ConsoleCharacter(' ');
         public const int DurationLineLength = 30;
         private DateTime? firstFrameTime;
         private ConsoleBitmapRawFrame lastFrame;
@@ -180,7 +181,8 @@ namespace PowerArgs.Cli
                 rawFrame.Pixels[x] = new ConsoleCharacter[GetEffectiveHeight(bitmap)];
                 for (int y = 0; y < GetEffectiveHeight(bitmap); y++)
                 {
-                    var pixelValue = bitmap.GetPixel(GetEffectiveLeft + x, GetEffectiveTop + y).Value.HasValue ? bitmap.GetPixel(GetEffectiveLeft + x, GetEffectiveTop + y).Value.Value : new ConsoleCharacter(' ');
+                    var pixel = bitmap.GetPixel(GetEffectiveLeft + x, GetEffectiveTop + y);
+                    var pixelValue = pixel.Value.HasValue ? pixel.Value.Value : defaultChar;
                     rawFrame.Pixels[x][y] = pixelValue;
                 }
             }
