@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace PowerArgs.Cli.Physics
 {
@@ -53,80 +54,58 @@ namespace PowerArgs.Cli.Physics
 
         private void UpdateViewInternal()
         {
-            var uiActions = new List<Action>();
-            foreach (var e in SpaceTime.AddedElements)
+            if(SpaceTime.AddedElements.Count == 0 && SpaceTime.ChangedElements.Count == 0 && SpaceTime.RemovedElements.Count == 0)
             {
-                var t = e;
-                uiActions.Add(() =>
+                return;
+            }
+
+            var syncOperation = Application.QueueAction(() =>
+            {
+                foreach (var e in SpaceTime.AddedElements)
                 {
-                    var renderer = thingBinder.Bind(t, SpaceTime);
-                    renderers.Add(t, renderer);
+                    var renderer = thingBinder.Bind(e, SpaceTime);
+                    renderers.Add(e, renderer);
                     this.Controls.Add(renderer);
                     SizeAndLocate(renderer);
                     renderer.OnRender();
-                });
-            }
-
-            foreach (var e in SpaceTime.ChangedElements)
-            {
-                var t = e;
-                uiActions.Add(() =>
-                {
-                    var renderer = renderers[t];
-                    SizeAndLocate(renderer);
-                    renderer.OnRender();
-                });
-            }
-
-            foreach (var e in SpaceTime.RemovedElements)
-            {
-                var t = e;
-                uiActions.Add(() =>
-                {
-                    var renderer = renderers[t];
-                    renderers.Remove(t);
-                    Controls.Remove(renderer);
-                });
-            }
-
-            if (resizedSinceLastRender)
-            {
-                foreach (var r in renderers.Values)
-                {
-                    var renderer = r;
-                    uiActions.Add(() =>
-                    {
-                        SizeAndLocate(renderer);
-                    });
                 }
-            }
 
-            if (Application == null) return;
+                foreach (var e in SpaceTime.ChangedElements)
+                {
+                    SizeAndLocate(renderers[e]);
+                    renderers[e].OnRender();
+                }
 
-            if (uiActions.Count > 0)
+                foreach (var e in SpaceTime.RemovedElements)
+                {
+                    var renderer = renderers[e];
+                    renderers.Remove(e);
+                    Controls.Remove(renderer);
+                }
+
+                if (resizedSinceLastRender)
+                {
+                    foreach (var r in renderers.Values)
+                    {
+                        SizeAndLocate(r);
+                    }
+                }
+            });
+
+            while (syncOperation.IsFulfilled == false)
             {
-                var syncOperation = Application.QueueAction(() =>
+                Thread.Sleep(1);
+                // todo - improve this multithreading hack because Application can be null after the null check
+                try
                 {
-                    foreach (var uiAction in uiActions)
-                    {
-                        uiAction.Invoke();
-                    }
-                });
-
-                while (syncOperation.IsFulfilled == false)
-                {
-                    // todo - improve this multithreading hack because Application can be null after the null check
-                    try
-                    {
-                        if (Application == null || Application.IsExpired || SpaceTime.IsRunning == false)
-                        {
-                            return;
-                        }
-                    }
-                    catch (NullReferenceException)
+                    if (Application == null || Application.IsExpired || SpaceTime.IsRunning == false)
                     {
                         return;
                     }
+                }
+                catch (NullReferenceException)
+                {
+                    return;
                 }
             }
 

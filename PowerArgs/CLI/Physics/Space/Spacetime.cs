@@ -120,9 +120,9 @@ namespace PowerArgs.Cli.Physics
         public IRectangularF Bounds { get; private set; }
         public void ClearChanges() => ChangeTracker.ClearChanges();
         public bool ChangeTrackingEnabled { get => ChangeTracker.Enabled; set => ChangeTracker.Enabled = value; }
-        public IEnumerable<SpacialElement> ChangedElements => ChangeTracker.ChangedElements;
-        public IEnumerable<SpacialElement> AddedElements => ChangeTracker.AddedElements;
-        public IEnumerable<SpacialElement> RemovedElements => ChangeTracker.RemovedElements;
+        public IReadOnlyList<SpacialElement> ChangedElements => ChangeTracker.ChangedElements;
+        public IReadOnlyList<SpacialElement> AddedElements => ChangeTracker.AddedElements;
+        public IReadOnlyList<SpacialElement> RemovedElements => ChangeTracker.RemovedElements;
         public IEnumerable<SpacialElement> Elements => Functions.Where(f => f is SpacialElement).Select(f => f as SpacialElement);
 
         private SpacialChangeTracker ChangeTracker { get; set; } = new SpacialChangeTracker();
@@ -223,9 +223,9 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public IEnumerable<SpacialElement> ChangedElements => changed.AsReadOnly();
-        public IEnumerable<SpacialElement> AddedElements => added.AsReadOnly();
-        public IEnumerable<SpacialElement> RemovedElements => removed.AsReadOnly();
+        public IReadOnlyList<SpacialElement> ChangedElements => changed.AsReadOnly();
+        public IReadOnlyList<SpacialElement> AddedElements => added.AsReadOnly();
+        public IReadOnlyList<SpacialElement> RemovedElements => removed.AsReadOnly();
 
         public void ClearChanges()
         {
