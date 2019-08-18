@@ -280,9 +280,12 @@ namespace PowerArgs.Cli
         /// </summary>
         public void ClearFocus()
         {
-            FocusedControl.HasFocus = false;
-            FocusedControl.FireFocused(false);
-            FocusedControl = null;
+            if (FocusedControl != null)
+            {
+                FocusedControl.HasFocus = false;
+                FocusedControl.FireFocused(false);
+                FocusedControl = null;
+            }
         }
 
         private bool CycleFocusIndex(bool forward)

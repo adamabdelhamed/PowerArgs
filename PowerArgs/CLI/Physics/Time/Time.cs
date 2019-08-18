@@ -5,6 +5,12 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli.Physics
 {
+    public class TimeExceptionArgs
+    {
+        public Exception Exception { get; set; }
+        public bool Handled { get; set; }
+    }
+
     /// <summary>
     /// A model of time that lets you plug time functions and play them out on a thread. Each iteration of the time loop processes queued actions,
     /// executes time functions in order, and then increments the Now value.
@@ -58,6 +64,12 @@ namespace PowerArgs.Cli.Physics
         /// An event that fires when a time function is removed from the model
         /// </summary>
         public Event<ITimeFunction> TimeFunctionRemoved { get; private set; } = new Event<ITimeFunction>();
+
+        /// <summary>
+        /// An event that fires just before there is an unhandled exception on the model's thread. If any subscriber handles the exception
+        /// then the thread will stop gracefully (promise resolves). Otherwise it will not (promise rejects and the UnhandledException event fires.
+        /// </summary>
+        public Event<TimeExceptionArgs> BeforeUnhandledException { get; private set; } = new Event<TimeExceptionArgs>();
 
         /// <summary>
         /// An event that fires when there is an unhandled exception on the model's thread
@@ -173,12 +185,23 @@ namespace PowerArgs.Cli.Physics
                 catch (Exception ex)
                 {
                     IsRunning = false;
-                    UnhandledException.Fire(ex);
-                    runDeferred.Reject(ex);
+                    var args = new TimeExceptionArgs() { Exception = ex };
+                    BeforeUnhandledException.Fire(args);
+
+                    if (args.Handled)
+                    {
+                        runDeferred.Resolve();
+                    }
+                    else
+                    {
+                        UnhandledException.Fire(ex);
+                        runDeferred.Reject(ex);
+                    }
                 }
             })
             { Name = name };
             t.Priority = ThreadPriority.AboveNormal;
+            t.IsBackground = true;
             t.Start();
 
             return runDeferred.Promise;
