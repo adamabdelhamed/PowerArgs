@@ -14,6 +14,17 @@ namespace PowerArgs.Cli
         public CompactConsole()
         {
             SubscribeForLifetime(nameof(Bounds),()=>HardRefresh(), this);
+            this.Ready.SubscribeOnce(() =>
+            {
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, null, () =>
+                {
+                    var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, false, false, false));
+                }, this);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, ConsoleModifiers.Shift, () =>
+                {
+                    var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, true, false, false));
+                }, this);
+            });
         }
 
         protected abstract CommandLineArgumentsDefinition CreateDefinition();
@@ -71,14 +82,6 @@ namespace PowerArgs.Cli
             outputLabel = outputPanel.Add(new Label() { Text = outputValue ?? UpdateAssistiveText(), Mode = LabelRenderMode.MultiLineSmartWrap }).Fill();
 
             tb.KeyInputReceived.SubscribeForLifetime(async (keyInfo)=>await OnHandleHey(keyInfo), tb);
-            Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, null, () =>
-            {
-                var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, false, false, false));
-            }, tb);
-            Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, ConsoleModifiers.Shift, () =>
-            {
-                var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, true, false, false));
-            }, tb);
         }
 
         private async Task OnHandleHey(ConsoleKeyInfo keyInfo)
