@@ -40,6 +40,7 @@ namespace PowerArgs.Games
 
     public class AimLineOptions
     {
+        public bool IsHot { get; set; }
         public IRectangularF From { get; set; }
         public IRectangularF To { get; set; }
         public ILifetimeManager LifetimeManager { get; set; }
@@ -75,7 +76,7 @@ namespace PowerArgs.Games
 
     public static class AimLine
     {
-        public const char DefaultWireChar = '.';
+        public const char DefaultWireChar = '-';
 
         public static AimLineHandle Connect(AimLineOptions options)
         {
@@ -86,7 +87,7 @@ namespace PowerArgs.Games
             for (var i = 1; i < d; i++)
             {
                 var location = options.From.MoveTowards(angle, Geometry.NormalizeQuantity(i,angle,true));
-                var segment = SpaceTime.CurrentSpaceTime.Add(new AimLineSegment(options.Z, new ConsoleCharacter(DefaultWireChar, ConsoleColor.Cyan)));
+                var segment = SpaceTime.CurrentSpaceTime.Add(new AimLineSegment(options.Z, new ConsoleCharacter(DefaultWireChar, options.IsHot ? ConsoleColor.Cyan : ConsoleColor.Gray)));
                 segment.MoveTo(location.Left, location.Top);
                 aimLineSegments.Add(segment);
             }
