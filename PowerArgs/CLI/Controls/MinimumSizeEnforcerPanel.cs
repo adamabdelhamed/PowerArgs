@@ -22,6 +22,7 @@ namespace PowerArgs.Cli
             IsVisible = false;
             messageLabel = this.Add(new Label() { Text = "Make that screen bigger yo!".ToYellow() }).CenterBoth();
             this.SubscribeForLifetime(nameof(Bounds), CheckSize, this);
+            ZIndex = int.MaxValue;
         }
 
         private void CheckSize()
@@ -32,7 +33,10 @@ namespace PowerArgs.Cli
                 {
                     tooSmallLifetime = new Lifetime();
                     IsVisible = true;
+                    CanFocus = true;
+                    Application.QueueAction(() => this.TryFocus());
                     Application.FocusManager.Push();
+                    Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, () => { }, this);
                     options.OnMinimumSizeNotMet();
                     OnTooSmall();
                 }
@@ -40,6 +44,7 @@ namespace PowerArgs.Cli
             else
             {
                 IsVisible = false;
+                CanFocus = false;
                 if (tooSmallLifetime != null)
                 {
                     tooSmallLifetime.Dispose();
