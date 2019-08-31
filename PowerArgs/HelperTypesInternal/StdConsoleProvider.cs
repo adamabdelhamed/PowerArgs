@@ -208,7 +208,12 @@ namespace PowerArgs
             {
                 Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
                 Console.Clear();
-            }finally
+            }
+            catch(Exception ex)
+            {
+
+            }
+            finally
             {
                 Console.BackgroundColor = bg;
             }
