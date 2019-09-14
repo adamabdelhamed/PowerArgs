@@ -1,5 +1,5 @@
 ﻿using PowerArgs.Cli.Physics;
-
+using System.Linq;
 namespace PowerArgs.Games
 {
     public enum WeaponStyle
@@ -58,6 +58,28 @@ namespace PowerArgs.Games
                 if (AmmoAmount > 0)
                 {
                     AmmoAmount--;
+
+                    if(AmmoAmount == 0)
+                    {
+                        var alternative = Holder.Inventory.Items
+                            .WhereAs<Weapon>()
+                            .Where(w => w.Style == this.Style && w.AmmoAmount > 0)
+                            .OrderByDescending(w => w.PowerRanking)
+                            .FirstOrDefault();
+
+                        if(alternative != null)
+                        {
+                            if(alternative.Style == WeaponStyle.Primary)
+                            {
+                                Holder.Inventory.PrimaryWeapon = alternative;
+                            }
+                            else
+                            {
+                                Holder.Inventory.ExplosiveWeapon = alternative;
+                            }
+                        }
+                    }
+
                 }
             }
             else
