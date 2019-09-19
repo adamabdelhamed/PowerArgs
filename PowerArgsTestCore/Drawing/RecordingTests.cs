@@ -68,7 +68,9 @@ namespace ArgsTests.CLI.Recording
                 var video = reader.ReadToEnd();
                 var lastFrameIndex = 0;
                 var sw = Stopwatch.StartNew();
-                while((lastFrameIndex =  video.Seek(destination, out bitmap, lastFrameIndex >= 0 ? lastFrameIndex : 0)) != numFrames - 1)
+
+                InMemoryConsoleBitmapFrame frame;
+                while((lastFrameIndex =  video.Seek(destination, out frame, lastFrameIndex >= 0 ? lastFrameIndex : 0)) != numFrames - 1)
                 {
                     destination = destination.Add(TimeSpan.FromMilliseconds(1));
                 }

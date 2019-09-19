@@ -75,9 +75,8 @@ namespace PowerArgs.Cli
         /// <summary>
         /// The buttons that appear under the player progress bar
         /// </summary>
-        private Button  seekToBeginningButton, seekBack10SButton, seekForward10SButton, seekToEndButton;
+        private Button  seekToBeginningButton, seekBack10SButton, seekForward10SButton, seekToEndButton, playButton;
 
-        public Button PlayButton { get; private set; }
 
         /// <summary>
         /// The lifetime of the current play operation (or null if the player is not playing)
@@ -132,11 +131,12 @@ namespace PowerArgs.Cli
             }
         }
 
+        public Event<TimeSpan> OnFramePlayed { get; private set; } = new Event<TimeSpan>();
 
         /// <summary>
         /// Creates a console bitmap player control with no video loaded
         /// </summary>
-        public ConsoleBitmapPlayer()
+        public ConsoleBitmapPlayer(bool showButtonBar = true)
         {
             this.CanFocus = false;
             RewindAndFastForwardIncrement = TimeSpan.FromSeconds(10);
@@ -146,21 +146,25 @@ namespace PowerArgs.Cli
             playerProgressBar = Add(new PlayerProgressBar() { ShowPlayCursor = false }).FillHorizontally(padding: new Thickness(0,0,0,0)).DockToBottom(padding: 1);
 
             var buttonBar = Add(new StackPanel() { CanFocus =false, Height=1, Orientation = Orientation.Horizontal }).FillHorizontally().DockToBottom();
-
+          
             seekToBeginningButton = buttonBar.Add(new Button() { Text = "<<".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.Home), CanFocus = false });
-            seekToBeginningButton.Pressed.SubscribeForLifetime(SeekToBeginningButtonPressed, this);
-
-            seekBack10SButton = buttonBar.Add(new Button() { Shortcut = new KeyboardShortcut(ConsoleKey.LeftArrow), CanFocus = false });
-            seekBack10SButton.Pressed.SubscribeForLifetime(Rewind, this);
-
-            PlayButton = buttonBar.Add(new Button() { Text = "".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.P), CanFocus = false });
-            PlayButton.Pressed.SubscribeForLifetime(PlayPressed, this);
-
+            seekBack10SButton = buttonBar.Add(new Button() { Shortcut = new KeyboardShortcut(ConsoleKey.LeftArrow), CanFocus = false });          
+            playButton = buttonBar.Add(new Button() { Text = "".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.P), CanFocus = false });
             seekForward10SButton = buttonBar.Add(new Button() { Shortcut = new KeyboardShortcut(ConsoleKey.RightArrow), CanFocus = false });
-            seekForward10SButton.Pressed.SubscribeForLifetime(FastForward, this);
-
             seekToEndButton = buttonBar.Add(new Button() { Text = ">>".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.End), CanFocus = false });
-            seekToEndButton.Pressed.SubscribeForLifetime(SeekToEndButtonPressed, this);
+
+            if (showButtonBar)
+            {
+                seekToBeginningButton.Pressed.SubscribeForLifetime(SeekToBeginningButtonPressed, this);
+                seekBack10SButton.Pressed.SubscribeForLifetime(Rewind, this);
+                playButton.Pressed.SubscribeForLifetime(PlayPressed, this);
+                seekForward10SButton.Pressed.SubscribeForLifetime(FastForward, this);
+                seekToEndButton.Pressed.SubscribeForLifetime(SeekToEndButtonPressed, this);
+            }
+            else
+            {
+                buttonBar.IsVisible = false;
+            }
 
             this.SubscribeForLifetime(nameof(State), StateChanged, this);
 
@@ -259,6 +263,8 @@ namespace PowerArgs.Cli
             playStartTime = DateTime.UtcNow;
         }
 
+        public void Play() => PlayPressed();
+
         /// <summary>
         /// The handler for the play button that handles play / pause toggling and resetting to the beginning
         /// if the player is currently stopped at the end of the video.
@@ -323,17 +329,18 @@ namespace PowerArgs.Cli
                     var videoLocationPercentage = Math.Round(100.0 *newPlayerPosition.TotalSeconds / duration.Value.TotalSeconds,1);
                     videoLocationPercentage = Math.Min(videoLocationPercentage, 100);
                     playerProgressBar.PlayCursorPosition = videoLocationPercentage / 100.0;
-                    PlayButton.Text = $"Pause".ToConsoleString();
+                    playButton.Text = $"Pause".ToConsoleString();
 
-                    ConsoleBitmap seekedImage;
+                    InMemoryConsoleBitmapFrame seekedFrame;
  
-                    if((lastFrameIndex = inMemoryVideo.Seek(newPlayerPosition, out seekedImage, lastFrameIndex >= 0 ? lastFrameIndex : 0)) < 0)
+                    if((lastFrameIndex = inMemoryVideo.Seek(newPlayerPosition, out seekedFrame, lastFrameIndex >= 0 ? lastFrameIndex : 0)) < 0)
                     {
                         State = PlayerState.Buffering;
                     }
                     else
                     {
-                        CurrentFrame = seekedImage;
+                        CurrentFrame = seekedFrame.Bitmap;
+                        OnFramePlayed.Fire(seekedFrame.FrameTime);
                     }
 
                     if (newPlayerPosition > duration)
@@ -346,20 +353,20 @@ namespace PowerArgs.Cli
             else if(State == PlayerState.Stopped)
             {
                 pictureFrame.BorderColor = ConsoleColor.Yellow;
-                PlayButton.Text = "Play".ToConsoleString();
+                playButton.Text = "Play".ToConsoleString();
             }
             else if (State == PlayerState.Paused)
             {
-                PlayButton.Text = "Play".ToConsoleString();
+                playButton.Text = "Play".ToConsoleString();
             }
             else if(State == PlayerState.NotLoaded)
             {
-                PlayButton.Text = "Play".ToConsoleString();
-                PlayButton.CanFocus = false;
+                playButton.Text = "Play".ToConsoleString();
+                playButton.CanFocus = false;
             }
             else if (State == PlayerState.Buffering)
             {
-                PlayButton.Text = "Play".ToConsoleString();
+                playButton.Text = "Play".ToConsoleString();
             }
             else if(State == PlayerState.Failed)
             {
@@ -398,7 +405,7 @@ namespace PowerArgs.Cli
                             {
                                 this.CurrentFrame = videoWithProgressInfo.Frames[0].Bitmap;
                                 playerProgressBar.ShowPlayCursor = true;
-                                PlayButton.CanFocus = true;
+                                playButton.CanFocus = true;
                                 seekToBeginningButton.CanFocus = true;
                                 seekBack10SButton.CanFocus = true;
                                 seekForward10SButton.CanFocus = true;
@@ -406,7 +413,7 @@ namespace PowerArgs.Cli
                                 State = PlayerState.Stopped;
                                 if(Application.FocusManager.FocusedControl == null)
                                 {
-                                    Application.FocusManager.TrySetFocus(PlayButton);
+                                    Application.FocusManager.TrySetFocus(playButton);
                                 }
                             }
 
