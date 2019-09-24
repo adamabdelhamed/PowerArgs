@@ -2,12 +2,14 @@
 {
     public class StringSpacialElement : SpacialElement
     {
-        public ConsoleString Content { get; set; }
+        private ObservableObject observable = new ObservableObject();
+        public ConsoleString Content { get => observable.Get<ConsoleString>(); set => observable.Set(value); }
 
         public StringSpacialElement(ConsoleString content)
         {
             Content = content;
             ResizeTo(content.Length, 1);
+            observable.SubscribeForLifetime(nameof(Content), ()=> this.ResizeTo(Content.Length, this.Height), this.Lifetime);
         }
     }
 
