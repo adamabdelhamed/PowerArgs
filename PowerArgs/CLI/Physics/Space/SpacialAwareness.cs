@@ -149,6 +149,7 @@ namespace PowerArgs.Cli.Physics
                 EasingFunction = options.EasingFunction,
                 From = 0,
                 To = 1,
+                IsCancelled = options.IsCancelled,
                 Setter = v =>
                 {
                     var frameX = startX + (v * xDelta);
@@ -211,5 +212,10 @@ namespace PowerArgs.Cli.Physics
         /// finishes, to wait before reversing
         /// </summary>
         public float AutoReverseDelay { get; set; } = 0;
+
+        /// <summary>
+        /// A callback that indicates that the animation should end early
+        /// </summary>
+        public Func<bool> IsCancelled { get; set; }
     }
 }

@@ -49,6 +49,11 @@ namespace PowerArgs.Cli
         /// </summary>
         public float AutoReverseDelay { get; set; } = 0;
 
+        /// <summary>
+        /// A callback that indicates that we should end the animation early
+        /// </summary>
+        public Func<bool> IsCancelled { get; set; }
+
         internal abstract void Set(float value);
 
         internal Action<string> Debug { get; set; }
@@ -220,6 +225,11 @@ namespace PowerArgs.Cli
 #if DEBUG
                 options.Debug?.Invoke($"Delayed for {delayTime.TotalMilliseconds} ms at percentage {percentageDone}");
 #endif
+
+                if(options.IsCancelled != null && options.IsCancelled())
+                {
+                    return;
+                }
                 if (delayTime == TimeSpan.Zero)
                 {
                     await options.DelayProvider.YieldAsync();
