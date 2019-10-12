@@ -106,6 +106,11 @@ namespace PowerArgs.Cli
                         inner = ex.InnerException;
                     }
 
+                    if(ex is ArgException == false)
+                    {
+                        throw;
+                    }
+
                     output = inner.Message.ToRed();
                 }
                 finally
