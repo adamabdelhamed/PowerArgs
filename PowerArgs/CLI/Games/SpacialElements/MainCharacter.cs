@@ -69,6 +69,7 @@ namespace PowerArgs.Games
 
         public MainCharacter()
         {
+            this.Id = nameof(MainCharacter);
             InitializeTargeting();
             this.MoveTo(0, 0);
             this.Added.SubscribeForLifetime(() =>

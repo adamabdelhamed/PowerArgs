@@ -39,7 +39,7 @@ namespace PowerArgs.Games
         {
             var angle = Holder.Target != null ?
                 Holder.CalculateAngleTo(Holder.Target) :
-                MainCharacter.Current.Speed.Angle;
+                Holder.Speed.Angle;
 
             if (Holder == MainCharacter.Current && MainCharacter.Current.FreeAimCursor != null)
             {

@@ -9,6 +9,8 @@ namespace PowerArgs.Cli.Physics
     /// </summary>
     public interface ITimeFunction
     {
+        string Id { get; set; }
+
         /// <summary>
         /// An event that will be fired when this function is added to a time model
         /// </summary>
@@ -47,6 +49,8 @@ namespace PowerArgs.Cli.Physics
     /// </summary>
     public abstract class TimeFunction : ITimeFunction
     {
+        public string Id { get; set; }
+
         private class ActionTimeFunction : TimeFunction
         {
             public Action Eval { get; set; }

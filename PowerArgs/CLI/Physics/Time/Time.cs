@@ -108,6 +108,7 @@ namespace PowerArgs.Cli.Physics
         private Deferred runDeferred;
         private List<WorkItem> syncQueue = new List<WorkItem>();
         private CustomSyncContext syncContext;
+        private Dictionary<string, ITimeFunction> idMap = new Dictionary<string, ITimeFunction>();
         /// <summary>
         /// Creates a new time model, optionally providing a starting time and increment
         /// </summary>
@@ -334,6 +335,14 @@ namespace PowerArgs.Cli.Physics
         }
 
         /// <summary>
+        /// Gets the time function with the given id. Ids must be populated at the time it was
+        /// added in order to be tracked.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public ITimeFunction this[string id] { get => idMap[id]; }
+
+        /// <summary>
         /// Adds the given time function to the model. This method must be called from the time thread.
         /// </summary>
         /// <typeparam name="T">The type of the time function</typeparam>
@@ -345,10 +354,18 @@ namespace PowerArgs.Cli.Physics
             timeFunction.InternalState.AddedTime = Now;
             timeFunction.InternalState.AttachedTime = this;
             toAdd.Add(timeFunction);
+            if(timeFunction.Id != null)
+            {
+                idMap.Add(timeFunction.Id, timeFunction);
+            }
 
             timeFunction.Lifetime.OnDisposed(() =>
             {
                 toRemove.Add(timeFunction);
+                if(timeFunction.Id != null && idMap.ContainsKey(timeFunction.Id))
+                {
+                    idMap.Remove(timeFunction.Id);
+                }
                 TimeFunctionRemoved.Fire(timeFunction);
                 timeFunction.InternalState.AttachedTime = null;
             });

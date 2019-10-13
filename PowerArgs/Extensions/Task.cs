@@ -42,5 +42,17 @@ namespace PowerArgs
                 return runningTask.Result;
             }
         }
+
+        public static Task Then(this Task t, Action a)
+        {
+            return t.ContinueWith((t2)=> a(), TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        public static ILifetimeManager ToLifetime(this Task t)
+        {
+            var lt = new Lifetime();
+            t.ContinueWith((t2) => lt.Dispose(), TaskScheduler.FromCurrentSynchronizationContext());
+            return lt;
+        }
     }
 }

@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Linq;
 namespace PowerArgs
 {
     public static class ArrayEx
     {
+        public static bool None<T>(this IEnumerable<T> items) => items.Any() == false;
+
+
         public static List<T> ToList<T>(this Array a)
         {
             List<T> ret = new List<T>();
