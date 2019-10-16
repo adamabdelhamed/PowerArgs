@@ -8,6 +8,7 @@ namespace PowerArgs.Games
     public interface IInventoryItem
     {
         ConsoleString DisplayName { get; }
+        Character Holder { get; set; }
     }
 
     public class Inventory : ObservableObject
@@ -98,6 +99,7 @@ namespace PowerArgs.Games
 
         private void ProcessItem(IInventoryItem item)
         {
+            item.Holder = this.Owner;
             if (item is Weapon)
             {
                 var priorWeapons = Items.WhereAs<Weapon>().Where(w => w != item);
