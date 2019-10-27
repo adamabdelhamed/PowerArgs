@@ -22,6 +22,8 @@ namespace PowerArgs.Games
         public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
         public SpacialElement Target { get; set; }
 
+
+        public float TargetAngle => Target == null ? Speed.Angle : this.CalculateAngleTo(Target);
         public SpeedTracker Speed { get; set; }
 
         public Character()

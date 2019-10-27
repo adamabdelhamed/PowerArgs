@@ -274,6 +274,11 @@ namespace PowerArgs.Cli.Physics
 
             element.SizeOrPositionChanged.SubscribeForLifetime(() =>
             {
+                if(Time.CurrentTime == null)
+                {
+                    throw new InvalidOperationException("Change did not occur on the time thread");
+                }
+
                 if (element.InternalSpacialState.Changed == false)
                 {
                     changed.Add(element);
