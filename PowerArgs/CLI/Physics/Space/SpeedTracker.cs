@@ -57,6 +57,7 @@ namespace PowerArgs.Cli.Physics
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
 
         private float _angle;
+        private bool isSettingAnglePrivately;
         public float Angle
         {
             get
@@ -66,6 +67,7 @@ namespace PowerArgs.Cli.Physics
             set
             {
                 _angle = value;
+                if (isSettingAnglePrivately == false && Speed != 0) throw new InvalidOperationException("Angle can only be set when stopped");
                 Element.SizeOrPositionChanged.Fire();
             }
         }
@@ -161,8 +163,9 @@ namespace PowerArgs.Cli.Physics
             {
                 var oldLocation = Element.CopyBounds();
                 Element.MoveBy(dx, dy);
-
+                isSettingAnglePrivately = true;
                 this.Angle = oldLocation.Center().CalculateAngleTo(Element.Center());
+                isSettingAnglePrivately = false;
                 haveMovedSinceLastHitDetection = true;
             }
         }

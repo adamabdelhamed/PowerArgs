@@ -287,22 +287,7 @@ namespace PowerArgs.Games
 
             var angle = Character.Speed.Angle;
 
-            if (angle >= 315 || angle < 45)
-            {
-                c = '>';
-            }
-            else if (angle >= 45 && angle < 135)
-            {
-                c = 'v';
-            }
-            else if (angle >= 135 && angle < 225)
-            {
-                c = '<';
-            }
-            else
-            {
-                c = '^';
-            }
+            c = Geometry.GetArrowPointedAt(angle);
 
             context.Pen = new ConsoleCharacter(c, Character.Color);
             context.FillRect(0, 0, Width, Height);

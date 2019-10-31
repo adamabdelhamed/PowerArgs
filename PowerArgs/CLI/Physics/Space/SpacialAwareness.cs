@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Games;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,6 +9,12 @@ namespace PowerArgs.Cli.Physics
     public static class SpacialAwareness
     {
         public const string PassThruTag = "passthru";
+
+        public static bool HasLineOfSight(this Character from, IRectangularF to)
+        {
+            var obstacles = from.GetObstacles(from.Speed.HitDetectionExclusions, from.Speed.HitDetectionExclusionTypes);
+            return HasLineOfSight(from, to, obstacles);
+        }
 
         public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .2f)
         {
@@ -90,7 +97,7 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static List<IRectangularF> GetObstacles(this SpacialElement element, IEnumerable<SpacialElement> exclusions = null)
+        public static List<IRectangularF> GetObstacles(this SpacialElement element, IEnumerable<SpacialElement> exclusions = null, IEnumerable<Type> excludedTypes=null)
         {
             var ret = new List<IRectangularF>();
             foreach (var e in SpaceTime.CurrentSpaceTime.Elements)
@@ -108,6 +115,10 @@ namespace PowerArgs.Cli.Physics
                     continue;
                 }
                 else if(e.HasSimpleTag(PassThruTag))
+                {
+                    continue;
+                }
+                else if(excludedTypes != null && excludedTypes.Contains(e.GetType()))
                 {
                     continue;
                 }

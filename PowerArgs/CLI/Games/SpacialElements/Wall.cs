@@ -6,8 +6,9 @@ using System.Collections.Generic;
 
 namespace PowerArgs.Games
 {
-    public class Wall : SpacialElement, IObservableObject
+    public class Wall : SpacialElement, IObservableObject, IHaveHP
     {
+        public float HP { get; set; } = 10;
         protected ObservableObject observable;
         public bool SuppressEqualChanges { get; set; }
         public object GetPrevious(string name) => observable.GetPrevious<object>(name);

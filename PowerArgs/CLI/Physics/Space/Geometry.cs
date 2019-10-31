@@ -129,6 +129,27 @@ namespace PowerArgs.Cli.Physics
         public static bool Contains(this IRectangularF rectangle, IRectangularF other) => OverlapPercentage(rectangle, other) == 1;
         public static bool Touches(this IRectangularF rectangle, IRectangularF other) => OverlapPercentage(rectangle, other) > 0;
 
+
+        public static char GetArrowPointedAt(float angle)
+        {
+            if (angle >= 315 || angle < 45)
+            {
+                return '>';
+            }
+            else if (angle >= 45 && angle < 135)
+            {
+                return 'v';
+            }
+            else if (angle >= 135 && angle < 225)
+            {
+                return '<';
+            }
+            else
+            {
+                return '^';
+            }
+        }
+
         public static float GetOppositeAngle(this float angle)
         {
             float ret = angle < 180 ? angle + 180 : angle - 180;
@@ -151,6 +172,12 @@ namespace PowerArgs.Cli.Physics
             var c = Math.Abs(a - b);
             c = c <= 180 ? c : Math.Abs(360 - c); 
             return c;
+        }
+
+        public static float DiffAngleRaw(this float a, float b)
+        {
+            var c = a - b;
+            return c % 360;
         }
 
         public static float AddToAngle(this float angle, float toAdd)

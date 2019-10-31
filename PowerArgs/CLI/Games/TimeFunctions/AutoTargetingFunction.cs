@@ -38,14 +38,19 @@ namespace PowerArgs.Games
 
             foreach(var target in options.TargetsEval())
             {
-                obstacles.Add(target);
+                if (options.Source.HitDetectionExclusions.Contains(target) == false && options.Source.HitDetectionExclusionTypes.Contains(target.GetType()) == false)
+                {
+                    obstacles.Add(target);
+                }
             }
 
             foreach(var element in SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag(Weapon.WeaponTag) == false && e.ZIndex == options.Source.Element.ZIndex))
             {
-                obstacles.Add(element);
+                if (options.Source.HitDetectionExclusions.Contains(element) == false && options.Source.HitDetectionExclusionTypes.Contains(element.GetType()) == false)
+                {
+                    obstacles.Add(element);
+                }
             }
-            
 
             foreach (var target in targets)
             {

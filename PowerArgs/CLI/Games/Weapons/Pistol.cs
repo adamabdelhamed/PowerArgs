@@ -12,6 +12,8 @@ namespace PowerArgs.Games
             var bullet = new Projectile(Holder.CenterX() - Projectile.StandardWidth/ 2, Holder.CenterY() - Projectile.StandardHeight / 2, CalculateAngleToTarget()) { PlaySoundOnImpact = true };
             bullet.Accelleration = Accelleration;
             bullet.Speed.HitDetectionExclusions.Add(Holder);
+            bullet.Speed.HitDetectionExclusions.AddRange(Holder.Speed.HitDetectionExclusions);
+            bullet.Speed.HitDetectionExclusionTypes.AddRange(Holder.Speed.HitDetectionExclusionTypes);
             Holder.Speed.HitDetectionExclusions.Add(bullet);
             bullet.Lifetime.OnDisposed(()=> Holder.Speed.HitDetectionExclusions.Remove(bullet));
             bullet.MoveTo(bullet.Left, bullet.Top, Holder.ZIndex);

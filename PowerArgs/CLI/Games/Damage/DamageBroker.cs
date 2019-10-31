@@ -17,6 +17,11 @@ namespace PowerArgs.Games
         void RegisterHPChangedForLifetime(SpacialElement element, Action<float> hpChangedHandler, ILifetimeManager lifetime);
     }
 
+    public interface IHaveHP
+    {
+        float HP { get; }
+    }
+
     public class DamageBroker
     {
         public const string DamageableTag = "damageable";

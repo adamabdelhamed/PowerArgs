@@ -17,6 +17,10 @@
     public class StringSpacialElementRenderer : SpacialElementRenderer
     {
         public StringSpacialElement StringSpacialElement => Element as StringSpacialElement;
+        public StringSpacialElementRenderer()
+        {
+            TransparentBackground = true;
+        }
         protected override void OnPaint(ConsoleBitmap context) => context.DrawString(StringSpacialElement.Content, 0, 0);
     }
 }

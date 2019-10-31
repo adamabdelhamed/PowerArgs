@@ -1,4 +1,5 @@
 ﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Linq;
 namespace PowerArgs.Games
 {
@@ -12,7 +13,7 @@ namespace PowerArgs.Games
     {
         public static Event<Weapon> OnFireEmpty { get; private set; } = new Event<Weapon>();
         public static Event<Weapon> OnFire { get; private set; } = new Event<Weapon>();
-
+        public SmartTrigger Trigger { get; set; }
         public const string WeaponTag = "Weapon";
         public Character Holder { get; set; }
 
@@ -25,6 +26,8 @@ namespace PowerArgs.Games
             get { return Get<int>(); } set { Set(value); }
         }
 
+        protected TimeSpan MinTimeBetweenShots { get; set; } = TimeSpan.FromSeconds(.05);
+
         /// <summary>
         /// If a weapon is picked up and it's the highest ranking in the inventory then it will automatically be put into use
         /// </summary>
@@ -33,6 +36,7 @@ namespace PowerArgs.Games
         public Weapon()
         {
             DisplayName = GetType().Name.ToConsoleString();
+            AmmoAmount = -1;
         }
 
         public float CalculateAngleToTarget()
@@ -49,42 +53,53 @@ namespace PowerArgs.Games
             return angle;
         }
 
+        private TimeSpan lastFireTime = TimeSpan.Zero;
+
         public void TryFire()
         {
-            if ((AmmoAmount > 0 || AmmoAmount == -1) && Holder != null)
+            if (Trigger == null || Trigger.AllowFire())
             {
-                OnFire.Fire(this);
-                FireInternal();
-                if (AmmoAmount > 0)
+                if ((AmmoAmount > 0 || AmmoAmount == -1) && Holder != null)
                 {
-                    AmmoAmount--;
-
-                    if(AmmoAmount == 0)
+                    if (Time.CurrentTime.Now - lastFireTime < MinTimeBetweenShots)
                     {
-                        var alternative = Holder.Inventory.Items
-                            .WhereAs<Weapon>()
-                            .Where(w => w.Style == this.Style && w.AmmoAmount > 0)
-                            .OrderByDescending(w => w.PowerRanking)
-                            .FirstOrDefault();
+                        return;
+                    }
+                    lastFireTime = Time.CurrentTime.Now;
 
-                        if(alternative != null)
+                    OnFire.Fire(this);
+                    FireInternal();
+                    if (AmmoAmount > 0)
+                    {
+                        AmmoAmount--;
+
+                        if (AmmoAmount == 0)
                         {
-                            if(alternative.Style == WeaponStyle.Primary)
+                            var alternative = Holder.Inventory.Items
+                                .WhereAs<Weapon>()
+                                .Where(w => w.Style == this.Style && w.AmmoAmount > 0)
+                                .OrderByDescending(w => w.PowerRanking)
+                                .FirstOrDefault();
+
+                            if (alternative != null)
                             {
-                                Holder.Inventory.PrimaryWeapon = alternative;
-                            }
-                            else
-                            {
-                                Holder.Inventory.ExplosiveWeapon = alternative;
+                                if (alternative.Style == WeaponStyle.Primary)
+                                {
+                                    Holder.Inventory.PrimaryWeapon = alternative;
+                                }
+                                else
+                                {
+                                    Holder.Inventory.ExplosiveWeapon = alternative;
+                                }
                             }
                         }
-                    }
 
+                    }
                 }
-            }
-            else
-            {
-                OnFireEmpty.Fire(this);
+                else
+                {
+                    OnFireEmpty.Fire(this);
+                }
             }
         }
 

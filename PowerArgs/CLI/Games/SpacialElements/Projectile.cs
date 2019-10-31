@@ -21,7 +21,7 @@ namespace PowerArgs.Games
 
         private IRectangularF startLocation;
         private Force force;
-        private Projectile()
+        public Projectile()
         {
             this.ResizeTo(StandardWidth, StandardHeight);
             this.Tags.Add(Weapon.WeaponTag);

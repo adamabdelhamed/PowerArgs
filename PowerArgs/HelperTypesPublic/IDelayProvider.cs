@@ -148,4 +148,14 @@ namespace PowerArgs
         /// <returns>an async task</returns>
         public async Task YieldAsync() => await Task.Yield();
     }
+
+    public class NonDelayProvider : IDelayProvider
+    {
+        public Task DelayAsync(double ms) => Task.CompletedTask;
+        public Task DelayAsync(TimeSpan timeout) => Task.CompletedTask;
+        public Task DelayAsync(Event ev, TimeSpan? timeout = null, TimeSpan? evalFrequency = null) => Task.CompletedTask;
+        public Task DelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null) => Task.CompletedTask;
+        public Task<bool> TryDelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null) => Task.FromResult(true);
+        public Task YieldAsync() => Task.CompletedTask;
+    }
 }

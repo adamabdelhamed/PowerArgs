@@ -299,10 +299,10 @@ namespace PowerArgs.Cli
             }
 
             Ready.SubscribeOnce(() =>
-            {
+            { 
                 ConsoleApp.Current.FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), () =>
-                 {
-                     if(ConsoleApp.Current.FocusManager.FocusedControl is DataPointControl == false)
+                {
+                     if(options.Data.Count > 1 && ConsoleApp.Current.FocusManager.FocusedControl is DataPointControl == false)
                      {
                          seriesTitleLabel.Text = ConsoleString.Empty;
                      }
@@ -378,28 +378,31 @@ namespace PowerArgs.Cli
             var minSpaceBetweenLabels = 1;
             var maxNumberOfLabels = XAxisWidth / (MaxXAxisLabelLength + minSpaceBetweenLabels);
 
-            cachedXAxisLabels = cachedXAxisLabels ??
-                options.XAxisFormatter.GetOptimizedAxisLabelValues(MinXValueInPlotArea, MaxXValueInPlotArea, maxNumberOfLabels).Select(d =>
-                {
-                    var label = options.XAxisFormatter.FormatValue(MinXValueInPlotArea, MaxXValueInPlotArea, d);
-
-                    if (label.Length > MaxXAxisLabelLength)
-                    {
-                        label = label.Substring(0, MaxXAxisLabelLength);
-                    }
-                    return new AxisLabelInfo() { Label = label, Value = d };
-                }).ToList();
-
-            foreach (var labelInfo in cachedXAxisLabels)
+            if (MinXValueInPlotArea != double.PositiveInfinity && MaxXValueInPlotArea != double.NegativeInfinity)
             {
-                var x = ConvertXValueToPixel(labelInfo.Value);
-                var y = XAxisYValue + 1;
+                cachedXAxisLabels = cachedXAxisLabels ??
+                    options.XAxisFormatter.GetOptimizedAxisLabelValues(MinXValueInPlotArea, MaxXValueInPlotArea, maxNumberOfLabels).Select(d =>
+                    {
+                        var label = options.XAxisFormatter.FormatValue(MinXValueInPlotArea, MaxXValueInPlotArea, d);
 
-                if (x + labelInfo.Label.Length <= Width)
+                        if (label.Length > MaxXAxisLabelLength)
+                        {
+                            label = label.Substring(0, MaxXAxisLabelLength);
+                        }
+                        return new AxisLabelInfo() { Label = label, Value = d };
+                    }).ToList();
+
+                foreach (var labelInfo in cachedXAxisLabels)
                 {
-                    context.Pen = new ConsoleCharacter('^', Foreground, Background);
-                    context.DrawPoint(x, y - 1);
-                    context.DrawString(labelInfo.Label, x, y);
+                    var x = ConvertXValueToPixel(labelInfo.Value);
+                    var y = XAxisYValue + 1;
+
+                    if (x + labelInfo.Label.Length <= Width)
+                    {
+                        context.Pen = new ConsoleCharacter('^', Foreground, Background);
+                        context.DrawPoint(x, y - 1);
+                        context.DrawString(labelInfo.Label, x, y);
+                    }
                 }
             }
         }
@@ -416,11 +419,16 @@ namespace PowerArgs.Cli
             var maxNumberOfLabels = YAxisHeight / 3;
             maxYAxisLabelLength = 0;
             var labels = new List<AxisLabelInfo>();
-            foreach (var labelValue in options.YAxisFormatter.GetOptimizedAxisLabelValues(MinYValueInPlotArea, MaxYValueInPlotArea, maxNumberOfLabels))
+
+
+            if (MinYValueInPlotArea != double.MaxValue && MaxYValueInPlotArea != double.NegativeInfinity)
             {
-                var label = options.YAxisFormatter.FormatValue(MinYValueInPlotArea, MaxYValueInPlotArea, labelValue);
-                labels.Add(new AxisLabelInfo() { Label = label, Value = labelValue });
-                maxYAxisLabelLength = Math.Max(maxYAxisLabelLength, label.Length);
+                foreach (var labelValue in options.YAxisFormatter.GetOptimizedAxisLabelValues(MinYValueInPlotArea, MaxYValueInPlotArea, maxNumberOfLabels))
+                {
+                    var label = options.YAxisFormatter.FormatValue(MinYValueInPlotArea, MaxYValueInPlotArea, labelValue);
+                    labels.Add(new AxisLabelInfo() { Label = label, Value = labelValue });
+                    maxYAxisLabelLength = Math.Max(maxYAxisLabelLength, label.Length);
+                }
             }
             cachedYAxisLabels = labels;
             return labels;
@@ -449,7 +457,10 @@ namespace PowerArgs.Cli
             cachedMinYValueInPlotArea = null;
             cachedMaxXValueInPlotArea = null;
             cachedMaxYValueInPlotArea = null;
-            this.Controls.Clear();
+            foreach(var control in this.Controls.Where(c => c != chartTitleLabel && c != seriesTitleLabel ).ToArray())
+            {
+                this.Controls.Remove(control);
+            }
 
             foreach (var series in options.Data)
             {
@@ -499,10 +510,10 @@ namespace PowerArgs.Cli
                     control.BarsOrLines.Clear();
                     var newX = ConvertXValueToPixel(control.DataPoint.X);
                     var newY = ConvertYValueToPixel(control.DataPoint.Y);
+                    control.X = newX;
+                    control.Y = newY;
                     if (newX >= 0 && newX < Width && newY >= 0 && newY < Height)
                     {
-                        control.X = newX;
-                        control.Y = newY;
                         control.IsVisible = true;
                     }
                     else

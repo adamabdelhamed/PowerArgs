@@ -10,8 +10,8 @@ namespace PowerArgs.Games
     public class Door : Wall, IInteractable
     {
         private bool isOpen;
-        internal IRectangularF ClosedBounds;
-        internal IRectangularF OpenBounds;
+        public IRectangularF ClosedBounds;
+        public IRectangularF OpenBounds;
 
         public float MaxInteractDistance => 5;
         public IRectangularF InteractionPoint => ClosedBounds;
@@ -102,8 +102,7 @@ namespace PowerArgs.Games
     [SpacialElementBinding(typeof(Door))]
     public class DoorRenderer : SpacialElementRenderer
     {
-        private ConsoleString DefaultStyle => new ConsoleString(" ", backgroundColor: ConsoleColor.Cyan);
-        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(DefaultStyle, 0, 0);
+        protected override void OnPaint(ConsoleBitmap context) => context.FillRect(new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Cyan), 0, 0,Width,Height);
     }
 
     public class DoorReviver : ItemReviver

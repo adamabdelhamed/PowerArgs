@@ -9,6 +9,7 @@ namespace PowerArgs.Games
 {
     public class Explosive : SpacialElement
     {
+        public Event<Projectile> OnProjectileAdded { get; private set; } = new Event<Projectile>();
         public static Event<Explosive> OnExplode { get; private set; } = new Event<Explosive>();
 
         public float AngleIncrement { get; set; } = 5;
@@ -36,6 +37,7 @@ namespace PowerArgs.Games
 
                 var shrapnel = new Projectile(this.Left, this.Top, angle) { Range = effectiveRange };
                 shrapnel.MoveTo(shrapnel.Left, shrapnel.Top, this.ZIndex);
+                OnProjectileAdded.Fire(shrapnel);
                 if(ProjectilePen != null)
                 {
                     shrapnel.Pen = ProjectilePen;

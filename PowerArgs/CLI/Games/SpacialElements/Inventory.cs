@@ -119,7 +119,7 @@ namespace PowerArgs.Games
                 }
                 else
                 {
-                    if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0 || weapon.PowerRanking > highestPrimaryWeapon.PowerRanking)
+                    if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0 || highestPrimaryWeapon == null || weapon.PowerRanking > highestPrimaryWeapon.PowerRanking)
                     {
                         ExplosiveWeapon = weapon;
                     }

@@ -40,7 +40,7 @@ namespace PowerArgs.Games
                 rpg.Explode();
             }, rpg.Lifetime);
 
-            new Force(rpgSpeed, 25.NormalizeQuantity(angle), angle);
+            new Force(rpgSpeed, 45.NormalizeQuantity(angle), angle);
             SpaceTime.CurrentSpaceTime.Add(rpg);
         }
 

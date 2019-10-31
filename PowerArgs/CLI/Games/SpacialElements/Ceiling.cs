@@ -17,45 +17,44 @@ namespace PowerArgs.Games
         public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
 
         public bool IsVisible { get => observable.Get<bool>(); set => observable.Set(value); }
-        public bool Seed { get; set; }
         public Ceiling()
         {
             observable = new ObservableObject(this);
             IsVisible = true;
             this.SubscribeForLifetime(nameof(IsVisible), this.SizeOrPositionChanged.Fire, this.Lifetime);
             Tags.Add(SpacialAwareness.PassThruTag);
+        }
 
-            if (Seed)
+        public void Seed()
+        {
+            var walls = SpaceTime.CurrentSpaceTime.Elements.WhereAs<Wall>().ToList();
+            var done = false;
+            for (var y = Top; y < SpaceTime.CurrentSpaceTime.Height; y++)
             {
-                var walls = SpaceTime.CurrentSpaceTime.Elements.WhereAs<Wall>().ToList();
-                var done = false;
-                for (var y = Top; y < SpaceTime.CurrentSpaceTime.Height; y++)
+                for (var x = Left; x < SpaceTime.CurrentSpaceTime.Width; x++)
                 {
-                    for (var x = Left; x < SpaceTime.CurrentSpaceTime.Width; x++)
+                    if (x == Left && y == Top) continue;
+
+                    var canPlaceCeiling = walls.Where(w => w.Touches(PowerArgs.Cli.Physics.RectangularF.Create(x, y, 1, 1))).Count() == 0;
+
+                    if (canPlaceCeiling == false)
                     {
-                        if (x == Left && y == Top) continue;
-
-                        var canPlaceCeiling = walls.Where(w => w.Touches(PowerArgs.Cli.Physics.RectangularF.Create(x, y, 1, 1))).Count() == 0;
-
-                        if (canPlaceCeiling == false)
+                        if (y > Top && x == Left)
                         {
-                            if (y > Top && x == Left)
-                            {
-                                done = true;
-                            }
-                            break;
+                            done = true;
                         }
-                        else
-                        {
-                            var c = SpaceTime.CurrentSpaceTime.Add(new Ceiling());
-                            c.MoveTo(x, y);
-                        }
-                    }
-
-                    if (done)
-                    {
                         break;
                     }
+                    else
+                    {
+                        var c = SpaceTime.CurrentSpaceTime.Add(new Ceiling());
+                        c.MoveTo(x, y);
+                    }
+                }
+
+                if (done)
+                {
+                    break;
                 }
             }
         }
@@ -77,7 +76,7 @@ namespace PowerArgs.Games
         {
             if(item.Symbol == 'c' && item.HasSimpleTag("ceiling"))
             {
-                hydratedElement = new Ceiling() { Seed = true };
+                hydratedElement = new Ceiling();
                 return true;
             }
 
