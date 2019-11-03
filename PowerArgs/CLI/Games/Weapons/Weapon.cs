@@ -16,7 +16,7 @@ namespace PowerArgs.Games
         public SmartTrigger Trigger { get; set; }
         public const string WeaponTag = "Weapon";
         public Character Holder { get; set; }
-
+        public object Tag { get; set; }
         public abstract WeaponStyle Style { get; }
 
         public ConsoleString DisplayName { get; set; }

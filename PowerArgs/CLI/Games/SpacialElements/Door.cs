@@ -7,43 +7,50 @@ using System.Linq;
 
 namespace PowerArgs.Games
 {
+    public enum DoorState
+    {
+        Locked,
+        Opened,
+        Closed
+    }
+
     public class Door : Wall, IInteractable
     {
-        private bool isOpen;
+        private DoorState state;
         public IRectangularF ClosedBounds;
         public IRectangularF OpenBounds;
 
-        public float MaxInteractDistance => 5;
+        public float MaxInteractDistance => 1.5f;
         public IRectangularF InteractionPoint => ClosedBounds;
-        public bool IsOpen
+        public DoorState State
         {
             get
             {
-                return isOpen;
+                return state;
             }
             set
             {
-                if (value && IsOpen)
+                if (value == DoorState.Opened && state == DoorState.Opened)
                 {
                     FindCieling().ForEach(c => c.IsVisible = false);
                 }
-                else if (value)
+                else if (value == DoorState.Opened)
                 {
                     Sound.Play("opendoor");
                     this.MoveTo(OpenBounds.Left, OpenBounds.Top);
                     FindCieling().ForEach(c => c.IsVisible = false);
                 }
-                else if (value == false && IsOpen == false)
+                else if (value != DoorState.Opened && State != DoorState.Opened)
                 {
                     FindCieling().ForEach(c => c.IsVisible = true);
                 }
-                else if (value == false)
+                else if (value != DoorState.Opened)
                 {
                     Sound.Play("closedoor");
                     this.MoveTo(ClosedBounds.Left, ClosedBounds.Top);
                     FindCieling().ForEach(c => c.IsVisible = true);
                 }
-                isOpen = value;
+                state = value;
             }
         }
 
@@ -51,7 +58,7 @@ namespace PowerArgs.Games
         {
             Added.SubscribeForLifetime(() =>
             {
-                this.IsOpen = this.IsOpen;
+                this.State = this.State;
             }, this.Lifetime);
             Lifetime.OnDisposed(() => FindCieling().ForEach(c => c.Lifetime.Dispose()));
         }
@@ -86,15 +93,17 @@ namespace PowerArgs.Games
             return ret;
         }
 
-        public void Interact(MainCharacter character)
+        public void Interact(Character character)
         {
-            var newDoorDest = IsOpen ? ClosedBounds : OpenBounds;
+            if (state == DoorState.Locked) return;
+
+            var newDoorDest = State == DoorState.Opened ? ClosedBounds : OpenBounds;
 
             var charactersThatWillTouchNewDest = SpaceTime.CurrentSpaceTime.Elements.WhereAs<Character>().Where(c => c.OverlapPercentage(newDoorDest) > 0).Count();
 
             if (charactersThatWillTouchNewDest == 0)
             {
-                IsOpen = !IsOpen;
+                State = State == DoorState.Closed ? DoorState.Opened : DoorState.Closed;
             }
         }
     }
@@ -102,7 +111,15 @@ namespace PowerArgs.Games
     [SpacialElementBinding(typeof(Door))]
     public class DoorRenderer : SpacialElementRenderer
     {
-        protected override void OnPaint(ConsoleBitmap context) => context.FillRect(new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Cyan), 0, 0,Width,Height);
+
+        protected override void OnPaint(ConsoleBitmap context)
+        {
+            var state = (Element as Door).State;
+            var pen = state == DoorState.Locked ? new ConsoleCharacter('X', ConsoleColor.Black, ConsoleColor.Cyan) :
+                 new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Cyan);
+  
+            context.FillRect(pen, 0, 0, Width, Height);
+        }
     }
 
     public class DoorReviver : ItemReviver

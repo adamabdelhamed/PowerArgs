@@ -16,14 +16,17 @@ namespace PowerArgs.Cli.Physics
             return HasLineOfSight(from, to, obstacles);
         }
 
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .2f)
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f) => GetLineOfSight(from, to, obstacles, increment) != null;
+
+        public static List<IRectangularF> GetLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f)
         {
             IRectangularF current = from;
             var currentDistance = current.CalculateDistanceTo(to);
-            var firstDistance = currentDistance;
+            var a = current.Center().CalculateAngleTo(to.Center());
+            var path = new List<IRectangularF>();
             while (currentDistance > increment)
             {
-                current = RectangularF.Create(MoveTowards(current.Center(), to.Center(), 1), current);
+                current = RectangularF.Create(MoveTowards(current.Center(), a, increment), current);
                 current = RectangularF.Create(current.Left - current.Width / 2, current.Top - current.Height / 2, current.Width, current.Height);
 
                 foreach (var obstacle in obstacles)
@@ -34,17 +37,17 @@ namespace PowerArgs.Cli.Physics
                     }
                     else if (obstacle.OverlapPercentage(current) > 0)
                     {
-                        return false;
+                        return null;
                     }
                 }
-
+                path.Add(current);
                 currentDistance = current.CalculateDistanceTo(to);
             }
 
-            return true;
+            return path;
         }
 
-        public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = .2f)
+        public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = .5f)
         {
             for (var d = increment; d < range; d += increment)
             {
