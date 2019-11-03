@@ -18,6 +18,8 @@ namespace PowerArgs.Games
 
         public ProximityMineState State { get; set; } = ProximityMineState.NoNearbyThreats;
 
+        public ProximityMine(Weapon w) : base(w) { }
+
         public override void Evaluate()
         {
             var closestTarget = DamageBroker.Instance.DamageableElements

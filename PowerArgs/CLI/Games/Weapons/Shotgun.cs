@@ -22,7 +22,7 @@ namespace PowerArgs.Games
             while (sprayedSoFar <= sprayAngle)
             {
                 var angle = startAngle.AddToAngle(sprayedSoFar);
-                var bullet = new Projectile(Holder.CenterX() - Projectile.StandardWidth / 2, Holder.CenterY() - Projectile.StandardHeight / 2, angle) { Range = Range.NormalizeQuantity(angle), PlaySoundOnImpact = true };
+                var bullet = new Projectile(this,Holder.CenterX() - Projectile.StandardWidth / 2, Holder.CenterY() - Projectile.StandardHeight / 2, angle) { Range = Range.NormalizeQuantity(angle), PlaySoundOnImpact = true };
                 bullet.Speed.HitDetectionExclusions.Add(Holder);
                 Holder.Speed.HitDetectionExclusions.Add(bullet);
                 bullet.Lifetime.OnDisposed(() =>

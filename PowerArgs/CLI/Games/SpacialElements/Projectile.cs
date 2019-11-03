@@ -5,7 +5,7 @@ using System;
 
 namespace PowerArgs.Games
 {
-    public class Projectile : SpacialElement
+    public class Projectile : WeaponElement
     {
         public static Event<Impact> OnAudibleImpact { get; private set; } = new Event<Impact>();
 
@@ -21,7 +21,7 @@ namespace PowerArgs.Games
 
         private IRectangularF startLocation;
         private Force force;
-        public Projectile()
+        public Projectile(Weapon w) : base(w)
         {
             this.ResizeTo(StandardWidth, StandardHeight);
             this.Tags.Add(Weapon.WeaponTag);
@@ -31,14 +31,14 @@ namespace PowerArgs.Games
             this.Speed.HitDetectionExclusionTypes.Add(typeof(Projectile));
         }
 
-        public Projectile(float x, float y, float angle) : this()
+        public Projectile(Weapon w,float x, float y, float angle) : this(w)
         {
             this.MoveTo(x, y);
             this.angle = angle;
             startLocation = this.Bounds;
         }
 
-        public Projectile(float x, float y, IRectangularF target) : this()
+        public Projectile(Weapon w,float x, float y, IRectangularF target) : this(w)
         {
             this.MoveTo(x, y);
             this.angle = this.CalculateAngleTo(target);

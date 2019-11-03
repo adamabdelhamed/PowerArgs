@@ -22,13 +22,18 @@ namespace PowerArgs.Games
         {
             if (Holder.Target != null)
             {
-                DamageBroker.Instance.ReportImpact(new Impact()
+                var dummyEl = SpaceTime.CurrentSpaceTime.Add(new WeaponElement(this));
+                using (dummyEl.Lifetime)
                 {
-                    HitType = HitType.Obstacle,
-                    ObstacleHit = Holder.Target,
-                    MovingObject= Holder,
-                    Angle = Holder.CalculateAngleTo(Holder.Target)
-                });
+                    dummyEl.MoveTo(Holder.Target.Left, Holder.Target.Top, Holder.Target.ZIndex);
+                    DamageBroker.Instance.ReportImpact(new Impact()
+                    {
+                        HitType = HitType.Obstacle,
+                        ObstacleHit = Holder.Target,
+                        MovingObject = dummyEl,
+                        Angle = Holder.CalculateAngleTo(Holder.Target)
+                    });
+                }
                 OnHit.Fire(new SniperRifleHitEventArgs() { Rifle = this, ElementHit = Holder.Target });
             }
             else

@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace PowerArgs.Games
 {
-    public class Explosive : SpacialElement
+    public class Explosive : WeaponElement
     {
         public Event<Projectile> OnProjectileAdded { get; private set; } = new Event<Projectile>();
         public static Event<Explosive> OnExplode { get; private set; } = new Event<Explosive>();
@@ -17,7 +17,7 @@ namespace PowerArgs.Games
 
         public Event Exploded { get; private set; } = new Event();
         public ConsoleString ProjectilePen { get; set; }
-        public Explosive() 
+        public Explosive(Weapon w) : base(w) 
         {
             this.AngleIncrement = 5;
             this.Range = 5;
@@ -35,7 +35,7 @@ namespace PowerArgs.Games
                     effectiveRange = Range / 3;
                 }
 
-                var shrapnel = new Projectile(this.Left, this.Top, angle) { Range = effectiveRange };
+                var shrapnel =SpaceTime.CurrentSpaceTime.Add(new Projectile(this.Weapon,this.Left, this.Top, angle) { Range = effectiveRange });
                 shrapnel.MoveTo(shrapnel.Left, shrapnel.Top, this.ZIndex);
                 OnProjectileAdded.Fire(shrapnel);
                 if(ProjectilePen != null)
@@ -45,7 +45,6 @@ namespace PowerArgs.Games
 
                 shrapnelSet.Add(shrapnel);
                 shrapnel.Tags.Add("hot");
-                SpaceTime.CurrentSpaceTime.Add(shrapnel);
             }
 
             foreach(var shrapnel in shrapnelSet)

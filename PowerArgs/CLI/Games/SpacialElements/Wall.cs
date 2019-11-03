@@ -8,7 +8,6 @@ namespace PowerArgs.Games
 {
     public class Wall : SpacialElement, IObservableObject
     {
-        public float HP { get; set; } = 10;
         protected ObservableObject observable;
         public bool SuppressEqualChanges { get; set; }
         public object GetPrevious(string name) => observable.GetPrevious<object>(name);

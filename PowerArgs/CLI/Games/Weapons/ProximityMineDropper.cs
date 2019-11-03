@@ -11,7 +11,7 @@ namespace PowerArgs.Games
 
         public override void FireInternal()
         {
-            var mine = new ProximityMine() { ExcludedTypes = ExcludedTypes };
+            var mine = new ProximityMine(this) { ExcludedTypes = ExcludedTypes };
             PlaceMineSafe(mine, Holder);
             SpaceTime.CurrentSpaceTime.Add(mine);
         }

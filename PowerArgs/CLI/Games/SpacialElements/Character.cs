@@ -30,7 +30,7 @@ namespace PowerArgs.Games
         public SpacialElement Target { get; set; }
 
 
-        public float TargetAngle => Target == null ? Speed.Angle : this.CalculateAngleTo(Target);
+        public float TargetAngle => Target == null ? Speed.Angle : this.CalculateAngleTo(Target.Center());
         public SpeedTracker Speed { get; set; }
 
 

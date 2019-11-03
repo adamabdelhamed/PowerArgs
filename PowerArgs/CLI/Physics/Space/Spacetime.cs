@@ -27,6 +27,24 @@ namespace PowerArgs.Cli.Physics
 
         internal SpacialElementInternalState InternalSpacialState => InternalState as SpacialElementInternalState;
 
+        public ObservableObject ObservableProperties { get; private set; } = new ObservableObject();
+
+        public T GetProperty<T>(string key, Func<T> defaultValue = null)
+        {
+            if(defaultValue != null && ObservableProperties.ContainsKey(key) == false)
+            {
+                return defaultValue();
+            }
+            else
+            {
+                return ObservableProperties.Get<T>(key);
+            }
+        }
+
+        public void SetProperty<T>(string key, T val) => ObservableProperties.Set(val, key);
+
+
+
         public SpacialElement(float w = 1, float h = 1, float x = 0, float y = 0, int z = 0)
         {
             Width = w;

@@ -16,7 +16,7 @@ namespace PowerArgs.Games
 
         public bool Silent { get; set; }
 
-        public TimedMine(TimeSpan timeToDetinate)
+        public TimedMine(Weapon w, TimeSpan timeToDetinate) : base(w)
         {
             this.Tags.Add(Weapon.WeaponTag);
             this.timeToDetinate = timeToDetinate;

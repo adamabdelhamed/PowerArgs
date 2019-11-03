@@ -9,6 +9,15 @@ namespace PowerArgs.Games
         Explosive
     }
 
+    public class WeaponElement : SpacialElement
+    {
+        public Weapon Weapon { get; set; }
+        public WeaponElement(Weapon w)
+        {
+            this.Weapon = w;
+        }
+    }
+
     public abstract class Weapon : ObservableObject, IInventoryItem
     {
         public static Event<Weapon> OnFireEmpty { get; private set; } = new Event<Weapon>();
@@ -18,7 +27,7 @@ namespace PowerArgs.Games
         public Character Holder { get; set; }
         public object Tag { get; set; }
         public abstract WeaponStyle Style { get; }
-
+        public float Strength { get; set; }
         public ConsoleString DisplayName { get; set; }
 
         public int AmmoAmount
@@ -42,12 +51,12 @@ namespace PowerArgs.Games
         public float CalculateAngleToTarget()
         {
             var angle = Holder.Target != null ?
-                Holder.CalculateAngleTo(Holder.Target) :
+                Holder.CalculateAngleTo(Holder.Target.Center()) :
                 Holder.Speed.Angle;
 
             if (Holder == MainCharacter.Current && MainCharacter.Current.FreeAimCursor != null)
             {
-                angle = Holder.CalculateAngleTo(MainCharacter.Current.FreeAimCursor);
+                angle = Holder.CalculateAngleTo(MainCharacter.Current.FreeAimCursor.Center());
             };
 
             return angle;
