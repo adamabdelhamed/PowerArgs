@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace PowerArgs.Games
 {
-    public class Wall : SpacialElement, IObservableObject, IHaveHP
+    public class Wall : SpacialElement, IObservableObject
     {
         public float HP { get; set; } = 10;
         protected ObservableObject observable;
