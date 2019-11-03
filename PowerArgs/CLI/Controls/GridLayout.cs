@@ -123,6 +123,19 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
+        /// Gets the current column width for the given column index
+        /// </summary>
+        /// <param name="col">the index of the column to inspect</param>
+        /// <returns>the current column width for the given column index</returns>
+        public int GetColumnWidth(int col) => columnWidths[col];
+        /// <summary>
+        /// Gets the current row heightfor the given row index
+        /// </summary>
+        /// <param name="row">the index of the row to inspect</param>
+        /// <returns>the current row heightfor the given row index</returns>
+        public int GetRowHeight(int row) => rowHeights[row];
+
+        /// <summary>
         /// Adds a control to the grid layout
         /// </summary>
         /// <param name="control">the control to add</param>
