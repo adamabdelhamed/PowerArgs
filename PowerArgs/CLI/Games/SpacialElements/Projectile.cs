@@ -29,6 +29,10 @@ namespace PowerArgs.Games
             Speed.Governor.Rate = TimeSpan.FromSeconds(0);
             Speed.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime);
             this.Speed.HitDetectionExclusionTypes.Add(typeof(Projectile));
+            if (w?.Holder != null)
+            {
+                this.Speed.HitDetectionExclusions.Add(w.Holder);
+            }
         }
 
         public Projectile(Weapon w,float x, float y, float angle) : this(w)

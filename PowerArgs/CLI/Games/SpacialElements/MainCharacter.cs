@@ -70,7 +70,7 @@ namespace PowerArgs.Games
             {
                 if (Inventory.PrimaryWeapon != null) OnEquipWeapon.Fire(Inventory.ExplosiveWeapon);
             }, this.Lifetime);
-
+            InitializeTargeting();
         }
 
        

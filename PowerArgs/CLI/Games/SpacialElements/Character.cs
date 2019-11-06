@@ -53,7 +53,6 @@ namespace PowerArgs.Games
             Inventory = new Inventory();
             Speed = new SpeedTracker(this) { Bounciness = 0 };
             this.ResizeTo(1, 1);
-            InitializeTargeting();
         }
 
         public void MoveLeft()
@@ -201,7 +200,7 @@ namespace PowerArgs.Games
             }
         }
         
-    private void InitializeTargeting()
+        public void InitializeTargeting()
         {
             Targeting = new AutoTargetingFunction(new AutoTargetingOptions()
             {

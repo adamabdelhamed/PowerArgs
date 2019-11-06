@@ -124,6 +124,7 @@ namespace PowerArgs.Cli.Physics
     public interface IGhost
     {
         void BecomeGhost();
+        bool IsGhost { get; }
     }
 
     public class SpacialElementInternalState : TimeFunctionInternalState

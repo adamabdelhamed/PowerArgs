@@ -24,8 +24,12 @@ namespace PowerArgs.Games
         {
             var closestTarget = DamageBroker.Instance.DamageableElements
                 .Where(e => e.ZIndex == this.ZIndex)
+                .Where(e => e != this)
+                .Where(e => e is Wall == false && e is Door == false)
+                .Where(e => e != Weapon.Holder)
                 .Where(e => IsIncluded(e))
-                .Select(t => new { Target = t, Distance = t.CalculateDistanceTo(this) })
+                .Where(e => this.HasLineOfSight(e, this.GetObstacles()))
+                .Select(t => new { Target = t, Distance = Geometry.CalculateNormalizedDistanceTo(t,this)})
                 .OrderBy(t => t.Distance)
                 .FirstOrDefault();
 
@@ -33,7 +37,7 @@ namespace PowerArgs.Games
             {
                 State = ProximityMineState.NoNearbyThreats;
             }
-            else if (closestTarget.Distance < Range)
+            else if (closestTarget.Distance < Range *.9f)
             {
                 Explode();
             }

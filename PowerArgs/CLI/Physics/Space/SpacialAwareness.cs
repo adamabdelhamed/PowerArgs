@@ -16,9 +16,9 @@ namespace PowerArgs.Cli.Physics
             return HasLineOfSight(from, to, obstacles);
         }
 
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f) => GetLineOfSight(from, to, obstacles, increment) != null;
+        public static bool HasLineOfSightSlow(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f) => GetLineOfSight(from, to, obstacles, increment) != null;
 
-        public static List<IRectangularF> GetLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f)
+        private static List<IRectangularF> GetLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f)
         {
             IRectangularF current = from;
             var currentDistance = current.CalculateDistanceTo(to);
@@ -47,7 +47,37 @@ namespace PowerArgs.Cli.Physics
             return path;
         }
 
-        public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = .5f)
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles)
+        {
+            var a = from.CalculateAngleTo(to);
+            var d = Geometry.CalculateNormalizedDistanceTo(from, to);
+
+            foreach(var o in obstacles)
+            {
+                if (o == from || o == to) continue;
+                var dO = Geometry.CalculateNormalizedDistanceTo(from, o);
+
+                if (dO > d) continue;
+                // todo - define this curve smoothly with real math
+                var angleDiffThreshold = d < 2 ? 180 :
+                                   d < 5 ? 60 :
+                                   d < 10 ? 40 :
+                                   d < 20 ? 20 :
+                                   d < 40 ? 15 : 10;
+
+                var aO = from.CalculateAngleTo(o);
+                var aODiff = a.DiffAngle(aO);
+                
+                if(aODiff < angleDiffThreshold)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+            public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = .5f)
         {
             for (var d = increment; d < range; d += increment)
             {

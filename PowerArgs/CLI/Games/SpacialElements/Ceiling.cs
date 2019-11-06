@@ -58,6 +58,45 @@ namespace PowerArgs.Games
                 }
             }
         }
+
+        public void SeedRectangular()
+        {
+            var walls = SpaceTime.CurrentSpaceTime.Elements.WhereAs<Wall>().ToList();
+            var done = false;
+            var w = 1;
+            var h = 0;
+            for (var y = Top; y < SpaceTime.CurrentSpaceTime.Height; y++)
+            {
+                h++;
+                for (var x = Left; x < SpaceTime.CurrentSpaceTime.Width; x++)
+                {
+                    if (x == Left && y == Top) continue;
+
+                    var canPlaceCeiling = walls.Where(wall => wall.Touches(PowerArgs.Cli.Physics.RectangularF.Create(x, y, 1, 1))).Count() == 0;
+
+                    if (canPlaceCeiling == false)
+                    {
+                        if (y > Top && x == Left)
+                        {
+                            done = true;
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        w++;
+                    }
+                }
+
+                if (done)
+                {
+                    var c = SpaceTime.CurrentSpaceTime.Add(new Ceiling());
+                    c.MoveTo(Left, Top);
+                    c.ResizeTo(w, h);
+                    break;
+                }
+            }
+        }
     }
 
     [SpacialElementBinding(typeof(Ceiling))]
@@ -66,7 +105,7 @@ namespace PowerArgs.Games
         private ConsoleString DefaultStyle => new ConsoleString(" ", backgroundColor: ConsoleColor.Gray);
         public CeilingRenderer() { this.ZIndex = int.MaxValue-1; }
         public override void OnRender() => this.IsVisible = (Element as Ceiling).IsVisible;
-        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(DefaultStyle, 0, 0);
+        protected override void OnPaint(ConsoleBitmap context) => context.FillRect(DefaultStyle[0], 0, 0,Width,Height);
 
     }
 
