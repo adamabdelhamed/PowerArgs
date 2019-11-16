@@ -62,8 +62,8 @@ namespace PowerArgs.Cli.Physics
                 var angleDiffThreshold = d < 2 ? 180 :
                                    d < 5 ? 60 :
                                    d < 10 ? 40 :
-                                   d < 20 ? 20 :
-                                   d < 40 ? 15 : 10;
+                                   d < 20 ? 25 :
+                                   d < 40 ? 20 : 15;
 
                 var aO = from.CalculateAngleTo(o);
                 var aODiff = a.DiffAngle(aO);
