@@ -231,6 +231,31 @@ namespace ArgsTests
             Assert.AreEqual(true, parsed.Bool);
         }
 
+        [TestMethod]
+        public void TestConstantParsing()
+        {
+            string[] args;
+            BasicArgs parsed;
+
+            args = new string[] { "-double", nameof(double.PositiveInfinity) };
+            parsed = Args.Parse<BasicArgs>(args);
+            Assert.IsTrue(double.IsPositiveInfinity(parsed.Double));
+            Assert.IsFalse(double.IsNegativeInfinity(parsed.Double));
+
+            args = new string[] { "-double", nameof(double.NegativeInfinity) };
+            parsed = Args.Parse<BasicArgs>(args);
+            Assert.IsTrue(double.IsNegativeInfinity(parsed.Double));
+            Assert.IsFalse(double.IsPositiveInfinity(parsed.Double));
+
+            args = new string[] { "-int", nameof(int.MaxValue) };
+            parsed = Args.Parse<BasicArgs>(args);
+            Assert.AreEqual(int.MaxValue, parsed.Int);
+
+            args = new string[] { "-int", nameof(int.MinValue) };
+            parsed = Args.Parse<BasicArgs>(args);
+            Assert.AreEqual(int.MinValue, parsed.Int);
+        }
+
         // TODO - More tests around lists and arrays
 
 

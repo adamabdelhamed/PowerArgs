@@ -291,21 +291,28 @@ namespace PowerArgs
             revivers.Add(typeof(int), (prop, val) =>
             {
                 int ret;
-                if (int.TryParse(val, out ret) == false) throw new FormatException("value must be an integer: " + val);
+                if (int.TryParse(val, out ret) == false && TryParseConstant(val, out ret) == false) throw new FormatException("value must be an integer: " + val);
                 return ret;
             });
 
             revivers.Add(typeof(long), (prop, val) =>
             {
                 long ret;
-                if (long.TryParse(val, out ret) == false) throw new FormatException("value must be an integer: " + val);
+                if (long.TryParse(val, out ret) == false && TryParseConstant(val, out ret) == false) throw new FormatException("value must be an integer: " + val);
+                return ret;
+            });
+
+            revivers.Add(typeof(float), (prop, val) =>
+            {
+                float ret;
+                if (float.TryParse(val, out ret) == false && TryParseConstant(val, out ret) == false) throw new FormatException("value must be a number: " + val);
                 return ret;
             });
 
             revivers.Add(typeof(double), (prop, val) =>
             {
                 double ret;
-                if (double.TryParse(val, out ret) == false) throw new FormatException("value must be a number: " + val);
+                if (double.TryParse(val, out ret) == false && TryParseConstant(val, out ret) == false) throw new FormatException("value must be a number: " + val);
                 return ret;
             });
 
@@ -350,6 +357,48 @@ namespace PowerArgs
             {
                 return ConsoleString.Parse(val);
             });
+        }
+
+        private static bool TryParseConstant<T>(string constantIdentifier, out T ret) where T : struct
+        {
+            var match = GetConstants(typeof(T)).Where(c => c.Name == constantIdentifier);
+            if(match.Count() == 0)
+            {
+                ret = default(T);
+                return false;
+            }
+            else
+            {
+                ret = (T)match.First().GetValue(null);
+                return true;
+            }
+        }
+
+        private static FieldInfo[] GetConstants(System.Type type)
+        {
+            ArrayList constants = new ArrayList();
+
+            FieldInfo[] fieldInfos = type.GetFields(
+                // Gets all public and static fields
+
+                BindingFlags.Public | BindingFlags.Static |
+                // This tells it to get the fields from all base types as well
+
+                BindingFlags.FlattenHierarchy);
+
+            // Go through the list and only pick out the constants
+            foreach (FieldInfo fi in fieldInfos)
+                // IsLiteral determines if its value is written at 
+                //   compile time and not changeable
+                // IsInitOnly determines if the field can be set 
+                //   in the body of the constructor
+                // for C# a field which is readonly keyword would have both true 
+                //   but a const field would have only IsLiteral equal to true
+                if (fi.IsLiteral && !fi.IsInitOnly)
+                    constants.Add(fi);
+
+            // Return an array of FieldInfos
+            return (FieldInfo[])constants.ToArray(typeof(FieldInfo));
         }
     }
 }
