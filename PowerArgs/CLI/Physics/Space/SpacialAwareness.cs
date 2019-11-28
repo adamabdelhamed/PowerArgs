@@ -16,26 +16,45 @@ namespace PowerArgs.Cli.Physics
             return HasLineOfSight(from, to, obstacles);
         }
 
-        public static bool HasLineOfSightSlow(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f) => GetLineOfSight(from, to, obstacles, increment) != null;
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f) => GetLineOfSight(from, to, obstacles, increment) != null;
 
         private static List<IRectangularF> GetLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f)
         {
             IRectangularF current = from;
             var currentDistance = current.CalculateDistanceTo(to);
             var a = current.Center().CalculateAngleTo(to.Center());
+
+            obstacles = new List<IRectangularF>(obstacles);// because we will be destructive
+
+            for(var i = 0; i < obstacles.Count; i++)
+            {
+                var o = obstacles[i];
+                if(o == from || o == to)
+                {
+                    obstacles.RemoveAt(i--);
+                    continue;
+                }
+
+                var aODiff = from.CalculateAngleTo(o).DiffAngle(a);
+                if(aODiff >= 180)
+                {
+                    obstacles.RemoveAt(i--);
+                    continue;
+                }
+            }
+
+           
             var path = new List<IRectangularF>();
+
             while (currentDistance > increment)
             {
                 current = RectangularF.Create(MoveTowards(current.Center(), a, increment), current);
                 current = RectangularF.Create(current.Left - current.Width / 2, current.Top - current.Height / 2, current.Width, current.Height);
 
-                foreach (var obstacle in obstacles)
+                for(var i = 0; i < obstacles.Count;i++)
                 {
-                    if (obstacle == to || obstacle == from)
-                    {
-                        continue;
-                    }
-                    else if (obstacle.OverlapPercentage(current) > 0)
+                    var obstacle = obstacles[i];
+                    if (obstacle.OverlapPercentage(current) > 0)
                     {
                         return null;
                     }
@@ -47,17 +66,22 @@ namespace PowerArgs.Cli.Physics
             return path;
         }
 
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles)
+        public static bool HasLineOfSightBeta(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles)
         {
-            var a = from.CalculateAngleTo(to);
-            var d = Geometry.CalculateNormalizedDistanceTo(from, to);
+            var fromC = from.CenterRect();
+            var toC = to.CenterRect();
+
+            var a = from.CalculateAngleTo(toC);
+            var d = Geometry.CalculateNormalizedDistanceTo(fromC, toC);
 
             foreach(var o in obstacles)
             {
                 if (o == from || o == to) continue;
-                var dO = Geometry.CalculateNormalizedDistanceTo(from, o);
 
+                var oc = o.CenterRect();
+                var dO = Geometry.CalculateNormalizedDistanceTo(fromC, oc);
                 if (dO > d) continue;
+
                 // todo - define this curve smoothly with real math
                 var angleDiffThreshold = d < 2 ? 180 :
                                    d < 5 ? 60 :
@@ -65,9 +89,8 @@ namespace PowerArgs.Cli.Physics
                                    d < 20 ? 25 :
                                    d < 40 ? 20 : 15;
 
-                var aO = from.CalculateAngleTo(o);
+                var aO = fromC.CalculateAngleTo(oc);
                 var aODiff = a.DiffAngle(aO);
-                
                 if(aODiff < angleDiffThreshold)
                 {
                     return false;
@@ -151,7 +174,7 @@ namespace PowerArgs.Cli.Physics
                 {
                     continue;
                 }
-                else if(excludedTypes != null && excludedTypes.Contains(e.GetType()))
+                else if(excludedTypes != null && excludedTypes.Where(t => e.GetType() == t || e.GetType().IsSubclassOf(t) || e.GetType().GetInterfaces().Contains(t)).Any())
                 {
                     continue;
                 }

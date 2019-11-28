@@ -28,6 +28,15 @@ namespace PowerArgs.Cli.Physics
         }
 
         /// <summary>
+        /// Resets the governor as if it fired just now
+        /// </summary>
+        /// <param name="currentTime">now</param>
+        public void Reset(TimeSpan currentTime)
+        {
+            lastFire = currentTime;
+        }
+
+        /// <summary>
         /// Determines if enough time has passed per the governor's
         /// configured rate
         /// </summary>
