@@ -16,7 +16,7 @@ namespace ArgsTests.CLI.Physics
             var t = new Time(TimeSpan.FromSeconds(.05));
             var now = TimeSpan.Zero;
             var assertions = 0;
-            t.QueueAction(async() =>
+            t.QueueAction("Test",async() =>
             {
                 while(t.Now < TimeSpan.FromSeconds(1))
                 {

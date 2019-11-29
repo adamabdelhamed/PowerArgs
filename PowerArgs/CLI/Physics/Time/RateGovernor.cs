@@ -44,6 +44,11 @@ namespace PowerArgs.Cli.Physics
         /// <returns>True if enough time has passed, false otherwise</returns>
         public bool ShouldFire(TimeSpan currentTime)
         {
+            if(Rate < TimeSpan.Zero)
+            {
+                return false;
+            }
+
             if (currentTime - lastFire < Rate)
             {
                 return false;

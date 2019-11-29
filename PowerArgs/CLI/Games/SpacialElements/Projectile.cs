@@ -21,7 +21,7 @@ namespace PowerArgs.Games
 
         private IRectangularF startLocation;
         private Force force;
-        public Projectile(Weapon w) : base(w)
+        private Projectile(Weapon w) : base(w)
         {
             this.ResizeTo(StandardWidth, StandardHeight);
             this.Tags.Add(Weapon.WeaponTag);
@@ -33,6 +33,19 @@ namespace PowerArgs.Games
             {
                 this.Speed.HitDetectionExclusions.Add(w.Holder);
             }
+            Time.CurrentTime.QueueAction("Init projectile force", () => { force = new Force(Speed, Accelleration.NormalizeQuantity(angle), angle); });
+
+            
+            this.SizeOrPositionChanged.SubscribeForLifetime(() =>
+            {
+                if (Range > 0 && this.CalculateDistanceTo(startLocation) > Range)
+                {
+                    this.Lifetime.Dispose();
+                }
+            }, this.Lifetime);
+            
+
+            this.Governor.Rate = TimeSpan.FromSeconds(-1);
         }
 
         public Projectile(Weapon w,float x, float y, float angle) : this(w)
@@ -50,14 +63,7 @@ namespace PowerArgs.Games
         }
 
 
-        public override void Evaluate()
-        {
-            force = force ?? new Force(Speed, Accelleration.NormalizeQuantity(angle), angle);
-            if (Range > 0 && this.CalculateDistanceTo(startLocation) > Range)
-            {
-                this.Lifetime.Dispose();
-            }
-        }
+     
 
         private void Speed_ImpactOccurred(Impact impact)
         {

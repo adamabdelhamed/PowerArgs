@@ -1,4 +1,6 @@
-﻿namespace PowerArgs.Cli.Physics
+﻿using System;
+
+namespace PowerArgs.Cli.Physics
 {
     public class StringSpacialElement : SpacialElement
     {
@@ -10,6 +12,7 @@
             Content = content;
             ResizeTo(content.Length, 1);
             observable.SubscribeForLifetime(nameof(Content), ()=> this.ResizeTo(Content.Length, this.Height), this.Lifetime);
+            this.Governor.Rate = TimeSpan.FromSeconds(-1);
         }
     }
 

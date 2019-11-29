@@ -20,11 +20,31 @@ namespace PowerArgs.Cli.Physics
         internal class CustomSyncContext : SynchronizationContext
         {
             private Time t;
-            public CustomSyncContext(Time t) { this.t = t; }
+            public CustomSyncContext(Time t)
+            {
+                this.t = t;
+            }
 
-            public override void Post(SendOrPostCallback d, object state) => t.QueueAction(() => d.Invoke(state));
+            public override void Post(SendOrPostCallback d, object state)
+            {
+                var reason = "Async";
+                if(t == Time.CurrentTime)
+                {
+                    reason = t.CurrentReason;
+                }
 
-            public override void Send(SendOrPostCallback d, object state) => t.QueueAction(() => d.Invoke(state));
+                if(reason.EndsWith(" (continued)") == false)
+                {
+                    reason += " (continued)";
+                }
+
+                t.QueueAction(reason, () => d.Invoke(state));
+            }
+
+            public override void Send(SendOrPostCallback d, object state)
+            {
+                t.QueueAction("Async Continuation", () => d.Invoke(state));
+            }
         }
 
         private class StopTimeException : Exception { }
@@ -33,15 +53,37 @@ namespace PowerArgs.Cli.Physics
         public ConsoleApp Application { get; set; }
 
         public ITimeFunction CurrentlyRunningFunction { get; private set; }
+        private WorkItem CurrentlyRunningWorkItem { get; set; }
+
+        public string CurrentReason
+        {
+            get
+            {
+                if(CurrentlyRunningFunction != null)
+                {
+                    return GetReasonString(CurrentlyRunningFunction, null);
+                }
+                else if(CurrentlyRunningWorkItem != null)
+                {
+                    return CurrentlyRunningWorkItem.Reason;
+                }
+                else
+                {
+                    return "None";
+                }
+            }
+        }
 
         private class WorkItem
         {
             public Action Work { get; set; }
+            public string Reason { get; set; }
 
             public Deferred Deferred { get; set; }
 
-            public WorkItem(Action work)
+            public WorkItem(string reason, Action work)
             {
+                this.Reason = reason;
                 this.Work = work;
                 Deferred = Deferred.Create();
             }
@@ -109,6 +151,13 @@ namespace PowerArgs.Cli.Physics
         private List<WorkItem> syncQueue = new List<WorkItem>();
         private CustomSyncContext syncContext;
         private Dictionary<string, ITimeFunction> idMap = new Dictionary<string, ITimeFunction>();
+
+
+        /// <summary>
+        /// Set this to get information about the current time simulation
+        /// </summary>
+        public TimeDebuggingData Debugger { get; set; }
+
         /// <summary>
         /// Creates a new time model, optionally providing a starting time and increment
         /// </summary>
@@ -155,7 +204,10 @@ namespace PowerArgs.Cli.Physics
                         {
                             try
                             {
+                                CurrentlyRunningWorkItem = syncAction;
+                                Debugger?.Track(syncAction.Reason);
                                 syncAction.Work();
+                                CurrentlyRunningWorkItem = null;
                             }
                             catch (Exception ex)
                             {
@@ -220,8 +272,18 @@ namespace PowerArgs.Cli.Physics
             }
 
             var p = runDeferred.Promise;
-            QueueAction(() => { throw new StopTimeException(); });
+            QueueAction("StopTime", () => { throw new StopTimeException(); });
             return p;
+        }
+
+        private Random rand = new Random();
+        public async Task DelayFuzzyAsync(double ms, double maxDeltaPercentage = .1)
+        {
+            var maxDelta = maxDeltaPercentage * ms;
+            var min = ms - maxDelta;
+            var max = ms + maxDelta;
+            var delay = rand.Next((int)min, (int)max);
+            await DelayAsync(delay);
         }
 
         public async Task DelayAsync(double ms) => await DelayAsync(TimeSpan.FromMilliseconds(ms));
@@ -309,29 +371,38 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-
         /// <summary>
         /// Queues an action that will run at the beginning of the next time iteration
         /// </summary>
         /// <param name="action">code to run at the beginning of the next time iteration</param>
-        public Promise QueueAction(Action action)
+        public Promise QueueAction(string reason, Action action)
         {
             lock (syncQueue)
             {
-                var workItem = new WorkItem(action);
+                var workItem = new WorkItem(reason, action);
                 syncQueue.Add(workItem);
                 return workItem.Deferred.Promise;
             }
         }
 
-        public Promise QueueActionInFront(Action action)
+        public Promise QueueActionInFront(string reason, Action action)
         {
             lock (syncQueue)
             {
-                var workItem = new WorkItem(action);
+                var workItem = new WorkItem(reason, action);
                 syncQueue.Insert(0, workItem);
                 return workItem.Deferred.Promise;
             }
+        }
+
+        private string GetReasonString(ITimeFunction func, string reason)
+        {
+            var ret = func.GetType().Name + (func.Id == null ? "" : "/" + func.Id);
+            if(reason != null)
+            {
+                ret += "/" + reason;
+            }
+            return ret;
         }
 
         /// <summary>
@@ -406,6 +477,7 @@ namespace PowerArgs.Cli.Physics
                 if (timeFunctions[i].Lifetime.IsExpired == false && timeFunctions[i].Governor.ShouldFire(Now))
                 {
                     CurrentlyRunningFunction = timeFunctions[i];
+                    Debugger?.Track(GetReasonString(CurrentlyRunningFunction, null));
                     CurrentlyRunningFunction.Evaluate();
                     CurrentlyRunningFunction = null;
                 }
@@ -418,6 +490,7 @@ namespace PowerArgs.Cli.Physics
                 if (toAdd[i].Lifetime.IsExpired == false && toAdd[i].Governor.ShouldFire(Now))
                 {
                     CurrentlyRunningFunction = toAdd[i];
+                    Debugger?.Track(GetReasonString(CurrentlyRunningFunction, null));
                     CurrentlyRunningFunction.Evaluate();
                     CurrentlyRunningFunction = null;
                 }

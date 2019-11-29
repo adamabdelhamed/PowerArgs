@@ -24,7 +24,7 @@ namespace PowerArgs.Cli.Physics
             thingBinder = new SpacialElementBinder();
             resetHandle = new AutoResetEvent(false);
             this.SpaceTime = time ?? new SpaceTime(w, h, increment: TimeSpan.FromSeconds(.05));
-            this.SpaceTime.QueueAction(() =>
+            this.SpaceTime.QueueAction("SpacetimePanel/InitRealTimeViewing",() =>
             {
                 RealTimeViewing = new RealTimeViewingFunction(this.SpaceTime) { Enabled = true };
                 this.SpaceTime.ChangeTrackingEnabled = true;

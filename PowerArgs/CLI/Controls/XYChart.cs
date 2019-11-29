@@ -130,6 +130,11 @@ namespace PowerArgs.Cli
         /// The y coordinate
         /// </summary>
         public double Y { get; set; }
+
+        /// <summary>
+        /// A description of this point
+        /// </summary>
+        public string Description { get; set; }
     }
 
     /// <summary>
@@ -474,9 +479,18 @@ namespace PowerArgs.Cli
                         pixel.BarsOrLines.ForEach(b => b.Value = pixel.Value);
                         pixel.BarsOrLines.ForEach(b => b.ZIndex = pixel.ZIndex);
                         var newTitle = pixel.Series.Title.ToConsoleString(pixel.Series.PlotCharacter.ForegroundColor);
+
                         var xValue = options.XAxisFormatter.FormatValue(MinXValueInPlotArea, MaxXValueInPlotArea, pixel.DataPoint.X);
                         var yValue = options.YAxisFormatter.FormatValue(MinYValueInPlotArea, MaxYValueInPlotArea, pixel.DataPoint.Y);
-                        newTitle += new ConsoleString(" ( " + xValue + ", " + yValue + " )", series.PlotCharacter.ForegroundColor, series.PlotCharacter.BackgroundColor);
+
+                        if (pixel.DataPoint.Description == null)
+                        {
+                            newTitle += new ConsoleString(" ( " + xValue + ", " + yValue + " )", series.PlotCharacter.ForegroundColor, series.PlotCharacter.BackgroundColor);
+                        }
+                        else
+                        {
+                            newTitle+= new ConsoleString($" ( {xValue},{yValue} - {pixel.DataPoint.Description} )", series.PlotCharacter.ForegroundColor, series.PlotCharacter.BackgroundColor);
+                        }
                         seriesTitleLabel.Text = newTitle;
                     }, pixel);
 

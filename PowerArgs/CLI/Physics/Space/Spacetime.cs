@@ -53,6 +53,10 @@ namespace PowerArgs.Cli.Physics
             Top = y;
             ZIndex = z;
             this.InternalState = new SpacialElementInternalState();
+            if(GetType() == typeof(SpacialElement))
+            {
+                Governor.Rate = TimeSpan.FromSeconds(-1);
+            }
         }
 
         public override void Evaluate() { }

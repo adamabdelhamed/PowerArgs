@@ -111,6 +111,7 @@ namespace PowerArgs.Cli.Physics
             if (slept == false)
             {
                 ZeroSleepCycles++;
+                Time.CurrentTime.QueueAction("Clogged", () => { });
             }
             else
             {

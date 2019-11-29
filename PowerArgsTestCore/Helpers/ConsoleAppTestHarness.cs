@@ -3,11 +3,7 @@ using PowerArgs;
 using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ArgsTests.CLI.Physics
 {
@@ -27,7 +23,7 @@ namespace ArgsTests.CLI.Physics
             Run(context, (app) =>
             {
                 var panel = app.LayoutRoot.Add(new SpacetimePanel(w, h));
-                panel.SpaceTime.QueueAction(() =>
+                panel.SpaceTime.QueueAction("Test",() =>
                 {
                     testCode(app, panel);
                 });

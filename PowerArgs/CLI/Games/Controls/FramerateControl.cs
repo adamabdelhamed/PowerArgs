@@ -44,7 +44,7 @@ namespace PowerArgs.Games
                 sleepTimeLabel.Text = (Math.Round(scene.RealTimeViewing.SleepTime)+" ms").ToConsoleString();
                 zeroSpinsLabel.Text = (scene.RealTimeViewing.ZeroSleepCycles + " zero spin cycles").ToConsoleString();
                 nonZeroSpinsLabel.Text = (scene.RealTimeViewing.SleepCycles + " non-zero spin cycles").ToConsoleString();
-                scene.SpaceTime.QueueAction(() =>
+                scene.SpaceTime.QueueAction("FramerateControl/QueryFunctionAndElementCount",() =>
                 {
                     var functionCount = Time.CurrentTime.Functions.Count();
                     var elementCount = SpaceTime.CurrentSpaceTime.Elements.Count();

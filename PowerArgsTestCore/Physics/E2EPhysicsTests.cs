@@ -18,7 +18,7 @@ namespace ArgsTests.CLI.Physics
             var panel = app.LayoutRoot.Add(new SpacetimePanel(1, 1));
             SpacialElement element;
             TimeSpan lastAge = TimeSpan.Zero;
-            panel.SpaceTime.QueueAction(() =>
+            panel.SpaceTime.QueueAction("Test",() =>
             {
                 element = new SpacialElement();
                 panel.SpaceTime.Add(element);
