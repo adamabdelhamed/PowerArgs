@@ -55,7 +55,7 @@ namespace PowerArgs.Cli.Physics
             {
                 return;
             }
-
+            resetHandle.Reset();
             Application.QueueAction(() =>
             {
                 foreach (var e in SpaceTime.AddedElements)

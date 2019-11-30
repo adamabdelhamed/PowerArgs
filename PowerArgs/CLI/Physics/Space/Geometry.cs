@@ -150,6 +150,16 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        public static IRectangularF Round(this IRectangularF rect)
+        {
+            return RectangularF.Create(
+                (int)Math.Round(rect.Left),
+                (int)Math.Round(rect.Top),
+                (int)Math.Round(rect.Width),
+                (int)Math.Round(rect.Height)
+            );
+        }
+
         public static float GetOppositeAngle(this float angle)
         {
             float ret = angle < 180 ? angle + 180 : angle - 180;
