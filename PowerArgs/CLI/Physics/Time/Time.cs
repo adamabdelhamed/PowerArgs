@@ -182,75 +182,8 @@ namespace PowerArgs.Cli.Physics
             Thread t = new Thread(() =>
             {
                 SynchronizationContext.SetSynchronizationContext(syncContext);
-
                 IsRunning = true;
-                try
-                {
-                    current = this;
-                    while (true)
-                    {
-                        List<WorkItem> syncActions = new List<WorkItem>();
-                        lock (syncQueue)
-                        {
-                            while (syncQueue.Count > 0)
-                            {
-                                var workItem = syncQueue[0];
-                                syncQueue.RemoveAt(0);
-                                syncActions.Add(workItem);
-                            }
-                        }
-
-                        foreach (var syncAction in syncActions)
-                        {
-                            try
-                            {
-                                CurrentlyRunningWorkItem = syncAction;
-                                Debugger?.Track(syncAction.Reason);
-                                syncAction.Work();
-                                CurrentlyRunningWorkItem = null;
-                            }
-                            catch (Exception ex)
-                            {
-                                if (syncAction.Deferred.HasExceptionListeners)
-                                {
-                                    syncAction.Deferred.Reject(ex);
-                                }
-                                else
-                                {
-                                    throw;
-                                }
-                            }
-                            if (syncAction.Deferred.IsFulfilled == false)
-                            {
-                                syncAction.Deferred.Resolve();
-                            }
-                        }
-
-                        Tick();
-                        AfterTick.Fire();
-                    }
-                }
-                catch (StopTimeException)
-                {
-                    IsRunning = false;
-                    runDeferred.Resolve();
-                }
-                catch (Exception ex)
-                {
-                    IsRunning = false;
-                    var args = new TimeExceptionArgs() { Exception = ex };
-                    BeforeUnhandledException.Fire(args);
-
-                    if (args.Handled)
-                    {
-                        runDeferred.Resolve();
-                    }
-                    else
-                    {
-                        UnhandledException.Fire(ex);
-                        runDeferred.Reject(ex);
-                    }
-                }
+                Body();
             })
             { Name = name };
             t.Priority = ThreadPriority.AboveNormal;
@@ -274,6 +207,115 @@ namespace PowerArgs.Cli.Physics
             var p = runDeferred.Promise;
             QueueAction("StopTime", () => { throw new StopTimeException(); });
             return p;
+        }
+
+        private void Body()
+        {
+            try
+            {
+                current = this;
+                Loop();
+            }
+            catch (StopTimeException)
+            {
+                IsRunning = false;
+                runDeferred.Resolve();
+            }
+            catch (Exception ex)
+            {
+                IsRunning = false;
+                var args = new TimeExceptionArgs() { Exception = ex };
+                BeforeUnhandledException.Fire(args);
+
+                if (args.Handled)
+                {
+                    Body();
+                }
+                else
+                {
+                    UnhandledException.Fire(ex);
+                    runDeferred.Reject(ex);
+                }
+            }
+        }
+
+        private void Loop()
+        {
+            while (true)
+            {
+                List<WorkItem> syncActions = new List<WorkItem>();
+                lock (syncQueue)
+                {
+                    while (syncQueue.Count > 0)
+                    {
+                        var workItem = syncQueue[0];
+                        syncQueue.RemoveAt(0);
+                        syncActions.Add(workItem);
+                    }
+                }
+
+                foreach (var syncAction in syncActions)
+                {
+                    try
+                    {
+                        CurrentlyRunningWorkItem = syncAction;
+                        Debugger?.Track(syncAction.Reason);
+                        syncAction.Work();
+                        CurrentlyRunningWorkItem = null;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (syncAction.Deferred.HasExceptionListeners)
+                        {
+                            syncAction.Deferred.Reject(ex);
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                    if (syncAction.Deferred.IsFulfilled == false)
+                    {
+                        syncAction.Deferred.Resolve();
+                    }
+                }
+
+                for (var i = 0; i < timeFunctions.Count; i++)
+                {
+                    if (timeFunctions[i].Lifetime.IsExpired == false && timeFunctions[i].Governor.ShouldFire(Now))
+                    {
+                        CurrentlyRunningFunction = timeFunctions[i];
+                        Debugger?.Track(GetReasonString(CurrentlyRunningFunction, null));
+                        CurrentlyRunningFunction.Evaluate();
+                        CurrentlyRunningFunction = null;
+                    }
+                }
+
+                for (var i = 0; i < toAdd.Count; i++)
+                {
+                    timeFunctions.Add(toAdd[i]);
+
+                    if (toAdd[i].Lifetime.IsExpired == false && toAdd[i].Governor.ShouldFire(Now))
+                    {
+                        CurrentlyRunningFunction = toAdd[i];
+                        Debugger?.Track(GetReasonString(CurrentlyRunningFunction, null));
+                        CurrentlyRunningFunction.Evaluate();
+                        CurrentlyRunningFunction = null;
+                    }
+                }
+
+                toAdd.Clear();
+
+                for (var i = 0; i < toRemove.Count; i++)
+                {
+                    timeFunctions.Remove(toRemove[i]);
+                }
+
+                toRemove.Clear();
+
+                Now += Increment;
+                AfterTick.Fire();
+            }
         }
 
         private Random rand = new Random();
@@ -469,44 +511,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-
-        private void Tick()
-        {
-            for (var i = 0; i < timeFunctions.Count; i++)
-            {
-                if (timeFunctions[i].Lifetime.IsExpired == false && timeFunctions[i].Governor.ShouldFire(Now))
-                {
-                    CurrentlyRunningFunction = timeFunctions[i];
-                    Debugger?.Track(GetReasonString(CurrentlyRunningFunction, null));
-                    CurrentlyRunningFunction.Evaluate();
-                    CurrentlyRunningFunction = null;
-                }
-            }
-
-            for (var i = 0; i < toAdd.Count; i++)
-            {
-                timeFunctions.Add(toAdd[i]);
-
-                if (toAdd[i].Lifetime.IsExpired == false && toAdd[i].Governor.ShouldFire(Now))
-                {
-                    CurrentlyRunningFunction = toAdd[i];
-                    Debugger?.Track(GetReasonString(CurrentlyRunningFunction, null));
-                    CurrentlyRunningFunction.Evaluate();
-                    CurrentlyRunningFunction = null;
-                }
-            }
-
-            toAdd.Clear();
-
-            for (var i = 0; i < toRemove.Count; i++)
-            {
-                timeFunctions.Remove(toRemove[i]);
-            }
-
-            toRemove.Clear();
-
-            Now += Increment;
-        }
+ 
 
         private IEnumerable<ITimeFunction> EnumerateFunctions()
         {
