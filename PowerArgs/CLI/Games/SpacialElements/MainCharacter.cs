@@ -55,6 +55,7 @@ namespace PowerArgs.Games
         public MainCharacter()
         {
             this.Id = nameof(MainCharacter)+": "+NextId++;
+            this.Tags.Add(nameof(MainCharacter));
             this.MoveTo(0, 0);
             this.Added.SubscribeForLifetime(() =>
             {

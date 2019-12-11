@@ -183,7 +183,22 @@ namespace PowerArgs.Cli.Physics
             {
                 SynchronizationContext.SetSynchronizationContext(syncContext);
                 IsRunning = true;
-                Body();
+                try
+                {
+                    current = this;
+                    Loop();
+                }
+                catch (StopTimeException)
+                {
+                    IsRunning = false;
+                    runDeferred.Resolve();
+                }
+                catch (Exception ex)
+                {
+                    IsRunning = false;
+                    UnhandledException.Fire(ex);
+                    runDeferred.Reject(ex);
+                }
             })
             { Name = name };
             t.Priority = ThreadPriority.AboveNormal;
@@ -193,51 +208,8 @@ namespace PowerArgs.Cli.Physics
             return runDeferred.Promise;
         }
 
-        /// <summary>
-        /// Stops the time model
-        /// </summary>
-        /// <returns>A promise that will complete when the simulation finishes</returns>
-        public Promise Stop()
-        {
-            if (runDeferred == null)
-            {
-                throw new InvalidOperationException("Not running");
-            }
 
-            var p = runDeferred.Promise;
-            QueueAction("StopTime", () => { throw new StopTimeException(); });
-            return p;
-        }
-
-        private void Body()
-        {
-            try
-            {
-                current = this;
-                Loop();
-            }
-            catch (StopTimeException)
-            {
-                IsRunning = false;
-                runDeferred.Resolve();
-            }
-            catch (Exception ex)
-            {
-                IsRunning = false;
-                var args = new TimeExceptionArgs() { Exception = ex };
-                BeforeUnhandledException.Fire(args);
-
-                if (args.Handled)
-                {
-                    Body();
-                }
-                else
-                {
-                    UnhandledException.Fire(ex);
-                    runDeferred.Reject(ex);
-                }
-            }
-        }
+ 
 
         private void Loop()
         {
@@ -263,6 +235,10 @@ namespace PowerArgs.Cli.Physics
                         syncAction.Work();
                         CurrentlyRunningWorkItem = null;
                     }
+                    catch(StopTimeException)
+                    {
+                        throw;
+                    }
                     catch (Exception ex)
                     {
                         if (syncAction.Deferred.HasExceptionListeners)
@@ -271,9 +247,10 @@ namespace PowerArgs.Cli.Physics
                         }
                         else
                         {
-                            throw;
+                            HandleWorkItemException(ex);
                         }
                     }
+
                     if (syncAction.Deferred.IsFulfilled == false)
                     {
                         syncAction.Deferred.Resolve();
@@ -285,9 +262,7 @@ namespace PowerArgs.Cli.Physics
                     if (timeFunctions[i].Lifetime.IsExpired == false && timeFunctions[i].Governor.ShouldFire(Now))
                     {
                         CurrentlyRunningFunction = timeFunctions[i];
-                        Debugger?.Track(GetReasonString(CurrentlyRunningFunction, null));
-                        CurrentlyRunningFunction.Evaluate();
-                        CurrentlyRunningFunction = null;
+                        EvaluateCurrentlyRunningFunction();
                     }
                 }
 
@@ -298,9 +273,7 @@ namespace PowerArgs.Cli.Physics
                     if (toAdd[i].Lifetime.IsExpired == false && toAdd[i].Governor.ShouldFire(Now))
                     {
                         CurrentlyRunningFunction = toAdd[i];
-                        Debugger?.Track(GetReasonString(CurrentlyRunningFunction, null));
-                        CurrentlyRunningFunction.Evaluate();
-                        CurrentlyRunningFunction = null;
+                        EvaluateCurrentlyRunningFunction();
                     }
                 }
 
@@ -316,6 +289,60 @@ namespace PowerArgs.Cli.Physics
                 Now += Increment;
                 AfterTick.Fire();
             }
+        }
+
+        private void EvaluateCurrentlyRunningFunction()
+        {
+            Debugger?.Track(GetReasonString(CurrentlyRunningFunction, null));
+            try
+            {
+                CurrentlyRunningFunction.Evaluate();
+            }
+            catch (StopTimeException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                HandleWorkItemException(ex);
+            }
+            finally
+            {
+                CurrentlyRunningFunction = null;
+            }
+        }
+
+        private void HandleWorkItemException(Exception ex)
+        {
+            var args = new TimeExceptionArgs() { Exception = ex };
+            BeforeUnhandledException.Fire(args);
+
+            if (args.Handled)
+            {
+                // continue
+            }
+            else
+            {
+                UnhandledException.Fire(ex);
+                runDeferred.Reject(ex);
+                throw new StopTimeException();
+            }
+        }
+
+        /// <summary>
+        /// Stops the time model
+        /// </summary>
+        /// <returns>A promise that will complete when the simulation finishes</returns>
+        public Promise Stop()
+        {
+            if (runDeferred == null)
+            {
+                throw new InvalidOperationException("Not running");
+            }
+
+            var p = runDeferred.Promise;
+            QueueAction("StopTime", () => { throw new StopTimeException(); });
+            return p;
         }
 
         private Random rand = new Random();
