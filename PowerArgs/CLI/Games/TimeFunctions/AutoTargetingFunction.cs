@@ -16,37 +16,39 @@ namespace PowerArgs.Games
     public class AutoTargetingFunction : TimeFunction
     {
         public Event<SpacialElement> TargetChanged { get; private set; } = new Event<SpacialElement>();
-        private AutoTargetingOptions options;
+        public AutoTargetingOptions Options { get; private set; }
         private SpacialElement lastTarget;
         public AutoTargetingFunction(AutoTargetingOptions options)
         {
-            this.options = options;
+            this.Options = options;
             this.Governor = new RateGovernor(TimeSpan.FromSeconds(.1));
         }
 
+        protected virtual SpacialElement FilterTarget(SpacialElement t) => t;
+
         public override void Evaluate()
         {
-            var targets = options.TargetsEval()
+            var targets = Options.TargetsEval()
                 .Where(z =>
                 {
-                    var angle = options.Source.Element.CalculateAngleTo(z);
-                    var delta = options.Source.Angle.DiffAngle(angle);
+                    var angle = Options.Source.Element.CalculateAngleTo(z);
+                    var delta = Options.Source.Angle.DiffAngle(angle);
                     return delta < 90;
                 })
-                .OrderBy(z => Geometry.CalculateNormalizedDistanceTo( options.Source.Element,z));
+                .OrderBy(z => Geometry.CalculateNormalizedDistanceTo( Options.Source.Element,z));
             var obstacles = new HashSet<IRectangularF>();
 
-            foreach(var target in options.TargetsEval())
+            foreach(var target in Options.TargetsEval())
             {
-                if (options.Source.HitDetectionExclusions.Contains(target) == false && options.Source.HitDetectionExclusionTypes.Contains(target.GetType()) == false)
+                if (Options.Source.HitDetectionExclusions.Contains(target) == false && Options.Source.HitDetectionExclusionTypes.Contains(target.GetType()) == false)
                 {
                     obstacles.Add(target);
                 }
             }
 
-            foreach(var element in SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag(Weapon.WeaponTag) == false && e.ZIndex == options.Source.Element.ZIndex))
+            foreach(var element in SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag(Weapon.WeaponTag) == false && e.ZIndex == Options.Source.Element.ZIndex))
             {
-                if (options.Source.HitDetectionExclusions.Contains(element) == false && options.Source.HitDetectionExclusionTypes.Contains(element.GetType()) == false)
+                if (Options.Source.HitDetectionExclusions.Contains(element) == false && Options.Source.HitDetectionExclusionTypes.Contains(element.GetType()) == false)
                 {
                     obstacles.Add(element);
                 }
@@ -54,14 +56,15 @@ namespace PowerArgs.Games
 
             foreach (var target in targets)
             {
-                var hasLineOfSight = SpacialAwareness.HasLineOfSight(options.Source.Element, target, obstacles.ToList());
+                var hasLineOfSight = SpacialAwareness.HasLineOfSight(Options.Source.Element, target, obstacles.ToList());
 
                 if (hasLineOfSight)
                 {
+                    var finalTarget = FilterTarget(target);
                     if (target != lastTarget)
                     {
-                        TargetChanged.Fire(target);
-                        lastTarget = target;
+                        TargetChanged.Fire(finalTarget);
+                        lastTarget = finalTarget;
                     }
                     return;
                 }

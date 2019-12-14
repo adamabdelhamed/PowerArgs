@@ -71,7 +71,11 @@ namespace PowerArgs.Games
             {
                 if (Inventory.PrimaryWeapon != null) OnEquipWeapon.Fire(Inventory.ExplosiveWeapon);
             }, this.Lifetime);
-            InitializeTargeting();
+            InitializeTargeting(SpaceTime.CurrentSpaceTime.Add(new AutoTargetingFunction(new AutoTargetingOptions()
+            {
+                Source = this.Speed,
+                TargetsEval = () => SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("enemy")),
+            })));
         }
 
        

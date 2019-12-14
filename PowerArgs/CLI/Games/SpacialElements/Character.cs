@@ -200,14 +200,9 @@ namespace PowerArgs.Games
             }
         }
         
-        public void InitializeTargeting()
+        protected void InitializeTargeting(AutoTargetingFunction func)
         {
-            Targeting = new AutoTargetingFunction(new AutoTargetingOptions()
-            {
-                Source = this.Speed,
-                TargetsEval = () => SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("enemy")),
-            });
-            Added.SubscribeForLifetime(() => { Time.CurrentTime.Add(Targeting); }, this.Lifetime);
+            Targeting = func;
             this.Lifetime.OnDisposed(Targeting.Lifetime.Dispose);
 
             Targeting.TargetChanged.SubscribeForLifetime((target) =>
@@ -225,6 +220,21 @@ namespace PowerArgs.Games
                 }
             }, this.Lifetime);
         }
+
+        public void DisableTargeting()
+        {
+            Time.CurrentTime.Functions.WhereAs<AutoTargetingFunction>().Where(f => f.Options.Source == this.Speed).SingleOrDefault()?.Lifetime.Dispose();
+        }
+
+        public void OverrideTargeting(AutoTargetingFunction func)
+        {
+            if(Time.CurrentTime.Functions.WhereAs<AutoTargetingFunction>().Where(f => f.Options.Source == this.Speed).Single() != func)
+            {
+                throw new ArgumentException("You must disable targeting and add the new function to Time before overriding");
+            }
+            InitializeTargeting(func);
+        }
+
         public void TryInteract() => SpaceTime.CurrentSpaceTime.Elements
        .Where(e => e is IInteractable)
        .Select(i => i as IInteractable)
