@@ -9,6 +9,7 @@ namespace PowerArgs.Cli.Physics
 
         private bool itsMeResizing;
         private IRectangularF prevSize;
+        public bool IsVisible { get; set; } = true;
         public StringSpacialElement(ConsoleString content)
         {
             this.Governor.Rate = TimeSpan.FromSeconds(-1);
@@ -45,6 +46,7 @@ namespace PowerArgs.Cli.Physics
         public override void OnRender()
         {
             base.OnRender();
+            this.IsVisible = StringSpacialElement.IsVisible;
             this.content = new ConsoleString(StringSpacialElement.Content);
         }
 
