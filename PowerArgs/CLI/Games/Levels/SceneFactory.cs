@@ -59,7 +59,7 @@ namespace PowerArgs.Games
                     {
                         if(function is TimeFunction)
                         {
-                            (function as TimeFunction).Tags.AddRange(item.Tags);
+                            (function as TimeFunction).AddTags(item.Tags);
                         }
 
                         if (function is SpacialElement)

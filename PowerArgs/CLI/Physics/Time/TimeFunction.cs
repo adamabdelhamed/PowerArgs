@@ -80,7 +80,15 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         public RateGovernor Governor { get; protected set; } = new RateGovernor(TimeSpan.Zero);
 
-        public List<string> Tags { get; set; } = new List<string>();
+        public HashSet<string> Tags { get; set; } = new HashSet<string>();
+
+        public void AddTags(IEnumerable<string> tags)
+        {
+            foreach(var tag in tags)
+            {
+                Tags.Add(tag);
+            }
+        }
 
         public bool HasSimpleTag(string tag) => Tags.Where(t => t.Equals(tag, StringComparison.OrdinalIgnoreCase)).Any();
         public bool HasValueTag(string tag) => Tags.Where(t => t.StartsWith(tag + ":", StringComparison.OrdinalIgnoreCase)).Any();

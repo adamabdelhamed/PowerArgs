@@ -21,7 +21,7 @@ namespace PowerArgs.Games
         public AutoTargetingFunction(AutoTargetingOptions options)
         {
             this.Options = options;
-            this.Governor = new RateGovernor(TimeSpan.FromSeconds(.1));
+            this.Governor = new RateGovernor(TimeSpan.FromSeconds(0));
         }
 
         protected virtual SpacialElement FilterTarget(SpacialElement t) => t;

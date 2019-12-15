@@ -16,9 +16,9 @@ namespace PowerArgs.Cli.Physics
             return HasLineOfSight(from, to, obstacles);
         }
 
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f) => GetLineOfSight(from, to, obstacles, increment) != null;
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .25f) => GetLineOfSight(from, to, obstacles, increment) != null;
 
-        private static List<IRectangularF> GetLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .5f)
+        private static List<IRectangularF> GetLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .25f)
         {
             IRectangularF current = from;
             var currentDistance = current.CalculateDistanceTo(to);

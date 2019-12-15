@@ -1,17 +1,15 @@
 ﻿using PowerArgs.Cli.Physics;
-using System;
-using System.Collections.Generic;
 
 namespace PowerArgs.Games
 {
     public class ProximityMineDropper : Weapon
     {
         public override WeaponStyle Style => WeaponStyle.Explosive;
-        public List<Type> ExcludedTypes { get; set; }
+        public string TargetTag { get; set; }
 
         public override void FireInternal()
         {
-            var mine = new ProximityMine(this) { ExcludedTypes = ExcludedTypes };
+            var mine = new ProximityMine(this) { TargetTag = TargetTag };
             PlaceMineSafe(mine, Holder);
             SpaceTime.CurrentSpaceTime.Add(mine);
         }

@@ -1,8 +1,9 @@
 ﻿using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+
 namespace PowerArgs.Games
 {
     public enum ProximityMineState
@@ -12,53 +13,86 @@ namespace PowerArgs.Games
         ThreatNearby
     }
 
-    public class ProximityMine : Explosive
+    public class ProximityMineWatcher : AsyncTimeFunction
     {
-        public List<Type> ExcludedTypes { get; set; }
-
-        public ProximityMineState State { get; set; } = ProximityMineState.NoNearbyThreats;
-
-        public ProximityMine(Weapon w) : base(w) { }
-
-        public override void Evaluate()
+        public ProximityMineWatcher()
         {
-            var closestTarget = DamageBroker.Instance.DamageableElements
-                .Where(e => e.ZIndex == this.ZIndex)
-                .Where(e => e != this)
-                .Where(e => e is Wall == false && e is Door == false)
-                .Where(e => e != Weapon.Holder)
-                .Where(e => IsIncluded(e))
-                .Where(e => this.HasLineOfSight(e, this.GetObstacles()))
-                .Select(t => new { Target = t, Distance = Geometry.CalculateNormalizedDistanceTo(t,this)})
-                .OrderBy(t => t.Distance)
-                .FirstOrDefault();
-
-            if(closestTarget == null)
-            {
-                State = ProximityMineState.NoNearbyThreats;
-            }
-            else if (closestTarget.Distance < Range *.9f)
-            {
-                Explode();
-            }
-            else if(closestTarget.Distance < Range * 3f)
-            {
-                State = ProximityMineState.ThreatNearby;
-            }
-            else if(closestTarget.Distance < Range * 6f)
-            {
-                State = ProximityMineState.ThreatApproaching;
-            }
-            else
-            {
-                State = ProximityMineState.NoNearbyThreats;
-            }
+            Start();
         }
 
-        private bool IsIncluded(SpacialElement e)
+        protected override async Task ExecuteAsync()
         {
-            if (ExcludedTypes == null) return true;
-            else return ExcludedTypes.Contains(e.GetType()) == false;
+            while(Lifetime.IsExpired == false)
+            {
+                var mines = SpaceTime.CurrentSpaceTime.Elements.WhereAs<ProximityMine>().ToArray();
+                if (mines.Length == 0)
+                {
+                    Lifetime.Dispose();
+                    break;
+                }
+
+                foreach(var mineGroup in mines.GroupBy(m => m.TargetTag + "/"+m.ZIndex))
+                {
+                    var proto = mineGroup.First();
+                    var tag = proto.TargetTag;
+                    var z = proto.ZIndex;
+                    var targets = SpaceTime.CurrentSpaceTime.Elements
+                        .Where(e => e.ZIndex == z && e.Tags.Contains(tag)).ToArray();
+
+                    foreach(var mine in mineGroup)
+                    {
+                        if (mine.Lifetime.IsExpired) continue;
+
+                        var closest = targets.OrderBy(t => Geometry.CalculateNormalizedDistanceTo(mine, t)).FirstOrDefault();
+
+                        if (closest == null)
+                        {
+                            mine.State = ProximityMineState.NoNearbyThreats;
+                            continue;
+                        }
+
+                        var d = Geometry.CalculateNormalizedDistanceTo(closest, mine);
+
+                        if (d < mine.Range * .9f)
+                        {
+                            mine.Explode();
+                        }
+                        else if (d < mine.Range * 3f)
+                        {
+                            mine.State = ProximityMineState.ThreatNearby;
+                        }
+                        else if (d < mine.Range * 6f)
+                        {
+                            mine.State = ProximityMineState.ThreatApproaching;
+                        }
+                        else
+                        {
+                            mine.State = ProximityMineState.NoNearbyThreats;
+                        }
+                        await Time.CurrentTime.YieldAsync();
+                    }
+
+                    await Time.CurrentTime.DelayFuzzyAsync(333);
+                }
+            }
+        }
+    }
+
+    public class ProximityMine : Explosive
+    {
+        public string TargetTag { get; set; }
+        public ProximityMineState State { get; set; } = ProximityMineState.NoNearbyThreats;
+
+
+       
+        public ProximityMine(Weapon w) : base(w)
+        {
+            this.Governor.Rate = TimeSpan.FromSeconds(-1);
+
+            if(Time.CurrentTime.Functions.WhereAs<ProximityMineWatcher>().None())
+            {
+                Time.CurrentTime.Add(new ProximityMineWatcher());
+            }
         }
     }
 
