@@ -235,7 +235,10 @@ namespace PowerArgs.Cli.Physics
         public override void Setter(IRectangularF target, IRectangularF bounds)
         {
             (target as SpacialElement).MoveTo(bounds.Left, bounds.Top);
-            (target as SpacialElement).ResizeTo(bounds.Width, bounds.Height);
+            if (target.Width != bounds.Width || target.Height != bounds.Height)
+            {
+                (target as SpacialElement).ResizeTo(bounds.Width, bounds.Height);
+            }
         }
     }
 
