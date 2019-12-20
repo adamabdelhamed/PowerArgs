@@ -148,15 +148,24 @@ namespace PowerArgs
         public static Lifetime EarliestOf(IEnumerable<ILifetimeManager> others)
         {
             Lifetime ret = new Lifetime();
+            var count = 0;
             foreach (var other in others)
             {
-                other.OnDisposed(() =>
+                if (other != null)
                 {
-                    if(ret.IsExpired == false)
+                    count++;
+                    other.OnDisposed(() =>
                     {
-                        ret.Dispose();
-                    }
-                });
+                        if (ret.IsExpired == false)
+                        {
+                            ret.Dispose();
+                        }
+                    });
+                }
+            }
+            if(count == 0)
+            {
+                ret.Dispose();
             }
             return ret;
         }

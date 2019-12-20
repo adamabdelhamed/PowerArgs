@@ -346,7 +346,7 @@ namespace PowerArgs.Cli.Physics
         }
 
         private Random rand = new Random();
-        public async Task DelayFuzzyAsync(double ms, double maxDeltaPercentage = .1)
+        public async Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1)
         {
             var maxDelta = maxDeltaPercentage * ms;
             var min = ms - maxDelta;

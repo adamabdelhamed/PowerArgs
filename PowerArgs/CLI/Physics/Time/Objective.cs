@@ -40,6 +40,10 @@ namespace PowerArgs.Cli.Physics
         public Task YieldAsync() => Focus.YieldAsync();
         public void Interject(Func<Task> work) => Focus.Interject(work);
 
+        public Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1)
+        {
+            return Focus.DelayAsync(ms);
+        }
         public void Evaluate()
         {
             if(Focus != null && Focus.IsInterjecting)

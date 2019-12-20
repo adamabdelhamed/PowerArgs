@@ -172,6 +172,10 @@ namespace PowerArgs.Cli.Physics
 
         internal static void FindEdgesGivenHyp(float hyp, float angle, out float dx, out float dy)
         {
+            if(angle == 360)
+            {
+                angle = 0;
+            }
             float angleTemp, d1, d2;
             if (angle >= 0 && angle < 90)
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace PowerArgs
 {
@@ -29,6 +30,21 @@ namespace PowerArgs
         /// returns true if expired
         /// </summary>
         bool IsExpired { get;  }
+    }
+
+    public static class ILifetimeManagerEx
+    {
+        /// <summary>
+        /// Delays until this lifetime is complete
+        /// </summary>
+        /// <returns>an async task</returns>
+        public static async Task AwaitEndOfLifetime(this ILifetimeManager manager)
+        {
+            while (manager.IsExpired == false)
+            {
+                await Task.Delay(10);
+            }
+        }
     }
 
     /// <summary>

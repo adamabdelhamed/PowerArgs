@@ -52,12 +52,19 @@ namespace ArgsTests.CLI
             await app.PaintAndRecordKeyFrameAsync();
             return await Time.CurrentTime.TryDelayAsync(condition, timeout, evalFrequency);
         }
-
+   
         public async Task YieldAsync()
         {
             DelayCount++;
             await app.PaintAndRecordKeyFrameAsync();
             await Time.CurrentTime.YieldAsync();
+        }
+
+        public async Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = 0.1)
+        {
+            DelayCount++;
+            await app.PaintAndRecordKeyFrameAsync();
+            await Time.CurrentTime.DelayFuzzyAsync(ms, maxDeltaPercentage);
         }
     }
 

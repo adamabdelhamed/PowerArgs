@@ -50,6 +50,14 @@ namespace PowerArgs
         Task<bool> TryDelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null);
 
         /// <summary>
+        /// Delays for a time close to the given time.
+        /// </summary>
+        /// <param name="ms">the approximate time to wait</param>
+        /// <param name="maxDeltaPercentage">max variance</param>
+        /// <returns>an async task</returns>
+        Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1);
+
+        /// <summary>
         /// Yields immidiately
         /// </summary>
         /// <returns>an async task</returns>
@@ -109,6 +117,11 @@ namespace PowerArgs
             }
         }
 
+        public Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1)
+        {
+            return DelayAsync(ms);
+        }
+
         /// <summary>
         /// Try to delay until the given condition is true
         /// </summary>
@@ -157,5 +170,7 @@ namespace PowerArgs
         public Task DelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null) => Task.CompletedTask;
         public Task<bool> TryDelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null) => Task.FromResult(true);
         public Task YieldAsync() => Task.CompletedTask;
+
+        public Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1) => Task.CompletedTask;
     }
 }

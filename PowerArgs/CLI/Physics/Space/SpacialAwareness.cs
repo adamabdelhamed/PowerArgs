@@ -137,6 +137,16 @@ namespace PowerArgs.Cli.Physics
 
         public static ILocationF MoveTowards(this ILocationF a, float angle, float distance)
         {
+            while(angle < 0)
+            {
+                angle += 360;
+            }
+
+            while(angle > 360)
+            {
+                angle -= 360;
+            }
+
             distance = Geometry.NormalizeQuantity(distance, angle);
             var forward = angle > 270 || angle < 90;
             var up = angle > 180;

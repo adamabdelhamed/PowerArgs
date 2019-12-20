@@ -93,6 +93,12 @@ namespace PowerArgs.Cli.Physics
             return Time.CurrentTime.YieldAsync();
         }
 
+        public Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1)
+        {
+            AssertAlive();
+            return DelayAsync(ms);
+        }
+
         private void AssertAlive()
         {
             if (Lifetime.IsExpired) throw new AbortObjectiveException("TimeFunction expired");
