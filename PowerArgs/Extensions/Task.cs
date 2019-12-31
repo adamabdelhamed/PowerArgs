@@ -48,6 +48,15 @@ namespace PowerArgs
             return t.ContinueWith((t2)=> a(), TaskScheduler.FromCurrentSynchronizationContext());
         }
 
+        public static Task Then<T>(this Task<T> t, Action<T> a)
+        {
+            return t.ContinueWith((t2) =>
+            {
+                a(t.Result);
+
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
         public static ILifetimeManager ToLifetime(this Task t)
         {
             var lt = new Lifetime();

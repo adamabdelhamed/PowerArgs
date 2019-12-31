@@ -83,7 +83,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public IEnumerable<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions);
+        public List<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions, HitDetectionExclusionTypes);
 
         public SpeedTracker(SpacialElement t) : base(t)
         {
