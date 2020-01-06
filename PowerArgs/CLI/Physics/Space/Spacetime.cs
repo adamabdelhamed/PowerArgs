@@ -125,6 +125,11 @@ namespace PowerArgs.Cli.Physics
         }
     }
 
+    public interface IHaveMassBounds
+    {
+        IRectangularF MassBounds { get; } 
+    }
+
     public interface IGhost
     {
         bool IsGhost { get; set; }

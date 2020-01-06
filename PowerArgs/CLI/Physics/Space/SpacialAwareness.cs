@@ -46,10 +46,20 @@ namespace PowerArgs.Cli.Physics
            
             var path = new List<IRectangularF>();
 
-            while (currentDistance > increment)
+            var terminate = false;
+            while (terminate == false)
             {
-                current = RectangularF.Create(MoveTowards(current.Center(), a, increment), current);
-                current = RectangularF.Create(current.Left - current.Width / 2, current.Top - current.Height / 2, current.Width, current.Height);
+                if (currentDistance < increment)
+                {
+                    currentDistance = 0;
+                    current = RectangularF.Create(to.CenterX() - from.Width / 2, to.CenterY() - from.Height / 2, from.Width, from.Height);
+                    terminate = true;
+                }
+                else
+                {
+                    current = RectangularF.Create(MoveTowards(current.Center(), a, increment), current);
+                    current = RectangularF.Create(current.Left - current.Width / 2, current.Top - current.Height / 2, current.Width, current.Height);
+                }
 
                 for(var i = 0; i < obstacles.Count;i++)
                 {

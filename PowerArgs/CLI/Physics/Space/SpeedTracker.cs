@@ -114,10 +114,11 @@ namespace PowerArgs.Cli.Physics
 
             var effectiveExclusions = HitDetectionExclusionTypes.Count > 0 || HitDetectionExclusions.Count == 0 ?
                 new List<IRectangularF>(this.HitDetectionExclusions.Union(SpaceTime.CurrentSpaceTime.Elements.Where(e => HitDetectionExclusionTypes.Contains(e.GetType())))) : null;
-            var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
+
+             var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
             {
                 Bounds = SpaceTime.CurrentSpaceTime.Bounds,
-                MovingObject = Element,
+                MovingObject = Element is IHaveMassBounds ? (Element as IHaveMassBounds).MassBounds : Element,
                 Exclusions = effectiveExclusions,
                 Obstacles = obstacles.As<IRectangularF>().ToList(),
                 Dx = dx,

@@ -130,6 +130,20 @@ namespace PowerArgs.Cli.Physics
         public static bool Touches(this IRectangularF rectangle, IRectangularF other) => OverlapPercentage(rectangle, other) > 0;
 
 
+        public static Direction GetOppositeDirection(this Direction d)
+        {
+            if (d == Direction.Down) return Direction.Up;
+            if (d == Direction.Up) return Direction.Down;
+            if (d == Direction.Left) return Direction.Right;
+            if (d == Direction.Right) return Direction.Left;
+            if (d == Direction.UpLeft) return Direction.DownRight;
+            if (d == Direction.DownLeft) return Direction.UpRight;
+            if (d == Direction.UpRight) return Direction.DownLeft;
+            if (d == Direction.DownRight) return Direction.UpLeft;
+
+            return Direction.None;
+        }
+
         public static char GetArrowPointedAt(float angle)
         {
             if (angle >= 315 || angle < 45)
@@ -166,7 +180,7 @@ namespace PowerArgs.Cli.Physics
             ret = ret == 360 ? 0 : ret;
             return ret;
         }
-
+        
         public static IRectangularF Resize(this IRectangularF me, float ratio)
         {
             var newW = me.Width * ratio;
@@ -247,6 +261,13 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
+        public static IRectangularF Grow(this IRectangularF rect, float percentage)
+        {
+            var center = rect.Center();
+            var newW = rect.Width * (1 + percentage);
+            var newH = rect.Height * (1 + percentage);
+            return RectangularF.Create(center.Left - newW / 2, center.Top - newH / 2, newW, newH);
+        }
 
         public static float CalculateDistanceTo(this IRectangularF a, IRectangularF b)
         {
