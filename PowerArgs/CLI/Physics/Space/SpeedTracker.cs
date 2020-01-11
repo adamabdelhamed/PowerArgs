@@ -112,22 +112,30 @@ namespace PowerArgs.Cli.Physics
                 return;
             }
 
-            var effectiveExclusions = HitDetectionExclusionTypes.Count > 0 || HitDetectionExclusions.Count == 0 ?
-                new List<IRectangularF>(this.HitDetectionExclusions.Union(SpaceTime.CurrentSpaceTime.Elements.Where(e => HitDetectionExclusionTypes.Contains(e.GetType())))) : null;
 
              var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
             {
                 Bounds = SpaceTime.CurrentSpaceTime.Bounds,
                 MovingObject = Element is IHaveMassBounds ? (Element as IHaveMassBounds).MassBounds : Element,
-                Exclusions = effectiveExclusions,
                 Obstacles = obstacles.As<IRectangularF>().ToList(),
                 Dx = dx,
                 Dy = dy,
             });
 
             if (hitPrediction.Type != HitType.None)
-            {
-                float angle  = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
+            {          
+                if(hitPrediction.LKG != null && Element.TopLeft().Equals(hitPrediction.LKG) == false)
+                {
+                    var oldLocation = Element.CopyBounds();
+                    Element.MoveTo(hitPrediction.LKG.Left, hitPrediction.LKG.Top);
+                    isSettingAnglePrivately = true;
+                    this.Angle = oldLocation.Center().CalculateAngleTo(Element.Center());
+                    isSettingAnglePrivately = false;
+                    haveMovedSinceLastHitDetection = true;
+                }
+
+                float angle = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
+
 
                 if (haveMovedSinceLastHitDetection)
                 {

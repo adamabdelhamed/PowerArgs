@@ -86,12 +86,15 @@ namespace PowerArgs.Cli.Physics
 
         public float Height { get; private set; }
 
-        private RectangularF(float x, float y, float w, float h)
+        public object Tag { get; private set; }
+
+        private RectangularF(float x, float y, float w, float h, object tag = null)
         {
             this.Left = x;
             this.Top = y;
             this.Width = w;
             this.Height = h;
+            this.Tag = tag;
         }
 
         public override bool Equals(object obj)
@@ -194,7 +197,8 @@ namespace PowerArgs.Cli.Physics
         public static float DiffAngle(this float a, float b)
         {
             var c = Math.Abs(a - b);
-            c = c <= 180 ? c : Math.Abs(360 - c); 
+            c = c <= 180 ? c : Math.Abs(360 - c);
+            if (c == 360) return 0;
             return c;
         }
 
@@ -211,6 +215,11 @@ namespace PowerArgs.Cli.Physics
             ret = ret >= 0 ? ret : ret + 360;
             if (ret == 360) ret = 0;
             return ret;
+        }
+
+        public static bool EqualsAngle(this float angle, float other)
+        {
+            return angle.DiffAngle(other) == 0;
         }
 
         public static float CalculateAngleTo(this IRectangularF from, IRectangularF to) => CalculateAngleTo(from.Center(), to.Center());
@@ -266,6 +275,14 @@ namespace PowerArgs.Cli.Physics
             var center = rect.Center();
             var newW = rect.Width * (1 + percentage);
             var newH = rect.Height * (1 + percentage);
+            return RectangularF.Create(center.Left - newW / 2, center.Top - newH / 2, newW, newH);
+        }
+
+        public static IRectangularF Shrink(this IRectangularF rect, float percentage)
+        {
+            var center = rect.Center();
+            var newW = rect.Width * (1 - percentage);
+            var newH = rect.Height * (1 - percentage);
             return RectangularF.Create(center.Left - newW / 2, center.Top - newH / 2, newW, newH);
         }
 

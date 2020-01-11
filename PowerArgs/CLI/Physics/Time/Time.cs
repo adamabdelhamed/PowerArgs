@@ -43,7 +43,8 @@ namespace PowerArgs.Cli.Physics
 
             public override void Send(SendOrPostCallback d, object state)
             {
-                t.QueueAction("Async Continuation", () => d.Invoke(state));
+                Time.CurrentTime.AssertIsThisTimeThread();
+                d.Invoke(state);
             }
         }
 

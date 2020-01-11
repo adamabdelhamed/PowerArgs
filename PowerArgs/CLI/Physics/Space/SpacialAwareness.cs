@@ -16,29 +16,29 @@ namespace PowerArgs.Cli.Physics
             return HasLineOfSight(from, to, obstacles);
         }
 
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .25f) => GetLineOfSight(from, to, obstacles, increment) != null;
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles, float increment = .25f) => GetLineOfSight(from, to, obstacles, increment) != null;
 
-        private static List<IRectangularF> GetLineOfSight(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles, float increment = .25f)
+        private static List<IRectangularF> GetLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles, float increment = .25f)
         {
             IRectangularF current = from;
             var currentDistance = current.CalculateDistanceTo(to);
             var a = current.Center().CalculateAngleTo(to.Center());
 
-            obstacles = new List<IRectangularF>(obstacles);// because we will be destructive
+            var effectiveObstacles = new List<IRectangularF>(obstacles);// because we will be destructive
 
-            for(var i = 0; i < obstacles.Count; i++)
+            for(var i = 0; i < effectiveObstacles.Count; i++)
             {
-                var o = obstacles[i];
+                var o = effectiveObstacles[i];
                 if(o == from || o == to)
                 {
-                    obstacles.RemoveAt(i--);
+                    effectiveObstacles.RemoveAt(i--);
                     continue;
                 }
 
                 var aODiff = from.CalculateAngleTo(o).DiffAngle(a);
                 if(aODiff >= 180)
                 {
-                    obstacles.RemoveAt(i--);
+                    effectiveObstacles.RemoveAt(i--);
                     continue;
                 }
             }
@@ -61,9 +61,9 @@ namespace PowerArgs.Cli.Physics
                     current = RectangularF.Create(current.Left - current.Width / 2, current.Top - current.Height / 2, current.Width, current.Height);
                 }
 
-                for(var i = 0; i < obstacles.Count;i++)
+                for(var i = 0; i < effectiveObstacles.Count;i++)
                 {
-                    var obstacle = obstacles[i];
+                    var obstacle = effectiveObstacles[i];
                     if (obstacle.OverlapPercentage(current) > 0)
                     {
                         return null;
@@ -76,7 +76,7 @@ namespace PowerArgs.Cli.Physics
             return path;
         }
 
-        public static bool HasLineOfSightBeta(this IRectangularF from, IRectangularF to, List<IRectangularF> obstacles)
+        public static bool HasLineOfSightBeta(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles)
         {
             var fromC = from.CenterRect();
             var toC = to.CenterRect();
@@ -110,12 +110,12 @@ namespace PowerArgs.Cli.Physics
             return true;
         }
 
-            public static float LineOfSightVisibility(this IRectangularF from, float angle, List<IRectangularF> obstacles, float range, float increment = .5f)
+            public static float LineOfSightVisibility(this IRectangularF from, float angle, IEnumerable<IRectangularF> obstacles, float range, float increment = .5f)
         {
             for (var d = increment; d < range; d += increment)
             {
-                var testLocation = from.MoveTowards(angle, d);
-                var testRect = RectangularF.Create(testLocation.Left, testLocation.Top, from.Width, from.Height);
+                var testLocation = from.Center().MoveTowards(angle, d);
+                var testRect = RectangularF.Create(testLocation.Left - from.Width/2, testLocation.Top - from.Height/2, from.Width, from.Height);
                 if (obstacles.Where(o => o.Touches(testRect)).Any() || SpaceTime.CurrentSpaceTime.Bounds.Contains(testRect) == false)
                 {
                     return d;
@@ -142,6 +142,13 @@ namespace PowerArgs.Cli.Physics
             float y2 = up ? a.Top + dy : a.Top - dy;
 
             var ret = LocationF.Create(x2, y2);
+            return ret;
+        }
+
+        public static IRectangularF MoveTowards(this IRectangularF r, float angle, float distance)
+        {
+            var newLoc = MoveTowards(r as ILocationF, angle, distance);
+            var ret = RectangularF.Create(newLoc.Left, newLoc.Top, r.Width, r.Height);
             return ret;
         }
 

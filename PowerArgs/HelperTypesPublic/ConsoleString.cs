@@ -471,6 +471,11 @@ namespace PowerArgs
         /// </summary>
         public static readonly ConsoleString Empty = new ConsoleString();
 
+        /// <summary>
+        /// Represents a new line.
+        /// </summary>
+        public static readonly ConsoleString NewLine = new ConsoleString("\n");
+
         private List<ConsoleCharacter> characters;
 
         /// <summary>

@@ -23,21 +23,57 @@ namespace PowerArgs.Cli.Physics
         public HitType Type { get; set; }
         public Direction Direction { get; set; }
         public IRectangularF ObstacleHit { get; set; }
+        public ILocationF LKG { get; set; }
     }
 
     public class HitDetectionOptions
     {
         public IRectangularF Bounds { get; set; }
         public IRectangularF MovingObject { get; set; }
-        public List<IRectangularF> Obstacles { get; set; }
-        public List<IRectangularF> Exclusions { get; set; }
+        public IEnumerable<IRectangularF> Obstacles { get; set; }
         public float Dx { get; set; }
         public float Dy { get; set; }
-        public float Precision { get; set; } = .02f;
+        public float Precision { get; set; } = .1f;
+    }
+
+    public class SonarOptions
+    {
+        public IRectangularF Bounds { get; set; }
+        public IRectangularF MovingObject { get; set; }
+        public IEnumerable<IRectangularF> Obstacles { get; set; }
+        public float Angle { get; set; }
+        public float Visibility { get; set; } = Geometry.Hypotenous(SpaceTime.CurrentSpaceTime.Bounds);
+        public float Precision { get; set; } = .1f;
     }
 
     public static class HitDetection
     {
+        public static HitPrediction Sonar(SonarOptions options)
+        {
+            var innerOptions = new HitDetectionOptions()
+            {
+                Bounds = options.Bounds,
+                MovingObject = options.MovingObject,
+                Precision = options.Precision,
+                Obstacles = options.Obstacles,
+            };
+            for (var d = options.Precision; d < options.Visibility; d+=options.Precision)
+            {
+                var loc = options.MovingObject.TopLeft().MoveTowards(options.Angle, d);
+                innerOptions.Dx = loc.Left - options.MovingObject.Left;
+                innerOptions.Dy = loc.Top - options.MovingObject.Top;
+                var prediction = PredictHit(innerOptions);
+                if(prediction.Type != HitType.None)
+                {
+                    return prediction;
+                }
+            }
+
+            return new HitPrediction()
+            {
+                Type = HitType.None,
+            };
+        }
 
         public static HitPrediction PredictHit(HitDetectionOptions options)
         {
@@ -60,42 +96,43 @@ namespace PowerArgs.Cli.Physics
 
             var endPoint = RectangularF.Create(options.MovingObject.Left + options.Dx, options.MovingObject.Top + options.Dy, options.MovingObject.Width, options.MovingObject.Height);
             var angle = options.MovingObject.CalculateAngleTo(endPoint);
-            var d = endPoint.CalculateDistanceTo(options.MovingObject);
+            var d = endPoint.Center().CalculateDistanceTo(options.MovingObject.Center());
+            ILocationF lkg = null;
             for(var dPrime = options.Precision; dPrime < d; dPrime+=options.Precision)
             {
                 var testLocation = options.MovingObject.Center().MoveTowards(angle, dPrime);
                 var testArea = RectangularF.Create(testLocation.Left - options.MovingObject.Width / 2, testLocation.Top - options.MovingObject.Height / 2, options.MovingObject.Width, options.MovingObject.Height);
-                var obstacleHit = effectiveObstacles.Where(o => IsIncluded(options,o) && o.Touches(testArea) == true).FirstOrDefault();
+                var obstacleHit = effectiveObstacles.Where(o => o.Touches(testArea) == true).FirstOrDefault();
 
                 if(obstacleHit != null)
                 {
                     return new HitPrediction()
                     {
                         Type = HitType.Obstacle,
-                        ObstacleHit = obstacleHit
+                        ObstacleHit = obstacleHit,
+                        LKG = lkg,
                     };
+                }
+                else
+                {
+                    lkg = testArea.TopLeft();
                 }
             }
 
-            var obstacleHitFinal = effectiveObstacles.Where(o => IsIncluded(options, o) && o.Touches(endPoint) == true).FirstOrDefault();
+            var obstacleHitFinal = effectiveObstacles.Where(o => o.Touches(endPoint) == true).FirstOrDefault();
 
             if (obstacleHitFinal != null)
             {
                 return new HitPrediction()
                 {
                     Type = HitType.Obstacle,
-                    ObstacleHit = obstacleHitFinal
+                    ObstacleHit = obstacleHitFinal,
+                    LKG = lkg
                 };
             }
 
             prediction.Type = HitType.None;
             return prediction;
-        }
-
-        private static bool IsIncluded(HitDetectionOptions options, IRectangularF obj)
-        {
-            if (options.Exclusions == null) return true;
-            else return options.Exclusions.Contains(obj) == false;
         }
     }
 }
