@@ -17,15 +17,15 @@ namespace PowerArgs.Games
         public static void PlaceMineSafe(SpacialElement mine, Character holder)
         {
             var buffer = 2f;
-            if (holder.Speed.Angle >= 315 || holder.Speed.Angle < 45)
+            if (holder.Velocity.Angle >= 315 || holder.Velocity.Angle < 45)
             {
                 mine.MoveTo(holder.Left - buffer * mine.Width, holder.Top, holder.ZIndex);
             }
-            else if (holder.Speed.Angle < 135)
+            else if (holder.Velocity.Angle < 135)
             {
                 mine.MoveTo(holder.Left, holder.Top - buffer * mine.Height, holder.ZIndex);
             }
-            else if (holder.Speed.Angle < 225)
+            else if (holder.Velocity.Angle < 225)
             {
                 mine.MoveTo(holder.Left + buffer * mine.Width, holder.Top, holder.ZIndex);
             }

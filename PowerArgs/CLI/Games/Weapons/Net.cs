@@ -77,14 +77,14 @@ namespace PowerArgs.Games
         {
             internal List<NetMatter> Composite { get; set; }
 
-            public SpeedTracker Speed { get; private set; } 
+            public Velocity Speed { get; private set; } 
 
             private IRectangularF initialBonds;
             private TimeSpan initialTime;
 
             public NetMatter()
             {
-                Speed = new SpeedTracker(this);
+                Speed = new Velocity(this);
                 this.initialBonds = this.CopyBounds();
                 this.initialTime = Time.CurrentTime.Now;
             }

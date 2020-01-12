@@ -9,9 +9,9 @@ namespace PowerArgs.Cli.Physics
         public TimeSpan Duration { get; set; }
         public TimeSpan EndTime { get; set; }
         public bool IsPermanentForce { get; set; }
-        SpeedTracker tracker;
+        Velocity tracker;
 
-        public Force(SpeedTracker tracker, float accelleration, float angle, TimeSpan? duration = null) : base(tracker.Element)
+        public Force(Velocity tracker, float accelleration, float angle, TimeSpan? duration = null) : base(tracker.Element)
         {
             this.Accelleration = accelleration;
             this.Angle = angle;
@@ -62,7 +62,7 @@ namespace PowerArgs.Cli.Physics
 
         private void CalculateSpeedDeltas(float dSpeed, out float dx, out float dy)
         {
-            SpeedTracker.FindEdgesGivenHyp(dSpeed, Angle, out dx, out dy);
+            Velocity.FindEdgesGivenHyp(dSpeed, Angle, out dx, out dy);
         }
     }
 }

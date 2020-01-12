@@ -5,11 +5,11 @@ namespace PowerArgs.Cli.Physics
     public class Roamer : SpacialElementFunction
     {
         public bool IsRoaming { get; set; }
-        public SpeedTracker RoamerSpeed { get; private set; }
+        public Velocity RoamerSpeed { get; private set; }
         private Force currentForce;
         private float accelleration;
 
-        public Roamer(SpacialElement roamer, SpeedTracker roamerSpeed, float accelleration) : base(roamer)
+        public Roamer(SpacialElement roamer, Velocity roamerSpeed, float accelleration) : base(roamer)
         {
             this.RoamerSpeed = roamerSpeed;
             this.accelleration = accelleration;

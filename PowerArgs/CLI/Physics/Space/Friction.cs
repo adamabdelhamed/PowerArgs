@@ -4,8 +4,8 @@
     {
         public float Decay { get; set; } = .9f;
 
-        private SpeedTracker tracker;
-        public Friction(SpeedTracker tracker) : base(tracker.Element)
+        private Velocity tracker;
+        public Friction(Velocity tracker) : base(tracker.Element)
         {
             this.tracker = tracker;
             tracker.Lifetime.OnDisposed(this.Lifetime.Dispose);

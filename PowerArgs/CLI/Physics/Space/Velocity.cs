@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace PowerArgs.Cli.Physics
 {
-    public class SpeedTracker : SpacialElementFunction
+    public class Velocity : SpacialElementFunction
     {
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
 
@@ -24,7 +24,7 @@ namespace PowerArgs.Cli.Physics
 
         public List<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions, HitDetectionExclusionTypes);
 
-        public SpeedTracker(SpacialElement t) : base(t)
+        public Velocity(SpacialElement t) : base(t)
         {
             Bounciness = .4f;
             ImpactFriction = .95f;

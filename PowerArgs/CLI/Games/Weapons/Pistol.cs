@@ -11,11 +11,11 @@ namespace PowerArgs.Games
         {
             var bullet = new Projectile(this,Holder.CenterX() - Projectile.StandardWidth/ 2, Holder.CenterY() - Projectile.StandardHeight / 2, CalculateAngleToTarget()) { PlaySoundOnImpact = true };
             bullet.Accelleration = Accelleration;
-            bullet.Speed.HitDetectionExclusions.Add(Holder);
-            bullet.Speed.HitDetectionExclusions.AddRange(Holder.Speed.HitDetectionExclusions);
-            bullet.Speed.HitDetectionExclusionTypes.AddRange(Holder.Speed.HitDetectionExclusionTypes);
-            Holder.Speed.HitDetectionExclusions.Add(bullet);
-            bullet.Lifetime.OnDisposed(()=> Holder.Speed.HitDetectionExclusions.Remove(bullet));
+            bullet.Velocity.HitDetectionExclusions.Add(Holder);
+            bullet.Velocity.HitDetectionExclusions.AddRange(Holder.Velocity.HitDetectionExclusions);
+            bullet.Velocity.HitDetectionExclusionTypes.AddRange(Holder.Velocity.HitDetectionExclusionTypes);
+            Holder.Velocity.HitDetectionExclusions.Add(bullet);
+            bullet.Lifetime.OnDisposed(()=> Holder.Velocity.HitDetectionExclusions.Remove(bullet));
             bullet.MoveTo(bullet.Left, bullet.Top, Holder.ZIndex);
             if(ProjectilePen != null)
             {

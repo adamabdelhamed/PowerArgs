@@ -49,7 +49,7 @@ namespace PowerArgs.Games
 
             foreach(var shrapnel in shrapnelSet)
             {
-                shrapnel.Speed.HitDetectionExclusions.AddRange(shrapnelSet.Where(s => s != shrapnel));
+                shrapnel.Velocity.HitDetectionExclusions.AddRange(shrapnelSet.Where(s => s != shrapnel));
             }
 
             Exploded.Fire();

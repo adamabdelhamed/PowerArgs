@@ -30,8 +30,8 @@ namespace PowerArgs.Games
         public SpacialElement Target { get; set; }
 
 
-        public float TargetAngle => Target == null ? Speed.Angle : this.CalculateAngleTo(Target.Center());
-        public SpeedTracker Speed { get; set; }
+        public float TargetAngle => Target == null ? Velocity.Angle : this.CalculateAngleTo(Target.Center());
+        public Velocity Velocity { get; set; }
 
 
         public AutoTargetingFunction Targeting { get; protected set; }
@@ -51,7 +51,7 @@ namespace PowerArgs.Games
             IsVisible = true;
             this.SubscribeForLifetime(nameof(Inventory), () => this.Inventory.Owner = this, this.Lifetime);
             Inventory = new Inventory();
-            Speed = new SpeedTracker(this) { Bounciness = 0 };
+            Velocity = new Velocity(this) { Bounciness = 0 };
             this.ResizeTo(1, 1);
         }
 
@@ -63,15 +63,15 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Speed.Angle.RoundAngleToNearest(90) == 180 && Speed.Speed > 0)
+            if (Velocity.Angle.RoundAngleToNearest(90) == 180 && Velocity.Speed > 0)
             {
-                Speed.Speed = 0;
-                Speed.Angle = 180;
+                Velocity.Speed = 0;
+                Velocity.Angle = 180;
             }
             else
             {
-                Speed.Angle = 180;
-                Speed.Speed = PlayerMovementSpeed;
+                Velocity.Angle = 180;
+                Velocity.Speed = PlayerMovementSpeed;
                 RoundOff();
             }
 
@@ -87,15 +87,15 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Speed.Angle.RoundAngleToNearest(90) == 0 && Speed.Speed > 0)
+            if (Velocity.Angle.RoundAngleToNearest(90) == 0 && Velocity.Speed > 0)
             {
-                Speed.Speed = 0;
-                Speed.Angle = 0;
+                Velocity.Speed = 0;
+                Velocity.Angle = 0;
             }
             else
             {
-                Speed.Angle = 0;
-                Speed.Speed = PlayerMovementSpeed;
+                Velocity.Angle = 0;
+                Velocity.Speed = PlayerMovementSpeed;
                 RoundOff();
             }
 
@@ -111,15 +111,15 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Speed.Angle.RoundAngleToNearest(90) == 90 && Speed.Speed > 0)
+            if (Velocity.Angle.RoundAngleToNearest(90) == 90 && Velocity.Speed > 0)
             {
-                Speed.Angle = 90;
-                Speed.Speed = 0;
+                Velocity.Angle = 90;
+                Velocity.Speed = 0;
             }
             else
             {
-                Speed.Angle = 90;
-                Speed.Speed = PlayerMovementSpeed;
+                Velocity.Angle = 90;
+                Velocity.Speed = PlayerMovementSpeed;
                 RoundOff();
             }
 
@@ -135,15 +135,15 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Speed.Angle.RoundAngleToNearest(90) == 270 && Speed.Speed > 0)
+            if (Velocity.Angle.RoundAngleToNearest(90) == 270 && Velocity.Speed > 0)
             {
-                Speed.Angle = 270;
-                Speed.Speed = 0;
+                Velocity.Angle = 270;
+                Velocity.Speed = 0;
             }
             else
             {
-                Speed.Angle = 270;
-                Speed.Speed = PlayerMovementSpeed;
+                Velocity.Angle = 270;
+                Velocity.Speed = PlayerMovementSpeed;
                 RoundOff();
             }
 
@@ -164,8 +164,8 @@ namespace PowerArgs.Games
             {
                 X = Left,
                 Y = Top,
-                Speed = Speed.Speed,
-                Angle = Speed.Angle,
+                Speed = Velocity.Speed,
+                Angle = Velocity.Angle,
                 ClientToUpdate = MultiPlayerClient.ClientId
             });
         }
@@ -190,7 +190,7 @@ namespace PowerArgs.Games
                     FreeAimCursor.MoveTo(Target.Left, Target.Top);
                 }
                 SpaceTime.CurrentSpaceTime.Add(FreeAimCursor);
-                Speed.Stop();
+                Velocity.Stop();
                 observable.FirePropertyChanged(nameof(AimMode));
             }
             else
@@ -222,12 +222,12 @@ namespace PowerArgs.Games
 
         public void DisableTargeting()
         {
-            Time.CurrentTime.Functions.WhereAs<AutoTargetingFunction>().Where(f => f.Options.Source == this.Speed).SingleOrDefault()?.Lifetime.Dispose();
+            Time.CurrentTime.Functions.WhereAs<AutoTargetingFunction>().Where(f => f.Options.Source == this.Velocity).SingleOrDefault()?.Lifetime.Dispose();
         }
 
         public void OverrideTargeting(AutoTargetingFunction func)
         {
-            if(Time.CurrentTime.Functions.WhereAs<AutoTargetingFunction>().Where(f => f.Options.Source == this.Speed).Single() != func)
+            if(Time.CurrentTime.Functions.WhereAs<AutoTargetingFunction>().Where(f => f.Options.Source == this.Velocity).Single() != func)
             {
                 throw new ArgumentException("You must disable targeting and add the new function to Time before overriding");
             }

@@ -31,9 +31,9 @@ namespace PowerArgs.Games
         {
             var rpg = new TimedMine(this,TimeSpan.FromSeconds(2)) { Silent = true, ProjectilePen= ProjectilePen };
             rpg.MoveTo(x, y, Holder.ZIndex);
-            var rpgSpeed = new SpeedTracker(rpg);
+            var rpgSpeed = new Velocity(rpg);
             rpgSpeed.HitDetectionExclusions.Add(Holder);
-            Holder.Speed.HitDetectionExclusions.Add(rpg);
+            Holder.Velocity.HitDetectionExclusions.Add(rpg);
             rpgSpeed.ImpactOccurred.SubscribeForLifetime((impact) =>
             {
                 DamageBroker.Instance.ReportImpact(impact);

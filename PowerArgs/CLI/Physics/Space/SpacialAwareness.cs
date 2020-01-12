@@ -12,7 +12,7 @@ namespace PowerArgs.Cli.Physics
 
         public static bool HasLineOfSight(this Character from, IRectangularF to)
         {
-            var obstacles = from.GetObstacles(from.Speed.HitDetectionExclusions, from.Speed.HitDetectionExclusionTypes);
+            var obstacles = from.GetObstacles(from.Velocity.HitDetectionExclusions, from.Velocity.HitDetectionExclusionTypes);
             return HasLineOfSight(from, to, obstacles);
         }
 

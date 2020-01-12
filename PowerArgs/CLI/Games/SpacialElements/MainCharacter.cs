@@ -73,7 +73,7 @@ namespace PowerArgs.Games
             }, this.Lifetime);
             InitializeTargeting(SpaceTime.CurrentSpaceTime.Add(new AutoTargetingFunction(new AutoTargetingOptions()
             {
-                Source = this.Speed,
+                Source = this.Velocity,
                 TargetsEval = () => SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("enemy")),
             })));
         }
@@ -109,7 +109,7 @@ namespace PowerArgs.Games
             if (Character.IsVisible == false) return;
             char c;
 
-            var angle = Character.Speed.Angle;
+            var angle = Character.Velocity.Angle;
 
             c = Geometry.GetArrowPointedAt(angle);
 

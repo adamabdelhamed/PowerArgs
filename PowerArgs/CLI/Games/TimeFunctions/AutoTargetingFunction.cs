@@ -8,7 +8,7 @@ namespace PowerArgs.Games
 {
     public class AutoTargetingOptions
     {
-        public SpeedTracker Source { get; set; }
+        public Velocity Source { get; set; }
         public Func<IEnumerable<SpacialElement>> TargetsEval { get; set; }
 
     }

@@ -16,7 +16,7 @@ namespace PowerArgs.Games
         public float Accelleration { get; set; } = 40;
         public float Range { get; set; } = -1;
         public float angle { get; private set; }
-        public SpeedTracker Speed { get; private set; }
+        public Velocity Velocity { get; private set; }
         public bool PlaySoundOnImpact { get; set; }
 
         private IRectangularF startLocation;
@@ -25,15 +25,15 @@ namespace PowerArgs.Games
         {
             this.ResizeTo(StandardWidth, StandardHeight);
             this.Tags.Add(Weapon.WeaponTag);
-            Speed = new SpeedTracker(this);
-            Speed.Governor.Rate = TimeSpan.FromSeconds(0);
-            Speed.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime);
-            this.Speed.HitDetectionExclusionTypes.Add(typeof(Projectile));
+            Velocity = new Velocity(this);
+            Velocity.Governor.Rate = TimeSpan.FromSeconds(0);
+            Velocity.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime);
+            this.Velocity.HitDetectionExclusionTypes.Add(typeof(Projectile));
             if (w?.Holder != null)
             {
-                this.Speed.HitDetectionExclusions.Add(w.Holder);
+                this.Velocity.HitDetectionExclusions.Add(w.Holder);
             }
-            Time.CurrentTime.QueueAction("Init projectile force", () => { force = new Force(Speed, Accelleration.NormalizeQuantity(angle), angle); });
+            Time.CurrentTime.QueueAction("Init projectile force", () => { force = new Force(Velocity, Accelleration.NormalizeQuantity(angle), angle); });
 
             
             this.SizeOrPositionChanged.SubscribeForLifetime(() =>

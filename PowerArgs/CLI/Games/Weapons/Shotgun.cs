@@ -23,11 +23,11 @@ namespace PowerArgs.Games
             {
                 var angle = startAngle.AddToAngle(sprayedSoFar);
                 var bullet = new Projectile(this,Holder.CenterX() - Projectile.StandardWidth / 2, Holder.CenterY() - Projectile.StandardHeight / 2, angle) { Range = Range.NormalizeQuantity(angle), PlaySoundOnImpact = true };
-                bullet.Speed.HitDetectionExclusions.Add(Holder);
-                Holder.Speed.HitDetectionExclusions.Add(bullet);
+                bullet.Velocity.HitDetectionExclusions.Add(Holder);
+                Holder.Velocity.HitDetectionExclusions.Add(bullet);
                 bullet.Lifetime.OnDisposed(() =>
                 {
-                    Holder.Speed.HitDetectionExclusions.Remove(bullet);
+                    Holder.Velocity.HitDetectionExclusions.Remove(bullet);
                 });
                 bullet.MoveTo(bullet.Left, bullet.Top, Holder.ZIndex);
                 if (ProjectilePen != null)
@@ -46,7 +46,7 @@ namespace PowerArgs.Games
                 {
                     if (innerBullet != bullet)
                     {
-                        bullet.Speed.HitDetectionExclusions.Add(innerBullet);
+                        bullet.Velocity.HitDetectionExclusions.Add(innerBullet);
                     }
                 }
             }
