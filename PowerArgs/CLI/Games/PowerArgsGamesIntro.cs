@@ -48,7 +48,8 @@ namespace PowerArgs.Games
             // he starts a few pixels from the right edge
             character.MoveTo(Width - 7, 0);
             // he moves to the right
-            character.Speed.SpeedX = 5;
+            character.Speed.Speed = 5;
+            character.Speed.Angle = 0;
             // he drops a timed mine and turns around when he gets near the right edge
             ListenForCharacterNearRightEdge();
 
@@ -65,8 +66,8 @@ namespace PowerArgs.Games
                 if (character.Left > Width - 2)
                 {
                     // turn the character around so he now moves to the left
-                    character.Speed.SpeedX = -8;
-
+                    character.Speed.Speed = 8;
+                    character.Speed.Angle = 180;
                     // drop a timed mine
                     var dropper = new TimedMineDropper() { Delay = TimeSpan.FromSeconds(4), AmmoAmount = 1, Holder = character };
                     dropper.Exploded.SubscribeOnce(() => Sound.Play("PowerArgsIntro"));

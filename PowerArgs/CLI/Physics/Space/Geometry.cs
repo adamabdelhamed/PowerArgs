@@ -120,7 +120,7 @@ namespace PowerArgs.Cli.Physics
         public static IRectangularF CenterRect(this IRectangularF rectangular) => RectangularF.Create(rectangular.CenterX(), rectangular.CenterY(), 0,0);
         public static ILocationF TopLeft(this IRectangularF rectangular) => LocationF.Create(rectangular.Left, rectangular.Top);
         public static IRectangularF CopyBounds(this IRectangularF rectangular) => RectangularF.Create(rectangular.Left, rectangular.Top, rectangular.Width, rectangular.Height);
-        public static float Hypotenous(this IRectangularF rectangular) => (float)Math.Sqrt(rectangular.Width * rectangular.Width + rectangular.Height + rectangular.Height);
+        public static float Hypotenous(this IRectangularF rectangular) => (float)Math.Sqrt(rectangular.Width * rectangular.Width + rectangular.Height * rectangular.Height);
         public static float DiffAngle(this int a, float b) => DiffAngle((float)a, b);
         public static float AddToAngle(this int a, float b) => AddToAngle((float)a, b);
         public static float CalculateNormalizedDistanceTo(ILocationF a, ILocationF b) => NormalizeQuantity(a.CalculateDistanceTo(b), a.CalculateAngleTo(b), true);
@@ -194,6 +194,9 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
+        public static float ToRadians(this float degrees) => (float)(Math.PI * degrees / 180.0);
+        public static float ToDegrees(this float radians) => (float)(radians * (180.0 / Math.PI));
+
         public static float DiffAngle(this float a, float b)
         {
             var c = Math.Abs(a - b);
@@ -206,6 +209,11 @@ namespace PowerArgs.Cli.Physics
         {
             var c = a - b;
             return c % 360;
+        }
+
+        public static float RoundAngleToNearest(this float a, float nearest)
+        {
+            return (float)Math.Round(a / nearest) * nearest;
         }
 
         public static float AddToAngle(this float angle, float toAdd)

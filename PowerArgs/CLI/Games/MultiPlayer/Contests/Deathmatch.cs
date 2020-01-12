@@ -184,7 +184,7 @@ namespace PowerArgs.Games
         public float Y { get; set; }
         public float W { get; set; }
         public float H { get; set; }
-        public float SpeedX { get; set; }
-        public float SpeedY { get; set; }
+        public float Speed { get; set; }
+        public float Angle { get; set; }
     }
 }

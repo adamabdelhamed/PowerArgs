@@ -13,8 +13,7 @@
 
         public override void Evaluate()
         {
-            tracker.SpeedX *= Decay;
-            tracker.SpeedY *= Decay;
+            tracker.Speed *= Decay;
         }
     }
 }

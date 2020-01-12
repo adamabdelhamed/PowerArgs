@@ -9,79 +9,18 @@ namespace PowerArgs.Cli.Physics
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
 
 
-#if DEBUG
 
-        float _debugOnly_speedX, _debugOnly_speedY;
-        public float SpeedX
-        {
-            get
-            {
-                return _debugOnly_speedX;
-            }
-            set
-            {
-                if (float.IsNaN(value) || float.IsNegativeInfinity(value) || float.IsPositiveInfinity(value) ||
-                    float.IsInfinity(value))
-                {
-                    throw new Exception("Someone is trying to set an invalid speed.  You have a bug :(");
-                }
-                _debugOnly_speedX = value;
-            }
-        }
-
-        public float SpeedY
-        {
-            get
-            {
-                return _debugOnly_speedY;
-            }
-            set
-            {
-                if (float.IsNaN(value) || float.IsNegativeInfinity(value) || float.IsPositiveInfinity(value) ||
-                    float.IsInfinity(value))
-                {
-                    throw new Exception("Someone is trying to set an invalid speed.  You have a bug :(");
-                }
-                _debugOnly_speedY = value;
-            }
-        }
-#else
-        public float SpeedX { get; set; }
-        public float SpeedY { get; set; }
-#endif
 
         public float Bounciness { get; set; } // Should be set between 0 and 1
         public float ImpactFriction { get; set; } // Should be set between 0 and 1
 
         public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
-
-        private float _angle;
-        private bool isSettingAnglePrivately;
-        public float Angle
-        {
-            get
-            {
-                return _angle;
-            }
-            set
-            {
-                _angle = value;
-                if (isSettingAnglePrivately == false && Speed != 0) throw new InvalidOperationException("Angle can only be set when stopped");
-                Element.SizeOrPositionChanged.Fire();
-            }
-        }
+        
+        public float Angle { get; set; }
 
         bool haveMovedSinceLastHitDetection = true;
-        public float Speed
-        {
-            get
-            {
-                var ret = (float)Math.Sqrt(SpeedX * SpeedX + SpeedY * SpeedY);
-                if (float.IsNaN(ret)) throw new Exception();
-                return ret;
-            }
-        }
+        public float Speed { get; set; }
 
         public List<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions, HitDetectionExclusionTypes);
 
@@ -93,44 +32,36 @@ namespace PowerArgs.Cli.Physics
 
         public void Stop()
         {
-            SpeedX = 0;
-            SpeedY = 0;
+            Speed = 0;
         }
 
         public override void Evaluate()
         {
             float dt = (float)Governor.Rate.TotalSeconds;
             if (dt == 0) dt = (float)Time.CurrentTime.Increment.TotalSeconds;
+            float d = Speed * dt;
 
-            float dx = SpeedX * dt;
-            float dy = SpeedY * dt;
-
-            var obstacles = GetObstacles().ToList();
-
-            if (dx == 0 && dy == 0)
+            if (d == 0)
             {
                 return;
             }
 
+            var obstacles = GetObstacles().ToList();
 
-             var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
+            var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
             {
                 Bounds = SpaceTime.CurrentSpaceTime.Bounds,
                 MovingObject = Element is IHaveMassBounds ? (Element as IHaveMassBounds).MassBounds : Element,
                 Obstacles = obstacles.As<IRectangularF>().ToList(),
-                Dx = dx,
-                Dy = dy,
+                Angle = Angle,
+                Visibility = d,
             });
 
             if (hitPrediction.Type != HitType.None)
             {          
                 if(hitPrediction.LKG != null && Element.TopLeft().Equals(hitPrediction.LKG) == false)
                 {
-                    var oldLocation = Element.CopyBounds();
                     Element.MoveTo(hitPrediction.LKG.Left, hitPrediction.LKG.Top);
-                    isSettingAnglePrivately = true;
-                    this.Angle = oldLocation.Center().CalculateAngleTo(Element.Center());
-                    isSettingAnglePrivately = false;
                     haveMovedSinceLastHitDetection = true;
                 }
 
@@ -148,33 +79,14 @@ namespace PowerArgs.Cli.Physics
                     });
 
                     haveMovedSinceLastHitDetection = false;
-                    var testArea = RectangularF.Create(Element.Left + dx, Element.Top + dy, Element.Width, Element.Height);
-
-                    if (hitPrediction.Direction == Direction.Down || hitPrediction.Direction == Direction.Up)
-                    {
-                        SpeedY = -SpeedY * Bounciness;
-                        SpeedX = SpeedX * ImpactFriction;
-                    }
-                    else if (hitPrediction.Direction == Direction.Left || hitPrediction.Direction == Direction.Right)
-                    {
-                        SpeedX = -SpeedX * Bounciness;
-                        SpeedY = SpeedY * ImpactFriction;
-                    }
-                    else
-                    {
-                        SpeedX = -SpeedX * Bounciness;
-                        SpeedY = -SpeedY * Bounciness;
-                    }
+                    Angle = Angle.GetOppositeAngle();
                     Element.SizeOrPositionChanged.Fire();
                 }
             }
             else
             {
-                var oldLocation = Element.CopyBounds();
-                Element.MoveBy(dx, dy);
-                isSettingAnglePrivately = true;
-                this.Angle = oldLocation.Center().CalculateAngleTo(Element.Center());
-                isSettingAnglePrivately = false;
+                var newLocation = Element.MoveTowards(Angle, d);
+                Element.MoveTo(newLocation.Left, newLocation.Top);
                 haveMovedSinceLastHitDetection = true;
             }
         }

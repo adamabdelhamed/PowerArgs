@@ -63,15 +63,15 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Speed.SpeedX < 0 && Math.Abs(Speed.SpeedX) > Math.Abs(Speed.SpeedY))
+            if (Speed.Angle.RoundAngleToNearest(90) == 180 && Speed.Speed > 0)
             {
-                Speed.SpeedX = 0;
-                Speed.SpeedY = 0;
+                Speed.Speed = 0;
+                Speed.Angle = 180;
             }
             else
             {
-                Speed.SpeedX = -PlayerMovementSpeed.NormalizeQuantity(0);
-                Speed.SpeedY = 0;
+                Speed.Angle = 180;
+                Speed.Speed = PlayerMovementSpeed;
                 RoundOff();
             }
 
@@ -87,15 +87,15 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Speed.SpeedX > Math.Abs(Speed.SpeedY))
+            if (Speed.Angle.RoundAngleToNearest(90) == 0 && Speed.Speed > 0)
             {
-                Speed.SpeedX = 0;
-                Speed.SpeedY = 0;
+                Speed.Speed = 0;
+                Speed.Angle = 0;
             }
             else
             {
-                Speed.SpeedX = PlayerMovementSpeed.NormalizeQuantity(0);
-                Speed.SpeedY = 0;
+                Speed.Angle = 0;
+                Speed.Speed = PlayerMovementSpeed;
                 RoundOff();
             }
 
@@ -111,15 +111,15 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Speed.SpeedY > Math.Abs(Speed.SpeedX))
+            if (Speed.Angle.RoundAngleToNearest(90) == 90 && Speed.Speed > 0)
             {
-                Speed.SpeedY = 0;
-                Speed.SpeedX = 0;
+                Speed.Angle = 90;
+                Speed.Speed = 0;
             }
             else
             {
-                Speed.SpeedY = PlayerMovementSpeed.NormalizeQuantity(90);
-                Speed.SpeedX = 0;
+                Speed.Angle = 90;
+                Speed.Speed = PlayerMovementSpeed;
                 RoundOff();
             }
 
@@ -135,15 +135,15 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Speed.SpeedY < 0 && Math.Abs(Speed.SpeedY) > Math.Abs(Speed.SpeedX))
+            if (Speed.Angle.RoundAngleToNearest(90) == 270 && Speed.Speed > 0)
             {
-                Speed.SpeedY = 0;
-                Speed.SpeedX = 0;
+                Speed.Angle = 270;
+                Speed.Speed = 0;
             }
             else
             {
-                Speed.SpeedY = -PlayerMovementSpeed.NormalizeQuantity(90);
-                Speed.SpeedX = 0;
+                Speed.Angle = 270;
+                Speed.Speed = PlayerMovementSpeed;
                 RoundOff();
             }
 
@@ -164,8 +164,8 @@ namespace PowerArgs.Games
             {
                 X = Left,
                 Y = Top,
-                SpeedX = Speed.SpeedX,
-                SpeedY = Speed.SpeedY,
+                Speed = Speed.Speed,
+                Angle = Speed.Angle,
                 ClientToUpdate = MultiPlayerClient.ClientId
             });
         }
@@ -190,8 +190,7 @@ namespace PowerArgs.Games
                     FreeAimCursor.MoveTo(Target.Left, Target.Top);
                 }
                 SpaceTime.CurrentSpaceTime.Add(FreeAimCursor);
-                Speed.SpeedX = 0;
-                Speed.SpeedY = 0;
+                Speed.Stop();
                 observable.FirePropertyChanged(nameof(AimMode));
             }
             else

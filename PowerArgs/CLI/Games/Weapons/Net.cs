@@ -107,8 +107,7 @@ namespace PowerArgs.Games
                     {
                         foreach (var matter in Composite)
                         {
-                            matter.Speed.SpeedX = 0;
-                            matter.Speed.SpeedY = 0;
+                            matter.Speed.Stop();
                         }
                     }
                 }

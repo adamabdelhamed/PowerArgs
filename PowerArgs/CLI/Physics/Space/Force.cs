@@ -29,10 +29,11 @@ namespace PowerArgs.Cli.Physics
 
             if (Duration == TimeSpan.Zero)
             {
-                float dx, dy;
-                CalculateSpeedDeltas(Accelleration, out dx, out dy);
-                tracker.SpeedX += dx;
-                tracker.SpeedY += dy;
+                var end = tracker.Element.MoveTowards(tracker.Angle, tracker.Speed).MoveTowards(angle, accelleration);
+                var newAngle = tracker.Element.CalculateAngleTo(end);
+                var newSpeed = tracker.Element.CalculateDistanceTo(end);
+                tracker.Angle = newAngle;
+                tracker.Speed = newSpeed;
                 this.Lifetime.Dispose();
             }
         }
@@ -50,13 +51,14 @@ namespace PowerArgs.Cli.Physics
 
             float dt = (float)(Time.CurrentTime.Now.TotalSeconds - Governor.Rate.TotalSeconds);
             float dSpeed = (Accelleration * dt);
-            float dx, dy;
-
-            CalculateSpeedDeltas(dSpeed, out dx, out dy);
-
-            tracker.SpeedX += dx;
-            tracker.SpeedY += dy;
+            var end = tracker.Element.MoveTowards(tracker.Angle, tracker.Speed).MoveTowards(Angle, dSpeed);
+            var newAngle = tracker.Element.CalculateAngleTo(end);
+            var newSpeed = tracker.Element.CalculateDistanceTo(end);
+            tracker.Angle = newAngle;
+            tracker.Speed = newSpeed;
         }
+
+    
 
         private void CalculateSpeedDeltas(float dSpeed, out float dx, out float dy)
         {
