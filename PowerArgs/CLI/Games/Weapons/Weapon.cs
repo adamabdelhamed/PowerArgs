@@ -51,12 +51,12 @@ namespace PowerArgs.Games
         public float CalculateAngleToTarget()
         {
             var angle = Holder.Target != null ?
-                Holder.CalculateAngleTo(Holder.Target.Center()) :
+                Holder.Center().CalculateAngleTo(Holder.Target.Center()) :
                 Holder.Velocity.Angle;
 
             if (Holder == MainCharacter.Current && MainCharacter.Current.FreeAimCursor != null)
             {
-                angle = Holder.CalculateAngleTo(MainCharacter.Current.FreeAimCursor.Center());
+                angle = Holder.Center().CalculateAngleTo(MainCharacter.Current.FreeAimCursor.Center());
             };
 
             return angle;

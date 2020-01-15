@@ -9,11 +9,6 @@ namespace PowerArgs.Cli.Physics
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
 
 
-
-
-        public float Bounciness { get; set; } // Should be set between 0 and 1
-        public float ImpactFriction { get; set; } // Should be set between 0 and 1
-
         public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
         
@@ -24,11 +19,10 @@ namespace PowerArgs.Cli.Physics
 
         public List<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions, HitDetectionExclusionTypes);
 
-        public Velocity(SpacialElement t) : base(t)
-        {
-            Bounciness = .4f;
-            ImpactFriction = .95f;
-        }
+        public List<IRectangularF> LastObstacles { get; set; }
+        public HitPrediction LastPrediction { get; set; }
+
+        public Velocity(SpacialElement t) : base(t) { }
 
         public void Stop()
         {
@@ -47,7 +41,7 @@ namespace PowerArgs.Cli.Physics
             }
 
             var obstacles = GetObstacles().ToList();
-
+            LastObstacles = obstacles;
             var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
             {
                 Bounds = SpaceTime.CurrentSpaceTime.Bounds,
@@ -56,9 +50,9 @@ namespace PowerArgs.Cli.Physics
                 Angle = Angle,
                 Visibility = d,
             });
-
+            LastPrediction = hitPrediction;
             if (hitPrediction.Type != HitType.None)
-            {          
+            {
                 if(hitPrediction.LKG != null && Element.TopLeft().Equals(hitPrediction.LKG) == false)
                 {
                     Element.MoveTo(hitPrediction.LKG.Left, hitPrediction.LKG.Top);
@@ -79,7 +73,6 @@ namespace PowerArgs.Cli.Physics
                     });
 
                     haveMovedSinceLastHitDetection = false;
-                    Angle = Angle.GetOppositeAngle();
                     Element.SizeOrPositionChanged.Fire();
                 }
             }

@@ -28,52 +28,42 @@ namespace PowerArgs.Games
 
         public override void Evaluate()
         {
-            var targets = Options.TargetsEval()
+            var obstacles = Options.Source.GetObstacles();
+
+            var target = Options.TargetsEval()
                 .Where(z =>
                 {
                     var angle = Options.Source.Element.CalculateAngleTo(z);
                     var delta = Options.Source.Angle.DiffAngle(angle);
-                    return delta < 90;
-                })
-                .OrderBy(z => Geometry.CalculateNormalizedDistanceTo( Options.Source.Element,z));
-            var obstacles = new HashSet<IRectangularF>();
+                    if (delta >= 90) return false;
 
-            foreach(var target in Options.TargetsEval())
-            {
-                if (Options.Source.HitDetectionExclusions.Contains(target) == false && Options.Source.HitDetectionExclusionTypes.Contains(target.GetType()) == false)
-                {
-                    obstacles.Add(target);
-                }
-            }
-
-            foreach(var element in SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag(Weapon.WeaponTag) == false && e.ZIndex == Options.Source.Element.ZIndex))
-            {
-                if (Options.Source.HitDetectionExclusions.Contains(element) == false && Options.Source.HitDetectionExclusionTypes.Contains(element.GetType()) == false)
-                {
-                    obstacles.Add(element);
-                }
-            }
-
-            foreach (var target in targets)
-            {
-                var hasLineOfSight = SpacialAwareness.HasLineOfSight(Options.Source.Element, target, obstacles.ToList());
-
-                if (hasLineOfSight)
-                {
-                    var finalTarget = FilterTarget(target);
-                    if (target != lastTarget)
+                    var prediction = HitDetection.PredictHit(new HitDetectionOptions()
                     {
-                        TargetChanged.Fire(finalTarget);
-                        lastTarget = finalTarget;
-                    }
-                    return;
-                }
-            }
+                        Angle = angle,
+                        Bounds = SpaceTime.CurrentSpaceTime.Bounds,
+                        MovingObject = z is IHaveMassBounds ? (z as IHaveMassBounds).MassBounds : z,
+                        Obstacles = obstacles.Where(o => o is WeaponElement == false),
+                        Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
+                    });
 
-            if (lastTarget != null)
+                    var elementHit = prediction.ObstacleHit as SpacialElement;
+
+                    if (prediction.ObstacleHit == z || (elementHit != null && z is IHaveMassBounds && (z as IHaveMassBounds).IsPartOfMass(elementHit)))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                })
+                .OrderBy(z => Geometry.CalculateNormalizedDistanceTo( Options.Source.Element,z))
+                .FirstOrDefault();
+
+            if (target != lastTarget)
             {
-                lastTarget = null;
-                TargetChanged.Fire(null);
+                TargetChanged.Fire(target);
+                lastTarget = target;
             }
         }
     }

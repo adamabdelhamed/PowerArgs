@@ -57,14 +57,13 @@ namespace PowerArgs.Cli.Physics
                 }
                 else
                 {
-                    current = RectangularF.Create(MoveTowards(current.Center(), a, increment), current);
-                    current = RectangularF.Create(current.Left - current.Width / 2, current.Top - current.Height / 2, current.Width, current.Height);
+                    current = current.MoveTowards(a, increment);
                 }
 
                 for(var i = 0; i < effectiveObstacles.Count;i++)
                 {
                     var obstacle = effectiveObstacles[i];
-                    if (obstacle.OverlapPercentage(current) > 0)
+                    if (obstacle.CalculateDistanceTo(current) == 0)
                     {
                         return null;
                     }
@@ -147,7 +146,7 @@ namespace PowerArgs.Cli.Physics
 
         public static IRectangularF MoveTowards(this IRectangularF r, float angle, float distance)
         {
-            var newLoc = MoveTowards(r as ILocationF, angle, distance);
+            var newLoc = MoveTowards(r.TopLeft(), angle, distance);
             var ret = RectangularF.Create(newLoc.Left, newLoc.Top, r.Width, r.Height);
             return ret;
         }

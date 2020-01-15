@@ -8,6 +8,7 @@ namespace PowerArgs.Cli.Physics
 {
     public class SpacetimePanel : ConsolePanel
     {
+        public bool HeadlessMode { get; set; }
         public SpaceTime SpaceTime { get; private set; }
         private bool resizedSinceLastRender;
         private Dictionary<SpacialElement, SpacialElementRenderer> renderers;
@@ -51,6 +52,12 @@ namespace PowerArgs.Cli.Physics
 
         private void UpdateViewInternal()
         {
+            if(HeadlessMode)
+            {
+                SpaceTime.ClearChanges();
+                return;
+            }
+
             if(SpaceTime.AddedElements.Count == 0 && SpaceTime.ChangedElements.Count == 0 && SpaceTime.RemovedElements.Count == 0)
             {
                 return;

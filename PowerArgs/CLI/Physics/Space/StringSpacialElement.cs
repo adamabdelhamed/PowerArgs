@@ -8,7 +8,7 @@ namespace PowerArgs.Cli.Physics
         public ConsoleString Content { get => observable.Get<ConsoleString>(); set => observable.Set(value); }
 
         private bool itsMeResizing;
-        private IRectangularF prevSize;
+        private ISizeF prevSize;
         public bool IsVisible { get; set; } = true;
         public StringSpacialElement(ConsoleString content)
         {
@@ -19,13 +19,13 @@ namespace PowerArgs.Cli.Physics
                 this.ResizeTo(Content.Length, this.Height);
                 itsMeResizing = false;
             }, this.Lifetime);
-            
 
-            prevSize = this.CopyBounds();
+
+            prevSize = SizeF.Create(Bounds.Width, Bounds.Height);
             this.SizeOrPositionChanged.SubscribeForLifetime(() =>
             {
                 if (itsMeResizing == false && SizeF.Create(Width,Height).Equals(prevSize) == false) throw new InvalidOperationException($"You can't manually resize elements of type {nameof(StringSpacialElement)}");
-                prevSize = Bounds.CopyBounds();
+                prevSize = SizeF.Create(Bounds.Width, Bounds.Height);
             }, this.Lifetime);
 
             Content = content;

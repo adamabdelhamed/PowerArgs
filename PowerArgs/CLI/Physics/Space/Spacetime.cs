@@ -127,7 +127,8 @@ namespace PowerArgs.Cli.Physics
 
     public interface IHaveMassBounds
     {
-        IRectangularF MassBounds { get; } 
+        IRectangularF MassBounds { get; }
+        bool IsPartOfMass(SpacialElement other);
     }
 
     public interface IGhost

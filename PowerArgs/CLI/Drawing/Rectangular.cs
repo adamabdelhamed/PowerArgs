@@ -97,10 +97,8 @@ namespace PowerArgs.Cli
 
         float IRectangularF.Width => Width;
 
-        float ISizeF.Width => Width;
 
         float IRectangularF.Height => Height;
 
-        float ISizeF.Height => Height;
     }
 }

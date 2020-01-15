@@ -30,7 +30,7 @@ namespace PowerArgs.Games
         public SpacialElement Target { get; set; }
 
 
-        public float TargetAngle => Target == null ? Velocity.Angle : this.CalculateAngleTo(Target.Center());
+        public float TargetAngle => Target == null ? Velocity.Angle : this.Center().CalculateAngleTo(Target.Center());
         public Velocity Velocity { get; set; }
 
 
@@ -51,7 +51,7 @@ namespace PowerArgs.Games
             IsVisible = true;
             this.SubscribeForLifetime(nameof(Inventory), () => this.Inventory.Owner = this, this.Lifetime);
             Inventory = new Inventory();
-            Velocity = new Velocity(this) { Bounciness = 0 };
+            Velocity = new Velocity(this);
             this.ResizeTo(1, 1);
         }
 

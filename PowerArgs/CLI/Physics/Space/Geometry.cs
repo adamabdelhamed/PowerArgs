@@ -20,7 +20,7 @@ namespace PowerArgs.Cli.Physics
         RightUp = 315
     }
 
-    public interface IRectangularF : ISizeF, ILocationF
+    public interface IRectangularF
     {
         float Left { get; }
         float Top { get; }
@@ -203,6 +203,12 @@ namespace PowerArgs.Cli.Physics
             c = c <= 180 ? c : Math.Abs(360 - c);
             if (c == 360) return 0;
             return c;
+        }
+
+        public static bool IsClockwiseShortestPathToAngle(this float a, float b)
+        {
+            var diff = a.DiffAngle(b);
+            return a.AddToAngle(diff) == b;
         }
 
         public static float DiffAngleRaw(this float a, float b)
