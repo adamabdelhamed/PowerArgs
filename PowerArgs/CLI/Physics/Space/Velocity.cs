@@ -44,7 +44,6 @@ namespace PowerArgs.Cli.Physics
             LastObstacles = obstacles;
             var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
             {
-                Bounds = SpaceTime.CurrentSpaceTime.Bounds,
                 MovingObject = Element is IHaveMassBounds ? (Element as IHaveMassBounds).MassBounds : Element,
                 Obstacles = obstacles.As<IRectangularF>().ToList(),
                 Angle = Angle,

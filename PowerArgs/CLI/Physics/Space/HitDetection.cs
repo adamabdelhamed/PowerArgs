@@ -21,7 +21,6 @@ namespace PowerArgs.Cli.Physics
     public class HitPrediction
     {
         public IRectangularF MovingObjectPosition { get; set; }
-        public TimeSpan PredictionTime { get; set; } = Time.CurrentTime.Now;
         public HitType Type { get; set; }
         public Direction Direction { get; set; }
         public IRectangularF ObstacleHit { get; set; }
@@ -31,7 +30,6 @@ namespace PowerArgs.Cli.Physics
 
     public class HitDetectionOptions
     {
-        public IRectangularF Bounds { get; set; }
         public IRectangularF MovingObject { get; set; }
         public IEnumerable<IRectangularF> Obstacles { get; set; }
         public float Angle { get; set; }
@@ -41,6 +39,21 @@ namespace PowerArgs.Cli.Physics
 
     public static class HitDetection
     {
+        public static bool HasLineOfSight(this Velocity from, IRectangularF to) => HasLineOfSight(from.Element, to, from.GetObstacles());
+        public static bool HasLineOfSight(this SpacialElement from, IRectangularF to) => HasLineOfSight(from, to, from.GetObstacles());
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles)
+        {
+            var prediction = PredictHit(new HitDetectionOptions()
+            {
+                MovingObject = from,
+                Angle = from.Center().CalculateAngleTo(to.Center()),
+                Obstacles = obstacles.Union(new IRectangularF[] { to }),
+                Visibility = 3 * from.Center().CalculateDistanceTo(to.Center()),
+            });
+
+            return prediction.ObstacleHit == to;
+        }
+
         public static HitPrediction PredictHit(HitDetectionOptions options)
         {
             HitPrediction prediction = new HitPrediction();

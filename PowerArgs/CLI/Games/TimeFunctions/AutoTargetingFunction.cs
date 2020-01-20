@@ -40,7 +40,6 @@ namespace PowerArgs.Games
                     var prediction = HitDetection.PredictHit(new HitDetectionOptions()
                     {
                         Angle = angle,
-                        Bounds = SpaceTime.CurrentSpaceTime.Bounds,
                         MovingObject = z is IHaveMassBounds ? (z as IHaveMassBounds).MassBounds : z,
                         Obstacles = obstacles.Where(o => o is WeaponElement == false),
                         Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
