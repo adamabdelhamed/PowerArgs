@@ -41,7 +41,9 @@ namespace PowerArgs.Cli.Physics
     {
         public static bool HasLineOfSight(this Velocity from, IRectangularF to) => HasLineOfSight(from.Element, to, from.GetObstacles());
         public static bool HasLineOfSight(this SpacialElement from, IRectangularF to) => HasLineOfSight(from, to, from.GetObstacles());
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles)
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles) => GetLineOfSightObstruction(from, to, obstacles) == null;
+
+        public static IRectangularF GetLineOfSightObstruction(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles)
         {
             var prediction = PredictHit(new HitDetectionOptions()
             {
@@ -51,7 +53,14 @@ namespace PowerArgs.Cli.Physics
                 Visibility = 3 * from.Center().CalculateDistanceTo(to.Center()),
             });
 
-            return prediction.ObstacleHit == to;
+            if (prediction.Type == HitType.None)
+            {
+                return SpaceTime.CurrentSpaceTime.Bounds;
+            }
+            else
+            {
+                return prediction.ObstacleHit == to ? null : prediction.ObstacleHit;
+            }
         }
 
         public static HitPrediction PredictHit(HitDetectionOptions options)
