@@ -11,6 +11,8 @@ namespace PowerArgs.Games
         public Velocity Source { get; set; }
         public Func<IEnumerable<SpacialElement>> TargetsEval { get; set; }
 
+        public IRectangularF SourceBounds => Source.Element is IHaveMassBounds ? (Source.Element as IHaveMassBounds).MassBounds : Source.Element;
+
     }
 
     public class AutoTargetingFunction : TimeFunction
@@ -21,10 +23,8 @@ namespace PowerArgs.Games
         public AutoTargetingFunction(AutoTargetingOptions options)
         {
             this.Options = options;
-            this.Governor = new RateGovernor(TimeSpan.FromSeconds(0));
+            this.Governor = new RateGovernor(TimeSpan.FromSeconds(options.Source.Element is MainCharacter ? 0 : .5));
         }
-
-        protected virtual SpacialElement FilterTarget(SpacialElement t) => t;
 
         public override void Evaluate()
         {
@@ -33,21 +33,27 @@ namespace PowerArgs.Games
             var target = Options.TargetsEval()
                 .Where(z =>
                 {
-                    var angle = Options.Source.Element.CalculateAngleTo(z);
+                    var sb = Options.SourceBounds;
+                    var angle = sb.Center().CalculateAngleTo(z.Center());
                     var delta = Options.Source.Angle.DiffAngle(angle);
                     if (delta >= 90) return false;
 
                     var prediction = HitDetection.PredictHit(new HitDetectionOptions()
                     {
                         Angle = angle,
-                        MovingObject = z is IHaveMassBounds ? (z as IHaveMassBounds).MassBounds : z,
+                        MovingObject = sb,
                         Obstacles = obstacles.Where(o => o is WeaponElement == false),
                         Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
+                        Precision = .5f,
                     });
 
                     var elementHit = prediction.ObstacleHit as SpacialElement;
 
-                    if (prediction.ObstacleHit == z || (elementHit != null && z is IHaveMassBounds && (z as IHaveMassBounds).IsPartOfMass(elementHit)))
+                    if (elementHit == z)
+                    {
+                        return true;
+                    }
+                    else if(elementHit != null && z is IHaveMassBounds && (z as IHaveMassBounds).IsPartOfMass(elementHit))
                     {
                         return true;
                     }

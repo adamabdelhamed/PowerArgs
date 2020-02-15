@@ -26,6 +26,8 @@ namespace PowerArgs.Cli.Physics
         public IRectangularF ObstacleHit { get; set; }
         public ILocationF LKG { get; set; }
         public float Visibility { get; set; }
+
+        public List<IRectangularF> Path { get; set; } = new List<IRectangularF>();
     }
 
     public class HitDetectionOptions
@@ -83,6 +85,7 @@ namespace PowerArgs.Cli.Physics
             for(var dPrime = options.Precision; dPrime < options.Visibility; dPrime+=options.Precision)
             {
                 var testArea = options.MovingObject.MoveTowards(options.Angle, dPrime);
+                prediction.Path.Add(testArea);
                 var obstacleHit = effectiveObstacles.Where(o => o.Touches(testArea) == true).FirstOrDefault();
 
                 if(obstacleHit != null)

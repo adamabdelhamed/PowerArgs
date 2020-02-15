@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PowerArgs.Cli.Physics
@@ -119,6 +120,9 @@ namespace PowerArgs.Cli.Physics
         public static ILocationF Center(this IRectangularF rectangular) => LocationF.Create(rectangular.CenterX(), rectangular.CenterY());
         public static IRectangularF CenterRect(this IRectangularF rectangular) => RectangularF.Create(rectangular.CenterX(), rectangular.CenterY(), 0,0);
         public static ILocationF TopLeft(this IRectangularF rectangular) => LocationF.Create(rectangular.Left, rectangular.Top);
+        public static ILocationF TopRight(this IRectangularF rectangular) => LocationF.Create(rectangular.Right(), rectangular.Top);
+        public static ILocationF BottomLeft(this IRectangularF rectangular) => LocationF.Create(rectangular.Left, rectangular.Bottom());
+        public static ILocationF BottomRight(this IRectangularF rectangular) => LocationF.Create(rectangular.Right(), rectangular.Bottom());
         public static IRectangularF CopyBounds(this IRectangularF rectangular) => RectangularF.Create(rectangular.Left, rectangular.Top, rectangular.Width, rectangular.Height);
         public static float Hypotenous(this IRectangularF rectangular) => (float)Math.Sqrt(rectangular.Width * rectangular.Width + rectangular.Height * rectangular.Height);
         public static float DiffAngle(this int a, float b) => DiffAngle((float)a, b);
@@ -389,6 +393,14 @@ namespace PowerArgs.Cli.Physics
             var skewPercentage = 1 + (degreesFromFlat / 90);
 
             return reverse ? quantity * skewPercentage : quantity / skewPercentage;
+        }
+
+        public static IEnumerable<ILocationF> Corners(this IRectangularF rect)
+        {
+            yield return rect.TopLeft();
+            yield return rect.TopRight();
+            yield return rect.BottomLeft();
+            yield return rect.BottomRight();
         }
     }
 }
