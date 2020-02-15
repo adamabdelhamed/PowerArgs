@@ -118,7 +118,6 @@ namespace PowerArgs.Cli.Physics
         public static float CenterX(this IRectangularF rectangular) => rectangular.Left + (rectangular.Width / 2);
         public static float CenterY(this IRectangularF rectangular) => rectangular.Top + (rectangular.Height / 2);
         public static ILocationF Center(this IRectangularF rectangular) => LocationF.Create(rectangular.CenterX(), rectangular.CenterY());
-        public static IRectangularF CenterRect(this IRectangularF rectangular) => RectangularF.Create(rectangular.CenterX(), rectangular.CenterY(), 0,0);
         public static ILocationF TopLeft(this IRectangularF rectangular) => LocationF.Create(rectangular.Left, rectangular.Top);
         public static ILocationF TopRight(this IRectangularF rectangular) => LocationF.Create(rectangular.Right(), rectangular.Top);
         public static ILocationF BottomLeft(this IRectangularF rectangular) => LocationF.Create(rectangular.Left, rectangular.Bottom());
@@ -136,6 +135,13 @@ namespace PowerArgs.Cli.Physics
         public static bool Contains(this IRectangularF rectangle, IRectangularF other) => OverlapPercentage(rectangle, other) == 1;
         public static bool Touches(this IRectangularF rectangle, IRectangularF other) => OverlapPercentage(rectangle, other) > 0;
 
+
+        public static IRectangularF ToRect(this ILocationF loc, float w, float h)
+        {
+            var left = loc.Left - w / 2;
+            var top = loc.Top - h / 2;
+            return RectangularF.Create(left, top, w, h);
+        }
 
         public static Direction GetOppositeDirection(this Direction d)
         {
