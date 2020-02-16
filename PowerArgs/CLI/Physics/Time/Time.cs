@@ -442,6 +442,28 @@ namespace PowerArgs.Cli.Physics
         }
 
         /// <summary>
+        /// If called from the current time thread then the action will happen synchronously.
+        /// Otherwise it will be queued.
+        /// </summary>
+        /// <param name="reason">the reason of the work</param>
+        /// <param name="action">the work to do</param>
+        /// <returns></returns>
+        public Promise DoASAP(string reason, Action action)
+        {
+            if (Time.CurrentTime == this)
+            {
+                action();
+                var d = Deferred.Create();
+                d.Resolve();
+                return d.Promise;
+            }
+            else
+            {
+                return QueueAction(reason, action);
+            }
+        }
+
+        /// <summary>
         /// Queues an action that will run at the beginning of the next time iteration
         /// </summary>
         /// <param name="action">code to run at the beginning of the next time iteration</param>
