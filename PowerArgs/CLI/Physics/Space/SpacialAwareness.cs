@@ -118,9 +118,14 @@ namespace PowerArgs.Cli.Physics
                 {
                     continue;
                 }
-                else if (e is WeaponElement && e is Explosive == false && (e as WeaponElement).Weapon?.Holder == element)
+                else if (e is WeaponElement && (e as WeaponElement).Weapon?.Holder == element)
                 {
-                    // Characters can't hit their own weapon elements, except for explosives
+                    // Characters can't hit their own weapon elements
+                    continue;
+                }
+                else if (element is WeaponElement && (element as WeaponElement).Weapon?.Holder == e)
+                {
+                    // Characters can't hit their own weapon elements
                     continue;
                 }
                 else if (e is WeaponElement && element is WeaponElement  && 

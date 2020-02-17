@@ -46,6 +46,7 @@ namespace PowerArgs.Games
                 if(SpaceTime.CurrentSpaceTime.Elements.WhereAs<Explosive>().None())
                 {
                     explosiveWatcherLifetime.Dispose();
+                    explosiveWatcherLifetime = null;
                 }
             });
         }
