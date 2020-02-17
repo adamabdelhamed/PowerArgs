@@ -24,9 +24,9 @@ namespace PowerArgs.Games
     {
         public static Event<Weapon> OnEquipWeapon { get; private set; } = new Event<Weapon>();
 
-       
+
         public ConsoleColor Color { get; set; } = ConsoleColor.Magenta;
-       
+
         private static Dictionary<SpaceTime, MainCharacter> mainCharacters = new Dictionary<SpaceTime, MainCharacter>();
         public static MainCharacter Current
         {
@@ -54,7 +54,7 @@ namespace PowerArgs.Games
 
         public MainCharacter()
         {
-            this.Id = nameof(MainCharacter)+": "+NextId++;
+            this.Id = nameof(MainCharacter) + ": " + NextId++;
             this.Tags.Add(nameof(MainCharacter));
             this.MoveTo(0, 0);
             this.Added.SubscribeForLifetime(() =>
@@ -62,7 +62,7 @@ namespace PowerArgs.Games
                 Current = this;
             }, this.Lifetime);
 
-            this.Inventory.SubscribeForLifetime(nameof(Inventory.PrimaryWeapon), ()=> 
+            this.Inventory.SubscribeForLifetime(nameof(Inventory.PrimaryWeapon), () =>
             {
                 if (Inventory.PrimaryWeapon != null) OnEquipWeapon.Fire(Inventory.PrimaryWeapon);
             }, this.Lifetime);
@@ -78,16 +78,26 @@ namespace PowerArgs.Games
             })));
         }
 
-       
 
-   
+        public void RegisterItemForPickup(SpacialElement item, Action afterPickup)
+        {
+            this.Velocity.ImpactOccurred.SubscribeForLifetime((i) =>
+            {
+                if (i.ObstacleHit == item)
+                {
+                    afterPickup();
+                    item.Lifetime.Dispose();
+                }
+            }, item.Lifetime);
+        }
 
-   
 
 
 
 
-    
+
+
+
 
 
 

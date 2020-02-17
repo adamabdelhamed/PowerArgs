@@ -14,6 +14,7 @@
         public override void Evaluate()
         {
             tracker.Speed *= Decay;
+            if (tracker.Speed < .1f) tracker.Speed = 0;
         }
     }
 }

@@ -40,10 +40,17 @@ namespace PowerArgs.Cli.Physics
                 return;
             }
 
+            var obstacles = GetObstacles();
+
+            if(obstacles.Where(o => o.Touches(Element)).Any())
+            {
+                Element.NudgeFree();
+            }
+
             var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
             {
                 MovingObject = Element is IHaveMassBounds ? (Element as IHaveMassBounds).MassBounds : Element,
-                Obstacles = GetObstacles(),
+                Obstacles = obstacles,
                 Angle = Angle,
                 Visibility = d,
             });

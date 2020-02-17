@@ -42,7 +42,7 @@ namespace PowerArgs.Games
                 mine.MoveTo(initialPlacement.Left, initialPlacement.Top);
                 var v = new Velocity(mine);
                 v.Speed = holder.Velocity.Speed + 50;
-                v.Angle = holder.Velocity.Angle;
+                v.Angle = holder.TargetAngle;
                 new Friction(v);
             }
         }

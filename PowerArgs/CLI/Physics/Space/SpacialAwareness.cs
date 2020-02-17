@@ -133,7 +133,18 @@ namespace PowerArgs.Cli.Physics
                 {
                     if (e is Explosive || element is Explosive)
                     {
-                        ret.Add(e);
+                        if (e is WeaponElement && (e as WeaponElement).Weapon.Style == WeaponStyle.Shield)
+                        {
+                            continue;
+                        }
+                        else if (e is WeaponElement && (e as WeaponElement).Weapon.Style == WeaponStyle.Shield)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            ret.Add(e);
+                        }
                     }
                     else
                     {
@@ -190,6 +201,38 @@ namespace PowerArgs.Cli.Physics
                     options.Setter(rectangular, frameBounds);
                 }
             });
+        }
+
+        public static void NudgeFree(this SpacialElement el)
+        {
+            var loc = GetNudgeLocation(el);
+            if (loc != null)
+            {
+                el.MoveTo(loc.Left, loc.Top);
+            }
+        }
+
+        public static ILocationF GetNudgeLocation(this SpacialElement el, IRectangularF desiredLocation = null, float initialAngle = 0)
+        {
+            desiredLocation = desiredLocation ?? (el is IHaveMassBounds ? (el as IHaveMassBounds).MassBounds : el);
+            var obstacles = el.GetObstacles();
+            if (obstacles.Where(o => o.Touches(desiredLocation)).Any())
+            {
+                for (var d = 1f; d < 15; d++)
+                {
+                    for (var angle = initialAngle; angle < initialAngle + 360; angle += 20)
+                    {
+                        var effectiveAngle = angle % 360;
+                        var testLoc = desiredLocation.MoveTowards(effectiveAngle, d);
+                        var testArea = RectangularF.Create(testLoc.Left, testLoc.Top, el.Width, el.Height);
+                        if (obstacles.Where(o => o.Touches(testArea)).None())
+                        {
+                            return testLoc.TopLeft();
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 
