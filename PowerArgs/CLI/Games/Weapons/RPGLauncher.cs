@@ -13,7 +13,7 @@ namespace PowerArgs.Games
         public ConsoleString ProjectilePen { get; set; }
         public override WeaponStyle Style => WeaponStyle.Explosive;
 
-        public override void FireInternal()
+        public override void FireInternal(bool alt)
         {
 
             var angle = CalculateAngleToTarget();

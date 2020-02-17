@@ -12,10 +12,10 @@ namespace PowerArgs.Games
 
         public override WeaponStyle Style => WeaponStyle.Explosive;
 
-        public override void FireInternal()
+        public override void FireInternal(bool alt)
         {
             var mine = new TimedMine(this,Delay);
-            ProximityMineDropper.PlaceMineSafe(mine, Holder);
+            ProximityMineDropper.PlaceMineSafe(mine, Holder, !alt);
             SpaceTime.CurrentSpaceTime.Add(mine);
             mine.Exploded.SubscribeOnce(this.Exploded.Fire);
         }

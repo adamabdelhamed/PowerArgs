@@ -18,7 +18,7 @@ namespace PowerArgs.Games
         public static Event<SniperRifleHitEventArgs> OnHit { get; private set; } = new Event<SniperRifleHitEventArgs>();
 
         public override WeaponStyle Style => WeaponStyle.Primary;
-        public override void FireInternal()
+        public override void FireInternal(bool alt)
         {
             if (Holder.Target != null)
             {

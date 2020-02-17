@@ -10,7 +10,7 @@ namespace PowerArgs.Games
 
         public float Range { get; set; } = 15f;
 
-        public override void FireInternal()
+        public override void FireInternal(bool alt)
         {
             var targetAngle = CalculateAngleToTarget();
             var sprayAngle = 30.0f;

@@ -14,7 +14,7 @@ namespace PowerArgs.Games
 
         private List<Blade> activeBlades = new List<Blade>();
 
-        public override void FireInternal()
+        public override void FireInternal(bool alt)
         {
             activeBlades.ForEach(b => { if (b.Lifetime.IsExpired == false) b.Lifetime.Dispose(); });
             activeBlades.Clear();

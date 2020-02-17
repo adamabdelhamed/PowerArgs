@@ -9,6 +9,9 @@ namespace PowerArgs.Games
 {
     public class Explosive : WeaponElement
     {
+        [ThreadStatic]
+        private static Lifetime explosiveWatcherLifetime;
+
         public Event<Projectile> OnProjectileAdded { get; private set; } = new Event<Projectile>();
         public static Event<Explosive> OnExplode { get; private set; } = new Event<Explosive>();
 
@@ -21,10 +24,36 @@ namespace PowerArgs.Games
         {
             this.AngleIncrement = 5;
             this.Range = 5;
+
+            if(explosiveWatcherLifetime == null)
+            {
+                explosiveWatcherLifetime = new Lifetime();
+                Velocity.GlobalImpactOccurred.SubscribeForLifetime((impact) =>
+                {
+                    if(impact.MovingObject is Explosive)
+                    {
+                        (impact.MovingObject as Explosive).Explode();
+                    }
+                    else if(impact.ObstacleHit is Explosive)
+                    {
+                        (impact.ObstacleHit as Explosive).Explode();
+                    }
+                }, explosiveWatcherLifetime);
+            }
+
+            this.Lifetime.OnDisposed(()=>
+            {
+                if(SpaceTime.CurrentSpaceTime.Elements.WhereAs<Explosive>().None())
+                {
+                    explosiveWatcherLifetime.Dispose();
+                }
+            });
         }
 
         public void Explode()
         {
+            if (Lifetime.IsExpired) return;
+
             var shrapnelSet = new List<Projectile>();
             for (float angle = 0; angle < 360; angle += AngleIncrement)
             {

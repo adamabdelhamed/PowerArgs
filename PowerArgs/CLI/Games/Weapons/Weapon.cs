@@ -16,6 +16,10 @@ namespace PowerArgs.Games
         public WeaponElement(Weapon w)
         {
             this.Weapon = w;
+            if(w.Holder != null)
+            {
+                this.MoveTo(0, 0, w.Holder.ZIndex);
+            }
         }
     }
 
@@ -65,7 +69,7 @@ namespace PowerArgs.Games
 
         private TimeSpan lastFireTime = TimeSpan.Zero;
 
-        public void TryFire()
+        public void TryFire(bool alt)
         {
             if (Trigger == null || Trigger.AllowFire())
             {
@@ -78,7 +82,7 @@ namespace PowerArgs.Games
                     lastFireTime = Time.CurrentTime.Now;
 
                     OnFire.Fire(this);
-                    FireInternal();
+                    FireInternal(alt);
                     if (AmmoAmount > 0)
                     {
                         AmmoAmount--;
@@ -113,6 +117,6 @@ namespace PowerArgs.Games
             }
         }
 
-        public abstract void FireInternal();
+        public abstract void FireInternal(bool alt);
     }
 }

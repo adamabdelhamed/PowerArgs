@@ -71,7 +71,7 @@ namespace PowerArgs.Games
                     // drop a timed mine
                     var dropper = new TimedMineDropper() { Delay = TimeSpan.FromSeconds(4), AmmoAmount = 1, Holder = character };
                     dropper.Exploded.SubscribeOnce(() => Sound.Play("PowerArgsIntro"));
-                    dropper.FireInternal();
+                    dropper.FireInternal(false);
 
                     // eventually he will hit the left wall, remove him when that happens
                     character.Velocity.ImpactOccurred.SubscribeForLifetime((i) => character.Lifetime.Dispose(), character.Lifetime);

@@ -7,7 +7,7 @@ namespace PowerArgs.Games
 
         public ConsoleString ProjectilePen { get; set; }
         public override WeaponStyle Style => WeaponStyle.Primary;
-        public override void FireInternal()
+        public override void FireInternal(bool alt)
         {
             var bullet = new Projectile(this,Holder.CenterX() - Projectile.StandardWidth/ 2, Holder.CenterY() - Projectile.StandardHeight / 2, CalculateAngleToTarget()) { PlaySoundOnImpact = true };
             bullet.Accelleration = Accelleration;

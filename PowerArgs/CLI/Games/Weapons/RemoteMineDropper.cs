@@ -6,11 +6,11 @@ namespace PowerArgs.Games
     {
         public override WeaponStyle Style => WeaponStyle.Explosive;
 
-        public override void FireInternal()
+        public override void FireInternal(bool alt)
         {
             var ex = new Explosive(this);
             ex.SetProperty<Character>(nameof(Holder), this.Holder);
-            ProximityMineDropper.PlaceMineSafe(ex, Holder);
+            ProximityMineDropper.PlaceMineSafe(ex, Holder, !alt);
             SpaceTime.CurrentSpaceTime.Add(ex);
         }
 

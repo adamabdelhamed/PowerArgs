@@ -17,7 +17,7 @@ namespace PowerArgs.Games
         public static Event<NetWrappedEventArgs> OnWrappedCharacter { get; private set; } = new Event<NetWrappedEventArgs>();
         public override WeaponStyle Style => WeaponStyle.Primary;
 
-        public override void FireInternal()
+        public override void FireInternal(bool alt)
         {
             var matterList = new List<NetMatter>();
             StructuralIntegrity<NetMatter> matterIntegrity = null;
