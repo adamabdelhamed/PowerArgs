@@ -88,9 +88,10 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static List<IRectangularF> GetObstacles(this SpacialElement element, IEnumerable<SpacialElement> exclusions = null, IEnumerable<Type> excludedTypes=null)
+        public static List<IRectangularF> GetObstacles(this SpacialElement element, IEnumerable<SpacialElement> exclusions = null, IEnumerable<Type> excludedTypes=null, Func<IEnumerable<SpacialElement>> dynamicExclusions = null)
         {
             var ret = new List<IRectangularF>();
+            var dynamicEx = dynamicExclusions != null ? dynamicExclusions.Invoke() : null;
             foreach (var e in SpaceTime.CurrentSpaceTime.Elements)
             {
                 if(e == element)
@@ -110,6 +111,10 @@ namespace PowerArgs.Cli.Physics
                     continue;
                 }
                 else if(excludedTypes != null && excludedTypes.Where(t => e.GetType() == t || e.GetType().IsSubclassOf(t) || e.GetType().GetInterfaces().Contains(t)).Any())
+                {
+                    continue;
+                }
+                else if(dynamicEx != null && dynamicEx.Contains(e))
                 {
                     continue;
                 }

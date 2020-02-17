@@ -36,6 +36,12 @@ namespace PowerArgs.Games
                     {
                         (item as Weapon).AmmoAmount += InnerWeapon.AmmoAmount;
                     }
+
+                    if((item as Weapon).Style == WeaponStyle.Shield && (item as Weapon).Strength != -1)
+                    {
+                        (item as Weapon).Strength += InnerWeapon.Strength;
+                    }
+
                     return;
                 }
             }

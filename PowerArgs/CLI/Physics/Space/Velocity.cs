@@ -7,17 +7,18 @@ namespace PowerArgs.Cli.Physics
     public class Velocity : SpacialElementFunction
     {
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
-
+        public static Event<Impact> GlobalImpactOccurred { get; private set; } = new Event<Impact>();
 
         public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
+        public Func<IEnumerable<SpacialElement>> HitDetectionDynamicExclusions { get; set; }
         
         public float Angle { get; set; }
 
         bool haveMovedSinceLastHitDetection = true;
         public float Speed { get; set; }
 
-        public List<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions, HitDetectionExclusionTypes);
+        public List<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions, HitDetectionExclusionTypes, HitDetectionDynamicExclusions);
 
         public List<IRectangularF> LastObstacles { get; set; }
         public HitPrediction LastPrediction { get; set; }
@@ -63,13 +64,15 @@ namespace PowerArgs.Cli.Physics
 
                 if (haveMovedSinceLastHitDetection)
                 {
-                    ImpactOccurred?.Fire(new Impact()
+                    var impact = new Impact()
                     {
                         Angle = angle,
                         MovingObject = Element,
                         ObstacleHit = hitPrediction.ObstacleHit,
                         HitType = hitPrediction.Type,
-                    });
+                    };
+                    ImpactOccurred?.Fire(impact);
+                    GlobalImpactOccurred.Fire(impact);
 
                     haveMovedSinceLastHitDetection = false;
                     Element.SizeOrPositionChanged.Fire();

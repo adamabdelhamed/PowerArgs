@@ -6,7 +6,8 @@ namespace PowerArgs.Games
     public enum WeaponStyle
     {
         Primary,
-        Explosive
+        Explosive,
+        Shield
     }
 
     public class WeaponElement : SpacialElement
@@ -27,7 +28,7 @@ namespace PowerArgs.Games
         public Character Holder { get; set; }
         public object Tag { get; set; }
         public abstract WeaponStyle Style { get; }
-        public float Strength { get; set; }
+        public virtual float Strength { get; set; }
         public ConsoleString DisplayName { get; set; }
 
         public int AmmoAmount

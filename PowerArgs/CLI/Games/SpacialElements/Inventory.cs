@@ -58,6 +58,25 @@ namespace PowerArgs.Games
             }
         }
 
+        private Weapon _shieldWeapon;
+        public Weapon ShieldWeapon
+        {
+            get
+            {
+                return _shieldWeapon;
+            }
+            set
+            {
+                if (Items.Contains(value) == false)
+                {
+                    Items.Add(value);
+                }
+
+                _shieldWeapon = value;
+                FirePropertyChanged(nameof(ShieldWeapon));
+            }
+        }
+
         public Inventory()
         {
             this.SubscribeForLifetime(nameof(Items), () =>
@@ -80,22 +99,7 @@ namespace PowerArgs.Games
             Items = new ObservableCollection<IInventoryItem>();
         }
 
-        public void TryEquip(Type weaponType)
-        {
-            var match = Items.Where(i => i is Weapon && i.GetType() == weaponType).Select(i => i as Weapon).FirstOrDefault();
-            if(match == null)
-            {
-                return;
-            }
-            else if(match.Style == WeaponStyle.Primary && match.AmmoAmount > 0)
-            {
-                PrimaryWeapon = match;
-            }
-            else if(match.Style == WeaponStyle.Explosive && match.AmmoAmount > 0)
-            {
-                ExplosiveWeapon = match;
-            }
-        }
+       
 
         private void ProcessItem(IInventoryItem item)
         {
@@ -103,10 +107,14 @@ namespace PowerArgs.Games
             if (item is Weapon)
             {
                 var priorWeapons = Items.WhereAs<Weapon>().Where(w => w != item);
+
                 var priorPrimaryWeapons = priorWeapons.Where(w => w.Style == WeaponStyle.Primary);
                 var priorExplosiveWeapons = priorWeapons.Where(w => w.Style == WeaponStyle.Explosive);
+                var priorShieldWeapons = priorWeapons.Where(w => w.Style == WeaponStyle.Shield);
+
                 var highestPrimaryWeapon = priorPrimaryWeapons.Any() ? priorPrimaryWeapons.OrderByDescending(w => w.PowerRanking).First() : null;
                 var highestExplosiveWeapon = priorExplosiveWeapons.Any() ? priorExplosiveWeapons.OrderByDescending(w => w.PowerRanking).First() : null;
+                var highestShieldWeapon = priorShieldWeapons.Any() ? priorShieldWeapons.OrderByDescending(w => w.PowerRanking).First() : null;
 
                 var weapon = item as Weapon;
                 weapon.Holder = this.Owner;
@@ -117,11 +125,18 @@ namespace PowerArgs.Games
                         PrimaryWeapon = weapon;
                     }
                 }
-                else
+                else if(weapon.Style == WeaponStyle.Explosive)
                 {
-                    if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0 || highestPrimaryWeapon == null || weapon.PowerRanking > highestPrimaryWeapon.PowerRanking)
+                    if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0 || weapon.PowerRanking > highestExplosiveWeapon.PowerRanking)
                     {
                         ExplosiveWeapon = weapon;
+                    }
+                }
+                else if (weapon.Style == WeaponStyle.Shield)
+                {
+                    if (highestShieldWeapon == null || weapon.PowerRanking > highestShieldWeapon.PowerRanking)
+                    {
+                        ShieldWeapon = weapon;
                     }
                 }
             }
