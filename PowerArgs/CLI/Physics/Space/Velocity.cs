@@ -20,7 +20,6 @@ namespace PowerArgs.Cli.Physics
 
         public List<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions, HitDetectionExclusionTypes, HitDetectionDynamicExclusions);
 
-        public List<IRectangularF> LastObstacles { get; set; }
         public HitPrediction LastPrediction { get; set; }
 
         public Velocity(SpacialElement t) : base(t) { }
@@ -41,12 +40,10 @@ namespace PowerArgs.Cli.Physics
                 return;
             }
 
-            var obstacles = GetObstacles().ToList();
-            LastObstacles = obstacles;
             var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
             {
                 MovingObject = Element is IHaveMassBounds ? (Element as IHaveMassBounds).MassBounds : Element,
-                Obstacles = obstacles.As<IRectangularF>().ToList(),
+                Obstacles = GetObstacles(),
                 Angle = Angle,
                 Visibility = d,
             });

@@ -128,12 +128,18 @@ namespace PowerArgs.Cli.Physics
                     // Characters can't hit their own weapon elements
                     continue;
                 }
-                else if (e is WeaponElement && element is WeaponElement  && 
-                    (e as WeaponElement).Weapon?.Style == WeaponStyle.Shield && 
-                    (e as WeaponElement).Weapon.Holder == (element as WeaponElement).Weapon.Holder)
+                else if (e is WeaponElement && element is WeaponElement &&
+                  (e as WeaponElement).Weapon.Holder == (element as WeaponElement).Weapon.Holder)
                 {
-                    // Characters can shoot past their shields
-                    continue;
+                    if (e is Explosive || element is Explosive)
+                    {
+                        ret.Add(e);
+                    }
+                    else
+                    {
+                        // WeaponElements from the same holder don't collide with each other
+                        continue;
+                    }
                 }
                 else
                 {
