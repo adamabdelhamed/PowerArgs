@@ -18,6 +18,7 @@ namespace PowerArgs.Games
             ProximityMineDropper.PlaceMineSafe(mine, Holder, !alt);
             SpaceTime.CurrentSpaceTime.Add(mine);
             mine.Exploded.SubscribeOnce(this.Exploded.Fire);
+            OnWeaponElementEmitted.Fire(mine);
         }
     }
 }

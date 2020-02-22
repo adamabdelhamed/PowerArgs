@@ -61,6 +61,11 @@ namespace PowerArgs.Cli.Physics
             }
             else
             {
+                if(to is IHaveMassBounds && prediction.ObstacleHit is SpacialElement && (to as IHaveMassBounds).IsPartOfMass(prediction.ObstacleHit as SpacialElement))
+                {
+                    return null;
+                }
+
                 return prediction.ObstacleHit == to ? null : prediction.ObstacleHit;
             }
         }

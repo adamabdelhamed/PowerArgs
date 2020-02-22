@@ -13,17 +13,21 @@ namespace PowerArgs.Games
         public const float StandardHeight = 1f;
 
         public ConsoleString Pen { get; set; } = new ConsoleString("*", ConsoleColor.Red);
-        public float Accelleration { get; set; } = 40;
         public float Range { get; set; } = -1;
-        public float angle { get; private set; }
+
         public Velocity Velocity { get; private set; }
         public bool PlaySoundOnImpact { get; set; }
 
         private IRectangularF startLocation;
         private Force force;
-        private Projectile(Weapon w) : base(w)
+        public Projectile(Weapon w, float speed, float angle) : base(w)
         {
             this.ResizeTo(StandardWidth, StandardHeight);
+            if (w?.Holder != null)
+            {
+                this.MoveTo(w.Holder.CenterX()-StandardWidth/2, w.Holder.CenterY()-StandardHeight/2, w.Holder.ZIndex);
+                startLocation = w.Holder.CopyBounds();
+            }
             this.Tags.Add(Weapon.WeaponTag);
             Velocity = new Velocity(this);
             Velocity.Governor.Rate = TimeSpan.FromSeconds(0);
@@ -33,9 +37,9 @@ namespace PowerArgs.Games
             {
                 this.Velocity.HitDetectionExclusions.Add(w.Holder);
             }
-            Time.CurrentTime.QueueAction("Init projectile force", () => { force = new Force(Velocity, Accelleration.NormalizeQuantity(angle), angle); });
+            Velocity.Speed = speed;
+            Velocity.Angle = angle;
 
-            
             this.SizeOrPositionChanged.SubscribeForLifetime(() =>
             {
                 if (Range > 0 && this.CalculateDistanceTo(startLocation) > Range)
@@ -47,20 +51,7 @@ namespace PowerArgs.Games
 
             this.Governor.Rate = TimeSpan.FromSeconds(-1);
         }
-
-        public Projectile(Weapon w,float x, float y, float angle) : this(w)
-        {
-            this.MoveTo(x, y);
-            this.angle = angle;
-            startLocation = this.Bounds;
-        }
-
-        public Projectile(Weapon w,float x, float y, IRectangularF target) : this(w)
-        {
-            this.MoveTo(x, y);
-            this.angle = this.CalculateAngleTo(target);
-            startLocation = this.Bounds;
-        }
+ 
 
 
      

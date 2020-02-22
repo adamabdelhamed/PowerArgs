@@ -118,7 +118,17 @@ namespace PowerArgs.Cli.Physics
                 {
                     continue;
                 }
+                else if(element is IHaveMassBounds && (element as IHaveMassBounds).IsPartOfMass(e))
+                {
+                    // own mass can't obstruct itself
+                    continue;
+                }
                 else if (e is WeaponElement && (e as WeaponElement).Weapon?.Holder == element)
+                {
+                    // Characters can't hit their own weapon elements
+                    continue;
+                }
+                else if (e is WeaponElement && (e as WeaponElement).Weapon?.Holder != null && element is IHaveMassBounds && (element as IHaveMassBounds).IsPartOfMass((e as WeaponElement).Weapon?.Holder))
                 {
                     // Characters can't hit their own weapon elements
                     continue;
@@ -129,15 +139,15 @@ namespace PowerArgs.Cli.Physics
                     continue;
                 }
                 else if (e is WeaponElement && element is WeaponElement &&
-                  (e as WeaponElement).Weapon.Holder == (element as WeaponElement).Weapon.Holder)
+                  (e as WeaponElement).Weapon?.Holder == (element as WeaponElement).Weapon?.Holder)
                 {
                     if (e is Explosive || element is Explosive)
                     {
-                        if (e is WeaponElement && (e as WeaponElement).Weapon.Style == WeaponStyle.Shield)
+                        if (e is WeaponElement && (e as WeaponElement).Weapon?.Style == WeaponStyle.Shield)
                         {
                             continue;
                         }
-                        else if (e is WeaponElement && (e as WeaponElement).Weapon.Style == WeaponStyle.Shield)
+                        else if (e is WeaponElement && (e as WeaponElement).Weapon?.Style == WeaponStyle.Shield)
                         {
                             continue;
                         }
@@ -224,7 +234,7 @@ namespace PowerArgs.Cli.Physics
                     {
                         var effectiveAngle = angle % 360;
                         var testLoc = desiredLocation.MoveTowards(effectiveAngle, d);
-                        var testArea = RectangularF.Create(testLoc.Left, testLoc.Top, el.Width, el.Height);
+                        var testArea = RectangularF.Create(testLoc.Left, testLoc.Top, desiredLocation.Width, desiredLocation.Height);
                         if (obstacles.Where(o => o.Touches(testArea)).None())
                         {
                             return testLoc.TopLeft();

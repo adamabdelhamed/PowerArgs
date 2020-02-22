@@ -16,10 +16,20 @@ namespace PowerArgs.Games
         public WeaponElement(Weapon w)
         {
             this.Weapon = w;
-            if(w.Holder != null)
+            if(w?.Holder != null)
             {
                 this.MoveTo(0, 0, w.Holder.ZIndex);
             }
+        }
+    }
+
+    public class NoOpWeapon : Weapon
+    {
+        public override WeaponStyle Style => WeaponStyle.Primary;
+
+        public override void FireInternal(bool alt)
+        {
+             
         }
     }
 
@@ -27,6 +37,7 @@ namespace PowerArgs.Games
     {
         public static Event<Weapon> OnFireEmpty { get; private set; } = new Event<Weapon>();
         public static Event<Weapon> OnFire { get; private set; } = new Event<Weapon>();
+        public Event<WeaponElement> OnWeaponElementEmitted { get; private set; } = new Event<WeaponElement>();
         public SmartTrigger Trigger { get; set; }
         public const string WeaponTag = "Weapon";
         public Character Holder { get; set; }

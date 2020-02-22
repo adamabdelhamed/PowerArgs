@@ -42,6 +42,7 @@ namespace PowerArgs.Games
 
             new Force(rpgSpeed, 45.NormalizeQuantity(angle), angle);
             SpaceTime.CurrentSpaceTime.Add(rpg);
+            OnWeaponElementEmitted.Fire(rpg);
         }
 
         public void RemoteFire(MultiPlayerMessage message)

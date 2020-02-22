@@ -9,6 +9,7 @@ namespace PowerArgs.Games
 {
     public class Explosive : WeaponElement
     {
+        public const float ExplosiveProjectileSpeed = 60;
         [ThreadStatic]
         private static Lifetime explosiveWatcherLifetime;
 
@@ -16,14 +17,13 @@ namespace PowerArgs.Games
         public static Event<Explosive> OnExplode { get; private set; } = new Event<Explosive>();
 
         public float AngleIncrement { get; set; } = 5;
-        public float Range { get; set; } = 6;
+        public float Range { get; set; } = 10;
 
         public Event Exploded { get; private set; } = new Event();
         public ConsoleString ProjectilePen { get; set; }
         public Explosive(Weapon w) : base(w) 
         {
             this.AngleIncrement = 5;
-            this.Range = 5;
 
             if(explosiveWatcherLifetime == null)
             {
@@ -65,7 +65,7 @@ namespace PowerArgs.Games
                     effectiveRange = Range / 3;
                 }
 
-                var shrapnel =SpaceTime.CurrentSpaceTime.Add(new Projectile(this.Weapon,this.Left, this.Top, angle) { Range = effectiveRange });
+                var shrapnel =SpaceTime.CurrentSpaceTime.Add(new Projectile(this.Weapon,ExplosiveProjectileSpeed, angle) { Range = effectiveRange });
                 shrapnel.MoveTo(shrapnel.Left, shrapnel.Top, this.ZIndex);
                 OnProjectileAdded.Fire(shrapnel);
                 if(ProjectilePen != null)

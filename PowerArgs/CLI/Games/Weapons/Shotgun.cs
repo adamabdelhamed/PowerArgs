@@ -7,7 +7,7 @@ namespace PowerArgs.Games
     {
         public override WeaponStyle Style => WeaponStyle.Primary;
         public ConsoleString ProjectilePen { get; set; }
-
+        public float Speed { get; set; } = 70f;
         public float Range { get; set; } = 15f;
 
         public override void FireInternal(bool alt)
@@ -22,7 +22,7 @@ namespace PowerArgs.Games
             while (sprayedSoFar <= sprayAngle)
             {
                 var angle = startAngle.AddToAngle(sprayedSoFar);
-                var bullet = new Projectile(this,Holder.CenterX() - Projectile.StandardWidth / 2, Holder.CenterY() - Projectile.StandardHeight / 2, angle) { Range = Range.NormalizeQuantity(angle), PlaySoundOnImpact = true };
+                var bullet = new Projectile(this, Speed, angle) { Range = Range.NormalizeQuantity(angle), PlaySoundOnImpact = true };
                 bullet.Velocity.HitDetectionExclusions.Add(Holder);
                 Holder.Velocity.HitDetectionExclusions.Add(bullet);
                 bullet.Lifetime.OnDisposed(() =>
@@ -36,6 +36,7 @@ namespace PowerArgs.Games
                 }
 
                 bullets.Add(bullet);
+                OnWeaponElementEmitted.Fire(bullet);
                 sprayedSoFar += sprayIncrement;
             }
 

@@ -25,7 +25,7 @@ namespace PowerArgs.Games
             {
                 for (var x = 0; x < 7; x++)
                 {
-                    var matter = new NetMatter();
+                    var matter = new NetMatter(this);
 
                     var force = new Force(matter.Speed, 45f.NormalizeQuantity(CalculateAngleToTarget()), CalculateAngleToTarget());
                     var matterX = this.Holder.Left + 1 + x;
@@ -46,7 +46,7 @@ namespace PowerArgs.Games
                             {
                                 for (var newY = i.ObstacleHit.Top - 1; newY <= i.ObstacleHit.Top+ 1; newY++)
                                 {
-                                    var newMatter = new NetMatter();
+                                    var newMatter = new NetMatter(this);
                                     newMatter.MoveTo(newX, newY);
                                     matterList.Add(newMatter);
                                 }
@@ -56,6 +56,7 @@ namespace PowerArgs.Games
                             {
                                 m.Composite = matterList;
                                 SpaceTime.CurrentSpaceTime.Add(m);
+                                OnWeaponElementEmitted.Fire(m);
                             });
                         }
                     }, matter.Lifetime);
@@ -73,7 +74,7 @@ namespace PowerArgs.Games
             SpaceTime.CurrentSpaceTime.Add(matterIntegrity);
         }
 
-        public class NetMatter : SpacialElement
+        public class NetMatter : WeaponElement
         {
             internal List<NetMatter> Composite { get; set; }
 
@@ -82,7 +83,7 @@ namespace PowerArgs.Games
             private IRectangularF initialBonds;
             private TimeSpan initialTime;
 
-            public NetMatter()
+            public NetMatter(Net net) : base(net)
             {
                 Speed = new Velocity(this);
                 this.initialBonds = this.CopyBounds();

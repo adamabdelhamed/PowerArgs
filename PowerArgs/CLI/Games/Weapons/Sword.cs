@@ -24,24 +24,25 @@ namespace PowerArgs.Games
                 var newBounds = Cli.Physics.RectangularF.Create(location.Left - .5f, location.Top - .5f, 1, 1);
                 if (SpaceTime.CurrentSpaceTime.IsInBounds(newBounds))
                 {
-                    var blade = new Blade() { Holder = this.Holder };
+                    var blade = new Blade(this);
                     var holderLocation = Holder.TopLeft();
                     blade.MoveTo(newBounds.Left, newBounds.Top);
                     SpaceTime.CurrentSpaceTime.Add(blade);
                     activeBlades.Add(blade);
+                    OnWeaponElementEmitted.Fire(blade);
                 }
             }
         }
     }
 
-    public class Blade : SpacialElement
+    public class Blade : WeaponElement
     {
         public Character Holder { get; set; }
 
         private float dx;
         private float dy;
 
-        public Blade()
+        public Blade(Sword w) : base(w)
         {
             dx = Holder.Left - this.Left;
             dy = Holder.Top - this.Top;

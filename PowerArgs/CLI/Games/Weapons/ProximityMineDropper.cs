@@ -12,6 +12,7 @@ namespace PowerArgs.Games
             var mine = new ProximityMine(this) { TargetTag = TargetTag };
             PlaceMineSafe(mine, Holder, !alt);
             SpaceTime.CurrentSpaceTime.Add(mine);
+            OnWeaponElementEmitted.Fire(mine);
         }
 
         public static void PlaceMineSafe(SpacialElement mine, Character holder, bool throwElement)

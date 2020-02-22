@@ -3,14 +3,13 @@ namespace PowerArgs.Games
 {
     public class Pistol : Weapon
     {
-        public float Accelleration { get; set; } = 50;
+        public float Speed { get; set; } = 70;
 
         public ConsoleString ProjectilePen { get; set; }
         public override WeaponStyle Style => WeaponStyle.Primary;
         public override void FireInternal(bool alt)
         {
-            var bullet = new Projectile(this,Holder.CenterX() - Projectile.StandardWidth/ 2, Holder.CenterY() - Projectile.StandardHeight / 2, CalculateAngleToTarget()) { PlaySoundOnImpact = true };
-            bullet.Accelleration = Accelleration;
+            var bullet = new Projectile(this, Speed, CalculateAngleToTarget()) { PlaySoundOnImpact = true };
             bullet.Velocity.HitDetectionExclusions.Add(Holder);
             bullet.Velocity.HitDetectionExclusions.AddRange(Holder.Velocity.HitDetectionExclusions);
             bullet.Velocity.HitDetectionExclusionTypes.AddRange(Holder.Velocity.HitDetectionExclusionTypes);
@@ -23,6 +22,7 @@ namespace PowerArgs.Games
             }
 
             SpaceTime.CurrentSpaceTime.Add(bullet);
+            OnWeaponElementEmitted.Fire(bullet);
         }
     }
 }

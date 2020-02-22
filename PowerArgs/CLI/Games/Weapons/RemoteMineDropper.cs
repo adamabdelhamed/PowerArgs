@@ -12,6 +12,7 @@ namespace PowerArgs.Games
             ex.SetProperty<Character>(nameof(Holder), this.Holder);
             ProximityMineDropper.PlaceMineSafe(ex, Holder, !alt);
             SpaceTime.CurrentSpaceTime.Add(ex);
+            OnWeaponElementEmitted.Fire(ex);
         }
 
         public static bool Any(Character holder) => SpaceTime.CurrentSpaceTime.Elements
