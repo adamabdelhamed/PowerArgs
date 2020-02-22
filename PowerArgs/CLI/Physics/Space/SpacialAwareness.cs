@@ -213,6 +213,8 @@ namespace PowerArgs.Cli.Physics
             });
         }
 
+        public static IRectangularF EffectiveBounds(this IRectangularF rect) => rect is IHaveMassBounds ? (rect as IHaveMassBounds).MassBounds : rect;
+
         public static void NudgeFree(this SpacialElement el)
         {
             var loc = GetNudgeLocation(el);
@@ -224,7 +226,7 @@ namespace PowerArgs.Cli.Physics
 
         public static ILocationF GetNudgeLocation(this SpacialElement el, IRectangularF desiredLocation = null, float initialAngle = 0)
         {
-            desiredLocation = desiredLocation ?? (el is IHaveMassBounds ? (el as IHaveMassBounds).MassBounds : el);
+            desiredLocation = desiredLocation ?? el.EffectiveBounds();
             var obstacles = el.GetObstacles();
             if (obstacles.Where(o => o.Touches(desiredLocation)).Any())
             {
