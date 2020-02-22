@@ -54,7 +54,7 @@ namespace PowerArgs.Games
         public void Explode()
         {
             if (Lifetime.IsExpired) return;
-
+            this.Lifetime.Dispose();
             var shrapnelSet = new List<Projectile>();
             for (float angle = 0; angle < 360; angle += AngleIncrement)
             {
@@ -66,7 +66,7 @@ namespace PowerArgs.Games
                 }
 
                 var shrapnel =SpaceTime.CurrentSpaceTime.Add(new Projectile(this.Weapon,ExplosiveProjectileSpeed, angle) { Range = effectiveRange });
-                shrapnel.MoveTo(shrapnel.Left, shrapnel.Top, this.ZIndex);
+                shrapnel.MoveTo(this.Left, this.Top, this.ZIndex);
                 OnProjectileAdded.Fire(shrapnel);
                 if(ProjectilePen != null)
                 {
@@ -84,7 +84,6 @@ namespace PowerArgs.Games
 
             Exploded.Fire();
             OnExplode.Fire(this);
-            this.Lifetime.Dispose();
         }
     }
 

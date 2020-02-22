@@ -26,8 +26,10 @@ namespace PowerArgs.Games
             if (w?.Holder != null)
             {
                 this.MoveTo(w.Holder.CenterX()-StandardWidth/2, w.Holder.CenterY()-StandardHeight/2, w.Holder.ZIndex);
-                startLocation = w.Holder.CopyBounds();
             }
+
+            Time.CurrentTime.QueueAction("Snap bounds",() => startLocation = this.Bounds);
+
             this.Tags.Add(Weapon.WeaponTag);
             Velocity = new Velocity(this);
             Velocity.Governor.Rate = TimeSpan.FromSeconds(0);
@@ -42,7 +44,7 @@ namespace PowerArgs.Games
 
             this.SizeOrPositionChanged.SubscribeForLifetime(() =>
             {
-                if (Range > 0 && this.CalculateDistanceTo(startLocation) > Range)
+                if (startLocation != null && Range > 0 && this.CalculateDistanceTo(startLocation) > Range)
                 {
                     this.Lifetime.Dispose();
                 }
