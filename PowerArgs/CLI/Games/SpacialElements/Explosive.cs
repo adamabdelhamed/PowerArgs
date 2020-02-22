@@ -40,15 +40,6 @@ namespace PowerArgs.Games
                     }
                 }, explosiveWatcherLifetime);
             }
-
-            this.Lifetime.OnDisposed(()=>
-            {
-                if(SpaceTime.CurrentSpaceTime.Elements.WhereAs<Explosive>().None())
-                {
-                    explosiveWatcherLifetime.Dispose();
-                    explosiveWatcherLifetime = null;
-                }
-            });
         }
 
         public void Explode()
