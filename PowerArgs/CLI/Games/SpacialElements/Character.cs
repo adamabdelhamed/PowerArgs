@@ -206,12 +206,13 @@ namespace PowerArgs.Games
 
             Targeting.TargetChanged.SubscribeForLifetime((target) =>
             {
-                if (this.Target != null && this.Target.Lifetime.IsExpired == false)
-                {
-                    this.Target.SizeOrPositionChanged.Fire();
-                }
-
+                var oldTarget = this.Target;
                 this.Target = target;
+
+                if (oldTarget != null && oldTarget.Lifetime.IsExpired == false)
+                {
+                    oldTarget.SizeOrPositionChanged.Fire();
+                }
 
                 if (this.Target != null && this.Target.Lifetime.IsExpired == false)
                 {
