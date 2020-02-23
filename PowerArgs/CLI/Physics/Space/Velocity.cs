@@ -4,6 +4,10 @@ using System.Linq;
 
 namespace PowerArgs.Cli.Physics
 {
+    public interface IHaveVelocity
+    {
+        Velocity Velocity { get; }
+    }
     public class Velocity : SpacialElementFunction
     {
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();

@@ -9,7 +9,7 @@ namespace PowerArgs.Games
         public override WeaponStyle Style => WeaponStyle.Primary;
         public override void FireInternal(bool alt)
         {
-            var bullet = new Projectile(this, Speed, CalculateAngleToTarget()) { PlaySoundOnImpact = true };
+            var bullet = new Projectile(this, Speed, Holder.CalculateAngleToTarget()) { PlaySoundOnImpact = true };
             bullet.Velocity.HitDetectionExclusions.Add(Holder);
             bullet.Velocity.HitDetectionExclusions.AddRange(Holder.Velocity.HitDetectionExclusions);
             bullet.Velocity.HitDetectionExclusionTypes.AddRange(Holder.Velocity.HitDetectionExclusionTypes);

@@ -5,7 +5,7 @@ namespace PowerArgs.Games
 {
 
 
-    public class Character : SpacialElement, IObservableObject
+    public class Character : SpacialElement, IObservableObject, IHaveVelocity
     {
         public Event<float> OnMove { get; private set; } = new Event<float>();
 
@@ -30,7 +30,7 @@ namespace PowerArgs.Games
         public SpacialElement Target { get; set; }
 
 
-        public float TargetAngle => Target == null ? Velocity.Angle : this.Center().CalculateAngleTo(Target.Center());
+        public float TargetAngle => Target == null ? Velocity.Angle : CalculateAngleToTarget();
         public Velocity Velocity { get; set; }
 
 
@@ -53,6 +53,28 @@ namespace PowerArgs.Games
             Inventory = new Inventory();
             Velocity = new Velocity(this);
             this.ResizeTo(1, 1);
+        }
+
+        public float CalculateAngleToTarget()
+        {
+            var realTarget = Target is IAmMass ? (Target as IAmMass).Parent : (ISpacialElement)Target;
+
+            var angle = realTarget != null ?
+                this.EffectiveBounds().Center().CalculateAngleTo(realTarget.EffectiveBounds().Center()) :
+                Velocity.Angle;
+
+            if (this == MainCharacter.Current && MainCharacter.Current.FreeAimCursor != null)
+            {
+                angle = this.Center().CalculateAngleTo(MainCharacter.Current.FreeAimCursor.Center());
+            }
+            else if (realTarget is IHaveVelocity && (realTarget as IHaveVelocity).Velocity.Speed > 0)
+            {
+                var targetEl = realTarget as IHaveVelocity;
+                var oldAngle = angle;
+                angle = Projectile.AnticipateAngle(this, targetEl.Velocity, Inventory.PrimaryWeapon?.ProjectileSpeedHint ?? 50, oldAngle);
+            }
+
+            return angle;
         }
 
         public void MoveLeft()

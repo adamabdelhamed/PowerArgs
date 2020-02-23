@@ -35,6 +35,8 @@ namespace PowerArgs.Games
 
     public abstract class Weapon : ObservableObject, IInventoryItem
     {
+        public virtual float ProjectileSpeedHint => 50;
+
         public static Event<Weapon> OnFireEmpty { get; private set; } = new Event<Weapon>();
         public static Event<Weapon> OnFire { get; private set; } = new Event<Weapon>();
         public Event<WeaponElement> OnWeaponElementEmitted { get; private set; } = new Event<WeaponElement>();
@@ -64,19 +66,7 @@ namespace PowerArgs.Games
             AmmoAmount = -1;
         }
 
-        public float CalculateAngleToTarget()
-        {
-            var angle = Holder.Target != null ?
-                Holder.Center().CalculateAngleTo(Holder.Target.Center()) :
-                Holder.Velocity.Angle;
 
-            if (Holder == MainCharacter.Current && MainCharacter.Current.FreeAimCursor != null)
-            {
-                angle = Holder.Center().CalculateAngleTo(MainCharacter.Current.FreeAimCursor.Center());
-            };
-
-            return angle;
-        }
 
         private TimeSpan lastFireTime = TimeSpan.Zero;
 

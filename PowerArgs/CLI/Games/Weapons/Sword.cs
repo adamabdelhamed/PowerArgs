@@ -18,9 +18,9 @@ namespace PowerArgs.Games
         {
             activeBlades.ForEach(b => { if (b.Lifetime.IsExpired == false) b.Lifetime.Dispose(); });
             activeBlades.Clear();
-            for(var i = 1; i < 1+  Range.NormalizeQuantity(CalculateAngleToTarget()); i++)
+            for(var i = 1; i < 1+  Range.NormalizeQuantity(Holder.CalculateAngleToTarget()); i++)
             {
-                var location = Holder.Center().MoveTowards(CalculateAngleToTarget(), i);
+                var location = Holder.Center().MoveTowards(Holder.CalculateAngleToTarget(), i);
                 var newBounds = Cli.Physics.RectangularF.Create(location.Left - .5f, location.Top - .5f, 1, 1);
                 if (SpaceTime.CurrentSpaceTime.IsInBounds(newBounds))
                 {

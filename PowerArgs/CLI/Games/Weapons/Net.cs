@@ -27,7 +27,7 @@ namespace PowerArgs.Games
                 {
                     var matter = new NetMatter(this);
 
-                    var force = new Force(matter.Speed, 45f.NormalizeQuantity(CalculateAngleToTarget()), CalculateAngleToTarget());
+                    var force = new Force(matter.Speed, 45f.NormalizeQuantity(Holder.CalculateAngleToTarget()), Holder.CalculateAngleToTarget());
                     var matterX = this.Holder.Left + 1 + x;
                     var matterY = this.Holder.Top - 1 + y;
                     matter.MoveTo(matterX, matterY, 1);

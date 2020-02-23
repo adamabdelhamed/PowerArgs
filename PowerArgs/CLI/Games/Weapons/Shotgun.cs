@@ -12,7 +12,7 @@ namespace PowerArgs.Games
 
         public override void FireInternal(bool alt)
         {
-            var targetAngle = CalculateAngleToTarget();
+            var targetAngle = Holder.CalculateAngleToTarget();
             var sprayAngle = 30.0f;
             var sprayIncrement = 5;
             var startAngle = targetAngle.AddToAngle(-sprayAngle/2);

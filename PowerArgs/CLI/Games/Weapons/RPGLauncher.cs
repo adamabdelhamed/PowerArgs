@@ -16,7 +16,7 @@ namespace PowerArgs.Games
         public override void FireInternal(bool alt)
         {
 
-            var angle = CalculateAngleToTarget();
+            var angle = Holder.CalculateAngleToTarget();
 
             if (Holder.MultiPlayerClient != null && Holder is MainCharacter)
             {

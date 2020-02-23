@@ -5,7 +5,12 @@ using System.Linq;
 
 namespace PowerArgs.Cli.Physics
 {
-    public class SpacialElement : TimeFunction, IRectangularF
+    public interface ISpacialElement : IRectangularF
+    {
+        Lifetime Lifetime { get; }
+    }
+
+    public class SpacialElement : TimeFunction, ISpacialElement
     {
         public Event SizeOrPositionChanged { get; private set; } = new Event();
         public float Left { get; private set; }
@@ -125,10 +130,15 @@ namespace PowerArgs.Cli.Physics
         }
     }
 
-    public interface IHaveMassBounds
+    public interface IHaveMassBounds : ISpacialElement
     {
         IRectangularF MassBounds { get; }
         bool IsPartOfMass(SpacialElement other);
+    }
+
+    public interface IAmMass : ISpacialElement
+    {
+        IHaveMassBounds Parent { get; }
     }
 
     public interface IGhost
