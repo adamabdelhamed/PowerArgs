@@ -237,7 +237,7 @@ namespace PowerArgs.Cli.Physics
                         var effectiveAngle = angle % 360;
                         var testLoc = desiredLocation.MoveTowards(effectiveAngle, d);
                         var testArea = RectangularF.Create(testLoc.Left, testLoc.Top, desiredLocation.Width, desiredLocation.Height);
-                        if (obstacles.Where(o => o.Touches(testArea)).None())
+                        if (obstacles.Where(o => o.Touches(testArea)).None() && SpaceTime.CurrentSpaceTime.Bounds.Contains(testArea))
                         {
                             return testLoc.TopLeft();
                         }
