@@ -312,7 +312,7 @@ namespace PowerArgs.Cli
             {
                 for(var yd = startY; yd < maxY; yd++)
                 {
-                    if (IsInBounds(xd, yd))
+                    if (IsInScope(xd, yd))
                     {
                         pixels[xd][yd].Value = Pen;
                     }
@@ -338,7 +338,7 @@ namespace PowerArgs.Cli
             // left vertical line
             for (var yd = startY; yd < maxY; yd++)
             {
-                if (IsInBounds(startX, yd))
+                if (IsInScope(startX, yd))
                 {
                     pixels[startX][yd].Value = Pen;
                 }
@@ -347,7 +347,7 @@ namespace PowerArgs.Cli
             // right vertical line
             for (var yd = startY; yd < maxY; yd++)
             {
-                if (IsInBounds(maxX-1, yd))
+                if (IsInScope(maxX-1, yd))
                 {
                     pixels[maxX - 1][yd].Value = Pen;
                 }
@@ -357,7 +357,7 @@ namespace PowerArgs.Cli
             // top horizontal line
             for (int xd = startX; xd < maxX; xd++)
             {
-                if (IsInBounds(xd, startY))
+                if (IsInScope(xd, startY))
                 {
                     pixels[xd][startY].Value = Pen;
                 }
@@ -366,7 +366,7 @@ namespace PowerArgs.Cli
             // bottom horizontal line
             for (int xd = startX; xd < maxX; xd++)
             {
-                if (IsInBounds(xd, maxY-1))
+                if (IsInScope(xd, maxY-1))
                 {
                     pixels[xd][maxY - 1].Value = Pen;
                 }
@@ -422,7 +422,7 @@ namespace PowerArgs.Cli
         }
 
         [ThreadStatic]
-        internal static Point[] LineBuffer = new Point[10000];
+        internal static Point[] LineBuffer;
 
         /// <summary>
         /// Draw a line segment between the given points
@@ -452,6 +452,7 @@ namespace PowerArgs.Cli
 
         public static int DefineLineBuffered(int x1, int y1, int x2, int y2)
         {
+            LineBuffer = LineBuffer ??  new Point[10000];
             var ret = 0;
             if (x1 == x2)
             {
