@@ -11,37 +11,35 @@ namespace PowerArgs
     /// <summary>
     /// An effect that makes all command line output get written in a green themed, futuristic fasion.   
     /// </summary>
-    public static class MatrixMode
+    public static class SimulatedHumanOutputMode
     {
         /// <summary>
-        /// Starts MatrixMode.
+        /// Starts simulated human output mode.
         /// </summary>
-        /// <returns>An action that when invoked stops MatrixMode.</returns>
-        public static Action Start()
+        /// <returns>A lifetime that you can dispose when you want to stop the effect.</returns>
+        public static Lifetime Start()
         {
-            var writer = new MatrixWriter();
-
+            var writer = new SimulatedHumanOutputWriter();
+            var lt = new Lifetime();
             Task t = new Task(() =>
             {
                 Thread.CurrentThread.IsBackground = false;
                 writer.Loop();
             });
+            lt.OnDisposed(writer.Cancel);
             t.Start();
             Thread.Sleep(100);
-            return () =>
-            {
-                writer.Cancel();
-            };
+            return lt;
         }
     }
 
-    internal class MatrixWriter : TextWriter
+    internal class SimulatedHumanOutputWriter : TextWriter
     {
         TextWriter wrapped;
         Queue<char> chars = new Queue<char>();
         bool cancelled;
 
-        public MatrixWriter()
+        public SimulatedHumanOutputWriter()
         {
             wrapped = Console.Out;
         }

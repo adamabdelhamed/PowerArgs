@@ -260,6 +260,13 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestUnderline()
+        {
+            Assert.IsTrue("A".ToConsoleString(underlined: true)[0].IsUnderlined);
+            Assert.IsFalse("A".ToConsoleString(underlined: false)[0].IsUnderlined);
+        }
+
+        [TestMethod]
         public void TestConsoleStringEdgeCases()
         {
             ConsoleString str = ConsoleString.Empty;
@@ -328,14 +335,28 @@ namespace ArgsTests
             foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
             {
                 var method = typeof(StringEx).GetMethod("To" + color, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                Assert.AreEqual(new ConsoleString("Hello", color, color), method.Invoke(null,new object[] { "Hello", color }));
+                Assert.AreEqual(new ConsoleString("Hello", color, color), method.Invoke(null,new object[] { "Hello", color, false }));
             }
 
             foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
             {
                 ConsoleString baseString = new ConsoleString("Hello", null, null);
                 var method = typeof(ConsoleString).GetMethod("To" + color);
-                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color), method.Invoke(baseString, new object[] { color }));
+                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color), method.Invoke(baseString, new object[] { color, false }));
+            }
+
+
+            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            {
+                var method = typeof(StringEx).GetMethod("To" + color, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                Assert.AreEqual(new ConsoleString("Hello", color, color, true), method.Invoke(null, new object[] { "Hello", color, true }));
+            }
+
+            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            {
+                ConsoleString baseString = new ConsoleString("Hello", null, null);
+                var method = typeof(ConsoleString).GetMethod("To" + color);
+                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color, true), method.Invoke(baseString, new object[] { color, true }));
             }
         }
 

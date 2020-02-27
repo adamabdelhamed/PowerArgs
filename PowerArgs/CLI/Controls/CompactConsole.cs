@@ -94,7 +94,7 @@ namespace PowerArgs.Cli
                     var args = Args.Convert(tb.Value.ToString());
                     AddHistory(tb.Value.ToString());
                     var action = Args.ParseAction(def, args);
-                    (tb.Parent as ConsolePanel).Controls.Remove(tb);
+                    tb.Parent.Controls.Remove(tb);
                     output = await Run(action);
                 }
                 catch (Exception ex)

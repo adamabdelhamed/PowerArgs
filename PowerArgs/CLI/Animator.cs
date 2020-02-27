@@ -159,12 +159,13 @@ namespace PowerArgs.Cli
 
                         await AnimateAsyncInternal(options);
 
-                        if (options.Loop != null && options.AutoReverseDelay > 0)
+                        if (options.AutoReverseDelay > 0)
                         {
                             await options.DelayProvider.DelayAsync(TimeSpan.FromMilliseconds(options.AutoReverseDelay));
-                            options.From = originalFrom;
-                            options.To = originalTo;
                         }
+
+                        options.From = originalFrom;
+                        options.To = originalTo;
                     }
                 }
             }

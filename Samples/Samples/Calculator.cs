@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace HelloWorld.Samples
+namespace Samples
 {
 
     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), TabCompletion(typeof(ItemNameCompletion), REPL = true, HistoryToSave = 10)]

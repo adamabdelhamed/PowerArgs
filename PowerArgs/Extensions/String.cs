@@ -15,7 +15,7 @@ namespace PowerArgs
         /// <param name="fg">the foreground color to apply to the result</param>
         /// <param name="bg">the background color to apply to the result</param>
         /// <returns>a console string</returns>
-        public static ConsoleString ToConsoleString(this string s, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public static ConsoleString ToConsoleString(this string s, ConsoleColor? fg = null, ConsoleColor? bg = null, bool underlined = false)
         {
             if (s == null)
             {
@@ -23,7 +23,7 @@ namespace PowerArgs
             }
             else
             {
-                return new ConsoleString(s, fg, bg);
+                return new ConsoleString(s, fg, bg, underlined);
             }
         }
 
@@ -33,9 +33,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToBlack(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToBlack(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.Black, bg);
+            return new ConsoleString(s, ConsoleColor.Black, bg, underlined);
         }
 
         /// <summary>
@@ -44,9 +44,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToDarkBlue(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToDarkBlue(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.DarkBlue, bg);
+            return new ConsoleString(s, ConsoleColor.DarkBlue, bg, underlined);
         }
 
         /// <summary>
@@ -55,9 +55,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToDarkGreen(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToDarkGreen(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.DarkGreen, bg);
+            return new ConsoleString(s, ConsoleColor.DarkGreen, bg, underlined);
         }
 
         /// <summary>
@@ -66,9 +66,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToDarkCyan(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToDarkCyan(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.DarkCyan, bg);
+            return new ConsoleString(s, ConsoleColor.DarkCyan, bg, underlined);
         }
 
         /// <summary>
@@ -77,9 +77,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToDarkRed(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToDarkRed(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.DarkRed, bg);
+            return new ConsoleString(s, ConsoleColor.DarkRed, bg, underlined);
         }
 
         /// <summary>
@@ -88,9 +88,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToDarkMagenta(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToDarkMagenta(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.DarkMagenta, bg);
+            return new ConsoleString(s, ConsoleColor.DarkMagenta, bg, underlined);
         }
 
         /// <summary>
@@ -99,9 +99,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToDarkYellow(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToDarkYellow(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.DarkYellow, bg);
+            return new ConsoleString(s, ConsoleColor.DarkYellow, bg, underlined);
         }
 
         /// <summary>
@@ -110,9 +110,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToGray(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToGray(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.Gray, bg);
+            return new ConsoleString(s, ConsoleColor.Gray, bg, underlined);
         }
 
         /// <summary>
@@ -121,9 +121,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToDarkGray(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToDarkGray(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.DarkGray, bg);
+            return new ConsoleString(s, ConsoleColor.DarkGray, bg, underlined);
         }
 
         /// <summary>
@@ -132,9 +132,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToBlue(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToBlue(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.Blue, bg);
+            return new ConsoleString(s, ConsoleColor.Blue, bg, underlined);
         }
 
         /// <summary>
@@ -143,9 +143,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToGreen(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToGreen(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.Green, bg);
+            return new ConsoleString(s, ConsoleColor.Green, bg, underlined);
         }
 
         /// <summary>
@@ -154,9 +154,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToCyan(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToCyan(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.Cyan, bg);
+            return new ConsoleString(s, ConsoleColor.Cyan, bg, underlined);
         }
 
         /// <summary>
@@ -165,9 +165,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToRed(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToRed(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.Red, bg);
+            return new ConsoleString(s, ConsoleColor.Red, bg, underlined);
         }
 
         /// <summary>
@@ -176,9 +176,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToMagenta(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToMagenta(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.Magenta, bg);
+            return new ConsoleString(s, ConsoleColor.Magenta, bg, underlined);
         }
 
         /// <summary>
@@ -187,9 +187,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToYellow(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToYellow(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.Yellow, bg);
+            return new ConsoleString(s, ConsoleColor.Yellow, bg, underlined);
         }
 
         /// <summary>
@@ -198,9 +198,9 @@ namespace PowerArgs
         /// <param name="s">the string to use to create the result</param>
         /// <param name="bg">The new background color for all characters or null to use the console's default</param>
         /// <returns>a new console string with the desired color attributes</returns>
-        public static ConsoleString ToWhite(this string s, ConsoleColor? bg = null)
+        public static ConsoleString ToWhite(this string s, ConsoleColor? bg = null, bool underlined = false)
         {
-            return new ConsoleString(s, ConsoleColor.White, bg);
+            return new ConsoleString(s, ConsoleColor.White, bg, underlined);
         }
     }
 }

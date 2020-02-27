@@ -217,8 +217,8 @@ namespace PowerArgs.Cli
                     return options.YMinOverride.Value;
                 }
 
-                var trueMin = GetMinValueAcrossSeries(options.Data, s => s.Points.Count == 0 ? double.MaxValue : s.Points.Select(p => p.Y).Min());
-                var trueMax = GetMaxValueAcrossSeries(options.Data, s => s.Points.Count == 0 ? double.MinValue : s.Points.Select(p => p.Y).Max());
+                var trueMin = GetMinValueAcrossSeries(options.Data, s => s.Points.Count == 0 ? double.MinValue : s.Points.Select(p => p.Y).Min());
+                var trueMax = GetMaxValueAcrossSeries(options.Data, s => s.Points.Count == 0 ? double.MaxValue : s.Points.Select(p => p.Y).Max());
                 PadZeroRangeIfNeeded(ref trueMin, ref trueMax);
                 var trueRange = trueMax - trueMin;
                 var padding = trueRange * options.YAxisRangePadding;
@@ -242,8 +242,8 @@ namespace PowerArgs.Cli
                     return options.XMaxOverride.Value;
                 }
 
-                var trueMin = GetMinValueAcrossSeries(options.Data, s => s.Points.Count == 0 ? double.MaxValue : s.Points.Select(p => p.X).Min());
-                var trueMax = GetMaxValueAcrossSeries(options.Data, s => s.Points.Count == 0 ? double.MinValue : s.Points.Select(p => p.X).Max());
+                var trueMin = GetMinValueAcrossSeries(options.Data, s => s.Points.Count == 0 ? double.MinValue : s.Points.Select(p => p.X).Min());
+                var trueMax = GetMaxValueAcrossSeries(options.Data, s => s.Points.Count == 0 ? double.MaxValue : s.Points.Select(p => p.X).Max());
                 PadZeroRangeIfNeeded(ref trueMin, ref trueMax);
                 var trueRange = trueMax - trueMin;
                 var padding = trueRange * options.XAxisRangePadding;
@@ -318,15 +318,25 @@ namespace PowerArgs.Cli
             chartTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = options.Title }).CenterHorizontally().DockToTop(padding: 2);
             seriesTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = defaultSeriesTitle }).CenterHorizontally().DockToTop(padding: 3);
 
-            this.AddedToVisualTree.SubscribeOnce(() =>
+            this.CanFocus = true;
+            Lifetime focusLt = null;
+            this.Focused.SubscribeForLifetime(() =>
             {
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.UpArrow, null, HandleUpArrow, this);
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.DownArrow, null, HandleDownArrow, this);
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.LeftArrow, null, HandleLeftArrow, this);
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.RightArrow, null, HandleRightArrow, this);
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Home, null, HandleHomeKey, this);
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.End, null, HandleEndKey, this);
-            });
+                focusLt = new Lifetime();
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.UpArrow, null, HandleUpArrow, focusLt);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.DownArrow, null, HandleDownArrow, focusLt);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.LeftArrow, null, HandleLeftArrow, focusLt);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.RightArrow, null, HandleRightArrow, focusLt);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Home, null, HandleHomeKey, focusLt);
+                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.End, null, HandleEndKey, focusLt);
+            }, this);
+
+            this.Unfocused.SubscribeForLifetime(() =>
+            {
+                focusLt?.Dispose();
+                focusLt = null;
+            }, this);
+ 
         }
 
         /// <summary>
@@ -560,8 +570,10 @@ namespace PowerArgs.Cli
                             nextControl.X = newX2;
                             nextControl.Y = newY2;
 
-                            foreach (var point in ConsoleBitmap.DefineLine(control.X, control.Y, nextControl.X, nextControl.Y))
+                            var len = ConsoleBitmap.DefineLineBuffered(control.X, control.Y, nextControl.X, nextControl.Y);
+                            for(var j = 0; j < len; j++)
                             {
+                                var point = ConsoleBitmap.LineBuffer[j];
                                 var line = new BarOrLineControl()
                                 {
                                     X = point.X,

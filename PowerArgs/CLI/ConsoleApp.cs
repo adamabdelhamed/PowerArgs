@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
@@ -116,6 +117,7 @@ namespace PowerArgs.Cli
             LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, this);
             LayoutRoot.Controls.Removed.SubscribeForLifetime(ControlRemovedFromVisualTree, this);
             WindowResized.SubscribeForLifetime(HandleDebouncedResize, this);
+            FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.F12, null, ToggleDevMode, this);
         }
 
         /// <summary>
@@ -191,8 +193,17 @@ namespace PowerArgs.Cli
 
             if(AutoFillOnConsoleResize)
             {
-                Bitmap.Resize(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
-                this.LayoutRoot.Size = new Size(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
+                if (devModeLifetime != null)
+                {
+                    Bitmap.Resize(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
+                    this.LayoutRoot.Size = new Size(Bitmap.Console.BufferWidth-40, Bitmap.Console.WindowHeight - 1);
+                    devPanel.Size = new Size(40, this.LayoutRoot.Height);
+                }
+                else
+                {
+                    Bitmap.Resize(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
+                    this.LayoutRoot.Size = new Size(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
+                }
             }
 
             Paint();
@@ -212,6 +223,13 @@ namespace PowerArgs.Cli
         private void ControlAddedToVisualTree(ConsoleControl c)
         {
             c.Application = this;
+            c.OnDisposed(() =>
+            {
+                if(c.Application == this && c.Parent != null && c.Parent.Application == this)
+                {
+                    c.Parent.Controls.Remove(c);
+                }
+            });
 
             if (c is ConsolePanel)
             {
@@ -258,7 +276,10 @@ namespace PowerArgs.Cli
             c.RemovedFromVisualTreeInternal();
             c.Application = null;
             ControlRemoved.Fire(c);
-            c.Dispose();
+            if (c.IsExpired == false && c.IsExpiring == false)
+            {
+                c.Dispose();
+            }
             return focusChanged;
         }
 
@@ -311,15 +332,58 @@ namespace PowerArgs.Cli
             Dispose();
         }
 
+        private ConsoleCharacter defaultPen = new ConsoleCharacter(' ', null, DefaultColors.BackgroundColor);
         private void PaintInternal()
         {
 
-            Bitmap.Pen = new ConsoleCharacter(' ', null, DefaultColors.BackgroundColor);
+            Bitmap.Pen = defaultPen;
             Bitmap.FillRect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
-                LayoutRoot.Paint(Bitmap);
-
+            LayoutRoot.Paint(Bitmap);
+            if(devModeLifetime != null && devModeLifetime.IsExpired == false)
+            {
+                Bitmap.Scope = new Rectangle(LayoutRoot.Width, 0, devPanel.Width, LayoutRoot.Height);
+                devPanel.Paint(Bitmap);
+                Bitmap.Scope = new Rectangle(0, 0, LayoutRoot.Width + devPanel.Width, LayoutRoot.Height);
+            }
             Recorder?.WriteFrame(Bitmap);
             Bitmap.Paint();
+        }
+
+        private Lifetime devModeLifetime;
+        private StackPanel devPanel;
+        private void ToggleDevMode()
+        {
+            if (devModeLifetime == null)
+            {
+                devModeLifetime = new Lifetime();
+                this.LayoutRoot.Size = new Size(this.LayoutRoot.Width - 40, this.LayoutRoot.Height);
+                devPanel = new StackPanel() { Orientation = Orientation.Vertical, Background = ConsoleColor.Gray, X = this.LayoutRoot.Width, Width = 40, Height = this.LayoutRoot.Height };
+                devPanel.Add(new ConsolePanel() { Background = devPanel.Background, Height = 1 }).FillHorizontally();
+                devModeLifetime.OnDisposed(() => this.LayoutRoot.Size = new Size(this.LayoutRoot.Width + 40, this.LayoutRoot.Height));
+                devPanel.Application = this;
+
+                FocusManager.Push();
+                FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.F12, null, ToggleDevMode, devModeLifetime);
+                devModeLifetime.OnDisposed(FocusManager.Pop);
+
+                var paintsPerSecondLabel = devPanel.Add(new Label() { Text = $"Paints per second: {PaintRequestsProcessedPerSecond}".ToBlack(ConsoleColor.Gray), }).DockToLeft(padding: 3);
+
+                QueueAction(async () =>
+                {
+                    while(devModeLifetime != null && devModeLifetime.IsExpired == false)
+                    {
+                        await Task.Delay(1000);
+                        paintsPerSecondLabel.Text = $"Paints per second: {PaintRequestsProcessedPerSecond}".ToBlack(ConsoleColor.Gray);
+                    }
+                });
+
+            }
+            else
+            {
+                devModeLifetime.Dispose();
+                devModeLifetime = null;
+                devPanel.Dispose();
+            }
         }
     }
 }

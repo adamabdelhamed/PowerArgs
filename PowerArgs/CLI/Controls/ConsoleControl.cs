@@ -63,7 +63,7 @@ namespace PowerArgs.Cli
         /// Gets a reference to this control's parent in the visual tree.  It will be null if this control is not in the visual tree 
         /// and also if this control is the root of the visual tree.
         /// </summary>
-        public ConsoleControl Parent { get { return Get<ConsoleControl>(); } internal set { Set(value); } }
+        public ConsolePanel Parent { get { return Get<ConsolePanel>(); } internal set { Set(value); } }
 
         /// <summary>
         /// Gets or sets the background color

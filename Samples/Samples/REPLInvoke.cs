@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace HelloWorld.Samples
+namespace Samples
 {
     /*
      * This sample shows how you can easily provide a REPL (Read Eval Print Loop) experience for

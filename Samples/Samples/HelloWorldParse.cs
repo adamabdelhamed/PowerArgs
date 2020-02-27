@@ -1,7 +1,7 @@
 ﻿using PowerArgs;
 using System;
 
-namespace HelloWorld.Samples
+namespace Samples
 {
     [TabCompletion] // This is useful for the sample, but you don't need it in your program (unless you want it).
     public class HelloWorldParseArgs

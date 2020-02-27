@@ -41,6 +41,11 @@ namespace PowerArgs
                 return _manager == null;
             }
         }
+
+        /// <summary>
+        /// returns true if the lifetime's Dispose() method is currently running, false otherwise
+        /// </summary>
+        public bool IsExpiring { get; private set; }
         
         /// <summary>
         /// Creates a new lifetime
@@ -195,11 +200,19 @@ namespace PowerArgs
         {
             if (!IsExpired)
             {
-                foreach (var item in _manager.ManagedItems)
+                IsExpiring = true;
+                try
                 {
-                    item.Dispose();
+                    foreach (var item in _manager.ManagedItems)
+                    {
+                        item.Dispose();
+                    }
+                    _manager = null;
                 }
-                _manager = null;
+                finally
+                {
+                    IsExpiring = false;
+                }
             }
         }
     }

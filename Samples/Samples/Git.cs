@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace HelloWorld.Samples
+namespace Samples
 {
     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), ArgDescription("A sample that uses the familiar git command line tool to show how to implement programs with multiple actions."), TabCompletion(ExeName="git", HighlighterConfiguratorType=typeof(CustomHighlighter)), /*[TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
     public class GitExampleArgs

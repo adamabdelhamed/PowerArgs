@@ -2,11 +2,19 @@
 
 namespace PowerArgs.Cli
 {
-    public class MatrixPanel : ConsolePanel
+    public class FallingCharactersPanel : ConsolePanel
     {
         private static Random r = new Random();
-        public MatrixPanel()
+
+        private ConsoleColor primaryColor;
+        private ConsoleColor accentColor;
+        private ConsoleColor bgColor;
+
+        public FallingCharactersPanel(ConsoleColor primaryColor, ConsoleColor accentColor, ConsoleColor bgColor)
         {
+            this.primaryColor = primaryColor;
+            this.accentColor = accentColor;
+            this.bgColor = bgColor;
             this.AddedToVisualTree.SubscribeForLifetime(Added, this); 
         }
 
@@ -19,8 +27,8 @@ namespace PowerArgs.Cli
                 {
                     CanFocus = false,
                     Value = new ConsoleCharacter((char)r.Next((int)'a', (int)'z'), 
-                    foregroundColor: fore ? ConsoleColor.Green : ConsoleColor.Black, 
-                    backgroundColor: fore ? ConsoleColor.Black : (r.NextDouble() < .5 ? ConsoleColor.Green : ConsoleColor.DarkGreen)),
+                    foregroundColor: fore ? primaryColor : bgColor, 
+                    backgroundColor: fore ? bgColor : (r.NextDouble() < .5 ? primaryColor : accentColor)),
                     X = r.Next(0, Width)
                 });
 

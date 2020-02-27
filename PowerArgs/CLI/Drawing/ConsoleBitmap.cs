@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.CommandLine.Rendering;
 using System.IO;
-using System.Linq;
 
 namespace PowerArgs.Cli
 {
@@ -11,6 +11,48 @@ namespace PowerArgs.Cli
     /// </summary>
     public class ConsoleBitmap
     {
+
+        public static readonly RgbColor[] ColorMap = new RgbColor[]
+        {
+            new RgbColor(0,0,0) ,      // Black = 0
+            new RgbColor(0,0,139) ,      // DarkBlue = 1
+            new RgbColor(0,139,0) ,      // DarkGreen = 2
+            new RgbColor(0,139,139) ,      // DarkCyan = 3
+            new RgbColor(139,0,0) ,      // DarkRed = 4
+            new RgbColor(139,0,139) ,      // DarkMagenta = 5
+            new RgbColor(204,204,0) ,      // DarkYellow = 6
+            new RgbColor(200,200,200) ,      // Gray = 7
+            new RgbColor(128,128,128) ,      // DarkGray = 8
+            new RgbColor(0,0,255) ,      // Blue = 9
+            new RgbColor(0,255,0) ,      // Green = 10
+            new RgbColor(0,255,255) ,      // Cyan = 11
+            new RgbColor(255,0,0) ,      // Red = 12
+            new RgbColor(255,0,255) ,      // Magenta = 13
+            new RgbColor(255,255,0) ,      // Yellow = 14
+            new RgbColor(255,255,255) ,      // White = 15
+        };
+
+        public static readonly Dictionary<RgbColor, ConsoleColor> ReverseColorMap = new Dictionary<RgbColor, ConsoleColor>
+       {
+            { new RgbColor(0,0,0) ,  ConsoleColor.Black },    // Black = 0
+            { new RgbColor(0,0,139) , ConsoleColor.DarkBlue },     // DarkBlue = 1
+            { new RgbColor(0,139,0) ,  ConsoleColor.DarkGreen },    // DarkGreen = 2
+           {  new RgbColor(0,139,139) ,   ConsoleColor.DarkCyan },   // DarkCyan = 3
+            { new RgbColor(139,0,0) ,    ConsoleColor.DarkRed },  // DarkRed = 4
+            { new RgbColor(139,0,139) ,    ConsoleColor.DarkMagenta },  // DarkMagenta = 5
+           {  new RgbColor(204,204,0) ,   ConsoleColor.DarkYellow },   // DarkYellow = 6
+            { new RgbColor(200,200,200) ,   ConsoleColor.Gray },  // Gray = 7
+         {    new RgbColor(128,128,128) ,    ConsoleColor.DarkGray },  // DarkGray = 8
+          {   new RgbColor(0,0,255) ,    ConsoleColor.Blue },  // Blue = 9
+         {    new RgbColor(0,255,0) ,   ConsoleColor.Green },   // Green = 10
+          {   new RgbColor(0,255,255) ,  ConsoleColor.Cyan },    // Cyan = 11
+          {   new RgbColor(255,0,0) ,    ConsoleColor.Red },  // Red = 12
+          {   new RgbColor(255,0,255) ,   ConsoleColor.Magenta },   // Magenta = 13
+          {   new RgbColor(255,255,0) ,    ConsoleColor.Yellow },  // Yellow = 14
+          {   new RgbColor(255,255,255) ,  ConsoleColor.White },    // White = 15
+       };
+
+
         private const double DrawPrecision = .25;
 
 
@@ -262,9 +304,19 @@ namespace PowerArgs.Cli
         /// <param name="h">the height of the rectangle</param>
         public void FillRect(int x, int y, int w, int h)
         {
-            for (int xd = x; xd <= x + w; xd++)
+            var startX = Scope.X + x;
+            var maxX = startX + w;
+            var startY = Scope.Y + y;
+            var maxY = startY + h;
+            for (int xd = startX; xd < maxX; xd++)
             {
-                DrawLine(xd, y, xd, y + h);
+                for(var yd = startY; yd < maxY; yd++)
+                {
+                    if (IsInBounds(xd, yd))
+                    {
+                        pixels[xd][yd].Value = Pen;
+                    }
+                }
             }
         }
 
@@ -278,10 +330,47 @@ namespace PowerArgs.Cli
         /// <param name="h">the height of the rectangle</param>
         public void DrawRect(int x, int y, int w, int h)
         {
-            DrawLine(x, y, x, y + h);                       // Left, vertical line
-            DrawLine(x + w - 1, y, x + w - 1, y + h);       // Right, vertical line
-            DrawLine(x, y, x + w, y);                       // Top, horizontal line
-            DrawLine(x, y + h - 1, x + w, y + h - 1);       // Bottom, horizontal line
+            var startX = Scope.X + x;
+            var maxX = startX + w;
+            var startY = Scope.Y + y;
+            var maxY = startY + h;
+            
+            // left vertical line
+            for (var yd = startY; yd < maxY; yd++)
+            {
+                if (IsInBounds(startX, yd))
+                {
+                    pixels[startX][yd].Value = Pen;
+                }
+            }
+
+            // right vertical line
+            for (var yd = startY; yd < maxY; yd++)
+            {
+                if (IsInBounds(maxX-1, yd))
+                {
+                    pixels[maxX - 1][yd].Value = Pen;
+                }
+            }
+
+
+            // top horizontal line
+            for (int xd = startX; xd < maxX; xd++)
+            {
+                if (IsInBounds(xd, startY))
+                {
+                    pixels[xd][startY].Value = Pen;
+                }
+            }
+
+            // bottom horizontal line
+            for (int xd = startX; xd < maxX; xd++)
+            {
+                if (IsInBounds(xd, maxY-1))
+                {
+                    pixels[xd][maxY - 1].Value = Pen;
+                }
+            }
         }
 
         /// <summary>
@@ -332,6 +421,9 @@ namespace PowerArgs.Cli
             }
         }
 
+        [ThreadStatic]
+        internal static Point[] LineBuffer = new Point[10000];
+
         /// <summary>
         /// Draw a line segment between the given points
         /// </summary>
@@ -346,9 +438,11 @@ namespace PowerArgs.Cli
 
             x2 = Scope.X + x2;
             y2 = Scope.Y + y2;
-
-            foreach (var point in DefineLine(x1, y1, x2, y2))
+            var len = DefineLineBuffered(x1, y1, x2, y2);
+            Point point;
+            for(var i = 0; i < len; i++)
             {
+                point = LineBuffer[i];
                 if (IsInScope(point.X, point.Y))
                 {
                     pixels[point.X][point.Y].Value = Pen;
@@ -356,24 +450,16 @@ namespace PowerArgs.Cli
             }
         }
 
-        /// <summary>
-        /// Gets the points that would represent a line between the two given points
-        /// </summary>
-        /// <param name="x1">the x coordinate of the first point</param>
-        /// <param name="y1">the y coordinate of the first point</param>
-        /// <param name="x2">the x coordinate of the second point</param>
-        /// <param name="y2">the y coordinate of the second point</param>
-        /// <returns></returns>
-        public static List<Point> DefineLine(int x1, int y1, int x2, int y2)
+        public static int DefineLineBuffered(int x1, int y1, int x2, int y2)
         {
-            var ret = new List<Point>();
+            var ret = 0;
             if (x1 == x2)
             {
                 int yMin = y1 >= y2 ? y2 : y1;
                 int yMax = y1 >= y2 ? y1 : y2;
                 for (int y = yMin; y < yMax; y++)
                 {
-                    ret.Add(new Point(x1, y));
+                    LineBuffer[ret++] = new Point(x1, y);
                 }
             }
             else if (y1 == y2)
@@ -382,7 +468,7 @@ namespace PowerArgs.Cli
                 int xMax = x1 >= x2 ? x1 : x2;
                 for (int x = xMin; x < xMax; x++)
                 {
-                    ret.Add(new Point(x, y1));
+                    LineBuffer[ret++] = new Point(x, y1);
                 }
             }
             else
@@ -403,7 +489,7 @@ namespace PowerArgs.Cli
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
-                            ret.Add(p);
+                            LineBuffer[ret++] = p;
                             last = p;
                         }
                     }
@@ -416,7 +502,7 @@ namespace PowerArgs.Cli
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
-                            ret.Add(p);
+                            LineBuffer[ret++] = p;
                             last = p;
                         }
                     }
@@ -431,7 +517,7 @@ namespace PowerArgs.Cli
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
-                            ret.Add(p);
+                            LineBuffer[ret++] = p;
                             last = p;
                         }
                     }
@@ -444,7 +530,7 @@ namespace PowerArgs.Cli
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
-                            ret.Add(p);
+                            LineBuffer[ret++] = p;
                             last = p;
                         }
                     }
@@ -474,14 +560,34 @@ namespace PowerArgs.Cli
 
         private class Chunk
         {
-            public List<ConsoleCharacter> Characters { get; set; } = new List<ConsoleCharacter>();
-            public bool HasChanged { get; set; }
+            public ConsoleColor FG;
+            public ConsoleColor BG;
+            public bool HasChanged;
+            public short Length;
+            private char[] buffer;
+            public bool Underlined;
+            public Chunk(int maxWidth) => buffer = new char[maxWidth];
+            public void Add(char c) => buffer[Length++] = c;
+            public override string ToString() => new string(buffer, 0, Length);
+        }
+ 
+
+        public void Paint()
+        {
+            if (ConsoleProvider.Renderer != null)
+            {
+                PaintNew();
+            }
+            else
+            {
+                PaintOld();
+            }
         }
 
         /// <summary>
         /// Paints this image to the current Console
         /// </summary>
-        public void Paint()
+        public void PaintOld()
         {
             if (Console.WindowHeight == 0) return;
 
@@ -495,52 +601,63 @@ namespace PowerArgs.Cli
             }
             try
             {
-                var currentChunk = new Chunk();
+                Chunk currentChunk = null;
                 var chunksOnLine = new List<Chunk>();
+                ConsolePixel pixel;
+                char val;
+                ConsoleColor fg;
+                ConsoleColor bg;
+                bool pixelChanged;
                 for (int y = Scope.Y; y < Scope.Y + Scope.Height; y++)
                 {
                     var changeOnLine = false;
                     for (int x = Scope.X; x < Scope.X + Scope.Width; x++)
                     {
-                        var pixel = pixels[x][y];
-                        changeOnLine = changeOnLine || pixel.HasChanged;
-                        var val = pixel.Value.HasValue ? pixel.Value.Value.Value : ' ';
-                        var fg = pixel.Value.HasValue ? pixel.Value.Value.ForegroundColor : ConsoleString.DefaultForegroundColor;
-                        var bg = pixel.Value.HasValue ? pixel.Value.Value.BackgroundColor : ConsoleString.DefaultBackgroundColor;
-                        var character = pixel.Value.HasValue ? pixel.Value.Value : new ConsoleCharacter(val, fg, bg);
-                        if (currentChunk.Characters.Count == 0)
+                        pixel = pixels[x][y];
+                        pixelChanged = pixel.HasChanged;
+                        changeOnLine = changeOnLine || pixelChanged;
+                        val = pixel.Value.HasValue ? pixel.Value.Value.Value : ' ';
+                        fg = pixel.Value.HasValue ? pixel.Value.Value.ForegroundColor : ConsoleString.DefaultForegroundColor;
+                        bg = pixel.Value.HasValue ? pixel.Value.Value.BackgroundColor : ConsoleString.DefaultBackgroundColor;
+                        if (currentChunk == null)
                         {
                             // first pixel always gets added to the current empty chunk
-                            currentChunk.HasChanged = pixel.HasChanged;
-                            currentChunk.Characters.Add(character);
+                            currentChunk = new Chunk(Scope.Width);
+                            currentChunk.FG = fg;
+                            currentChunk.BG = bg;
+                            currentChunk.HasChanged = pixelChanged;
+                            currentChunk.Add(val);
                         }
-                        else if (currentChunk.HasChanged == false && pixel.HasChanged == false)
+                        else if (currentChunk.HasChanged == false && pixelChanged == false)
                         {
                             // characters that have not changed get chunked even if their styles differ
-                            currentChunk.Characters.Add(character);
+                            currentChunk.Add(val);
                         }
-                        else if (currentChunk.HasChanged && pixel.HasChanged && fg == currentChunk.Characters[0].ForegroundColor && bg == currentChunk.Characters[0].BackgroundColor)
+                        else if (currentChunk.HasChanged && pixelChanged && fg == currentChunk.FG && bg == currentChunk.BG)
                         {
                             // characters that have changed only get chunked if their styles match to minimize the number of writes
-                            currentChunk.Characters.Add(character);
+                            currentChunk.Add(val);
                         }
                         else
                         {
                             // either the styles of consecutive changing characters differ or we've gone from a non changed character to a changed one
                             // in either case we end the current chunk and start a new one
                             chunksOnLine.Add(currentChunk);
-                            currentChunk = new Chunk();
-                            currentChunk.HasChanged = pixel.HasChanged;
-                            currentChunk.Characters.Add(character);
+                            currentChunk = new Chunk(Scope.Width);
+                            currentChunk.FG = fg;
+                            currentChunk.BG = bg;
+                            currentChunk.HasChanged = pixelChanged;
+                            currentChunk.Add(val);
                         }
-                        pixel.Sync();
+                        pixel.LastDrawnValue = pixel.Value;
                     }
 
-                    if (currentChunk.Characters.Count > 0)
+                    if (currentChunk.Length > 0)
                     {
                         chunksOnLine.Add(currentChunk);
-                        currentChunk = new Chunk();
                     }
+
+                    currentChunk = null;
 
                     if (changeOnLine)
                     {
@@ -558,15 +675,15 @@ namespace PowerArgs.Cli
                                     leftChanged = false;
                                 }
 
-                                Console.ForegroundColor = chunk.Characters[0].ForegroundColor;
-                                Console.BackgroundColor = chunk.Characters[0].BackgroundColor;
-                                Console.Write((string)(new ConsoleString(chunk.Characters).StringValue));
-                                left += chunk.Characters.Count;
+                                Console.ForegroundColor = chunk.FG;
+                                Console.BackgroundColor = chunk.BG;
+                                Console.Write(chunk.ToString());
+                                left += chunk.Length;
                                 changed = true;
                             }
                             else
                             {
-                                left += chunk.Characters.Count;
+                                left += chunk.Length;
                                 leftChanged = true;
                             }
                         }
@@ -585,12 +702,156 @@ namespace PowerArgs.Cli
             catch(IOException)
             {
                 Invalidate();
-                Paint();
+                PaintOld();
             }
             catch (ArgumentOutOfRangeException)
             {
                 Invalidate();
-                Paint();
+                PaintOld();
+            }
+        }
+
+ 
+        public void PaintNew()
+        {
+            if (Console.WindowHeight == 0) return;
+             
+            if (lastBufferWidth != this.Console.BufferWidth)
+            {
+                lastBufferWidth = this.Console.BufferWidth;
+                Invalidate();
+                this.Console.Clear();
+            }
+       
+            try
+            {
+                Chunk currentChunk = null;
+                var chunksOnLine = new List<Chunk>();
+                char val;
+                ConsoleColor fg;
+                ConsoleColor bg;
+                bool underlined;
+                ConsolePixel pixel;
+                bool changeOnLine;
+                bool pixelChanged;
+                for (int y = Scope.Y; y < Scope.Y + Scope.Height; y++)
+                {
+                    changeOnLine = false;
+                    for (int x = Scope.X; x < Scope.X + Scope.Width; x++)
+                    {
+                        pixel = pixels[x][y];
+                        pixelChanged = pixel.HasChanged;
+                        changeOnLine = changeOnLine || pixelChanged;
+                        
+                        if(pixel.Value.HasValue)
+                        {
+                            val = pixel.Value.Value.Value;
+                            fg = pixel.Value.Value.ForegroundColor;
+                            bg = pixel.Value.Value.BackgroundColor;
+                            underlined = pixel.Value.Value.IsUnderlined;
+                        }
+                        else
+                        {
+                            val = ' ';
+                            fg = ConsoleString.DefaultForegroundColor;
+                            bg = ConsoleString.DefaultBackgroundColor;
+                            underlined = false;
+                        }
+
+                        if (currentChunk == null)
+                        {
+                            // first pixel always gets added to the current empty chunk
+                            currentChunk = new Chunk(Scope.Width);
+                            currentChunk.FG = fg;
+                            currentChunk.BG = bg;
+                            currentChunk.Underlined = underlined;
+                            currentChunk.HasChanged = pixelChanged;
+                            currentChunk.Add(val);
+                        }
+                        else if (currentChunk.HasChanged == false && pixelChanged == false)
+                        {
+                            // characters that have not changed get chunked even if their styles differ
+                            currentChunk.Add(val);
+                        }
+                        else if (currentChunk.HasChanged && pixelChanged && fg == currentChunk.FG && bg == currentChunk.BG && underlined == currentChunk.Underlined)
+                        {
+                            // characters that have changed only get chunked if their styles match to minimize the number of writes
+                            currentChunk.Add(val);
+                        }
+                        else
+                        {
+                            chunksOnLine.Add(currentChunk);
+                            currentChunk = new Chunk(Scope.Width);
+                            currentChunk.FG = fg;
+                            currentChunk.BG = bg;
+                            currentChunk.Underlined = underlined;
+                            currentChunk.HasChanged = pixelChanged;
+                            currentChunk.Add(val);
+                        }
+                        pixel.LastDrawnValue = pixel.Value;
+                    }
+
+                    if (currentChunk.Length> 0)
+                    {
+                        chunksOnLine.Add(currentChunk);
+                    }
+
+                    currentChunk = null;
+
+                    if (changeOnLine)
+                    {
+                        var left = Scope.X;
+                        for (var i = 0; i < chunksOnLine.Count; i++)
+                        {
+                            var chunk = chunksOnLine[i];
+                            if (chunk.HasChanged)
+                            {
+                                Span[] children;
+                                if(chunk.Underlined)
+                                {
+                                    children = new Span[]
+                                    {
+                                        new ForegroundColorSpan(ColorMap[(int)chunk.FG]),
+                                        new BackgroundColorSpan(ColorMap[(int)chunk.BG]),
+                                        StyleSpan.UnderlinedOn(),
+                                        new ContentSpan(chunk.ToString()),
+                                        StyleSpan.UnderlinedOff(),
+                                    };
+                                }
+                                else
+                                {
+                                    children = new Span[]
+                                    {
+                                        new ForegroundColorSpan(ColorMap[(int)chunk.FG]),
+                                        new BackgroundColorSpan(ColorMap[(int)chunk.BG]),
+                                        new ContentSpan(chunk.ToString()),
+                                    };
+                                }
+
+                                var span = new ContainerSpan(children);
+
+                                //@Jon - I will call this render function somewhere between 0 and Width * Height times for each render pass.
+                                //       That's a lot of IO. Would there be any benefit (i.e. less IO roundtrips) if I were to pass you a collection of
+                                //       span + region pairs and ask you to render them all at once?
+                                ConsoleProvider.Renderer.RenderToRegion(span, new Region(left, y, chunk.Length, 1, true));
+                            }
+
+                            left += chunk.Length;
+                        }
+                    }
+             
+                    chunksOnLine.Clear();
+                }
+            }
+            catch (IOException)
+            {
+                Invalidate();
+                PaintNew();
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                Invalidate();
+                PaintNew();
             }
         }
 
@@ -606,7 +867,7 @@ namespace PowerArgs.Cli
                 for (int x = 0; x < Width; x++)
                 {
                     var pixel = pixels[x][y];
-                    pixel.Invalidate();
+                    pixel.LastDrawnValue = null;
                 }
             }
         }

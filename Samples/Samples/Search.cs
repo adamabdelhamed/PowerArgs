@@ -1,7 +1,7 @@
 ﻿using PowerArgs;
 using System;
 
-namespace HelloWorld.Samples
+namespace Samples
 {
     public class SearchSample
     {

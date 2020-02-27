@@ -80,6 +80,13 @@ namespace PowerArgs.Cli
             this.SynchronizeForLifetime(nameof(Bounds), HandleTextChanged, this);
         }
 
+        public static ConsolePanel CreatePanelWithCenteredLabel(ConsoleString str)
+        {
+            var ret = new ConsolePanel();
+            ret.Add(new Label() { Text = str }).CenterBoth();
+            return ret;
+        }
+
         private void HandleTextChanged()
         {
             lines.Clear();

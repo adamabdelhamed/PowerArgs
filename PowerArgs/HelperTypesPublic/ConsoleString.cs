@@ -1,6 +1,7 @@
 ﻿using PowerArgs.Cli;
 using System;
 using System.Collections.Generic;
+using System.CommandLine.Rendering;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -19,7 +20,7 @@ namespace PowerArgs
         /// <returns>a ConsoleString</returns>
         ConsoleString ToConsoleString();
     }
-
+ 
     /// <summary>
     /// A wrapper for char that encapsulates foreground and background colors.
     /// </summary>
@@ -33,12 +34,17 @@ namespace PowerArgs
         /// <summary>
         /// The console foreground color to use when printing this character.
         /// </summary>
-        public ConsoleColor ForegroundColor { get; set; }
+        public ConsoleColor ForegroundColor { get; private set; }
 
         /// <summary>
         /// The console background color to use when printing this character.
         /// </summary>
-        public ConsoleColor BackgroundColor { get; set; }
+        public ConsoleColor BackgroundColor { get; private set; }
+
+        /// <summary>
+        /// True if this character should be underlined when printed
+        /// </summary>
+        public bool IsUnderlined { get; private set; }
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -302,14 +308,14 @@ namespace PowerArgs
         /// <param name="value">The character value</param>
         /// <param name="foregroundColor">The foreground color (defaults to the console's foreground color at initialization time).</param>
         /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
-        public ConsoleCharacter(char value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        public ConsoleCharacter(char value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, bool underline = false)
             : this()
         {
             this.Value = value;
 
             if (foregroundColor.HasValue == false) foregroundColor = ConsoleString.DefaultForegroundColor;
             if (backgroundColor.HasValue == false) backgroundColor = ConsoleString.DefaultBackgroundColor;
-
+            this.IsUnderlined = underline;
             this.ForegroundColor = foregroundColor.Value;
             this.BackgroundColor = backgroundColor.Value;
         }
@@ -345,7 +351,8 @@ namespace PowerArgs
 
             return this.Value == other.Value &&
                    this.ForegroundColor == other.ForegroundColor &&
-                   this.BackgroundColor == other.BackgroundColor;
+                   this.BackgroundColor == other.BackgroundColor &&
+                   this.IsUnderlined == other.IsUnderlined;
         }
 
         /// <summary>
@@ -409,6 +416,11 @@ namespace PowerArgs
         public ConsoleString ToConsoleString()
         {
             return new ConsoleString(new ConsoleCharacter[] { this });
+        }
+
+        public ConsoleCharacter ToUnderlined()
+        {
+            return new ConsoleCharacter(Value, ForegroundColor, BackgroundColor, true);
         }
     }
 
@@ -550,11 +562,12 @@ namespace PowerArgs
         /// <param name="value"></param>
         /// <param name="foregroundColor">The foreground color (defaults to the console's foreground color at initialization time).</param>
         /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
-        public ConsoleString(string value = "", ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        /// <param name="underline">If true then underlines in an Ansi supported console.</param>
+        public ConsoleString(string value = "", ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, bool underline = false)
         {
             characters = new List<ConsoleCharacter>();
             ContentSet = false;
-            Append(value, foregroundColor, backgroundColor);
+            Append(value, foregroundColor, backgroundColor, underline);
         }
 
         /// <summary>
@@ -653,7 +666,7 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Creates a new ConsoleString with the sam characters as this one, but with a 
+        /// Creates a new ConsoleString with the same characters as this one, but with a 
         /// new background color
         /// </summary>
         /// <param name="bg">the new background color</param>
@@ -667,6 +680,12 @@ namespace PowerArgs
             }
             return new ConsoleString(ret);
         }
+
+        /// <summary>
+        /// Creates a new ConsoleString with the sams characters as this one, but with an underlined style.
+        /// </summary>
+        /// <returns></returns>
+        public ConsoleString ToUnderlined() => new ConsoleString(this.Select(c => c.ToUnderlined()));
 
         /// <summary>
         /// Returns a new ConsoleString that is a copy of this ConsoleString, but applies the given style to the range of characters specified.
@@ -922,7 +941,7 @@ namespace PowerArgs
             {
                 ConsoleOutInterceptor.Instance.Write(this);
             }
-            else
+            else if(PowerArgs.ConsoleProvider.Renderer == null)
             {
                 string buffer = "";
 
@@ -952,6 +971,89 @@ namespace PowerArgs
                 {
                     ConsoleProvider.ForegroundColor = existingForeground;
                     ConsoleProvider.BackgroundColor = existingBackground;
+                }
+            }
+            else
+            {
+                string buffer = "";
+
+                ConsoleColor existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
+ 
+                try
+                {
+                    ConsoleColor currentForeground = existingForeground, currentBackground = existingBackground;
+                    var currentUnderlined = false;
+                    foreach (var character in this)
+                    {
+                        if (character.ForegroundColor != currentForeground ||
+                            character.BackgroundColor != currentBackground || 
+                            character.IsUnderlined != currentUnderlined)
+                        {
+                            if (buffer.Length > 0)
+                            {
+                                if (currentUnderlined)
+                                {
+                                    PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
+                                    {
+                                    StyleSpan.UnderlinedOn(),
+                                    new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)currentForeground]),
+                                    new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)currentBackground]),
+                                    new ContentSpan(buffer),
+                                    StyleSpan.UnderlinedOff(),
+                                    }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
+                                }
+                                else
+                                {
+                                    PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
+                                    {
+                                    new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)currentForeground]),
+                                    new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)currentBackground]),
+                                    new ContentSpan(buffer)
+                                    }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
+                                }
+                            }
+
+                            currentForeground = character.ForegroundColor;
+                            currentBackground = character.BackgroundColor;
+                            currentUnderlined = character.IsUnderlined;
+                            buffer = "";
+                        }
+
+                        buffer += character.Value;
+                    }
+
+                    if (buffer.Length > 0)
+                    {
+                        if (currentUnderlined)
+                        {
+                            PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
+                            {
+                                    StyleSpan.UnderlinedOn(),
+                                    new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)currentForeground]),
+                                    new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)currentBackground]),
+                                    new ContentSpan(buffer),
+                                    StyleSpan.UnderlinedOff(),
+                            }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
+                        }
+                        else
+                        {
+                            PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
+                            {
+                                    new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)currentForeground]),
+                                    new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)currentBackground]),
+                                    new ContentSpan(buffer)
+                            }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
+                        }
+                        buffer = "";
+                    }
+                }
+                finally
+                {
+                    PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
+                    {
+                            new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)existingForeground]),
+                            new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)existingBackground]),
+                    }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
                 }
             }
         }
@@ -986,6 +1088,7 @@ namespace PowerArgs
 
             var currentFg = this[0].ForegroundColor;
             var currentBg = this[0].BackgroundColor;
+            var currentUnderlined = false;
 
             var defaultFg = new ConsoleCharacter(' ').ForegroundColor;
             var defaultBg = new ConsoleCharacter(' ').BackgroundColor;
@@ -1004,6 +1107,17 @@ namespace PowerArgs
 
             foreach (var c in this)
             {
+                if(c.IsUnderlined && currentUnderlined == false)
+                {
+                    builder.Append($"[U]");
+                    currentUnderlined = true;
+                }
+                else if(c.IsUnderlined == false && currentUnderlined)
+                {
+                    builder.Append($"[!U]");
+                    currentUnderlined = false;
+                }
+
                 if (c.ForegroundColor != currentFg && c.BackgroundColor != currentBg)
                 {
                     currentFg = c.ForegroundColor;
@@ -1088,12 +1202,12 @@ namespace PowerArgs
 
             var currentFg = defaultFg.Value;
             var currentBg = defaultBg.Value;
-
+            var currentUnderlined = false;
             while (reader.TryAdvance(out Token t))
             {
                 if (t.Value != "[")
                 {
-                    chars.AddRange(new ConsoleString(t.Value, currentFg, currentBg));
+                    chars.AddRange(new ConsoleString(t.Value, currentFg, currentBg, currentUnderlined));
                 }
                 else
                 {
@@ -1114,22 +1228,27 @@ namespace PowerArgs
                         }
 
                     }
+                    else  if (t.Value == "D")
+                    {
+                        currentFg = defaultFg.Value;
+                        currentBg = defaultBg.Value;
+                    }
+                    else if (t.Value == "U")
+                    {
+                        currentUnderlined = true;
+                    }
+                    else if(t.Value == "!U")
+                    {
+                        currentUnderlined = false;
+                    }
                     else
                     {
-                        if (t.Value == "D")
+                        if (Enum.TryParse<ConsoleColor>(t.Value, out currentFg) == false)
                         {
-                            currentFg = defaultFg.Value;
-                            currentBg = defaultBg.Value;
-                        }
-                        else
-                        {
-                            if (Enum.TryParse<ConsoleColor>(t.Value, out currentFg) == false)
-                            {
-                                throw new FormatException($"Expected a ConsoleColor, got {t.Value} @ {t.Position}");
-                            }
+                            throw new FormatException($"Expected a ConsoleColor, got {t.Value} @ {t.Position}");
                         }
                     }
-
+                     
                     reader.Expect("]", skipWhiteSpace: true);
                 }
             }
@@ -1448,9 +1567,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToBlack(ConsoleColor? bg = null)
+        public ConsoleString ToBlack(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Black, bg);
+            return To(ConsoleColor.Black, bg, underlined);
         }
 
         /// <summary>
@@ -1458,9 +1577,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkBlue(ConsoleColor? bg = null)
+        public ConsoleString ToDarkBlue(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkBlue, bg);
+            return To(ConsoleColor.DarkBlue, bg, underlined);
         }
 
         /// <summary>
@@ -1468,9 +1587,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkGreen(ConsoleColor? bg = null)
+        public ConsoleString ToDarkGreen(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkGreen, bg);
+            return To(ConsoleColor.DarkGreen, bg, underlined);
         }
 
         /// <summary>
@@ -1478,9 +1597,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkCyan(ConsoleColor? bg = null)
+        public ConsoleString ToDarkCyan(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkCyan, bg);
+            return To(ConsoleColor.DarkCyan, bg, underlined);
         }
 
         /// <summary>
@@ -1488,9 +1607,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkRed(ConsoleColor? bg = null)
+        public ConsoleString ToDarkRed(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkRed, bg);
+            return To(ConsoleColor.DarkRed, bg, underlined);
         }
 
         /// <summary>
@@ -1498,9 +1617,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkMagenta(ConsoleColor? bg = null)
+        public ConsoleString ToDarkMagenta(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkMagenta, bg);
+            return To(ConsoleColor.DarkMagenta, bg, underlined);
         }
 
         /// <summary>
@@ -1508,9 +1627,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkYellow(ConsoleColor? bg = null)
+        public ConsoleString ToDarkYellow(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkYellow, bg);
+            return To(ConsoleColor.DarkYellow, bg, underlined);
         }
 
         /// <summary>
@@ -1518,9 +1637,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToGray(ConsoleColor? bg = null)
+        public ConsoleString ToGray(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Gray, bg);
+            return To(ConsoleColor.Gray, bg, underlined);
         }
 
         /// <summary>
@@ -1528,9 +1647,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkGray(ConsoleColor? bg = null)
+        public ConsoleString ToDarkGray(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkGray, bg);
+            return To(ConsoleColor.DarkGray, bg, underlined);
         }
 
         /// <summary>
@@ -1538,9 +1657,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToBlue(ConsoleColor? bg = null)
+        public ConsoleString ToBlue(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Blue, bg);
+            return To(ConsoleColor.Blue, bg, underlined);
         }
 
         /// <summary>
@@ -1548,9 +1667,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToGreen(ConsoleColor? bg = null)
+        public ConsoleString ToGreen(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Green, bg);
+            return To(ConsoleColor.Green, bg, underlined);
         }
 
         /// <summary>
@@ -1558,9 +1677,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToCyan(ConsoleColor? bg = null)
+        public ConsoleString ToCyan(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Cyan, bg);
+            return To(ConsoleColor.Cyan, bg, underlined);
         }
 
         /// <summary>
@@ -1568,9 +1687,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToRed(ConsoleColor? bg = null)
+        public ConsoleString ToRed(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Red, bg);
+            return To(ConsoleColor.Red, bg, underlined);
         }
 
         /// <summary>
@@ -1578,9 +1697,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToMagenta(ConsoleColor? bg = null)
+        public ConsoleString ToMagenta(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Magenta, bg);
+            return To(ConsoleColor.Magenta, bg, underlined);
         }
 
         /// <summary>
@@ -1588,9 +1707,9 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToYellow(ConsoleColor? bg = null)
+        public ConsoleString ToYellow(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Yellow, bg);
+            return To(ConsoleColor.Yellow, bg, underlined);
         }
 
         /// <summary>
@@ -1598,17 +1717,17 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToWhite(ConsoleColor? bg = null)
+        public ConsoleString ToWhite(ConsoleColor? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.White, bg);
+            return To(ConsoleColor.White, bg, underlined);
         }
 
-        private ConsoleString To(ConsoleColor color, ConsoleColor? bg = null)
+        private ConsoleString To(ConsoleColor color, ConsoleColor? bg, bool underlined)
         {
             List<ConsoleCharacter> chars = new List<ConsoleCharacter>();
             foreach (var c in this)
             {
-                chars.Add(new ConsoleCharacter(c.Value, color, bg.HasValue ? bg.Value : c.BackgroundColor));
+                chars.Add(new ConsoleCharacter(c.Value, color, bg.HasValue ? bg.Value : c.BackgroundColor, underlined));
             }
 
             return new ConsoleString(chars);
@@ -1631,12 +1750,12 @@ namespace PowerArgs
         }
 
 
-        private void Append(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        private void Append(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, bool underline = false)
         {
             if (ContentSet) throw new Exception("ConsoleStrings are immutable");
             foreach (var c in value)
             {
-                this.characters.Add(new ConsoleCharacter(c, foregroundColor, backgroundColor));
+                this.characters.Add(new ConsoleCharacter(c, foregroundColor, backgroundColor, underline));
             }
             ContentSet = true;
         }

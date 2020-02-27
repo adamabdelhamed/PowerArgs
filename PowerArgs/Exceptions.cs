@@ -128,26 +128,7 @@ namespace PowerArgs
         public UnknownActionArgException(string msg, Exception inner) : base(msg, inner) { }
 
     }
-
-    /// <summary>
-    /// An exception that should be thrown when the query can not be compiled.
-    /// </summary>
-    public class QueryInvalidArgException : ArgException
-    {
-        /// <summary>
-        /// Creates a new QueryInvalidArgException given a user friendly message
-        /// </summary>
-        /// <param name="msg">A user friendly message.</param>
-        public QueryInvalidArgException(string msg) : base(msg) { }
-
-        /// <summary>
-        /// Creates a new QueryInvalidArgException given a user friendly message
-        /// </summary>
-        /// <param name="msg">A user friendly message.</param>
-        /// <param name="inner">The inner exception that caused the problem</param>
-        public QueryInvalidArgException(string msg, Exception inner) : base(msg, inner) { }
-
-    }
+ 
 
     /// <summary>
     /// An exception that should be thrown when an argument's value is not valid.
