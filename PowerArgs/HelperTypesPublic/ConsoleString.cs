@@ -20,6 +20,74 @@ namespace PowerArgs
         /// <returns>a ConsoleString</returns>
         ConsoleString ToConsoleString();
     }
+
+    public struct RGB
+    { 
+        public byte R { get; private set; }
+        public byte G { get; private set; }
+        public byte B { get; private set; }
+
+      
+
+        public RGB(RgbColor color)
+        {
+            this.R = color.Red;
+            this.G = color.Green;
+            this.B = color.Blue;
+        }
+
+        public RGB(byte r, byte g, byte b) : this(new RgbColor(r, g, b)) { }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is RGB == false) return false;
+            var other = (RGB)obj;
+            if (other == null) return false;
+            return this.R == other.R &&  this.G == other.G && this.B == other.B;
+        }
+
+        public override int GetHashCode() => $"{R}/{G}/{B}".GetHashCode();
+
+        public static bool operator ==(RGB a, RGB b) => a.Equals(b);
+        public static bool operator !=(RGB a, RGB b) => !a.Equals(b);
+
+        public static bool operator ==(RGB a, ConsoleColor b) => a.Equals((RGB)b);
+        public static bool operator !=(RGB a, ConsoleColor b) => !a.Equals((RGB)b);
+
+        public static implicit operator ConsoleColor(RGB color) => color == null ? (ConsoleColor)ConsoleString.DefaultForegroundColor : ConsoleBitmap.ReverseColorMap[color];
+        public static implicit operator RGB(ConsoleColor color) => (int)color < ConsoleBitmap.ColorMap.Length ? ConsoleBitmap.ColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
+
+        public RgbColor ToRgbColor() => new RgbColor(R, G, B);
+
+        private static readonly Regex RGBRegex = new Regex(@"^\s*(?<r>d+)\s*,\s*(?<g>d+)\s*,\s*(?<b>d+)\s*$");
+
+        internal static bool TryParse(string value, out RGB ret)
+        {
+            var match = RGBRegex.Match(value);
+            if (match.Success == false)
+            {
+                ret = default(RGB);
+                return false;
+            }
+            var r = byte.Parse(match.Groups["r"].Value);
+            var g = byte.Parse(match.Groups["g"].Value);
+            var b = byte.Parse(match.Groups["b"].Value);
+            ret = new RGB(r, g, b);
+            return true;
+        }
+
+        public override string ToString()
+        {
+            if (ConsoleBitmap.ReverseColorMap.TryGetValue(this, out ConsoleColor c))
+            {
+                return c.ToString();
+            }
+            else
+            {
+                return $"{R},{G},{B}";
+            }
+        }
+    }
  
     /// <summary>
     /// A wrapper for char that encapsulates foreground and background colors.
@@ -34,12 +102,12 @@ namespace PowerArgs
         /// <summary>
         /// The console foreground color to use when printing this character.
         /// </summary>
-        public ConsoleColor ForegroundColor { get; private set; }
+        public RGB ForegroundColor { get; private set; }
 
         /// <summary>
         /// The console background color to use when printing this character.
         /// </summary>
-        public ConsoleColor BackgroundColor { get; private set; }
+        public RGB BackgroundColor { get; private set; }
 
         /// <summary>
         /// True if this character should be underlined when printed
@@ -52,7 +120,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Black(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Black, bg);
+        public static ConsoleCharacter Black(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Black, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -60,7 +128,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter BlackBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Black);
+        public static ConsoleCharacter BlackBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Black);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -68,7 +136,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkBlue(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkBlue, bg);
+        public static ConsoleCharacter DarkBlue(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkBlue, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -76,7 +144,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkBlueBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkBlue);
+        public static ConsoleCharacter DarkBlueBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkBlue);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -84,7 +152,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkGreen(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkGreen, bg);
+        public static ConsoleCharacter DarkGreen(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkGreen, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -92,7 +160,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkGreenBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkGreen);
+        public static ConsoleCharacter DarkGreenBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkGreen);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -100,7 +168,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkCyan(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkCyan, bg);
+        public static ConsoleCharacter DarkCyan(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkCyan, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -108,7 +176,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkCyanBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkCyan);
+        public static ConsoleCharacter DarkCyanBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkCyan);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -116,7 +184,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkRed(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkRed, bg);
+        public static ConsoleCharacter DarkRed(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkRed, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -124,7 +192,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkRedBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkRed);
+        public static ConsoleCharacter DarkRedBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkRed);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -132,7 +200,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkMagenta(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkMagenta, bg);
+        public static ConsoleCharacter DarkMagenta(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkMagenta, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -140,7 +208,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkMagentaBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkMagenta);
+        public static ConsoleCharacter DarkMagentaBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkMagenta);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -148,7 +216,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkYellow(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkYellow, bg);
+        public static ConsoleCharacter DarkYellow(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkYellow, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -156,7 +224,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkYellowBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkYellow);
+        public static ConsoleCharacter DarkYellowBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkYellow);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -164,7 +232,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Gray(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Gray, bg);
+        public static ConsoleCharacter Gray(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Gray, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -172,7 +240,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter GrayBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Gray);
+        public static ConsoleCharacter GrayBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Gray);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -180,7 +248,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkGray(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkGray, bg);
+        public static ConsoleCharacter DarkGray(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkGray, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -188,7 +256,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkGrayBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkGray);
+        public static ConsoleCharacter DarkGrayBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkGray);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -196,7 +264,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Blue(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Blue, bg);
+        public static ConsoleCharacter Blue(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Blue, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -204,7 +272,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter BlueBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Blue);
+        public static ConsoleCharacter BlueBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Blue);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -212,7 +280,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Green(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Green, bg);
+        public static ConsoleCharacter Green(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Green, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -220,7 +288,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter GreenBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Green);
+        public static ConsoleCharacter GreenBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Green);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -228,7 +296,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Cyan(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Cyan, bg);
+        public static ConsoleCharacter Cyan(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Cyan, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -236,7 +304,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter CyanBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Cyan);
+        public static ConsoleCharacter CyanBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Cyan);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -244,7 +312,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Red(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Red, bg);
+        public static ConsoleCharacter Red(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Red, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -252,7 +320,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter RedBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Red);
+        public static ConsoleCharacter RedBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Red);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -260,7 +328,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Magenta(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Magenta, bg);
+        public static ConsoleCharacter Magenta(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Magenta, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -268,7 +336,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter MagentaBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Magenta);
+        public static ConsoleCharacter MagentaBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Magenta);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -276,7 +344,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Yellow(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.Yellow, bg);
+        public static ConsoleCharacter Yellow(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Yellow, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -284,7 +352,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter YellowBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Yellow);
+        public static ConsoleCharacter YellowBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Yellow);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -292,7 +360,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter White(char val = ' ', ConsoleColor? bg = null) => new ConsoleCharacter(val, ConsoleColor.White, bg);
+        public static ConsoleCharacter White(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.White, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -300,7 +368,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter WhiteBG(char val = ' ', ConsoleColor? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.White);
+        public static ConsoleCharacter WhiteBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.White);
 
         /// <summary>
         /// Create a new ConsoleCharacter given a char value and optionally set the foreground or background coor.
@@ -308,7 +376,7 @@ namespace PowerArgs
         /// <param name="value">The character value</param>
         /// <param name="foregroundColor">The foreground color (defaults to the console's foreground color at initialization time).</param>
         /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
-        public ConsoleCharacter(char value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, bool underline = false)
+        public ConsoleCharacter(char value, RGB? foregroundColor = null, RGB? backgroundColor = null, bool underline = false)
             : this()
         {
             this.Value = value;
@@ -437,11 +505,11 @@ namespace PowerArgs
         /// <summary>
         /// Gets the console's default foreground color
         /// </summary>
-        public static ConsoleColor DefaultForegroundColor { get; private set; }
+        public static RGB DefaultForegroundColor { get; private set; }
         /// <summary>
         /// Gets the console's default background color
         /// </summary
-        public static ConsoleColor DefaultBackgroundColor { get; private set; }
+        public static RGB DefaultBackgroundColor { get; private set; }
 
         private static Dictionary<ConsoleColor, string> CSSMap = new Dictionary<ConsoleColor, string>()
         {
@@ -563,7 +631,7 @@ namespace PowerArgs
         /// <param name="foregroundColor">The foreground color (defaults to the console's foreground color at initialization time).</param>
         /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
         /// <param name="underline">If true then underlines in an Ansi supported console.</param>
-        public ConsoleString(string value = "", ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, bool underline = false)
+        public ConsoleString(string value = "", RGB? foregroundColor = null, RGB? backgroundColor = null, bool underline = false)
         {
             characters = new List<ConsoleCharacter>();
             ContentSet = false;
@@ -577,7 +645,7 @@ namespace PowerArgs
         /// <param name="foregroundColor">the foreground color of all returned ConsoleStrings</param>
         /// <param name="backgroundColor">the background color of all returned ConsoleStrings</param>
         /// <returns>a collection of ConsoleStrnigs</returns>
-        public static List<ConsoleString> ToConsoleStrings(IEnumerable<string> plainStrings, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        public static List<ConsoleString> ToConsoleStrings(IEnumerable<string> plainStrings, RGB? foregroundColor = null, RGB? backgroundColor = null)
         {
             return plainStrings.Select(s => new ConsoleString(s, foregroundColor, backgroundColor)).ToList();
         }
@@ -608,7 +676,7 @@ namespace PowerArgs
         /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
         /// <param name="comparison">Specifies how characters are compared</param>
         /// <returns>A new ConsoleString with the replacements.</returns>
-        public ConsoleString Replace(string toFind, string toReplace, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
+        public ConsoleString Replace(string toFind, string toReplace, RGB? foregroundColor = null, RGB? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
             ConsoleString ret = new ConsoleString(this);
 
@@ -636,7 +704,7 @@ namespace PowerArgs
         /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
         /// <param name="comparison">Specifies how characters are compared</param>
         /// <returns>A new ConsoleString with the highlights.</returns>
-        public ConsoleString Highlight(string toFind,ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
+        public ConsoleString Highlight(string toFind,RGB? foregroundColor = null, RGB? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
             ConsoleString ret = new ConsoleString(this);
             if(toFind == null || toFind.Length == 0)
@@ -671,7 +739,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">the new background color</param>
         /// <returns>A  new string with a different background color</returns>
-        public ConsoleString ToDifferentBackground(ConsoleColor? bg)
+        public ConsoleString ToDifferentBackground(RGB bg)
         {
             List<ConsoleCharacter> ret = new List<ConsoleCharacter>();
             foreach(var c in this)
@@ -695,7 +763,7 @@ namespace PowerArgs
         /// <param name="foregroundColor">the foreground color to apply to the highlighted characters or null to use the default foreground color</param>
         /// <param name="backgroundColor">the background color to apply to the highlighted characters or null to use the default background color</param>
         /// <returns>a new ConsoleString that is a copy of this ConsoleString, but applies the given style to the range of characters specified.</returns>
-        public ConsoleString HighlightSubstring(int start, int length, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        public ConsoleString HighlightSubstring(int start, int length, RGB? foregroundColor = null, RGB? backgroundColor = null)
         {
             List<ConsoleCharacter> buffer = new List<ConsoleCharacter>();
             
@@ -722,7 +790,7 @@ namespace PowerArgs
         /// <param name="foregroundColor">The foreground color (defaults to the console's foreground color at initialization time).</param>
         /// <param name="backgroundColor">The background color (defaults to the console's background color at initialization time).</param>
         /// <returns></returns>
-        public ConsoleString ReplaceRegex(string regex, string toReplace, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        public ConsoleString ReplaceRegex(string regex, string toReplace, RGB? foregroundColor = null, RGB? backgroundColor = null)
         {
             ConsoleString ret = new ConsoleString(this);
             MatchCollection matches = Regex.Matches(this.ToString(), regex);
@@ -874,7 +942,7 @@ namespace PowerArgs
         /// <param name="o">The object to write</param>
         /// <param name="fg">The foreground color to use</param>
         /// <param name="bg">The background color to use</param>
-        public static void Write(object o, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public static void Write(object o, RGB? fg = null, RGB? bg = null)
         {
             string str = o == null ? "" : o.ToString();
             new ConsoleString(str, fg, bg).Write();
@@ -886,7 +954,7 @@ namespace PowerArgs
         /// <param name="o">The object to write</param>
         /// <param name="fg">The foreground color to use</param>
         /// <param name="bg">The background color to use</param>
-        public static void WriteLine(object o, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public static void WriteLine(object o, RGB? fg = null, RGB? bg = null)
         {
             string str = o == null ? "" : o.ToString();
             new ConsoleString(str, fg, bg).WriteLine();
@@ -916,7 +984,7 @@ namespace PowerArgs
         /// <param name="str">The object to write</param>
         /// <param name="fg">The foreground color to use</param>
         /// <param name="bg">The background color to use</param>
-        public static void Write(string str, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public static void Write(string str, RGB? fg = null, RGB? bg = null)
         {
             new ConsoleString(str, fg, bg).Write();
         }
@@ -927,7 +995,7 @@ namespace PowerArgs
         /// <param name="str">The object to write</param>
         /// <param name="fg">The foreground color to use</param>
         /// <param name="bg">The background color to use</param>
-        public static void WriteLine(string str, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public static void WriteLine(string str, RGB? fg = null, RGB? bg = null)
         {
             new ConsoleString(str, fg, bg).WriteLine();
         }
@@ -945,10 +1013,10 @@ namespace PowerArgs
             {
                 string buffer = "";
 
-                ConsoleColor existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
+                RGB existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
                 try
                 {
-                    ConsoleColor currentForeground = existingForeground, currentBackground = existingBackground;
+                    RGB currentForeground = existingForeground, currentBackground = existingBackground;
                     foreach (var character in this)
                     {
                         if (character.ForegroundColor != currentForeground ||
@@ -977,11 +1045,11 @@ namespace PowerArgs
             {
                 string buffer = "";
 
-                ConsoleColor existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
+                RGB existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
  
                 try
                 {
-                    ConsoleColor currentForeground = existingForeground, currentBackground = existingBackground;
+                    RGB currentForeground = existingForeground, currentBackground = existingBackground;
                     var currentUnderlined = false;
                     foreach (var character in this)
                     {
@@ -996,8 +1064,8 @@ namespace PowerArgs
                                     PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
                                     {
                                     StyleSpan.UnderlinedOn(),
-                                    new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)currentForeground]),
-                                    new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)currentBackground]),
+                                    new ForegroundColorSpan(new RgbColor(currentForeground.R, currentForeground.G,currentForeground.B)),
+                                    new BackgroundColorSpan(new RgbColor(currentBackground.R, currentBackground.G,currentBackground.B)),
                                     new ContentSpan(buffer),
                                     StyleSpan.UnderlinedOff(),
                                     }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
@@ -1006,8 +1074,8 @@ namespace PowerArgs
                                 {
                                     PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
                                     {
-                                    new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)currentForeground]),
-                                    new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)currentBackground]),
+                                    new ForegroundColorSpan(new RgbColor(currentForeground.R, currentForeground.G,currentForeground.B)),
+                                    new BackgroundColorSpan(new RgbColor(currentBackground.R, currentBackground.G,currentBackground.B)),
                                     new ContentSpan(buffer)
                                     }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
                                 }
@@ -1029,8 +1097,8 @@ namespace PowerArgs
                             PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
                             {
                                     StyleSpan.UnderlinedOn(),
-                                    new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)currentForeground]),
-                                    new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)currentBackground]),
+                                    new ForegroundColorSpan(new RgbColor(currentForeground.R, currentForeground.G,currentForeground.B)),
+                                    new BackgroundColorSpan(new RgbColor(currentBackground.R, currentBackground.G,currentBackground.B)),
                                     new ContentSpan(buffer),
                                     StyleSpan.UnderlinedOff(),
                             }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
@@ -1039,8 +1107,8 @@ namespace PowerArgs
                         {
                             PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
                             {
-                                    new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)currentForeground]),
-                                    new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)currentBackground]),
+                                    new ForegroundColorSpan(new RgbColor(currentForeground.R, currentForeground.G,currentForeground.B)),
+                                    new BackgroundColorSpan(new RgbColor(currentBackground.R, currentBackground.G,currentBackground.B)),
                                     new ContentSpan(buffer)
                             }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
                         }
@@ -1051,8 +1119,8 @@ namespace PowerArgs
                 {
                     PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
                     {
-                            new ForegroundColorSpan(ConsoleBitmap.ColorMap[(int)existingForeground]),
-                            new BackgroundColorSpan(ConsoleBitmap.ColorMap[(int)existingBackground]),
+                      new ForegroundColorSpan(new RgbColor(existingForeground.R, existingForeground.G,existingForeground.B)),
+                      new BackgroundColorSpan(new RgbColor(existingBackground.R, existingBackground.G,existingBackground.B)),
                     }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
                 }
             }
@@ -1186,7 +1254,7 @@ namespace PowerArgs
         /// <param name="defaultFg">optionally specify the default foreground color to apply for characters with an explicit default</param>
         /// <param name="defaultBg">optionally specify the default background color to apply for characters with an explicit default</param>
         /// <returns>a rehydrated ConsoleString</returns>
-        public static ConsoleString Parse(string serializedConsoleString, ConsoleColor? defaultFg = null, ConsoleColor? defaultBg = null)
+        public static ConsoleString Parse(string serializedConsoleString, RGB? defaultFg = null, RGB? defaultBg = null)
         {
             Tokenizer<Token> tokenizer = new Tokenizer<Token>();
             tokenizer.Delimiters.Add("[");
@@ -1222,9 +1290,13 @@ namespace PowerArgs
 
                         reader.Advance(skipWhitespace: true); // read the equals
                         t = reader.Advance(skipWhitespace: true); // read the token after the equals
-                        if (Enum.TryParse<ConsoleColor>(t.Value, out currentBg) == false)
+                        if (Enum.TryParse<ConsoleColor>(t.Value, out ConsoleColor consoleColor))
                         {
-                            throw new FormatException($"Expected a ConsoleColor, got {t.Value} @ {t.Position}");
+                            currentBg = (RGB)consoleColor;
+                        }
+                        else if(RGB.TryParse(t.Value, out currentBg) == false)
+                        {
+                            throw new FormatException($"Expected a color, got {t.Value} @ {t.Position}");
                         }
 
                     }
@@ -1243,9 +1315,13 @@ namespace PowerArgs
                     }
                     else
                     {
-                        if (Enum.TryParse<ConsoleColor>(t.Value, out currentFg) == false)
+                        if (Enum.TryParse<ConsoleColor>(t.Value, out ConsoleColor consoleColor))
                         {
-                            throw new FormatException($"Expected a ConsoleColor, got {t.Value} @ {t.Position}");
+                            currentFg = (RGB)consoleColor;
+                        }
+                        else if (RGB.TryParse(t.Value, out currentFg) == false)
+                        {
+                            throw new FormatException($"Expected a color, got {t.Value} @ {t.Position}");
                         }
                     }
                      
@@ -1371,14 +1447,14 @@ namespace PowerArgs
         /// <param name="indent">if true, the spans will be indented inside the parent div</param>
         /// <param name="htmlEncode">if true, the function will html encode content before inserting markup</param>
         /// <returns>a string that is a valid html div. Null inputs will result in a null return value. Empty string wi</returns>
-        public string ToHtmlDiv(ConsoleColor? divBackground = null, bool indent = false, bool htmlEncode = true)
+        public string ToHtmlDiv(RGB? divBackground = null, bool indent = false, bool htmlEncode = true)
         {
-            var backgroundColor = divBackground.HasValue ? divBackground.Value : new ConsoleCharacter(' ').BackgroundColor;
+            var backgroundColor = divBackground.HasValue ? divBackground.Value : DefaultBackgroundColor;
             var str = this.Replace("\r\n", "\n").Replace("\r", "\n");
 
             StringBuilder ret = new StringBuilder();
 
-            ret.Append($"<div class='powerargs-console-string' style='font-family:Consolas;background-color:{CSSMap[backgroundColor]}'>");
+            ret.Append($"<div class='powerargs-console-string' style='font-family:Consolas;background-color:{CSSMap[(ConsoleColor)backgroundColor]}'>");
 
             if (indent)
             {
@@ -1387,8 +1463,8 @@ namespace PowerArgs
 
             foreach (var chunk in str.GroupByFormatting())
             {
-                var fg = CSSMap[chunk[0].ForegroundColor];
-                var bg = CSSMap[chunk[0].BackgroundColor];
+                var fg = CSSMap[(ConsoleColor)chunk[0].ForegroundColor];
+                var bg = CSSMap[(ConsoleColor)chunk[0].BackgroundColor];
 
                 var encodedChunkString = (htmlEncode ? WebUtility.HtmlEncode(new string(chunk.Select(c => c.Value).ToArray())) : new string(chunk.Select(c => c.Value).ToArray())).Replace("\n", "<br/>");
 
@@ -1419,8 +1495,8 @@ namespace PowerArgs
 
             if (this.Length == 0) return ret;
 
-            ConsoleColor lastFg = this[0].ForegroundColor;
-            ConsoleColor lastBg = this[0].BackgroundColor;
+            var lastFg = this[0].ForegroundColor;
+            var lastBg = this[0].BackgroundColor;
 
             List<ConsoleCharacter> currentChunk = new List<ConsoleCharacter>();
             ret.Add(currentChunk);
@@ -1567,7 +1643,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToBlack(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToBlack(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.Black, bg, underlined);
         }
@@ -1577,7 +1653,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkBlue(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToDarkBlue(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.DarkBlue, bg, underlined);
         }
@@ -1587,7 +1663,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkGreen(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToDarkGreen(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.DarkGreen, bg, underlined);
         }
@@ -1597,7 +1673,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkCyan(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToDarkCyan(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.DarkCyan, bg, underlined);
         }
@@ -1607,7 +1683,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkRed(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToDarkRed(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.DarkRed, bg, underlined);
         }
@@ -1617,7 +1693,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkMagenta(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToDarkMagenta(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.DarkMagenta, bg, underlined);
         }
@@ -1627,7 +1703,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkYellow(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToDarkYellow(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.DarkYellow, bg, underlined);
         }
@@ -1637,7 +1713,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToGray(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToGray(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.Gray, bg, underlined);
         }
@@ -1647,7 +1723,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToDarkGray(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToDarkGray(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.DarkGray, bg, underlined);
         }
@@ -1657,7 +1733,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToBlue(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToBlue(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.Blue, bg, underlined);
         }
@@ -1667,7 +1743,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToGreen(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToGreen(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.Green, bg, underlined);
         }
@@ -1677,7 +1753,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToCyan(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToCyan(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.Cyan, bg, underlined);
         }
@@ -1687,7 +1763,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToRed(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToRed(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.Red, bg, underlined);
         }
@@ -1697,7 +1773,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToMagenta(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToMagenta(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.Magenta, bg, underlined);
         }
@@ -1707,7 +1783,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToYellow(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToYellow(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.Yellow, bg, underlined);
         }
@@ -1717,23 +1793,23 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">The new background color for all characters or null to preserve each character's current background color</param>
         /// <returns>a new ConsoleString with the desired color changes</returns>
-        public ConsoleString ToWhite(ConsoleColor? bg = null, bool underlined = false)
+        public ConsoleString ToWhite(RGB? bg = null, bool underlined = false)
         {
             return To(ConsoleColor.White, bg, underlined);
         }
 
-        private ConsoleString To(ConsoleColor color, ConsoleColor? bg, bool underlined)
+        private ConsoleString To(RGB color, RGB? bg, bool underlined)
         {
             List<ConsoleCharacter> chars = new List<ConsoleCharacter>();
             foreach (var c in this)
             {
-                chars.Add(new ConsoleCharacter(c.Value, color, bg.HasValue ? bg.Value : c.BackgroundColor, underlined));
+                chars.Add(new ConsoleCharacter(c.Value, color, bg ?? c.BackgroundColor, underlined));
             }
 
             return new ConsoleString(chars);
         }
 
-        private ConsoleString ImmutableAppend(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null)
+        private ConsoleString ImmutableAppend(string value, RGB? foregroundColor = null, RGB? backgroundColor = null)
         {
             ConsoleString str = new ConsoleString(this);
             str.ContentSet = false;
@@ -1750,7 +1826,7 @@ namespace PowerArgs
         }
 
 
-        private void Append(string value, ConsoleColor? foregroundColor = null, ConsoleColor? backgroundColor = null, bool underline = false)
+        private void Append(string value, RGB? foregroundColor = null, RGB? backgroundColor = null, bool underline = false)
         {
             if (ContentSet) throw new Exception("ConsoleStrings are immutable");
             foreach (var c in value)

@@ -87,7 +87,7 @@ namespace PowerArgs.Cli
 
         private ConsoleString GetButtonDisplayString()
         {
-            var startAnchor = "[".ToConsoleString(HasFocus ? DefaultColors.BackgroundColor : CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, HasFocus ? DefaultColors.FocusColor : Background);
+            var startAnchor = "[".ToConsoleString(HasFocus ? DefaultColors.BackgroundColor : CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, HasFocus ? (RGB)DefaultColors.FocusColor : Background);
             var effectiveText = Text ?? ConsoleString.Empty;
             var shortcut = ConsoleString.Empty;
             if (Text != null)
@@ -130,7 +130,7 @@ namespace PowerArgs.Cli
                 }
             }
 
-            var endAnchor = "]".ToConsoleString(HasFocus ? DefaultColors.BackgroundColor : CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, HasFocus ? DefaultColors.FocusColor : Background);
+            var endAnchor = "]".ToConsoleString(HasFocus ? DefaultColors.BackgroundColor : CanFocus ? DefaultColors.H1Color : DefaultColors.DisabledColor, HasFocus ? (RGB)DefaultColors.FocusColor : Background);
             var ret = startAnchor + effectiveText + shortcut + endAnchor;
             return ret;
         }

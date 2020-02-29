@@ -117,8 +117,8 @@ namespace ArgsTests
                 ConsoleString orig = new ConsoleString(testString);
                 ConsoleString replaced = orig.Replace(testString[i]+"", testString[i]+"", ConsoleColor.Red);
 
-                Assert.AreEqual(ConsoleColor.Gray, orig[i].ForegroundColor);
-                Assert.AreEqual(ConsoleColor.Red, replaced[i].ForegroundColor);
+                Assert.AreEqual(ConsoleColor.Gray, (ConsoleColor)orig[i].ForegroundColor);
+                Assert.AreEqual(ConsoleColor.Red, (ConsoleColor)replaced[i].ForegroundColor);
             }
         }
 
@@ -335,28 +335,28 @@ namespace ArgsTests
             foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
             {
                 var method = typeof(StringEx).GetMethod("To" + color, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                Assert.AreEqual(new ConsoleString("Hello", color, color), method.Invoke(null,new object[] { "Hello", color, false }));
+                Assert.AreEqual(new ConsoleString("Hello", color, color), method.Invoke(null,new object[] { "Hello", (RGB)color, false }));
             }
 
             foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
             {
                 ConsoleString baseString = new ConsoleString("Hello", null, null);
                 var method = typeof(ConsoleString).GetMethod("To" + color);
-                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color), method.Invoke(baseString, new object[] { color, false }));
+                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color), method.Invoke(baseString, new object[] { (RGB)color, false }));
             }
 
 
             foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
             {
                 var method = typeof(StringEx).GetMethod("To" + color, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                Assert.AreEqual(new ConsoleString("Hello", color, color, true), method.Invoke(null, new object[] { "Hello", color, true }));
+                Assert.AreEqual(new ConsoleString("Hello", color, color, true), method.Invoke(null, new object[] { "Hello", (RGB)color, true }));
             }
 
             foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
             {
                 ConsoleString baseString = new ConsoleString("Hello", null, null);
                 var method = typeof(ConsoleString).GetMethod("To" + color);
-                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color, true), method.Invoke(baseString, new object[] { color, true }));
+                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color, true), method.Invoke(baseString, new object[] { (RGB)color, true }));
             }
         }
 
@@ -366,14 +366,14 @@ namespace ArgsTests
             foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
             {
                 var method = typeof(ConsoleCharacter).GetMethod(color+"", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                Assert.AreEqual(new ConsoleCharacter('*', color, color), method.Invoke(null, new object[] { '*', color }));
+                Assert.AreEqual(new ConsoleCharacter('*', color, color), method.Invoke(null, new object[] { '*', (RGB)color }));
                 Assert.AreEqual(new ConsoleCharacter('*', color, null), method.Invoke(null, new object[] { '*', null }));
             }
 
             foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
             {
                 var method = typeof(ConsoleCharacter).GetMethod(color + "BG", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                Assert.AreEqual(new ConsoleCharacter('*', color, color), method.Invoke(null, new object[] { '*', color }));
+                Assert.AreEqual(new ConsoleCharacter('*', color, color), method.Invoke(null, new object[] { '*', (RGB)color }));
                 Assert.AreEqual(new ConsoleCharacter('*', null, color), method.Invoke(null, new object[] { '*', null }));
             }
         }
@@ -397,8 +397,8 @@ namespace ArgsTests
 
             for (var x = 0; x < "Adam".Length; x++)
             {
-                Assert.AreEqual(ConsoleColor.Yellow, bmp.GetPixel(x, 0).Value.Value.ForegroundColor);
-                Assert.AreEqual(ConsoleColor.Green, bmp.GetPixel(x, 0).Value.Value.BackgroundColor);
+                Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, 0).Value.Value.ForegroundColor);
+                Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, 0).Value.Value.BackgroundColor);
             }
 
             // the last 4 characters should get trimmed here
@@ -437,8 +437,8 @@ namespace ArgsTests
                     if (bmp.GetPixel(x, y).Value.HasValue && bmp.GetPixel(x, y).Value.Value != ' ')
                     {
                         pixelsWithValueCount++;
-                        Assert.AreEqual(ConsoleColor.Yellow, bmp.GetPixel(x, y).Value.Value.ForegroundColor);
-                        Assert.AreEqual(ConsoleColor.Green, bmp.GetPixel(x, y).Value.Value.BackgroundColor);
+                        Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, y).Value.Value.ForegroundColor);
+                        Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, y).Value.Value.BackgroundColor);
                     }
                 }
             }
@@ -461,8 +461,8 @@ namespace ArgsTests
 
             for (var x = 0; x < bmp.Width; x++)
             {
-                Assert.AreEqual(ConsoleColor.Yellow, bmp.GetPixel(x, 0).Value.Value.ForegroundColor);
-                Assert.AreEqual(ConsoleColor.Green, bmp.GetPixel(x, 0).Value.Value.BackgroundColor);
+                Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, 0).Value.Value.ForegroundColor);
+                Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, 0).Value.Value.BackgroundColor);
             }
 
             var readBack = bmp.ToConsoleString();

@@ -48,7 +48,7 @@ namespace PowerArgs
         /// <param name="fg">The foreground highlight color</param>
         /// <param name="bg">The background highlight color</param>
         /// <param name="comparison">Determines how strings are compared. </param>
-        public void AddKeyword(string keyword, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
+        public void AddKeyword(string keyword, RGB? fg = null, RGB? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
             TokenHighlighters.Add(new KeywordHighlighter(keyword, fg, bg, comparison));
         }
@@ -61,7 +61,7 @@ namespace PowerArgs
         /// <param name="fg">The foreground highlight color</param>
         /// <param name="bg">The background highlight color</param>
         /// <param name="comparison">Determines how strings are compared. </param>
-        public void AddConditionalKeyword(string keyword, Func<RichCommandLineContext,HighlighterContext, bool> conditionEval, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
+        public void AddConditionalKeyword(string keyword, Func<RichCommandLineContext,HighlighterContext, bool> conditionEval, RGB? fg = null, RGB? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
             TokenHighlighters.Add(new ConditionalKeywordHighlighter(keyword, conditionEval,  fg, bg, comparison));
         }
@@ -72,7 +72,7 @@ namespace PowerArgs
         /// <param name="regex">the regular expression pattern to search for</param>
         /// <param name="fg">The foreground highlight color</param>
         /// <param name="bg">The background highlight color</param>
-        public void AddRegex(string regex, ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public void AddRegex(string regex, RGB? fg = null, RGB? bg = null)
         {
             TokenHighlighters.Add(new RegexHighlighter(regex, fg, bg));
         }
@@ -91,7 +91,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="fg">The foreground highlight color</param>
         /// <param name="bg">The background highlight color</param>
-        public void SetQuotedStringLiteralHighlight(ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public void SetQuotedStringLiteralHighlight(RGB? fg = null, RGB? bg = null)
         {
             var existing = (from h in TokenHighlighters where h is StringLiteralHighlighter select h).FirstOrDefault();
             if(existing != null)
@@ -107,7 +107,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="fg">The foreground highlight color</param>
         /// <param name="bg">The background highlight color</param>
-        public void SetNumericHighlight(ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public void SetNumericHighlight(RGB? fg = null, RGB? bg = null)
         {
             var existing = (from h in TokenHighlighters where h is NumericHighlighter select h).FirstOrDefault();
             if (existing != null)
@@ -167,7 +167,7 @@ namespace PowerArgs
             return didWork;
         }
 
-        private bool EnsureHighlighted(Token token, RichCommandLineContext context, ConsoleColor? fg, ConsoleColor? bg)
+        private bool EnsureHighlighted(Token token, RichCommandLineContext context, RGB? fg, RGB? bg)
         {
             if (fg.HasValue == false) fg = ConsoleString.DefaultForegroundColor;
             if (bg.HasValue == false) bg = ConsoleString.DefaultBackgroundColor;
@@ -213,11 +213,11 @@ namespace PowerArgs
         /// <summary>
         /// The foreground color of this highlighter.  If null, the console default is used.
         /// </summary>
-        ConsoleColor? HighlightForegroundColor { get; }
+        RGB? HighlightForegroundColor { get; }
         /// <summary>
         /// The background color of this highlighter.  If null, the console default is used.
         /// </summary>
-        ConsoleColor? HighlightBackgroundColor { get; }
+        RGB? HighlightBackgroundColor { get; }
     }
 
     /// <summary>
@@ -228,18 +228,18 @@ namespace PowerArgs
         /// <summary>
         /// The foreground color of this highlighter.  If null, the console default is used.
         /// </summary>
-        public ConsoleColor? HighlightForegroundColor { get; private set; }
+        public RGB? HighlightForegroundColor { get; private set; }
         /// <summary>
         /// The background color of this highlighter.  If null, the console default is used.
         /// </summary>
-        public ConsoleColor? HighlightBackgroundColor { get; private set; }
+        public RGB? HighlightBackgroundColor { get; private set; }
 
         /// <summary>
         /// Creates a new highlighter using the given colors
         /// </summary>
         /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
         /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
-        public FixedHighlightTokenHighlighter(ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public FixedHighlightTokenHighlighter(RGB? fg = null, RGB? bg = null)
         {
             this.HighlightForegroundColor = fg;
             this.HighlightBackgroundColor = bg;
@@ -273,7 +273,7 @@ namespace PowerArgs
         /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
         /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
         /// <param name="comparison">determines how strings are compared.  By default the comparison is case sensitive</param>
-        public KeywordHighlighter(string keyword, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture) : base(fg, bg)
+        public KeywordHighlighter(string keyword, RGB? fg = null, RGB? bg = null, StringComparison comparison = StringComparison.InvariantCulture) : base(fg, bg)
         {
             this.keyword = keyword;
             this.comparison = comparison;
@@ -307,7 +307,7 @@ namespace PowerArgs
         /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
         /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
         /// <param name="comparison">determines how characters are compared</param>
-        public ConditionalKeywordHighlighter(string keyword, Func<RichCommandLineContext, HighlighterContext, bool> conditionEval, ConsoleColor? fg = null, ConsoleColor? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
+        public ConditionalKeywordHighlighter(string keyword, Func<RichCommandLineContext, HighlighterContext, bool> conditionEval, RGB? fg = null, RGB? bg = null, StringComparison comparison = StringComparison.InvariantCulture)
             : base(keyword, fg, bg,comparison)
         {
             this.conditionEval = conditionEval;
@@ -346,7 +346,7 @@ namespace PowerArgs
         /// <param name="pattern">The regular expression pattern</param>
         /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
         /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
-        public RegexHighlighter(string pattern, ConsoleColor? fg = null, ConsoleColor? bg = null) : base(fg,bg)
+        public RegexHighlighter(string pattern, RGB? fg = null, RGB? bg = null) : base(fg,bg)
         {
             this.regex = new Regex(pattern);
         }
@@ -378,7 +378,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
         /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
-        public StringLiteralHighlighter(ConsoleColor? fg = null, ConsoleColor? bg = null) : base("\".*\"", fg, bg) { }
+        public StringLiteralHighlighter(RGB? fg = null, RGB? bg = null) : base("\".*\"", fg, bg) { }
     }
 
     /// <summary>
@@ -391,7 +391,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="fg">The foreground color of this highlighter.  If null, the console default is used.</param>
         /// <param name="bg">The background color of this highlighter.  If null, the console default is used.</param>
-        public NumericHighlighter(ConsoleColor? fg = null, ConsoleColor? bg = null) : base(fg, bg) { }
+        public NumericHighlighter(RGB? fg = null, RGB? bg = null) : base(fg, bg) { }
 
         /// <summary>
         /// Returns true if the current token is a numeric value, false otherwise

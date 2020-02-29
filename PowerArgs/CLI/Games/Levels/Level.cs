@@ -27,8 +27,8 @@ namespace PowerArgs.Games
         public int Width { get; set; }
         public int Height { get; set; }
         public char Symbol { get; set; }
-        public ConsoleColor? FG { get; set; }
-        public ConsoleColor? BG { get; set; }
+        public RGB? FG { get; set; }
+        public RGB? BG { get; set; }
         public List<String> Tags { get; set; } = new List<string>();
 
         public bool HasSimpleTag(string tag) => Tags.Where(t => t.ToLower().Equals(tag.ToLower())).Any();

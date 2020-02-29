@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using ArgsTests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using System.Linq;
 
@@ -14,6 +15,7 @@ namespace PowerArgsTestCore.Core
     }
 
     [TestClass]
+    [TestCategory(Categories.Core)]
     public class WhichShortcutTest
     {
 

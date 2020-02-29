@@ -52,8 +52,8 @@ namespace PowerArgs.Cli
 
             builder.Append($"[{frame.Timestamp.Ticks}]");
             builder.Append("[Raw]");
-            ConsoleColor? lastFg = null;
-            ConsoleColor? lastBg = null;
+            RGB? lastFg = null;
+            RGB? lastBg = null;
             for (var x = 0; x < frame.Pixels.Length; x++)
             {
                 for (var y = 0; y < frame.Pixels[0].Length; y++)
@@ -121,8 +121,8 @@ namespace PowerArgs.Cli
             builder.Append($"[{frame.Timestamp.Ticks}]");
             builder.Append("[Diff]");
 
-            ConsoleColor? lastFg = null;
-            ConsoleColor? lastBg = null;
+            RGB? lastFg = null;
+            RGB? lastBg = null;
 
             foreach (var diff in frame.Diffs)
             {
@@ -190,8 +190,8 @@ namespace PowerArgs.Cli
                     Diffs = new System.Collections.Generic.List<ConsoleBitmapPixelDiff>()
                 };
 
-                ConsoleColor lastBackground = ConsoleString.DefaultBackgroundColor;
-                ConsoleColor lastForeground = ConsoleString.DefaultForegroundColor;
+                var lastBackground = ConsoleString.DefaultBackgroundColor;
+                var lastForeground = ConsoleString.DefaultForegroundColor;
                 while (reader.CanAdvance())
                 {
                     reader.Expect("[");
@@ -205,11 +205,25 @@ namespace PowerArgs.Cli
 
                         if (isForeground)
                         {
-                            lastForeground = (ConsoleColor)Enum.Parse(typeof(ConsoleColor), match.Groups["color"].Value);
+                            if (Enum.TryParse(match.Groups["color"].Value, out ConsoleColor c))
+                            {
+                                lastForeground = (RGB)c;
+                            }
+                            else if (RGB.TryParse(match.Groups["color"].Value, out lastForeground) == false)
+                            {
+                                throw new ArgumentException($"Expected a color @ {reader.Position}");
+                            }
                         }
                         else
                         {
-                            lastBackground = (ConsoleColor)Enum.Parse(typeof(ConsoleColor), match.Groups["color"].Value);
+                            if (Enum.TryParse(match.Groups["color"].Value, out ConsoleColor c))
+                            {
+                                lastBackground = (RGB)c;
+                            }
+                            else if (RGB.TryParse(match.Groups["color"].Value, out lastBackground) == false)
+                            {
+                                throw new ArgumentException($"Expected a color @ {reader.Position}");
+                            }
                         }
 
                         reader.Expect("]");
@@ -265,11 +279,26 @@ namespace PowerArgs.Cli
 
                         if (isForeground)
                         {
-                            lastFg = (ConsoleColor)Enum.Parse(typeof(ConsoleColor), match.Groups["color"].Value);
+
+                            if(Enum.TryParse<ConsoleColor>(match.Groups["color"].Value, out ConsoleColor c))
+                            {
+                                lastFg = c;
+                            }
+                            else if(RGB.TryParse(match.Groups["color"].Value, out lastFg) == false)
+                            {
+                                throw new ArgumentException($"Expected a color @ {reader.Position}");
+                            }
                         }
                         else
                         {
-                            lastBg = (ConsoleColor)Enum.Parse(typeof(ConsoleColor), match.Groups["color"].Value);
+                            if (Enum.TryParse<ConsoleColor>(match.Groups["color"].Value, out ConsoleColor c))
+                            {
+                                lastBg = c;
+                            }
+                            else if (RGB.TryParse(match.Groups["color"].Value, out lastBg) == false)
+                            {
+                                throw new ArgumentException($"Expected a color @ {reader.Position}");
+                            }
                         }
                     }
                     else

@@ -13,22 +13,22 @@ namespace PowerArgs
         /// <summary>
         /// Gets or sets the foreground color to use when a valid argument name appears on the command line
         /// </summary>
-        public ConsoleColor ArgumentNameForeground { get; set; }
+        public RGB ArgumentNameForeground { get; set; }
 
         /// <summary>
         /// Gets or sets the foreground color to use when a numeric value appears on the command line
         /// </summary>
-        public ConsoleColor NumericForeground { get; set; }
+        public RGB NumericForeground { get; set; }
 
         /// <summary>
         /// Gets or sets the foreground color to use when a double quoted string literal appears on the command line
         /// </summary>
-        public ConsoleColor StringLiteralForeground { get; set; }
+        public RGB StringLiteralForeground { get; set; }
 
         /// <summary>
         /// Gets or sets the foregrund color to use when a valid action alias appears as the first token on the command line
         /// </summary>
-        public ConsoleColor ActionForeground { get; set; }
+        public RGB ActionForeground { get; set; }
 
         /// <summary>
         /// Gets the definition that is used to configure the reader
@@ -357,12 +357,12 @@ namespace PowerArgs
             return false;
         }
 
-        public ConsoleColor? HighlightForegroundColor
+        public RGB? HighlightForegroundColor
         {
             get { return ConsoleColor.Red; }
         }
 
-        public ConsoleColor? HighlightBackgroundColor
+        public RGB? HighlightBackgroundColor
         {
             get { return null; }
         }

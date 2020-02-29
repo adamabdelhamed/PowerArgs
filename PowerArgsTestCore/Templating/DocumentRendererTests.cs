@@ -105,7 +105,7 @@ namespace ArgsTests.Templating
             var rendered = new DocumentRenderer().Render("Hi {{Name Red!}}! Sup?", new { Name = "Adam" });
             Assert.AreEqual("Hi Adam! Sup?", rendered.ToString());
             Assert.AreEqual(new ConsoleCharacter('a').ForegroundColor, rendered[0].ForegroundColor);
-            Assert.AreEqual(ConsoleColor.Red, rendered[3].ForegroundColor);
+            Assert.AreEqual(ConsoleColor.Red, (ConsoleColor)rendered[3].ForegroundColor);
             Assert.AreEqual(new ConsoleCharacter('a').ForegroundColor, rendered[rendered.Length - 1].ForegroundColor);
         }
 

@@ -68,12 +68,12 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Gets or sets the background color
         /// </summary>
-        public ConsoleColor Background { get { return Get<ConsoleColor>(); } set { Set(value); } }
+        public RGB Background { get { return Get<RGB>(); } set { Set(value); } }
 
         /// <summary>
         /// Gets or sets the foreground color
         /// </summary>
-        public ConsoleColor Foreground { get { return Get<ConsoleColor>(); } set { Set(value); } }
+        public RGB Foreground { get { return Get<RGB>(); } set { Set(value); } }
 
         /// <summary>
         /// Gets or sets whether or not this control should paint its background color or leave it transparent.  By default

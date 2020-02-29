@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli;
+using System;
 using System.Collections.Generic;
 
 namespace PowerArgs
@@ -26,24 +27,52 @@ namespace PowerArgs
         /// <summary>
         /// Gets the ConsoleColor that matches the provided foreground color token, if it was provided.
         /// </summary>
-        public ConsoleColor? FG
+        public RGB? FG
         {
             get
             {
-                if (ForegroundColorToken == null) return null;
-                else return (ConsoleColor)Enum.Parse(typeof(ConsoleColor), ForegroundColorToken.Value, true);
+                if (ForegroundColorToken == null)
+                {
+                    return null;
+                }
+                else if (Enum.TryParse(ForegroundColorToken.Value, out ConsoleColor c))
+                {
+                    return ConsoleBitmap.ColorMap[(int)c];
+                }
+                else if(RGB.TryParse(ForegroundColorToken.Value, out RGB rgb))
+                {
+                    return rgb;
+                }
+                else
+                {
+                    throw new FormatException($"Could not parse color '{ForegroundColorToken.Value}'");
+                }
             }
         }
 
         /// <summary>
         /// Gets the ConsoleColor that matches the provided background color token, if it was provided.
         /// </summary>
-        public ConsoleColor? BG
+        public RGB? BG
         {
             get
             {
-                if (BackgroundColorToken == null) return null;
-                else return (ConsoleColor)Enum.Parse(typeof(ConsoleColor), BackgroundColorToken.Value, true);
+                if (BackgroundColorToken == null)
+                {
+                    return null;
+                }
+                else if (Enum.TryParse(BackgroundColorToken.Value, out ConsoleColor c))
+                {
+                    return ConsoleBitmap.ColorMap[(int)c];
+                }
+                else if (RGB.TryParse(BackgroundColorToken.Value, out RGB rgb))
+                {
+                    return rgb;
+                }
+                else
+                {
+                    throw new FormatException($"Could not parse color '{BackgroundColorToken.Value}'");
+                }
             }
         }
 

@@ -35,8 +35,8 @@ namespace PowerArgs.Cli
         private PixelControl cursor;
         private ConsolePanel frame;
         private ConsoleBitmapViewer viewer;
-        private ConsoleColor currentFg { get => Get<ConsoleColor>(); set => Set(value); }
-        private ConsoleColor currentBg { get => Get<ConsoleColor>(); set => Set(value); }
+        private RGB currentFg { get => Get<RGB>(); set => Set(value); }
+        private RGB currentBg { get => Get<RGB>(); set => Set(value); }
 
         /// <summary>
         /// Creates an editor with a new bitmap of the given size
@@ -94,7 +94,7 @@ namespace PowerArgs.Cli
             {
                 Dialog.ShowEnumOptions<ConsoleColor>("Choose a color".ToConsoleString()).Then((newColor) =>
                 {
-                    currentFg = newColor.HasValue ? newColor.Value : currentFg;
+                    currentFg = newColor.HasValue ? (RGB)newColor.Value : currentFg;
                 });
             }, this);
 
@@ -104,7 +104,7 @@ namespace PowerArgs.Cli
             {
                 Dialog.ShowEnumOptions<ConsoleColor>("Choose a color".ToConsoleString()).Then((newColor) =>
                 {
-                    currentBg = newColor.HasValue ? newColor.Value : currentBg;
+                    currentBg = newColor.HasValue ? (RGB)newColor : currentBg;
                 });
             }, this);
 

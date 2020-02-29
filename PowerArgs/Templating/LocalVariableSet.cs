@@ -11,12 +11,12 @@ namespace PowerArgs
         /// <summary>
         /// An optional foreground color value
         /// </summary>
-        public ConsoleColor? FG { get; set; }
+        public RGB? FG { get; set; }
 
         /// <summary>
         /// An optional background color value
         /// </summary>
-        public ConsoleColor? BG { get; set; }
+        public RGB? BG { get; set; }
     }
 
     /// <summary>
@@ -41,13 +41,13 @@ namespace PowerArgs
         /// <summary>
         /// Gets the current foreground color that is in scope or null if it is not currently defined
         /// </summary>
-        public ConsoleColor? CurrentForegroundColor
+        public RGB? CurrentForegroundColor
         {
             get
             {
                 if (IsDefined("ConsoleForegroundColor"))
                 {
-                    return (ConsoleColor)this["ConsoleForegroundColor"];
+                    return (RGB)(ConsoleColor)this["ConsoleForegroundColor"];
                 }
                 else
                 {
@@ -59,13 +59,13 @@ namespace PowerArgs
         /// <summary>
         /// Gets the current background color that is in scope or null if it is not currently defined
         /// </summary>
-        public ConsoleColor? CurrentBackgroundColor
+        public RGB? CurrentBackgroundColor
         {
             get
             {
                 if (IsDefined("ConsoleBackgroundColor"))
                 {
-                    return (ConsoleColor)this["ConsoleBackgroundColor"];
+                    return (RGB)(ConsoleColor)this["ConsoleBackgroundColor"];
                 }
                 else
                 {
@@ -79,28 +79,28 @@ namespace PowerArgs
         /// </summary>
         /// <param name="fg">The optional foreground color to set</param>
         /// <param name="bg">The optional background color to set</param>
-        public void PushConsoleColors(ConsoleColor? fg = null, ConsoleColor? bg = null)
+        public void PushConsoleColors(RGB? fg = null, RGB? bg = null)
         {
             ConsoleColorStackElement el = new ConsoleColorStackElement();
             if(IsDefined("ConsoleForegroundColor"))
             {
-                el.FG = (ConsoleColor)this["ConsoleForegroundColor"];
+                el.FG = (RGB)(ConsoleColor)this["ConsoleForegroundColor"];
             }
 
             if (IsDefined("ConsoleBackgroundColor"))
             {
-                el.BG = (ConsoleColor)this["ConsoleBackgroundColor"];
+                el.BG = (RGB)(ConsoleColor)this["ConsoleBackgroundColor"];
             }
             consoleStack.Push(el);
 
-            if(fg.HasValue)
+            if (fg.HasValue)
             {
-                Force("ConsoleForegroundColor", fg.Value);
+                Force("ConsoleForegroundColor", (ConsoleColor)fg.Value);
             }
 
             if (bg.HasValue)
             {
-                Force("ConsoleBackgroundColor", bg.Value);
+                Force("ConsoleBackgroundColor", (ConsoleColor)bg.Value);
             }
         }
 
@@ -111,9 +111,9 @@ namespace PowerArgs
         {
             var popped = consoleStack.Pop();
 
-            if(popped.FG.HasValue)
+            if (popped.FG.HasValue)
             {
-                Force("ConsoleForegroundColor", popped.FG.Value);
+                Force("ConsoleForegroundColor", (ConsoleColor)popped.FG.Value);
             }
             else
             {
@@ -122,7 +122,7 @@ namespace PowerArgs
 
             if (popped.BG.HasValue)
             {
-                Force("ConsoleBackgroundColor", popped.BG.Value);
+                Force("ConsoleBackgroundColor", (ConsoleColor)popped.BG.Value);
             }
             else
             {
