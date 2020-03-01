@@ -152,6 +152,7 @@ namespace PowerArgs
             }
             else
             {
+                FancyTerminal = terminal;
                 terminal.HideCursor();
                 AppDomain.CurrentDomain.ProcessExit += (s, e) => terminal.ShowCursor();
                 return true;
