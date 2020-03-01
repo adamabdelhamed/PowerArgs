@@ -1,6 +1,4 @@
-﻿using PowerArgs.Cli;
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace PowerArgs
 {
@@ -37,7 +35,7 @@ namespace PowerArgs
                 }
                 else if (Enum.TryParse(ForegroundColorToken.Value, out ConsoleColor c))
                 {
-                    return ConsoleBitmap.ColorMap[(int)c];
+                    return RGB.ConsoleColorMap[(int)c];
                 }
                 else if(RGB.TryParse(ForegroundColorToken.Value, out RGB rgb))
                 {
@@ -63,7 +61,7 @@ namespace PowerArgs
                 }
                 else if (Enum.TryParse(BackgroundColorToken.Value, out ConsoleColor c))
                 {
-                    return ConsoleBitmap.ColorMap[(int)c];
+                    return RGB.ConsoleColorMap[(int)c];
                 }
                 else if (RGB.TryParse(BackgroundColorToken.Value, out RGB rgb))
                 {

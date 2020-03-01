@@ -129,6 +129,7 @@ namespace PowerArgs
         /// </summary>
         public static ConsoleRenderer Renderer { get; private set; } = null;
 
+        internal static ITerminal FancyTerminal { get; private set; } = null;
 
         /// <summary>
         /// Experimental - Leveraging new .NET command line APIs. To try. If this method returns true
@@ -151,6 +152,8 @@ namespace PowerArgs
             }
             else
             {
+                terminal.HideCursor();
+                AppDomain.CurrentDomain.ProcessExit += (s, e) => terminal.ShowCursor();
                 return true;
             }
         }

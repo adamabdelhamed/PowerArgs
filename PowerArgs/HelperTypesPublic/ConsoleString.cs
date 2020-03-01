@@ -21,74 +21,7 @@ namespace PowerArgs
         ConsoleString ToConsoleString();
     }
 
-    public struct RGB
-    { 
-        public byte R { get; private set; }
-        public byte G { get; private set; }
-        public byte B { get; private set; }
 
-      
-
-        public RGB(RgbColor color)
-        {
-            this.R = color.Red;
-            this.G = color.Green;
-            this.B = color.Blue;
-        }
-
-        public RGB(byte r, byte g, byte b) : this(new RgbColor(r, g, b)) { }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is RGB == false) return false;
-            var other = (RGB)obj;
-            if (other == null) return false;
-            return this.R == other.R &&  this.G == other.G && this.B == other.B;
-        }
-
-        public override int GetHashCode() => $"{R}/{G}/{B}".GetHashCode();
-
-        public static bool operator ==(RGB a, RGB b) => a.Equals(b);
-        public static bool operator !=(RGB a, RGB b) => !a.Equals(b);
-
-        public static bool operator ==(RGB a, ConsoleColor b) => a.Equals((RGB)b);
-        public static bool operator !=(RGB a, ConsoleColor b) => !a.Equals((RGB)b);
-
-        public static implicit operator ConsoleColor(RGB color) => color == null ? (ConsoleColor)ConsoleString.DefaultForegroundColor : ConsoleBitmap.ReverseColorMap[color];
-        public static implicit operator RGB(ConsoleColor color) => (int)color < ConsoleBitmap.ColorMap.Length ? ConsoleBitmap.ColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
-
-        public RgbColor ToRgbColor() => new RgbColor(R, G, B);
-
-        private static readonly Regex RGBRegex = new Regex(@"^\s*(?<r>d+)\s*,\s*(?<g>d+)\s*,\s*(?<b>d+)\s*$");
-
-        internal static bool TryParse(string value, out RGB ret)
-        {
-            var match = RGBRegex.Match(value);
-            if (match.Success == false)
-            {
-                ret = default(RGB);
-                return false;
-            }
-            var r = byte.Parse(match.Groups["r"].Value);
-            var g = byte.Parse(match.Groups["g"].Value);
-            var b = byte.Parse(match.Groups["b"].Value);
-            ret = new RGB(r, g, b);
-            return true;
-        }
-
-        public override string ToString()
-        {
-            if (ConsoleBitmap.ReverseColorMap.TryGetValue(this, out ConsoleColor c))
-            {
-                return c.ToString();
-            }
-            else
-            {
-                return $"{R},{G},{B}";
-            }
-        }
-    }
- 
     /// <summary>
     /// A wrapper for char that encapsulates foreground and background colors.
     /// </summary>

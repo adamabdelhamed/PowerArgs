@@ -13,46 +13,7 @@ namespace PowerArgs.Cli
     public class ConsoleBitmap
     {
 
-        public static readonly RGB[] ColorMap = new RGB[]
-        {
-            new RGB(0,0,0) ,      // Black = 0
-            new RGB(0,0,139) ,      // DarkBlue = 1
-            new RGB(0,139,0) ,      // DarkGreen = 2
-            new RGB(0,139,139) ,      // DarkCyan = 3
-            new RGB(139,0,0) ,      // DarkRed = 4
-            new RGB(139,0,139) ,      // DarkMagenta = 5
-            new RGB(204,204,0) ,      // DarkYellow = 6
-            new RGB(200,200,200) ,      // Gray = 7
-            new RGB(128,128,128) ,      // DarkGray = 8
-            new RGB(0,0,255) ,      // Blue = 9
-            new RGB(0,255,0) ,      // Green = 10
-            new RGB(0,255,255) ,      // Cyan = 11
-            new RGB(255,0,0) ,      // Red = 12
-            new RGB(255,0,255) ,      // Magenta = 13
-            new RGB(255,255,0) ,      // Yellow = 14
-            new RGB(255,255,255) ,      // White = 15
-        };
-
-        public static readonly ReadOnlyDictionary<RGB, ConsoleColor> ReverseColorMap = new ReadOnlyDictionary<RGB,ConsoleColor>(new Dictionary<RGB, ConsoleColor>
-       {
-            { new RGB(0,0,0) ,  ConsoleColor.Black },    // Black = 0
-            { new RGB(0,0,139) , ConsoleColor.DarkBlue },     // DarkBlue = 1
-            { new RGB(0,139,0) ,  ConsoleColor.DarkGreen },    // DarkGreen = 2
-           {  new RGB(0,139,139) ,   ConsoleColor.DarkCyan },   // DarkCyan = 3
-            { new RGB(139,0,0) ,    ConsoleColor.DarkRed },  // DarkRed = 4
-            { new RGB(139,0,139) ,    ConsoleColor.DarkMagenta },  // DarkMagenta = 5
-           {  new RGB(204,204,0) ,   ConsoleColor.DarkYellow },   // DarkYellow = 6
-            { new RGB(200,200,200) ,   ConsoleColor.Gray },  // Gray = 7
-         {    new RGB(128,128,128) ,    ConsoleColor.DarkGray },  // DarkGray = 8
-          {   new RGB(0,0,255) ,    ConsoleColor.Blue },  // Blue = 9
-         {    new RGB(0,255,0) ,   ConsoleColor.Green },   // Green = 10
-          {   new RGB(0,255,255) ,  ConsoleColor.Cyan },    // Cyan = 11
-          {   new RGB(255,0,0) ,    ConsoleColor.Red },  // Red = 12
-          {   new RGB(255,0,255) ,   ConsoleColor.Magenta },   // Magenta = 13
-          {   new RGB(255,255,0) ,    ConsoleColor.Yellow },  // Yellow = 14
-          {   new RGB(255,255,255) ,  ConsoleColor.White },    // White = 15
-       });
-
+  
 
         private const double DrawPrecision = .25;
 
@@ -844,6 +805,9 @@ namespace PowerArgs.Cli
              
                     chunksOnLine.Clear();
                 }
+
+                ConsoleProvider.FancyTerminal.CursorLeft = 0;
+                ConsoleProvider.FancyTerminal.CursorTop = 0;
             }
             catch (IOException)
             {
