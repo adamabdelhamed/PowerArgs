@@ -62,7 +62,7 @@ namespace PowerArgs.Cli
 
         public ScrollablePanel()
         {
-            ScrollableContent = Add(new ConsolePanel() { IsVisible = false }).Fill();
+            ScrollableContent = Add(new ConsolePanel() { IsVisible = true }).Fill();
         
             verticalScrollbar = Add(new Scrollbar(Orientation.Vertical) { Width = 1 }).DockToRight();
             horizontalScrollbar = Add(new Scrollbar(Orientation.Horizontal) { Height = 1 }).DockToBottom();
@@ -173,9 +173,7 @@ namespace PowerArgs.Cli
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            var fullSize = ScrollableContentSize;
-            ConsoleBitmap fullyPaintedPanel = new ConsoleBitmap(0, 0, fullSize.Width, fullSize.Height);
-            ScrollableContent.PaintTo(fullyPaintedPanel);
+            ScrollableContent.Paint();
 
             for (int x = 0; x < Width; x++)
             {
@@ -184,12 +182,12 @@ namespace PowerArgs.Cli
                     int scrollX = x + HorizontalScrollUnits;
                     int scrollY = y + VerticalScrollUnits;
 
-                    if (scrollX >= fullyPaintedPanel.Width || scrollY >= fullyPaintedPanel.Height)
+                    if (scrollX >= ScrollableContent.Width || scrollY >= ScrollableContent.Height)
                     {
                         continue;
                     }
 
-                    var scrolledPixel = fullyPaintedPanel.GetPixel(scrollX, scrollY);
+                    var scrolledPixel = ScrollableContent.Bitmap.GetPixel(scrollX, scrollY);
 
                     if (scrolledPixel.Value.HasValue)
                     {
@@ -203,8 +201,6 @@ namespace PowerArgs.Cli
                     context.DrawPoint(x, y);
                 }
             }
-
-            base.OnPaint(context);
         }
     }
 

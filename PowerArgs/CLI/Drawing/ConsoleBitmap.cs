@@ -12,11 +12,7 @@ namespace PowerArgs.Cli
     /// </summary>
     public class ConsoleBitmap
     {
-
-  
-
         private const double DrawPrecision = .25;
-
 
         /// <summary>
         /// The width of the image, in number of character pixels
@@ -42,13 +38,6 @@ namespace PowerArgs.Cli
         /// The character to draw when calling the various Draw methods
         /// </summary>
         public ConsoleCharacter Pen { get; set; }
-
-        /// <summary>
-        /// The inner rectangle that is used to temporarily
-        /// reduce the drawing area. When a scope is set calls to the draw
-        /// methods will be scoped to this area
-        /// </summary>
-        public Rectangle Scope { get; set; }
 
         /// <summary>
         /// The console to target when the Paint method is called 
@@ -87,7 +76,6 @@ namespace PowerArgs.Cli
             this.Y = bounds.Y;
             this.Width = bounds.Width;
             this.Height = bounds.Height;
-            this.Scope = bounds;
             this.Console = ConsoleProvider.Current;
             this.lastBufferWidth = this.Console.BufferWidth;
             this.Pen = new ConsoleCharacter('*');
@@ -184,7 +172,6 @@ namespace PowerArgs.Cli
             pixels = newPixels;
             this.Width = w;
             this.Height = h;
-            this.Scope = new Rectangle(X,Y,Width,Height);
             this.Invalidate();
         }
 
@@ -216,28 +203,7 @@ namespace PowerArgs.Cli
             return wiper;
         }
 
-        /// <summary>
-        /// Incrementally adjusts the current scope
-        /// </summary>
-        /// <param name="xIncrement">the x increment</param>
-        /// <param name="yIncrement">the y increment</param>
-        /// <param name="w">the width of the scope</param>
-        /// <param name="h">the height of the scope</param>
-        public void NarrowScope(int xIncrement, int yIncrement, int w, int h)
-        {
-            w = Math.Min(w, Scope.Width - xIncrement);
-            h = Math.Min(h, Scope.Height - yIncrement);
-            Scope = new Rectangle(Scope.X + xIncrement, Scope.Y + yIncrement, w, h);
-        }
-
-        private bool IsInScope(int x, int y)
-        {
-            if (x < 0 || x >= Width) return false;
-            if (y < 0 || y >= Height) return false;
-            return Scope.Contains(x, y);
-        }
-
-        private bool IsInBounds(int x, int y)
+        public bool IsInBounds(int x, int y)
         {
             if (x < 0 || x >= Width) return false;
             if (y < 0 || y >= Height) return false;
@@ -266,17 +232,15 @@ namespace PowerArgs.Cli
         /// <param name="h">the height of the rectangle</param>
         public void FillRect(int x, int y, int w, int h)
         {
-            var startX = Scope.X + x;
-            var maxX = startX + w;
-            var startY = Scope.Y + y;
-            var maxY = startY + h;
-            for (int xd = startX; xd < maxX; xd++)
+            var maxX = x + w;
+            var maxY = y + h;
+            for (int xd = x; xd < maxX; xd++)
             {
-                for(var yd = startY; yd < maxY; yd++)
+                for(var yd = y; yd < maxY; yd++)
                 {
-                    if (IsInScope(xd, yd))
+                    if (IsInBounds(xd, yd))
                     {
-                        pixels[xd][yd].Value = Pen;
+                        Compose(xd, yd, Pen);
                     }
                 }
             }
@@ -292,45 +256,43 @@ namespace PowerArgs.Cli
         /// <param name="h">the height of the rectangle</param>
         public void DrawRect(int x, int y, int w, int h)
         {
-            var startX = Scope.X + x;
-            var maxX = startX + w;
-            var startY = Scope.Y + y;
-            var maxY = startY + h;
+            var maxX = x + w;
+            var maxY = y + h;
             
             // left vertical line
-            for (var yd = startY; yd < maxY; yd++)
+            for (var yd = y; yd < maxY; yd++)
             {
-                if (IsInScope(startX, yd))
+                if (IsInBounds(x, yd))
                 {
-                    pixels[startX][yd].Value = Pen;
+                    Compose(x, yd, Pen);
                 }
             }
 
             // right vertical line
-            for (var yd = startY; yd < maxY; yd++)
+            for (var yd = y; yd < maxY; yd++)
             {
-                if (IsInScope(maxX-1, yd))
+                if (IsInBounds(maxX-1, yd))
                 {
-                    pixels[maxX - 1][yd].Value = Pen;
+                    Compose(maxX - 1, yd, Pen);
                 }
             }
 
 
             // top horizontal line
-            for (int xd = startX; xd < maxX; xd++)
+            for (int xd = x; xd < maxX; xd++)
             {
-                if (IsInScope(xd, startY))
+                if (IsInBounds(xd, y))
                 {
-                    pixels[xd][startY].Value = Pen;
+                    Compose(xd,y, Pen);
                 }
             }
 
             // bottom horizontal line
-            for (int xd = startX; xd < maxX; xd++)
+            for (int xd = x; xd < maxX; xd++)
             {
-                if (IsInScope(xd, maxY-1))
+                if (IsInBounds(xd, maxY-1))
                 {
-                    pixels[xd][maxY - 1].Value = Pen;
+                    Compose(xd,maxY - 1,  Pen);
                 }
             }
         }
@@ -344,9 +306,8 @@ namespace PowerArgs.Cli
         /// <param name="vert">if true, draw vertically, else draw horizontally</param>
         public void DrawString(ConsoleString str, int x, int y, bool vert = false)
         {
-            var xStart = Scope.X + x;
-            x = Scope.X + x;
-            y = Scope.Y + y;
+            var xStart = x;
+
             foreach (var character in str)
             {
                 if (character.Value == '\n')
@@ -358,9 +319,9 @@ namespace PowerArgs.Cli
                 {
                     // ignore
                 }
-                else if (IsInScope(x, y))
+                else if (IsInBounds(x, y))
                 {
-                    pixels[x][y].Value = character;
+                    Compose(x, y, character);
                     if (vert) y++;
                     else x++;
                 }
@@ -374,13 +335,14 @@ namespace PowerArgs.Cli
         /// <param name="y">the y coordinate</param>
         public void DrawPoint(int x, int y)
         {
-            x = Scope.X + x;
-            y = Scope.Y + y;
-
-            if (IsInScope(x, y))
+            if (IsInBounds(x, y))
             {
-                pixels[x][y].Value = Pen;
+                Compose(x, y, Pen);
             }
+        }
+        private void Compose(int x, int y, ConsoleCharacter pen)
+        {
+           pixels[x][y].Value = pen;
         }
 
         [ThreadStatic]
@@ -395,19 +357,14 @@ namespace PowerArgs.Cli
         /// <param name="y2">the y coordinate of the second point</param>
         public void DrawLine(int x1, int y1, int x2, int y2)
         {
-            x1 = Scope.X + x1;
-            y1 = Scope.Y + y1;
-
-            x2 = Scope.X + x2;
-            y2 = Scope.Y + y2;
             var len = DefineLineBuffered(x1, y1, x2, y2);
             Point point;
             for(var i = 0; i < len; i++)
             {
                 point = LineBuffer[i];
-                if (IsInScope(point.X, point.Y))
+                if (IsInBounds(point.X, point.Y))
                 {
-                    pixels[point.X][point.Y].Value = Pen;
+                    Compose(point.X, point.Y, Pen);
                 }
             }
         }
@@ -571,10 +528,10 @@ namespace PowerArgs.Cli
                 RGB fg;
                 RGB bg;
                 bool pixelChanged;
-                for (int y = Scope.Y; y < Scope.Y + Scope.Height; y++)
+                for (int y = 0; y < Height; y++)
                 {
                     var changeOnLine = false;
-                    for (int x = Scope.X; x < Scope.X + Scope.Width; x++)
+                    for (int x = 0; x < Width; x++)
                     {
                         pixel = pixels[x][y];
                         pixelChanged = pixel.HasChanged;
@@ -585,7 +542,7 @@ namespace PowerArgs.Cli
                         if (currentChunk == null)
                         {
                             // first pixel always gets added to the current empty chunk
-                            currentChunk = new Chunk(Scope.Width);
+                            currentChunk = new Chunk(Width);
                             currentChunk.FG = fg;
                             currentChunk.BG = bg;
                             currentChunk.HasChanged = pixelChanged;
@@ -606,7 +563,7 @@ namespace PowerArgs.Cli
                             // either the styles of consecutive changing characters differ or we've gone from a non changed character to a changed one
                             // in either case we end the current chunk and start a new one
                             chunksOnLine.Add(currentChunk);
-                            currentChunk = new Chunk(Scope.Width);
+                            currentChunk = new Chunk(Width);
                             currentChunk.FG = fg;
                             currentChunk.BG = bg;
                             currentChunk.HasChanged = pixelChanged;
@@ -625,7 +582,7 @@ namespace PowerArgs.Cli
                     if (changeOnLine)
                     {
                         Console.CursorTop = y; // we know there will be a change on this line so move the cursor top
-                        var left = Scope.X;
+                        var left = 0;
                         var leftChanged = true;
                         for (var i = 0; i < chunksOnLine.Count; i++)
                         {
@@ -697,10 +654,10 @@ namespace PowerArgs.Cli
                 ConsolePixel pixel;
                 bool changeOnLine;
                 bool pixelChanged;
-                for (int y = Scope.Y; y < Scope.Y + Scope.Height; y++)
+                for (int y = 0; y < Height; y++)
                 {
                     changeOnLine = false;
-                    for (int x = Scope.X; x < Scope.X + Scope.Width; x++)
+                    for (int x = 0; x < Width; x++)
                     {
                         pixel = pixels[x][y];
                         pixelChanged = pixel.HasChanged;
@@ -724,7 +681,7 @@ namespace PowerArgs.Cli
                         if (currentChunk == null)
                         {
                             // first pixel always gets added to the current empty chunk
-                            currentChunk = new Chunk(Scope.Width);
+                            currentChunk = new Chunk(Width);
                             currentChunk.FG = fg;
                             currentChunk.BG = bg;
                             currentChunk.Underlined = underlined;
@@ -744,7 +701,7 @@ namespace PowerArgs.Cli
                         else
                         {
                             chunksOnLine.Add(currentChunk);
-                            currentChunk = new Chunk(Scope.Width);
+                            currentChunk = new Chunk(Width);
                             currentChunk.FG = fg;
                             currentChunk.BG = bg;
                             currentChunk.Underlined = underlined;
@@ -763,7 +720,7 @@ namespace PowerArgs.Cli
 
                     if (changeOnLine)
                     {
-                        var left = Scope.X;
+                        var left = 0;
                         for (var i = 0; i < chunksOnLine.Count; i++)
                         {
                             var chunk = chunksOnLine[i];

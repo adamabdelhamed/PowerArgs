@@ -242,6 +242,12 @@ namespace PowerArgs.Cli.Physics
     {
         public SpacialElement Element { get; set; }
         public SpaceTime Spacetime { get; set; }
+        
+        public SpacialElementRenderer()
+        {
+            this.CompositionMode = CompositionMode.Blend;
+        }
+        
         public virtual void OnBind() { }
         public virtual void OnRender()
         {

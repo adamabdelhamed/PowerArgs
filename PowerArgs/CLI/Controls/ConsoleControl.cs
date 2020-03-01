@@ -1,13 +1,23 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
+
+    public enum CompositionMode
+    {
+        PaintOver = 0,
+        Blend = 1,
+    }
+
     /// <summary>
     /// A class that represents a visual element within a CLI application
     /// </summary>
     public class ConsoleControl : Rectangular
     {
+        /// <summary>
+        /// Controls how controls are painted when multiple controls overlap
+        /// </summary>
+        public CompositionMode CompositionMode { get; set; } = CompositionMode.PaintOver;
         /// <summary>
         /// An id that can be used for debugging.  It is not used for anything internally.
         /// </summary>
@@ -162,6 +172,7 @@ namespace PowerArgs.Cli
             }
         }
 
+        internal ConsoleBitmap Bitmap;
 
         /// <summary>
         /// Creates a new ConsoleControl
@@ -169,6 +180,15 @@ namespace PowerArgs.Cli
         public ConsoleControl()
         {
             CanFocus = true;
+            this.Bitmap = new ConsoleBitmap(1, 1);
+            this.SubscribeForLifetime(nameof(Bounds), () =>
+            {
+                if (Width > 0 && Height > 0)
+                {
+                    this.Bitmap.Resize(Width, Height);
+                }
+ 
+            }, this);
             Background = DefaultColors.BackgroundColor;
             this.Foreground = DefaultColors.ForegroundColor;
             this.IsVisible = true;
@@ -268,7 +288,7 @@ namespace PowerArgs.Cli
         public override string ToString()
         {
             return GetType().Name+" ("+Id+")";
-                }
+        }
         
         /// <summary>
         /// You should override this method if you are building a custom control, from scratch, and need to control
@@ -317,32 +337,27 @@ namespace PowerArgs.Cli
             RemovedFromVisualTree.Fire();
         }
 
-        internal void Paint(ConsoleBitmap context)
+        internal void Paint()
         {
-            if (IsVisible == false)
+            if (IsVisible == false || Height <= 0 || Width <= 0)
             {
                 return;
             }
-
+            
             if (TransparentBackground == false)
             {
-                context.Pen = new ConsoleCharacter(' ', null, Background);
-                context.FillRect(0, 0, Width, Height);
+                Bitmap.Pen = new ConsoleCharacter(' ', null, Background);
+                Bitmap.FillRect(0, 0, Width, Height);
             }
 
-            OnPaint(context);
-            if (Recorder != null && Recorder.IsExpired == false && Width == context.Scope.Width && context.Scope.Height == Height)
+            OnPaint(Bitmap);
+            if (Recorder != null && Recorder.IsExpired == false)
             {
-                Recorder.Window = context.Scope;
-                Recorder.WriteFrame(context, false, RecorderTimestampProvider != null ? new TimeSpan?(RecorderTimestampProvider()) : new TimeSpan?());
+                Recorder.Window = new Rectangle(0,0,Width,Height);
+                Recorder.WriteFrame(Bitmap, false, RecorderTimestampProvider != null ? new TimeSpan?(RecorderTimestampProvider()) : new TimeSpan?());
             }
         }
-
-        internal void PaintTo(ConsoleBitmap context)
-        {
-            OnPaint(context);
-        }
-
+ 
         internal void HandleKeyInput(ConsoleKeyInfo info)
         {
             KeyInputReceived.Fire(info);

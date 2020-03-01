@@ -110,20 +110,45 @@ namespace PowerArgs.Cli
         {
             foreach (var control in GetPaintOrderedControls())
             {
-                Rectangle myScope = context.Scope;
-                try
+                if (control.Width > 0 && control.Height > 0 && control.IsVisible)
                 {
-                    var w = control.X >= 0 ? control.Width : control.Width + control.X;
-                    var h = control.Y >= 0 ? control.Height: control.Height + control.Y;
-                    context.NarrowScope(control.X, control.Y, w, h);
-                    if (control.Width > 0 && control.Height > 0)
-                    {
-                        control.Paint(context);
-                    }
+                    control.Paint();
+                    Compose(control);
                 }
-                finally
+            }
+        }
+
+        private void Compose(ConsoleControl control)
+        {
+            var maxX = control.X + control.Width;
+            var maxY = control.Y + control.Height;
+            for (var x = control.X; x < maxX;x++)
+            {
+                for(var y = control.Y; y < maxY; y++)
                 {
-                    context.Scope = myScope;
+                    if (Bitmap.IsInBounds(x,y) == false)
+                    {
+                        continue;
+                    }
+                    var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y).Value;
+
+                    if (controlPixel?.BackgroundColor != ConsoleString.DefaultBackgroundColor || control.CompositionMode == CompositionMode.PaintOver)
+                    {
+                        Bitmap.DrawPoint(controlPixel.Value, x, y);
+                    }
+                    else
+                    {
+                        var myPixel = Bitmap.GetPixel(x, y).Value;
+                        if (myPixel.HasValue && myPixel.Value.BackgroundColor != ConsoleString.DefaultBackgroundColor)
+                        {
+                            var composedValue = new ConsoleCharacter(controlPixel.Value.Value, controlPixel.Value.ForegroundColor, myPixel.Value.BackgroundColor);
+                            Bitmap.DrawPoint(composedValue, x, y);
+                        }
+                        else
+                        {
+                            Bitmap.DrawPoint(controlPixel.Value, x, y);
+                        }
+                    }
                 }
             }
         }

@@ -47,5 +47,7 @@
         {
 
         }
+
+        public override string ToString() => $"{Value} - HasChanged = {HasChanged}";
     }
 }

@@ -140,9 +140,9 @@ namespace PowerArgs.Cli
         {
             this.CanFocus = false;
             RewindAndFastForwardIncrement = TimeSpan.FromSeconds(10);
-            pictureFrame = Add(new Border()).Fill(padding: new Thickness(0,0,0,1));
+            pictureFrame = Add(new Border()).Fill(padding: new Thickness(0,0,0,2));
             pictureFrame.Background = ConsoleColor.DarkGray;
-            pictureInTheFrame = pictureFrame.Add(new BitmapControl() { AutoSize = true, CanFocus = false }).CenterBoth();
+            pictureInTheFrame = pictureFrame.SetContent(new BitmapControl() { AutoSize = true, CanFocus = false }).CenterBoth();
             playerProgressBar = Add(new PlayerProgressBar() { ShowPlayCursor = false }).FillHorizontally(padding: new Thickness(0,0,0,0)).DockToBottom(padding: 1);
 
             var buttonBar = Add(new StackPanel() { CanFocus =false, Height=1, Orientation = Orientation.Horizontal }).FillHorizontally().DockToBottom();
@@ -352,7 +352,7 @@ namespace PowerArgs.Cli
             }
             else if(State == PlayerState.Stopped)
             {
-                pictureFrame.BorderColor = ConsoleColor.Yellow;
+                pictureFrame.Background = ConsoleColor.Yellow;
                 playButton.Text = "Play".ToConsoleString();
             }
             else if (State == PlayerState.Paused)
@@ -370,7 +370,7 @@ namespace PowerArgs.Cli
             }
             else if(State == PlayerState.Failed)
             {
-                pictureFrame.BorderColor = ConsoleColor.Red;
+                pictureFrame.Background = ConsoleColor.Red;
                 Dialog.ShowMessage(failedMessage.ToRed());
             }
             else
