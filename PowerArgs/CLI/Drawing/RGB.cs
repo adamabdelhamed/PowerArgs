@@ -147,12 +147,39 @@ namespace PowerArgs
             }
         }
 
+        /// <summary>
+        /// Converts this color to a new color that is closer to the other
+        /// color provided.
+        /// </summary>
+        /// <param name="other">The other color to change to</param>
+        /// <param name="percentage">The percentage to change. A value of zero will result in the original color being returned. A value of 1 will result in the other color returned. A value between zero and one will result in the color being a mix of the two colors.</param>
+        /// <returns></returns>
+        public RGB ToOther(RGB other, float percentage)
+        {
+            var dR = other.R - R;
+            var dG = other.G - G;
+            var dB = other.B - B;
+
+            var r = R + dR * percentage;
+            var g = G + dG * percentage;
+            var b = B + dB * percentage;
+
+            return new RGB((byte)r, (byte)g, (byte)b);
+        }
+
         public static Task AnimateAsync(RGBAnimationOptions options)
         {
-            var rDelta = options.To.R - options.From.R;
-            var gDelta = options.To.G - options.From.G;
-            var bDelta = options.To.B - options.From.B;
+            var deltaBufferR = new float[options.Transitions.Count];
+            var deltaBufferG = new float[options.Transitions.Count];
+            var deltaBufferB = new float[options.Transitions.Count];
 
+            for (var i = 0; i < options.Transitions.Count; i++)
+            {
+                deltaBufferR[i] = options.Transitions[i].Key.R - options.Transitions[i].Value.R;
+                deltaBufferG[i] = options.Transitions[i].Key.G - options.Transitions[i].Value.G;
+                deltaBufferB[i] = options.Transitions[i].Key.B - options.Transitions[i].Value.B;
+            }
+            var colorBuffer = new RGB[options.Transitions.Count];
             return Animator.AnimateAsync(new FloatAnimatorOptions()
             {
                 From = 0,
@@ -168,17 +195,28 @@ namespace PowerArgs
                 {
                     if (percentage == 1)
                     {
-                        options.OnColorChanged((RGB)options.To);
-                    }
-                    var rDeltaFrame = rDelta * percentage;
-                    var gDeltaFrame = gDelta * percentage;
-                    var bDeltaFrame = bDelta * percentage;
+                        for (var i = 0; i < options.Transitions.Count; i++)
+                        {
+                            colorBuffer[i] = options.Transitions[i].Value;
+                        }
 
-                    var c = new RGB(
-                        (byte)(options.From.R + rDeltaFrame),
-                        (byte)(options.From.G + gDeltaFrame),
-                        (byte)(options.From.B + bDeltaFrame));
-                    options.OnColorChanged(c);
+                    }
+                    else
+                    {
+                        for (var i = 0; i < options.Transitions.Count; i++)
+                        {
+                            var rDeltaFrame = deltaBufferR[i] * percentage;
+                            var gDeltaFrame = deltaBufferG[i] * percentage;
+                            var bDeltaFrame = deltaBufferB[i] * percentage;
+
+                            colorBuffer[i] = new RGB(
+                                (byte)(options.Transitions[i].Key.R + rDeltaFrame),
+                                (byte)(options.Transitions[i].Key.G + gDeltaFrame),
+                                (byte)(options.Transitions[i].Key.B + bDeltaFrame));
+                        }
+                    }
+
+                    options.OnColorsChanged(colorBuffer);
                 }
             });
         }
@@ -186,8 +224,7 @@ namespace PowerArgs
 
     public class RGBAnimationOptions
     {
-        public RGB From { get; set; }
-        public RGB To { get; set; }
+        public List<KeyValuePair<RGB, RGB>> Transitions { get; set; } = new List<KeyValuePair<RGB, RGB>>();
 
         public float Duration { get; set; }
         /// <summary>
@@ -221,7 +258,7 @@ namespace PowerArgs
         /// </summary>
         public Func<bool> IsCancelled { get; set; }
 
-        public Action<RGB> OnColorChanged { get; set; }
+        public Action<RGB[]> OnColorsChanged { get; set; }
     }
 
 
