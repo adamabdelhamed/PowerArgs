@@ -6,7 +6,17 @@ using System.Text;
 
 namespace PowerArgs.Cli
 {
-    public class Rectangular : ObservableObject, IRectangularF
+    public interface IRectangular
+    {
+        int X { get; set; }
+        int Y { get; set; }
+        int Width { get; set; }
+        int Height { get; set; }
+
+        Size Size { get; set; }
+    }
+
+    public class Rectangular : ObservableObject, IRectangular, IRectangularF
     {
         public Rectangle Bounds
         {

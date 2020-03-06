@@ -1,7 +1,7 @@
 ﻿using PowerArgs;
 using System;
 
-namespace Samples
+namespace PowerArgs.Samples
 {
     public class SearchSample
     {

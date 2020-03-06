@@ -216,15 +216,12 @@ namespace PowerArgs.Cli
             Unfocused.SubscribeForLifetime(UpdateHighlightedRowsToReflectCurrentFocus, this);
             KeyInputReceived.SubscribeForLifetime(HandleArrows, this);
 
-            using (var modifyLock = Unlock())
+            presenter = ProtectedPanel.Add(new DataGridPresenter(new DataGridCoreOptions()
             {
-                presenter = Add(new DataGridPresenter(new DataGridCoreOptions()
-                {
-                    Columns = options.Columns.Select(c => c as DataGridColumnDefinition).ToList(),  
-                    ShowColumnHeaders = options.ShowColumnHeaders,
-                    ShowPager=options.ShowPager,
-                })).Fill();
-            }
+                Columns = options.Columns.Select(c => c as DataGridColumnDefinition).ToList(),  
+                ShowColumnHeaders = options.ShowColumnHeaders,
+                ShowPager=options.ShowPager,
+            })).Fill();
 
             presenter.BeforeRecompose.SubscribeForLifetime(BeforeRecompose, this);
             presenter.AfterRecompose.SubscribeForLifetime(UpdateHighlightedRowsToReflectCurrentFocus, this);

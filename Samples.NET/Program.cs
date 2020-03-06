@@ -1,7 +1,6 @@
 ﻿using PowerArgs.Samples;
 using System;
-
-namespace Samples
+namespace Samples.NET
 {
     class Program
     {

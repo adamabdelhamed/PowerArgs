@@ -12,6 +12,8 @@ namespace PowerArgs
     {
         private LifetimeManager _manager;
 
+        public LifetimeManager Manager => _manager;
+
         private static Lifetime forever = CreateForeverLifetime();
 
         private static Lifetime CreateForeverLifetime()

@@ -65,7 +65,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// The border control that hosts the current frame inside of it
         /// </summary>
-        private Border pictureFrame;
+        private BorderPanel pictureFrame;
 
         /// <summary>
         /// The control that renders the current frame in the video
@@ -140,9 +140,11 @@ namespace PowerArgs.Cli
         {
             this.CanFocus = false;
             RewindAndFastForwardIncrement = TimeSpan.FromSeconds(10);
-            pictureFrame = Add(new Border()).Fill(padding: new Thickness(0,0,0,2));
-            pictureFrame.Background = ConsoleColor.DarkGray;
-            pictureInTheFrame = pictureFrame.SetContent(new BitmapControl() { AutoSize = true, CanFocus = false }).CenterBoth();
+            pictureInTheFrame = new BitmapControl() { AutoSize = true, CanFocus = false  };
+            pictureFrame = Add(new BorderPanel(pictureInTheFrame)).Fill(padding: new Thickness(0,0,0,2));
+            pictureInTheFrame.CenterBoth();
+            pictureFrame.BorderColor = ConsoleColor.DarkGray;
+      
             playerProgressBar = Add(new PlayerProgressBar() { ShowPlayCursor = false }).FillHorizontally(padding: new Thickness(0,0,0,0)).DockToBottom(padding: 1);
 
             var buttonBar = Add(new StackPanel() { CanFocus =false, Height=1, Orientation = Orientation.Horizontal }).FillHorizontally().DockToBottom();
@@ -352,7 +354,7 @@ namespace PowerArgs.Cli
             }
             else if(State == PlayerState.Stopped)
             {
-                pictureFrame.Background = ConsoleColor.Yellow;
+                pictureFrame.BorderColor = ConsoleColor.Yellow;
                 playButton.Text = "Play".ToConsoleString();
             }
             else if (State == PlayerState.Paused)
@@ -370,7 +372,7 @@ namespace PowerArgs.Cli
             }
             else if(State == PlayerState.Failed)
             {
-                pictureFrame.Background = ConsoleColor.Red;
+                pictureFrame.BorderColor = ConsoleColor.Red;
                 Dialog.ShowMessage(failedMessage.ToRed());
             }
             else

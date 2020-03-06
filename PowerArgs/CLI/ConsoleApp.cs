@@ -216,7 +216,14 @@ namespace PowerArgs.Cli
             {
                 if(c.Application == this && c.Parent != null && c.Parent.Application == this)
                 {
-                    c.Parent.Controls.Remove(c);
+                    if (c.Parent is ConsolePanel)
+                    {
+                        (c.Parent as ConsolePanel).Controls.Remove(c);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"You cannot manually dispose child controls of parent type {c.Parent.GetType().Name}");
+                    }
                 }
             });
 
@@ -224,6 +231,12 @@ namespace PowerArgs.Cli
             {
                 var childPanel = c as ConsolePanel;
                 childPanel.Controls.SynchronizeForLifetime((cp) => { ControlAddedToVisualTree(cp); }, (cp) => { ControlRemovedFromVisualTree(cp); }, () => { }, c);
+            }
+            else if(c is ProtectedConsolePanel)
+            {
+                var childPanel = c as ProtectedConsolePanel;
+                ControlAddedToVisualTree(childPanel.ProtectedPanelInternal);
+                childPanel.OnDisposed(() => ControlRemovedFromVisualTree(childPanel.ProtectedPanelInternal));
             }
 
             FocusManager.Add(c);

@@ -158,5 +158,11 @@ namespace PowerArgs
                 return true;
             }
         }
+
+        public static void DisableFancyRendering()
+        {
+            Renderer = null;
+            FancyTerminal = null;
+        }
     }
 }

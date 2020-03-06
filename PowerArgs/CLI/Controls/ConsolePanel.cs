@@ -4,20 +4,35 @@ using System.Linq;
 
 namespace PowerArgs.Cli
 {
+    public interface IConsolePanel : IConsoleControl
+    {
+        IEnumerable<ConsoleControl> Descendents { get; }
+        IEnumerable<ConsoleControl> Children { get; }
+    }
+
+    public enum CompositionMode
+    {
+        PaintOver = 0,
+        Blend = 1,
+    }
+
+
     /// <summary>
     /// A console control that has nested control within its bounds
     /// </summary>
-    public class ConsolePanel : ConsoleControl
+    public class ConsolePanel : ConsoleControl, IConsolePanel
     {
         /// <summary>
         /// The nested controls
         /// </summary>
         public ObservableCollection<ConsoleControl> Controls { get; private set; }
 
+        public IEnumerable<ConsoleControl> Children => Controls;
+
         /// <summary>
         /// All nested controls, including those that are recursively nested within inner console panels
         /// </summary>
-        public IReadOnlyCollection<ConsoleControl> Descendents
+        public IEnumerable<ConsoleControl> Descendents
         {
             get
             {
@@ -120,6 +135,12 @@ namespace PowerArgs.Cli
 
         private void Compose(ConsoleControl control)
         {
+            if(control.CompositionMode == CompositionMode.PaintOver)
+            {
+                ComposePaintOver(control);
+                return;
+            }
+
             var maxX = control.X + control.Width;
             var maxY = control.Y + control.Height;
             for (var x = control.X; x < maxX;x++)
@@ -132,7 +153,7 @@ namespace PowerArgs.Cli
                     }
                     var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y).Value;
 
-                    if (controlPixel?.BackgroundColor != ConsoleString.DefaultBackgroundColor || control.CompositionMode == CompositionMode.PaintOver)
+                    if (controlPixel?.BackgroundColor != ConsoleString.DefaultBackgroundColor)
                     {
                         Bitmap.DrawPoint(controlPixel.Value, x, y);
                     }
@@ -152,6 +173,21 @@ namespace PowerArgs.Cli
                 }
             }
         }
+
+        private void ComposePaintOver(ConsoleControl control)
+        {
+            var maxX = control.X + control.Width;
+            var maxY = control.Y + control.Height;
+            for (var x = control.X; x < maxX; x++)
+            {
+                for (var y = control.Y; y < maxY; y++)
+                {
+
+                    var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y).Value;
+                    Bitmap.DrawPoint(controlPixel.Value, x, y);
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -159,10 +195,32 @@ namespace PowerArgs.Cli
     /// adding to its Controls collection. You must use the internal
     /// Unlock method to add or remove controls.
     /// </summary>
-    public class ProtectedConsolePanel : ConsolePanel
+    public class ProtectedConsolePanel : ConsoleControl, IConsolePanel
     {
-        private int activeModifierCount;
+        protected ConsolePanel ProtectedPanel { get; private set; }
 
+        internal ConsolePanel ProtectedPanelInternal => ProtectedPanel;
+
+        public IEnumerable<ConsoleControl> Children
+        {
+            get
+            {
+                yield return ProtectedPanel;
+            }
+        }
+
+        public IEnumerable<ConsoleControl> Descendents
+
+        {
+            get
+            {
+                yield return ProtectedPanel;
+                foreach(var d in ProtectedPanel.Descendents)
+                {
+                    yield return d;
+                }
+            }
+        }
         /// <summary>
         /// Gets or sets the exception message to use when an invalid add or remove is performed
         /// </summary>
@@ -173,29 +231,23 @@ namespace PowerArgs.Cli
         /// </summary>
         public ProtectedConsolePanel()
         {
-            activeModifierCount = 0;
-            Controls.Changed.SubscribeForLifetime(OnChanged, this);
+            this.CanFocus = false;
+            ProtectedPanel = new ConsolePanel();
+            ProtectedPanel.Parent = this;
+            ProtectedPanel.Fill();
         }
 
-        private void OnChanged()
+        protected override void OnPaint(ConsoleBitmap context)
         {
-            if(activeModifierCount == 0)
+            ProtectedPanel.Paint();
+            for (var x = 0; x < Width; x++)
             {
-                throw new InvalidOperationException(ExceptionMessage);
+                for (var y = 0; y < Height; y++)
+                {
+                    var controlPixel = ProtectedPanel.Bitmap.GetPixel(x, y).Value;
+                    Bitmap.DrawPoint(controlPixel.Value, x, y);
+                }
             }
-        }
-
-        /// <summary>
-        /// Enables modification of the Controls connection until the given
-        /// lifetime expires
-        /// </summary>
-        /// <returns>A lifetime that you should dispose when you want to disable controls modification</returns>
-        protected Lifetime Unlock()
-        {
-            var ret = new Lifetime();
-            activeModifierCount++;
-            ret.OnDisposed(() => activeModifierCount--);
-            return ret;
         }
     }
 }

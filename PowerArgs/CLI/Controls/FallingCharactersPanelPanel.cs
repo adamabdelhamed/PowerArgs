@@ -15,36 +15,44 @@ namespace PowerArgs.Cli
             this.primaryColor = primaryColor;
             this.accentColor = accentColor;
             this.bgColor = bgColor;
-            this.AddedToVisualTree.SubscribeForLifetime(Added, this); 
+            this.Ready.SubscribeOnce(Added); 
         }
 
         private void Added()
         {
-            this.OnDisposed(Application.SetInterval(() =>
+            if (this.IsExpired == false && this.Application != null)
             {
-                var fore = r.NextDouble() < .4;
-                var pixel = Add(new PixelControl()
-                {
-                    CanFocus = false,
-                    Value = new ConsoleCharacter((char)r.Next((int)'a', (int)'z'), 
-                    foregroundColor: fore ? primaryColor : bgColor, 
-                    backgroundColor: fore ? bgColor : (r.NextDouble() < .5 ? primaryColor : accentColor)),
-                    X = r.Next(0, Width)
-                });
-
                 this.OnDisposed(Application.SetInterval(() =>
                 {
-                    if (pixel.Y < Height)
+                    var fore = r.NextDouble() < .4;
+                    var pixel = Add(new PixelControl()
                     {
-                        pixel.Y++;
-                    }
-                    else
+                        CanFocus = false,
+                        Value = new ConsoleCharacter((char)r.Next((int)'a', (int)'z'),
+                        foregroundColor: fore ? primaryColor : bgColor,
+                        backgroundColor: fore ? bgColor : (r.NextDouble() < .5 ? primaryColor : accentColor)),
+                        X = r.Next(0, Width)
+                    });
+                    if (this.IsExpired == false && this.Application != null)
                     {
-                        this.Controls.Remove(pixel);
+                        this.OnDisposed(Application.SetInterval(() =>
+                        {
+                            if (this.IsExpired == false && this.Application != null)
+                            {
+                                if (pixel.Y < Height)
+                                {
+                                    pixel.Y++;
+                                }
+                                else
+                                {
+                                    this.Controls.Remove(pixel);
+                                }
+                            }
+                        }, TimeSpan.FromMilliseconds(r.Next(3, 25))));
                     }
-                }, TimeSpan.FromMilliseconds(r.Next(3, 25))));
 
-            }, TimeSpan.FromMilliseconds(r.Next(3, 5))));
+                }, TimeSpan.FromMilliseconds(r.Next(3, 5))));
+            }
         }
     }
 }

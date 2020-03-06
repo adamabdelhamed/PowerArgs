@@ -2,17 +2,16 @@
 
 namespace PowerArgs.Cli
 {
-
-    public enum CompositionMode
+    public interface IConsoleControl : IRectangular, ILifetimeManager, IObservableObject
     {
-        PaintOver = 0,
-        Blend = 1,
+        IConsolePanel Parent { get; }
+        ConsoleApp Application { get; }
     }
 
     /// <summary>
     /// A class that represents a visual element within a CLI application
     /// </summary>
-    public class ConsoleControl : Rectangular
+    public class ConsoleControl : Rectangular, IConsoleControl
     {
         /// <summary>
         /// Controls how controls are painted when multiple controls overlap
@@ -73,7 +72,7 @@ namespace PowerArgs.Cli
         /// Gets a reference to this control's parent in the visual tree.  It will be null if this control is not in the visual tree 
         /// and also if this control is the root of the visual tree.
         /// </summary>
-        public ConsolePanel Parent { get { return Get<ConsolePanel>(); } internal set { Set(value); } }
+        public IConsolePanel Parent { get { return Get<IConsolePanel>(); } internal set { Set(value); } }
 
         /// <summary>
         /// Gets or sets the background color
@@ -144,7 +143,7 @@ namespace PowerArgs.Cli
             get
             {
                 var ret = this.X;
-                var current = this;
+                IConsoleControl current = this;
                 while (current.Parent != null)
                 {
                     current = current.Parent;
@@ -162,7 +161,7 @@ namespace PowerArgs.Cli
             get
             {
                 var ret = this.Y;
-                var current = this;
+                IConsoleControl current = this;
                 while (current.Parent != null)
                 {
                     current = current.Parent;

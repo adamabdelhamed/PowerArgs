@@ -58,25 +58,23 @@ namespace PowerArgs.Cli
         {
             this.Options = options;
             recomposableControls = new List<ConsoleControl>();
-            using (var modifyLock = Unlock())
+
+            var columns = options.Columns.Select(c => c as GridColumnDefinition).ToList();
+
+            if(columns.Where(c => c.Type == GridValueType.RemainderValue).Count() == 0)
             {
-                var columns = options.Columns.Select(c => c as GridColumnDefinition).ToList();
-
-                if(columns.Where(c => c.Type == GridValueType.RemainderValue).Count() == 0)
+                columns.Add(new GridColumnDefinition()
                 {
-                    columns.Add(new GridColumnDefinition()
-                    {
-                        Type = GridValueType.RemainderValue,
-                        Width = 1
-                    });
-                }
-
-                gridLayout = this.Add(new GridLayout(new GridLayoutOptions()
-                {
-                    Columns = columns,
-                    Rows = new List<GridRowDefinition>()
-                })).Fill();
+                    Type = GridValueType.RemainderValue,
+                    Width = 1
+                });
             }
+
+            gridLayout = ProtectedPanel.Add(new GridLayout(new GridLayoutOptions()
+            {
+                Columns = columns,
+                Rows = new List<GridRowDefinition>()
+            })).Fill();
 
             SubscribeForLifetime(nameof(Bounds), Recompose, this);
         }
@@ -121,11 +119,8 @@ namespace PowerArgs.Cli
 
             if(loadingPanel != null)
             {
-                using (var modifyLock = Unlock())
-                {
-                    Controls.Remove(loadingPanel);
-                    loadingPanel = null;
-                }
+                ProtectedPanel.Controls.Remove(loadingPanel);
+                loadingPanel = null;
             }
         }
 
@@ -142,11 +137,8 @@ namespace PowerArgs.Cli
 
         private void ComposeLoadingUX()
         {
-            using(var modifyLock = Unlock())
-            {
-                loadingPanel = Add(new ConsolePanel() { ZIndex = int.MaxValue }).Fill();
-                loadingPanel.Add(new Label() { Text = Options.LoadingMessage }).CenterBoth();
-            }
+            loadingPanel = ProtectedPanel.Add(new ConsolePanel() { ZIndex = int.MaxValue }).Fill();
+            loadingPanel.Add(new Label() { Text = Options.LoadingMessage }).CenterBoth();
         }
 
         private void ComposeDataCells()

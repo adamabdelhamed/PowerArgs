@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace Samples
+namespace PowerArgs.Samples
 {
     public enum Environment
     {

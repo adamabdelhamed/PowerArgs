@@ -4,7 +4,7 @@ using PowerArgs.Cli.Physics;
 using System;
 using System.Threading.Tasks;
 
-namespace Samples
+namespace PowerArgs.Samples
 {
     public enum ConsoleMode
     {
@@ -30,21 +30,18 @@ namespace Samples
     }
 
     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
-    public class PerfTest
+    public class PerfTest : ConsolePanel
     {
         private PerfTestArgs args;
 
         public PerfTest(PerfTestArgs args)
         {
             this.args = args;
+
+            this.Ready.SubscribeOnce(Init);
         }
 
-        public Promise Start()
-        {
-            var app = new ConsoleApp();
-            app.QueueAction(Init);
-            return app.Start();
-        }
+
 
         private TestOptions GetOptionsForArg() => GetType()
                                                     .GetMethod(args.Test.ToString(), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
@@ -56,7 +53,7 @@ namespace Samples
             var testPanel = new PerfTestPanel();
             return new TestOptions()
             {
-                InitTest = () => testPanel = ConsoleApp.Current.LayoutRoot.Add(new PerfTestPanel()).Fill(),
+                InitTest = () => testPanel = Add(new PerfTestPanel()).Fill(),
                 OnFrame = () => testPanel.Even = !testPanel.Even
             };
         }
@@ -72,7 +69,7 @@ namespace Samples
             {
                 InitTest = () =>
                 {
-                    ConsoleApp.Current.LayoutRoot.Add(new FallingCharactersPanel(ConsoleColor.Green, ConsoleColor.DarkGreen, ConsoleColor.Black)).Fill();
+                    Add(new FallingCharactersPanel(ConsoleColor.Green, ConsoleColor.DarkGreen, ConsoleColor.Black)).Fill();
                 }
             };
         }
@@ -83,12 +80,12 @@ namespace Samples
             {
                 InitTest = async () =>
                 {
-                    var ball = ConsoleApp.Current.LayoutRoot.Add(new Label() { Text = "Bouncing ball".ToMagenta(), Y = 2, X = 1 });
+                    var ball = Add(new Label() { Text = "Bouncing ball".ToMagenta(), Y = 2, X = 1 });
                     await ball.AnimateAsync(new ConsoleControlAnimationOptions()
                     {
                         Loop = Lifetime.Forever,
                         Duration = 1000,
-                        Destination = RectangularF.Create((ConsoleApp.Current.LayoutRoot.Width - ball.Width) - 1, ball.Y, ball.Width, ball.Height),
+                        Destination = RectangularF.Create((Width - ball.Width) - 1, ball.Y, ball.Width, ball.Height),
                         AutoReverse = true,
                         EasingFunction = Animator.EaseInOut,
                     });
@@ -106,33 +103,42 @@ namespace Samples
                 return;
             }
 
+            if(args.Mode == ConsoleMode.Console)
+            {
+                ConsoleProvider.DisableFancyRendering();
+            }
+
             var mechanism = ConsoleProvider.Renderer == null ? "System.Console" : "VirtualTerminal";
 
             options.InitTest?.Invoke();
-            var messagePanel = ConsoleApp.Current.LayoutRoot.Add(new ConsolePanel() { Width = 45, Height = 3, Background = ConsoleColor.Red }).CenterBoth();
+            var messagePanel = Add(new ConsolePanel() { Width = 45, Height = 3, Background = ConsoleColor.Red }).CenterBoth();
             var messageLabel = messagePanel.Add(new Label() { Text = "Waiting".ToConsoleString(fg: ConsoleColor.Black, bg: ConsoleColor.Red) }).CenterBoth();
 
             var now = DateTime.Now;
+            var paintsNow = ConsoleApp.Current.TotalPaints;
             while ((DateTime.Now - now).TotalSeconds < 3)
             {
-                messageLabel.Text = $"{ConsoleApp.Current.TotalPaints} paints using {mechanism}".ToConsoleString(fg: ConsoleColor.Black, bg: ConsoleColor.Red, true);
+                messageLabel.Text = $"{ConsoleApp.Current.TotalPaints- paintsNow} paints using {mechanism}".ToConsoleString(fg: ConsoleColor.Black, bg: ConsoleColor.Red, true);
                 options.OnFrame?.Invoke();
                 await Task.Yield();
             }
 
-            var animationPanel = ConsoleApp.Current.LayoutRoot.Add(new ConsolePanel() { Background = ConsoleColor.Green, Width = 45, Height = 3 });
+            var animationPanel = Add(new ConsolePanel() { Background = ConsoleColor.Green, Width = 45, Height = 3 });
 
-            var centerX = (int)Math.Round(ConsoleApp.Current.LayoutRoot.Width / 2.0 - animationPanel.Width / 2.0);
-            var targetY = (int)Math.Round((ConsoleApp.Current.LayoutRoot.Height / 2.0 - animationPanel.Height / 2) - 5.0);
+            var centerX = (int)Math.Round(Width / 2.0 - animationPanel.Width / 2.0);
+            var targetY = (int)Math.Round((Height / 2.0 - animationPanel.Height / 2) - 5.0);
             animationPanel.X = centerX;
-            animationPanel.Y = ConsoleApp.Current.LayoutRoot.Height;
-            var animationLabel = animationPanel.Add(new Label() { Text = "Press escape to exit".ToBlack(bg: ConsoleColor.Green) }).CenterBoth();
+            animationPanel.Y = Height;
+            var animationLabel = animationPanel.Add(new Label() { Text = "That's all folks".ToBlack(bg: ConsoleColor.Green) }).CenterBoth();
             await animationPanel.AnimateAsync(new ConsoleControlAnimationOptions()
             {
                 Duration = 1000,
                 Destination = RectangularF.Create(centerX, targetY, animationPanel.Width, animationPanel.Height),
             });
-            animationPanel.CenterHorizontally();
+            if (animationPanel.IsExpired == false && animationPanel.Parent?.IsExpired == false)
+            {
+                animationPanel.CenterHorizontally();
+            }
         }
     }
     public class TestOptions

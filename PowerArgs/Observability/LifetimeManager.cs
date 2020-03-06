@@ -40,7 +40,7 @@ namespace PowerArgs
         /// <returns>an async task</returns>
         public static async Task AwaitEndOfLifetime(this ILifetimeManager manager)
         {
-            while (manager.IsExpired == false)
+            while (manager != null && manager.IsExpired == false)
             {
                 await Task.Delay(10);
             }

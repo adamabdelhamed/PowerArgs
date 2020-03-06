@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-namespace Samples
+namespace PowerArgs.Samples
 {
 
     public class ResourceMonitor : ConsoleApp

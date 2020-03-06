@@ -30,7 +30,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerArgsVideoPlayerWindows
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerArgsTestCore", "PowerArgsTestCore\PowerArgsTestCore.csproj", "{FE80C276-F40C-4C41-B490-8E155085A3B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples", "Samples\Samples.csproj", "{E61F107D-3144-45BC-9506-C28209E2CA8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Samples", "Samples\Samples.csproj", "{E61F107D-3144-45BC-9506-C28209E2CA8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.NET", "Samples.NET\Samples.NET.csproj", "{E0754452-BF59-45D7-803B-E37EA10474AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -126,6 +128,18 @@ Global
 		{E61F107D-3144-45BC-9506-C28209E2CA8A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E61F107D-3144-45BC-9506-C28209E2CA8A}.Release|x86.ActiveCfg = Release|Any CPU
 		{E61F107D-3144-45BC-9506-C28209E2CA8A}.Release|x86.Build.0 = Release|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Debug|x86.Build.0 = Debug|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Release|x86.ActiveCfg = Release|Any CPU
+		{E0754452-BF59-45D7-803B-E37EA10474AD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

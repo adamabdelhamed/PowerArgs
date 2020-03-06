@@ -10,21 +10,10 @@ namespace PowerArgs.Cli
         private TextBox tb;
         private CommandLineArgumentsDefinition def;
         protected Label outputLabel;
-
+        private Lifetime focusLt;
         public CompactConsole()
         {
             SubscribeForLifetime(nameof(Bounds),()=>HardRefresh(), this);
-            this.Ready.SubscribeOnce(() =>
-            {
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, null, () =>
-                {
-                    var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, false, false, false));
-                }, this);
-                Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, ConsoleModifiers.Shift, () =>
-                {
-                    var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, true, false, false));
-                }, this);
-            });
         }
 
         protected abstract CommandLineArgumentsDefinition CreateDefinition();
@@ -76,7 +65,39 @@ namespace PowerArgs.Cli
             inputPanel.Add(new Label() { Text = "CMD> ".ToConsoleString() });
             tb = inputPanel.Add(new TextBox() { X = "CMD> ".Length, Width = inputPanel.Width - "CMD> ".Length, Foreground = ConsoleColor.Gray, Background = ConsoleColor.Black });
             tb.RichTextEditor.TabHandler.TabCompletionHandlers.Add(new PowerArgsRichCommandLineReader(def, new List<ConsoleString>(), false));
-            tb.TryFocus();
+            ConsoleApp.Current.QueueAction(() =>
+            {
+                tb.Focused.SubscribeForLifetime(() =>
+                {
+                    if (focusLt != null && focusLt.IsExpired == false && focusLt.IsExpiring == false)
+                    {
+                        focusLt.Dispose();
+                    }
+
+                    focusLt = new Lifetime();
+
+
+                    Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, null, () =>
+                    {
+                        var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, false, false, false));
+                    }, focusLt);
+                    Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, ConsoleModifiers.Shift, () =>
+                    {
+                        var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, true, false, false));
+                    }, focusLt);
+
+                }, this);
+
+                tb.Unfocused.SubscribeForLifetime(() =>
+                {
+                    if (focusLt != null && focusLt.IsExpired == false && focusLt.IsExpiring == false)
+                    {
+                        focusLt.Dispose();
+                    }
+                }, this);
+
+                tb.TryFocus();
+            });
 
             var outputPanel = gridLayout.Add(new ConsolePanel() { Background = ConsoleColor.Black }, 1, 5);
             outputLabel = outputPanel.Add(new Label() { Text = outputValue ?? UpdateAssistiveText(), Mode = LabelRenderMode.MultiLineSmartWrap }).Fill();
@@ -93,9 +114,29 @@ namespace PowerArgs.Cli
                 {
                     var args = Args.Convert(tb.Value.ToString());
                     AddHistory(tb.Value.ToString());
-                    var action = Args.ParseAction(def, args);
-                    tb.Parent.Controls.Remove(tb);
-                    output = await Run(action);
+
+                    if(def.ExceptionBehavior?.Policy == ArgExceptionPolicy.StandardExceptionHandling)
+                    {
+                        def.ExceptionBehavior = new ArgExceptionBehavior(ArgExceptionPolicy.DontHandleExceptions);
+                    }
+
+                    ArgAction action;
+                    ConsoleOutInterceptor.Instance.Attach();
+                    try
+                    {
+                        action = Args.ParseAction(def, args);
+                    }
+                    finally
+                    {
+                        ConsoleOutInterceptor.Instance.Detatch();
+                    }
+                    tb.Dispose();
+                    output = new ConsoleString(ConsoleOutInterceptor.Instance.ReadAndClear());
+
+                    if (action.Cancelled == false)
+                    {
+                        output = output + await Run(action);
+                    }
                 }
                 catch (Exception ex)
                 {

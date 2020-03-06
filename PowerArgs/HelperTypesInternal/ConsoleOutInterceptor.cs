@@ -35,6 +35,7 @@ namespace PowerArgs
         /// </summary>
         public void Attach()
         {
+            IsInitialized = true;
             Console.SetOut(this);
         }
 
@@ -46,6 +47,7 @@ namespace PowerArgs
             StreamWriter standardOutput = new StreamWriter(Console.OpenStandardOutput());
             standardOutput.AutoFlush = true;
             Console.SetOut(standardOutput);
+            IsInitialized = false;
         }
 
         private ConsoleOutInterceptor() { }

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Samples
+namespace PowerArgs.Samples
 {
     /*
      * This sample shows how you can easily provide a REPL (Read Eval Print Loop) experience for

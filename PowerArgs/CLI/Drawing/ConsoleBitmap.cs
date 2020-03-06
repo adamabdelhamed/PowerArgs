@@ -763,8 +763,6 @@ namespace PowerArgs.Cli
                     chunksOnLine.Clear();
                 }
 
-                ConsoleProvider.FancyTerminal.CursorLeft = 0;
-                ConsoleProvider.FancyTerminal.CursorTop = 0;
             }
             catch (IOException)
             {

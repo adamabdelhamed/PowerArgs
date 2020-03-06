@@ -9,6 +9,8 @@ namespace PowerArgs
 {
     public struct RGB
     {
+        public static readonly float MaxDistance = (float)Math.Sqrt((255 * 255) + (255 * 255) + (255 * 255));
+
         public static readonly RGB[] ConsoleColorMap = new RGB[]
         {
             new RGB(0,0,0) ,      // Black = 0
@@ -28,6 +30,23 @@ namespace PowerArgs
             new RGB(255,255,0) ,      // Yellow = 14
             new RGB(255,255,255) ,      // White = 15
         };
+
+        public static readonly RGB Black = ConsoleColor.Black;
+        public static readonly RGB DarkBlue = ConsoleColor.DarkBlue;
+        public static readonly RGB DarkGreen = ConsoleColor.DarkGreen;
+        public static readonly RGB DarkCyan = ConsoleColor.DarkCyan;
+        public static readonly RGB DarkRed = ConsoleColor.DarkRed;
+        public static readonly RGB DarkMagenta = ConsoleColor.DarkMagenta;
+        public static readonly RGB DarkYellow = ConsoleColor.DarkYellow;
+        public static readonly RGB Gray = ConsoleColor.Gray;
+        public static readonly RGB DarkGray = ConsoleColor.DarkGray;
+        public static readonly RGB Blue = ConsoleColor.Blue;
+        public static readonly RGB Green = ConsoleColor.Green;
+        public static readonly RGB Cyan = ConsoleColor.Cyan;
+        public static readonly RGB Red = ConsoleColor.Red;
+        public static readonly RGB Magenta = ConsoleColor.Magenta;
+        public static readonly RGB Yellow = ConsoleColor.Yellow;
+        public static readonly RGB White = ConsoleColor.White;
 
         public static readonly Dictionary<RGB, ConsoleColor> RGBToConsoleColorMap = new Dictionary<RGB, ConsoleColor>
         {
@@ -76,9 +95,13 @@ namespace PowerArgs
         public float CalculateDistanceTo(RGB other) => (float)Math.Sqrt(
                 Math.Pow(R - other.R, 2) +
                 Math.Pow(G - other.G, 2) +
-                Math.Pow(B - other.B, 2)
-            );
+                Math.Pow(B - other.B, 2));
 
+        public RGB GetCompliment()
+        {
+            byte max = 255;
+            return new RGB((byte)(max - R), (byte)(max - G), (byte)(max - B));
+        }
 
         public static bool operator ==(RGB a, RGB b) => a.Equals(b);
         public static bool operator !=(RGB a, RGB b) => !a.Equals(b);
@@ -110,7 +133,10 @@ namespace PowerArgs
                     }
                 }
 
-                RGBToConsoleColorMap.Add(color, closestColor);
+                if (RGBToConsoleColorMap.Count < 10000)
+                {
+                    RGBToConsoleColorMap.Add(color, closestColor);
+                }
                 return closestColor;
             }
         }
@@ -143,10 +169,12 @@ namespace PowerArgs
             }
             else
             {
-                return $"{R},{G},{B}";
+                return ToRGBString();
             }
         }
 
+        public string ToRGBString() => $"{R},{G},{B}";
+            
         /// <summary>
         /// Converts this color to a new color that is closer to the other
         /// color provided.
@@ -173,13 +201,22 @@ namespace PowerArgs
             var deltaBufferG = new float[options.Transitions.Count];
             var deltaBufferB = new float[options.Transitions.Count];
 
+            var deltaBufferRReversed = new float[options.Transitions.Count];
+            var deltaBufferGReversed = new float[options.Transitions.Count];
+            var deltaBufferBReversed = new float[options.Transitions.Count];
+
             for (var i = 0; i < options.Transitions.Count; i++)
             {
-                deltaBufferR[i] = options.Transitions[i].Key.R - options.Transitions[i].Value.R;
-                deltaBufferG[i] = options.Transitions[i].Key.G - options.Transitions[i].Value.G;
-                deltaBufferB[i] = options.Transitions[i].Key.B - options.Transitions[i].Value.B;
+                deltaBufferR[i] = options.Transitions[i].Value.R - options.Transitions[i].Key.R;
+                deltaBufferG[i] = options.Transitions[i].Value.G - options.Transitions[i].Key.G;
+                deltaBufferB[i] = options.Transitions[i].Value.B - options.Transitions[i].Key.B;
+
+                deltaBufferRReversed[i] = options.Transitions[i].Key.R - options.Transitions[i].Value.R;
+                deltaBufferGReversed[i] = options.Transitions[i].Key.G - options.Transitions[i].Value.G;
+                deltaBufferBReversed[i] = options.Transitions[i].Key.B - options.Transitions[i].Value.B;
             }
             var colorBuffer = new RGB[options.Transitions.Count];
+            var isReversed = false;
             return Animator.AnimateAsync(new FloatAnimatorOptions()
             {
                 From = 0,
@@ -191,31 +228,60 @@ namespace PowerArgs
                 EasingFunction = options.EasingFunction,
                 IsCancelled = options.IsCancelled,
                 Loop = options.Loop,
+                OnReversedChanged = (r) => isReversed=r,
                 Setter = percentage =>
                 {
-                    if (percentage == 1)
+                     
+                    if(isReversed == false)
                     {
                         for (var i = 0; i < options.Transitions.Count; i++)
                         {
-                            colorBuffer[i] = options.Transitions[i].Value;
-                        }
 
+                            if (percentage == 1)
+                            {
+                                colorBuffer[i] = new RGB(
+                               (byte)(options.Transitions[i].Value.R),
+                               (byte)(options.Transitions[i].Value.G),
+                               (byte)(options.Transitions[i].Value.B));
+                            }
+                            else
+                            {
+                                var rDeltaFrame = deltaBufferR[i] * percentage;
+                                var gDeltaFrame = deltaBufferG[i] * percentage;
+                                var bDeltaFrame = deltaBufferB[i] * percentage;
+
+                                colorBuffer[i] = new RGB(
+                                    (byte)(options.Transitions[i].Key.R + rDeltaFrame),
+                                    (byte)(options.Transitions[i].Key.G + gDeltaFrame),
+                                    (byte)(options.Transitions[i].Key.B + bDeltaFrame));
+                            }
+                        }
                     }
                     else
                     {
+                        percentage = 1 - percentage;
                         for (var i = 0; i < options.Transitions.Count; i++)
                         {
-                            var rDeltaFrame = deltaBufferR[i] * percentage;
-                            var gDeltaFrame = deltaBufferG[i] * percentage;
-                            var bDeltaFrame = deltaBufferB[i] * percentage;
-
-                            colorBuffer[i] = new RGB(
-                                (byte)(options.Transitions[i].Key.R + rDeltaFrame),
-                                (byte)(options.Transitions[i].Key.G + gDeltaFrame),
-                                (byte)(options.Transitions[i].Key.B + bDeltaFrame));
+                            var rDeltaFrame = deltaBufferRReversed[i] * percentage;
+                            var gDeltaFrame = deltaBufferGReversed[i] * percentage;
+                            var bDeltaFrame = deltaBufferBReversed[i] * percentage;
+                            if (percentage == 1)
+                            {
+                                colorBuffer[i] = new RGB(
+                               (byte)(options.Transitions[i].Key.R),
+                               (byte)(options.Transitions[i].Key.G),
+                               (byte)(options.Transitions[i].Key.B));
+                            }
+                            else
+                            {
+                                colorBuffer[i] = new RGB(
+                                    (byte)(options.Transitions[i].Value.R + rDeltaFrame),
+                                    (byte)(options.Transitions[i].Value.G + gDeltaFrame),
+                                    (byte)(options.Transitions[i].Value.B + bDeltaFrame));
+                            }
                         }
                     }
-
+                   
                     options.OnColorsChanged(colorBuffer);
                 }
             });

@@ -119,7 +119,7 @@ namespace PowerArgs.Cli
         {
             this.Options = options;
             this.SubscribeForLifetime(nameof(Bounds), HandleSizeChanged, this);
-            this.Controls.Removed.SubscribeForLifetime(HandleControlRemoved, this);
+            ProtectedPanel.Controls.Removed.SubscribeForLifetime(HandleControlRemoved, this);
         }
 
         /// <summary>
@@ -156,11 +156,9 @@ namespace PowerArgs.Cli
                 RowSpan = rowSpan
             };
             layoutAssignments.Add(assignment);
-            control.Bounds = GetCellArea(assignment);
-            using (var modifyLock = Unlock())
-            { 
-                Controls.Add(control);
-            }
+            control.Bounds = GetCellArea(assignment);            
+            ProtectedPanel.Controls.Add(control);
+            
 
             return control;
         }
@@ -181,18 +179,12 @@ namespace PowerArgs.Cli
         /// <param name="control">the control to remove</param>
         public void Remove(ConsoleControl control)
         {
-            using (var modifyLock = Unlock())
-            {
-                Controls.Remove(control);
-            }
+            ProtectedPanel.Controls.Remove(control);
         }
 
         public void Clear()
         {
-            using (var modifyLock = Unlock())
-            {
-                Controls.Clear();
-            }
+            ProtectedPanel.Controls.Clear();
         }
 
         private void HandleControlRemoved(ConsoleControl c)

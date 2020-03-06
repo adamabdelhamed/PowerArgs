@@ -57,6 +57,12 @@ namespace PowerArgs.Cli
         internal abstract void Set(float value);
 
         internal Action<string> Debug { get; set; }
+
+        /// <summary>
+        /// A callback that lets you know if the animation is running in reverse (true) or forward (false).
+        /// Forward is the default so this will not fire with false unless the animation loops.
+        /// </summary>
+        public Action<bool> OnReversedChanged { get; set; }
     }
 
     /// <summary>
@@ -156,7 +162,7 @@ namespace PowerArgs.Cli
                         var temp = options.From;
                         options.From = options.To;
                         options.To = temp;
-
+                        options.OnReversedChanged?.Invoke(true);
                         await AnimateAsyncInternal(options);
 
                         if (options.AutoReverseDelay > 0)
@@ -166,6 +172,7 @@ namespace PowerArgs.Cli
 
                         options.From = originalFrom;
                         options.To = originalTo;
+                        options.OnReversedChanged?.Invoke(false);
                     }
                 }
             }

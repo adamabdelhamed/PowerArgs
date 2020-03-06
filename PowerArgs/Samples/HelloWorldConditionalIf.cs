@@ -1,7 +1,7 @@
 ﻿using PowerArgs;
 using System;
 
-namespace Samples
+namespace PowerArgs.Samples
 {
     [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling), TabCompletion(REPL=true) /* [TabCompletion] is useful for the sample, but you don't need it in your program (unless you want it).*/ ]
     public class HelloWorldConditionalIfArgs
