@@ -5,7 +5,7 @@ namespace PowerArgs.Games
     public class ProximityMineDropper : Weapon
     {
         public override WeaponStyle Style => WeaponStyle.Explosive;
-        public string TargetTag { get; set; }
+        public string TargetTag { get; set; } = "enemy";
 
         public override void FireInternal(bool alt)
         {

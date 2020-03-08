@@ -10,8 +10,6 @@ namespace PowerArgs.Games
     public class Explosive : WeaponElement
     {
         public const float ExplosiveProjectileSpeed = 60;
-        [ThreadStatic]
-        private static Lifetime explosiveWatcherLifetime;
 
         public Event<Projectile> OnProjectileAdded { get; private set; } = new Event<Projectile>();
         public static Event<Explosive> OnExplode { get; private set; } = new Event<Explosive>();
@@ -24,22 +22,17 @@ namespace PowerArgs.Games
         public Explosive(Weapon w) : base(w) 
         {
             this.AngleIncrement = 5;
-
-            if(explosiveWatcherLifetime == null)
+            Velocity.GlobalImpactOccurred.SubscribeForLifetime((impact) =>
             {
-                explosiveWatcherLifetime = new Lifetime();
-                Velocity.GlobalImpactOccurred.SubscribeForLifetime((impact) =>
+                if(impact.MovingObject == this)
                 {
-                    if(impact.MovingObject is Explosive)
-                    {
-                        (impact.MovingObject as Explosive).Explode();
-                    }
-                    else if(impact.ObstacleHit is Explosive)
-                    {
-                        (impact.ObstacleHit as Explosive).Explode();
-                    }
-                }, explosiveWatcherLifetime);
-            }
+                    (impact.MovingObject as Explosive).Explode();
+                }
+                else if(impact.ObstacleHit == this)
+                {
+                    (impact.ObstacleHit as Explosive).Explode();
+                }
+            }, this.Lifetime);
         }
 
         public void Explode()

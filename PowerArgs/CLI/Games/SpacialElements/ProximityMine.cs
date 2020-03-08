@@ -25,11 +25,6 @@ namespace PowerArgs.Games
             while(Lifetime.IsExpired == false)
             {
                 var mines = SpaceTime.CurrentSpaceTime.Elements.WhereAs<ProximityMine>().ToArray();
-                if (mines.Length == 0)
-                {
-                    Lifetime.Dispose();
-                    break;
-                }
 
                 foreach(var mineGroup in mines.GroupBy(m => m.TargetTag + "/"+m.ZIndex))
                 {
@@ -42,8 +37,8 @@ namespace PowerArgs.Games
                     foreach(var mine in mineGroup)
                     {
                         if (mine.Lifetime.IsExpired) continue;
-
-                        var closest = targets.OrderBy(t => Geometry.CalculateNormalizedDistanceTo(mine, t)).FirstOrDefault();
+                        var obs = mine.GetObstacles();
+                        var closest = targets.Where(t => mine.HasLineOfSight(t, obs)).OrderBy(t => Geometry.CalculateNormalizedDistanceTo(mine, t)).FirstOrDefault();
 
                         if (closest == null)
                         {
@@ -71,9 +66,8 @@ namespace PowerArgs.Games
                         }
                         await Time.CurrentTime.YieldAsync();
                     }
-
-                    await Time.CurrentTime.DelayFuzzyAsync(333);
                 }
+                await Time.CurrentTime.DelayFuzzyAsync(333);
             }
         }
     }
@@ -83,8 +77,6 @@ namespace PowerArgs.Games
         public string TargetTag { get; set; }
         public ProximityMineState State { get; set; } = ProximityMineState.NoNearbyThreats;
 
-
-       
         public ProximityMine(Weapon w) : base(w)
         {
             this.Governor.Rate = TimeSpan.FromSeconds(-1);
