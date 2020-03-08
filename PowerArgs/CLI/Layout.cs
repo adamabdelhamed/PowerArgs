@@ -45,11 +45,11 @@ namespace PowerArgs.Cli
             return height;
         }
 
-        public static T CenterBoth<T>(this T child, IConsolePanel parent = null) where T : ConsoleControl => child.CenterHorizontally(parent).CenterVertically(parent);
+        public static T CenterBoth<T>(this T child, Container parent = null) where T : ConsoleControl => child.CenterHorizontally(parent).CenterVertically(parent);
 
 
 
-        public static T CenterVertically<T>(this T child, IConsolePanel parent = null) where T : ConsoleControl
+        public static T CenterVertically<T>(this T child, Container parent = null) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
             
@@ -67,7 +67,7 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T CenterHorizontally<T>(this T child, IConsolePanel parent = null) where T : ConsoleControl
+        public static T CenterHorizontally<T>(this T child, Container parent = null) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
 
@@ -86,7 +86,7 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T Fill<T>(this T child, IConsolePanel parent = null, Thickness? padding = null) where T : ConsoleControl
+        public static T Fill<T>(this T child, Container parent = null, Thickness? padding = null) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
             var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
@@ -114,7 +114,7 @@ namespace PowerArgs.Cli
         }
 
 
-        public static T FillAndPreserveAspectRatio<T>(this T child, IConsolePanel parent = null, Thickness? padding = null) where T : ConsoleControl
+        public static T FillAndPreserveAspectRatio<T>(this T child, Container parent = null, Thickness? padding = null) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
             var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
@@ -142,7 +142,7 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T FillHorizontally<T>(this T child, IConsolePanel parent = null, Thickness? padding = null) where T : ConsoleControl
+        public static T FillHorizontally<T>(this T child, Container parent = null, Thickness? padding = null) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
             var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
@@ -157,7 +157,7 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T FillVertically<T>(this T child, IConsolePanel parent = null, Thickness? padding = null) where T : ConsoleControl
+        public static T FillVertically<T>(this T child, Container parent = null, Thickness? padding = null) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
             var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
@@ -170,7 +170,7 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T DockToBottom<T>(this T child, IConsolePanel parent = null, int padding = 0) where T :ConsoleControl
+        public static T DockToBottom<T>(this T child, Container parent = null, int padding = 0) where T :ConsoleControl
         {
             parent = parent ?? child.Parent;
             Action syncAction = () =>
@@ -185,7 +185,7 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T DockToTop<T>(this T child, IConsolePanel parent = null, int padding = 0) where T : ConsoleControl
+        public static T DockToTop<T>(this T child, Container parent = null, int padding = 0) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
             Action syncAction = () =>
@@ -199,7 +199,7 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T DockToRight<T>(this T child, IConsolePanel parent = null, int padding = 0) where T : ConsoleControl
+        public static T DockToRight<T>(this T child, Container parent = null, int padding = 0) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
             Action syncAction = () =>
@@ -215,7 +215,7 @@ namespace PowerArgs.Cli
             return child;
         }
 
-        public static T DockToLeft<T>(this T child, IConsolePanel parent = null, int padding = 0) where T : ConsoleControl
+        public static T DockToLeft<T>(this T child, Container parent = null, int padding = 0) where T : ConsoleControl
         {
             parent = parent ?? child.Parent;
             Action syncAction = () =>

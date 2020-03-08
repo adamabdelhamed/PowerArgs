@@ -1,18 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace PowerArgs.Cli
 {
-    public interface IConsoleControl : IRectangular, ILifetimeManager, IObservableObject
+
+    public interface IConsoleControlFilter
     {
-        IConsolePanel Parent { get; }
-        ConsoleApp Application { get; }
+        void Filter(ConsoleBitmap bitmap);
+    }
+
+    public class ConsoleControlFilter : IConsoleControlFilter
+    {
+        private Action<ConsoleBitmap> impl;
+        public ConsoleControlFilter(Action<ConsoleBitmap> impl)
+        {
+            this.impl = impl;
+        }
+
+        public void Filter(ConsoleBitmap bmp) => impl(bmp);
     }
 
     /// <summary>
     /// A class that represents a visual element within a CLI application
     /// </summary>
-    public class ConsoleControl : Rectangular, IConsoleControl
+    public class ConsoleControl : Rectangular
     {
+        public List<IConsoleControlFilter> RenderFilters { get; private set; } = new List<IConsoleControlFilter>();
+
         /// <summary>
         /// Controls how controls are painted when multiple controls overlap
         /// </summary>
@@ -72,7 +86,7 @@ namespace PowerArgs.Cli
         /// Gets a reference to this control's parent in the visual tree.  It will be null if this control is not in the visual tree 
         /// and also if this control is the root of the visual tree.
         /// </summary>
-        public IConsolePanel Parent { get { return Get<IConsolePanel>(); } internal set { Set(value); } }
+        public Container Parent { get { return Get<Container>(); } internal set { Set(value); } }
 
         /// <summary>
         /// Gets or sets the background color
@@ -143,7 +157,7 @@ namespace PowerArgs.Cli
             get
             {
                 var ret = this.X;
-                IConsoleControl current = this;
+                ConsoleControl current = this;
                 while (current.Parent != null)
                 {
                     current = current.Parent;
@@ -161,7 +175,7 @@ namespace PowerArgs.Cli
             get
             {
                 var ret = this.Y;
-                IConsoleControl current = this;
+                ConsoleControl current = this;
                 while (current.Parent != null)
                 {
                     current = current.Parent;

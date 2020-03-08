@@ -234,13 +234,14 @@ namespace PowerArgs.Samples
         }
         protected override CommandLineArgumentsDefinition CreateDefinition() => factory();
 
-        protected override Task<ConsoleString> Run(ArgAction toRun)
+        protected override Task Run(ArgAction toRun)
         {
             ConsoleOutInterceptor.Instance.Attach();
             toRun.Invoke();
             var output = ConsoleOutInterceptor.Instance.ReadAndClear();
             ConsoleOutInterceptor.Instance.Detatch();
-            return Task.FromResult(new ConsoleString(output));
+            WriteLine(new ConsoleString(output));
+            return Task.CompletedTask;
         }
     }
 }

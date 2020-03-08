@@ -116,7 +116,12 @@ namespace PowerArgs.Games
 
         protected override void OnPaint(ConsoleBitmap context)
         {
-            if (Character.IsVisible == false) return;
+            if (Character.IsVisible == false)
+            {
+                context.Pen = new ConsoleCharacter(' ', RGB.Black);
+                context.FillRect(0, 0, Width, Height);
+                return;
+            }
             char c;
 
             var angle = Character.Velocity.Angle;

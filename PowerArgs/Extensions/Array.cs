@@ -7,6 +7,19 @@ namespace PowerArgs
     {
         public static bool None<T>(this IEnumerable<T> items) => items.Any() == false;
 
+        public static int RemoveWhere<T>(this IList<T> list, Func<T,bool> whereClause)
+        {
+            var toRemove = list.Where(item => whereClause(item)).ToList();
+            var removed = 0;
+            foreach(var item in toRemove)
+            {
+                if(list.Remove(item))
+                {
+                    removed++;
+                }
+            }
+            return removed;
+        }
 
         public static List<T> ToList<T>(this Array a)
         {

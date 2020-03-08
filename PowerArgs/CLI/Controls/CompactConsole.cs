@@ -9,7 +9,7 @@ namespace PowerArgs.Cli
     {
         private TextBox tb;
         private CommandLineArgumentsDefinition def;
-        protected Label outputLabel;
+        private Label outputLabel;
         private Lifetime focusLt;
         public CompactConsole()
         {
@@ -22,10 +22,11 @@ namespace PowerArgs.Cli
         protected virtual ConsoleString GetHistoryPrevious() => throw new NotImplementedException();
         protected virtual ConsoleString GetHistoryNext() => throw new NotImplementedException();
 
-        protected virtual Task<ConsoleString> Run(ArgAction toRun)
+        protected virtual Task Run(ArgAction toRun)
         {
             toRun.Invoke();
-            return Task.FromResult("Command finished".ToCyan());
+            WriteLine("Command finished".ToCyan());
+            return Task.CompletedTask;
         }
 
         private void HardRefresh(ConsoleString outputValue = null)
@@ -135,7 +136,7 @@ namespace PowerArgs.Cli
 
                     if (action.Cancelled == false)
                     {
-                        output = output + await Run(action);
+                        await Run(action);
                     }
                 }
                 catch (Exception ex)
@@ -188,6 +189,10 @@ namespace PowerArgs.Cli
                 outputLabel.Text = UpdateAssistiveText();
             }
         }
+
+        public void Write(ConsoleString text) => outputLabel.Text += text;
+        public void WriteLine(ConsoleString text) => Write(text + "\n");
+        public void Clear() =>  outputLabel.Text = ConsoleString.Empty;
 
         private ConsoleString UpdateAssistiveText()
         {
