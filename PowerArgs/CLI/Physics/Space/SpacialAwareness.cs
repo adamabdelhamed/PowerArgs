@@ -9,10 +9,10 @@ namespace PowerArgs.Cli.Physics
     public static class SpacialAwareness
     {
         public const string PassThruTag = "passthru";
+        public const string WeaponsPassThruTag = "WeaponsPassThru";
 
-        
 
-            public static float LineOfSightVisibility(this IRectangularF from, float angle, IEnumerable<IRectangularF> obstacles, float range, float increment = .5f)
+        public static float LineOfSightVisibility(this IRectangularF from, float angle, IEnumerable<IRectangularF> obstacles, float range, float increment = .5f)
         {
             for (var d = increment; d < range; d += increment)
             {
@@ -131,6 +131,10 @@ namespace PowerArgs.Cli.Physics
                 else if (e is WeaponElement && (e as WeaponElement).Weapon?.Holder != null && element is IHaveMassBounds && (element as IHaveMassBounds).IsPartOfMass((e as WeaponElement).Weapon?.Holder))
                 {
                     // Characters can't hit their own weapon elements
+                    continue;
+                }
+                else if (element is WeaponElement && e.HasSimpleTag(WeaponsPassThruTag))
+                {
                     continue;
                 }
                 else if (element is WeaponElement && (element as WeaponElement).Weapon?.Holder == e)

@@ -26,11 +26,25 @@ namespace PowerArgs.Games
         public IDisposable SubscribeUnmanaged(string propertyName, Action handler) => observable.SubscribeUnmanaged(propertyName, handler);
         public void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
         public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
-        public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
+        public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);      
         public SpacialElement Target { get; set; }
 
 
-        public float TargetAngle => Target == null ? Velocity.Angle : CalculateAngleToTarget();
+        public float TargetAngle
+        {
+            get
+            {
+                if (FreeAimCursor != null)
+                {
+                    return this.EffectiveBounds().Center().CalculateAngleTo(FreeAimCursor.Center());
+                }
+                else
+                {
+                    return Target == null ? Velocity.Angle : CalculateAngleToTarget();
+                }
+            }
+        }
+       
         public Velocity Velocity { get; set; }
 
 
@@ -220,7 +234,25 @@ namespace PowerArgs.Games
                 EndFreeAim();
             }
         }
-        
+
+        public void DisableFreeAim()
+        {
+            var cursor = FreeAimCursor;
+            if (cursor != null)
+            {
+                ToggleFreeAim();
+            }
+        }
+
+        public void EnableFreeAim()
+        {
+            var cursor = FreeAimCursor;
+            if (cursor == null)
+            {
+                ToggleFreeAim();
+            }
+        }
+
         protected void InitializeTargeting(AutoTargetingFunction func)
         {
             Targeting = func;
@@ -229,7 +261,7 @@ namespace PowerArgs.Games
             Targeting.TargetChanged.SubscribeForLifetime((target) =>
             {
                 var oldTarget = this.Target;
-                this.Target = target;
+                this.Target = FreeAimCursor != null ? null : target;
 
                 if (oldTarget != null && oldTarget.Lifetime.IsExpired == false)
                 {

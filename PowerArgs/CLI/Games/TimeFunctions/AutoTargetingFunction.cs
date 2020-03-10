@@ -43,7 +43,7 @@ namespace PowerArgs.Games
                         Angle = angle,
                         MovingObject = sb,
                         Obstacles = obstacles.Where(o => o is WeaponElement == false),
-                        Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
+                        Visibility = 3*SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
                         Precision = .5f,
                     });
 
