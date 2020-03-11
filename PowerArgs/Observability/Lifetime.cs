@@ -207,7 +207,7 @@ namespace PowerArgs
                 {
                     foreach (var item in _manager.ManagedItems)
                     {
-                        item.Dispose();
+                        item?.Dispose();
                     }
                     _manager = null;
                 }
