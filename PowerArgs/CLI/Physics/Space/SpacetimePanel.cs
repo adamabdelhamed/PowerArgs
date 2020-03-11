@@ -245,14 +245,18 @@ namespace PowerArgs.Cli.Physics
         
         public SpacialElementRenderer()
         {
-            this.CompositionMode = CompositionMode.Blend;
+
         }
         
-        public virtual void OnBind() { }
+        public virtual void OnBind() 
+        {
+            this.CompositionMode = Element.CompositionMode;
+        }
         public virtual void OnRender()
         {
             Background = Element.BackgroundColor;
             this.ZIndex = Element.ZIndex;
+            this.CompositionMode = Element.CompositionMode;
         }
 
         protected override void OnPaint(ConsoleBitmap context)

@@ -38,7 +38,23 @@ namespace PowerArgs.Cli.Physics
                     reason += " (continued)";
                 }
 
-                t.QueueAction(reason, () => d.Invoke(state));
+                t.QueueAction(reason, () =>
+                {
+                    var task = state as Task;
+                    if (task != null && task.Status == TaskStatus.Faulted)
+                    {
+                        throw new AggregateException(task.Exception);
+                    }
+                    else
+                    {
+                        d.Invoke(state);
+
+                        if(task != null && task.Status == TaskStatus.Faulted)
+                        {
+                            throw new PromiseWaitException(task.Exception);
+                        }
+                    }
+                });
             }
 
             public override void Send(SendOrPostCallback d, object state)

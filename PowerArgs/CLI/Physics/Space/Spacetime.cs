@@ -18,12 +18,12 @@ namespace PowerArgs.Cli.Physics
         public int ZIndex { get; private set; }
         public float Width { get; private set; }
         public float Height { get; private set; }
-
+        public CompositionMode CompositionMode { get; set; } = CompositionMode.Blend;
         public ConsoleColor BackgroundColor { get; set; } = ConsoleColor.Red;
 
         public ConsoleCharacter? Pen { get; set; }
 
-        public SpacialElementRenderer Renderer { get; set; }
+        internal SpacialElementRenderer Renderer { get; set; }
 
         public IRectangularF Bounds => RectangularF.Create(Left, Top, Width, Height);
 

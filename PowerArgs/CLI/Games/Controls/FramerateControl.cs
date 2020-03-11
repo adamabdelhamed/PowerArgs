@@ -49,7 +49,7 @@ namespace PowerArgs.Games
                     var functionCount = Time.CurrentTime.Functions.Count();
                     var elementCount = SpaceTime.CurrentSpaceTime.Elements.Count();
 
-                    Application.QueueAction(() =>
+                    Application?.QueueAction(() =>
                     {
                         elementsControl.Text = $"SpacialElements: {elementCount}".ToConsoleString();
                         functionsControl.Text = $"Time Functions: {functionCount}".ToConsoleString();
