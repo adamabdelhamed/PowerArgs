@@ -5,6 +5,8 @@ namespace PowerArgs.Games
 {
     public abstract class LooseItem : SpacialElement
     {
+        public ConsoleString DisplayString { get; set; }
+
         public static Event<LooseItem> OnIncorporated { get; private set; } = new Event<LooseItem>();
 
         public Event Incorporated { get; private set; } = new Event();

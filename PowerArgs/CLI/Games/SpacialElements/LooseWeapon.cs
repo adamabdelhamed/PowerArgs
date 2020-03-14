@@ -11,7 +11,7 @@ namespace PowerArgs.Games
     {
         public Weapon InnerWeapon { get; private set; }
 
-        public ConsoleString DisplayString { get; private set; } 
+
 
         public LooseWeapon(Weapon weapon, ConsoleString displayName)
         {

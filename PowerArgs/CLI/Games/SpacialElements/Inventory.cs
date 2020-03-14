@@ -9,6 +9,8 @@ namespace PowerArgs.Games
     {
         ConsoleString DisplayName { get; }
         Character Holder { get; set; }
+
+        bool AllowMultiple { get; }
     }
 
     public class Inventory : ObservableObject

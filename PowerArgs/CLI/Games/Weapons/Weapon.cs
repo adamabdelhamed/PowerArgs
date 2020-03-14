@@ -37,6 +37,7 @@ namespace PowerArgs.Games
     {
         public virtual float ProjectileSpeedHint => 50;
 
+        public bool AllowMultiple => false;
         public static Event<Weapon> OnFireEmpty { get; private set; } = new Event<Weapon>();
         public static Event<Weapon> OnFire { get; private set; } = new Event<Weapon>();
         public Event<WeaponElement> OnWeaponElementEmitted { get; private set; } = new Event<WeaponElement>();

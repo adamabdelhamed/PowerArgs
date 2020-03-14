@@ -284,7 +284,7 @@ namespace PowerArgs.Cli.Physics
             }
             else
             {
-                throw new Exception();
+                throw new Exception($"Failed to calculate angle from {start?.Left},{start?.Top} to {end?.Left},{end?.Top}");
             }
 
             var ret = (float)(increment + radians * 180 / Math.PI);
