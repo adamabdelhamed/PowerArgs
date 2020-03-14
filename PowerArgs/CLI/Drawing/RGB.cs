@@ -103,6 +103,8 @@ namespace PowerArgs
             return new RGB((byte)(max - R), (byte)(max - G), (byte)(max - B));
         }
 
+        public RGB Darker => ToOther(Black, .5f);
+
         public static bool operator ==(RGB a, RGB b) => a.Equals(b);
         public static bool operator !=(RGB a, RGB b) => !a.Equals(b);
         public static bool operator ==(RGB a, ConsoleColor b) => a.Equals((RGB)b);

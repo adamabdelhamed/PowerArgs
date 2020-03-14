@@ -85,7 +85,6 @@ namespace PowerArgs.Games
             {
                 var targetEl = realTarget as IHaveVelocity;
                 var oldAngle = angle;
-                angle = Projectile.AnticipateAngle(this, targetEl.Velocity, Inventory.PrimaryWeapon?.ProjectileSpeedHint ?? 50, oldAngle);
             }
 
             return angle;

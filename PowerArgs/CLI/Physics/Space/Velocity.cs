@@ -26,6 +26,8 @@ namespace PowerArgs.Cli.Physics
 
         public HitPrediction LastPrediction { get; set; }
 
+        public Impact LastImpact { get; private set; }
+
         public Velocity(SpacialElement t) : base(t) { }
 
         public void Stop()
@@ -72,15 +74,15 @@ namespace PowerArgs.Cli.Physics
 
                 if (haveMovedSinceLastHitDetection)
                 {
-                    var impact = new Impact()
+                    LastImpact = new Impact()
                     {
                         Angle = angle,
                         MovingObject = Element,
                         ObstacleHit = hitPrediction.ObstacleHit,
                         HitType = hitPrediction.Type,
                     };
-                    ImpactOccurred?.Fire(impact);
-                    GlobalImpactOccurred.Fire(impact);
+                    ImpactOccurred?.Fire(LastImpact);
+                    GlobalImpactOccurred.Fire(LastImpact);
 
                     haveMovedSinceLastHitDetection = false;
                     Element.SizeOrPositionChanged.Fire();

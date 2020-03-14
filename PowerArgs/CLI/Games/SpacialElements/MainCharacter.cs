@@ -128,7 +128,7 @@ namespace PowerArgs.Games
 
             c = Geometry.GetArrowPointedAt(angle);
 
-            context.Pen = new ConsoleCharacter(c, Character.Color);
+            context.Pen = Character.Pen.HasValue ? Character.Pen.Value : new ConsoleCharacter(c, Character.Color);
             context.FillRect(0, 0, Width, Height);
         }
     }

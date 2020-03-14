@@ -54,24 +54,7 @@ namespace PowerArgs.Games
             this.Governor.Rate = TimeSpan.FromSeconds(-1);
         }
  
-
-        public static float AnticipateAngle(Character shooter, Velocity movingTarget, float projectileSpeed, float currentAngle)
-        {
-            var targetCurrentBounds = movingTarget.Element.EffectiveBounds();
-            var targetCurrentCenter = targetCurrentBounds.Center();
-            var targetCurrentDistance = Geometry.NormalizeQuantity(shooter.Center().CalculateDistanceTo(targetCurrentCenter), currentAngle, true);
-            var anticipatedTimeToImpact =   Geometry.NormalizeQuantity(  targetCurrentDistance / projectileSpeed, movingTarget.Angle, true);
-            var anticipatedTargetMovement = movingTarget.Speed * anticipatedTimeToImpact;
-
-            var anticipatedTargetCenter = SpacialAwareness.MoveTowards(targetCurrentCenter, movingTarget.Angle, anticipatedTargetMovement.NormalizeQuantity(movingTarget.Angle, true));
-            var anticipatedTargetBounds = RectangularF.Create(anticipatedTargetCenter.Left - targetCurrentBounds.Width / 2,
-                targetCurrentCenter.Top - targetCurrentBounds.Height / 2, targetCurrentBounds.Width, targetCurrentBounds.Height);
-
-            var ret =  shooter.Center().CalculateAngleTo(anticipatedTargetBounds.Center());
-            return ret;
-        }
-
-     
+       
 
         private void Speed_ImpactOccurred(Impact impact)
         {
