@@ -525,6 +525,19 @@ namespace PowerArgs
             Append(string.Empty);
         }
 
+        public ConsoleString Darker
+        {
+            get
+            {
+                var buffer = new ConsoleCharacter[this.Length];
+                for(var i = 0; i < Length; i++)
+                {
+                    buffer[i] = new ConsoleCharacter(this[i].Value, this[i].ForegroundColor.Darker, this[i].BackgroundColor.Darker);
+                }
+                return new ConsoleString(buffer);
+            }
+        }
+
         /// <summary>
         /// Returns true if all characters have the default foreground and background color
         /// </summary>

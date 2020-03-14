@@ -17,6 +17,8 @@ namespace PowerArgs.Games
 
     public class AutoTargetingFunction : TimeFunction
     {
+        public float AngularVisibility { get; set; } = 50;
+
         public Event<SpacialElement> TargetChanged { get; private set; } = new Event<SpacialElement>();
         public AutoTargetingOptions Options { get; private set; }
         private SpacialElement lastTarget;
@@ -36,7 +38,7 @@ namespace PowerArgs.Games
                     var sb = Options.SourceBounds;
                     var angle = sb.Center().CalculateAngleTo(z.Center());
                     var delta = Options.Source.Angle.DiffAngle(angle);
-                    if (delta >= 90) return false;
+                    if (delta >= AngularVisibility) return false;
 
                     var prediction = HitDetection.PredictHit(new HitDetectionOptions()
                     {
