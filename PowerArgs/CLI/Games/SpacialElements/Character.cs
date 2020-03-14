@@ -1,6 +1,8 @@
 ﻿using PowerArgs.Cli.Physics;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
+
 namespace PowerArgs.Games
 {
 
@@ -9,7 +11,7 @@ namespace PowerArgs.Games
     {
         public Event<float> OnMove { get; private set; } = new Event<float>();
 
-
+        public Func<Task> MovementTakeover { get; private set; }
         public bool IsVisible { get => observable.Get<bool>(); set => observable.Set(value); } 
         public MultiPlayerClient MultiPlayerClient { get; set; }
         public char? Symbol { get; set; }
@@ -67,6 +69,19 @@ namespace PowerArgs.Games
             Inventory = new Inventory();
             Velocity = new Velocity(this);
             this.ResizeTo(1, 1);
+        }
+
+        public Task Takeover(Func<Task> movementTakeover)
+        {
+            Deferred d = Deferred.Create();
+            if (MovementTakeover != null) throw new ArgumentException("Movement has already been taken over");
+            MovementTakeover = async () =>
+            {
+                await movementTakeover();
+                MovementTakeover = null;
+                d.Resolve();
+            };
+            return d.Promise.AsAwaitable();
         }
 
         public float CalculateAngleToTarget()
