@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli.Physics
 {
@@ -16,7 +17,7 @@ namespace PowerArgs.Cli.Physics
         public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
         public Func<IEnumerable<SpacialElement>> HitDetectionDynamicExclusions { get; set; }
-        
+
         public float Angle { get; set; }
 
         bool haveMovedSinceLastHitDetection = true;
@@ -28,71 +29,103 @@ namespace PowerArgs.Cli.Physics
 
         public Impact LastImpact { get; private set; }
 
-        public Velocity(SpacialElement t) : base(t) { }
+        public Func<Task> MovementTakeover { get; private set; }
+
+        public Velocity(SpacialElement t) : base(t)
+        {
+            Time.CurrentTime.DoASAP("V",async()=> await ExecuteAsync());
+        }
+
+        public Task Takeover(Func<Task> movementTakeover)
+        {
+            Deferred d = Deferred.Create();
+            if (MovementTakeover != null) throw new ArgumentException("Movement has already been taken over");
+            MovementTakeover = async () =>
+            {
+                await movementTakeover();
+                MovementTakeover = null;
+                d.Resolve();
+            };
+            return d.Promise.AsAwaitable();
+        }
 
         public void Stop()
         {
             Speed = 0;
         }
 
-        public override void Evaluate()
+        public override void Evaluate() { }
+
+        private async Task ExecuteAsync()
         {
-            float dt = (float)Governor.Rate.TotalSeconds;
-            if (dt == 0) dt = (float)Time.CurrentTime.Increment.TotalSeconds;
-            float d = Speed * dt;
-
-            if (d == 0)
+            while (this.Lifetime.IsExpired == false)
             {
-                return;
-            }
-
-            var obstacles = GetObstacles();
-
-            if(obstacles.Where(o => o.Touches(Element)).Any())
-            {
-                Element.NudgeFree();
-            }
-
-            var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
-            {
-                MovingObject = Element is IHaveMassBounds ? (Element as IHaveMassBounds).MassBounds : Element,
-                Obstacles = obstacles,
-                Angle = Angle,
-                Visibility = d,
-            });
-            LastPrediction = hitPrediction;
-            if (hitPrediction.Type != HitType.None)
-            {
-                if(hitPrediction.LKG != null && Element.TopLeft().Equals(hitPrediction.LKG) == false)
+                if (MovementTakeover != null)
                 {
-                    Element.MoveTo(hitPrediction.LKG.Left, hitPrediction.LKG.Top);
+                    await MovementTakeover();
+                    continue;
+                }
+
+                float dt = (float)Governor.Rate.TotalSeconds;
+                if (dt == 0) dt = (float)Time.CurrentTime.Increment.TotalSeconds;
+                float d = Speed * dt;
+
+                if (d == 0)
+                {
+                    await Time.CurrentTime.YieldAsync();
+                    continue;
+                }
+
+                var obstacles = GetObstacles();
+
+                if (obstacles.Where(o => o.Touches(Element)).Any())
+                {
+                    Element.NudgeFree();
+                }
+
+                var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
+                {
+                    MovingObject = Element is IHaveMassBounds ? (Element as IHaveMassBounds).MassBounds : Element,
+                    Obstacles = obstacles,
+                    Angle = Angle,
+                    Visibility = d,
+                });
+                LastPrediction = hitPrediction;
+                if (hitPrediction.Type != HitType.None)
+                {
+                    if (hitPrediction.LKG != null && Element.TopLeft().Equals(hitPrediction.LKG) == false)
+                    {
+                        Element.MoveTo(hitPrediction.LKG.Left, hitPrediction.LKG.Top);
+                        haveMovedSinceLastHitDetection = true;
+                    }
+
+                    float angle = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
+
+
+                    if (haveMovedSinceLastHitDetection)
+                    {
+                        LastImpact = new Impact()
+                        {
+                            Angle = angle,
+                            MovingObject = Element,
+                            ObstacleHit = hitPrediction.ObstacleHit,
+                            HitType = hitPrediction.Type,
+                        };
+                        ImpactOccurred?.Fire(LastImpact);
+                        GlobalImpactOccurred.Fire(LastImpact);
+
+                        haveMovedSinceLastHitDetection = false;
+                        Element.SizeOrPositionChanged.Fire();
+                    }
+                }
+                else
+                {
+                    var newLocation = Element.MoveTowards(Angle, d);
+                    Element.MoveTo(newLocation.Left, newLocation.Top);
                     haveMovedSinceLastHitDetection = true;
                 }
 
-                float angle = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
-
-
-                if (haveMovedSinceLastHitDetection)
-                {
-                    LastImpact = new Impact()
-                    {
-                        Angle = angle,
-                        MovingObject = Element,
-                        ObstacleHit = hitPrediction.ObstacleHit,
-                        HitType = hitPrediction.Type,
-                    };
-                    ImpactOccurred?.Fire(LastImpact);
-                    GlobalImpactOccurred.Fire(LastImpact);
-
-                    haveMovedSinceLastHitDetection = false;
-                    Element.SizeOrPositionChanged.Fire();
-                }
-            }
-            else
-            {
-                var newLocation = Element.MoveTowards(Angle, d);
-                Element.MoveTo(newLocation.Left, newLocation.Top);
-                haveMovedSinceLastHitDetection = true;
+                await Time.CurrentTime.YieldAsync();
             }
         }
 
