@@ -139,7 +139,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public TimeSpan MinTimeBetweenKeyPresses { get; set; } = TimeSpan.FromMilliseconds(35);
 
-        
+        public Event OnKeyInputThrottled { get; private set; } = new Event();
         private ConsoleKey lastKey;
         private DateTime lastKeyPressTime = DateTime.MinValue;
 
@@ -492,6 +492,7 @@ namespace PowerArgs.Cli
                         if (KeyThrottlingEnabled && info.Key == lastKey && DateTime.UtcNow - lastKeyPressTime < effectiveMinTimeBetweenKeyPresses)
                         {
                             // the user is holding the key down and throttling is enabled
+                            OnKeyInputThrottled.Fire();
                         }
                         else
                         {

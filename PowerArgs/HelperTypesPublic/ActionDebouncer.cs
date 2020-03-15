@@ -47,4 +47,28 @@ namespace PowerArgs
             }
         }
     }
+
+    public class ActionThrottler
+    {
+        public TimeSpan BurstTimeWindow { get; set; }
+        private Action callback;
+        private DateTime lastFireTime;
+
+        public ActionThrottler(TimeSpan burstTimeWindow, Action callback)
+        {
+            this.BurstTimeWindow = burstTimeWindow;
+            lastFireTime = DateTime.MinValue;
+            this.callback = callback;
+        }
+
+        public void Trigger()
+        {
+            var now = DateTime.UtcNow;
+            if(now - lastFireTime >= BurstTimeWindow)
+            {
+                callback();
+                lastFireTime = now;
+            }
+        }
+    }
 }

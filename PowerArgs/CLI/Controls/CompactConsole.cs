@@ -190,7 +190,10 @@ namespace PowerArgs.Cli
             }
         }
 
-        public void Write(ConsoleString text) => outputLabel.Text += text;
+        public void Write(ConsoleString text)
+        {
+            outputLabel.Text += text;
+        }
         public void WriteLine(ConsoleString text) => Write(text + "\n");
         public void Clear() =>  outputLabel.Text = ConsoleString.Empty;
 

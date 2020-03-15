@@ -16,6 +16,8 @@ namespace PowerArgs.Games
 
     public class Door : Wall, IInteractable
     {
+        public Event OnPlayerTriedToOpenLockedDoor { get; private set; } = new Event();
+
         private DoorState state;
         public IRectangularF ClosedBounds;
         public IRectangularF OpenBounds;
@@ -95,15 +97,19 @@ namespace PowerArgs.Games
 
         public void Interact(Character character)
         {
-            if (state == DoorState.Locked) return;
-
             var newDoorDest = State == DoorState.Opened ? ClosedBounds : OpenBounds;
-
             var charactersThatWillTouchNewDest = SpaceTime.CurrentSpaceTime.Elements.WhereAs<Character>().Where(c => c.OverlapPercentage(newDoorDest) > 0).Count();
 
             if (charactersThatWillTouchNewDest == 0)
             {
-                State = State == DoorState.Closed ? DoorState.Opened : DoorState.Closed;
+                if (state == DoorState.Locked)
+                {
+                    OnPlayerTriedToOpenLockedDoor.Fire();
+                }
+                else
+                {
+                    State = State == DoorState.Closed ? DoorState.Opened : DoorState.Closed;
+                }
             }
         }
     }

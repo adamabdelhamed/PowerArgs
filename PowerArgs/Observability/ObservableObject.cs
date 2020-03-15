@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Reflection;
+using System.Collections.ObjectModel;
 
 namespace PowerArgs
 {
@@ -40,6 +41,8 @@ namespace PowerArgs
         /// DeepObservableRoot
         /// </summary>
         public IObservableObject DeepObservableRoot { get; private set; }
+
+        public IReadOnlyDictionary<string, object> ToDictionary() => new ReadOnlyDictionary<string,object>(values);
 
         /// <summary>
         /// Creates a new bag and optionally sets the notifier object.
