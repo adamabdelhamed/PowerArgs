@@ -97,7 +97,14 @@ namespace PowerArgs
             object ret;
             if(values.TryGetValue(name, out ret))
             {
-                return (T)ret;
+                if(ret is T)
+                {
+                    return (T)ret;
+                }
+                else
+                {
+                    return (T)Convert.ChangeType(ret, typeof(T));
+                }
             }
             else
             {
