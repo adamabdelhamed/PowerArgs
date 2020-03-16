@@ -9,6 +9,23 @@ namespace PowerArgs.Cli.Physics
     {
         Velocity Velocity { get; }
     }
+
+    public static class VelocityEx
+    {
+        public static async Task ControlVelocity(this SpacialElement el, Func<Velocity, Task> takeoverAction, ILifetimeManager lt)
+        {
+            Velocity tempV = new Velocity(el);
+            lt.OnDisposed(tempV.Lifetime.Dispose);
+            if (el is IHaveVelocity)
+            {
+                await (el as IHaveVelocity).Velocity.Takeover(() => takeoverAction(tempV));
+            }
+            else
+            {
+                await takeoverAction(tempV);
+            }
+        }
+    }
     public class Velocity : SpacialElementFunction
     {
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
