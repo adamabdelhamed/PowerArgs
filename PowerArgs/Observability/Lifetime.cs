@@ -110,6 +110,19 @@ namespace PowerArgs
             }
         }
 
+        public bool TryDispose()
+        {
+            if(IsExpired || IsExpiring)
+            {
+                return false;
+            }
+            else
+            {
+                Dispose();
+                return true;
+            }
+        }
+
         /// <summary>
         /// Creates a new lifetime that will end when any of the given
         /// lifetimes ends

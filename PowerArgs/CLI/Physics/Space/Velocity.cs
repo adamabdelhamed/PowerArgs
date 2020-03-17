@@ -12,18 +12,23 @@ namespace PowerArgs.Cli.Physics
 
     public static class VelocityEx
     {
-        public static async Task ControlVelocity(this SpacialElement el, Func<Velocity, Task> takeoverAction, ILifetimeManager lt)
+        public static async Task<bool> TryControlVelocity(this SpacialElement el, Func<Velocity, Task> takeoverAction, ILifetimeManager lt)
         {
             Velocity tempV = new Velocity(el);
             lt.OnDisposed(tempV.Lifetime.Dispose);
             if (el is IHaveVelocity)
             {
+                if ((el as IHaveVelocity).Velocity.MovementTakeover != null)
+                {
+                    return false;
+                }
                 await (el as IHaveVelocity).Velocity.Takeover(() => takeoverAction(tempV));
             }
             else
             {
                 await takeoverAction(tempV);
             }
+            return true;
         }
     }
     public class Velocity : SpacialElementFunction
