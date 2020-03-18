@@ -10,8 +10,6 @@ namespace PowerArgs.Games
     public class Character : SpacialElement, IObservableObject, IHaveVelocity
     {
         public Event<float> OnMove { get; private set; } = new Event<float>();
-
-
         public bool IsVisible { get => observable.Get<bool>(); set => observable.Set(value); } 
         public MultiPlayerClient MultiPlayerClient { get; set; }
         public char? Symbol { get; set; }

@@ -137,6 +137,10 @@ namespace PowerArgs.Cli.Physics
                 {
                     continue;
                 }
+                else if (element is Character && e.HasSimpleTag(WeaponsPassThruTag))
+                {
+                    continue;
+                }
                 else if (element is WeaponElement && (element as WeaponElement).Weapon?.Holder == e)
                 {
                     // Characters can't hit their own weapon elements
