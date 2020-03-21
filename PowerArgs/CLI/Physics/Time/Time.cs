@@ -283,18 +283,18 @@ namespace PowerArgs.Cli.Physics
                     }
                 }
 
-                for (var i = 0; i < toAdd.Count; i++)
+                while(toAdd.Count > 0)
                 {
-                    timeFunctions.Add(toAdd[i]);
-
-                    if (toAdd[i].Lifetime.IsExpired == false && toAdd[i].Governor.ShouldFire(Now))
+                    var added = toAdd[0];
+                    toAdd.RemoveAt(0);
+                    timeFunctions.Add(added);
+         
+                    if (added.Lifetime.IsExpired == false && added.Governor.ShouldFire(Now))
                     {
-                        CurrentlyRunningFunction = toAdd[i];
+                        CurrentlyRunningFunction = added;
                         EvaluateCurrentlyRunningFunction();
                     }
                 }
-
-                toAdd.Clear();
 
                 for (var i = 0; i < toRemove.Count; i++)
                 {
