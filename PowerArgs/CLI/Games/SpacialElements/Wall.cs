@@ -15,8 +15,6 @@ namespace PowerArgs.Games
         public void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
         public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
         public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
-
-        public bool ForcePen { get; set; }
         public ConsoleCharacter? Pen { get; set; }
 
         public Wall()
@@ -34,7 +32,7 @@ namespace PowerArgs.Games
         protected override void OnPaint(ConsoleBitmap context)
         {
             var w = Element as Wall;
-            if(w.Pen.HasValue && w.Pen.Value.Value != ' ')
+            if(w.Pen.HasValue)
             {
                 context.Pen = w.Pen.Value;
             }
@@ -42,16 +40,7 @@ namespace PowerArgs.Games
             {
                 context.Pen = Style;
             }
-
-            if (context.Pen.Value == ' ' && context.Pen.BackgroundColor == ConsoleString.DefaultBackgroundColor)
-            {
-                context.Pen = new ConsoleCharacter('W');
-            }
-
-            if ((Element as Wall).ForcePen)
-            {
-                context.Pen = (Element as Wall).Pen.Value;
-            }
+ 
             context.FillRect(0, 0, Width, Height);
         }
     }

@@ -7,7 +7,7 @@ namespace PowerArgs.Cli
 {
     public abstract class CompactConsole : ConsolePanel
     {
-        private TextBox tb;
+        public TextBox InputBox { get; private set; }
         private CommandLineArgumentsDefinition def;
         private Label outputLabel;
         private Lifetime focusLt;
@@ -29,8 +29,12 @@ namespace PowerArgs.Cli
             return Task.CompletedTask;
         }
 
+        Lifetime refreshLt = new Lifetime();
         private void HardRefresh(ConsoleString outputValue = null)
         {
+            refreshLt?.Dispose();
+            refreshLt = new Lifetime();
+            var myLt = refreshLt;
             Controls.Clear();
             if (Width < 10 || Height < 5) return;
 
@@ -64,46 +68,51 @@ namespace PowerArgs.Cli
 
             var inputPanel = gridLayout.Add(new ConsolePanel() { }, 1, 4);
             inputPanel.Add(new Label() { Text = "CMD> ".ToConsoleString() });
-            tb = inputPanel.Add(new TextBox() { X = "CMD> ".Length, Width = inputPanel.Width - "CMD> ".Length, Foreground = ConsoleColor.Gray, Background = ConsoleColor.Black });
-            tb.RichTextEditor.TabHandler.TabCompletionHandlers.Add(new PowerArgsRichCommandLineReader(def, new List<ConsoleString>(), false));
+            InputBox = inputPanel.Add(new TextBox() { X = "CMD> ".Length, Width = inputPanel.Width - "CMD> ".Length, Foreground = ConsoleColor.Gray, Background = ConsoleColor.Black });
+            InputBox.RichTextEditor.TabHandler.TabCompletionHandlers.Add(new PowerArgsRichCommandLineReader(def, new List<ConsoleString>(), false));
             ConsoleApp.Current.QueueAction(() =>
             {
-                tb.Focused.SubscribeForLifetime(() =>
+                if (myLt == refreshLt)
                 {
-                    if (focusLt != null && focusLt.IsExpired == false && focusLt.IsExpiring == false)
+
+
+                    InputBox.Focused.SubscribeForLifetime(() =>
                     {
-                        focusLt.Dispose();
-                    }
+                        if (focusLt != null && focusLt.IsExpired == false && focusLt.IsExpiring == false)
+                        {
+                            focusLt.Dispose();
+                        }
 
-                    focusLt = new Lifetime();
+                        focusLt = new Lifetime();
 
 
-                    Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, null, () =>
+                        Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, null, () =>
+                        {
+                            var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, false, false, false));
+                        }, focusLt);
+                        Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, ConsoleModifiers.Shift, () =>
+                        {
+                            var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, true, false, false));
+                        }, focusLt);
+
+                    }, refreshLt);
+
+                    InputBox.Unfocused.SubscribeForLifetime(() =>
                     {
-                        var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, false, false, false));
-                    }, focusLt);
-                    Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, ConsoleModifiers.Shift, () =>
-                    {
-                        var forgotten = OnHandleHey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, true, false, false));
-                    }, focusLt);
+                        if (focusLt != null && focusLt.IsExpired == false && focusLt.IsExpiring == false)
+                        {
+                            focusLt.Dispose();
+                        }
+                    }, refreshLt);
 
-                }, this);
-
-                tb.Unfocused.SubscribeForLifetime(() =>
-                {
-                    if (focusLt != null && focusLt.IsExpired == false && focusLt.IsExpiring == false)
-                    {
-                        focusLt.Dispose();
-                    }
-                }, this);
-
-                tb.TryFocus();
+                    InputBox.TryFocus();
+                }
             });
 
             var outputPanel = gridLayout.Add(new ConsolePanel() { Background = ConsoleColor.Black }, 1, 5);
             outputLabel = outputPanel.Add(new Label() { Text = outputValue ?? UpdateAssistiveText(), Mode = LabelRenderMode.MultiLineSmartWrap }).Fill();
 
-            tb.KeyInputReceived.SubscribeForLifetime(async (keyInfo)=>await OnHandleHey(keyInfo), tb);
+            InputBox.KeyInputReceived.SubscribeForLifetime(async (keyInfo)=>await OnHandleHey(keyInfo), InputBox);
         }
 
         private async Task OnHandleHey(ConsoleKeyInfo keyInfo)
@@ -113,8 +122,8 @@ namespace PowerArgs.Cli
                 ConsoleString output = ConsoleString.Empty;
                 try
                 {
-                    var args = Args.Convert(tb.Value.ToString());
-                    AddHistory(tb.Value.ToString());
+                    var args = Args.Convert(InputBox.Value.ToString());
+                    AddHistory(InputBox.Value.ToString());
 
                     if(def.ExceptionBehavior?.Policy == ArgExceptionPolicy.StandardExceptionHandling)
                     {
@@ -131,7 +140,7 @@ namespace PowerArgs.Cli
                     {
                         ConsoleOutInterceptor.Instance.Detatch();
                     }
-                    tb.Dispose();
+                    InputBox.Dispose();
                     output = new ConsoleString(ConsoleOutInterceptor.Instance.ReadAndClear());
 
                     if (action.Cancelled == false)
@@ -165,14 +174,14 @@ namespace PowerArgs.Cli
             }
             else if (keyInfo.Key == ConsoleKey.Tab)
             {
-                ConsoleCharacter? prototype = tb.Value.Length == 0 ? (ConsoleCharacter?)null : tb.Value[tb.Value.Length - 1];
-                tb.RichTextEditor.RegisterKeyPress(keyInfo, prototype);
+                ConsoleCharacter? prototype = InputBox.Value.Length == 0 ? (ConsoleCharacter?)null : InputBox.Value[InputBox.Value.Length - 1];
+                InputBox.RichTextEditor.RegisterKeyPress(keyInfo, prototype);
             }
             else if (keyInfo.Key == ConsoleKey.UpArrow)
             {
                 if (HasHistory())
                 {
-                    tb.Value = GetHistoryPrevious();
+                    InputBox.Value = GetHistoryPrevious();
                     outputLabel.Text = UpdateAssistiveText();
                 }
             }
@@ -180,7 +189,7 @@ namespace PowerArgs.Cli
             {
                 if (HasHistory())
                 {
-                    tb.Value = GetHistoryNext();
+                    InputBox.Value = GetHistoryNext();
                     outputLabel.Text = UpdateAssistiveText();
                 }
             }
@@ -200,15 +209,15 @@ namespace PowerArgs.Cli
         private ConsoleString UpdateAssistiveText()
         {
             List<CommandLineAction> candidates;
-            if (tb.Value.Length > 0)
+            if (InputBox.Value.Length > 0)
             {
-                var command = tb.Value.Split(" ".ToConsoleString()).FirstOrDefault();
+                var command = InputBox.Value.Split(" ".ToConsoleString()).FirstOrDefault();
                 command = command ?? ConsoleString.Empty;
                 candidates = def.Actions.Where(a => a.DefaultAlias.StartsWith(command.StringValue, StringComparison.OrdinalIgnoreCase)).ToList();
 
                 if (candidates.Count == 0)
                 {
-                    return $"\nNo actions start with {tb.Value.ToString()}".ToRed();
+                    return $"\nNo actions start with {InputBox.Value.ToString()}".ToRed();
                 }
             }
             else

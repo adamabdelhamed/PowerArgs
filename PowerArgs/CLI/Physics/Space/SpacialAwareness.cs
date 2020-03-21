@@ -60,6 +60,11 @@ namespace PowerArgs.Cli.Physics
             return RectangularF.Create(r.Left + dx, r.Top + dy, r.Width, r.Height);
         }
 
+        public static ILocationF GetOffsetByPixels(this ILocationF r, float dx, float dy)
+        {
+            return LocationF.Create(r.Left + dx, r.Top + dy);
+        }
+
         public static ILocationF MoveTowards(this ILocationF a, float angle, float distance)
         {
             while(angle < 0)

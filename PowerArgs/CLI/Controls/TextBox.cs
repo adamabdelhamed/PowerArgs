@@ -48,6 +48,8 @@ namespace PowerArgs.Cli
         /// </summary>
         public bool BlinkEnabled { get; set; } = true;
 
+        public bool IsInputBlocked { get; set; }
+
         /// <summary>
         /// Creates a new text box
         /// </summary>
@@ -87,6 +89,7 @@ namespace PowerArgs.Cli
 
         private void OnKeyInputReceived(ConsoleKeyInfo info)
         {
+            if (IsInputBlocked) return;
             ConsoleCharacter? prototype = this.Value.Length == 0 ? (ConsoleCharacter?)null : this.Value[this.Value.Length - 1];
             textState.RegisterKeyPress(info, prototype);
             blinkState = true;
