@@ -185,7 +185,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        internal ConsoleBitmap Bitmap;
+        public ConsoleBitmap Bitmap { get; internal set; }
 
         /// <summary>
         /// Creates a new ConsoleControl

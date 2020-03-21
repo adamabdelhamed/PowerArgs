@@ -33,6 +33,7 @@ namespace PowerArgs.Cli.Physics
     }
     public class Velocity : SpacialElementFunction
     {
+        public Event OnVelocityEnforced { get; private set; } = new Event();
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
         public static Event<Impact> GlobalImpactOccurred { get; private set; } = new Event<Impact>();
 
@@ -94,6 +95,7 @@ namespace PowerArgs.Cli.Physics
 
                 if (d == 0)
                 {
+                    OnVelocityEnforced?.Fire();
                     await Time.CurrentTime.YieldAsync();
                     continue;
                 }
@@ -147,6 +149,7 @@ namespace PowerArgs.Cli.Physics
                     haveMovedSinceLastHitDetection = true;
                 }
 
+                OnVelocityEnforced?.Fire();
                 await Time.CurrentTime.YieldAsync();
             }
         }

@@ -1,4 +1,5 @@
 ﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Linq;
 
 namespace PowerArgs.Games
@@ -9,6 +10,8 @@ namespace PowerArgs.Games
 
         public static Event<LooseItem> OnIncorporated { get; private set; } = new Event<LooseItem>();
 
+        public Func<Character, bool> Filter { get; set; } = e => true;
+
         public Event Incorporated { get; private set; } = new Event();
         public override void Evaluate()
         {
@@ -16,7 +19,8 @@ namespace PowerArgs.Games
                 .Where(e =>
                     e is Character &&
                     CanIncorporate(e as Character) &&
-                    e.Touches(this))
+                    e.Touches(this) &&
+                    Filter(e as Character))
                 .Select(e => e as Character).FirstOrDefault();
 
             if (target != null)

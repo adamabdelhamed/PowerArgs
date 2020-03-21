@@ -146,7 +146,7 @@ namespace PowerArgs
 
         public RgbColor ToRgbColor() => new RgbColor(R, G, B);
 
-        private static readonly Regex RGBRegex = new Regex(@"^\s*(?<r>d+)\s*,\s*(?<g>d+)\s*,\s*(?<b>d+)\s*$");
+        private static readonly Regex RGBRegex = new Regex(@"^\s*(?<r>\d+)\s*,\s*(?<g>\d+)\s*,\s*(?<b>\d+)\s*$");
 
         internal static bool TryParse(string value, out RGB ret)
         {

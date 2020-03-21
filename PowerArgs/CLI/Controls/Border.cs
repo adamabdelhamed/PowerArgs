@@ -12,6 +12,8 @@
         /// </summary>
         public RGB? BorderColor { get => Get<RGB>(); set => Set(value); }
 
+        public ConsoleString Adornment { get => Get<ConsoleString>(); set => Set(value); }
+
         public BorderPanel(ConsoleControl content)
         {
             container = ProtectedPanel.Add(new ConsolePanel()).Fill(padding: new Thickness(2, 2, 1, 1));
@@ -35,6 +37,11 @@
             context.DrawLine(Width - 2, 0, Width - 2, Height);
             context.DrawLine(0, 0, Width, 0);
             context.DrawLine(0, Height-1, Width, Height-1);
+
+            if(Adornment != null)
+            {
+                context.DrawString(Adornment,Width - Adornment.Length-3, Height - 1);
+            }
         }
     }
 }

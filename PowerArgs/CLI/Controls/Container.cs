@@ -39,9 +39,9 @@ namespace PowerArgs.Cli
                 shortCircuit = visitAction(child);
                 if (shortCircuit) return true;
 
-                if (child is ConsolePanel)
+                if (child is Container)
                 {
-                    shortCircuit = VisitControlTree(visitAction, child as ConsolePanel);
+                    shortCircuit = VisitControlTree(visitAction, child as Container);
                     if (shortCircuit) return true;
                 }
             }
