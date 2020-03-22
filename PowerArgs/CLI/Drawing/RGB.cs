@@ -163,6 +163,24 @@ namespace PowerArgs
             return true;
         }
 
+        [ArgReviver]
+        public static RGB Revive(string key, string val)
+        {
+            if(TryParse(val, out RGB ret))
+            {
+                return ret;
+            }
+            else if(Enum.TryParse(val, out ConsoleColor c))
+            {
+                return c;
+            }
+            {
+                throw new ArgException($"'{val}' is not a valid RGB color");
+            }
+        }
+
+
+
         public override string ToString()
         {
             if (RGBToConsoleColorMap.TryGetValue(this, out ConsoleColor c))
@@ -329,6 +347,22 @@ namespace PowerArgs
         public Action<RGB[]> OnColorsChanged { get; set; }
     }
 
-
-
+    public static class NullableRGBReviver
+    {
+        [ArgReviver]
+        public static RGB? Revive(string key, string val)
+        {
+            if (RGB.TryParse(val, out RGB ret))
+            {
+                return ret;
+            }
+            else if (Enum.TryParse(val, out ConsoleColor c))
+            {
+                return c;
+            }
+            {
+                throw new ArgException($"'{val}' is not a valid RGB color");
+            }
+        }
+    }
 }

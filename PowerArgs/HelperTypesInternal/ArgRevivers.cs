@@ -43,9 +43,18 @@ namespace PowerArgs
                 (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
                 (t.IsArray && CanRevive(t.GetElementType())))
                 return true;
-
-            SearchAssemblyForRevivers(t.Assembly);
-
+            
+            if (t.IsGenericType && t.GetGenericTypeDefinition().MakeGenericType(typeof(int)) == typeof(int?))
+            {
+                // search for nullable revivers in the generic type's assembly
+                var nullableType = t.GetGenericArguments()[0];
+                SearchAssemblyForRevivers(nullableType.Assembly);
+            }
+            else
+            {
+                SearchAssemblyForRevivers(t.Assembly);
+            }
+            
             var entryAssembly = Assembly.GetEntryAssembly();
             if (entryAssembly != null && t.Assembly.FullName != entryAssembly.FullName)
             {

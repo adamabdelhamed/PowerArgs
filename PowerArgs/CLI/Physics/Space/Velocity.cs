@@ -141,6 +141,8 @@ namespace PowerArgs.Cli.Physics
                         haveMovedSinceLastHitDetection = false;
                         Element.SizeOrPositionChanged.Fire();
                     }
+
+                    Stop();
                 }
                 else
                 {

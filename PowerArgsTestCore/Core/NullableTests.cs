@@ -17,6 +17,8 @@ namespace ArgsTests
             public Nullable<char> OptionalCharacter{get;set;}
             public Nullable<Guid> OptionalGuid { get; set; }
             public Nullable<DayOfWeek> OptionalDayOfWeek { get; set; }
+
+            public Nullable<RGB> OptionalColor { get; set; }
         }
 
         [TestCleanup]
@@ -50,6 +52,9 @@ namespace ArgsTests
             Assert.IsFalse(parsed.OptionalCharacter.HasValue);
             Assert.IsTrue(parsed.OptionalGuid.HasValue);
             Assert.AreEqual(Guid.Parse("E4BA2178-3367-4AA0-89B2-E08168378FE0"), parsed.OptionalGuid.Value);
+
+            parsed = Args.Parse<NullableArgs>("-OptionalColor", "Red");
+            Assert.AreEqual(parsed.OptionalColor.Value, RGB.Red); ;
 
             try
             {

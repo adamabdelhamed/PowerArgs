@@ -164,7 +164,7 @@ namespace PowerArgs
         /// <summary>
         /// The implementation of the action that can be invoked by the parser if the user specifies this action.
         /// </summary>
-        internal MethodInfo ActionMethod { get; private set; }
+        public MethodInfo ActionMethod { get; set; }
 
         /// <summary>
         /// Returns true if there is at least 1 ArgExample metadata on this action
@@ -254,7 +254,7 @@ namespace PowerArgs
             return false;
         }
 
-        internal CommandLineAction()
+        public CommandLineAction()
         {
             overrides = new AttrOverride(GetType());
             Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace PowerArgs
 {
-    internal class ActionMethodInfo : MethodInfo
+    public class ActionMethodInfo : MethodInfo
     {
         protected Action<CommandLineArgumentsDefinition> action;
 
