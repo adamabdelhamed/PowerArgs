@@ -197,6 +197,17 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Converts this promise to a lifetime
+        /// </summary>
+        /// <returns>a lifetime that ends when this promise resolves</returns>
+        public Lifetime ToLifetime()
+        {
+            var ret = new Lifetime();
+            this.Finally(p => ret.Dispose());
+            return ret;
+        }
+
+        /// <summary>
         /// Registers an action to run if this promise is rejected.
         /// </summary>
         /// <param name="a">the exception handler</param>
@@ -473,6 +484,18 @@ namespace PowerArgs
         {
             this.myDeferred = myDeferred;
             this.innerPromise = new Promise(myDeferred.innerDeferred);
+        }
+
+
+        /// <summary>
+        /// Converts this promise to a lifetime
+        /// </summary>
+        /// <returns>a lifetime that ends when this promise resolves</returns>
+        public Lifetime ToLifetime()
+        {
+            var ret = new Lifetime();
+            this.Finally(p => ret.Dispose());
+            return ret;
         }
 
         /// <summary>
