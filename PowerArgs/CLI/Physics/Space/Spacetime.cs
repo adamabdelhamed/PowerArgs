@@ -8,6 +8,8 @@ namespace PowerArgs.Cli.Physics
     public interface ISpacialElement : IRectangularF
     {
         Lifetime Lifetime { get; }
+
+        void MoveTo(float x, float y, int? z = null);
     }
 
     public class SpacialElement : TimeFunction, ISpacialElement
