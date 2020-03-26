@@ -37,16 +37,20 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="contentFactory">A callback where you are given a handle that can be used to configure the dialog. 
         /// It also has a method that lets you close the dialog. This callback should return the dialog content.</param>
-        public static async void Show(Func<DialogHandle,ConsolePanel> contentFactory)
+        public static async void Show(Func<DialogHandle,ConsolePanel> contentFactory, ConsolePanel parent = null, bool pushPop = true)
         {
+            parent = parent ?? ConsoleApp.Current.LayoutRoot;
             using (var dialogLt = new Lifetime())
             {
-                ConsoleApp.Current.FocusManager.Push();
-                dialogLt.OnDisposed(ConsoleApp.Current.FocusManager.Pop);
+                if (pushPop)
+                {
+                    ConsoleApp.Current.FocusManager.Push();
+                    dialogLt.OnDisposed(ConsoleApp.Current.FocusManager.Pop);
+                }
                 var handle = new DialogHandle();
                 var content = contentFactory(handle);
                 content.IsVisible = false;
-                var dialogContainer = ConsoleApp.Current.LayoutRoot.Add(new BorderPanel(content) { BorderColor = handle.BorderColor, Background = content.Background, Width = 1, Height = 1 }).CenterBoth();
+                var dialogContainer = parent.Add(new BorderPanel(content) { ZIndex = int.MaxValue, BorderColor = handle.BorderColor, Background = content.Background, Width = 1, Height = 1 }).CenterBoth();
                 await Forward(300, dialogLt, percentage => dialogContainer.Width = Math.Max(1, (int)Math.Round((4+content.Width) * percentage)));
                 await Forward(200, dialogLt, percentage => dialogContainer.Height = Math.Max(1, (int)Math.Round((2+content.Height) * percentage)));
                 content.IsVisible = true;
