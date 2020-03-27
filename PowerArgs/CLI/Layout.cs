@@ -149,8 +149,8 @@ namespace PowerArgs.Cli
             Action syncAction = () => 
             {
                 if (parent.Width == 0) return;
-
-                child.Bounds = new Rectangle(effectivePadding.Left, child.Y, parent.Width - (effectivePadding.Right+effectivePadding.Left), child.Height);
+                if (parent.Width - (effectivePadding.Right + effectivePadding.Left) <= 0) return;
+                child.Bounds = new Rectangle(effectivePadding.Left, child.Y,  parent.Width - (effectivePadding.Right+effectivePadding.Left), child.Height);
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
