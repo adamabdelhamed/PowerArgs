@@ -20,7 +20,7 @@ namespace PowerArgs.Cli.Physics
         public int ZIndex { get; private set; }
         public float Width { get; private set; }
         public float Height { get; private set; }
-        public CompositionMode CompositionMode { get; set; } = CompositionMode.Blend;
+        public CompositionMode CompositionMode { get; set; } = CompositionMode.BlendBackground;
         public ConsoleColor BackgroundColor { get; set; } = ConsoleColor.Red;
 
         public ConsoleCharacter? Pen { get; set; }

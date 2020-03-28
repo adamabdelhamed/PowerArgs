@@ -61,13 +61,16 @@ namespace PowerArgs.Cli
             if (control.CompositionMode == CompositionMode.PaintOver)
             {
                 ComposePaintOver(control);
-           
             }
-            else
+            else if(control.CompositionMode == CompositionMode.BlendBackground)
             {
-                ComposeBlend(control);
+                ComposeBlendBackground(control);
             }
-           
+            else 
+            {
+                ComposeBlendVisible(control);
+            }
+
         }
 
         private void ComposePaintOver(ConsoleControl control)
@@ -85,7 +88,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        private void ComposeBlend(ConsoleControl control)
+        private void ComposeBlendBackground (ConsoleControl control)
         {
             var maxX = control.X + control.Width;
             var maxY = control.Y + control.Height;
@@ -115,6 +118,47 @@ namespace PowerArgs.Cli
                         {
                             Bitmap.DrawPoint(controlPixel.Value, x, y);
                         }
+                    }
+                }
+            }
+        }
+
+        private bool IsVisibleOnMyPanel(ConsolePixel pixel)
+        {
+            if (pixel.Value.HasValue == false) return false;
+
+            var c = pixel.Value.Value;
+
+            if(c.Value == ' ')
+            {
+                return c.BackgroundColor != Background;
+            }
+            else
+            {
+                return c.ForegroundColor != Background || c.BackgroundColor != Background;
+            }
+        }
+
+        private void ComposeBlendVisible(ConsoleControl control)
+        {
+            var maxX = control.X + control.Width;
+            var maxY = control.Y + control.Height;
+            for (var x = control.X; x < maxX; x++)
+            {
+                for (var y = control.Y; y < maxY; y++)
+                {
+                    if (Bitmap.IsInBounds(x, y) == false)
+                    {
+                        continue;
+                    }
+                    var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y);
+
+                    var controlPixelHasRenderableContent = IsVisibleOnMyPanel(controlPixel);
+
+ 
+                    if (controlPixelHasRenderableContent)
+                    {
+                        Bitmap.DrawPoint(controlPixel.Value.Value, x, y);
                     }
                 }
             }

@@ -7,7 +7,8 @@ namespace PowerArgs.Cli
     public enum CompositionMode
     {
         PaintOver = 0,
-        Blend = 1,
+        BlendBackground = 1,
+        BlendVisible = 2,
     }
 
     /// <summary>
