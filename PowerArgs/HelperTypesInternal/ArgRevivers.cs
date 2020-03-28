@@ -29,7 +29,11 @@ namespace PowerArgs
 
         private static List<Type> cachedConvertibleTypes = new List<Type>();
         private static List<Assembly> alreadySearched = new List<Assembly>();
-        
+
+        private static bool IsNullable(Type t) => t.IsGenericType && t.GetGenericTypeDefinition().MakeGenericType(typeof(int)) == typeof(int?);
+
+        private static Type GetNullableType(Type t) => IsNullable(t) ? t.GetGenericArguments()[0] : throw new ArgumentException("Given argument is not nullable");
+
         /// <summary>
         /// Returns true if the given type can be revived, false otherwise
         /// </summary>
@@ -44,22 +48,39 @@ namespace PowerArgs
                 (t.IsArray && CanRevive(t.GetElementType())))
                 return true;
             
-            if (t.IsGenericType && t.GetGenericTypeDefinition().MakeGenericType(typeof(int)) == typeof(int?))
+            if (IsNullable(t) && CanRevive(GetNullableType(t)))
+            {
+                return true;
+            }
+            else if(IsNullable(t))
             {
                 // search for nullable revivers in the generic type's assembly
-                var nullableType = t.GetGenericArguments()[0];
-                SearchAssemblyForRevivers(nullableType.Assembly);
+                SearchAssemblyForRevivers(GetNullableType(t).Assembly);
             }
             else
             {
                 SearchAssemblyForRevivers(t.Assembly);
             }
-            
+
+            if (Revivers.ContainsKey(t) ||
+               t.IsEnum ||
+               cachedConvertibleTypes.Contains(t) ||
+               (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
+               (t.IsArray && CanRevive(t.GetElementType())))
+                return true;
+
             var entryAssembly = Assembly.GetEntryAssembly();
             if (entryAssembly != null && t.Assembly.FullName != entryAssembly.FullName)
             {
                 SearchAssemblyForRevivers(entryAssembly);
             }
+
+            if (Revivers.ContainsKey(t) ||
+                  t.IsEnum ||
+                  cachedConvertibleTypes.Contains(t) ||
+                  (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
+                  (t.IsArray && CanRevive(t.GetElementType())))
+                return true;
 
             if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string)))
             {
@@ -70,7 +91,7 @@ namespace PowerArgs
                 return true;
             }
 
-            return Revivers.ContainsKey(t);
+            return false;
         }
 
         internal static object ReviveEnum(Type t, string value, bool ignoreCase)
@@ -185,6 +206,10 @@ namespace PowerArgs
             else if (Revivers.ContainsKey(t))
             {
                 return Revivers[t].Invoke(name, value);
+            }
+            else if(IsNullable(t) && Revivers.ContainsKey(GetNullableType(t)))
+            {
+                return Revivers[GetNullableType(t)].Invoke(name, value);
             }
             else if (System.ComponentModel.TypeDescriptor.GetConverter(t).CanConvertFrom(typeof(string)))
             {
