@@ -148,19 +148,39 @@ namespace PowerArgs
 
         private static readonly Regex RGBRegex = new Regex(@"^\s*(?<r>\d+)\s*,\s*(?<g>\d+)\s*,\s*(?<b>\d+)\s*$");
 
-        internal static bool TryParse(string value, out RGB ret)
+        public static RGB Parse(string value)
+        {
+            if(TryParse(value, out RGB ret) == false)
+            {
+                throw new FormatException($"{value} is not a valid RGB color");
+            }
+            else
+            {
+                return ret;
+            }
+        }
+
+        public static bool TryParse(string value, out RGB ret)
         {
             var match = RGBRegex.Match(value);
-            if (match.Success == false)
+            if (match.Success)
+            {
+                var r = byte.Parse(match.Groups["r"].Value);
+                var g = byte.Parse(match.Groups["g"].Value);
+                var b = byte.Parse(match.Groups["b"].Value);
+                ret = new RGB(r, g, b);
+                return true;
+            }
+            else if (Enum.TryParse(value, out ConsoleColor c))
+            {
+                ret = (RGB)c;
+                return true;
+            }
+            else
             {
                 ret = default(RGB);
                 return false;
             }
-            var r = byte.Parse(match.Groups["r"].Value);
-            var g = byte.Parse(match.Groups["g"].Value);
-            var b = byte.Parse(match.Groups["b"].Value);
-            ret = new RGB(r, g, b);
-            return true;
         }
 
         [ArgReviver]
@@ -170,10 +190,7 @@ namespace PowerArgs
             {
                 return ret;
             }
-            else if(Enum.TryParse(val, out ConsoleColor c))
-            {
-                return c;
-            }
+            else
             {
                 throw new ArgException($"'{val}' is not a valid RGB color");
             }
