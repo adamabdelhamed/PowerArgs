@@ -98,7 +98,30 @@ namespace PowerArgs.Cli.Physics
             {
                 var testArea = options.MovingObject.MoveTowards(options.Angle, dPrime);
                 prediction.Path.Add(testArea);
-                var obstacleHit = effectiveObstacles.Where(o => o.Touches(testArea) == true).FirstOrDefault();
+                var obstacleHit = effectiveObstacles.Where(o =>
+                {
+                    var simpleTest = o.Touches(testArea) == true;
+                    if (simpleTest == false) return false;
+
+                    if(o.Touches(options.MovingObject))
+                    {
+                        var overlapBefore = options.MovingObject.NumberOfPixelsThatOverlap(o);
+                        var overlapAfter = testArea.NumberOfPixelsThatOverlap(o);
+
+                        if (overlapAfter < overlapBefore)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }).FirstOrDefault();
 
                 if(obstacleHit != null)
                 {
