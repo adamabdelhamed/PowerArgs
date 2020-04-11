@@ -41,7 +41,22 @@ namespace PowerArgs.Cli.Physics
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
         public Func<IEnumerable<SpacialElement>> HitDetectionDynamicExclusions { get; set; }
 
-        public float Angle { get; set; }
+        public Event OnAngleChanged { get; private set; } = new Event();
+
+        private float angle;
+        public float Angle
+        {
+            get
+            {
+                return angle;
+            }
+            set
+            {
+                if (value == angle) return;
+                angle = value;
+                OnAngleChanged.Fire();
+            }
+        }
 
         bool haveMovedSinceLastHitDetection = true;
         public float Speed { get; set; }

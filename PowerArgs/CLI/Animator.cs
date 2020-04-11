@@ -118,6 +118,14 @@ namespace PowerArgs.Cli
         public static float EaseOut(float percentage) => (float)Math.Pow(percentage, 1.0f / 5);
 
         /// <summary>
+        /// An easing function that starts fast and decellerates as time moves on
+        /// </summary>
+        /// <param name="percentage">the linear percentage</param>
+        /// <returns>the eased percentage</returns>
+
+        public static float EaseOutSoft(float percentage) => (float)Math.Pow(percentage, 1.0f / 2);
+
+        /// <summary>
         /// An easing function that starts and ends slow, but peaks at the midpoint
         /// </summary>
         /// <param name="percentage">the linear percentage</param>

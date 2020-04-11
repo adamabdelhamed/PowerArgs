@@ -85,7 +85,7 @@ namespace PowerArgs.Samples
                     {
                         Loop = Lifetime.Forever,
                         Duration = 1000,
-                        Destination = RectangularF.Create((Width - ball.Width) - 1, ball.Y, ball.Width, ball.Height),
+                        Destination = ()=> RectangularF.Create((Width - ball.Width) - 1, ball.Y, ball.Width, ball.Height),
                         AutoReverse = true,
                         EasingFunction = Animator.EaseInOut,
                     });
@@ -133,7 +133,7 @@ namespace PowerArgs.Samples
             await animationPanel.AnimateAsync(new ConsoleControlAnimationOptions()
             {
                 Duration = 1000,
-                Destination = RectangularF.Create(centerX, targetY, animationPanel.Width, animationPanel.Height),
+                Destination = () => RectangularF.Create(centerX, targetY, animationPanel.Width, animationPanel.Height),
             });
             if (animationPanel.IsExpired == false && animationPanel.Parent?.IsExpired == false)
             {

@@ -21,7 +21,7 @@ namespace PowerArgs.Cli.Physics
         public float Width { get; private set; }
         public float Height { get; private set; }
         public CompositionMode CompositionMode { get; set; } = CompositionMode.BlendBackground;
-        public ConsoleColor BackgroundColor { get; set; } = ConsoleColor.Red;
+        public RGB BackgroundColor { get; set; } = RGB.Red;
 
         public ConsoleCharacter? Pen { get; set; }
 

@@ -281,7 +281,7 @@ namespace PowerArgs.Games
 
         public void OverrideTargeting(AutoTargetingFunction func)
         {
-            if(Time.CurrentTime.Functions.WhereAs<AutoTargetingFunction>().Where(f => f.Options.Source == this.Velocity).Single() != func)
+            if(Time.CurrentTime.Functions.WhereAs<AutoTargetingFunction>().Where(f => f.Options.Source == this.Velocity).SingleOrDefault() != func)
             {
                 throw new ArgumentException("You must disable targeting and add the new function to Time before overriding");
             }

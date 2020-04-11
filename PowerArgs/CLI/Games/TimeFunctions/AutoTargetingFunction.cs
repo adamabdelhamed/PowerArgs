@@ -32,7 +32,8 @@ namespace PowerArgs.Games
         {
             var obstacles = Options.Source.GetObstacles();
 
-            var target = Options.TargetsEval()
+            var candidates = Options.TargetsEval();
+            var target = candidates
                 .Where(z =>
                 {
                     var sb = Options.SourceBounds;

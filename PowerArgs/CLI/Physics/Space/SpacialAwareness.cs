@@ -198,11 +198,6 @@ namespace PowerArgs.Cli.Physics
             var startW = rectangular.Width;
             var startH = rectangular.Height;
 
-            var xDelta = options.Destination.Left - startX;
-            var yDelta = options.Destination.Top - startY;
-            var wDelta = options.Destination.Width - startW;
-            var hDelta = options.Destination.Height - startH;
-
             await Animator.AnimateAsync(new FloatAnimatorOptions()
             {
                 Duration = options.Duration,
@@ -216,6 +211,12 @@ namespace PowerArgs.Cli.Physics
                 IsCancelled = options.IsCancelled,
                 Setter = v =>
                 {
+                    var dest = options.Destination();
+                    var xDelta = dest.Left - startX;
+                    var yDelta = dest.Top - startY;
+                    var wDelta = dest.Width - startW;
+                    var hDelta = dest.Height - startH;
+
                     var frameX = startX + (v * xDelta);
                     var frameY = startY + (v * yDelta);
                     var frameW = startW + (v * wDelta);
@@ -286,7 +287,7 @@ namespace PowerArgs.Cli.Physics
 
     public abstract class RectangularAnimationOptions
     {
-        public IRectangularF Destination { get; set; }
+        public Func<IRectangularF> Destination { get; set; }
 
         public abstract void Setter(IRectangularF target, IRectangularF bounds);
 
