@@ -69,7 +69,7 @@ namespace PowerArgs.Games
 
 
 
-        private TimeSpan lastFireTime = TimeSpan.Zero;
+        private TimeSpan? lastFireTime;
 
         public void TryFire(bool alt)
         {
@@ -77,7 +77,7 @@ namespace PowerArgs.Games
             {
                 if ((AmmoAmount > 0 || AmmoAmount == -1) && Holder != null)
                 {
-                    if (Time.CurrentTime.Now - lastFireTime < MinTimeBetweenShots)
+                    if (lastFireTime.HasValue && Time.CurrentTime.Now - lastFireTime < MinTimeBetweenShots)
                     {
                         return;
                     }
