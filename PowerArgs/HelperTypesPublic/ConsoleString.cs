@@ -437,11 +437,11 @@ namespace PowerArgs
         /// <summary>
         /// Gets the console's default foreground color
         /// </summary>
-        public static RGB DefaultForegroundColor { get; private set; }
+        public static RGB DefaultForegroundColor { get; set; }
         /// <summary>
         /// Gets the console's default background color
         /// </summary
-        public static RGB DefaultBackgroundColor { get; private set; }
+        public static RGB DefaultBackgroundColor { get; set; }
 
         private static Dictionary<ConsoleColor, string> CSSMap = new Dictionary<ConsoleColor, string>()
         {
