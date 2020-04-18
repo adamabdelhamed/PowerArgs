@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
+using System.Text;
 
 namespace PowerArgs.Cli
 {
@@ -655,6 +655,7 @@ namespace PowerArgs.Cli
        
             try
             {
+                var stringBuilder = new StringBuilder();
                 Chunk currentChunk = null;
                 var chunksOnLine = new List<Chunk>();
                 char val;
@@ -736,21 +737,20 @@ namespace PowerArgs.Cli
                             var chunk = chunksOnLine[i];
                             if (chunk.HasChanged)
                             {
-                                var toWrite = "";
+                             
                                 if(chunk.Underlined)
                                 {
-                                    toWrite+=Ansi.Text.UnderlinedOn.EscapeSequence;
+                                    stringBuilder.Append(Ansi.Text.UnderlinedOn.EscapeSequence);
                                 }
 
-                                toWrite += Ansi.Cursor.Move.ToLocation(left+1, y+1).EscapeSequence;
-                                toWrite += Ansi.Color.Foreground.Rgb(chunk.FG.R, chunk.FG.G, chunk.FG.B).EscapeSequence;
-                                toWrite += Ansi.Color.Background.Rgb(chunk.BG.R, chunk.BG.G, chunk.BG.B).EscapeSequence;
-                                toWrite += chunk.ToString();
+                                stringBuilder.Append(Ansi.Cursor.Move.ToLocation(left+1, y+1).EscapeSequence);
+                                stringBuilder.Append(Ansi.Color.Foreground.Rgb(chunk.FG.R, chunk.FG.G, chunk.FG.B).EscapeSequence);
+                                stringBuilder.Append(Ansi.Color.Background.Rgb(chunk.BG.R, chunk.BG.G, chunk.BG.B).EscapeSequence);
+                                stringBuilder.Append(chunk.ToString());
                                 if (chunk.Underlined)
                                 {
-                                    toWrite += Ansi.Text.UnderlinedOff.EscapeSequence;
+                                    stringBuilder.Append(Ansi.Text.UnderlinedOff.EscapeSequence);
                                 }
-                                Console.Write(toWrite);
                             }
 
                             left += chunk.Length;
@@ -760,6 +760,7 @@ namespace PowerArgs.Cli
                     chunksOnLine.Clear();
                 }
 
+                System.Console.Write(stringBuilder.ToString());
             }
             catch (IOException)
             {
