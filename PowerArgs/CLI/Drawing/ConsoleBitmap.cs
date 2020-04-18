@@ -497,6 +497,11 @@ namespace PowerArgs.Cli
             {
                 this.Invalidate();
                 wasFancy = ConsoleProvider.Fancy;
+
+                if(ConsoleProvider.Fancy)
+                {
+                    System.Console.Write(Ansi.Cursor.Hide.EscapeSequence + Ansi.Text.BlinkOff.EscapeSequence);
+                }
             }
 
             if (ConsoleProvider.Fancy)
@@ -736,9 +741,8 @@ namespace PowerArgs.Cli
                                 {
                                     toWrite+=Ansi.Text.UnderlinedOn.EscapeSequence;
                                 }
-                                toWrite += Ansi.Cursor.Hide.EscapeSequence;
+
                                 toWrite += Ansi.Cursor.Move.ToLocation(left+1, y+1).EscapeSequence;
-                                toWrite += Ansi.Cursor.SavePosition.EscapeSequence;
                                 toWrite += Ansi.Color.Foreground.Rgb(chunk.FG.R, chunk.FG.G, chunk.FG.B).EscapeSequence;
                                 toWrite += Ansi.Color.Background.Rgb(chunk.BG.R, chunk.BG.G, chunk.BG.B).EscapeSequence;
                                 toWrite += chunk.ToString();
