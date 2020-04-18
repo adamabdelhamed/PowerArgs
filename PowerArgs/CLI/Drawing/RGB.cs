@@ -1,7 +1,6 @@
 ﻿using PowerArgs.Cli;
 using System;
 using System.Collections.Generic;
-using System.CommandLine.Rendering;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -73,14 +72,12 @@ namespace PowerArgs
         public byte G { get; private set; }
         public byte B { get; private set; }
 
-        public RGB(RgbColor color)
+        public RGB(byte r, byte g, byte b) 
         {
-            this.R = color.Red;
-            this.G = color.Green;
-            this.B = color.Blue;
+            this.R = r;
+            this.G = g;
+            this.B = b;
         }
-
-        public RGB(byte r, byte g, byte b) : this(new RgbColor(r, g, b)) { }
 
         public override bool Equals(object obj)
         {
@@ -143,8 +140,6 @@ namespace PowerArgs
             }
         }
         public static implicit operator RGB(ConsoleColor color) => (int)color < ConsoleColorMap.Length ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
-
-        public RgbColor ToRgbColor() => new RgbColor(R, G, B);
 
         private static readonly Regex RGBRegex = new Regex(@"^\s*(?<r>\d+)\s*,\s*(?<g>\d+)\s*,\s*(?<b>\d+)\s*$");
 

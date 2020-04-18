@@ -96,19 +96,17 @@ namespace PowerArgs.Samples
         private async void Init()
         {
             var options = GetOptionsForArg();
-            if (args.Mode == ConsoleMode.VirtualTerminal && ConsoleProvider.TryEnableFancyRendering() == false)
+            if (args.Mode == ConsoleMode.VirtualTerminal)
             {
-                "Unable to configure Ansi output mode".ToRed().WriteLine();
-                System.Environment.Exit(1);
-                return;
+                ConsoleProvider.Fancy = true;
             }
 
             if(args.Mode == ConsoleMode.Console)
             {
-                ConsoleProvider.DisableFancyRendering();
+                ConsoleProvider.Fancy = false;
             }
 
-            var mechanism = ConsoleProvider.Renderer == null ? "System.Console" : "VirtualTerminal";
+            var mechanism = ConsoleProvider.Fancy == false ? "System.Console" : "VirtualTerminal";
 
             options.InitTest?.Invoke();
             var messagePanel = Add(new ConsolePanel() { Width = 45, Height = 3, Background = ConsoleColor.Red }).CenterBoth();

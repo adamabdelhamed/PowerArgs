@@ -1,7 +1,6 @@
 ﻿using PowerArgs.Cli;
 using System;
 using System.Collections.Generic;
-using System.CommandLine.Rendering;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -955,7 +954,7 @@ namespace PowerArgs
             {
                 ConsoleOutInterceptor.Instance.Write(this);
             }
-            else if(PowerArgs.ConsoleProvider.Renderer == null)
+            else if(PowerArgs.ConsoleProvider.Fancy == false)
             {
                 string buffer = "";
 
@@ -1005,26 +1004,7 @@ namespace PowerArgs
                         {
                             if (buffer.Length > 0)
                             {
-                                if (currentUnderlined)
-                                {
-                                    PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
-                                    {
-                                    StyleSpan.UnderlinedOn(),
-                                    new ForegroundColorSpan(new RgbColor(currentForeground.R, currentForeground.G,currentForeground.B)),
-                                    new BackgroundColorSpan(new RgbColor(currentBackground.R, currentBackground.G,currentBackground.B)),
-                                    new ContentSpan(buffer),
-                                    StyleSpan.UnderlinedOff(),
-                                    }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
-                                }
-                                else
-                                {
-                                    PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
-                                    {
-                                    new ForegroundColorSpan(new RgbColor(currentForeground.R, currentForeground.G,currentForeground.B)),
-                                    new BackgroundColorSpan(new RgbColor(currentBackground.R, currentBackground.G,currentBackground.B)),
-                                    new ContentSpan(buffer)
-                                    }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
-                                }
+                                WriteFancy(buffer, currentForeground, currentBackground, currentUnderlined);
                             }
 
                             currentForeground = character.ForegroundColor;
@@ -1038,38 +1018,42 @@ namespace PowerArgs
 
                     if (buffer.Length > 0)
                     {
-                        if (currentUnderlined)
-                        {
-                            PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
-                            {
-                                    StyleSpan.UnderlinedOn(),
-                                    new ForegroundColorSpan(new RgbColor(currentForeground.R, currentForeground.G,currentForeground.B)),
-                                    new BackgroundColorSpan(new RgbColor(currentBackground.R, currentBackground.G,currentBackground.B)),
-                                    new ContentSpan(buffer),
-                                    StyleSpan.UnderlinedOff(),
-                            }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
-                        }
-                        else
-                        {
-                            PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
-                            {
-                                    new ForegroundColorSpan(new RgbColor(currentForeground.R, currentForeground.G,currentForeground.B)),
-                                    new BackgroundColorSpan(new RgbColor(currentBackground.R, currentBackground.G,currentBackground.B)),
-                                    new ContentSpan(buffer)
-                            }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
-                        }
+                        WriteFancy(buffer, currentForeground, currentBackground, currentUnderlined);
                         buffer = "";
                     }
                 }
                 finally
                 {
-                    PowerArgs.ConsoleProvider.Renderer.RenderToRegion(new ContainerSpan(new Span[]
-                    {
-                      new ForegroundColorSpan(new RgbColor(existingForeground.R, existingForeground.G,existingForeground.B)),
-                      new BackgroundColorSpan(new RgbColor(existingBackground.R, existingBackground.G,existingBackground.B)),
-                    }), PowerArgs.ConsoleProvider.Renderer.GetRegion());
+                    SetColorsFancy(existingBackground, existingBackground);
                 }
             }
+        }
+
+        private void WriteFancy(string content, RGB fg, RGB bg, bool underlined)
+        {
+            var toWrite = "";
+            if (underlined)
+            {
+                toWrite += Ansi.Text.UnderlinedOn.EscapeSequence;
+            }
+            toWrite += Ansi.Cursor.SavePosition.EscapeSequence;
+            toWrite += Ansi.Color.Foreground.Rgb(fg.R, fg.G, fg.B).EscapeSequence;
+            toWrite += Ansi.Color.Background.Rgb(bg.R, bg.G, bg.B).EscapeSequence;
+            toWrite += content;
+            if (underlined)
+            {
+                toWrite += Ansi.Text.UnderlinedOff.EscapeSequence;
+            }
+            Console.Write(toWrite);
+        }
+
+        private void SetColorsFancy(RGB fg, RGB bg)
+        {
+            var toWrite = "";
+            toWrite += Ansi.Cursor.SavePosition.EscapeSequence;
+            toWrite += Ansi.Color.Foreground.Rgb(fg.R, fg.G, fg.B).EscapeSequence;
+            toWrite += Ansi.Color.Background.Rgb(bg.R, bg.G, bg.B).EscapeSequence;
+            Console.Write(toWrite);
         }
 
         /// <summary>

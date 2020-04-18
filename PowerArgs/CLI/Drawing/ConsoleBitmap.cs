@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.CommandLine.Rendering;
 using System.IO;
 
 namespace PowerArgs.Cli
@@ -490,11 +489,17 @@ namespace PowerArgs.Cli
             public void Add(char c) => buffer[Length++] = c;
             public override string ToString() => new string(buffer, 0, Length);
         }
- 
 
+        private bool wasFancy;
         public void Paint()
         {
-            if (ConsoleProvider.Renderer != null)
+            if(ConsoleProvider.Fancy != wasFancy)
+            {
+                this.Invalidate();
+                wasFancy = ConsoleProvider.Fancy;
+            }
+
+            if (ConsoleProvider.Fancy)
             {
                 PaintNew();
             }
@@ -726,34 +731,22 @@ namespace PowerArgs.Cli
                             var chunk = chunksOnLine[i];
                             if (chunk.HasChanged)
                             {
-                                Span[] children;
+                                var toWrite = "";
                                 if(chunk.Underlined)
                                 {
-                                    children = new Span[]
-                                    {
-                                        new ForegroundColorSpan(chunk.FG.ToRgbColor()),
-                                        new BackgroundColorSpan(chunk.BG.ToRgbColor()),
-                                        StyleSpan.UnderlinedOn(),
-                                        new ContentSpan(chunk.ToString()),
-                                        StyleSpan.UnderlinedOff(),
-                                    };
+                                    toWrite+=Ansi.Text.UnderlinedOn.EscapeSequence;
                                 }
-                                else
+                                toWrite += Ansi.Cursor.Hide.EscapeSequence;
+                                toWrite += Ansi.Cursor.Move.ToLocation(left+1, y+1).EscapeSequence;
+                                toWrite += Ansi.Cursor.SavePosition.EscapeSequence;
+                                toWrite += Ansi.Color.Foreground.Rgb(chunk.FG.R, chunk.FG.G, chunk.FG.B).EscapeSequence;
+                                toWrite += Ansi.Color.Background.Rgb(chunk.BG.R, chunk.BG.G, chunk.BG.B).EscapeSequence;
+                                toWrite += chunk.ToString();
+                                if (chunk.Underlined)
                                 {
-                                    children = new Span[]
-                                    {
-                                        new ForegroundColorSpan(chunk.FG.ToRgbColor()),
-                                        new BackgroundColorSpan(chunk.BG.ToRgbColor()),
-                                        new ContentSpan(chunk.ToString()),
-                                    };
+                                    toWrite += Ansi.Text.UnderlinedOff.EscapeSequence;
                                 }
-
-                                var span = new ContainerSpan(children);
-
-                                //@Jon - I will call this render function somewhere between 0 and Width * Height times for each render pass.
-                                //       That's a lot of IO. Would there be any benefit (i.e. less IO roundtrips) if I were to pass you a collection of
-                                //       span + region pairs and ask you to render them all at once?
-                                ConsoleProvider.Renderer.RenderToRegion(span, new Region(left, y, chunk.Length, 1, true));
+                                Console.Write(toWrite);
                             }
 
                             left += chunk.Length;

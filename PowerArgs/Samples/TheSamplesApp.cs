@@ -101,16 +101,14 @@ namespace PowerArgs.Samples
                 {
                     panel.Controls.Clear();
 
-                    if (colorArgs.Mode == ConsoleMode.VirtualTerminal && ConsoleProvider.TryEnableFancyRendering() == false)
+                    if (colorArgs.Mode == ConsoleMode.VirtualTerminal)
                     {
-                        "Unable to configure Ansi output mode".ToRed().WriteLine();
-                        System.Environment.Exit(1);
-                        return;
+                        ConsoleProvider.Fancy = true;
                     }
 
                     if (colorArgs.Mode == ConsoleMode.Console)
                     {
-                        ConsoleProvider.DisableFancyRendering();
+                        ConsoleProvider.Fancy = false;
                     }
 
                     var toColor = panel.Add(new ConsolePanel() { Width = 20, Height = 3, Background = colorArgs.From }).CenterBoth();

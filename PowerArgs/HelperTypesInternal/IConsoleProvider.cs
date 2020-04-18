@@ -1,7 +1,4 @@
 ﻿using System;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
-using System.CommandLine.Rendering;
 
 namespace PowerArgs
 {
@@ -123,46 +120,7 @@ namespace PowerArgs
         /// </summary>
         public static IConsoleProvider Current = new StdConsoleProvider();
 
-        /// <summary>
-        /// Experimental - Leveraging new .NET command line APIs. To try, first call TryEnableTerminalMode().
-        /// If it works then this property will be populated.
-        /// </summary>
-        public static ConsoleRenderer Renderer { get; private set; } = null;
-
-        internal static ITerminal FancyTerminal { get; private set; } = null;
-
-        /// <summary>
-        /// Experimental - Leveraging new .NET command line APIs. To try. If this method returns true
-        /// then the Renderer property will be populated.
-        /// </summary>
-        public static bool TryEnableFancyRendering()
-        {
-            if (Renderer != null) return true;
-            var mode = VirtualTerminalMode.TryEnable();
-            if (mode.IsEnabled == false) return false;
-            var console = new InvocationContext(new Parser().Parse("")).Console;
-            var terminal = Terminal.GetTerminal(console, true, OutputMode.Ansi);
-            Renderer = new ConsoleRenderer(terminal, OutputMode.Ansi);
-            
-            var outputMode = terminal.DetectOutputMode();
-            if (outputMode != OutputMode.Ansi)
-            {
-                Renderer = null;
-                return false;
-            }
-            else
-            {
-                FancyTerminal = terminal;
-                terminal.HideCursor();
-                AppDomain.CurrentDomain.ProcessExit += (s, e) => terminal.ShowCursor();
-                return true;
-            }
-        }
-
-        public static void DisableFancyRendering()
-        {
-            Renderer = null;
-            FancyTerminal = null;
-        }
+        public static bool Fancy { get; set; }
+ 
     }
 }
