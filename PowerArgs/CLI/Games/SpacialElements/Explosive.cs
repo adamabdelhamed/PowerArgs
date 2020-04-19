@@ -24,15 +24,27 @@ namespace PowerArgs.Games
             this.AngleIncrement = 5;
             Velocity.GlobalImpactOccurred.SubscribeForLifetime((impact) =>
             {
-                if(impact.MovingObject == this)
+                if(impact.MovingObject == this && CausesExplosion(impact.ObstacleHit))
                 {
                     (impact.MovingObject as Explosive).Explode();
                 }
-                else if(impact.ObstacleHit == this)
+                else if(impact.ObstacleHit == this && CausesExplosion(impact.MovingObject))
                 {
                     (impact.ObstacleHit as Explosive).Explode();
                 }
             }, this.Lifetime);
+        }
+
+        private bool CausesExplosion(IRectangularF thingHit)
+        {
+            if(thingHit is WeaponElement || thingHit is Character)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public void Explode()
