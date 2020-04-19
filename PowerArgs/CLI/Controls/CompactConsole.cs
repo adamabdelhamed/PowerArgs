@@ -117,6 +117,8 @@ namespace PowerArgs.Cli
 
         private async Task OnHandleHey(ConsoleKeyInfo keyInfo)
         {
+            if (InputBox.IsInputBlocked) return;
+
             if (keyInfo.Key == ConsoleKey.Enter)
             {
                 ConsoleString output = ConsoleString.Empty;
