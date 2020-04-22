@@ -19,6 +19,11 @@ namespace PowerArgs.Cli.Physics
         public int SleepCycles { get; private set; }
 
         /// <summary>
+        /// 1 is normal speed. Make bigger to slow down the simulation. Make smaller fractions to speed it up.
+        /// </summary>
+        public float SlowMoRatio { get; set; } = 1;
+
+        /// <summary>
         /// An event that fires when the target time simulation falls behind or catches up to
         /// the wall clock
         /// </summary>
@@ -78,12 +83,7 @@ namespace PowerArgs.Cli.Physics
             impl.Lifetime.OnDisposed(() => { impl = null; });
             t.Add(impl);
         }
-
-        public void ReSync()
-        {
-            wallClockSample = DateTime.UtcNow;
-            simulationTimeSample = t.Now;
-        }
+ 
 
         private void Disable()
         {
@@ -95,13 +95,13 @@ namespace PowerArgs.Cli.Physics
         {
             var realTimeNow = DateTime.UtcNow;
             // while the simulation time is ahead of the wall clock, spin
-            var wallClockTimeElapsed = realTimeNow - wallClockSample;
-            var age = t.Now - simulationTimeSample;
+            var wallClockTimeElapsed = TimeSpan.FromSeconds(1 * (realTimeNow - wallClockSample).TotalSeconds);
+            var simulationTimeElapsed = TimeSpan.FromSeconds(SlowMoRatio * (t.Now - simulationTimeSample).TotalSeconds);
             var slept = false;
 
-            if (Enabled && age > wallClockTimeElapsed)
+            if (Enabled && simulationTimeElapsed > wallClockTimeElapsed)
             {
-                var sleepTime = age - wallClockTimeElapsed;
+                var sleepTime = simulationTimeElapsed - wallClockTimeElapsed;
                 Thread.Sleep(sleepTime);
                 slept = true;
             }
@@ -121,16 +121,17 @@ namespace PowerArgs.Cli.Physics
             var idleTime = DateTime.UtcNow - realTimeNow;
             busyPercentageAverage.AddSample(1 - (idleTime.TotalSeconds / t.Increment.TotalSeconds));
             sleepTimeAverage.AddSample(idleTime.TotalMilliseconds);
-            age = t.Now - simulationTimeSample;
+            simulationTimeElapsed = t.Now - simulationTimeSample;
 
             // At this point, we're sure that the wall clock is equal to or ahead of the simulation time.
 
             // If the wall clock is ahead by too much then the simulation is falling behind. Calculate the amount. 
-            var behindAmount = wallClockTimeElapsed - age;
+            var behindAmount = wallClockTimeElapsed - simulationTimeElapsed;
 
             // Send the latest behind amount to the behind signal debouncer.
             behindSignal.Update(behindAmount.TotalMilliseconds);
-            ReSync();
+            wallClockSample = DateTime.UtcNow;
+            simulationTimeSample = t.Now;
         }
     }
 }
