@@ -79,7 +79,7 @@ namespace PowerArgs
                 for (aliasIndex = 0; aliasIndex < aliases.Count; aliasIndex++)
                 {
                     if (aliases[aliasIndex] == DefaultAlias) continue;
-                    var proposedInlineAliases = inlineAliasInfo == string.Empty ? "-"+aliases[aliasIndex] : inlineAliasInfo + ", -" + aliases[aliasIndex];
+                    var proposedInlineAliases = inlineAliasInfo == string.Empty ? "-" + aliases[aliasIndex] : inlineAliasInfo + ", -" + aliases[aliasIndex];
                     inlineAliasInfo = proposedInlineAliases;
                 }
 
@@ -87,7 +87,7 @@ namespace PowerArgs
             }
         }
 
-     
+
         internal string Syntax
         {
             get
@@ -99,9 +99,9 @@ namespace PowerArgs
                     ret += "*";
                 }
 
-                if(PrimaryShortcutAlias.Length > 0)
+                if (PrimaryShortcutAlias.Length > 0)
                 {
-                    ret += " ("+PrimaryShortcutAlias+")";
+                    ret += " (" + PrimaryShortcutAlias + ")";
                 }
 
                 return ret;
@@ -162,7 +162,7 @@ namespace PowerArgs
                     return true;
                 }
 
-                if(ArgumentType.IsGenericType == false)
+                if (ArgumentType.IsGenericType == false)
                 {
                     return false;
                 }
@@ -173,8 +173,8 @@ namespace PowerArgs
                 }
 
                 var nullableType = ArgumentType.GetGenericArguments().FirstOrDefault();
-                
-                if(nullableType == null)
+
+                if (nullableType == null)
                 {
                     return false;
                 }
@@ -188,7 +188,7 @@ namespace PowerArgs
         /// </summary>
         public bool OmitFromUsage
         {
-            get => overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p =>true, false);
+            get => overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p => true, false);
             set => overrides.Set("OmitFromUsage", value);
         }
 
@@ -262,8 +262,8 @@ namespace PowerArgs
                 }
 
                 var enumType = ArgumentType;
-                
-                if(enumType.IsEnum == false)
+
+                if (enumType.IsEnum == false)
                 {
                     // we must be dealing with a nullable<enum> since IsEnum returned true above
                     enumType = enumType.GetGenericArguments()[0];
@@ -316,7 +316,7 @@ namespace PowerArgs
         /// was created manually then this value will be null.
         /// </summary>
         public object Source { get; set; }
-        
+
         /// <summary>
         /// This property will contain the parsed value of the command line argument if parsing completed successfully.
         /// </summary>
@@ -347,7 +347,7 @@ namespace PowerArgs
             ArgumentType = typeof(string);
             Position = -1;
         }
- 
+
         /// <summary>
         /// Creates a command line argument of the given type and sets the first default alias.
         /// </summary>
@@ -438,7 +438,7 @@ namespace PowerArgs
             ret.ArgumentType = parameter.ParameterType;
             ret.Source = parameter;
             ret.DefaultValue = parameter.HasAttr<DefaultValueAttribute>() ? parameter.Attr<DefaultValueAttribute>().Value : null;
-            
+
             ret.IgnoreCase = true;
 
             if (parameter.Member.DeclaringType.HasAttr<ArgIgnoreCase>() && parameter.Member.DeclaringType.Attr<ArgIgnoreCase>().IgnoreCase == false)
@@ -498,7 +498,7 @@ namespace PowerArgs
             {
                 if (v.ImplementsValidateAlways)
                 {
-                    v.ValidateAlways(this, ref commandLineValue);  
+                    v.ValidateAlways(this, ref commandLineValue);
                 }
                 else if (commandLineValue != null)
                 {
@@ -522,7 +522,7 @@ namespace PowerArgs
                         RevivedValue = ArgRevivers.Revive(ArgumentType, Aliases.First(), commandLineValue);
                     }
                 }
-                catch(TargetInvocationException ex)
+                catch (TargetInvocationException ex)
                 {
                     if (ex.InnerException != null && ex.InnerException is ArgException)
                     {
@@ -641,25 +641,41 @@ namespace PowerArgs
 
             bool excludeName = info.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Any();
 
+            string retAlias = "";
+
             if (excludeName == false)
             {
-                knownShortcuts.Add(info.Name);
+                string knownShortcutsAlias;
 
-                if (CommandLineAction.IsActionImplementation(info) && info.Name.EndsWith(Constants.ActionArgConventionSuffix))
+                if (info.HasAttr<ArgDisplayName>())
                 {
-                    ret.Add(info.Name.Substring(0, info.Name.Length - Constants.ActionArgConventionSuffix.Length));
+                    var displayName = info.Attrs<ArgDisplayName>();
+                    knownShortcutsAlias = displayName[0].DisplayName;
+                    retAlias = displayName[0].DisplayName;
                 }
                 else
                 {
-                    ret.Add(info.Name);
+                    knownShortcutsAlias = info.Name;
+
+                    if (CommandLineAction.IsActionImplementation(info) && info.Name.EndsWith(Constants.ActionArgConventionSuffix))
+                    {
+                        retAlias = info.Name.Substring(0, info.Name.Length - Constants.ActionArgConventionSuffix.Length);
+                    }
+                    else
+                    {
+                        retAlias = info.Name;
+                    }
                 }
+
+                knownShortcuts.Add(knownShortcutsAlias);
+                ret.Add(retAlias);
             }
 
             var attrs = info.Attrs<ArgShortcut>();
 
             if (attrs.Count == 0)
             {
-                var shortcut = GenerateShortcutAlias(info.Name, knownShortcuts, ignoreCase);
+                var shortcut = GenerateShortcutAlias(retAlias == "" ? info.Name : retAlias, knownShortcuts, ignoreCase);
                 if (shortcut != null)
                 {
                     knownShortcuts.Add(shortcut);

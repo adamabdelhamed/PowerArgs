@@ -162,6 +162,7 @@ These attributes can be specified on argument properties. PowerArgs uses this me
 
 * `[ArgPosition(0)]` This argument can be specified by position (no need for -propName)
 * `[ArgShortcut("n")]` Lets the user specify -n
+* `[ArgDisplayName("displayName")]` A customized argument property name or action method name to display. 
 * `[ArgDescription("Description of the argument")]`
 * `[ArgExample("example text", "Example description")]`
 * `[HelpHook]` Put this on a boolean property and when the user specifies that boolean. PowerArgs will display the help info and stop processing any additional work. If the user is in the context of an action (e.g. myprogram myaction -help) then help is shown for the action in context only.
