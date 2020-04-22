@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace PowerArgs
 {
     /// <summary>
-    /// 
+    /// helper class to detect which OS we are on
     /// https://mariusschulz.com/blog/detecting-the-operating-system-in-net-core
     /// </summary>
     public static class OperatingSystem
