@@ -17,7 +17,7 @@ namespace PowerArgs.Games
 
     public class AutoTargetingFunction : TimeFunction
     {
-        public float AngularVisibility { get; set; } = 50;
+        public float AngularVisibility { get; set; } = 44;
 
         public Event<SpacialElement> TargetChanged { get; private set; } = new Event<SpacialElement>();
         public AutoTargetingOptions Options { get; private set; }

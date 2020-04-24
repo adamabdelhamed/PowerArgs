@@ -1,13 +1,17 @@
-﻿namespace PowerArgs.Cli.Physics
+﻿using System;
+
+namespace PowerArgs.Cli.Physics
 {
     public class Friction : SpacialElementFunction
     {
+        public const int DefaultFrictionEvalFrequency = 50;
         public float Decay { get; set; } = .9f;
 
         private Velocity tracker;
-        public Friction(Velocity tracker) : base(tracker.Element)
+        public Friction(Velocity tracker, float evalFrequency = DefaultFrictionEvalFrequency) : base(tracker.Element)
         {
             this.tracker = tracker;
+            this.Governor.Rate = TimeSpan.FromMilliseconds(evalFrequency);
             tracker.Lifetime.OnDisposed(this.Lifetime.Dispose);
         }
 

@@ -148,7 +148,7 @@ namespace PowerArgs.Cli.Physics
         /// <summary>
         /// The amount to add to the value of 'Now' after each tick.
         /// </summary>
-        public TimeSpan Increment { get; private set; }
+        public TimeSpan Increment { get; set; }
 
 
         /// <summary>
