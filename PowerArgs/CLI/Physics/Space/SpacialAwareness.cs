@@ -229,24 +229,49 @@ namespace PowerArgs.Cli.Physics
 
         public static IRectangularF EffectiveBounds(this IRectangularF rect) => rect is IHaveMassBounds ? (rect as IHaveMassBounds).MassBounds : rect;
 
-        public static void NudgeFree(this SpacialElement el)
+
+        public static IEnumerable<float> Enumerate360Angles(float initialAngle, int increments = 20)
         {
-            var loc = GetNudgeLocation(el);
+            initialAngle = initialAngle % 360;
+            var opposite = initialAngle.GetOppositeAngle();
+
+            for(var i = 1; i <= increments; i++)
+            {
+                if(i == 1)
+                {
+                    yield return initialAngle;
+                }
+                else if(i == 1)
+                {
+                    yield return opposite;
+                }
+                else
+                {
+                    var increment = 180f * i / increments;
+                    yield return initialAngle.AddToAngle(increment);
+                    yield return initialAngle.AddToAngle(-increment);
+                }
+            }
+        }
+
+        public static void NudgeFree(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0)
+        {
+            var loc = GetNudgeLocation(el, desiredLocation, optimalAngle);
             if (loc != null)
             {
                 el.MoveTo(loc.Left, loc.Top);
             }
         }
 
-        public static ILocationF GetNudgeLocation(this SpacialElement el, IRectangularF desiredLocation = null, float initialAngle = 0)
+        public static ILocationF GetNudgeLocation(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0)
         {
             desiredLocation = desiredLocation ?? el.EffectiveBounds();
             var obstacles = el.GetObstacles();
             if (obstacles.Where(o => o.Touches(desiredLocation)).Any())
             {
-                for (var d = 1f; d < 15; d++)
+                foreach (var angle in Enumerate360Angles(optimalAngle))
                 {
-                    for (var angle = initialAngle; angle < initialAngle + 360; angle += 20)
+                    for (var d = .25f; d < 15; d+=.25f)
                     {
                         var effectiveAngle = angle % 360;
                         var testLoc = desiredLocation.MoveTowards(effectiveAngle, d);

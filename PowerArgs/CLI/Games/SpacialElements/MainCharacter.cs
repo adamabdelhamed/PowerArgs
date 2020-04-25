@@ -3,7 +3,7 @@ using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using PowerArgs;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
@@ -17,7 +17,18 @@ namespace PowerArgs.Games
     {
         float MaxInteractDistance { get;  } 
         IRectangularF InteractionPoint { get; }
-        void Interact(Character character);
+        Task Interact(Character character);
+    }
+
+    public class Interactable : SpacialElement, IInteractable
+    {
+        public float MaxInteractDistance { get; set; }
+
+        public IRectangularF InteractionPoint { get; set; }
+
+        public Func<Character,Task> InteractFunc { get; set; }
+
+        public Task Interact(Character character) => InteractFunc(character);
     }
 
     public class MainCharacter : Character

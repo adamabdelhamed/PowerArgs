@@ -581,11 +581,12 @@ namespace PowerArgs.Cli.Physics
 
         private IEnumerable<ITimeFunction> EnumerateFunctions()
         {
+            var list = new List<ITimeFunction>();
             foreach (var func in timeFunctions)
             {
                 if (func.Lifetime.IsExpired == false)
                 {
-                    yield return func;
+                    list.Add(func);
                 }
             }
 
@@ -593,9 +594,11 @@ namespace PowerArgs.Cli.Physics
             {
                 if (func.Lifetime.IsExpired == false)
                 {
-                    yield return func;
+                    list.Add(func);
                 }
             }
+
+            return list;
         }
     }
 }

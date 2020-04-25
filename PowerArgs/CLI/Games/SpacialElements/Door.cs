@@ -1,9 +1,9 @@
-﻿using PowerArgs;
-using PowerArgs.Cli;
+﻿using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
@@ -24,6 +24,8 @@ namespace PowerArgs.Games
 
         public float MaxInteractDistance => 1.5f;
         public IRectangularF InteractionPoint => ClosedBounds;
+
+        private Interactable thresholdInteractable;
         public DoorState State
         {
             get
@@ -32,6 +34,8 @@ namespace PowerArgs.Games
             }
             set
             {
+                thresholdInteractable?.Lifetime.TryDispose();
+                thresholdInteractable = null;
                 if (value == DoorState.Opened && state == DoorState.Opened)
                 {
                     FindCieling().ForEach(c => c.IsVisible = false);
@@ -41,6 +45,8 @@ namespace PowerArgs.Games
                     Sound.Play("opendoor");
                     this.MoveTo(OpenBounds.Left, OpenBounds.Top);
                     FindCieling().ForEach(c => c.IsVisible = false);
+                    thresholdInteractable = SpaceTime.CurrentSpaceTime.Add(new Interactable() { InteractionPoint = ClosedBounds, MaxInteractDistance = this.MaxInteractDistance,  BackgroundColor = RGB.Black, InteractFunc = Interact });
+                    this.Lifetime.OnDisposed(() => thresholdInteractable?.Lifetime.TryDispose());
                 }
                 else if (value != DoorState.Opened && State != DoorState.Opened)
                 {
@@ -95,13 +101,13 @@ namespace PowerArgs.Games
             return ret;
         }
 
-        public void Interact(Character character)
+        private TimeThrottler throttler;
+        public Task Interact(Character character)
         {
-            var newDoorDest = State == DoorState.Opened ? ClosedBounds : OpenBounds;
-            var charactersThatWillTouchNewDest = SpaceTime.CurrentSpaceTime.Elements.WhereAs<Character>().Where(c => c.OverlapPercentage(newDoorDest) > 0).Count();
-
-            if (charactersThatWillTouchNewDest == 0)
+            throttler = throttler ?? new TimeThrottler(() =>
             {
+                var newDoorDest = State == DoorState.Opened ? ClosedBounds : OpenBounds;
+              
                 if (state == DoorState.Locked)
                 {
                     OnPlayerTriedToOpenLockedDoor.Fire();
@@ -109,8 +115,15 @@ namespace PowerArgs.Games
                 else
                 {
                     State = State == DoorState.Closed ? DoorState.Opened : DoorState.Closed;
+                    foreach (var c in SpaceTime.CurrentSpaceTime.Elements.WhereAs<Character>().Where(c => c.OverlapPercentage(newDoorDest) > 0))
+                    {
+                        c.NudgeFree(optimalAngle: c.Velocity.Angle);
+                    }
                 }
-            }
+            }, this.Lifetime);
+
+            throttler.Invoke();
+            return Task.CompletedTask;
         }
     }
 
