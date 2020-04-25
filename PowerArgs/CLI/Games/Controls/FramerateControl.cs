@@ -41,7 +41,7 @@ namespace PowerArgs.Games
                 renderFPSLabel.Text = FormatFramerateMessage($"{Application.CyclesPerSecond} UI cycles per second", Application.CyclesPerSecond, true);
                 paintFPSLabel.Text = FormatFramerateMessage($"{Application.PaintRequestsProcessedPerSecond} paint frames per second", Application.PaintRequestsProcessedPerSecond, false);
                 sceneBusyPercentageLabel.Text = FormatSceneBusyPercentage();
-                sleepTimeLabel.Text = (Math.Round(scene.RealTimeViewing.SleepTime)+" ms").ToConsoleString();
+                sleepTimeLabel.Text = (Geometry.Round(scene.RealTimeViewing.SleepTime)+" ms").ToConsoleString();
                 zeroSpinsLabel.Text = (scene.RealTimeViewing.ZeroSleepCycles + " zero spin cycles").ToConsoleString();
                 nonZeroSpinsLabel.Text = (scene.RealTimeViewing.SleepCycles + " non-zero spin cycles").ToConsoleString();
                 scene.SpaceTime.QueueAction("FramerateControl/QueryFunctionAndElementCount",() =>
@@ -65,7 +65,7 @@ namespace PowerArgs.Games
             var color = scene.RealTimeViewing.BusyPercentage >= .9 ? ConsoleColor.Red :
                 scene.RealTimeViewing.BusyPercentage >= .7 ? ConsoleColor.Yellow :
                 ConsoleColor.Green;
-            return ("Scene real time budget: "+Math.Round(100 * scene.RealTimeViewing.BusyPercentage) + " %").ToConsoleString(color);
+            return ("Scene real time budget: "+Geometry.Round(100 * scene.RealTimeViewing.BusyPercentage) + " %").ToConsoleString(color);
         }
 
         private ConsoleString FormatFramerateMessage(string message, int framerate, bool style)

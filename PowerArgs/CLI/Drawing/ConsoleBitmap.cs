@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -403,8 +404,8 @@ namespace PowerArgs.Cli
                     for (double x = x1; x < x2; x += DrawPrecision)
                     {
                         double y = slope + (x - x1) + y1;
-                        int xInt = (int)Math.Round(x);
-                        int yInt = (int)Math.Round(y);
+                        int xInt = Geometry.Round(x);
+                        int yInt = Geometry.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -416,8 +417,8 @@ namespace PowerArgs.Cli
                     for (double x = x2; x < x1; x += DrawPrecision)
                     {
                         double y = slope + (x - x1) + y1;
-                        int xInt = (int)Math.Round(x);
-                        int yInt = (int)Math.Round(y);
+                        int xInt = Geometry.Round(x);
+                        int yInt = Geometry.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -431,8 +432,8 @@ namespace PowerArgs.Cli
                     for (double y = y1; y < y2; y += DrawPrecision)
                     {
                         double x = ((y - y1) / slope) + x1;
-                        int xInt = (int)Math.Round(x);
-                        int yInt = (int)Math.Round(y);
+                        int xInt = Geometry.Round(x);
+                        int yInt = Geometry.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -444,8 +445,8 @@ namespace PowerArgs.Cli
                     for (double y = y2; y < y1; y += DrawPrecision)
                     {
                         double x = ((y - y1) / slope) + x1;
-                        int xInt = (int)Math.Round(x);
-                        int yInt = (int)Math.Round(y);
+                        int xInt = Geometry.Round(x);
+                        int yInt = Geometry.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {

@@ -1,4 +1,5 @@
 ﻿using PowerArgs;
+using PowerArgs.Cli.Physics;
 using System;
 using System.Linq;
 
@@ -227,8 +228,8 @@ namespace PowerArgs.Cli
 
             this.SynchronizeForLifetime(nameof(this.Bounds), () =>
             {
-                var labelColumnWidth = (int)Math.Round(this.Width * this.Options.LabelColumnPercentage);
-                var valueColumnWidth = (int)Math.Round(this.Width * (1 - this.Options.LabelColumnPercentage));
+                var labelColumnWidth = Geometry.Round(this.Width * this.Options.LabelColumnPercentage);
+                var valueColumnWidth = Geometry.Round(this.Width * (1 - this.Options.LabelColumnPercentage));
 
                 while (labelColumnWidth + valueColumnWidth > this.Width)
                 {

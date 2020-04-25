@@ -136,6 +136,11 @@ namespace PowerArgs.Cli.Physics
         public static bool Touches(this IRectangularF rectangle, IRectangularF other) => OverlapPercentage(rectangle, other) > 0;
 
 
+        public static float Round(float f, int digits) => (float)Math.Round(f, digits, MidpointRounding.AwayFromZero);
+        public static float Round(double d, int digits) => (float)Math.Round(d, digits, MidpointRounding.AwayFromZero);
+
+        public static int Round(float f) => (int)Math.Round(f, MidpointRounding.AwayFromZero);
+        public static int Round(double d) => (int)Math.Round(d, MidpointRounding.AwayFromZero);
         public static IRectangularF ToRect(this ILocationF loc, float w, float h)
         {
             var left = loc.Left - w / 2;
@@ -180,10 +185,10 @@ namespace PowerArgs.Cli.Physics
         public static IRectangularF Round(this IRectangularF rect)
         {
             return RectangularF.Create(
-                (int)Math.Round(rect.Left),
-                (int)Math.Round(rect.Top),
-                (int)Math.Round(rect.Width),
-                (int)Math.Round(rect.Height)
+                Geometry.Round(rect.Left),
+                Geometry.Round(rect.Top),
+                Geometry.Round(rect.Width),
+                Geometry.Round(rect.Height)
             );
         }
 
@@ -229,7 +234,7 @@ namespace PowerArgs.Cli.Physics
 
         public static float RoundAngleToNearest(this float a, float nearest)
         {
-            return (float)Math.Round(a / nearest) * nearest;
+            return (float)Geometry.Round(a / nearest) * nearest;
         }
 
         public static float AddToAngle(this float angle, float toAdd)
@@ -348,7 +353,7 @@ namespace PowerArgs.Cli.Physics
                 Math.Max(0, Math.Min(rectangleRight, otherRight) - Math.Max(rectangle.Left, other.Left)) *
                 Math.Max(0, Math.Min(rectangleBottom, otherBottom) - Math.Max(rectangle.Top, other.Top));
 
-            ret = (float)Math.Round(ret, 4);
+            ret = (float)Math.Round(ret, 4, MidpointRounding.AwayFromZero);
             return ret;
         }
 

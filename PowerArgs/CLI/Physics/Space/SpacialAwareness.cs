@@ -303,10 +303,10 @@ namespace PowerArgs.Cli.Physics
     {
         public override void Setter(IRectangularF target, IRectangularF bounds)
         {
-            (target as ConsoleControl).X = (int)Math.Round(bounds.Left);
-            (target as ConsoleControl).Y = (int)Math.Round(bounds.Top);
-            (target as ConsoleControl).Width = (int)Math.Round(bounds.Width);
-            (target as ConsoleControl).Height = (int)Math.Round(bounds.Height);
+            (target as ConsoleControl).X = Geometry.Round(bounds.Left);
+            (target as ConsoleControl).Y = Geometry.Round(bounds.Top);
+            (target as ConsoleControl).Width = Geometry.Round(bounds.Width);
+            (target as ConsoleControl).Height = Geometry.Round(bounds.Height);
         }
     }
 

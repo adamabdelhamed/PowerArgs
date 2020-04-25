@@ -1,4 +1,5 @@
 ﻿
+using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -104,10 +105,10 @@ namespace PowerArgs.Cli
                 var verticalPercentageScrolled = VerticalScrollUnits / (double)contentSize.Height;
 
 
-                var verticalScrollbarHeight = (int)Math.Round(Height * verticalPercentageShowing);
+                var verticalScrollbarHeight = Geometry.Round(Height * verticalPercentageShowing);
  
                 verticalScrollbar.Height = verticalScrollbarHeight;
-                verticalScrollbar.Y = (int)Math.Round(Height * verticalPercentageScrolled);
+                verticalScrollbar.Y = Geometry.Round(Height * verticalPercentageScrolled);
                 verticalScrollbar.CanFocus = true;
             }
 

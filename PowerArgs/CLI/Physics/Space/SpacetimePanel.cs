@@ -110,10 +110,10 @@ namespace PowerArgs.Cli.Physics
             float xPer = r.Element.Left / SpaceTime.Width;
             float yPer = r.Element.Top / SpaceTime.Height;
 
-            int x = (int)Math.Round(xPer * (float)Width);
-            int y = (int)Math.Round(yPer * (float)Height);
-            int w = (int)Math.Round(wPer * (float)Width);
-            int h = (int)Math.Round(hPer * (float)Height);
+            int x = Geometry.Round(xPer * (float)Width);
+            int y = Geometry.Round(yPer * (float)Height);
+            int w = Geometry.Round(wPer * (float)Width);
+            int h = Geometry.Round(hPer * (float)Height);
 
             if (w == 0 && r.Element.Width > 0)
             {

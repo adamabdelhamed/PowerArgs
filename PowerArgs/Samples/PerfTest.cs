@@ -123,8 +123,8 @@ namespace PowerArgs.Samples
 
             var animationPanel = Add(new ConsolePanel() { Background = ConsoleColor.Green, Width = 45, Height = 3 });
 
-            var centerX = (int)Math.Round(Width / 2.0 - animationPanel.Width / 2.0);
-            var targetY = (int)Math.Round((Height / 2.0 - animationPanel.Height / 2) - 5.0);
+            var centerX = Geometry.Round(Width / 2.0 - animationPanel.Width / 2.0);
+            var targetY = Geometry.Round((Height / 2.0 - animationPanel.Height / 2) - 5.0);
             animationPanel.X = centerX;
             animationPanel.Y = Height;
             var animationLabel = animationPanel.Add(new Label() { Text = "That's all folks".ToBlack(bg: ConsoleColor.Green) }).CenterBoth();

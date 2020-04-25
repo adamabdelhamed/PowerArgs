@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 namespace PowerArgs.Cli
@@ -263,7 +264,7 @@ namespace PowerArgs.Cli
                 }
                 else if (definitions[i].Type == GridValueType.Percentage)
                 {
-                    size = (int)Math.Round(definitions[i].Value * budget);
+                    size = Geometry.Round(definitions[i].Value * budget);
                     results.Add(i, size);
                     remainingBudget -= size;
                 }
@@ -294,7 +295,7 @@ namespace PowerArgs.Cli
                 if (definitions[i].Type == GridValueType.RemainderValue)
                 {
                     var myShare = definitions[i].Value / remainderShares;
-                    var size = (int)Math.Round(myShare * remainingBudget);
+                    var size = Geometry.Round(myShare * remainingBudget);
                     results.Add(i, size);
                     remainderSum += size;
                     remaindersToProcess--;

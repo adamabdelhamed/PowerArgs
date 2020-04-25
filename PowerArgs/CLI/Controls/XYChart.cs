@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -677,7 +678,7 @@ namespace PowerArgs.Cli
             else
             {
                 double xConverted = XAxisLeft + (XAxisWidth * percentage);
-                return (int)Math.Round(xConverted);
+                return Geometry.Round(xConverted);
             }
         }
 
@@ -715,7 +716,7 @@ namespace PowerArgs.Cli
             else
             {
                 double yConverted = YAxisBottom - (YAxisHeight * percentage);
-                return (int)Math.Round(yConverted);
+                return Geometry.Round((float)yConverted);
             }
 
         }
@@ -891,7 +892,7 @@ namespace PowerArgs.Cli
         /// <returns>the formatted value</returns>
         public ConsoleString FormatValue(double min, double max, double value)
         {
-            if (value == Math.Round(value))
+            if (value == Geometry.Round(value))
             {
                 return String.Format("{0:n0}", value).ToConsoleString();
             }

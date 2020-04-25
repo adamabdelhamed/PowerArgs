@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 namespace PowerArgs.Cli
@@ -124,12 +125,12 @@ namespace PowerArgs.Cli
 
                 var aspectRatio = (float)child.Width / child.Height;
                 var newW = parent.Width - (effectivePadding.Left + effectivePadding.Right);
-                var newH = (int)Math.Round(newW / aspectRatio);
+                var newH = Geometry.Round(newW / aspectRatio);
 
                 if (newH > parent.Height)
                 {
                     newH = parent.Height;
-                    newW = (int)Math.Round(newH * aspectRatio);
+                    newW = Geometry.Round(newH * aspectRatio);
                 }
 
                 var newLeft = (parent.Width - newW) / 2;

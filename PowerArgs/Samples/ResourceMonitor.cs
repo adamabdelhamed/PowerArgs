@@ -1,5 +1,6 @@
 ﻿using PowerArgs;
 using PowerArgs.Cli;
+using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -184,7 +185,7 @@ namespace PowerArgs.Samples
     
         public ConsoleString GetFormattedSample()
         {
-            return (Math.Round(lastSample) + " %").ToConsoleString(lastSample < 50 ? ConsoleColor.Green : lastSample < 90 ? ConsoleColor.Yellow : ConsoleColor.Red);
+            return (Geometry.Round(lastSample) + " %").ToConsoleString(lastSample < 50 ? ConsoleColor.Green : lastSample < 90 ? ConsoleColor.Yellow : ConsoleColor.Red);
         }
 
         public float GetSample()

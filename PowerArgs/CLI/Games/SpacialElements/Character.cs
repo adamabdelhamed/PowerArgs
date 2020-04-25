@@ -188,8 +188,8 @@ namespace PowerArgs.Games
 
         private void RoundOff()
         {
-            var newLeft = (float)Math.Round(this.Left);
-            var newTop = (float)Math.Round(this.Top);
+            var newLeft = (float)Geometry.Round(this.Left);
+            var newTop = (float)Geometry.Round(this.Top);
             this.MoveTo(newLeft, newTop);
         }
 

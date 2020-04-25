@@ -328,7 +328,7 @@ namespace PowerArgs.Cli
                     var now = DateTime.UtcNow;
                     var delta = now - playStartTime;
                     var newPlayerPosition = playStartPosition + delta;
-                    var videoLocationPercentage = Math.Round(100.0 *newPlayerPosition.TotalSeconds / duration.Value.TotalSeconds,1);
+                    var videoLocationPercentage = Math.Round(100.0 *newPlayerPosition.TotalSeconds / duration.Value.TotalSeconds,1, MidpointRounding.AwayFromZero);
                     videoLocationPercentage = Math.Min(videoLocationPercentage, 100);
                     playerProgressBar.PlayCursorPosition = videoLocationPercentage / 100.0;
                     playButton.Text = $"Pause".ToConsoleString();
