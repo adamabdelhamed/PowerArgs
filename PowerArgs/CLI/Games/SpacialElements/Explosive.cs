@@ -4,6 +4,7 @@ using System;
 using PowerArgs.Cli;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
@@ -47,9 +48,9 @@ namespace PowerArgs.Games
             }
         }
 
-        public void Explode()
+        public IEnumerable<SpacialElement> Explode()
         {
-            if (Lifetime.IsExpired) return;
+            if (Lifetime.IsExpired) yield break;
             this.Lifetime.Dispose();
             var shrapnelSet = new List<Projectile>();
             for (float angle = 0; angle < 360; angle += AngleIncrement)
@@ -71,6 +72,7 @@ namespace PowerArgs.Games
 
                 shrapnelSet.Add(shrapnel);
                 shrapnel.Tags.Add("hot");
+                yield return shrapnel;
             }
 
             foreach(var shrapnel in shrapnelSet)
