@@ -50,7 +50,9 @@ namespace PowerArgs.Games
 
         public IEnumerable<SpacialElement> Explode()
         {
-            if (Lifetime.IsExpired) yield break;
+            var ret = new List<SpacialElement>();
+            if (Lifetime.IsExpired) return ret;
+
             this.Lifetime.Dispose();
             var shrapnelSet = new List<Projectile>();
             for (float angle = 0; angle < 360; angle += AngleIncrement)
@@ -72,7 +74,7 @@ namespace PowerArgs.Games
 
                 shrapnelSet.Add(shrapnel);
                 shrapnel.Tags.Add("hot");
-                yield return shrapnel;
+                ret.Add(shrapnel);
             }
 
             foreach(var shrapnel in shrapnelSet)
@@ -82,6 +84,7 @@ namespace PowerArgs.Games
 
             Exploded.Fire();
             OnExplode.Fire(this);
+            return ret;
         }
     }
 
