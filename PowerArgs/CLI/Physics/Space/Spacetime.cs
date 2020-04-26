@@ -136,7 +136,31 @@ namespace PowerArgs.Cli.Physics
     {
         IRectangularF MassBounds { get; }
         bool IsPartOfMass(SpacialElement other);
+        IEnumerable<SpacialElement> Elements { get; }
     }
+
+    public static class IHaveMassBoundsEx
+    {
+        public static IRectangularF CalculateMassBounds(this IHaveMassBounds mass)
+        {
+            var left = float.MaxValue;
+            var top = float.MaxValue;
+            var right = float.MinValue;
+            var bottom = float.MinValue;
+
+            foreach (var part in mass.Elements.As<ISpacialElement>().Union(new ISpacialElement[] { mass }))
+            {
+                left = Math.Min(left, part.Left);
+                top = Math.Min(top, part.Top);
+                right = Math.Max(right, part.Right());
+                bottom = Math.Max(bottom, part.Bottom());
+            }
+
+            var bounds = RectangularF.Create(left, top, right - left, bottom - top);
+            return bounds;
+        }
+    }
+
 
     public interface IAmMass : ISpacialElement
     {

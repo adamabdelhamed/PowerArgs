@@ -65,6 +65,7 @@ namespace PowerArgs.Games
                 }
 
                 var shrapnel =SpaceTime.CurrentSpaceTime.Add(new Projectile(this.Weapon,ExplosiveProjectileSpeed, angle) { Range = effectiveRange });
+                shrapnel.Tags.Add(nameof(Explosive));
                 shrapnel.MoveTo(this.Left, this.Top, this.ZIndex);
                 OnProjectileAdded.Fire(shrapnel);
                 if(ProjectilePen != null)

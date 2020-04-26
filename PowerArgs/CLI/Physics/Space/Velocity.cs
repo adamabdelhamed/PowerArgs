@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace PowerArgs.Cli.Physics
 {
-    public interface IHaveVelocity
+    public interface IHaveVelocity : ISpacialElement
     {
         Velocity Velocity { get; }
     }
@@ -22,6 +22,9 @@ namespace PowerArgs.Cli.Physics
                 {
                     return false;
                 }
+                tempV.HitDetectionDynamicExclusions = (el as IHaveVelocity).Velocity.HitDetectionDynamicExclusions;
+                tempV.HitDetectionExclusions.AddRange((el as IHaveVelocity).Velocity.HitDetectionExclusions);
+                tempV.HitDetectionExclusionTypes.AddRange((el as IHaveVelocity).Velocity.HitDetectionExclusionTypes);
                 await (el as IHaveVelocity).Velocity.Takeover(() => takeoverAction(tempV));
             }
             else
@@ -119,7 +122,7 @@ namespace PowerArgs.Cli.Physics
 
                 if (obstacles.Where(o => o.Touches(Element)).Any())
                 {
-                    Element.NudgeFree();
+                    Element.NudgeFree(optimalAngle: Angle.GetOppositeAngle());
                 }
 
                 var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
