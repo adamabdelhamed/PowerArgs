@@ -54,8 +54,9 @@ namespace PowerArgs.Cli
                     new GridRowDefinition(){ Type = GridValueType.Pixels, Height = 1, },        // 2 press escape message
                     new GridRowDefinition(){ Type = GridValueType.Pixels, Height = 1, },        // 3 empty
                     new GridRowDefinition(){ Type = GridValueType.Pixels, Height = 1, },        // 4 input
-                    new GridRowDefinition(){ Type = GridValueType.RemainderValue, Height = 1, },// 5 output
-                    new GridRowDefinition(){ Type = GridValueType.Pixels, Height = 1, },        // 6 empty
+                    new GridRowDefinition(){ Type = GridValueType.Pixels, Height = 1, },        // 5 empty
+                    new GridRowDefinition(){ Type = GridValueType.RemainderValue, Height = 1, },// 6 output
+                    new GridRowDefinition(){ Type = GridValueType.Pixels, Height = 1, },        // 7 empty
                 }
             }));
             gridLayout.Fill();
@@ -109,7 +110,7 @@ namespace PowerArgs.Cli
                 }
             });
 
-            var outputPanel = gridLayout.Add(new ConsolePanel() { Background = ConsoleColor.Black }, 1, 5);
+            var outputPanel = gridLayout.Add(new ConsolePanel() { Background = ConsoleColor.Black }, 1, 6);
             outputLabel = outputPanel.Add(new Label() { Text = outputValue ?? UpdateAssistiveText(), Mode = LabelRenderMode.MultiLineSmartWrap }).Fill();
 
             InputBox.KeyInputReceived.SubscribeForLifetime(async (keyInfo)=>await OnHandleHey(keyInfo), InputBox);
@@ -208,6 +209,8 @@ namespace PowerArgs.Cli
         public void WriteLine(ConsoleString text) => Write(text + "\n");
         public void Clear() =>  outputLabel.Text = ConsoleString.Empty;
 
+        protected virtual ConsoleString Parse(string content) => ConsoleString.Parse(content);
+
         private ConsoleString UpdateAssistiveText()
         {
             List<CommandLineAction> candidates;
@@ -226,43 +229,46 @@ namespace PowerArgs.Cli
             {
                 candidates = def.Actions;
             }
+            var builder = new ConsoleTableBuilder();
 
-            List<ConsoleCharacter> buffer = new List<ConsoleCharacter>();
-            buffer.AddRange("\n".ToConsoleString());
+
+            var headers = new List<ConsoleString>()
+            {
+                "command".ToYellow(),
+                "description".ToYellow(),
+                "example".ToYellow(),
+            };
+
+            var rows = new List<List<ConsoleString>>();
+
             foreach (var candidate in candidates)
             {
-                buffer.AddRange(candidate.DefaultAlias.ToLower().ToCyan());
-                buffer.AddRange(" - ".ToGray());
-                buffer.AddRange(ConsoleString.Parse(candidate.Description));
-                buffer.AddRange("\n".ToConsoleString());
+                var row = new List<ConsoleString>();
+                rows.Add(row);
+                row.Add(candidate.DefaultAlias.ToLower().ToCyan());
+                row.Add(Parse(candidate.Description));
+                row.Add(candidate.HasExamples == false ? ConsoleString.Empty : candidate.Examples.First().Example.ToGreen());
+
+  
 
                 if (candidates.Count == 1)
                 {
                     foreach (var arg in candidate.Arguments)
                     {
-                        buffer.AddRange("    -".ToConsoleString() + arg.DefaultAlias.ToWhite());
-                        buffer.AddRange(arg.IsRequired ? " * ".ToRed() : " - ".ToConsoleString());
+                        var argDescription = !arg.HasDefaultValue ? ConsoleString.Empty : Parse($"[DarkYellow]\\[Default: [Yellow]{arg.DefaultValue}[DarkYellow]] ");
+                        argDescription += string.IsNullOrEmpty(arg.Description) ? ConsoleString.Empty : Parse(arg.Description);
+                        argDescription += !arg.IsEnum ? ConsoleString.Empty : "values: ".ToYellow() + string.Join(", ", arg.EnumValuesAndDescriptions).ToYellow();
 
-                        if (string.IsNullOrEmpty(arg.Description) == false)
-                        {
-                            buffer.AddRange(ConsoleString.Parse(arg.Description));
-                        }
-
-                        buffer.AddRange("\n".ToConsoleString());
-
-                        if (arg.IsEnum)
-                        {
-                            foreach (var enumString in arg.EnumValuesAndDescriptions)
-                            {
-                                buffer.AddRange(("     " + enumString + "\n").ToConsoleString());
-                            }
-                        }
+                        row = new List<ConsoleString>();
+                        rows.Add(row);
+                        row.Add(" -".ToWhite() + arg.DefaultAlias.ToLower().ToWhite() + (arg.IsRequired ? "*".ToRed() : ConsoleString.Empty));
+                        row.Add(argDescription);
+                        row.Add(ConsoleString.Empty);
+            
                     }
                 }
-
-                buffer.AddRange("\n".ToConsoleString());
             }
-            return new ConsoleString(buffer);
+            return builder.FormatAsTable(headers, rows);
         }
     }
 }
