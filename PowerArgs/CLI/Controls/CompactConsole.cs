@@ -213,22 +213,19 @@ namespace PowerArgs.Cli
 
         private ConsoleString UpdateAssistiveText()
         {
-            List<CommandLineAction> candidates;
+            List<CommandLineAction> candidates = def.Actions.Where(a => a.Metadata.WhereAs<OmitFromUsageDocs>().None()).ToList();
             if (InputBox.Value.Length > 0)
             {
                 var command = InputBox.Value.Split(" ".ToConsoleString()).FirstOrDefault();
                 command = command ?? ConsoleString.Empty;
-                candidates = def.Actions.Where(a => a.DefaultAlias.StartsWith(command.StringValue, StringComparison.OrdinalIgnoreCase)).ToList();
+                candidates = candidates.Where(a => a.DefaultAlias.StartsWith(command.StringValue, StringComparison.OrdinalIgnoreCase)).ToList();
 
                 if (candidates.Count == 0)
                 {
                     return $"\nNo actions start with {InputBox.Value.ToString()}".ToRed();
                 }
             }
-            else
-            {
-                candidates = def.Actions;
-            }
+
             var builder = new ConsoleTableBuilder();
 
 
