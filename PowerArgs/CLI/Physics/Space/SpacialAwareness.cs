@@ -259,7 +259,17 @@ namespace PowerArgs.Cli.Physics
             var loc = GetNudgeLocation(el, desiredLocation, optimalAngle);
             if (loc != null)
             {
-                el.MoveTo(loc.Left, loc.Top);
+                if (el is IHaveMassBounds == false)
+                {
+                    el.MoveTo(loc.Left, loc.Top);
+                }
+                else
+                {
+                    var elBounds = el.EffectiveBounds();
+                    var dx =  el.Left - elBounds.Left;
+                    var dy = el.Top - elBounds.Top;
+                    el.MoveTo(loc.Left + dx, loc.Top + dy);
+                }
             }
         }
 
@@ -285,6 +295,7 @@ namespace PowerArgs.Cli.Physics
             }
             return null;
         }
+ 
     }
 
     public class SpacialElementAnimationOptions : RectangularAnimationOptions

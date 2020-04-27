@@ -120,14 +120,16 @@ namespace PowerArgs.Cli.Physics
 
                 var obstacles = GetObstacles();
 
-                if (obstacles.Where(o => o.Touches(Element)).Any())
+                var bounds = Element.EffectiveBounds();
+                if (obstacles.Where(o => o.Touches(bounds)).Any())
                 {
                     Element.NudgeFree(optimalAngle: Angle.GetOppositeAngle());
+                    bounds = Element.EffectiveBounds();
                 }
 
                 var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
                 {
-                    MovingObject = Element is IHaveMassBounds ? (Element as IHaveMassBounds).MassBounds : Element,
+                    MovingObject = bounds,
                     Obstacles = obstacles,
                     Angle = Angle,
                     Visibility = d,
