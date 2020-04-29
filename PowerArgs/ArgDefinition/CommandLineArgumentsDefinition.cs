@@ -18,6 +18,8 @@ namespace PowerArgs
 
         private AttrOverride overrides;
 
+        public bool ValidationEnabled { get; set; } = true;
+
         /// <summary>
         /// Gets or sets the ExeName for this command line argument definition's program.  If not specified the entry assembly's file name
         /// is used, without the file extension.
@@ -308,7 +310,7 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgHook>().AsReadOnly();
+                return new ReadOnlyCollection<ArgHook>(Metadata.Metas<ArgHook>().ToList());
             }
         }
         
@@ -565,6 +567,7 @@ namespace PowerArgs
 
         internal void Validate(ArgHook.HookContext context)
         {
+            if (ValidationEnabled == false) return;
             context.RunBeforeValidateDefinition();
             ValidateArguments(Arguments);
             ValidateActionAliases();
@@ -683,28 +686,6 @@ namespace PowerArgs
                 {
                     argument.ArgumentType.ValidateNoDuplicateEnumShortcuts(argument.IgnoreCase);
                 }
-
-
-                foreach (var property in argument.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                {
-                    // Getting each property will result in all AttrOverrides being validated
-                    try
-                    {
-                        var val = property.GetValue(argument, null);
-                    }
-                    catch(TargetInvocationException ex)
-                    {
-                        if (ex.InnerException is InvalidArgDefinitionException)
-                        {
-                            ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                        }
-                        else
-                        {
-                            throw;
-                        }
-                    }
-                }
-
             }
         }
     }

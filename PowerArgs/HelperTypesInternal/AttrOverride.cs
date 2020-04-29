@@ -46,17 +46,6 @@ namespace PowerArgs
                 attributeVal = getter(attribute);
             }
 
-            bool overrideIsDifferentFromAttributeVal;
-
-            if(overrideVal == null)
-            {
-                overrideIsDifferentFromAttributeVal = attributeVal != null;
-            }
-            else
-            {
-                overrideIsDifferentFromAttributeVal = overrideVal.Equals(attributeVal) == false;
-            }
-
             if (hasOverride)
             {
                 return (T2)overrideVal;

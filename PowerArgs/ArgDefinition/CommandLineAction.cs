@@ -173,7 +173,7 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgExample>().Count > 0;
+                return Metadata.Metas<ArgExample>().Any();
             }
         }
 
@@ -257,7 +257,7 @@ namespace PowerArgs
         public CommandLineAction()
         {
             overrides = new AttrOverride(GetType());
-            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);
+            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>().ToList(); }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);
             PropertyInitializer.InitializeFields(this, 1);
             IgnoreCase = true;
         }

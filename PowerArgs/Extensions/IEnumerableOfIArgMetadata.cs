@@ -32,7 +32,7 @@ namespace PowerArgs
         /// provided, otherwise false</returns>
         public static bool HasMeta<T>(this IEnumerable<IArgMetadata> metadata) where T : class
         {
-            return Metas<T>(metadata).Count > 0;
+            return Metas<T>(metadata).Any();
         }
 
         /// <summary>
@@ -75,10 +75,15 @@ namespace PowerArgs
         /// <typeparam name="T">The type of metadata to search for</typeparam>
         /// <param name="metadata">The list of metadata to search</param>
         /// <returns>the subset of metadata of the given generic type T from the collection</returns>
-        public static List<T> Metas<T>(this IEnumerable<IArgMetadata> metadata) where T : class
+        public static IEnumerable<T> Metas<T>(this IEnumerable<IArgMetadata> metadata) where T : class
         {
-            var match = from a in metadata where a is T select (T)a;
-            return match.ToList();
+            foreach(var m in metadata)
+            {
+                if(m is T)
+                {
+                    yield return (T)m;
+                }
+            }
         }
     }
 }

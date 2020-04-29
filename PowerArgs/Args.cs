@@ -561,10 +561,21 @@ namespace PowerArgs
             };
         }
 
+        /// <summary>
+        /// Showed up on a profile parsing for the same definition in a tight loop. 
+        /// 
+        /// No use validating a type more than once so keep track of those already validated.
+        /// </summary>
+
+        private static HashSet<Type> validatedScaffoldTypes = new HashSet<Type>();
         private ArgAction ParseInternal(CommandLineArgumentsDefinition definition, string[] input)
         {
             // TODO - Validation should be consistently done against the definition, not against the raw type
-            if (definition.ArgumentScaffoldType != null) ValidateArgScaffold(definition.ArgumentScaffoldType);
+            if (definition.ValidationEnabled && definition.ArgumentScaffoldType != null && validatedScaffoldTypes.Contains(definition.ArgumentScaffoldType) == false)
+            {
+                ValidateArgScaffold(definition.ArgumentScaffoldType);
+                validatedScaffoldTypes.Add(definition.ArgumentScaffoldType);
+            }
 
             definition.Clean();
 

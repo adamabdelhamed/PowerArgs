@@ -120,7 +120,7 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgHook>().AsReadOnly();
+                return new ReadOnlyCollection<ArgHook>(Metadata.Metas<ArgHook>().ToList());
             }
         }
 
@@ -342,7 +342,7 @@ namespace PowerArgs
         {
             MustBeRevivable = true;
             overrides = new AttrOverride(GetType());
-            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>(); }, () => { return IgnoreCase; });
+            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>().ToList(); }, () => { return IgnoreCase; });
             PropertyInitializer.InitializeFields(this, 1);
             ArgumentType = typeof(string);
             Position = -1;
@@ -571,9 +571,33 @@ namespace PowerArgs
             }
         }
 
+        /*
+         * Showed up in a profile when parsing the same definition in a tight loop.
+         * 
+         * Rather than examine the aliases every time we'll remember the answer for a given property / key pair
+         */ 
+        private static Dictionary<string, bool> matchMemo = new Dictionary<string, bool>();
+
         internal bool IsMatch(string key)
         {
-            var ret = Aliases.Where(a => a.Equals(key, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Any();
+            bool ret = false;
+            
+            var propSource = Source as PropertyInfo;
+            string cacheKey = null;
+            if(propSource != null)
+            {
+                cacheKey = propSource.PropertyType.FullName + propSource.Name + "/" + key;
+                if (matchMemo.TryGetValue(cacheKey, out bool cachedVal))
+                {
+                    return cachedVal;
+                }
+            }
+            
+            ret = Aliases.Where(a => a.Equals(key, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Any();
+            if (cacheKey != null)
+            {
+                matchMemo.Add(cacheKey, ret);
+            }
             return ret;
         }
 
@@ -623,7 +647,10 @@ namespace PowerArgs
 
             if (RevivedValueOverride == null)
             {
-                Validate(ref context.ArgumentValue);
+                if (context.Definition.ValidationEnabled)
+                {
+                    Validate(ref context.ArgumentValue);
+                }
                 Revive(context.ArgumentValue);
             }
             else
@@ -677,12 +704,12 @@ namespace PowerArgs
         private void FindMatchingArgumentInRawParseData(ArgHook.HookContext context)
         {
             var match = from k in context.ParserData.ExplicitParameters.Keys where IsMatch(k) select k;
-
-            if (match.Count() > 1)
+            var count = match.Count();
+            if (count > 1)
             {
                 throw new DuplicateArgException("Argument specified more than once: " + Aliases.First());
             }
-            else if (match.Count() == 1)
+            else if (count == 1)
             {
                 var key = match.First();
                 context.ArgumentValue = context.ParserData.ExplicitParameters[key];

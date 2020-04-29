@@ -46,7 +46,7 @@ namespace PowerArgs.Cli.Physics
                 {
                     this.Lifetime.Dispose();
                 }
-                if (task.Exception.InnerExceptions.Count == 1 && task.Exception.InnerException is AbortObjectiveException)
+                if (task.Exception.InnerExceptions.Count == 1 && task.Exception.InnerException is ShortCircuitException)
                 {
                     // do nothing
                 }
@@ -101,7 +101,9 @@ namespace PowerArgs.Cli.Physics
 
         private void AssertAlive()
         {
-            if (Lifetime.IsExpired) throw new AbortObjectiveException("TimeFunction expired");
+            if (Lifetime.IsExpired) throw new ShortCircuitException();
         }
     }
+
+    public class ShortCircuitException : Exception { }
 }
