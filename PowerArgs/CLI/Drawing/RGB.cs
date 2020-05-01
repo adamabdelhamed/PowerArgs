@@ -101,7 +101,7 @@ namespace PowerArgs
         }
 
         public RGB Darker => ToOther(Black, .5f);
-
+        public RGB Brighter => ToOther(White, .5f);
         public static bool operator ==(RGB a, RGB b) => a.Equals(b);
         public static bool operator !=(RGB a, RGB b) => !a.Equals(b);
         public static bool operator ==(RGB a, ConsoleColor b) => a.Equals((RGB)b);

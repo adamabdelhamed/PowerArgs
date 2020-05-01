@@ -67,6 +67,27 @@ namespace PowerArgs.Cli
         public double Height { get; set; }
 
         internal override double Value => Height;
+
+        /// <summary>
+        /// Creates a pixel based row definition
+        /// </summary>
+        /// <param name="pixels">the number of pixels</param>
+        /// <returns>a pixel based row definition</returns>
+        public static GridRowDefinition Pixels(int pixels) => new GridRowDefinition() { Height = pixels, Type = GridValueType.Pixels };
+
+        /// <summary>
+        /// Creates a percentage based row definition
+        /// </summary>
+        /// <param name="percentage">the percentage, from 0 to 1</param>
+        /// <returns>a percentage based row definition</returns>
+        public static GridRowDefinition Percentage(double percentage) => new GridRowDefinition() { Height = percentage, Type = GridValueType.Percentage };
+
+        /// <summary>
+        /// Creates a remainder based row definition
+        /// </summary>
+        /// <param name="remainder">the relative remainder value</param>
+        /// <returns>a remainder based row definition</returns>
+        public static GridRowDefinition Remainder(double remainder) => new GridRowDefinition() { Height = remainder, Type = GridValueType.RemainderValue };
     }
 
     /// <summary>
@@ -80,6 +101,25 @@ namespace PowerArgs.Cli
         public double Width { get; set; }
 
         internal override double Value => Width;
+
+        /// <summary>
+        /// Creates a pixel based column definition
+        /// </summary>
+        /// <param name="pixels">the number of pixels</param>
+        /// <returns>a pixel based column definition</returns>
+        public static GridColumnDefinition Pixels(int pixels) => new GridColumnDefinition() { Width = pixels, Type = GridValueType.Pixels };
+        /// <summary>
+        /// Creates a percentage based column definition
+        /// </summary>
+        /// <param name="percentage">the percentage, from 0 to 1</param>
+        /// <returns>a percentage based column definition</returns>
+        public static GridColumnDefinition Percentage(double percentage) => new GridColumnDefinition() { Width = percentage, Type = GridValueType.Percentage };
+        /// <summary>
+        /// Creates a remainder based column definition
+        /// </summary>
+        /// <param name="remainder">the relative remainder value</param>
+        /// <returns>a remainder based column definition</returns>
+        public static GridColumnDefinition Remainder(double remainder) => new GridColumnDefinition() { Width = remainder, Type = GridValueType.RemainderValue };
 
     }
 

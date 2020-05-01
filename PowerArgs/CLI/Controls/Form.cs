@@ -171,13 +171,20 @@ namespace PowerArgs.Cli
                 else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType.IsEnum)
                 {
                     var enumPicker = new PickerControl<object>(new PickerControlClassOptions<object>()
-                    { 
+                    {
                         InitiallySelectedOption = property.GetValue(o),
                         Options = Enums.GetEnumValues(property.PropertyType)
                     });
-                    enumPicker.SynchronizeForLifetime(nameof(enumPicker.SelectedItem), () => property.SetValue(o, enumPicker.SelectedItem), enumPicker);
+                    enumPicker.SubscribeForLifetime(nameof(enumPicker.SelectedItem), () => property.SetValue(o, enumPicker.SelectedItem), enumPicker);
                     (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => enumPicker.SelectedItem = property.GetValue(o), enumPicker);
                     editControl = enumPicker;
+                }
+                else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType == typeof(bool))
+                {
+                    var toggle = new ToggleControl();
+                    toggle.SubscribeForLifetime(nameof(toggle.On), () => property.SetValue(o, toggle.On), toggle);
+                    (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => toggle.On = (bool)property.GetValue(o), toggle);
+                    editControl = toggle;
                 }
                 else
                 {
@@ -223,8 +230,8 @@ namespace PowerArgs.Cli
 
         private void InitializeForm()
         {
-            var labelColumn = Add(new StackPanel() { Orientation = Orientation.Vertical });
-            var valueColumn = Add(new StackPanel() { Orientation = Orientation.Vertical });
+            var labelColumn = Add(new StackPanel() { Orientation = Orientation.Vertical, Margin = 1 });
+            var valueColumn = Add(new StackPanel() { Orientation = Orientation.Vertical, Margin = 1 });
 
             this.SynchronizeForLifetime(nameof(this.Bounds), () =>
             {
@@ -255,7 +262,12 @@ namespace PowerArgs.Cli
             {
                 labelColumn.Add(new Label() { Height = 1, Text = element.Label }).FillHorizontally();
                 element.ValueControl.Height = 1;
-                valueColumn.Add(element.ValueControl).FillHorizontally();
+                valueColumn.Add(element.ValueControl);
+
+                if (element.ValueControl is ToggleControl == false)
+                {
+                    element.ValueControl.FillHorizontally();
+                }
             }
 
             this.Options.Elements.Added.SubscribeForLifetime((addedElement) =>
@@ -267,7 +279,11 @@ namespace PowerArgs.Cli
                 label.FillHorizontally();
 
                 valueColumn.Controls.Insert(index, addedElement.ValueControl);
-                addedElement.ValueControl.FillHorizontally();
+
+                if (addedElement.ValueControl is ToggleControl == false)
+                {
+                    addedElement.ValueControl.FillHorizontally();
+                }
 
             }, this);
 
