@@ -353,7 +353,6 @@ namespace PowerArgs.Cli.Physics
                 Math.Max(0, Math.Min(rectangleRight, otherRight) - Math.Max(rectangle.Left, other.Left)) *
                 Math.Max(0, Math.Min(rectangleBottom, otherBottom) - Math.Max(rectangle.Top, other.Top));
 
-            ret = (float)Math.Round(ret, 4, MidpointRounding.AwayFromZero);
             return ret;
         }
 
