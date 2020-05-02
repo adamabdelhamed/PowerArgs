@@ -64,7 +64,7 @@ namespace PowerArgs.Cli
         public ScrollablePanel()
         {
             ScrollableContent = Add(new ConsolePanel() { IsVisible = true }).Fill();
-        
+            SynchronizeForLifetime(nameof(Background), () => ScrollableContent.Background = Background, this);
             verticalScrollbar = Add(new Scrollbar(Orientation.Vertical) { Width = 1 }).DockToRight();
             horizontalScrollbar = Add(new Scrollbar(Orientation.Horizontal) { Height = 1 }).DockToBottom();
 
@@ -109,6 +109,16 @@ namespace PowerArgs.Cli
  
                 verticalScrollbar.Height = verticalScrollbarHeight;
                 verticalScrollbar.Y = Geometry.Round(Height * verticalPercentageScrolled);
+
+                if(verticalScrollbar.Y == Height && verticalPercentageScrolled < 1)
+                {
+                    verticalScrollbar.Y--;
+                }
+                else if(verticalScrollbar.Y == 0 && verticalPercentageScrolled > 0)
+                {
+                    verticalScrollbar.Y = 1;
+                }
+
                 verticalScrollbar.CanFocus = true;
             }
 
@@ -124,6 +134,16 @@ namespace PowerArgs.Cli
                 var horizontalPercentageScrolled = HorizontalScrollUnits / (double)contentSize.Width;
                 horizontalScrollbar.Width = (int)(Width * horizontalPercentageShowing);
                 horizontalScrollbar.X = (int)(Width * horizontalPercentageScrolled);
+
+                if (verticalScrollbar.X == Width && horizontalPercentageScrolled < 1)
+                {
+                    verticalScrollbar.X--;
+                }
+                else if (verticalScrollbar.X == 0 && horizontalPercentageScrolled > 0)
+                {
+                    verticalScrollbar.X = 1;
+                }
+
                 horizontalScrollbar.CanFocus = true;
             }
         }
@@ -202,6 +222,23 @@ namespace PowerArgs.Cli
                     context.DrawPoint(x, y);
                 }
             }
+
+            verticalScrollbar.Paint();
+            horizontalScrollbar.Paint();
+            DrawScrollbar(verticalScrollbar, context);
+            DrawScrollbar(horizontalScrollbar, context);
+
+        }
+
+        private void DrawScrollbar(Scrollbar bar, ConsoleBitmap context)
+        {
+            for (int x = 0; x < bar.Width; x++)
+            {
+                for (int y = 0; y < bar.Height; y++)
+                {
+                    context.DrawPoint(bar.Bitmap.GetPixel(x, y).Value.Value, x + bar.X, y + bar.Y);
+                }
+            }
         }
     }
 
@@ -220,7 +257,7 @@ namespace PowerArgs.Cli
         public Scrollbar(Orientation orientation)
         {
             this.orientation = orientation;
-            Background = ConsoleColor.DarkGray;
+            Background = ConsoleColor.White;
             KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this);
         }
 

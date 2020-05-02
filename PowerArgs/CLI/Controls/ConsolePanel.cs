@@ -50,6 +50,17 @@ namespace PowerArgs.Cli
             return c;
         }
 
+        /// <summary>
+        /// Adds a collection of controls to the panel
+        /// </summary>
+        /// <param name="controls">the controls to add</param>
+        public void AddRange(IEnumerable<ConsoleControl> controls)
+        {
+            foreach(var c in controls)
+            {
+                Add(c);
+            }
+        }
 
 
         private IEnumerable<ConsoleControl> GetPaintOrderedControls()

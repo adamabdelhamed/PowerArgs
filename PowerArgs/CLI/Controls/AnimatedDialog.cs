@@ -27,6 +27,12 @@ namespace PowerArgs.Cli
 
     }
  
+    public class AnimatedDialogOptions
+    {
+        public ConsolePanel Parent { get; set; }
+        public bool PushPop { get; set; } = true;
+        public float SpeedPercentage { get; set; } = 1;
+    }
 
     /// <summary>
     /// Utility that lets you add animated dialogs to your ConsoleApps.
@@ -38,12 +44,13 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="contentFactory">A callback where you are given a handle that can be used to configure the dialog. 
         /// It also has a method that lets you close the dialog. This callback should return the dialog content.</param>
-        public static async void Show(Func<DialogHandle,Container> contentFactory, ConsolePanel parent = null, bool pushPop = true)
+        public static async void Show(Func<DialogHandle,Container> contentFactory, AnimatedDialogOptions options = null)
         {
-            parent = parent ?? ConsoleApp.Current.LayoutRoot;
+            options = options ?? new AnimatedDialogOptions(); 
+            options.Parent = options.Parent ?? ConsoleApp.Current.LayoutRoot;
             using (var dialogLt = new Lifetime())
             {
-                if (pushPop)
+                if (options.PushPop)
                 {
                     ConsoleApp.Current.FocusManager.Push();
                     dialogLt.OnDisposed(ConsoleApp.Current.FocusManager.Pop);
@@ -51,15 +58,15 @@ namespace PowerArgs.Cli
                 var handle = new DialogHandle();
                 var content = contentFactory(handle);
                 content.IsVisible = false;
-                var dialogContainer = parent.Add(new BorderPanel(content) {  BorderColor = handle.BorderColor, Background = content.Background, Width = 1, Height = 1 }).CenterBoth();
-                await Forward(300, dialogLt, percentage => dialogContainer.Width = Math.Max(1, Geometry.Round((4+content.Width) * percentage)));
-                await Forward(200, dialogLt, percentage => dialogContainer.Height = Math.Max(1, Geometry.Round((2+content.Height) * percentage)));
+                var dialogContainer = options.Parent.Add(new BorderPanel(content) {  BorderColor = handle.BorderColor, Background = content.Background, Width = 1, Height = 1 }).CenterBoth();
+                await Forward(300 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Width = Math.Max(1, Geometry.Round((4+content.Width) * percentage)));
+                await Forward(200 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Height = Math.Max(1, Geometry.Round((2+content.Height) * percentage)));
                 content.IsVisible = true;
                 await handle.CallerLifetime.AwaitEndOfLifetime();
                 content.IsVisible = false;
-                await Reverse(150, dialogLt, percentage => dialogContainer.Height = Math.Max(1, (int)Math.Floor((2 + content.Height) * percentage)));
-                await Task.Delay(200);
-                await Reverse(200, dialogLt, percentage => dialogContainer.Width = Math.Max(1, Geometry.Round((4 + content.Width) * percentage)));
+                await Reverse(150 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Height = Math.Max(1, (int)Math.Floor((2 + content.Height) * percentage)));
+                await Task.Delay((int)(200 * options.SpeedPercentage));
+                await Reverse(200 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Width = Math.Max(1, Geometry.Round((4 + content.Width) * percentage)));
                 dialogContainer.Dispose();
             }
         }
@@ -70,7 +77,7 @@ namespace PowerArgs.Cli
         {
             From = from,
             To = to,
-            Duration = 300,
+            Duration = duration,
             EasingFunction = Animator.EaseInOut,
             IsCancelled = () => lt.IsExpired,
             Setter = percentage => setter(percentage)

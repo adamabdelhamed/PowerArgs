@@ -1,6 +1,7 @@
 ﻿using PowerArgs;
 using PowerArgs.Cli.Physics;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PowerArgs.Cli
@@ -18,6 +19,25 @@ namespace PowerArgs.Cli
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public class FormReadOnlyAttribute : Attribute { }
+
+    /// <summary>
+    /// An attribute that tells the form generator to give this
+    /// property a specific value width
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
+    public class FormWidth : Attribute 
+    {
+        public int Width { get; private set; }
+
+        /// <summary>
+        /// Creates a new FormWidth attribute
+        /// </summary>
+        /// <param name="width"></param>
+        public FormWidth(int width)
+        {
+            this.Width = width;
+        }
+    }
 
     /// <summary>
     /// An attribute that lets you override the display string 
@@ -170,14 +190,22 @@ namespace PowerArgs.Cli
                 }
                 else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType.IsEnum)
                 {
-                    var enumPicker = new PickerControl<object>(new PickerControlClassOptions<object>()
+                    var options = new List<DialogOption>();
+                    foreach(var val in Enum.GetValues(property.PropertyType))
                     {
-                        InitiallySelectedOption = property.GetValue(o),
-                        Options = Enums.GetEnumValues(property.PropertyType)
-                    });
-                    enumPicker.SubscribeForLifetime(nameof(enumPicker.SelectedItem), () => property.SetValue(o, enumPicker.SelectedItem), enumPicker);
-                    (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => enumPicker.SelectedItem = property.GetValue(o), enumPicker);
-                    editControl = enumPicker;
+                        options.Add(new DialogOption()
+                        {
+                            DisplayText = (val+"").ToConsoleString(),
+                            Id = val.ToString(),
+                            Value = val,
+                        });
+                    }
+
+                    var dropdown = new Dropdown(options);
+                    dropdown.Width = Math.Min(40, options.Select(option => option.DisplayText.Length).Max() + 8);
+                    dropdown.SubscribeForLifetime(nameof(dropdown.Value), () => property.SetValue(o, dropdown.Value.Value), dropdown);
+                    (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => dropdown.Value = options.Where(option => option.Value.Equals(property.GetValue(o))).Single(), dropdown);
+                    editControl = dropdown;
                 }
                 else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType == typeof(bool))
                 {
@@ -194,6 +222,11 @@ namespace PowerArgs.Cli
                     (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => valueLabel.Text = (property.GetValue(o) + "").ToConsoleString()+" (read only)".ToDarkGray(), valueLabel);
 
                     editControl = valueLabel;
+                }
+
+                if(property.HasAttr<FormWidth>())
+                {
+                    editControl.Width = property.Attr<FormWidth>().Width;
                 }
 
                 ret.Elements.Add(new FormElement()
@@ -263,11 +296,7 @@ namespace PowerArgs.Cli
                 labelColumn.Add(new Label() { Height = 1, Text = element.Label }).FillHorizontally();
                 element.ValueControl.Height = 1;
                 valueColumn.Add(element.ValueControl);
-
-                if (element.ValueControl is ToggleControl == false)
-                {
-                    element.ValueControl.FillHorizontally();
-                }
+                EnsureSizing(element);
             }
 
             this.Options.Elements.Added.SubscribeForLifetime((addedElement) =>
@@ -277,14 +306,8 @@ namespace PowerArgs.Cli
                 addedElement.ValueControl.Height = 1;
                 labelColumn.Controls.Insert(index, label);
                 label.FillHorizontally();
-
                 valueColumn.Controls.Insert(index, addedElement.ValueControl);
-
-                if (addedElement.ValueControl is ToggleControl == false)
-                {
-                    addedElement.ValueControl.FillHorizontally();
-                }
-
+                EnsureSizing(addedElement);
             }, this);
 
             this.Options.Elements.Removed.SubscribeForLifetime((removedElement) =>
@@ -295,6 +318,17 @@ namespace PowerArgs.Cli
             }, this);
 
             this.Options.Elements.AssignedToIndex.SubscribeForLifetime((assignment) => throw new NotSupportedException("Index assignments not supported in form elements"), this);
+        }
+
+        private void EnsureSizing(FormElement element)
+        {
+            if (element.ValueControl is ToggleControl == false && element.ValueControl is Dropdown == false)
+            {
+                if (element.ValueControl.Width == 0)
+                {
+                    element.ValueControl.FillHorizontally();
+                }
+            }
         }
     }
 }
