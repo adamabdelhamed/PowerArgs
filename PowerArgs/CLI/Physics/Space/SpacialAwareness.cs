@@ -267,7 +267,7 @@ namespace PowerArgs.Cli.Physics
         }
 
         public static Event<NudgeEvent> OnNudge { get; private set; } = new Event<NudgeEvent>();
-        public static void NudgeFree(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0, int? z = null)
+        public static NudgeEvent NudgeFree(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0, int? z = null)
         {
             var loc = GetNudgeLocation(el, desiredLocation, optimalAngle, z);
             if (loc != null)
@@ -281,13 +281,17 @@ namespace PowerArgs.Cli.Physics
                     var elBounds = el.EffectiveBounds();
                     var dx =  el.Left - elBounds.Left;
                     var dy = el.Top - elBounds.Top;
-                    el.MoveTo(loc.Left + dx, loc.Top + dy);
+                    el.MoveTo(loc.Left + dx, loc.Top + dy, z);
                 }
-                OnNudge.Fire(new NudgeEvent() { Element = el, Success = true });
+                var ev = new NudgeEvent() { Element = el, Success = true };
+                OnNudge.Fire(ev);
+                return ev;
             }
             else
             {
-                OnNudge.Fire(new NudgeEvent() { Element = el, Success = false });
+                var ev = new NudgeEvent() { Element = el, Success = false };
+                OnNudge.Fire(ev);
+                return ev;
             }
         }
 
