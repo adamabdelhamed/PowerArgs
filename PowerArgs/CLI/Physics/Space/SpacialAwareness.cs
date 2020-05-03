@@ -93,8 +93,14 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static List<IRectangularF> GetObstacles(this SpacialElement element, IEnumerable<SpacialElement> exclusions = null, IEnumerable<Type> excludedTypes=null, Func<IEnumerable<SpacialElement>> dynamicExclusions = null)
+        public static List<IRectangularF> GetObstacles(this SpacialElement element, float? z = null)
         {
+            float effectiveZ = z.HasValue ? z.Value : element.ZIndex;
+            var v = Velocity.For(element);
+            IEnumerable<SpacialElement> exclusions = v?.HitDetectionExclusions;
+            IEnumerable<Type> excludedTypes = v?.HitDetectionExclusionTypes;
+            Func<IEnumerable<SpacialElement>> dynamicExclusions =  v?.HitDetectionDynamicExclusions;
+
             var ret = new List<IRectangularF>();
             var dynamicEx = dynamicExclusions != null ? dynamicExclusions.Invoke() : null;
             foreach (var e in SpaceTime.CurrentSpaceTime.Elements)
@@ -107,7 +113,7 @@ namespace PowerArgs.Cli.Physics
                 {
                     continue;
                 }
-                else if(e.ZIndex != element.ZIndex)
+                else if(e.ZIndex != effectiveZ)
                 {
                     continue;
                 }
@@ -254,14 +260,21 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public static void NudgeFree(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0)
+        public class NudgeEvent
         {
-            var loc = GetNudgeLocation(el, desiredLocation, optimalAngle);
+            public SpacialElement Element { get; set; }
+            public bool Success { get; set; }
+        }
+
+        public static Event<NudgeEvent> OnNudge { get; private set; } = new Event<NudgeEvent>();
+        public static void NudgeFree(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0, int? z = null)
+        {
+            var loc = GetNudgeLocation(el, desiredLocation, optimalAngle, z);
             if (loc != null)
             {
                 if (el is IHaveMassBounds == false)
                 {
-                    el.MoveTo(loc.Left, loc.Top);
+                    el.MoveTo(loc.Left, loc.Top, z);
                 }
                 else
                 {
@@ -270,13 +283,18 @@ namespace PowerArgs.Cli.Physics
                     var dy = el.Top - elBounds.Top;
                     el.MoveTo(loc.Left + dx, loc.Top + dy);
                 }
+                OnNudge.Fire(new NudgeEvent() { Element = el, Success = true });
+            }
+            else
+            {
+                OnNudge.Fire(new NudgeEvent() { Element = el, Success = false });
             }
         }
 
-        public static ILocationF GetNudgeLocation(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0)
+        public static ILocationF GetNudgeLocation(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0, int? z = null)
         {
             desiredLocation = desiredLocation ?? el;
-            var obstacles = el.GetObstacles();
+            var obstacles = el.GetObstacles(z: z);
             if (obstacles.Where(o => o.Touches(desiredLocation)).Any())
             {
                 foreach (var angle in Enumerate360Angles(optimalAngle))

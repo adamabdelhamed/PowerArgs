@@ -16,6 +16,8 @@ namespace PowerArgs.Cli.Physics
         private AutoResetEvent resetHandle;
         public RealTimeViewingFunction RealTimeViewing { get; private set; }
 
+        public Event AfterUpdate { get; private set; } = new Event();
+
         public SpacetimePanel(int w, int h, SpaceTime time = null)
         {
             this.Width = w;
@@ -100,30 +102,42 @@ namespace PowerArgs.Cli.Physics
             resetHandle.WaitOne();
             resizedSinceLastRender = false;
             SpaceTime.ClearChanges();
+            AfterUpdate.Fire();
         }
 
         private bool SizeAndLocate(SpacialElementRenderer r)
         {
-            float wPer = r.Element.Width / SpaceTime.Width;
-            float hPer = r.Element.Height / SpaceTime.Height;
+            float eW = r.Element.Width;
+            float eH = r.Element.Height;
 
-            float xPer = r.Element.Left / SpaceTime.Width;
-            float yPer = r.Element.Top / SpaceTime.Height;
+            float eL = r.Element.Left;
+            float eT = r.Element.Top;
+
+            if (eW < .5f && eW > 0)
+            {
+                eL -= .5f;
+                eW = 1;
+            }
+
+            if (eH < .5f && eH > 0)
+            {
+                eT -= .5f;
+                eH = 1;
+            }
+
+            float wPer = eW / SpaceTime.Width;
+            float hPer = eH / SpaceTime.Height;
+
+            float xPer = eL / SpaceTime.Width;
+            float yPer = eT / SpaceTime.Height;
+
 
             int x = Geometry.Round(xPer * (float)Width);
             int y = Geometry.Round(yPer * (float)Height);
             int w = Geometry.Round(wPer * (float)Width);
             int h = Geometry.Round(hPer * (float)Height);
 
-            if (w == 0 && r.Element.Width > 0)
-            {
-                w = 1;
-            }
 
-            if (h == 0 && r.Element.Height > 0)
-            {
-                h = 1;
-            }
 
             r.ZIndex = r.Element.ZIndex;
 

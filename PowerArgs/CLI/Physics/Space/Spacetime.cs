@@ -68,17 +68,23 @@ namespace PowerArgs.Cli.Physics
 
         public override void Evaluate() { }
 
-        public bool IsOneOfThese(List<Type> these)
+        
+        public void EnableOverlapPrevention()
         {
-            Type SpacialElementType = GetType();
-
-            var count = these.Count;
-            for (int i = 0; i < count; i++)
+            SizeOrPositionChanged.SubscribeForLifetime(() =>
             {
-                if (these[i] == SpacialElementType || SpacialElementType.IsSubclassOf(these[i])) return true;
-            }
+                var overlappingObstacle = GetObstacleIfMovedTo(this);
+                if (overlappingObstacle != null)
+                {
+                    throw new InvalidOperationException("Overlaps not allowed: "+overlappingObstacle.GetType().Name);
+                }
+            }, this.Lifetime);
+        }
 
-            return false;
+        public IRectangularF GetObstacleIfMovedTo(IRectangularF f, int? z = null)
+        {
+            var overlaps = this.GetObstacles(z).Where(e => e.EffectiveBounds().Touches(f)).ToArray();
+            return overlaps.FirstOrDefault();
         }
 
         public void MoveTo(float x, float y, int? z = null)

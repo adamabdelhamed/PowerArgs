@@ -64,7 +64,7 @@ namespace PowerArgs.Cli.Physics
         bool haveMovedSinceLastHitDetection = true;
         public float Speed { get; set; }
 
-        public List<IRectangularF> GetObstacles() => Element.GetObstacles(HitDetectionExclusions, HitDetectionExclusionTypes, HitDetectionDynamicExclusions);
+        public List<IRectangularF> GetObstacles() => Element.GetObstacles();
 
         public HitPrediction LastPrediction { get; set; }
 
@@ -75,6 +75,18 @@ namespace PowerArgs.Cli.Physics
         public Velocity(SpacialElement t) : base(t)
         {
             Time.CurrentTime.DoASAP("V",async()=> await ExecuteAsync());
+        }
+
+        public static Velocity For(SpacialElement el)
+        {
+            if(el is IHaveVelocity)
+            {
+                return (el as IHaveVelocity).Velocity;
+            }
+            else
+            {
+                return Time.CurrentTime.Functions.WhereAs<Velocity>().Where(v => v.Element == el).FirstOrDefault();
+            }
         }
 
         public Task Takeover(Func<Task> movementTakeover)
@@ -120,7 +132,7 @@ namespace PowerArgs.Cli.Physics
 
                 var obstacles = GetObstacles();
 
-                var bounds = Element.EffectiveBounds();
+                var bounds = Element;
 
                 var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
                 {
@@ -134,8 +146,11 @@ namespace PowerArgs.Cli.Physics
                 {
                     if (hitPrediction.LKG != null && Element.TopLeft().Equals(hitPrediction.LKG) == false)
                     {
-                        Element.MoveTo(hitPrediction.LKG.Left, hitPrediction.LKG.Top);
-                        haveMovedSinceLastHitDetection = true;
+                        if (Element.GetObstacleIfMovedTo(RectangularF.Create(hitPrediction.LKG.Left, hitPrediction.LKG.Top, Element.Width, Element.Height)) == null)
+                        {
+                            Element.MoveTo(hitPrediction.LKG.Left, hitPrediction.LKG.Top);
+                            haveMovedSinceLastHitDetection = true;
+                        }
                     }
 
                     float angle = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
@@ -150,6 +165,17 @@ namespace PowerArgs.Cli.Physics
                             ObstacleHit = hitPrediction.ObstacleHit,
                             HitType = hitPrediction.Type,
                         };
+
+                         SpaceTime.CurrentSpaceTime.Functions
+                            .WhereAs<Velocity>().Where(v => v.Element == hitPrediction.ObstacleHit)
+                            .FirstOrDefault()?.ImpactOccurred.Fire(new Impact()
+                            {
+                                Angle = angle.GetOppositeAngle(),
+                                MovingObject = hitPrediction.ObstacleHit as SpacialElement,
+                                ObstacleHit = Element,
+                                HitType = hitPrediction.Type,
+                            });
+
                         ImpactOccurred?.Fire(LastImpact);
                         GlobalImpactOccurred.Fire(LastImpact);
 

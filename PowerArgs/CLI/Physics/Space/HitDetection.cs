@@ -26,6 +26,7 @@ namespace PowerArgs.Cli.Physics
         public IRectangularF ObstacleHit { get; set; }
         public ILocationF LKG { get; set; }
         public float Visibility { get; set; }
+        public bool ElementWasAlreadyObstructed { get; set; }
 
         public List<IRectangularF> Path { get; set; } = new List<IRectangularF>();
     }
@@ -105,17 +106,19 @@ namespace PowerArgs.Cli.Physics
 
                     if(o.Touches(options.MovingObject))
                     {
+                        prediction.ElementWasAlreadyObstructed = true;
                         var overlapBefore = options.MovingObject.NumberOfPixelsThatOverlap(o);
                         var overlapAfter = testArea.NumberOfPixelsThatOverlap(o);
 
-                        if (overlapAfter < overlapBefore)
+                        IRectangularF testArea2 = null;
+                        while(overlapBefore == overlapAfter)
                         {
-                            return false;
+                            testArea2 = testArea2 ?? testArea.CopyBounds();
+                            testArea2 = testArea2.MoveTowards(options.Angle, options.Precision);
+                            overlapAfter = testArea2.NumberOfPixelsThatOverlap(o);
                         }
-                        else
-                        {
-                            return true;
-                        }
+
+                        return overlapAfter > overlapBefore;
                     }
                     else
                     {

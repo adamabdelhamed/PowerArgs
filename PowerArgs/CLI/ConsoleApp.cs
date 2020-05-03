@@ -95,6 +95,11 @@ namespace PowerArgs.Cli
         public bool SetFocusOnStart { get; set; }
 
         /// <summary>
+        /// An event that fires just after painting the app
+        /// </summary>
+        public Event AfterPaint { get; private set; } = new Event();
+
+        /// <summary>
         /// Creates a new console app given a set of boundaries
         /// </summary>
         /// <param name="x">The left position on the target console to bound this app</param>
@@ -344,6 +349,7 @@ namespace PowerArgs.Cli
 
             Recorder?.WriteFrame(Bitmap);
             Bitmap.Paint();
+            AfterPaint.Fire();
         }
     }
 }

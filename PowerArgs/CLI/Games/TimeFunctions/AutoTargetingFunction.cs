@@ -47,7 +47,7 @@ namespace PowerArgs.Games
                         MovingObject = sb,
                         Obstacles = obstacles.Where(o => o is WeaponElement == false),
                         Visibility = 3*SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
-                        Precision = .5f,
+                        Precision = .1f,
                     });
 
                     var elementHit = prediction.ObstacleHit as SpacialElement;

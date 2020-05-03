@@ -130,6 +130,18 @@ namespace ArgsTests.CLI
             }
         }
 
+        public void PromoteToLKG()
+        {
+            if (this.keyFrameRecorder != null)
+            {
+                this.keyFrameRecorder.Dispose();
+            }
+
+            PromoteToLKGInternal();
+        }
+
+
+
         public void AssertThisTestMatchesLKG()
         {
             if(this.keyFrameRecorder != null)
@@ -142,12 +154,12 @@ namespace ArgsTests.CLI
                 reader.InnerStream.Dispose();
                 AssertLKGRecordingMatchesCurrentTest();
                 Console.WriteLine("LKG matches");
-                PromoteToLKG();
+                PromoteToLKGInternal();
             }
             else
             {
                 Console.WriteLine("Orignial LKG");
-                PromoteToLKG();
+                PromoteToLKGInternal();
             }
         }
 
@@ -164,12 +176,12 @@ namespace ArgsTests.CLI
                 reader.InnerStream.Dispose();
                 AssertLKGRecordingMatchesCurrentTestFirstAndLast();
                 Console.WriteLine("LKG matches");
-                PromoteToLKG();
+                PromoteToLKGInternal();
             }
             else
             {
                 Console.WriteLine("Orignial LKG");
-                PromoteToLKG();
+                PromoteToLKGInternal();
             }
         }
         private void AssertLKGRecordingMatchesCurrentTest()
@@ -242,7 +254,7 @@ namespace ArgsTests.CLI
             return true;
         }
 
-        public void PromoteToLKG()
+        private void PromoteToLKGInternal()
         {
             if (Directory.Exists(CurrentTestLKGPath))
             {

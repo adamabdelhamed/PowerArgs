@@ -190,7 +190,10 @@ namespace PowerArgs.Games
         {
             var newLeft = (float)Geometry.Round(this.Left);
             var newTop = (float)Geometry.Round(this.Top);
-            this.MoveTo(newLeft, newTop);
+            if (GetObstacleIfMovedTo(RectangularF.Create(newLeft, newTop, Width, Height)) == null)
+            {
+                this.MoveTo(newLeft, newTop);
+            }
         }
 
         public void TrySendBounds()
