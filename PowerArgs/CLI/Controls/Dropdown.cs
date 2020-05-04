@@ -37,7 +37,7 @@ namespace PowerArgs.Cli
             Unfocused.SubscribeForLifetime(() => caretLabel.Text = caretLabel.Text.StringValue.ToWhite(), this);
             this.KeyInputReceived.SubscribeForLifetime(k =>
             {
-                if(k.Key == ConsoleKey.Enter)
+                if(k.Key == ConsoleKey.Enter || k.Key == ConsoleKey.DownArrow)
                 {
                     Open();
                 }
