@@ -25,7 +25,7 @@ namespace PowerArgs.Games
         public AutoTargetingFunction(AutoTargetingOptions options)
         {
             this.Options = options;
-            this.Governor = new RateGovernor(TimeSpan.FromSeconds(options.Source.Element is MainCharacter ? 0 : .5));
+            this.Governor = new RateGovernor(TimeSpan.FromSeconds(options.Source.Element is MainCharacter ? .1 : .5));
         }
 
         public override void Evaluate()
@@ -47,7 +47,7 @@ namespace PowerArgs.Games
                         MovingObject = sb,
                         Obstacles = obstacles.Where(o => o is WeaponElement == false),
                         Visibility = 3*SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
-                        Precision = .1f,
+                        Precision = 1f,
                     });
 
                     var elementHit = prediction.ObstacleHit as SpacialElement;

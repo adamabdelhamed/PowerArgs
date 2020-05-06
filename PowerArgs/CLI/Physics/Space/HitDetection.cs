@@ -37,23 +37,25 @@ namespace PowerArgs.Cli.Physics
         public IEnumerable<IRectangularF> Obstacles { get; set; }
         public float Angle { get; set; }
         public float Visibility { get; set; } 
-        public float Precision { get; set; } = .1f;
+        public float Precision { get; set; } = .2f;
     }
 
     public static class HitDetection
     {
-        public static bool HasLineOfSight(this Velocity from, IRectangularF to) => HasLineOfSight(from.Element, to, from.GetObstacles());
-        public static bool HasLineOfSight(this SpacialElement from, IRectangularF to) => HasLineOfSight(from, to, from.GetObstacles());
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles) => GetLineOfSightObstruction(from, to, obstacles) == null;
+        public static bool HasLineOfSight(this Velocity from, IRectangularF to, float? precision = null) => HasLineOfSight(from.Element, to, from.GetObstacles(), precision);
+        public static bool HasLineOfSight(this SpacialElement from, IRectangularF to, float? precision = null) => HasLineOfSight(from, to, from.GetObstacles(), precision);
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles, float? precision = null) => GetLineOfSightObstruction(from, to, obstacles, precision) == null;
 
-        public static IRectangularF GetLineOfSightObstruction(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles)
+        public static IRectangularF GetLineOfSightObstruction(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles, float? precision = null)
         {
+            var effectivePrecision = precision.HasValue ? precision.Value : .2f;
             var prediction = PredictHit(new HitDetectionOptions()
             {
                 MovingObject = from,
                 Angle = from.Center().CalculateAngleTo(to.Center()),
                 Obstacles = obstacles.Union(new IRectangularF[] { to }),
                 Visibility = 3 * from.Center().CalculateDistanceTo(to.Center()),
+                Precision = effectivePrecision,
             });
 
             if (prediction.Type == HitType.None)

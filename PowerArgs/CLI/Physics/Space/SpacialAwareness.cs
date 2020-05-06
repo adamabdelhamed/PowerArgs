@@ -109,11 +109,11 @@ namespace PowerArgs.Cli.Physics
                 {
                     continue;
                 }
-                else if(exclusions != null && exclusions.Contains(e))
+                else if (e.ZIndex != effectiveZ)
                 {
                     continue;
                 }
-                else if(e.ZIndex != effectiveZ)
+                else if(exclusions != null && exclusions.Contains(e))
                 {
                     continue;
                 }
