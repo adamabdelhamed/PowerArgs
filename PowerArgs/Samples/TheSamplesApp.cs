@@ -219,8 +219,8 @@ namespace PowerArgs.Samples
 
     public class ColorTestArgs
     {
-        public ConsoleColor From { get; set; }
-        public ConsoleColor To { get; set; }
+        public RGB From { get; set; }
+        public RGB To { get; set; }
         public ConsoleMode Mode { get; set; }
     }
 

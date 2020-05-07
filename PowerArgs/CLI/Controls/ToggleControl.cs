@@ -23,13 +23,6 @@ namespace PowerArgs.Cli
             CanFocus = true;
             Width = 10;
             Height = 1;
-            SubscribeForLifetime(nameof(Bounds), () =>
-            {
-                if (Width != 10 || Height != 1)
-                {
-                    throw new Exception("");
-                }
-            }, this);
             valueLabel = ProtectedPanel.Add(new Label());
             SynchronizeForLifetime(nameof(On), ()=>Update(125), this);
             SynchronizeForLifetime(nameof(IsVisible), () => Update(0), this);

@@ -207,6 +207,15 @@ namespace PowerArgs.Cli
                     (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => dropdown.Value = options.Where(option => option.Value.Equals(property.GetValue(o))).Single(), dropdown);
                     editControl = dropdown;
                 }
+                else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType == typeof(RGB))
+                {
+              
+                    var dropdown = new ColorPicker();
+                    dropdown.Width = Math.Min(40, Enums.GetEnumValues<ConsoleColor>().Select(option => option.ToString().Length).Max() + 8);
+                    dropdown.SubscribeForLifetime(nameof(dropdown.Value), () => property.SetValue(o, dropdown.Value), dropdown);
+                    (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => dropdown.Value = (RGB)(property.GetValue(o)), dropdown);
+                    editControl = dropdown;
+                }
                 else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType == typeof(bool))
                 {
                     var toggle = new ToggleControl();
