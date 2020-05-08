@@ -55,6 +55,7 @@ namespace PowerArgs.Cli
 
             foreach(var filter in control.RenderFilters)
             {
+                filter.Control = control;
                 filter.Filter(control.Bitmap);
             }
 

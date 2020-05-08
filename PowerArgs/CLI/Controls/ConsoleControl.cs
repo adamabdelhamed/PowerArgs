@@ -3,20 +3,49 @@ using System.Collections.Generic;
 
 namespace PowerArgs.Cli
 {
-
+    /// <summary>
+    /// An interfaced that, when implemented, allows you
+    /// to edit the freshly painted bitmap of a control 
+    /// just before it is composed onto its parent
+    /// </summary>
     public interface IConsoleControlFilter
     {
+        /// <summary>
+        /// The control that was just painted
+        /// </summary>
+        ConsoleControl Control { get; set; }
+        
+        /// <summary>
+        /// The filter implementation
+        /// </summary>
+        /// <param name="bitmap">The bitmap you can modify</param>
         void Filter(ConsoleBitmap bitmap);
     }
 
+    /// <summary>
+    /// A filter whose implementation is defined inline via an action
+    /// </summary>
     public class ConsoleControlFilter : IConsoleControlFilter
     {
+        /// <summary>
+        /// The control that was just painted
+        /// </summary>
+        public ConsoleControl Control { get; set; }
         private Action<ConsoleBitmap> impl;
+        
+        /// <summary>
+        /// Creates a new filter
+        /// </summary>
+        /// <param name="impl">the filter impl</param>
         public ConsoleControlFilter(Action<ConsoleBitmap> impl)
         {
             this.impl = impl;
         }
 
+        /// <summary>
+        /// Calls the filter impl action
+        /// </summary>
+        /// <param name="bmp">the bitmap to modify</param>
         public void Filter(ConsoleBitmap bmp) => impl(bmp);
     }
 

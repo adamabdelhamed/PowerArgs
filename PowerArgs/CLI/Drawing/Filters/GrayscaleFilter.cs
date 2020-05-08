@@ -2,6 +2,11 @@
 {
     public class GrayscaleFilter : IConsoleControlFilter
     {
+        /// <summary>
+        /// The control to filter
+        /// </summary>
+        public ConsoleControl Control { get; set; }
+
         public void Filter(ConsoleBitmap bitmap)
         {
             for (var x = 0; x < bitmap.Width; x++)
