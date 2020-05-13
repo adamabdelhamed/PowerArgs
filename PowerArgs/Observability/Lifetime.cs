@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace PowerArgs
 {
@@ -218,7 +219,7 @@ namespace PowerArgs
                 IsExpiring = true;
                 try
                 {
-                    foreach (var item in _manager.ManagedItems)
+                    foreach (var item in _manager.ManagedItems.ToArray())
                     {
                         item?.Dispose();
                     }

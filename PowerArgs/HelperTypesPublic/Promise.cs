@@ -566,7 +566,7 @@ namespace PowerArgs
     {
         internal PromiseWaitException(Exception inner) : base("There were one or more exceptions that caused this promise to fail", Clean(inner)) { }
 
-        private static List<Exception> Clean(Exception ex)
+        public static List<Exception> Clean(Exception ex)
         {
             if (ex is AggregateException)
             {
@@ -578,7 +578,8 @@ namespace PowerArgs
             }
         }
 
-        private static List<Exception> Clean(IEnumerable<Exception> inners)
+
+        public static List<Exception> Clean(IEnumerable<Exception> inners)
         {
             List<Exception> cleaned = new List<Exception>();
             foreach (var exception in inners)

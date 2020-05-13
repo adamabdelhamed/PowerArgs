@@ -18,6 +18,8 @@ namespace PowerArgs.Cli.Physics
 
         public Event AfterUpdate { get; private set; } = new Event();
 
+        public bool PropagateExceptions { get; set; } = true;
+
         public SpacetimePanel(int w, int h, SpaceTime time = null)
         {
             this.Width = w;
@@ -27,12 +29,12 @@ namespace PowerArgs.Cli.Physics
             thingBinder = new SpacialElementBinder();
             resetHandle = new AutoResetEvent(false);
             this.SpaceTime = time ?? new SpaceTime(w, h, increment: TimeSpan.FromSeconds(.05));
-            this.SpaceTime.QueueAction("SpacetimePanel/InitRealTimeViewing",() =>
+            this.SpaceTime.Invoke(() =>
             {
                 RealTimeViewing = new RealTimeViewingFunction(this.SpaceTime) { Enabled = true };
                 this.SpaceTime.ChangeTrackingEnabled = true;
-                this.SpaceTime.AfterTick.SubscribeForLifetime(() => UpdateViewInternal(), this);
-            });
+                this.SpaceTime.EndOfCycle.SubscribeForLifetime(() => UpdateViewInternal(), this);
+             });
 
             this.AddedToVisualTree.SubscribeForLifetime(() =>
             {
@@ -45,7 +47,10 @@ namespace PowerArgs.Cli.Physics
                 resetHandle.Set();
                 Application?.QueueAction(() =>
                 {
-                    throw new AggregateException(ex);
+                    if (PropagateExceptions)
+                    {
+                        throw new AggregateException(ex.Exception);
+                    }
                 });
             }, this);
 

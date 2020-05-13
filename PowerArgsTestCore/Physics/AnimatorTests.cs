@@ -86,7 +86,7 @@ namespace ArgsTests.CLI
                 var panel = app.LayoutRoot.Add(new SpacetimePanel(40, 1));
                 panel.SpaceTime.Start(nameof(TestAnimatorInTimeAsync));
                 app.SecondsBetweenKeyframes = panel.SpaceTime.Increment.TotalSeconds;
-                panel.SpaceTime.QueueAction("Test",async ()=>
+                panel.SpaceTime.Invoke(async ()=>
                 {
                     panel.RealTimeViewing.Enabled = false;
                     var element = panel.SpaceTime.Add(new SpacialElement());

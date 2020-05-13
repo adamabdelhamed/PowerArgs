@@ -27,7 +27,7 @@ namespace PowerArgs.Games
             .WhereAs<Explosive>()
             .Where(e => e.GetProperty<Character>(nameof(Holder)) == holder)
             .ToList();
-            SpaceTime.CurrentSpaceTime.QueueAction("Detonate remote mine", async() =>
+            SpaceTime.CurrentSpaceTime.Invoke(async() =>
             {
                 foreach(var mine in mines)
                 {

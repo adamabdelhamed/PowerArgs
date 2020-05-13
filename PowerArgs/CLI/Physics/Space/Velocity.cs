@@ -74,7 +74,7 @@ namespace PowerArgs.Cli.Physics
 
         public Velocity(SpacialElement t) : base(t)
         {
-            Time.CurrentTime.DoASAP("V",async()=> await ExecuteAsync());
+            Time.CurrentTime.Invoke(async()=> await ExecuteAsync());
         }
 
         public static Velocity For(SpacialElement el)

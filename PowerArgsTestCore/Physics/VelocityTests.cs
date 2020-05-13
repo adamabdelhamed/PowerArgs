@@ -102,7 +102,7 @@ namespace ArgsTests.CLI.Physics
                 v.Angle = movementAngle;
                 v.Speed = speed;
                 await st.DelayAsync(20000);
-                PhysicsTest.AssertClose(expected, actual(movingObject), .1f);
+                PhysicsTest.AssertClose(expected, actual(movingObject), .2f);
                 Console.WriteLine($"Wall.Left == {expected}, movingObject.Right() == {actual(movingObject)}");
                 movingObject.Lifetime.Dispose();
             }

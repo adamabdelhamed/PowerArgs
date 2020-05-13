@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PowerArgs
@@ -17,7 +18,7 @@ namespace PowerArgs
         /// <returns>a new task that will throw a TimeoutException if the initial task fails to complete before the given timeout</returns>
         public static async Task TimeoutAfter(this Task runningTask, TimeSpan timeout, string timeoutMessage = "The operation timed out")
         {
-            if (await Task.WhenAny(runningTask, Task.Delay(timeout)) != runningTask)
+            if (await TaskEx.WhenAny(runningTask, Task.Delay(timeout)) != runningTask)
             {
                 throw new TimeoutException(timeoutMessage);
             }
@@ -33,7 +34,7 @@ namespace PowerArgs
         /// <returns>a new task, with a result, that will throw a TimeoutException if the initial task fails to complete before the given timeout</returns>
         public static async Task<T> TimeoutAfter<T>(this Task<T> runningTask, TimeSpan timeout, string timeoutMessage = "The operation timed out")
         {
-            if (await Task.WhenAny(runningTask, Task.Delay(timeout)) != runningTask)
+            if (await TaskEx.WhenAny(runningTask, Task.Delay(timeout)) != runningTask)
             {
                 throw new TimeoutException(timeoutMessage);
             }
@@ -45,7 +46,7 @@ namespace PowerArgs
 
         public static Task Then(this Task t, Action a)
         {
-            return t.ContinueWith((t2)=> a(), TaskScheduler.FromCurrentSynchronizationContext());
+            return t.ContinueWith((t2) => a(), TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public static Task Then<T>(this Task<T> t, Action<T> a)
@@ -55,6 +56,18 @@ namespace PowerArgs
                 a(t.Result);
 
             }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        public static Task<Task> WhenAny(params Task[] tasks) => WhenAny((IEnumerable<Task>)tasks);
+
+        public static async Task<Task> WhenAny(IEnumerable<Task> tasks)
+        {
+            var ret = await Task.WhenAny(tasks);
+            if(ret.Exception != null)
+            {
+                throw new AggregateException(ret.Exception);
+            }
+            return ret;
         }
 
         public static ILifetimeManager ToLifetime(this Task t)

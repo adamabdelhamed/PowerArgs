@@ -69,17 +69,7 @@ namespace PowerArgs.Cli.Physics
         public override void Evaluate() { }
 
         
-        public void EnableOverlapPrevention()
-        {
-            SizeOrPositionChanged.SubscribeForLifetime(() =>
-            {
-                var overlappingObstacle = GetObstacleIfMovedTo(this);
-                if (overlappingObstacle != null)
-                {
-                    throw new InvalidOperationException("Overlaps not allowed: "+overlappingObstacle.GetType().Name);
-                }
-            }, this.Lifetime);
-        }
+    
 
         public IRectangularF GetObstacleIfMovedTo(IRectangularF f, int? z = null)
         {
@@ -225,22 +215,42 @@ namespace PowerArgs.Cli.Physics
             });
         }
 
-        public float CalculateDistanceBetween(SpacialElement a, SpacialElement b)
+        public class OverlapInfo
         {
-            return (float)Math.Sqrt(((a.CenterX - b.CenterX) * (a.CenterX - b.CenterX)) + ((a.CenterY - b.CenterY) * (a.CenterY - b.CenterY)));
+            public SpacialElement DetectingElement { get; set; }
+            public IRectangularF OverlappingElement { get; set; }
         }
 
-        public bool IsEmpty(float x, float y, float w, float h)
+        public void EnableOverlapPrevention(Func<SpacialElement,bool> filter, Action<OverlapInfo> handler, ILifetimeManager lt)
         {
-            var myRect = RectangularF.Create(0, 0, Width, Height);
             foreach (var element in Elements)
             {
-                if (myRect.NumberOfPixelsThatOverlap(element) > 0)
-                {
-                    return false;
-                }
+                var myElement = element;
+                myElement.SizeOrPositionChanged.SubscribeForLifetime(() => AssertNoOverlaps(filter, myElement, handler), lt);
             }
-            return true;
+
+            SpacialElementAdded.SubscribeForLifetime((newEl) =>
+            {
+                newEl.SizeOrPositionChanged.SubscribeForLifetime(() => AssertNoOverlaps(filter, newEl, handler), lt);
+            }, lt);
+        }
+
+        private IRectangularF GetObstacleIfMovedTo(SpacialElement el, int? z = null)
+        {
+            var overlaps = el.GetObstacles(z).Where(e => e.EffectiveBounds().Touches(el)).ToArray();
+            return overlaps.FirstOrDefault();
+        }
+
+        private void AssertNoOverlaps(Func<SpacialElement, bool> filter, SpacialElement el, Action<OverlapInfo> handler)
+        {
+            if (filter(el) == false) return;
+
+            var overlappingObstacle = GetObstacleIfMovedTo(el);
+
+            if (overlappingObstacle != null)
+            {
+                handler(new OverlapInfo() { DetectingElement = el, OverlappingElement = overlappingObstacle });
+            }
         }
 
         public bool IsInBounds(IRectangularF bounds) => !IsOutOfBounds(bounds);

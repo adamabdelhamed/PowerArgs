@@ -314,8 +314,12 @@ namespace PowerArgs.Cli.Physics
                         }
                     }
                 }
+                return null;
             }
-            return null;
+            else
+            {
+                return el.TopLeft();
+            }
         }
  
     }

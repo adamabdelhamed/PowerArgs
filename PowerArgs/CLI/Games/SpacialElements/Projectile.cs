@@ -28,7 +28,10 @@ namespace PowerArgs.Games
                 this.MoveTo(w.Holder.CenterX()-StandardWidth/2, w.Holder.CenterY()-StandardHeight/2, w.Holder.ZIndex);
             }
 
-            Time.CurrentTime.QueueAction("Snap bounds",() => startLocation = this.Bounds);
+            Time.CurrentTime.InvokeNextCycle(() =>
+            {
+                startLocation = this.Bounds;
+            });
 
             this.Tags.Add(Weapon.WeaponTag);
             Velocity = new Velocity(this);

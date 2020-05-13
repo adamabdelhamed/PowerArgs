@@ -23,7 +23,7 @@ namespace ArgsTests.CLI.Physics
             Run(context, (app) =>
             {
                 var panel = app.LayoutRoot.Add(new SpacetimePanel(w, h));
-                panel.SpaceTime.QueueAction("Test",() =>
+                panel.SpaceTime.InvokeNextCycle(() =>
                 {
                     testCode(app, panel);
                 });

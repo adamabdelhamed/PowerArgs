@@ -18,7 +18,7 @@ namespace ArgsTests.CLI.Physics
             var panel = app.LayoutRoot.Add(new SpacetimePanel(1, 1));
             SpacialElement element;
             TimeSpan lastAge = TimeSpan.Zero;
-            panel.SpaceTime.QueueAction("Test",() =>
+            panel.SpaceTime.InvokeNextCycle(() =>
             {
                 element = new SpacialElement();
                 panel.SpaceTime.Add(element);
@@ -29,12 +29,11 @@ namespace ArgsTests.CLI.Physics
                     if(Time.CurrentTime.Now == TimeSpan.FromSeconds(.5))
                     {
                         Time.CurrentTime.Stop();
-                        app.Stop();
                     }
                 }));
-            });
+             });
 
-            panel.SpaceTime.Start();
+            panel.SpaceTime.Start().Then(()=> app.Stop());
             app.Start().Wait();
             Assert.AreEqual(.5, lastAge.TotalSeconds);
         }

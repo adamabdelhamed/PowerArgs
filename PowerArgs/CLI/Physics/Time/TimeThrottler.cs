@@ -11,7 +11,7 @@ namespace PowerArgs.Cli.Physics
         public TimeThrottler(Action innerAction, ILifetimeManager lt)
         {
             this.innerAction = innerAction;
-            Time.CurrentTime.AfterTick.SubscribeForLifetime(() => iterationsThisTick = 0, lt);
+            Time.CurrentTime.EndOfCycle.SubscribeForLifetime(() => iterationsThisTick = 0, lt);
             lt.OnDisposed(this.Dispose);
         }
 

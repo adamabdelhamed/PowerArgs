@@ -14,13 +14,13 @@
 
             if (target.IsAttached())
             {
-                Time.CurrentTime.QueueAction(GetType().Name+"AttachTo("+target.GetType().Name+")",() => 
+                Time.CurrentTime.InvokeNextCycle(() => 
                 {
                     if (target.Lifetime.IsExpired == false && target.IsAttached())
                     {
                         Time.CurrentTime.Add(this);
                     }
-                });
+                 });
             }
             else
             {

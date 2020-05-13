@@ -23,11 +23,11 @@ namespace ArgsTests.CLI.Physics
                     var spaceTimePanel = app.LayoutRoot.Add(new SpacetimePanel(app.LayoutRoot.Width, app.LayoutRoot.Height));
                     spaceTimePanel.SpaceTime.Increment = DefaultTimeIncrement;
                     spaceTimePanel.SpaceTime.Start();
-                    spaceTimePanel.SpaceTime.BeforeUnhandledException.SubscribeForLifetime((ex) =>
+                    spaceTimePanel.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>
                     {
                         spaceTimePanel.SpaceTime.Stop();
                         d.Resolve();
-                        ex.Handled = true;
+                        ex.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
                         stEx = ex.Exception;
                     }, app);
 
@@ -44,7 +44,7 @@ namespace ArgsTests.CLI.Physics
                         }
                     }, app);
 
-                    spaceTimePanel.SpaceTime.QueueAction("test", async () =>
+                    spaceTimePanel.SpaceTime.InvokeNextCycle(async () =>
                     {
                         spaceTimePanel.RealTimeViewing.Enabled = false;
                         await test(app, spaceTimePanel);

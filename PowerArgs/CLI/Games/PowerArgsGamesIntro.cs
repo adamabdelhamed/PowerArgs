@@ -4,7 +4,6 @@ using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace PowerArgs.Games
 {
@@ -34,7 +33,7 @@ namespace PowerArgs.Games
         public Promise Play()
         {
             introDeferred = Deferred.Create();
-            SpaceTime.QueueAction("GameIntro",PlaySceneInternal);
+            SpaceTime.InvokeNextCycle(PlaySceneInternal);
             SpaceTime.Start("PowerArgsGameIntro");
             return introDeferred.Promise;
         }
@@ -56,7 +55,7 @@ namespace PowerArgs.Games
             SpaceTime.Add(character);
 
             ListenForEndOfIntro();
-        }
+         }
 
         private void ListenForCharacterNearRightEdge()
         {
@@ -102,7 +101,7 @@ namespace PowerArgs.Games
                 return;
             }
 
-            SpaceTime.QueueAction("Cleanup game intro",() =>
+            SpaceTime.InvokeNextCycle(() =>
             {
                 if (introDeferred.IsFulfilled)
                 {
