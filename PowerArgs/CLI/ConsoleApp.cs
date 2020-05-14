@@ -1,14 +1,64 @@
 ﻿
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+
 namespace PowerArgs.Cli
 {
     /// <summary>
     /// A class representing a console application that uses a message pump to synchronize work on a UI thread
     /// </summary>
-    public class ConsoleApp : CliMessagePump
+    public class ConsoleApp : EventLoop, IObservableObject, ILifetime
     {
         [ThreadStatic]
         private static ConsoleApp _current;
+
+
+        private List<Deferred> paintRequests = new List<Deferred>();
+        private FrameRateMeter paintRateMeter = new FrameRateMeter();
+        private Queue<ConsoleKeyInfo> sendKeys = new Queue<ConsoleKeyInfo>();
+
+        /// <summary>
+        /// True by default. When true, discards key presses that come in too fast
+        /// likely because the user is holding the key down. You can set the
+        /// MinTimeBetweenKeyPresses property to suit your needs.
+        /// </summary>
+        public bool KeyThrottlingEnabled { get; set; } = true;
+
+        /// <summary>
+        /// When key throttling is enabled this lets you set the minimum time that must
+        /// elapse before we forward a key press to the app, provided it is the same key
+        /// that was most recently clicked.
+        /// </summary>
+        public TimeSpan MinTimeBetweenKeyPresses { get; set; } = TimeSpan.FromMilliseconds(35);
+
+        public Event OnKeyInputThrottled { get; private set; } = new Event();
+        private ConsoleKey lastKey;
+        private DateTime lastKeyPressTime = DateTime.MinValue;
+        /// <summary>
+        /// An event that fires when the console window has been resized by the user
+        /// </summary>
+        public Event WindowResized { get; private set; } = new Event();
+
+
+        private IConsoleProvider console;
+        private int lastConsoleWidth, lastConsoleHeight;
+ 
+        private List<IDisposable> timerHandles = new List<IDisposable>();
+
+        private FrameRateMeter cycleRateMeter;
+
+        /// <summary>
+        /// Gets the total number of event loop cycles that have run
+        /// </summary>
+        public int TotalCycles => cycleRateMeter != null ? cycleRateMeter.TotalFrames : 0;
+
+
+        /// <summary>
+        /// Gets the current frame rate for the app
+        /// </summary>
+        public int CyclesPerSecond => cycleRateMeter != null ? cycleRateMeter.CurrentFPS : 0;
 
         /// <summary>
         /// Gets a reference to the current app running on this thread.  This will only be populated by the thread
@@ -37,6 +87,23 @@ namespace PowerArgs.Cli
                 throw new InvalidOperationException("The ConsoleApp on this thread is different from the one expected");
             }
         }
+
+        /// <summary>
+        /// Gets the current paint rate for the app
+        /// </summary>
+        public int PaintRequestsProcessedPerSecond
+        {
+            get
+            {
+                return paintRateMeter != null ? paintRateMeter.CurrentFPS : 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets the total number of times a paint actually happened
+        /// </summary>
+        public int TotalPaints => paintRateMeter != null ? paintRateMeter.TotalFrames : 0;
+
 
         /// <summary>
         /// The writer used to record the contents of the screen while the app
@@ -106,8 +173,17 @@ namespace PowerArgs.Cli
         /// <param name="y">The right position on the target console to bound this app</param>
         /// <param name="w">The width of the app</param>
         /// <param name="h">The height of the app</param>
-        public ConsoleApp(int x, int y, int w, int h) : base(ConsoleProvider.Current)
+        public ConsoleApp(int x, int y, int w, int h) 
         {
+            this.console = ConsoleProvider.Current;
+            this.lastConsoleWidth = this.console.BufferWidth;
+            this.lastConsoleHeight = this.console.WindowHeight;
+            this.observable = new ObservableObject(this);
+
+            cycleRateMeter = new FrameRateMeter();
+
+            this.StartOfCycle.SubscribeForLifetime(Cycle, this);
+
             SetFocusOnStart = true;
             Bitmap = new ConsoleBitmap(x, y, w, h);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
@@ -120,6 +196,22 @@ namespace PowerArgs.Cli
             LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, this);
             LayoutRoot.Controls.Removed.SubscribeForLifetime(ControlRemovedFromVisualTree, this);
             WindowResized.SubscribeForLifetime(HandleDebouncedResize, this);
+            this.LoopStarted.SubscribeOnce(() => _current = this);
+            this.EndOfCycle.SubscribeForLifetime(DrainPaints, this);
+        }
+
+        private void DrainPaints()
+        {
+            if(paintRequests.Count > 0)
+            {
+                PaintInternal();
+                foreach(var request in paintRequests)
+                {
+                    request.Resolve();
+                }
+                paintRequests.Clear();
+                paintRateMeter.Increment();
+            }
         }
 
         /// <summary>
@@ -155,24 +247,21 @@ namespace PowerArgs.Cli
         public static void Show(Action<ConsoleApp> init)
         {
             var app = new ConsoleApp();
-            app.QueueAction(()=>init(app));
+            app.InvokeNextCycle(()=>init(app));
             app.Start().Wait();
         }
 
-        protected override void OnThredStart()
-        {
-            _current = this;
-        }
+   
 
         /// <summary>
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>
-        public override Promise Start()
+        public override Promise Start(string name = "ConsoleApp")
         {
             if (SetFocusOnStart)
             {
-                QueueAction(() => 
+                InvokeNextCycle(() => 
                 {
                     FocusManager.TryMoveFocus();
                 });
@@ -210,7 +299,7 @@ namespace PowerArgs.Cli
         public Promise Paint()
         {
             var d = Deferred.Create();
-            QueueAction(new PaintMessage(PaintInternal) { Deferred = d });
+            Invoke(() => paintRequests.Add(d));
             return d.Promise;
         }
 
@@ -294,7 +383,7 @@ namespace PowerArgs.Cli
         /// Handles key input for the application
         /// </summary>
         /// <param name="info">The key that was pressed</param>
-        protected override void HandleKeyInput(ConsoleKeyInfo info)
+        protected virtual void HandleKeyInput(ConsoleKeyInfo info)
         {
             if (FocusManager.GlobalKeyHandlers.TryIntercept(info))
             {
@@ -350,6 +439,153 @@ namespace PowerArgs.Cli
             Recorder?.WriteFrame(Bitmap);
             Bitmap.Paint();
             AfterPaint.Fire();
+        }
+
+
+        private void Cycle()
+        {
+            cycleRateMeter.Increment();
+            if ((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight))
+            {
+                DebounceResize();
+                WindowResized.Fire();
+            }
+
+            if (this.console.KeyAvailable)
+            {
+                var info = this.console.ReadKey(true);
+
+                var effectiveMinTimeBetweenKeyPresses = MinTimeBetweenKeyPresses;
+                if (KeyThrottlingEnabled && info.Key == lastKey && DateTime.UtcNow - lastKeyPressTime < effectiveMinTimeBetweenKeyPresses)
+                {
+                    // the user is holding the key down and throttling is enabled
+                    OnKeyInputThrottled.Fire();
+                }
+                else
+                {
+                    lastKeyPressTime = DateTime.UtcNow;
+                    lastKey = info.Key;
+                    InvokeNextCycle(() => HandleKeyInput(info));
+                }
+            }
+            else if (sendKeys.Count > 0)
+            {
+                var info = sendKeys.Dequeue();
+                InvokeNextCycle(() => HandleKeyInput(info));
+            }
+        }
+
+
+
+        /// <summary>
+        /// Simulates a key press
+        /// </summary>
+        /// <param name="key">the key press info</param>
+        public Promise SendKey(ConsoleKeyInfo key) => Invoke(() => { sendKeys.Enqueue(key); });
+
+
+        /// <summary>
+        /// Schedules the given action for periodic processing by the message pump
+        /// </summary>
+        /// <param name="a">The action to schedule for periodic processing</param>
+        /// <param name="interval">the execution interval for the action</param>
+        /// <returns>A handle that can be passed to ClearInterval if you want to cancel the work</returns>
+        public IDisposable SetInterval(Action a, TimeSpan interval)
+        {
+            return new TimerDisposer(new Timer((o) => Invoke(a), null, (int)interval.TotalMilliseconds, (int)interval.TotalMilliseconds), timerHandles);
+        }
+
+        /// <summary>
+        /// Schedules the given action for a one time execution after the given period elapses
+        /// </summary>
+        /// <param name="a">The action to schedule</param>
+        /// <param name="period">the period of time to wait before executing the action</param>
+        /// <returns></returns>
+        public IDisposable SetTimeout(Action a, TimeSpan period)
+        {
+            return new TimerDisposer(new Timer((o) => Invoke(a), null, (int)period.TotalMilliseconds, Timeout.Infinite), timerHandles);
+        }
+
+        /// <summary>
+        /// Updates a previously scheduled interval
+        /// </summary>
+        /// <param name="handle">the handle that was returned by a previous call to setInterval</param>
+        /// <param name="newInterval">the new interval</param>
+        public void ChangeInterval(IDisposable handle, TimeSpan newInterval)
+        {
+            var disposer = handle as TimerDisposer;
+            if (disposer == null) throw new ArgumentException($"The argument was not provided by {nameof(SetInterval)}");
+            disposer.Timer.Change(newInterval, newInterval);
+        }
+
+
+
+
+
+
+        private void DebounceResize()
+        {
+            console.Clear();
+            bool done = false;
+            ActionDebouncer debouncer = new ActionDebouncer(TimeSpan.FromSeconds(.25), () =>
+            {
+                done = true;
+            });
+
+            debouncer.Trigger();
+            while (done == false)
+            {
+                if (console.BufferWidth != lastConsoleWidth || console.WindowHeight != lastConsoleHeight)
+                {
+                    lastConsoleWidth = console.BufferWidth;
+                    lastConsoleHeight = console.WindowHeight;
+                    debouncer.Trigger();
+                }
+            }
+        }
+
+        private ObservableObject observable;
+        public bool SuppressEqualChanges { get => observable.SuppressEqualChanges; set => observable.SuppressEqualChanges = value; }
+        public IDisposable SubscribeUnmanaged(string propertyName, Action handler) => observable.SubscribeUnmanaged(propertyName, handler);
+        public void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
+        public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
+        public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => SynchronizeForLifetime(propertyName, handler, lifetimeManager);
+        public object GetPrevious(string propertyName) => ((IObservableObject)observable).GetPrevious(propertyName);
+        public Lifetime GetPropertyValueLifetime(string propertyName) => observable.GetPropertyValueLifetime(propertyName);
+
+        public T Get<T>([CallerMemberName]string name = null) => observable.Get<T>(name);
+        public void Set<T>(T value, [CallerMemberName]string name = null) => observable.Set<T>(value, name);
+
+        private Lifetime lifetime = new Lifetime();
+        public Promise OnDisposed(Action cleanupCode) => lifetime.OnDisposed(cleanupCode);
+        public Promise OnDisposed(IDisposable obj) => lifetime.OnDisposed(obj);
+        public bool IsExpired => lifetime.IsExpired;
+        public bool TryDispose() => lifetime.TryDispose();
+        public void Dispose() => lifetime.Dispose();
+
+      
+    }
+
+    internal class TimerDisposer : Disposable
+    {
+        public Timer Timer { get; private set; }
+        private List<IDisposable> tracker;
+        public TimerDisposer(Timer t, List<IDisposable> tracker)
+        {
+            this.Timer = t;
+            this.tracker = tracker;
+            lock (tracker)
+            {
+                tracker.Add(this);
+            }
+        }
+        protected override void DisposeManagedResources()
+        {
+            Timer.Dispose();
+            lock (tracker)
+            {
+                tracker.Remove(this);
+            }
         }
     }
 }

@@ -22,13 +22,25 @@ namespace PowerArgs.Games
         public Event<SpacialElement> TargetChanged { get; private set; } = new Event<SpacialElement>();
         public AutoTargetingOptions Options { get; private set; }
         private SpacialElement lastTarget;
+
+        public float Delay { get; set; }
+
         public AutoTargetingFunction(AutoTargetingOptions options)
         {
             this.Options = options;
-            this.Governor = new RateGovernor(TimeSpan.FromSeconds(options.Source.Element is MainCharacter ? .1 : .5));
+
+            Delay = options.Source.Element is MainCharacter ? 100 : 500;
+            this.Added.SubscribeOnce(async () =>
+            {
+                while(this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.DelayAsync(Delay);
+                }
+            });
         }
 
-        public override void Evaluate()
+        private void Evaluate()
         {
             var obstacles = Options.Source.GetObstacles();
 

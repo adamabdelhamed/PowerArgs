@@ -20,14 +20,20 @@ namespace PowerArgs.Games
         {
             this.Tags.Add(Weapon.WeaponTag);
             this.timeToDetinate = timeToDetinate;
-            this.Governor.Rate = TimeSpan.Zero;
             this.SecondsRemaining = timeToDetinate.TotalSeconds;
+
+            this.Added.SubscribeOnce(async () =>
+            {
+                while (this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.YieldAsync();
+                }
+            });
         }
 
-        public override void Evaluate()
+        private void Evaluate()
         {
-            base.Evaluate();
-           
             if (this.CalculateAge() >= timeToDetinate)
             {
                 Explode();
@@ -40,13 +46,15 @@ namespace PowerArgs.Games
                 {
                     if (Silent == false)
                     {
-                        OnAudibleTick.Fire(this);
-                        var d = SpaceTime.CurrentSpaceTime.Application.SetInterval(() => OnAudibleTick.Fire(this), TimeSpan.FromSeconds(1));
-                        this.Lifetime.OnDisposed(()=>
+                        var tickLt = Lifetime.EarliestOf(this.Lifetime, this.Exploded.CreateNextFireLifetime());
+                        Time.CurrentTime.Invoke(async () =>
                         {
-                            d.Dispose();
+                            while(tickLt.IsExpired == false)
+                            {
+                                OnAudibleTick.Fire(this);
+                                await Time.CurrentTime.DelayAsync(1000);
+                            }
                         });
-                        this.Exploded.SubscribeOnce(d.Dispose);
                         startedTimer = true;
                     }
                 }

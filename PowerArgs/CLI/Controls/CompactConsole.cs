@@ -71,7 +71,7 @@ namespace PowerArgs.Cli
             inputPanel.Add(new Label() { Text = "CMD> ".ToConsoleString() });
             InputBox = inputPanel.Add(new TextBox() { X = "CMD> ".Length, Width = inputPanel.Width - "CMD> ".Length, Foreground = ConsoleColor.Gray, Background = ConsoleColor.Black });
             InputBox.RichTextEditor.TabHandler.TabCompletionHandlers.Add(new PowerArgsRichCommandLineReader(def, new List<ConsoleString>(), false));
-            ConsoleApp.Current.QueueAction(() =>
+            ConsoleApp.Current.InvokeNextCycle(() =>
             {
                 if (myLt == refreshLt)
                 {

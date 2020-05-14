@@ -401,7 +401,7 @@ namespace PowerArgs.Cli
                     {
                         inMemoryVideo = inMemoryVideo ?? videoWithProgressInfo;
                         this.duration = videoWithProgressInfo.Duration;
-                        Application.QueueAction(() => 
+                        Application.InvokeNextCycle(() => 
                         {
                             if (this.CurrentFrame == null)
                             {
@@ -429,7 +429,7 @@ namespace PowerArgs.Cli
                 }
                 catch (Exception ex)
                 {
-                    Application.QueueAction(() => 
+                    Application.InvokeNextCycle(() => 
                     {
                         failedMessage = ex.Message;
                         State = PlayerState.Failed;

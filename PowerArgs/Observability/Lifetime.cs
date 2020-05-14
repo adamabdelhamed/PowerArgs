@@ -6,10 +6,16 @@ using System.Linq;
 
 namespace PowerArgs
 {
+    public interface ILifetime : ILifetimeManager
+    {
+        bool TryDispose();
+        void Dispose();
+    }
+
     /// <summary>
     /// An object that has a beginning and and end  that can be used to define the lifespan of event and observable subscriptions.
     /// </summary>
-    public class Lifetime : Disposable, ILifetimeManager
+    public class Lifetime : Disposable, ILifetime
     {
         private LifetimeManager _manager;
 

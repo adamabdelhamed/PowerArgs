@@ -36,9 +36,18 @@ namespace PowerArgs.Cli.Physics
                 tracker.Speed = newSpeed;
                 this.Lifetime.Dispose();
             }
+
+            this.Added.SubscribeOnce(async () =>
+            {
+                while (this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.YieldAsync();
+                }
+            });
         }
  
-        public override void Evaluate()
+        private void Evaluate()
         {
             if (!IsPermanentForce && Time.CurrentTime.Now >= EndTime)
             {
@@ -46,23 +55,16 @@ namespace PowerArgs.Cli.Physics
                 return;
             }
 
-            var increment = Governor.Rate.TotalSeconds;
+            var increment = Time.CurrentTime.Increment.TotalSeconds;
             if (increment == 0) increment = Time.CurrentTime.Increment.TotalSeconds;
 
-            float dt = (float)(Time.CurrentTime.Now.TotalSeconds - Governor.Rate.TotalSeconds);
+            float dt = (float)(Time.CurrentTime.Now.TotalSeconds - Time.CurrentTime.Increment.TotalSeconds);
             float dSpeed = (Accelleration * dt);
             var end = tracker.Element.MoveTowards(tracker.Angle, tracker.Speed).MoveTowards(Angle, dSpeed);
             var newAngle = tracker.Element.CalculateAngleTo(end);
             var newSpeed = tracker.Element.CalculateDistanceTo(end);
             tracker.Angle = newAngle;
             tracker.Speed = newSpeed;
-        }
-
-    
-
-        private void CalculateSpeedDeltas(float dSpeed, out float dx, out float dy)
-        {
-            Velocity.FindEdgesGivenHyp(dSpeed, Angle, out dx, out dy);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace PowerArgs.Cli
                     tooSmallLifetime = new Lifetime();
                     IsVisible = true;
                     CanFocus = true;
-                    Application.QueueAction(() => this.TryFocus());
+                    Application.InvokeNextCycle(() => this.TryFocus());
                     Application.FocusManager.Push();
                     Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, () => { }, this);
                     options.OnMinimumSizeNotMet();

@@ -88,9 +88,18 @@ namespace PowerArgs.Games
                 Speed = new Velocity(this);
                 this.initialBonds = this.CopyBounds();
                 this.initialTime = Time.CurrentTime.Now;
+
+                this.Added.SubscribeOnce(async () =>
+                {
+                    while (this.Lifetime.IsExpired == false)
+                    {
+                        Evaluate();
+                        await Time.CurrentTime.YieldAsync();
+                    }
+                });
             }
 
-            public override void Evaluate()
+            private void Evaluate()
             {
 
                 if (Time.CurrentTime.Now - initialTime > TimeSpan.FromSeconds(5))

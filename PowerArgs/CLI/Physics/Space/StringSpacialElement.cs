@@ -12,7 +12,6 @@ namespace PowerArgs.Cli.Physics
         public bool IsVisible { get; set; } = true;
         public StringSpacialElement(ConsoleString content)
         {
-            this.Governor.Rate = TimeSpan.FromSeconds(-1);
             observable.SubscribeForLifetime(nameof(Content), () =>
             {
                 itsMeResizing = true;

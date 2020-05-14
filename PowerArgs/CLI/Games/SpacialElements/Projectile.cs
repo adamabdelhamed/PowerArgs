@@ -35,7 +35,6 @@ namespace PowerArgs.Games
 
             this.Tags.Add(Weapon.WeaponTag);
             Velocity = new Velocity(this);
-            Velocity.Governor.Rate = TimeSpan.FromSeconds(0);
             Velocity.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime);
             this.Velocity.HitDetectionExclusionTypes.Add(typeof(Projectile));
             if (w?.Holder != null)
@@ -52,9 +51,6 @@ namespace PowerArgs.Games
                     this.Lifetime.Dispose();
                 }
             }, this.Lifetime);
-            
-
-            this.Governor.Rate = TimeSpan.FromSeconds(-1);
         }
  
        

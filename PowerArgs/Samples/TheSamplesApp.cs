@@ -18,7 +18,7 @@ namespace PowerArgs.Samples
         public TheSamplesApp()
         {
             
-            QueueAction(Init);
+            InvokeNextCycle(Init);
         }
 
         private void Init()
@@ -85,7 +85,7 @@ namespace PowerArgs.Samples
                     var console = panel.Add(new PerfTest(args)).Fill();
                 });
 
-                QueueAction(() => panel.Descendents.Where(d => d.CanFocus).FirstOrDefault()?.TryFocus());
+                InvokeNextCycle(() => panel.Descendents.Where(d => d.CanFocus).FirstOrDefault()?.TryFocus());
 
                 return panel;
             });
@@ -134,7 +134,7 @@ namespace PowerArgs.Samples
                     });
                 });
 
-                QueueAction(() => panel.Descendents.Where(d => d.CanFocus).FirstOrDefault()?.TryFocus());
+                InvokeNextCycle(() => panel.Descendents.Where(d => d.CanFocus).FirstOrDefault()?.TryFocus());
 
                 return panel;
             });
@@ -167,7 +167,7 @@ namespace PowerArgs.Samples
                         var textColor = RGB.Black.CalculateDistanceTo(bgCompliment) < RGB.MaxDistance * .75f ? RGB.Black : bgCompliment;
                         var panel = new ConsolePanel() { Height = 11, Width = Geometry.Round(LayoutRoot.Width * .5f), Background = contentBg };
                         var label = panel.Add(new Label() { Text = "Press enter to quit or escape to resume".ToConsoleString(textColor, contentBg) }).CenterBoth();
-                        FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, Stop, panel);
+                        FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, ()=> Stop(), panel);
                         FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, dialogHandle.CloseDialog, panel);
                         return panel;
                     });
@@ -199,7 +199,7 @@ namespace PowerArgs.Samples
             }
             currentContent = newContent;
             layout.Add(currentContent, 2, 0);
-            QueueAction(() =>
+            InvokeNextCycle(() =>
             {
                 if (newContent == null || currentContent.IsExpired == false) return;
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace PowerArgs
@@ -65,7 +66,7 @@ namespace PowerArgs
             var ret = await Task.WhenAny(tasks);
             if(ret.Exception != null)
             {
-                throw new AggregateException(ret.Exception);
+                ExceptionDispatchInfo.Capture(ret.Exception).Throw();
             }
             return ret;
         }

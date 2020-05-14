@@ -18,7 +18,7 @@ namespace ArgsTests.CLI.Apps
             ConsoleApp app = new ConsoleApp();
             var promise = app.Start();
 
-            app.QueueAction(() =>
+            app.InvokeNextCycle(() =>
             {
                 throw new FormatException("Some fake exception");
             });
@@ -32,54 +32,6 @@ namespace ArgsTests.CLI.Apps
             {
                 Assert.AreEqual(typeof(FormatException), ex.InnerException.GetType());
                 Assert.AreEqual("Some fake exception", ex.InnerException.Message);
-            }
-        }
-
-        [TestMethod]
-        public async Task TestQueueActionAsync()
-        {
-            var app = new ConsoleApp(80, 30);
-            var appTask = app.Start().AsAwaitable();
-
-            var hello = await app.QueueActionAsync<string>(async () =>
-            {
-                ConsoleApp.AssertAppThread(app);
-                await Task.Delay(100);
-                ConsoleApp.AssertAppThread(app);
-                app.Stop();
-                return "Hello";
-            });
-
-            Assert.AreEqual("Hello", hello);
-
-            await appTask;
-        }
-
-        [TestMethod]
-        public async Task TestQueueActionAsyncExceptions()
-        {
-            try
-            {
-                var app = new ConsoleApp(80, 30);
-                var appTask = app.Start().AsAwaitable();
-
-                var hello = await app.QueueActionAsync<string>(async () =>
-                {
-                    ConsoleApp.AssertAppThread(app);
-                    await Task.Delay(10);
-                    ConsoleApp.AssertAppThread(app);
-                    throw new FormatException("Some random format exception");
-                });
-
-                Assert.AreEqual("Hello", hello);
-
-                await appTask;
-                Assert.Fail("A format exception should have been thrown");
-            }
-            catch (Exception ex)
-            {
-                Assert.IsTrue(ex.InnerException is FormatException);
-                Assert.IsTrue(ex.InnerException.Message == "Some random format exception");
             }
         }
     }

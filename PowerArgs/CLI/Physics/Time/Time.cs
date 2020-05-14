@@ -11,9 +11,6 @@ namespace PowerArgs.Cli.Physics
     /// </summary>
     public class Time : EventLoop, IDelayProvider
     {
-      
-        public ConsoleApp Application { get; set; }
- 
         [ThreadStatic]
         private static Time current;
 
@@ -43,23 +40,16 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         public TimeSpan Increment { get; set; }
 
- 
-
         /// <summary>
         /// Enumerates all of the time functions that are a part of the model as of now.
         /// </summary>
         public IEnumerable<ITimeFunction> Functions => EnumerateFunctions();
 
         private List<ITimeFunction> timeFunctions = new List<ITimeFunction>();
-        private List<ITimeFunction> toAdd = new List<ITimeFunction>();
-        private List<ITimeFunction> toRemove = new List<ITimeFunction>();
         private Random rand = new Random();
- 
         private Dictionary<string, ITimeFunction> idMap = new Dictionary<string, ITimeFunction>();
-        public ITimeFunction CurrentlyRunningFunction { get; private set; }
-
-
         private Lifetime myLifetime;
+
         /// <summary>
         /// Creates a new time model, optionally providing a starting time and increment
         /// </summary>
@@ -69,60 +59,9 @@ namespace PowerArgs.Cli.Physics
         {
             Increment = increment.HasValue ? increment.Value : TimeSpan.FromTicks(1);
             Now = now.HasValue ? now.Value : TimeSpan.Zero;
-            InvokeNextCycle(() =>
-            {
-                current = this;
-            });
+            InvokeNextCycle(() => current = this);
             myLifetime = new Lifetime();
-            EndOfCycle.SubscribeForLifetime(() =>
-            {
-                Now = Now.Add(Increment);
-            }, myLifetime);
-
-
-            StartOfCycle.SubscribeForLifetime(() =>
-            {
-                for (var i = 0; i < timeFunctions.Count; i++)
-                {
-                    if (timeFunctions[i].Lifetime.IsExpired == false && timeFunctions[i].Governor.ShouldFire(Now))
-                    {
-                        CurrentlyRunningFunction = timeFunctions[i];
-                        EvaluateCurrentlyRunningFunction();
-                    }
-                }
-
-                while (toAdd.Count > 0)
-                {
-                    var added = toAdd[0];
-                    toAdd.RemoveAt(0);
-                    timeFunctions.Add(added);
-
-                    if (added.Lifetime.IsExpired == false && added.Governor.ShouldFire(Now))
-                    {
-                        CurrentlyRunningFunction = added;
-                        EvaluateCurrentlyRunningFunction();
-                    }
-                }
-
-                for (var i = 0; i < toRemove.Count; i++)
-                {
-                    timeFunctions.Remove(toRemove[i]);
-                }
-
-                toRemove.Clear();
-            }, myLifetime);
-        }
-
-        private void EvaluateCurrentlyRunningFunction()
-        {
-            try
-            {
-                CurrentlyRunningFunction.Evaluate();
-            }
-            finally
-            {
-                CurrentlyRunningFunction = null;
-            }
+            EndOfCycle.SubscribeForLifetime(() => Now = Now.Add(Increment), myLifetime);
         }
 
         public async Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1)
@@ -209,7 +148,7 @@ namespace PowerArgs.Cli.Physics
             AssertIsThisTimeThread();
             timeFunction.InternalState.AddedTime = Now;
             timeFunction.InternalState.AttachedTime = this;
-            toAdd.Add(timeFunction);
+            timeFunctions.Add(timeFunction);
             if(timeFunction.Id != null)
             {
                 idMap.Add(timeFunction.Id, timeFunction);
@@ -217,7 +156,7 @@ namespace PowerArgs.Cli.Physics
 
             timeFunction.Lifetime.OnDisposed(() =>
             {
-                toRemove.Add(timeFunction);
+                timeFunctions.Remove(timeFunction);
                 if(timeFunction.Id != null && idMap.ContainsKey(timeFunction.Id))
                 {
                     idMap.Remove(timeFunction.Id);
@@ -254,26 +193,6 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        private IEnumerable<ITimeFunction> EnumerateFunctions()
-        {
-            var list = new List<ITimeFunction>();
-            foreach (var func in timeFunctions)
-            {
-                if (func.Lifetime.IsExpired == false)
-                {
-                    list.Add(func);
-                }
-            }
-
-            foreach (var func in toAdd)
-            {
-                if (func.Lifetime.IsExpired == false)
-                {
-                    list.Add(func);
-                }
-            }
-
-            return list;
-        }
+        private IEnumerable<ITimeFunction> EnumerateFunctions() => timeFunctions.ToArray();
     }
 }

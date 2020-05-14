@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -86,7 +87,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public Promise Start(string name = "EventLoop")
+        public virtual Promise Start(string name = "EventLoop")
         {
             runDeferred = Deferred.Create();
             runDeferred.Promise.Finally((p) => { runDeferred = null; });
@@ -183,7 +184,7 @@ namespace PowerArgs
                         var handling = HandleWorkItemException(pendingWorkItems[i].Exception, pendingWorkItems[i]);
                         if (handling == EventLoopExceptionHandling.Throw)
                         {
-                            throw new AggregateException(pendingWorkItems[i].Exception);
+                            ExceptionDispatchInfo.Capture(pendingWorkItems[i].Exception).Throw(); 
                         }
                         else if (handling == EventLoopExceptionHandling.Stop)
                         {

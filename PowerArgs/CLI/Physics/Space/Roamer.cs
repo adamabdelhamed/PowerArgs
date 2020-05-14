@@ -13,12 +13,21 @@ namespace PowerArgs.Cli.Physics
         {
             this.RoamerSpeed = roamerSpeed;
             this.accelleration = accelleration;
-            Governor.Rate = TimeSpan.FromSeconds(.1);
+          
 
             if (IsRoaming)
             {
                 currentForce = new Force(RoamerSpeed, accelleration, NextAngle());
             }
+
+            this.Added.SubscribeOnce(async () =>
+            {
+                while (this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.DelayAsync(100);
+                }
+            });
         }
 
         private float NextAngle()
@@ -28,7 +37,7 @@ namespace PowerArgs.Cli.Physics
             return baseVal;
         }
 
-        public override void Evaluate()
+        private void Evaluate()
         {
             if (currentForce != null)
             {

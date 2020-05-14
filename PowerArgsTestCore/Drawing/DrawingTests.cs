@@ -20,7 +20,7 @@ namespace ArgsTests.CLI.Controls
 
             var app = new CliTestHarness(TestContext, bitmap.Width, bitmap.Height, true);
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 app.LayoutRoot.Add(new BitmapControl() { Bitmap = bitmap }).Fill();
                 await app.Paint().AsAwaitable();
@@ -122,7 +122,7 @@ namespace ArgsTests.CLI.Controls
 
             var app = new CliTestHarness(TestContext, bitmap.Width, bitmap.Height, true);
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 app.LayoutRoot.Add(new BitmapControl() { Bitmap = bitmap }).Fill();
                 await app.Paint().AsAwaitable();

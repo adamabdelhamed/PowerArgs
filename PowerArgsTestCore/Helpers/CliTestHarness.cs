@@ -118,7 +118,7 @@ namespace ArgsTests.CLI
             }
             else
             {
-                await QueueAction(RecordKeyFrame).AsAwaitable();
+                await InvokeNextCycle(RecordKeyFrame).AsAwaitable();
             }
         }
 

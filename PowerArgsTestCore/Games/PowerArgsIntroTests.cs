@@ -23,10 +23,10 @@ namespace ArgsTests.CLI.Games
             var appTask = app.Start().AsAwaitable();
 
             PowerArgsGamesIntro intro = null;
-            await app.QueueAction(() => intro = app.LayoutRoot.Add(new PowerArgsGamesIntro()).CenterVertically()).AsAwaitable();
+            await app.InvokeNextCycle(() => intro = app.LayoutRoot.Add(new PowerArgsGamesIntro()).CenterVertically()).AsAwaitable();
             Assert.IsNotNull(intro);
        
-            await app.QueueAction(async () =>
+            await app.InvokeNextCycle(async () =>
             {
                 await intro.Play().AsAwaitable();
                 app.Stop();
@@ -51,7 +51,7 @@ namespace ArgsTests.CLI.Games
                     var playTask = intro.Play().AsAwaitable();
 
                     await Task.Delay(10);
-                    app.QueueAction(() => intro.Cleanup());
+                    app.InvokeNextCycle(() => intro.Cleanup());
 
                     app.Stop();
                     await appTask;

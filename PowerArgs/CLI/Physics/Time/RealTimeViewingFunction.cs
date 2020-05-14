@@ -55,7 +55,7 @@ namespace PowerArgs.Cli.Physics
         private DateTime wallClockSample;
         private TimeSpan simulationTimeSample;
         private Time t;
-        private ITimeFunction impl;
+        private Lifetime impl;
 
         /// <summary>
         /// Creates a realtime viewing function
@@ -79,19 +79,26 @@ namespace PowerArgs.Cli.Physics
         {
             wallClockSample = DateTime.UtcNow;
             simulationTimeSample = t.Now;
-            impl = TimeFunction.Create(Evaluate);
-            impl.Lifetime.OnDisposed(() => { impl = null; });
-            t.Add(impl);
+            impl = new Lifetime();
+
+            t.Invoke(async () =>
+            {
+                while(impl != null)
+                {
+                    Evaluate();
+                    await t.YieldAsync();
+                }
+            });
         }
  
 
         private void Disable()
         {
-            impl.Lifetime.Dispose();
+            impl.Dispose();
             impl = null;
         }
     
-        internal void Evaluate()
+        private void Evaluate()
         {
             var realTimeNow = DateTime.UtcNow;
             // while the simulation time is ahead of the wall clock, spin

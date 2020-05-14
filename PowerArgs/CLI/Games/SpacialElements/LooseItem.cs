@@ -13,7 +13,20 @@ namespace PowerArgs.Games
         public Func<Character, bool> Filter { get; set; } = e => true;
 
         public Event Incorporated { get; private set; } = new Event();
-        public override void Evaluate()
+
+        public LooseItem()
+        {
+            this.Added.SubscribeOnce(async () =>
+            {
+                while (this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.YieldAsync();
+                }
+            });
+        }
+
+        private void Evaluate()
         {
             var target = SpaceTime.CurrentSpaceTime.Elements
                 .Where(e =>

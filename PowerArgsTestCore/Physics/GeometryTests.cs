@@ -23,7 +23,7 @@ namespace ArgsTests.CLI.Physics
         public async Task TestNormalizedProximity()
         {
             var app = new CliTestHarness(TestContext, 0, 0, 40, 40, true);
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 var a = app.LayoutRoot.Add(new ConsoleControl() { Background = ConsoleColor.Red, Width = 1, Height = 1, X = 0, Y = 0 });
                 var b = app.LayoutRoot.Add(new ConsoleControl() { Background = ConsoleColor.Green, Width = 1, Height = 1, X = 39, Y = 39 });

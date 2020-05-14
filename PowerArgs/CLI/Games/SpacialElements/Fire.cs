@@ -17,7 +17,7 @@ namespace PowerArgs.Games
         public Fire(TimeSpan duration)
         {
             this.duration = duration;
-            this.Governor.Rate = TimeSpan.FromSeconds(.1);
+         
             this.ResizeTo(1, 1);
             this.Tags.Add("hot");
 
@@ -36,6 +36,15 @@ namespace PowerArgs.Games
                         currentSound?.Result.Dispose();
                     }
                     currentSound = null;
+                }
+            });
+
+            this.Added.SubscribeOnce(async () =>
+            {
+                while (this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.DelayAsync(100);
                 }
             });
         }
@@ -61,7 +70,7 @@ namespace PowerArgs.Games
 
   
 
-        public override void Evaluate()
+        private void Evaluate()
         {
             if (Time.CurrentTime.Now - initTime >= duration)
             {

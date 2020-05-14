@@ -27,19 +27,6 @@ namespace PowerArgs.Cli.Physics
         /// will be when this function is removed from a time model.
         /// </summary>
         Lifetime Lifetime { get; }
-
-        /// <summary>
-        /// Gets the rate governor that determines how frequently this function should be evaluated. 
-        /// The actual evaulation interval will be either the governor value or the time model's increment value, 
-        /// whichever is largest.
-        /// </summary>
-        RateGovernor Governor { get; }
-
-        /// <summary>
-        /// The method that will be called by the time model when it is time for this function to
-        /// be evaluated.
-        /// </summary>
-        void Evaluate();
     }
 
     /// <summary>
@@ -50,12 +37,7 @@ namespace PowerArgs.Cli.Physics
     public abstract class TimeFunction : ITimeFunction
     {
         public string Id { get; set; }
-
-        private class ActionTimeFunction : TimeFunction
-        {
-            public Action Eval { get; set; }
-            public override void Evaluate() { if (Eval == null) { Lifetime.Dispose(); } else { Eval.Invoke(); } }
-        }
+ 
 
         /// <summary>
         /// An event that will be fired when this function is added to a time model
@@ -72,13 +54,7 @@ namespace PowerArgs.Cli.Physics
         /// will be when this function is removed from a time model.
         /// </summary>
         public Lifetime Lifetime { get; private set; } = new Lifetime();
-
-        /// <summary>
-        /// Gets the rate governor that determines how frequently this function should be evaluated. 
-        /// The actual evaulation interval will be either the governor value or the time model's increment value, 
-        /// whichever is largest.
-        /// </summary>
-        public RateGovernor Governor { get; protected set; } = new RateGovernor(TimeSpan.Zero);
+ 
 
         public HashSet<string> Tags { get; set; } = new HashSet<string>();
 
@@ -129,27 +105,6 @@ namespace PowerArgs.Cli.Physics
 
             var val = tag.Substring(splitIndex + 1, tag.Length - (splitIndex + 1));
             return val;
-        }
-
-
-        /// <summary>
-        /// Gets the rate governor that determines how frequently this function should be evaluated. 
-        /// The actual evaulation interval will be either the governor value or the time model's increment value, 
-        /// whichever is largest.
-        /// </summary>
-        public abstract void Evaluate();
-
-        /// <summary>
-        /// Creates a time function given action code to run
-        /// </summary>
-        /// <param name="eval">The evaluation action to run</param>
-        /// <param name="rate">The governor rate for the function</param>
-        /// <returns>A time function that can be added into a time model</returns>
-        public static ITimeFunction Create(Action eval, TimeSpan? rate = null)
-        {
-            var ret = new ActionTimeFunction() { Eval = eval };
-            ret.Governor = new RateGovernor(rate.HasValue ? rate.Value : ret.Governor.Rate);
-            return ret;
         }
     }
 

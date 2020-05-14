@@ -39,7 +39,7 @@ namespace ArgsTests.CLI.Physics
             await TestCantGoThroughWalls(Direction.Down, app, stPanel);
         });
 
-        private async Task TestCantGoThroughWalls(Direction d, CliTestHarness app, SpacetimePanel stPanel)
+        private async Task TestCantGoThroughWalls(Direction d, CliTestHarness app, SpaceTimePanel stPanel)
         {
             SpacialAwareness.OnNudge.SubscribeForLifetime((ev) => Assert.Fail("Nudging not allowed"), app);
             var st = stPanel.SpaceTime;

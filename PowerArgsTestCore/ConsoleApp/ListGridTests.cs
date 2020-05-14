@@ -92,7 +92,7 @@ namespace ArgsTests.CLI.Controls
                 }
             });
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 var selectionLabel = app.LayoutRoot.Add(new Label() { Text = "DEFAULT".ToConsoleString(), Height = 1 }).CenterHorizontally();
                 selectionLabel.Text = $"SelectedRowIndex: {dataGrid.SelectedRowIndex}, SelectedCellIndex: {dataGrid.SelectedColumnIndex}".ToConsoleString();
@@ -159,7 +159,7 @@ namespace ArgsTests.CLI.Controls
                 }
             });
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 var selectionLabel = app.LayoutRoot.Add(new Label() { Text = "DEFAULT".ToConsoleString(), Height = 1 }).CenterHorizontally();
                 selectionLabel.Text = $"SelectedRowIndex: {dataGrid.SelectedRowIndex}, SelectedCellIndex: {dataGrid.SelectedColumnIndex}".ToConsoleString();
@@ -216,7 +216,7 @@ namespace ArgsTests.CLI.Controls
                 }
             });
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 var selectionLabel = app.LayoutRoot.Add(new Label() { Text = "DEFAULT".ToConsoleString(), Height = 1 }).CenterHorizontally();
                 selectionLabel.Text = $"SelectedRowIndex: {dataGrid.SelectedRowIndex}, SelectedCellIndex: {dataGrid.SelectedColumnIndex}".ToConsoleString();
@@ -281,7 +281,7 @@ namespace ArgsTests.CLI.Controls
                 },
             });
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 var selectionLabel = app.LayoutRoot.Add(new Label() { Text = "DEFAULT".ToConsoleString(), Height = 1 }).CenterHorizontally();
                 selectionLabel.Text = $"SelectedRowIndex: {dataGrid.SelectedRowIndex}, SelectedCellIndex: {dataGrid.SelectedColumnIndex}".ToConsoleString();
@@ -340,7 +340,7 @@ namespace ArgsTests.CLI.Controls
                 }
             });
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 var selectionLabel = app.LayoutRoot.Add(new Label() { Text = "DEFAULT".ToConsoleString(), Height = 1 }).CenterHorizontally();
                 selectionLabel.Text = $"SelectedRowIndex: {dataGrid.SelectedRowIndex}, SelectedCellIndex: {dataGrid.SelectedColumnIndex}".ToConsoleString();

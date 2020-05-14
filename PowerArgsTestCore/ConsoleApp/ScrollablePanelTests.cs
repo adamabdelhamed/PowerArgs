@@ -18,7 +18,7 @@ namespace ArgsTests.CLI.Controls
             var app = new CliTestHarness(this.TestContext, 80, 10, true);
             app.SecondsBetweenKeyframes = .1f;
             app.LayoutRoot.Background = RGB.Red;
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 // We want to have a stack panel that can scroll if it gets too bit
 

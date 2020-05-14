@@ -151,8 +151,8 @@ namespace ArgsTests.CLI.Controls
         public void RenderChartTestCommon(XYChartOptions options, int w = 80, int h = 30)
         {
             var app = new CliTestHarness(this.TestContext, w, h, true);
-            app.QueueAction(() => app.LayoutRoot.Add(new XYChart(options)).Fill());
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(() => app.LayoutRoot.Add(new XYChart(options)).Fill());
+            app.InvokeNextCycle(async () =>
             {
                 await app.Paint().AsAwaitable();
                 app.RecordKeyFrame();

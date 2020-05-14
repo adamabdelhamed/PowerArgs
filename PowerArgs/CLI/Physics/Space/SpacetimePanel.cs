@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace PowerArgs.Cli.Physics
 {
-    public class SpacetimePanel : ConsolePanel
+    public class SpaceTimePanel : ConsolePanel
     {
         public bool HeadlessMode { get; set; }
         public SpaceTime SpaceTime { get; private set; }
@@ -20,7 +20,7 @@ namespace PowerArgs.Cli.Physics
 
         public bool PropagateExceptions { get; set; } = true;
 
-        public SpacetimePanel(int w, int h, SpaceTime time = null)
+        public SpaceTimePanel(int w, int h, SpaceTime time = null)
         {
             this.Width = w;
             this.Height = h;
@@ -38,14 +38,13 @@ namespace PowerArgs.Cli.Physics
 
             this.AddedToVisualTree.SubscribeForLifetime(() =>
             {
-                this.SpaceTime.Application = this.Application;
                 this.OnDisposed(()=> resetHandle.Set());
             }, this);
 
             this.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>
             {
                 resetHandle.Set();
-                Application?.QueueAction(() =>
+                Application?.InvokeNextCycle(() =>
                 {
                     if (PropagateExceptions)
                     {
@@ -70,7 +69,7 @@ namespace PowerArgs.Cli.Physics
                 return;
             }
             resetHandle.Reset();
-            Application.QueueAction(() =>
+            Application.InvokeNextCycle(() =>
             {
                 foreach (var e in SpaceTime.AddedElements)
                 {

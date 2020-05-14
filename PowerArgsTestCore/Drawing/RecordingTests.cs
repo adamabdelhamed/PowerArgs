@@ -103,7 +103,7 @@ namespace ArgsTests.CLI.Recording
 
             var app = new CliTestHarness(this.TestContext, 80, 30);
 
-            app.QueueAction(() =>
+            app.InvokeNextCycle(() =>
             {
                 var player = app.LayoutRoot.Add(new ConsoleBitmapPlayer()).Fill();
                 player.Load(File.OpenRead(temp));

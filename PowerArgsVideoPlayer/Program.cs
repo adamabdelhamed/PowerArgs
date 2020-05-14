@@ -20,7 +20,7 @@ namespace PowerArgsVideoPlayer
             }
 
             var app = new ConsoleApp();
-            app.QueueAction(() =>
+            app.InvokeNextCycle(() =>
             {
                 var player = app.LayoutRoot.Add(new ConsoleBitmapPlayer()).Fill();
                 player.Load(File.OpenRead(InputFile));

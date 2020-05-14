@@ -16,7 +16,7 @@ namespace ArgsTests.CLI
             var app = new ConsoleApp(1, 1);
             var appPromise = app.Start();
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 ConsoleApp.AssertAppThread(app);
                 foreach (TaskCreationOptions option in Enum.GetValues(typeof(TaskCreationOptions)))
@@ -38,7 +38,7 @@ namespace ArgsTests.CLI
             var app = new ConsoleApp(1, 1);
             var appPromise = app.Start();
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 ConsoleApp.AssertAppThread(app);
                 foreach (TaskCreationOptions option in Enum.GetValues(typeof(TaskCreationOptions)))

@@ -22,7 +22,7 @@ namespace PowerArgs.Games
             {
                 var location = Holder.Center().MoveTowards(Holder.CalculateAngleToTarget(), i);
                 var newBounds = Cli.Physics.RectangularF.Create(location.Left - .5f, location.Top - .5f, 1, 1);
-                if (SpaceTime.CurrentSpaceTime.IsInBounds(newBounds))
+                if (SpaceTime.CurrentSpaceTime.Bounds.Contains(newBounds))
                 {
                     var blade = new Blade(this);
                     var holderLocation = Holder.TopLeft();
@@ -46,9 +46,18 @@ namespace PowerArgs.Games
         {
             dx = Holder.Left - this.Left;
             dy = Holder.Top - this.Top;
+
+            this.Added.SubscribeOnce(async () =>
+            {
+                while (this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.YieldAsync();
+                }
+            });
         }
 
-        public override void Evaluate()
+        private void Evaluate()
         {
             if(this.CalculateAge().TotalSeconds >= .3)
             {

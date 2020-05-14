@@ -16,6 +16,11 @@ namespace PowerArgs
         void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager);
         object GetPrevious(string propertyName);
 
+        T Get<T>(string name);
+        void Set<T>(T value, string name);
+
+        Lifetime GetPropertyValueLifetime(string propertyName);
+
     }
 
     /// <summary>

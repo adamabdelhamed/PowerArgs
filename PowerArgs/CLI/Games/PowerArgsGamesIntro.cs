@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace PowerArgs.Games
 {
-    public class PowerArgsGamesIntro : SpacetimePanel
+    public class PowerArgsGamesIntro : SpaceTimePanel
     {
         private Deferred introDeferred;
         private static readonly Level level = new GeneratedLevels.PowerArgsGameIntroSeed();
@@ -59,39 +59,46 @@ namespace PowerArgs.Games
 
         private void ListenForCharacterNearRightEdge()
         {
-            ITimeFunction watcher = null;
-            watcher = TimeFunction.Create(() =>
+            SpaceTime.Invoke(async () =>
             {
-                if (character.Left > Width - 2)
+                while (SpaceTime.IsRunning)
                 {
-                    // turn the character around so he now moves to the left
-                    character.Velocity.Speed = 8;
-                    character.Velocity.Angle = 180;
-                    // drop a timed mine
-                    var dropper = new TimedMineDropper() { Delay = TimeSpan.FromSeconds(4), AmmoAmount = 1, Holder = character };
-                    dropper.Exploded.SubscribeOnce(() => Sound.Play("PowerArgsIntro"));
-                    dropper.FireInternal(false);
+                    if (character.Left > Width - 2)
+                    {
+                        // turn the character around so he now moves to the left
+                        character.Velocity.Speed = 8;
+                        character.Velocity.Angle = 180;
+                        // drop a timed mine
+                        var dropper = new TimedMineDropper() { Delay = TimeSpan.FromSeconds(4), AmmoAmount = 1, Holder = character };
+                        dropper.Exploded.SubscribeOnce(() => Sound.Play("PowerArgsIntro"));
+                        dropper.FireInternal(false);
 
-                    // eventually he will hit the left wall, remove him when that happens
-                    character.Velocity.ImpactOccurred.SubscribeForLifetime((i) => character.Lifetime.Dispose(), character.Lifetime);
+                        // eventually he will hit the left wall, remove him when that happens
+                        character.Velocity.ImpactOccurred.SubscribeForLifetime((i) => character.Lifetime.Dispose(), character.Lifetime);
 
-                    // this watcher has done its job, stop watching the secne 
-                    watcher.Lifetime.Dispose();
+                        // this watcher has done its job, stop watching the secne 
+                        break;
+                    }
+                    await SpaceTime.YieldAsync();
                 }
             });
-            SpaceTime.Add(watcher);
+        
         }
 
         private void ListenForEndOfIntro()
         {
-            SpaceTime.Add(TimeFunction.Create(() =>
+            SpaceTime.Invoke(async () =>
             {
-                var remainingCount = SpaceTime.Elements.Where(e => e is FlammableLetter || e is Fire).Count();
-                if (remainingCount == 0)
+                while (SpaceTime.IsRunning)
                 {
-                    Cleanup();
+                    var remainingCount = SpaceTime.Elements.Where(e => e is FlammableLetter || e is Fire).Count();
+                    if (remainingCount == 0)
+                    {
+                        Cleanup();
+                        await SpaceTime.YieldAsync();
+                    }
                 }
-            }));
+            });
         }
 
         public void Cleanup()
@@ -138,7 +145,19 @@ namespace PowerArgs.Games
     {
         public ConsoleCharacter Symbol { get; set; }
 
-        public override void Evaluate()
+        public FlammableLetter()
+        {
+            this.Added.SubscribeOnce(async () =>
+            {
+                while (this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.YieldAsync();
+                }
+            });
+        }
+
+        private void Evaluate()
         {
             Fire.BurnIfTouchingSomethingHot(this, TimeSpan.FromSeconds(4), this.Symbol.Value, true);
         }

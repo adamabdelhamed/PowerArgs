@@ -10,9 +10,9 @@ namespace PowerArgs.Games
         {
             this.server = server;
             tail = Add(new LogTailControl()).Fill();
-            server.Error.SubscribeForLifetime((msg)   => Application?.QueueAction(() => OnError(msg)), this);
-            server.Warning.SubscribeForLifetime((msg) => Application?.QueueAction(() => OnWarning(msg)), this);
-            server.Info.SubscribeForLifetime((msg)    => Application?.QueueAction(() => OnInfo(msg)), this);
+            server.Error.SubscribeForLifetime((msg)   => Application?.InvokeNextCycle(() => OnError(msg)), this);
+            server.Warning.SubscribeForLifetime((msg) => Application?.InvokeNextCycle(() => OnWarning(msg)), this);
+            server.Info.SubscribeForLifetime((msg)    => Application?.InvokeNextCycle(() => OnInfo(msg)), this);
         }
 
         private void OnError(string msg) => tail.Append(msg.ToRed());

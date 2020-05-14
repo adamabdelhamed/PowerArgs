@@ -13,14 +13,18 @@ namespace PowerArgs.Games
         ThreatNearby
     }
 
-    public class ProximityMineWatcher : AsyncTimeFunction
+    public class ProximityMineWatcher : TimeFunction
     {
         public ProximityMineWatcher()
         {
-            Start();
+            this.Added.SubscribeOnce(async () =>
+            {
+                await ExecuteAsync();
+                Lifetime.Dispose();
+            });
         }
 
-        protected override async Task ExecuteAsync()
+        private async Task ExecuteAsync()
         {
             while(Lifetime.IsExpired == false)
             {
@@ -79,8 +83,6 @@ namespace PowerArgs.Games
 
         public ProximityMine(Weapon w) : base(w)
         {
-            this.Governor.Rate = TimeSpan.FromSeconds(-1);
-
             if(Time.CurrentTime.Functions.WhereAs<ProximityMineWatcher>().None())
             {
                 Time.CurrentTime.Add(new ProximityMineWatcher());

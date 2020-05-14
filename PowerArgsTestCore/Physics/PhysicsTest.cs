@@ -10,17 +10,17 @@ namespace ArgsTests.CLI.Physics
     public static class PhysicsTest
     {
         public static readonly TimeSpan DefaultTimeIncrement = TimeSpan.FromSeconds(.05);
-        public static async Task Test(int w, int h, TestContext testContext, Func<CliTestHarness, SpacetimePanel,Task> test)
+        public static async Task Test(int w, int h, TestContext testContext, Func<CliTestHarness, SpaceTimePanel,Task> test)
         {
             Exception stEx = null;
             var app = new CliTestHarness(testContext, w, h, true);
             app.SecondsBetweenKeyframes = DefaultTimeIncrement.TotalSeconds;
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 try
                 {
                     Deferred d = Deferred.Create();
-                    var spaceTimePanel = app.LayoutRoot.Add(new SpacetimePanel(app.LayoutRoot.Width, app.LayoutRoot.Height));
+                    var spaceTimePanel = app.LayoutRoot.Add(new SpaceTimePanel(app.LayoutRoot.Width, app.LayoutRoot.Height));
                     spaceTimePanel.SpaceTime.Increment = DefaultTimeIncrement;
                     spaceTimePanel.SpaceTime.Start();
                     spaceTimePanel.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>

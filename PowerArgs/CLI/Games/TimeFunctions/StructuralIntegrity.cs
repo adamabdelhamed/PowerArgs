@@ -18,9 +18,18 @@ namespace PowerArgs.Games
                 var yDelta = matter[i].Top - matter[0].Top;
                 structure.Add(matter[i], LocationF.Create(xDelta, yDelta));
             }
+
+            this.Added.SubscribeOnce(async () =>
+            {
+                while (this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.YieldAsync();
+                }
+            });
         }
 
-        public override void Evaluate()
+        private void Evaluate()
         {
             for (var i = 1; i < matter.Count; i++)
             {

@@ -390,7 +390,7 @@ namespace PowerArgs.Cli
             presenter.Options.LoadingMessage = options.LoadingMessage;
             var myPromise = options.DataSource.LoadRangeAsync(topOfPageDataIndex, presenter.MaxRowsThatCanBePresented);
 
-            myPromise.Finally((p) => Application.QueueAction(() =>
+            myPromise.Finally((p) => Application.InvokeNextCycle(() =>
             {
                 if (myPromise == latestLoadingPromise)
                 {

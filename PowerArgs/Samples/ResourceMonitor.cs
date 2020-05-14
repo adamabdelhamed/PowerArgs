@@ -11,7 +11,7 @@ namespace PowerArgs.Samples
 
     public class ResourceMonitor : ConsoleApp
     {
-        public ResourceMonitor() => QueueAction(InitAsync);
+        public ResourceMonitor() => InvokeNextCycle(InitAsync);
 
         private GridLayout layout;
         private ListGrid<IResource> listView;

@@ -44,7 +44,7 @@ namespace ArgsTests.CLI.Controls
         {
             var app = new CliTestHarness(this.TestContext, 9, 1);
 
-            app.QueueAction(() =>
+            app.InvokeNextCycle(() =>
             {
                 app.LayoutRoot.Add(new TextBox() { Value = "SomeText".ToWhite() }).Fill();
                 app.Stop();
@@ -61,7 +61,7 @@ namespace ArgsTests.CLI.Controls
         {
             var app = new CliTestHarness(this.TestContext, 9, 1);
             app.LayoutRoot.Add(new TextBox() { Value = "SomeText".ToWhite() }).Fill();
-            app.SetTimeout(app.Stop, TimeSpan.FromSeconds(1.2));
+            app.SetTimeout(()=> app.Stop(), TimeSpan.FromSeconds(1.2));
             app.Start().Wait();
             app.AssertThisTestMatchesLKG();
         }

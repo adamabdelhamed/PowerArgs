@@ -121,7 +121,7 @@ namespace PowerArgs.Cli
                 }
             }, TextBox);
 
-            TextBox.AddedToVisualTree.SubscribeOnce(()=> TextBox.Application.QueueAction(()=>TextBox.TryFocus()));
+            TextBox.AddedToVisualTree.SubscribeOnce(()=> TextBox.Application.InvokeNextCycle(()=>TextBox.TryFocus()));
             return content;
         }
     }
@@ -203,7 +203,7 @@ namespace PowerArgs.Cli
                     buttonPanel.Controls.Add(b);
                 }
 
-                buttonPanel.Controls.Last().AddedToVisualTree.SubscribeOnce(() => buttonPanel.Application.QueueAction(()=>{ buttonPanel.Controls.Last().TryFocus(); }));
+                buttonPanel.Controls.Last().AddedToVisualTree.SubscribeOnce(() => buttonPanel.Application.InvokeNextCycle(()=>{ buttonPanel.Controls.Last().TryFocus(); }));
                 return dialogContent;
             }
             else
@@ -223,7 +223,7 @@ namespace PowerArgs.Cli
                     Dialog.Dismiss();
                 };
 
-                optionsGrid.AddedToVisualTree.SubscribeOnce(() => optionsGrid.Application.QueueAction(() => { optionsGrid.TryFocus(); }));
+                optionsGrid.AddedToVisualTree.SubscribeOnce(() => optionsGrid.Application.InvokeNextCycle(() => { optionsGrid.TryFocus(); }));
 
                 return optionsGrid;
             }

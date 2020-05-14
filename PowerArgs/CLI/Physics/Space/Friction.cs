@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PowerArgs.Cli.Physics
+﻿namespace PowerArgs.Cli.Physics
 {
     public class Friction : SpacialElementFunction
     {
@@ -11,11 +9,19 @@ namespace PowerArgs.Cli.Physics
         public Friction(Velocity tracker, float evalFrequency = DefaultFrictionEvalFrequency) : base(tracker.Element)
         {
             this.tracker = tracker;
-            this.Governor.Rate = TimeSpan.FromMilliseconds(evalFrequency);
             tracker.Lifetime.OnDisposed(this.Lifetime.Dispose);
+
+            this.Added.SubscribeOnce(async () =>
+            {
+                while (this.Lifetime.IsExpired == false)
+                {
+                    Evaluate();
+                    await Time.CurrentTime.DelayAsync(evalFrequency);
+                }
+            });
         }
 
-        public override void Evaluate()
+        private void Evaluate()
         {
             tracker.Speed *= Decay;
             if (tracker.Speed < .1f) tracker.Speed = 0;

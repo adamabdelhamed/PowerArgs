@@ -107,7 +107,6 @@ namespace PowerArgs.Cli.Physics
             Speed = 0;
         }
 
-        public override void Evaluate() { }
 
         private async Task ExecuteAsync()
         {
@@ -119,7 +118,7 @@ namespace PowerArgs.Cli.Physics
                     continue;
                 }
 
-                float dt = (float)Governor.Rate.TotalSeconds;
+                float dt = (float)Time.CurrentTime.Increment.TotalSeconds;
                 if (dt == 0) dt = (float)Time.CurrentTime.Increment.TotalSeconds;
                 float d = Speed * dt;
 

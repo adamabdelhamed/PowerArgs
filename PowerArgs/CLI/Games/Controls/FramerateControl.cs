@@ -8,8 +8,8 @@ namespace PowerArgs.Games
     public class FramerateControl : StackPanel
     {
         private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel, sleepTimeLabel,zeroSpinsLabel, nonZeroSpinsLabel, elementsControl, functionsControl;
-        private SpacetimePanel scene;
-        public FramerateControl(SpacetimePanel scene)
+        private SpaceTimePanel scene;
+        public FramerateControl(SpaceTimePanel scene)
         {
             this.scene = scene;
             this.AutoSize = true;
@@ -48,7 +48,7 @@ namespace PowerArgs.Games
                     var functionCount = Time.CurrentTime.Functions.Count();
                     var elementCount = SpaceTime.CurrentSpaceTime.Elements.Count();
 
-                    Application?.QueueAction(() =>
+                    Application?.InvokeNextCycle(() =>
                     {
                         elementsControl.Text = $"SpacialElements: {elementCount}".ToConsoleString();
                         functionsControl.Text = $"Time Functions: {functionCount}".ToConsoleString();

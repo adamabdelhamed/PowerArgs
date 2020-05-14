@@ -184,7 +184,7 @@ namespace PowerArgs.Cli
             {
                 if (Application != null && FilterTextBox != null)
                 {
-                    Application.QueueAction(() =>
+                    Application.InvokeNextCycle(() =>
                     {
                         FilterText = FilterTextBox.Value.ToString();
                     });

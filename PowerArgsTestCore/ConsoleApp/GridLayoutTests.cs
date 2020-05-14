@@ -52,7 +52,7 @@ namespace ArgsTests.CLI.Controls
                 }
             }
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 await app.Paint().AsAwaitable();
                 app.RecordKeyFrame();

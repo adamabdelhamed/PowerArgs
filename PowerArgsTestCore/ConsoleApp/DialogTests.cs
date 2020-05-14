@@ -16,7 +16,7 @@ namespace ArgsTests.CLI.Controls
         {
             var app = new CliTestHarness(this.TestContext, 80,20, true);
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 Promise dialogPromise;
 
@@ -42,7 +42,7 @@ namespace ArgsTests.CLI.Controls
         {
             var app = new CliTestHarness(this.TestContext, 80, 20, true);
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 Promise dialogPromise;
 
@@ -84,7 +84,7 @@ namespace ArgsTests.CLI.Controls
         {
             var app = new CliTestHarness(this.TestContext, 80, 20, true);
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 Promise<ConsoleString> dialogPromise;
                 dialogPromise = Dialog.ShowRichTextInput(new RichTextDialogOptions()
@@ -119,7 +119,7 @@ namespace ArgsTests.CLI.Controls
         {
             var app = new CliTestHarness(this.TestContext, 80, 20, true);
 
-            app.QueueAction(async () =>
+            app.InvokeNextCycle(async () =>
             {
                 Promise<ConsoleColor?> dialogPromise;
                 dialogPromise = Dialog.ShowEnumOptions<ConsoleColor>("Enum option picker".ToGreen());

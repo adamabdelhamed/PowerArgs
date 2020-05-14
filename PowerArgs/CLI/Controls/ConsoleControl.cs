@@ -252,7 +252,7 @@ namespace PowerArgs.Cli
                 }
                 else
                 {
-                    Application.QueueAction(Ready.Fire);
+                    Application.InvokeNextCycle(Ready.Fire);
                 }
             });
 

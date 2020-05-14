@@ -13,16 +13,16 @@ namespace ArgsTests.CLI.Physics
         {
             ConsoleApp app = new ConsoleApp(w, h);
             app.Recorder = TestRecorder.CreateTestRecorder(testName, context);
-            app.QueueAction(() => { testCode(app); });
+            app.InvokeNextCycle(() => { testCode(app); });
             app.Start().Wait();
         }
 
-        public static void Run(TestContext context, Action<ConsoleApp, SpacetimePanel> testCode, [CallerMemberName]string testName = null, int w = 80, int h = 30)
+        public static void Run(TestContext context, Action<ConsoleApp, SpaceTimePanel> testCode, [CallerMemberName]string testName = null, int w = 80, int h = 30)
         {
             Promise spaceTimePromise = null;
             Run(context, (app) =>
             {
-                var panel = app.LayoutRoot.Add(new SpacetimePanel(w, h));
+                var panel = app.LayoutRoot.Add(new SpaceTimePanel(w, h));
                 panel.SpaceTime.InvokeNextCycle(() =>
                 {
                     testCode(app, panel);

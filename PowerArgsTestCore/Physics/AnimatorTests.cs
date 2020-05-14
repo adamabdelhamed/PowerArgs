@@ -81,9 +81,9 @@ namespace ArgsTests.CLI
         {
             var app = new CliTestHarness(TestContext, 0, 0, 40, 1, true);
             var delayProvider = new KeyframeDelayProvider(app);
-            app.QueueAction(() =>
+            app.InvokeNextCycle(() =>
             {
-                var panel = app.LayoutRoot.Add(new SpacetimePanel(40, 1));
+                var panel = app.LayoutRoot.Add(new SpaceTimePanel(40, 1));
                 panel.SpaceTime.Start(nameof(TestAnimatorInTimeAsync));
                 app.SecondsBetweenKeyframes = panel.SpaceTime.Increment.TotalSeconds;
                 panel.SpaceTime.Invoke(async ()=>

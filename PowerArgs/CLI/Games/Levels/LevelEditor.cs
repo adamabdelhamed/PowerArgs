@@ -136,11 +136,11 @@ namespace PowerArgs.Games
             tags.Clear();
             if (currentLevelPath == null)
             {
-                AddedToVisualTree.SubscribeOnce(() => Application.QueueAction(newCommand.Pressed.Fire));
+                AddedToVisualTree.SubscribeOnce(() => Application.InvokeNextCycle(newCommand.Pressed.Fire));
             }
             else
             {
-                AddedToVisualTree.SubscribeOnce(() => Application.QueueAction(()=> Load(currentLevelPath)));
+                AddedToVisualTree.SubscribeOnce(() => Application.InvokeNextCycle(()=> Load(currentLevelPath)));
             }
         }
 
