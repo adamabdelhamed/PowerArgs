@@ -77,6 +77,7 @@ namespace PowerArgs.Cli.Physics
 
         public async Task DelayAsync(TimeSpan timeout)
         {
+            if (timeout == TimeSpan.Zero) throw new ArgumentException("Delay for a time span of zero is not supported because there's a good chance you're putting it in a loop on the time thread, which will block the thread. You may want to call DelayOrYield (extension method).");
             var startTime = Now;
             await DelayAsync(() => Now - startTime >= timeout);
         }

@@ -173,4 +173,10 @@ namespace PowerArgs
 
         public Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1) => Task.CompletedTask;
     }
+
+    public static class IDelayProviderEx
+    {
+        public static Task DelayOrYield(this IDelayProvider provider, float ms) => DelayOrYield(provider, TimeSpan.FromMilliseconds(ms));
+        public static Task DelayOrYield(this IDelayProvider provider, TimeSpan delay) => delay == TimeSpan.Zero ? provider.YieldAsync() : provider.DelayAsync(delay);
+    }
 }

@@ -35,7 +35,7 @@ namespace PowerArgs.Games
                 while(this.Lifetime.IsExpired == false)
                 {
                     Evaluate();
-                    await Time.CurrentTime.DelayAsync(Delay);
+                    await Time.CurrentTime.DelayOrYield(Delay);
                 }
             });
         }
