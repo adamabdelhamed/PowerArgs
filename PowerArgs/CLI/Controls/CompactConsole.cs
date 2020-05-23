@@ -148,7 +148,16 @@ namespace PowerArgs.Cli
 
                     if (action.Cancelled == false)
                     {
-                        await Run(action);
+                        var oldDef = Args.GetAmbientDefinition();
+                        try
+                        {
+                            Args.SetAmbientDefinition(def);
+                            await Run(action);
+                        }
+                        finally
+                        {
+                            Args.SetAmbientDefinition(oldDef);
+                        }
                     }
                 }
                 catch (Exception ex)

@@ -28,6 +28,15 @@ namespace PowerArgs
         private static CommandLineArgumentsDefinition _ambientDefinition;
 
         /// <summary>
+        /// Sets the ambient arg definition for the current thread
+        /// </summary>
+        /// <param name="def">the ambient definition</param>
+        public static void SetAmbientDefinition(CommandLineArgumentsDefinition def)
+        {
+            _ambientDefinition = def;
+        }
+
+        /// <summary>
         /// Gets the last definition parsed on the current thread or null if none was parsed.
         /// </summary>
         /// <returns>last definition parsed on the current thread or null if none was parsed</returns>
@@ -119,6 +128,44 @@ namespace PowerArgs
             }
 
             return ret.ToArray();
+        }
+
+        /// <summary>
+        /// Converts a string[] to a space separated string suitable for the command line.
+        /// It will enclose strings that have whitespace characters with quotes.
+        /// </summary>
+        /// <param name="commandLine">the command line arguments</param>
+        /// <returns>the command line arguments as a single string</returns>
+        public static string Convert(string[] commandLine)
+        {
+            var ret = "";
+
+            for(var i = 0; i < commandLine.Length; i++)
+            {
+                var element = commandLine[i];
+
+                if(string.IsNullOrWhiteSpace(element))
+                {
+                    continue;
+                }
+
+                if(element.Where(character => char.IsWhiteSpace(character)).Any())
+                {
+                    ret += "\"" + element + "\"";
+                }
+                else
+                {
+                    ret += element;
+                }
+
+
+                if (i < commandLine.Length - 1)
+                {
+                    ret += " ";
+                }
+            }
+
+            return ret;
         }
 
         /// <summary>

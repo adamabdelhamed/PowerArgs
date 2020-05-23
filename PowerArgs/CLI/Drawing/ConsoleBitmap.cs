@@ -369,9 +369,11 @@ namespace PowerArgs.Cli
             }
         }
 
-        public static int DefineLineBuffered(int x1, int y1, int x2, int y2)
+        public static int DefineLineBuffered(int x1, int y1, int x2, int y2, Point[] buffer = null)
         {
-            LineBuffer = LineBuffer ??  new Point[10000];
+            LineBuffer = LineBuffer ?? new Point[10000];
+            buffer = buffer ?? LineBuffer;
+   
             var ret = 0;
             if (x1 == x2)
             {
@@ -379,7 +381,7 @@ namespace PowerArgs.Cli
                 int yMax = y1 >= y2 ? y1 : y2;
                 for (int y = yMin; y < yMax; y++)
                 {
-                    LineBuffer[ret++] = new Point(x1, y);
+                    buffer[ret++] = new Point(x1, y);
                 }
             }
             else if (y1 == y2)
@@ -388,7 +390,7 @@ namespace PowerArgs.Cli
                 int xMax = x1 >= x2 ? x1 : x2;
                 for (int x = xMin; x < xMax; x++)
                 {
-                    LineBuffer[ret++] = new Point(x, y1);
+                    buffer[ret++] = new Point(x, y1);
                 }
             }
             else
@@ -409,7 +411,7 @@ namespace PowerArgs.Cli
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
-                            LineBuffer[ret++] = p;
+                            buffer[ret++] = p;
                             last = p;
                         }
                     }
@@ -422,7 +424,7 @@ namespace PowerArgs.Cli
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
-                            LineBuffer[ret++] = p;
+                            buffer[ret++] = p;
                             last = p;
                         }
                     }
@@ -437,7 +439,7 @@ namespace PowerArgs.Cli
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
-                            LineBuffer[ret++] = p;
+                            buffer[ret++] = p;
                             last = p;
                         }
                     }
@@ -450,7 +452,7 @@ namespace PowerArgs.Cli
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
-                            LineBuffer[ret++] = p;
+                            buffer[ret++] = p;
                             last = p;
                         }
                     }

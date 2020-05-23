@@ -1,21 +1,19 @@
-﻿using PowerArgs;
+﻿using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
-using PowerArgs.Cli;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
     public class Explosive : WeaponElement
     {
-        public const float ExplosiveProjectileSpeed = 60;
+        public float ExplosiveProjectileSpeed { get; set; } =  60;
 
         public Event<Projectile> OnProjectileAdded { get; private set; } = new Event<Projectile>();
         public static Event<Explosive> OnExplode { get; private set; } = new Event<Explosive>();
 
-        public float AngleIncrement { get; set; } = 5;
+        public float AngleIncrement { get; set; } = 30;
         public float Range { get; set; } = 10;
 
         public Event Exploded { get; private set; } = new Event();
