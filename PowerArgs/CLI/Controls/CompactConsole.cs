@@ -7,6 +7,7 @@ namespace PowerArgs.Cli
 {
     public abstract class CompactConsole : ConsolePanel
     {
+        public bool IsAssistanceEnabled { get; set; } = true;
         public TextBox InputBox { get; private set; }
         private CommandLineArgumentsDefinition def;
         private Label outputLabel;
@@ -222,6 +223,11 @@ namespace PowerArgs.Cli
 
         private ConsoleString UpdateAssistiveText()
         {
+            if(IsAssistanceEnabled == false)
+            {
+                return ConsoleString.Empty;
+            }
+
             List<CommandLineAction> candidates = def.Actions.Where(a => a.Metadata.WhereAs<OmitFromUsageDocs>().None()).ToList();
             if (InputBox.Value.Length > 0)
             {
