@@ -84,7 +84,7 @@ namespace ArgsTests.CLI
             app.InvokeNextCycle(() =>
             {
                 var panel = app.LayoutRoot.Add(new SpaceTimePanel(40, 1));
-                panel.SpaceTime.Start(nameof(TestAnimatorInTimeAsync));
+                panel.SpaceTime.Start();
                 app.SecondsBetweenKeyframes = panel.SpaceTime.Increment.TotalSeconds;
                 panel.SpaceTime.Invoke(async ()=>
                 {

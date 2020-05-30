@@ -55,8 +55,9 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         /// <param name="increment">The amount of time to increment on each iteration, defaults to one 100 nanosecond tick</param>
         /// <param name="now">The starting time, defaults to zero</param>
-        public Time(TimeSpan? increment = null, TimeSpan? now = null)
+        public Time(TimeSpan? increment = null, TimeSpan? now = null) : base()
         {
+            this.Name = "TimeThread";
             Increment = increment.HasValue ? increment.Value : TimeSpan.FromTicks(1);
             Now = now.HasValue ? now.Value : TimeSpan.Zero;
             InvokeNextCycle(() => current = this);

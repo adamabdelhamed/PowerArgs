@@ -75,7 +75,7 @@ namespace PowerArgs
         public Thread Thread { get; private set; }
         public bool IsRunning => runDeferred != null;
         public long Cycle { get; private set; }
-
+        protected string Name { get; set; }
         private List<SynchronizedEvent> workQueue = new List<SynchronizedEvent>();
         private List<SynchronizedEvent> pendingWorkItems = new List<SynchronizedEvent>();
         private Deferred runDeferred;
@@ -87,11 +87,11 @@ namespace PowerArgs
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public virtual Promise Start(string name = "EventLoop")
+        public virtual Promise Start()
         {
             runDeferred = Deferred.Create();
             runDeferred.Promise.Finally((p) => { runDeferred = null; });
-            Thread = new Thread(RunCommon) { Name = name };
+            Thread = new Thread(RunCommon) { Name = Name };
             Thread.Priority = ThreadPriority.AboveNormal;
             Thread.IsBackground = true;
             Thread.Start();

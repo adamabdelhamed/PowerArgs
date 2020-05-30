@@ -29,7 +29,7 @@ namespace ArgsTests.CLI.Physics
                 t.Stop();
             });
 
-            t.Start(nameof(TestYieldDoesOneIncrementAtATime)).Wait();
+            t.Start().Wait();
             Assert.AreEqual(20, assertions);
         }
 
@@ -55,7 +55,7 @@ namespace ArgsTests.CLI.Physics
                 t.Stop();
             });
 
-            t.Start(nameof(TestTimePerf)).Wait();
+            t.Start().Wait();
         }
     }
 

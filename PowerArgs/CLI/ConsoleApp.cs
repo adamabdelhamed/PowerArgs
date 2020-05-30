@@ -175,6 +175,7 @@ namespace PowerArgs.Cli
         /// <param name="h">The height of the app</param>
         public ConsoleApp(int x, int y, int w, int h) 
         {
+            this.Name = GetType().Name;
             this.console = ConsoleProvider.Current;
             this.lastConsoleWidth = this.console.BufferWidth;
             this.lastConsoleHeight = this.console.WindowHeight;
@@ -257,7 +258,7 @@ namespace PowerArgs.Cli
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>
-        public override Promise Start(string name = "ConsoleApp")
+        public override Promise Start()
         {
             if (SetFocusOnStart)
             {
