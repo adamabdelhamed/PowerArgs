@@ -64,7 +64,7 @@ namespace PowerArgs.Cli.Physics
         {
             return LocationF.Create(r.Left + dx, r.Top + dy);
         }
-
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoOptimization)]
         public static ILocationF MoveTowards(this ILocationF a, float angle, float distance)
         {
             while(angle < 0)
