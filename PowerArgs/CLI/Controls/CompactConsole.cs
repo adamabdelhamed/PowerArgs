@@ -112,7 +112,7 @@ namespace PowerArgs.Cli
             });
 
             var outputPanel = gridLayout.Add(new ConsolePanel() { Background = ConsoleColor.Black }, 1, 6);
-            outputLabel = outputPanel.Add(new Label() { Text = outputValue ?? UpdateAssistiveText(), Mode = LabelRenderMode.MultiLineSmartWrap }).Fill();
+            outputLabel = outputPanel.Add(new Label() { Text = string.IsNullOrWhiteSpace(outputValue?.StringValue) == false ? outputValue : outputLabel?.Text ?? UpdateAssistiveText(), Mode = LabelRenderMode.MultiLineSmartWrap }).Fill();
 
             InputBox.KeyInputReceived.SubscribeForLifetime(async (keyInfo)=>await OnHandleHey(keyInfo), InputBox);
         }
