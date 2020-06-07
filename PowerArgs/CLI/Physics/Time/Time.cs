@@ -71,6 +71,7 @@ namespace PowerArgs.Cli.Physics
             var min = ms - maxDelta;
             var max = ms + maxDelta;
             var delay = rand.Next((int)min, (int)max);
+            delay = Math.Max(Time.CurrentTime.Increment.TotalMilliseconds, delay);
             await DelayAsync(delay);
         }
 
