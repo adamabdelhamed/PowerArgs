@@ -47,9 +47,9 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static IRectangularF MoveTowards(this IRectangularF r, float angle, float distance)
+        public static IRectangularF MoveTowards(this IRectangularF r, float angle, float distance, bool normalized = true)
         {
-            var newLoc = MoveTowards(r.TopLeft(), angle, distance);
+            var newLoc = MoveTowards(r.TopLeft(), angle, distance, normalized);
             var ret = RectangularF.Create(newLoc.Left, newLoc.Top, r.Width, r.Height);
             return ret;
         }
@@ -65,7 +65,7 @@ namespace PowerArgs.Cli.Physics
             return LocationF.Create(r.Left + dx, r.Top + dy);
         }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoOptimization)]
-        public static ILocationF MoveTowards(this ILocationF a, float angle, float distance)
+        public static ILocationF MoveTowards(this ILocationF a, float angle, float distance, bool normalized = true)
         {
             while(angle < 0)
             {
@@ -77,7 +77,10 @@ namespace PowerArgs.Cli.Physics
                 angle -= 360;
             }
 
-            distance = Geometry.NormalizeQuantity(distance, angle);
+            if (normalized)
+            {
+                distance = Geometry.NormalizeQuantity(distance, angle);
+            }
             var forward = angle > 270 || angle < 90;
             var up = angle > 180;
 

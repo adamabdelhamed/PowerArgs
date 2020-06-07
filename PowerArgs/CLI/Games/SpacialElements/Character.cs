@@ -30,7 +30,7 @@ namespace PowerArgs.Games
         public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
 
         public T Get<T>([CallerMemberName]string name = null) => observable.Get<T>(name);
-        public void Set<T>(T value, [CallerMemberName]string name = null) => observable.Set<T>(value);
+        public void Set<T>(T value, [CallerMemberName]string name = null) => observable.Set<T>(value, name);
         public Lifetime GetPropertyValueLifetime(string propertyName) => observable.GetPropertyValueLifetime(propertyName);
 
         public SpacialElement Target { get; set; }
@@ -192,7 +192,7 @@ namespace PowerArgs.Games
             OnMove.Fire(270);
         }
 
-        private void RoundOff()
+        public void RoundOff()
         {
             var newLeft = (float)Geometry.Round(this.Left);
             var newTop = (float)Geometry.Round(this.Top);
