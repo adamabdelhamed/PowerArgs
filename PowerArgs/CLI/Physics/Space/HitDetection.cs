@@ -83,6 +83,7 @@ namespace PowerArgs.Cli.Physics
         public static HitPrediction PredictHit(HitDetectionOptions options)
         {
             HitPrediction prediction = new HitPrediction();
+            prediction.LKG = options.MovingObject.CopyBounds().TopLeft();
             prediction.MovingObjectPosition = options.MovingObject.CopyBounds();
             prediction.Visibility = options.Visibility;
             if (options.Visibility == 0)
@@ -96,7 +97,6 @@ namespace PowerArgs.Cli.Physics
             var effectiveObstacles =  options.Obstacles.Where(o => o.CalculateDistanceTo(options.MovingObject) <= options.Visibility+options.Precision).ToList();
 
             var endPoint = options.MovingObject.MoveTowards(options.Angle, options.Visibility);
-            ILocationF lkg = null;
             for(var dPrime = options.Precision; dPrime < options.Visibility; dPrime+=options.Precision)
             {
                 var testArea = options.MovingObject.MoveTowards(options.Angle, dPrime);
@@ -133,12 +133,11 @@ namespace PowerArgs.Cli.Physics
 
                     prediction.Type = HitType.Obstacle;
                     prediction.ObstacleHit = obstacleHit;
-                    prediction.LKG = lkg;
                     return prediction;
                 }
                 else
                 {
-                    lkg = testArea.TopLeft();
+                    prediction.LKG = testArea.TopLeft();
                 }
             }
 
@@ -148,7 +147,6 @@ namespace PowerArgs.Cli.Physics
             {
                 prediction.Type = HitType.Obstacle;
                 prediction.ObstacleHit = obstacleHitFinal;
-                prediction.LKG = lkg;
                 return prediction;
             }
 
