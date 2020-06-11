@@ -10,6 +10,7 @@ namespace PowerArgs.Games
 
     public class Character : SpacialElement, IObservableObject, IHaveVelocity
     {
+        public Event<IInteractable> OnInteract { get; private set; } = new Event<IInteractable>();
         public Event<float> OnMove { get; private set; } = new Event<float>();
         public bool IsVisible { get => observable.Get<bool>(); set => observable.Set(value); } 
         public MultiPlayerClient MultiPlayerClient { get; set; }
@@ -297,11 +298,19 @@ namespace PowerArgs.Games
             InitializeTargeting(func);
         }
 
-        public void TryInteract() => SpaceTime.CurrentSpaceTime.Elements
-       .Where(e => e is IInteractable)
-       .Select(i => i as IInteractable)
-       .Where(i => i.InteractionPoint.CalculateDistanceTo(this) <= i.MaxInteractDistance)
-       .ForEach(i => i.Interact(this));
+        public void TryInteract()
+        {
+            var interactables = SpaceTime.CurrentSpaceTime.Elements
+                .Where(e => e is IInteractable)
+                .Select(i => i as IInteractable)
+                .Where(i => i.InteractionPoint.CalculateDistanceTo(this) <= i.MaxInteractDistance);
+
+            foreach (var i in interactables)
+            {
+                i.Interact(this);
+                OnInteract.Fire(i);
+            }
+        }
 
     }
 
