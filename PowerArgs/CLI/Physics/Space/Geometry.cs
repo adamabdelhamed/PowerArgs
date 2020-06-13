@@ -148,6 +148,36 @@ namespace PowerArgs.Cli.Physics
             return RectangularF.Create(left, top, w, h);
         }
 
+        public static Direction GetNearestDirectionFromAngle(this float orig)
+        {
+            var effectiveAngle = (orig % 360).RoundAngleToNearest(45);
+
+            if (effectiveAngle == 0 || effectiveAngle == 360) return Direction.Right;
+            else if (effectiveAngle == 45) return Direction.DownRight;
+            else if (effectiveAngle == 90) return Direction.Down;
+            else if (effectiveAngle == 135) return Direction.DownLeft;
+            else if (effectiveAngle == 180) return Direction.Left;
+            else if (effectiveAngle == 225) return Direction.UpLeft;
+            else if (effectiveAngle == 270) return Direction.Up;
+            else if (effectiveAngle == 315) return Direction.UpRight;
+
+            throw new Exception("Unexpected angle: "+ orig);
+        }
+
+        public static float GetAngleFromDirection(this Direction d)
+        {
+            if (d == Direction.Right) return 0;
+            else if (d == Direction.DownRight) return 45;
+            else if (d == Direction.Down) return 90;
+            else if (d == Direction.DownLeft) return 135;
+            else if (d == Direction.Left) return 180;
+            else if (d == Direction.UpLeft) return 225;
+            else if (d == Direction.Up) return 270;
+            else if (d == Direction.UpRight) return 315;
+            
+            throw new Exception("Unexpected direction: " + d);
+        }
+
         public static Direction GetOppositeDirection(this Direction d)
         {
             if (d == Direction.Down) return Direction.Up;

@@ -25,7 +25,7 @@ namespace PowerArgs.Games
             this.ResizeTo(StandardWidth, StandardHeight);
             if (w?.Holder != null)
             {
-                this.MoveTo(w.Holder.CenterX()-StandardWidth/2, w.Holder.CenterY()-StandardHeight/2, w.Holder.ZIndex);
+                this.MoveTo(w.Holder.EffectiveBounds().CenterX()-StandardWidth/2, w.Holder.EffectiveBounds().CenterY()-StandardHeight/2, w.Holder.ZIndex);
             }
 
             Time.CurrentTime.InvokeNextCycle(() =>
