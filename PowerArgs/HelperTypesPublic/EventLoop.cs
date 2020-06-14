@@ -73,6 +73,8 @@ namespace PowerArgs
         public Event EndOfCycle { get; set; } = new Event();
         public Event LoopStarted { get; set; } = new Event();
         public Thread Thread { get; private set; }
+
+        public ThreadPriority Priority { get; set; } = ThreadPriority.AboveNormal;
         public bool IsRunning => runDeferred != null;
         public long Cycle { get; private set; }
         protected string Name { get; set; }
@@ -92,7 +94,7 @@ namespace PowerArgs
             runDeferred = Deferred.Create();
             runDeferred.Promise.Finally((p) => { runDeferred = null; });
             Thread = new Thread(RunCommon) { Name = Name };
-            Thread.Priority = ThreadPriority.AboveNormal;
+            Thread.Priority = Priority;
             Thread.IsBackground = true;
             Thread.Start();
             return runDeferred.Promise;
