@@ -51,6 +51,7 @@ namespace PowerArgs.Cli
 
         protected void Compose(ConsoleControl control)
         {
+            if (control.IsVisible == false) return;
             control.Paint();
 
             foreach(var filter in control.RenderFilters)
