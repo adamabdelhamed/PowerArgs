@@ -54,10 +54,10 @@ namespace PowerArgs
 
             var argIndicator = "-";
 
-            foreach (var action in definition.Actions)
+            foreach (var action in definition.Actions.Where(a => a.Metadata.Where(m => m is OmitFromUsageDocs).None()))
             {
                 List<string> arguments = new List<string>();
-                foreach (var argument in action.Arguments)
+                foreach (var argument in action.Arguments.Where(a => a.Metadata.Where(m => m is OmitFromUsageDocs).None()))
                 {
 
                     if (argument.ArgumentType == typeof(SecureStringArgument))
@@ -77,7 +77,7 @@ namespace PowerArgs
         {
             List<string> ret = new List<string>();
 
-            foreach (var action in definition.Actions)
+            foreach (var action in definition.Actions.Where(a => a.Metadata.Where(m => m is OmitFromUsageDocs).None()))
             {
                 var name = action.Aliases.First();
 
@@ -106,7 +106,7 @@ namespace PowerArgs
 
             var argIndicator = "-";
 
-            foreach (var argument in definition.Arguments)
+            foreach (var argument in definition.Arguments.Where(a => a.Metadata.Where(m => m is OmitFromUsageDocs).None()))
             {
                 if(argument.ArgumentType == typeof(SecureStringArgument))
                 {

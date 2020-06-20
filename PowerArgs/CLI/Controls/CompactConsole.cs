@@ -265,7 +265,7 @@ namespace PowerArgs.Cli
 
                 if (candidates.Count == 1)
                 {
-                    foreach (var arg in candidate.Arguments)
+                    foreach (var arg in candidate.Arguments.Where(a => a.Metadata.Where(m => m is OmitFromUsageDocs).None()))
                     {
                         var argDescription = !arg.HasDefaultValue ? ConsoleString.Empty : Parse($"[DarkYellow]\\[Default: [Yellow]{arg.DefaultValue}[DarkYellow]] ");
                         argDescription += string.IsNullOrEmpty(arg.Description) ? ConsoleString.Empty : Parse(arg.Description);
