@@ -78,7 +78,7 @@ namespace PowerArgs.Games
 
     public class ProximityMine : Explosive
     {
-        public string TargetTag { get; set; }
+        public string TargetTag { get; set; } = "enemy";
         public ProximityMineState State { get; set; } = ProximityMineState.NoNearbyThreats;
 
         public ProximityMine(Weapon w) : base(w)
