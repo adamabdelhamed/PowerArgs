@@ -17,54 +17,53 @@ namespace ArgsTests.CLI.Physics
             app.SecondsBetweenKeyframes = DefaultTimeIncrement.TotalSeconds;
             app.InvokeNextCycle(async () =>
             {
-                try
+                Deferred d = Deferred.Create();
+                var spaceTimePanel = app.LayoutRoot.Add(new SpaceTimePanel(app.LayoutRoot.Width, app.LayoutRoot.Height));
+                spaceTimePanel.SpaceTime.Increment = DefaultTimeIncrement;
+                spaceTimePanel.SpaceTime.Start();
+                spaceTimePanel.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>
                 {
-                    Deferred d = Deferred.Create();
-                    var spaceTimePanel = app.LayoutRoot.Add(new SpaceTimePanel(app.LayoutRoot.Width, app.LayoutRoot.Height));
-                    spaceTimePanel.SpaceTime.Increment = DefaultTimeIncrement;
-                    spaceTimePanel.SpaceTime.Start();
-                    spaceTimePanel.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>
-                    {
-                        spaceTimePanel.SpaceTime.Stop();
-                        d.Resolve();
-                        ex.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
-                        stEx = ex.Exception;
-                    }, app);
-
-
-                    var justUpdated = false;
-                    spaceTimePanel.AfterUpdate.SubscribeForLifetime(() => justUpdated = true , app);
-
-                    app.AfterPaint.SubscribeForLifetime(() =>
-                    {
-                        if(justUpdated)
-                        {
-                            app.RecordKeyFrame();
-                            justUpdated = false;
-                        }
-                    }, app);
-
-                    spaceTimePanel.SpaceTime.InvokeNextCycle(async () =>
-                    {
-                        spaceTimePanel.RealTimeViewing.Enabled = false;
-                        await test(app, spaceTimePanel);
-                        await app.Paint().AsAwaitable();
-                        d.Resolve();
-                    });
-                    await d.Promise.AsAwaitable();
-                    await spaceTimePanel.SpaceTime.YieldAsync();
-                    await app.PaintAndRecordKeyFrameAsync();
                     spaceTimePanel.SpaceTime.Stop();
-                }
-                catch (Exception ex)
+                    d.Resolve();
+                    ex.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
+                    stEx = ex.Exception;
+                }, app);
+
+
+                var justUpdated = false;
+                spaceTimePanel.AfterUpdate.SubscribeForLifetime(() => justUpdated = true, app);
+
+                app.AfterPaint.SubscribeForLifetime(() =>
                 {
-                    Assert.Fail(ex.ToString());
-                }
-                finally
+                    if (justUpdated)
+                    {
+                        app.RecordKeyFrame();
+                        justUpdated = false;
+                    }
+                }, app);
+
+                spaceTimePanel.SpaceTime.InvokeNextCycle(async () =>
                 {
-                    await app.PaintAndRecordKeyFrameAsync();
-                    app.Stop();
-                }
+                    spaceTimePanel.RealTimeViewing.Enabled = false;
+                    try
+                    {
+                        await test(app, spaceTimePanel);
+                    }
+                    catch (Exception ex)
+                    {
+                        stEx = ex;
+                    }
+
+                    await app.Paint().AsAwaitable();
+                    d.Resolve();
+                });
+                await d.Promise.AsAwaitable();
+                await spaceTimePanel.SpaceTime.YieldAsync();
+                await app.PaintAndRecordKeyFrameAsync();
+                spaceTimePanel.SpaceTime.Stop();
+
+                await app.PaintAndRecordKeyFrameAsync();
+                app.Stop();
             });
 
             await app.Start().AsAwaitable();
