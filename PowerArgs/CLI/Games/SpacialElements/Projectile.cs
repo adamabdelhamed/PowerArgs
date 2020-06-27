@@ -26,6 +26,9 @@ namespace PowerArgs.Games
             if (w?.Holder != null)
             {
                 this.MoveTo(w.Holder.EffectiveBounds().CenterX()-StandardWidth/2, w.Holder.EffectiveBounds().CenterY()-StandardHeight/2, w.Holder.ZIndex);
+                var offset = this.MoveTowards(angle, 1, false);
+                this.MoveTo(offset.Left, offset.Top);
+
             }
 
             Time.CurrentTime.InvokeNextCycle(() =>

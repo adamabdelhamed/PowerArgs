@@ -32,6 +32,8 @@ namespace PowerArgs.Cli
         public ConsolePanel Parent { get; set; }
         public bool PushPop { get; set; } = true;
         public float SpeedPercentage { get; set; } = 1;
+
+        public int ZIndex { get; set; }
     }
 
     /// <summary>
@@ -59,6 +61,7 @@ namespace PowerArgs.Cli
                 var content = contentFactory(handle);
                 content.IsVisible = false;
                 var dialogContainer = options.Parent.Add(new BorderPanel(content) {  BorderColor = handle.BorderColor, Background = content.Background, Width = 1, Height = 1 }).CenterBoth();
+                dialogContainer.ZIndex = options.ZIndex;
                 await Forward(300 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Width = Math.Max(1, Geometry.Round((4+content.Width) * percentage)));
                 await Forward(200 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Height = Math.Max(1, Geometry.Round((2+content.Height) * percentage)));
                 content.IsVisible = true;
