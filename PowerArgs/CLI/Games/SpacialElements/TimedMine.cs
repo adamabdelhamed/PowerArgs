@@ -18,7 +18,7 @@ namespace PowerArgs.Games
 
         public TimedMine(Weapon w, TimeSpan timeToDetinate) : base(w)
         {
-            this.Tags.Add(Weapon.WeaponTag);
+            this.AddTag(Weapon.WeaponTag);
             this.timeToDetinate = timeToDetinate;
             this.SecondsRemaining = timeToDetinate.TotalSeconds;
 

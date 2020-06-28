@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace PowerArgs.Cli.Physics
@@ -13,7 +15,21 @@ namespace PowerArgs.Cli.Physics
         public double BusyPercentage => busyPercentageAverage.Average;
 
         private RollingAverage sleepTimeAverage = new RollingAverage(30);
-        public double SleepTime => sleepTimeAverage.Average;
+        public ConsoleString SleepSummary
+        {
+            get
+            {
+                var min = Geometry.Round(sleepTimeAverage.Min);
+                var max = Geometry.Round(sleepTimeAverage.Max);
+                var avg = Geometry.Round(sleepTimeAverage.Average);
+
+                var color = min > 20 ? RGB.Green : min > 5 ? RGB.Yellow : RGB.Red;
+                return $"Min:{min}, Max:{max}, Avg:{avg}".ToConsoleString(color);
+            }
+        }
+
+        public int currentSecondBin = -1;
+        public List<DataPoint> SleepHistory { get; private set; } = new List<DataPoint>();
 
         public int ZeroSleepCycles { get; private set; }
         public int SleepCycles { get; private set; }
@@ -90,8 +106,8 @@ namespace PowerArgs.Cli.Physics
                 }
             });
         }
- 
 
+     
         private void Disable()
         {
             impl.Dispose();
@@ -124,9 +140,24 @@ namespace PowerArgs.Cli.Physics
                 SleepCycles++;
             }
 
-            var idleTime = DateTime.UtcNow - realTimeNow;
-            busyPercentageAverage.AddSample(1 - (idleTime.TotalSeconds / t.Increment.TotalSeconds));
-            sleepTimeAverage.AddSample(idleTime.TotalMilliseconds);
+            var idleTime = Math.Min(t.Increment.TotalMilliseconds, (DateTime.UtcNow - realTimeNow).TotalMilliseconds);
+
+            if((int)t.Now.TotalSeconds != currentSecondBin)
+            {
+                SleepHistory.Add(new DataPoint() { X = t.Now.Ticks, Y = idleTime });
+                currentSecondBin = (int)t.Now.TotalSeconds;
+            }
+            else
+            {
+                var current = SleepHistory.Last();
+                if(idleTime < current.Y)
+                {
+                    current.Y = idleTime;
+                }
+            }
+        
+            busyPercentageAverage.AddSample(1 - (idleTime / t.Increment.TotalMilliseconds));
+            sleepTimeAverage.AddSample(idleTime);
             simulationTimeElapsed = t.Now - simulationTimeSample;
 
             // At this point, we're sure that the wall clock is equal to or ahead of the simulation time.

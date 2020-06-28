@@ -7,7 +7,7 @@ namespace PowerArgs.Games
 {
     public class FramerateControl : StackPanel
     {
-        private Label sceneFPSLabel, renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel, sleepTimeLabel,zeroSpinsLabel, nonZeroSpinsLabel, elementsControl, functionsControl;
+        private Label renderFPSLabel, paintFPSLabel, nowControl, sceneBusyPercentageLabel, sleepTimeLabel,zeroSpinsLabel, nonZeroSpinsLabel, elementsControl, functionsControl;
         private SpaceTimePanel scene;
         public FramerateControl(SpaceTimePanel scene)
         {
@@ -16,7 +16,6 @@ namespace PowerArgs.Games
             nowControl = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             elementsControl = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             functionsControl = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
-            sceneFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             renderFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             paintFPSLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
             sleepTimeLabel = Add(new Label() { Text = "".ToConsoleString() }).FillHorizontally();
@@ -35,12 +34,11 @@ namespace PowerArgs.Games
                     return;
                 }
                 nowControl.Text = $"Now: {scene.SpaceTime.Now.TotalSeconds}".ToConsoleString();
-                sceneFPSLabel.Text = $"TODO scene frames per second".ToConsoleString();
                 //sceneFPSLabel.Text = FormatFramerateMessage($"{scene.FPS} scene frames per second", scene.FPS);
                 renderFPSLabel.Text = FormatFramerateMessage($"{Application.CyclesPerSecond} UI cycles per second", Application.CyclesPerSecond, true);
                 paintFPSLabel.Text = FormatFramerateMessage($"{Application.PaintRequestsProcessedPerSecond} paint frames per second", Application.PaintRequestsProcessedPerSecond, false);
                 sceneBusyPercentageLabel.Text = FormatSceneBusyPercentage();
-                sleepTimeLabel.Text = (Geometry.Round(scene.RealTimeViewing.SleepTime)+" ms").ToConsoleString();
+                sleepTimeLabel.Text = (scene.RealTimeViewing.SleepSummary).ToConsoleString();
                 zeroSpinsLabel.Text = (scene.RealTimeViewing.ZeroSleepCycles + " zero spin cycles").ToConsoleString();
                 nonZeroSpinsLabel.Text = (scene.RealTimeViewing.SleepCycles + " non-zero spin cycles").ToConsoleString();
                 scene.SpaceTime.InvokeNextCycle(() =>

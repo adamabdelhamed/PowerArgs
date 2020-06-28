@@ -17,7 +17,7 @@ namespace PowerArgs.Games
 
     public class AutoTargetingFunction : TimeFunction
     {
-        public float AngularVisibility { get; set; } = 90;
+        public float AngularVisibility { get; set; } = 60;
 
         public Event<SpacialElement> TargetChanged { get; private set; } = new Event<SpacialElement>();
         public AutoTargetingOptions Options { get; private set; }
@@ -42,43 +42,50 @@ namespace PowerArgs.Games
 
         private void Evaluate()
         {
-            var obstacles = Options.Source.GetObstacles();
+            var obstacles = Options.Source.GetObstacles().Where(o => o is WeaponElement == false).ToArray();
 
-            var candidates = Options.TargetsEval();
-            var target = candidates
-                .Where(z =>
+            var candidates = Options.TargetsEval().ToArray();
+
+            SpacialElement target = null;
+            float winningCandidateProximity = float.MaxValue;
+            for(var i = 0; i < candidates.Length; i++)
+            {
+                var z = candidates[i];
+                var sb = Options.SourceBounds;
+                var angle = sb.Center().CalculateAngleTo(z.Center());
+                var delta = Options.Source.Angle.DiffAngle(angle);
+                if (delta >= AngularVisibility) continue;
+
+                var prediction = HitDetection.PredictHit(new HitDetectionOptions()
                 {
-                    var sb = Options.SourceBounds;
-                    var angle = sb.Center().CalculateAngleTo(z.Center());
-                    var delta = Options.Source.Angle.DiffAngle(angle);
-                    if (delta >= AngularVisibility) return false;
+                    Angle = angle,
+                    MovingObject = sb,
+                    Obstacles = obstacles,
+                    Visibility = 3 * SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
+                    Precision = 1f,
+                });
 
-                    var prediction = HitDetection.PredictHit(new HitDetectionOptions()
-                    {
-                        Angle = angle,
-                        MovingObject = sb,
-                        Obstacles = obstacles.Where(o => o is WeaponElement == false),
-                        Visibility = 3*SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
-                        Precision = 1f,
-                    });
+                var elementHit = prediction.ObstacleHit as SpacialElement;
 
-                    var elementHit = prediction.ObstacleHit as SpacialElement;
-
-                    if (elementHit == z)
+                if (elementHit == z)
+                {
+                    var d = Geometry.CalculateNormalizedDistanceTo(Options.Source.Element, z);
+                    if(d < winningCandidateProximity)
                     {
-                        return true;
+                        target = elementHit;
+                        winningCandidateProximity = d;
                     }
-                    else if(elementHit != null && z is IHaveMassBounds && (z as IHaveMassBounds).IsPartOfMass(elementHit))
+                }
+                else if (elementHit != null && z is IHaveMassBounds && (z as IHaveMassBounds).IsPartOfMass(elementHit))
+                {
+                    var d = Geometry.CalculateNormalizedDistanceTo(Options.Source.Element, z);
+                    if (d < winningCandidateProximity)
                     {
-                        return true;
+                        target = elementHit;
+                        winningCandidateProximity = d;
                     }
-                    else
-                    {
-                        return false;
-                    }
-                })
-                .OrderBy(z => Geometry.CalculateNormalizedDistanceTo( Options.Source.Element,z))
-                .FirstOrDefault();
+                }
+            }
 
             if (target != lastTarget)
             {

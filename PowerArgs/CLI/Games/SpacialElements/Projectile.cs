@@ -36,7 +36,7 @@ namespace PowerArgs.Games
                 startLocation = this.Bounds;
             });
 
-            this.Tags.Add(Weapon.WeaponTag);
+            this.AddTag(Weapon.WeaponTag);
             Velocity = new Velocity(this);
             Velocity.ImpactOccurred.SubscribeForLifetime(Speed_ImpactOccurred, this.Lifetime);
             this.Velocity.HitDetectionExclusionTypes.Add(typeof(Projectile));

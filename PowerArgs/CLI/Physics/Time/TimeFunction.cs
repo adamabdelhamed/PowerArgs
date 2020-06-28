@@ -54,20 +54,30 @@ namespace PowerArgs.Cli.Physics
         /// will be when this function is removed from a time model.
         /// </summary>
         public Lifetime Lifetime { get; private set; } = new Lifetime();
- 
 
-        public HashSet<string> Tags { get; set; } = new HashSet<string>();
+
+        private HashSet<string> tags;
+
+        public TimeFunction()
+        {
+            tags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public IEnumerable<string> Tags => tags;
+        public void AddTag(string tag) => tags.Add(tag);
+
+        public void RemoveTag(string tag) => tags.Remove(tag);
 
         public void AddTags(IEnumerable<string> tags)
         {
             foreach(var tag in tags)
             {
-                Tags.Add(tag);
+                this.tags.Add(tag);
             }
         }
 
-        public bool HasSimpleTag(string tag) => Tags.Where(t => t.Equals(tag, StringComparison.OrdinalIgnoreCase)).Any();
-        public bool HasValueTag(string tag) => Tags.Where(t => t.StartsWith(tag + ":", StringComparison.OrdinalIgnoreCase)).Any();
+        public bool HasSimpleTag(string tag) => tags.Contains(tag);
+        public bool HasValueTag(string tag) => tags.Where(t => t.StartsWith(tag + ":", StringComparison.OrdinalIgnoreCase)).Any();
 
         public string GetTagValue(string key)
         {
@@ -87,7 +97,7 @@ namespace PowerArgs.Cli.Physics
             key = key.ToLower();
             if (HasValueTag(key))
             {
-                var tag = Tags.Where(t => t.ToLower().StartsWith(key + ":")).FirstOrDefault();
+                var tag = tags.Where(t => t.ToLower().StartsWith(key + ":")).FirstOrDefault();
                 value = ParseTagValue(tag);
                 return true;
             }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace PowerArgs.Cli.Physics
@@ -93,41 +94,52 @@ namespace PowerArgs.Cli.Physics
                 return prediction;
             }
 
-  
-            var effectiveObstacles =  options.Obstacles.Where(o => o.CalculateDistanceTo(options.MovingObject) <= options.Visibility+options.Precision).ToList();
+
+            var maxD = options.Visibility + options.Precision;
+            var effectiveObstacles =  options.Obstacles.Where(o => o.CalculateDistanceTo(options.MovingObject) <= maxD).ToArray();
 
             var endPoint = options.MovingObject.MoveTowards(options.Angle, options.Visibility);
-            for(var dPrime = options.Precision; dPrime < options.Visibility; dPrime+=options.Precision)
+            for(var dPrime = options.Precision; dPrime <= maxD; dPrime+=options.Precision)
             {
                 var testArea = options.MovingObject.MoveTowards(options.Angle, dPrime);
                 prediction.Path.Add(testArea);
-                var obstacleHit = effectiveObstacles.Where(o =>
-                {
-                    var simpleTest = o.Touches(testArea) == true;
-                    if (simpleTest == false) return false;
 
-                    if(o.Touches(options.MovingObject))
+                IRectangularF obstacleHit = null;
+
+                for(var i = 0; i < effectiveObstacles.Length; i++)
+                {
+                    var o = effectiveObstacles[i];
+                    var simpleTest = o.Touches(testArea);
+                    if (simpleTest == false) continue;
+
+                    if (o.Touches(options.MovingObject))
                     {
                         prediction.ElementWasAlreadyObstructed = true;
                         var overlapBefore = options.MovingObject.NumberOfPixelsThatOverlap(o);
                         var overlapAfter = testArea.NumberOfPixelsThatOverlap(o);
 
                         IRectangularF testArea2 = null;
-                        while(overlapBefore == overlapAfter)
+                        while (overlapBefore == overlapAfter)
                         {
                             testArea2 = testArea2 ?? testArea.CopyBounds();
                             testArea2 = testArea2.MoveTowards(options.Angle, options.Precision);
                             overlapAfter = testArea2.NumberOfPixelsThatOverlap(o);
                         }
 
-                        return overlapAfter > overlapBefore;
+                        if(overlapAfter > overlapBefore)
+                        {
+                            obstacleHit = o;
+                            break;
+                        }
                     }
                     else
                     {
-                        return true;
+                        obstacleHit = o;
+                        break;
                     }
-                }).FirstOrDefault();
+                }
 
+ 
                 if(obstacleHit != null)
                 {
 
@@ -139,15 +151,6 @@ namespace PowerArgs.Cli.Physics
                 {
                     prediction.LKG = testArea.TopLeft();
                 }
-            }
-
-            var obstacleHitFinal = effectiveObstacles.Where(o => o.Touches(endPoint) == true).FirstOrDefault();
-
-            if (obstacleHitFinal != null)
-            {
-                prediction.Type = HitType.Obstacle;
-                prediction.ObstacleHit = obstacleHitFinal;
-                return prediction;
             }
 
             prediction.Type = HitType.None;

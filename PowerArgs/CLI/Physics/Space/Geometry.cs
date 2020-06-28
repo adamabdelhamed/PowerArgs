@@ -133,7 +133,7 @@ namespace PowerArgs.Cli.Physics
         public static Direction GetHitDirection(this IRectangularF rectangle, IRectangularF other) => GetDirection(rectangle.CalculateAngleTo(other));
         public static float NormalizeQuantity(this int quantity, float angle, bool reverse = false) => NormalizeQuantity((float)quantity, angle, reverse);
         public static bool Contains(this IRectangularF rectangle, IRectangularF other) => OverlapPercentage(rectangle, other) == 1;
-        public static bool Touches(this IRectangularF rectangle, IRectangularF other) => OverlapPercentage(rectangle, other) > 0;
+        public static bool Touches(this IRectangularF rectangle, IRectangularF other) => NumberOfPixelsThatOverlap(rectangle, other) > 0;
 
 
         public static float Round(float f, int digits) => (float)Math.Round(f, digits, MidpointRounding.AwayFromZero);

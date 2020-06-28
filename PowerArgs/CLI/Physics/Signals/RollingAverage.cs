@@ -27,6 +27,50 @@
             }
         }
 
+        public double Min
+        {
+            get
+            {
+                var min = double.MaxValue;
+                lock (samples)
+                {
+                    for (var i = 0; i < samples.Length; i++)
+                    {
+                        if (isWindowFull == false && i == index) break;
+
+                        if(samples[i] < min)
+                        {
+                            min = samples[i];
+                        }
+                    }
+                }
+
+                return min;
+            }
+        }
+
+        public double Max
+        {
+            get
+            {
+                var max = double.MinValue;
+                lock (samples)
+                {
+                    for (var i = 0; i < samples.Length; i++)
+                    {
+                        if (isWindowFull == false && i == index) break;
+
+                        if (samples[i] > max)
+                        {
+                            max = samples[i];
+                        }
+                    }
+                }
+
+                return max;
+            }
+        }
+
         public RollingAverage(int sampleWindow)
         {
             samples = new double[sampleWindow];

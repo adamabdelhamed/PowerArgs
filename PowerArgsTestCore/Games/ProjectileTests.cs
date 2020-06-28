@@ -28,7 +28,7 @@ namespace ArgsTests.CLI.Physics
                 var target = SpaceTime.CurrentSpaceTime.Add(new Character());
                 var loc = player.MoveTowards(a, 12);
                 target.MoveTo(loc.Left, loc.Top);
-                target.Tags.Add("enemy");
+                target.AddTag("enemy");
 
                 await Time.CurrentTime.DelayAsync(100);
                 using (var testLifetime = new Lifetime())

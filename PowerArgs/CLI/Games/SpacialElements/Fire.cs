@@ -19,7 +19,7 @@ namespace PowerArgs.Games
             this.duration = duration;
          
             this.ResizeTo(1, 1);
-            this.Tags.Add("hot");
+            this.AddTag("hot");
 
             initTime = Time.CurrentTime.Now;
             if (currentSound == null)

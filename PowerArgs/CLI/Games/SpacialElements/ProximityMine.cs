@@ -36,7 +36,7 @@ namespace PowerArgs.Games
                     var tag = proto.TargetTag;
                     var z = proto.ZIndex;
                     var targets = SpaceTime.CurrentSpaceTime.Elements
-                        .Where(e => e.ZIndex == z && e.Tags.Contains(tag)).ToArray();
+                        .Where(e => e.ZIndex == z && e.HasSimpleTag(tag)).ToArray();
 
                     foreach(var mine in mineGroup)
                     {
