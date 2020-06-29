@@ -300,6 +300,8 @@ namespace PowerArgs.Games
 
         public void TryInteract()
         {
+            if (IsVisible == false) return;
+
             var interactables = SpaceTime.CurrentSpaceTime.Elements
                 .Where(e => e is IInteractable)
                 .Select(i => i as IInteractable)
