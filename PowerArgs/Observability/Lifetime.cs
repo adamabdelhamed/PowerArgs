@@ -12,6 +12,24 @@ namespace PowerArgs
         void Dispose();
     }
 
+    public static class ILifetimeEx
+    {
+        public static Lifetime CreateChildLifetime(this ILifetime lt)
+        {
+            var ret = new Lifetime();
+            lt.OnDisposed(() =>
+            {
+                if (ret.IsExpired == false)
+                {
+                    ret.Dispose();
+                }
+            });
+            return ret;
+        }
+    }
+
+
+
     /// <summary>
     /// An object that has a beginning and and end  that can be used to define the lifespan of event and observable subscriptions.
     /// </summary>
@@ -197,23 +215,7 @@ namespace PowerArgs
             return ret;
         }
 
-        /// <summary>
-        /// Creates a new lifetime that may be disposed earlier, but will be disposed when this
-        /// lifetime ends
-        /// </summary>
-        /// <returns></returns>
-        public Lifetime CreateChildLifetime()
-        {
-            var ret = new Lifetime();
-            _manager.OnDisposed(()=>
-            {
-                if(ret.IsExpired == false)
-                {
-                    ret.Dispose();
-                }
-            });
-            return ret;
-        }
+      
 
         /// <summary>
         /// Runs all the cleanup actions that have been registerd
