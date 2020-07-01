@@ -87,6 +87,11 @@ namespace PowerArgs.Games
                 }
             }
 
+            if (Options.Source.Element is Character && (Options.Source.Element as Character).IsVisible == false)
+            {
+                target = null;
+            }
+
             if (target != lastTarget)
             {
                 TargetChanged.Fire(target);

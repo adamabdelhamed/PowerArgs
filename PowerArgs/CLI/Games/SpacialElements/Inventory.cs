@@ -30,7 +30,7 @@ namespace PowerArgs.Games
             }
             set
             {
-                if (Items.Contains(value) == false)
+                if (value != null && Items.Contains(value) == false)
                 {
                     Items.Add(value);
                 }
@@ -50,7 +50,7 @@ namespace PowerArgs.Games
             }
             set
             {
-                if (Items.Contains(value) == false)
+                if (value != null && Items.Contains(value) == false)
                 {
                     Items.Add(value);
                 }
