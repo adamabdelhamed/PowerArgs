@@ -32,7 +32,8 @@ namespace PowerArgs.Cli
         public ConsolePanel Parent { get; set; }
         public bool PushPop { get; set; } = true;
         public float SpeedPercentage { get; set; } = 1;
-
+        public bool AllowEscapeToClose { get; set; }
+        public bool AllowEnterToClose { get; set; }
         public int ZIndex { get; set; }
     }
 
@@ -52,12 +53,30 @@ namespace PowerArgs.Cli
             options.Parent = options.Parent ?? ConsoleApp.Current.LayoutRoot;
             using (var dialogLt = new Lifetime())
             {
+                var handle = new DialogHandle();
                 if (options.PushPop)
                 {
                     ConsoleApp.Current.FocusManager.Push();
+
+                    if(options.AllowEscapeToClose)
+                    {
+                        ConsoleApp.Current.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, () =>
+                        {
+                            handle.CloseDialog();
+                        }, dialogLt);
+                    }
+
+                    if (options.AllowEnterToClose)
+                    {
+                        ConsoleApp.Current.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Enter, null, () =>
+                        {
+                            handle.CloseDialog();
+                        }, dialogLt);
+                    }
+
                     dialogLt.OnDisposed(ConsoleApp.Current.FocusManager.Pop);
                 }
-                var handle = new DialogHandle();
+      
                 var content = contentFactory(handle);
                 content.IsVisible = false;
                 var dialogContainer = options.Parent.Add(new BorderPanel(content) {  BorderColor = handle.BorderColor, Background = content.Background, Width = 1, Height = 1 }).CenterBoth();
