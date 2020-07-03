@@ -105,7 +105,13 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Velocity.Angle.RoundAngleToNearest(90) == 180 && Velocity.Speed > 0)
+            if (Velocity.Angle != 180)
+            {
+                Velocity.Angle = 180;
+                Velocity.Speed = Math.Min(Velocity.Speed, PlayerMovementSpeed);
+                SizeOrPositionChanged.Fire();
+            }
+            else if (Velocity.Angle.RoundAngleToNearest(90) == 180 && Velocity.Speed > 0)
             {
                 Velocity.Speed = 0;
                 Velocity.Angle = 180;
@@ -129,7 +135,13 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Velocity.Angle.RoundAngleToNearest(90) == 0 && Velocity.Speed > 0)
+            if (Velocity.Angle != 0)
+            {
+                Velocity.Angle = 0;
+                Velocity.Speed = Math.Min(Velocity.Speed, PlayerMovementSpeed);
+                SizeOrPositionChanged.Fire();
+            }
+            else if (Velocity.Angle.RoundAngleToNearest(90) == 0 && Velocity.Speed > 0)
             {
                 Velocity.Speed = 0;
                 Velocity.Angle = 0;
@@ -153,7 +165,13 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Velocity.Angle.RoundAngleToNearest(90) == 90 && Velocity.Speed > 0)
+            if (Velocity.Angle != 90)
+            {
+                Velocity.Angle = 90;
+                Velocity.Speed = Math.Min(Velocity.Speed, PlayerMovementSpeed);
+                SizeOrPositionChanged.Fire();
+            }
+            else if (Velocity.Angle.RoundAngleToNearest(90) == 90 && Velocity.Speed > 0)
             {
                 Velocity.Angle = 90;
                 Velocity.Speed = 0;
@@ -177,7 +195,13 @@ namespace PowerArgs.Games
                 return;
             }
 
-            if (Velocity.Angle.RoundAngleToNearest(90) == 270 && Velocity.Speed > 0)
+            if (Velocity.Angle != 270)
+            {
+                Velocity.Angle = 270;
+                Velocity.Speed = Math.Min(Velocity.Speed, PlayerMovementSpeed);
+                SizeOrPositionChanged.Fire();
+            }
+            else if (Velocity.Angle.RoundAngleToNearest(90) == 270 && Velocity.Speed > 0)
             {
                 Velocity.Angle = 270;
                 Velocity.Speed = 0;

@@ -100,6 +100,7 @@ namespace PowerArgs.Cli.Physics
                         SizeAndLocate(r);
                     }
                 }
+                Application.Paint();
                 resetHandle.Set();
             });
 
