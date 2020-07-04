@@ -109,7 +109,7 @@ namespace PowerArgs.Games
             {
                 Velocity.Angle = 180;
                 Velocity.Speed = Math.Min(Velocity.Speed, PlayerMovementSpeed);
-                SizeOrPositionChanged.Fire();
+                RoundOff();
             }
             else if (Velocity.Angle.RoundAngleToNearest(90) == 180 && Velocity.Speed > 0)
             {
@@ -139,7 +139,7 @@ namespace PowerArgs.Games
             {
                 Velocity.Angle = 0;
                 Velocity.Speed = Math.Min(Velocity.Speed, PlayerMovementSpeed);
-                SizeOrPositionChanged.Fire();
+                RoundOff();
             }
             else if (Velocity.Angle.RoundAngleToNearest(90) == 0 && Velocity.Speed > 0)
             {
@@ -169,7 +169,7 @@ namespace PowerArgs.Games
             {
                 Velocity.Angle = 90;
                 Velocity.Speed = Math.Min(Velocity.Speed, PlayerMovementSpeed);
-                SizeOrPositionChanged.Fire();
+                RoundOff();
             }
             else if (Velocity.Angle.RoundAngleToNearest(90) == 90 && Velocity.Speed > 0)
             {
@@ -199,7 +199,7 @@ namespace PowerArgs.Games
             {
                 Velocity.Angle = 270;
                 Velocity.Speed = Math.Min(Velocity.Speed, PlayerMovementSpeed);
-                SizeOrPositionChanged.Fire();
+                RoundOff();
             }
             else if (Velocity.Angle.RoundAngleToNearest(90) == 270 && Velocity.Speed > 0)
             {
