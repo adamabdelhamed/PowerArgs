@@ -95,14 +95,24 @@ namespace PowerArgs.Cli
 
         private static Task Forward(float duration, Lifetime lt, Action<float> setter) => AnimateCommon(duration, lt, setter, 0, 1);
         private static Task Reverse(float duration, Lifetime lt, Action<float> setter) => AnimateCommon(duration, lt, setter, 1, 0);
-        private static Task AnimateCommon(float duration, Lifetime lt, Action<float> setter, float from, float to) => Animator.AnimateAsync(new FloatAnimatorOptions()
+        private static async Task AnimateCommon(float duration, Lifetime lt, Action<float> setter, float from, float to)
         {
-            From = from,
-            To = to,
-            Duration = duration,
-            EasingFunction = Animator.EaseInOut,
-            IsCancelled = () => lt.IsExpired,
-            Setter = percentage => setter(percentage)
-        });
+            if (duration == 0)
+            {
+                setter(to);
+            }
+            else
+            {
+                await Animator.AnimateAsync(new FloatAnimatorOptions()
+                {
+                    From = from,
+                    To = to,
+                    Duration = duration,
+                    EasingFunction = Animator.EaseInOut,
+                    IsCancelled = () => lt.IsExpired,
+                    Setter = percentage => setter(percentage)
+                });
+            }
+        }
     }
 }
