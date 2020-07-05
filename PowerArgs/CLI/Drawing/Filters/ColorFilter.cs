@@ -1,7 +1,14 @@
 ﻿namespace PowerArgs.Cli
 {
-    public class GrayscaleFilter : IConsoleControlFilter
+    public class ColorFilter : IConsoleControlFilter
     {
+        public RGB Color { get; set; }
+
+        public ColorFilter(RGB color)
+        {
+            this.Color = color;
+        }
+
         /// <summary>
         /// The control to filter
         /// </summary>
@@ -18,12 +25,12 @@
                     {
                         if (pixel.Value.Value.BackgroundColor != pixel.Value.Value.ForegroundColor && pixel.Value.Value.BackgroundColor == RGB.Black && pixel.Value.Value != ' ')
                         {
-                            pixel.Value = new ConsoleCharacter(pixel.Value.Value.Value, RGB.Gray);
+                            pixel.Value = new ConsoleCharacter(pixel.Value.Value.Value, Color);
                         }
 
                         if (pixel.Value.Value.BackgroundColor != RGB.Black)
                         {
-                            pixel.Value = new ConsoleCharacter(pixel.Value.Value.Value, pixel.Value.Value.ForegroundColor, RGB.Gray);
+                            pixel.Value = new ConsoleCharacter(pixel.Value.Value.Value, pixel.Value.Value.ForegroundColor, Color);
                         }
                     }
                 }
