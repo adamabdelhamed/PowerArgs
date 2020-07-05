@@ -20,7 +20,14 @@ namespace PowerArgs.Games
         public Projectile(Weapon w, float speed, float angle) : base(w)
         {
             this.ResizeTo(1, 1);
-     
+
+            if (w?.Holder != null)
+            {
+                this.MoveTo(w.Holder.EffectiveBounds().CenterX() - Width / 2, w.Holder.EffectiveBounds().CenterY() - Height / 2, w.Holder.ZIndex);
+                var offset = this.MoveTowards(angle, 1, false);
+                this.MoveTo(offset.Left, offset.Top);
+            }
+
             Time.CurrentTime.InvokeNextCycle(() =>
             {
                 if (w?.Holder != null)
