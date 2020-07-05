@@ -22,6 +22,9 @@ namespace PowerArgs.Games
         public Event<SpacialElement> TargetChanged { get; private set; } = new Event<SpacialElement>();
         public AutoTargetingOptions Options { get; private set; }
         private SpacialElement lastTarget;
+        private List<SpacialElement> targets = new List<SpacialElement>();
+
+        public IEnumerable<SpacialElement> PotentialTargets => targets;
 
         public float Delay { get; set; }
 
@@ -48,6 +51,7 @@ namespace PowerArgs.Games
 
             SpacialElement target = null;
             float winningCandidateProximity = float.MaxValue;
+            targets.Clear();
             for(var i = 0; i < candidates.Length; i++)
             {
                 var z = candidates[i];
@@ -69,6 +73,7 @@ namespace PowerArgs.Games
 
                 if (elementHit == z)
                 {
+                    targets.Add(elementHit);
                     var d = Geometry.CalculateNormalizedDistanceTo(Options.Source.Element, z);
                     if(d < winningCandidateProximity)
                     {
@@ -78,6 +83,7 @@ namespace PowerArgs.Games
                 }
                 else if (elementHit != null && z is IHaveMassBounds && (z as IHaveMassBounds).IsPartOfMass(elementHit))
                 {
+                    targets.Add(elementHit);
                     var d = Geometry.CalculateNormalizedDistanceTo(Options.Source.Element, z);
                     if (d < winningCandidateProximity)
                     {
