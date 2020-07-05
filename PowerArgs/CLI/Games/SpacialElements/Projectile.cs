@@ -1,5 +1,4 @@
-﻿using PowerArgs;
-using PowerArgs.Cli;
+﻿using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 
@@ -9,8 +8,6 @@ namespace PowerArgs.Games
     {
         public static Event<Impact> OnAudibleImpact { get; private set; } = new Event<Impact>();
 
-        public const float StandardWidth = 1f;
-        public const float StandardHeight = 1f;
 
         public ConsoleString Pen { get; set; } = new ConsoleString("*", ConsoleColor.Red);
         public float Range { get; set; } = -1;
@@ -22,17 +19,18 @@ namespace PowerArgs.Games
         private Force force;
         public Projectile(Weapon w, float speed, float angle) : base(w)
         {
-            this.ResizeTo(StandardWidth, StandardHeight);
-            if (w?.Holder != null)
-            {
-                this.MoveTo(w.Holder.EffectiveBounds().CenterX()-StandardWidth/2, w.Holder.EffectiveBounds().CenterY()-StandardHeight/2, w.Holder.ZIndex);
-                var offset = this.MoveTowards(angle, 1, false);
-                this.MoveTo(offset.Left, offset.Top);
-
-            }
-
+            this.ResizeTo(1, 1);
+     
             Time.CurrentTime.InvokeNextCycle(() =>
             {
+                if (w?.Holder != null)
+                {
+                    this.MoveTo(w.Holder.EffectiveBounds().CenterX() - Width / 2, w.Holder.EffectiveBounds().CenterY() - Height / 2, w.Holder.ZIndex);
+                    var offset = this.MoveTowards(angle, 1, false);
+                    this.MoveTo(offset.Left, offset.Top);
+                }
+
+
                 startLocation = this.Bounds;
             });
 
@@ -75,7 +73,11 @@ namespace PowerArgs.Games
     {
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.DrawString((Element as Projectile).Pen, 0, 0);
+            if((Element as Projectile).Pen != null && (Element as Projectile).Pen.Length > 0)
+            {
+                context.Pen = (Element as Projectile).Pen[0];
+            }
+            context.FillRect(0, 0, Width,Height);
         }
     }
 }
