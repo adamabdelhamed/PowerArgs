@@ -17,7 +17,7 @@ namespace PowerArgs.Games
 
         private IRectangularF startLocation;
         private Force force;
-        public Projectile(Weapon w, float speed, float angle) : base(w)
+        public Projectile(Weapon w, float speed, float angle, bool autoLocate = true) : base(w)
         {
             this.ResizeTo(1, 1);
 
@@ -30,16 +30,16 @@ namespace PowerArgs.Games
 
             Time.CurrentTime.InvokeNextCycle(() =>
             {
-                if (w?.Holder != null)
-                {
-                    this.MoveTo(w.Holder.EffectiveBounds().CenterX() - Width / 2, w.Holder.EffectiveBounds().CenterY() - Height / 2, w.Holder.ZIndex);
-                    var offset = this.MoveTowards(angle, 1, false);
-                    this.MoveTo(offset.Left, offset.Top);
-                }
-
-
+                    if (autoLocate && w?.Holder != null)
+                    {
+                        this.MoveTo(w.Holder.EffectiveBounds().CenterX() - Width / 2, w.Holder.EffectiveBounds().CenterY() - Height / 2, w.Holder.ZIndex);
+                        var offset = this.MoveTowards(angle, 1, false);
+                        this.MoveTo(offset.Left, offset.Top);
+                    }
                 startLocation = this.Bounds;
             });
+
+         
 
             this.AddTag(Weapon.WeaponTag);
             Velocity = new Velocity(this);

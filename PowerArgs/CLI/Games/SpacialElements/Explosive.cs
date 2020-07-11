@@ -62,7 +62,7 @@ namespace PowerArgs.Games
                     effectiveRange = Range / 3;
                 }
 
-                var shrapnel =SpaceTime.CurrentSpaceTime.Add(new Projectile(this.Weapon,ExplosiveProjectileSpeed, angle) { Range = effectiveRange });
+                var shrapnel =SpaceTime.CurrentSpaceTime.Add(new Projectile(this.Weapon,ExplosiveProjectileSpeed, angle, autoLocate: false) { Range = effectiveRange });
                 shrapnel.AddTag(nameof(Explosive));
                 shrapnel.MoveTo(this.Left, this.Top, this.ZIndex);
                 OnProjectileAdded.Fire(shrapnel);
