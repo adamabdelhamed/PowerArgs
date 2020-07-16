@@ -1,4 +1,6 @@
 ﻿using PowerArgs.Cli.Physics;
+using System;
+
 namespace PowerArgs.Games
 {
     public class Pistol : Weapon
@@ -7,9 +9,15 @@ namespace PowerArgs.Games
 
         public ConsoleString ProjectilePen { get; set; }
         public override WeaponStyle Style => WeaponStyle.Primary;
+
+        public Func<float> AngleVariation { get; set; } = () => 0;
+
+        public float LastFireAngle { get; private set; }
+
         public override void FireInternal(bool alt)
         {
-            var bullet = new Projectile(this, Speed, Holder.CalculateAngleToTarget()) { PlaySoundOnImpact = true };
+            LastFireAngle = Holder.CalculateAngleToTarget() + AngleVariation();
+            var bullet = new Projectile(this, Speed, LastFireAngle) { PlaySoundOnImpact = true };
             bullet.Velocity.HitDetectionExclusions.Add(Holder);
             bullet.Velocity.HitDetectionExclusions.AddRange(Holder.Velocity.HitDetectionExclusions);
             bullet.Velocity.HitDetectionExclusionTypes.AddRange(Holder.Velocity.HitDetectionExclusionTypes);

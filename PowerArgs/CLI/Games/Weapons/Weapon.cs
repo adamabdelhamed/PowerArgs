@@ -40,6 +40,8 @@ namespace PowerArgs.Games
         public bool AllowMultiple => false;
         public static Event<Weapon> OnFireEmpty { get; private set; } = new Event<Weapon>();
         public static Event<Weapon> OnFire { get; private set; } = new Event<Weapon>();
+
+        public Event OnFired { get; private set; } = new Event();
         public Event<WeaponElement> OnWeaponElementEmitted { get; private set; } = new Event<WeaponElement>();
         public SmartTrigger Trigger { get; set; }
         public const string WeaponTag = "Weapon";
@@ -84,6 +86,7 @@ namespace PowerArgs.Games
                     lastFireTime = Time.CurrentTime.Now;
 
                     OnFire.Fire(this);
+                    OnFired.Fire();
                     FireInternal(alt);
                     if (AmmoAmount > 0)
                     {
