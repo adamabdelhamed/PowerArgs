@@ -373,17 +373,14 @@ namespace PowerArgs.Cli.Physics
 
         public static float NumberOfPixelsThatOverlap(this IRectangularF rectangle, IRectangularF other)
         {
-            var rectangleRight = rectangle.Right();
-            var otherRight = other.Right();
-
-            var rectangleBottom = rectangle.Bottom();
-            var otherBottom = other.Bottom();
-
-            var ret =
-                Math.Max(0, Math.Min(rectangleRight, otherRight) - Math.Max(rectangle.Left, other.Left)) *
-                Math.Max(0, Math.Min(rectangleBottom, otherBottom) - Math.Max(rectangle.Top, other.Top));
-
-            return ret;
+            var rectangleRight = rectangle.Left + rectangle.Width;
+            var otherRight = other.Left + other.Width;
+            var rectangleBottom = rectangle.Top + rectangle.Height;
+            var otherBottom = other.Top+other.Height;
+            var a = Math.Max(0, Math.Min(rectangleRight, otherRight) - Math.Max(rectangle.Left, other.Left));
+            if (a == 0) return 0;
+            var b = Math.Max(0, Math.Min(rectangleBottom, otherBottom) - Math.Max(rectangle.Top, other.Top));
+            return a * b;
         }
 
         public static float OverlapPercentage(this IRectangularF rectangle, IRectangularF other)

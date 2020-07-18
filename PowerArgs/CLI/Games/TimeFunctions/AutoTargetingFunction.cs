@@ -9,7 +9,8 @@ namespace PowerArgs.Games
     public class AutoTargetingOptions
     {
         public Velocity Source { get; set; }
-        public Func<IEnumerable<SpacialElement>> TargetsEval { get; set; }
+        public string TargetTag { get; set; }
+        public float AngularVisibility { get; set; } = 60;
 
         public IRectangularF SourceBounds => Source.Element is IHaveMassBounds ? (Source.Element as IHaveMassBounds).MassBounds : Source.Element;
 
@@ -17,7 +18,6 @@ namespace PowerArgs.Games
 
     public class AutoTargetingFunction : TimeFunction
     {
-        public float AngularVisibility { get; set; } = 60;
 
         public Event<SpacialElement> TargetChanged { get; private set; } = new Event<SpacialElement>();
         public AutoTargetingOptions Options { get; private set; }
@@ -47,18 +47,20 @@ namespace PowerArgs.Games
         {
             var obstacles = Options.Source.GetObstacles().Where(o => o is WeaponElement == false).ToArray();
 
-            var candidates = Options.TargetsEval().ToArray();
-
             SpacialElement target = null;
             float winningCandidateProximity = float.MaxValue;
             targets.Clear();
-            for(var i = 0; i < candidates.Length; i++)
+            foreach (var element in SpaceTime.CurrentSpaceTime.Elements)
             {
-                var z = candidates[i];
+                if (element.ZIndex != Options.Source.Element.ZIndex) continue;
+                if (element.HasSimpleTag(Options.TargetTag) == false) continue;
+
+                if (element is Character && (element as Character).IsVisible == false) continue;
+
                 var sb = Options.SourceBounds;
-                var angle = sb.Center().CalculateAngleTo(z.Center());
+                var angle = sb.Center().CalculateAngleTo(element.Center());
                 var delta = Options.Source.Angle.DiffAngle(angle);
-                if (delta >= AngularVisibility) continue;
+                if (delta >= Options.AngularVisibility) continue;
 
                 var prediction = HitDetection.PredictHit(new HitDetectionOptions()
                 {
@@ -71,20 +73,20 @@ namespace PowerArgs.Games
 
                 var elementHit = prediction.ObstacleHit as SpacialElement;
 
-                if (elementHit == z)
+                if (elementHit == element)
                 {
                     targets.Add(elementHit);
-                    var d = Geometry.CalculateNormalizedDistanceTo(Options.Source.Element, z);
+                    var d = Geometry.CalculateNormalizedDistanceTo(Options.Source.Element, element);
                     if(d < winningCandidateProximity)
                     {
                         target = elementHit;
                         winningCandidateProximity = d;
                     }
                 }
-                else if (elementHit != null && z is IHaveMassBounds && (z as IHaveMassBounds).IsPartOfMass(elementHit))
+                else if (elementHit != null && element is IHaveMassBounds && (element as IHaveMassBounds).IsPartOfMass(elementHit))
                 {
                     targets.Add(elementHit);
-                    var d = Geometry.CalculateNormalizedDistanceTo(Options.Source.Element, z);
+                    var d = Geometry.CalculateNormalizedDistanceTo(Options.Source.Element, element);
                     if (d < winningCandidateProximity)
                     {
                         target = elementHit;

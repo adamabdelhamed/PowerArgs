@@ -85,7 +85,7 @@ namespace PowerArgs.Games
             InitializeTargeting(SpaceTime.CurrentSpaceTime.Add(new AutoTargetingFunction(new AutoTargetingOptions()
             {
                 Source = this.Velocity,
-                TargetsEval = () => SpaceTime.CurrentSpaceTime.Elements.Where(e => e.HasSimpleTag("enemy")),
+                TargetTag = "enemy",
             })));
         }
 
