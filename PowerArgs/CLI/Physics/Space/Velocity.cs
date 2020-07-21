@@ -126,6 +126,8 @@ namespace PowerArgs.Cli.Physics
         {
             while (this.Lifetime.IsExpired == false)
             {
+                await Time.CurrentTime.YieldAsync();
+
                 if (MovementTakeover != null)
                 {
                     await MovementTakeover();
@@ -139,7 +141,6 @@ namespace PowerArgs.Cli.Physics
                 if (d == 0)
                 {
                     OnVelocityEnforced?.Fire();
-                    await Time.CurrentTime.YieldAsync();
                     continue;
                 }
 
@@ -206,7 +207,6 @@ namespace PowerArgs.Cli.Physics
                 }
 
                 OnVelocityEnforced?.Fire();
-                await Time.CurrentTime.YieldAsync();
             }
         }
 
