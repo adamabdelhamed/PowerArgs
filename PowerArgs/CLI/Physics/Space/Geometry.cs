@@ -27,6 +27,8 @@ namespace PowerArgs.Cli.Physics
         float Top { get; }
         float Width { get; }
         float Height { get; }
+
+        Edge[] Edges { get; }
     }
 
     public interface ISizeF
@@ -89,6 +91,8 @@ namespace PowerArgs.Cli.Physics
 
         public object Tag { get; private set; }
 
+        public Edge[] Edges { get; private set; }
+
         private RectangularF(float x, float y, float w, float h, object tag = null)
         {
             this.Left = x;
@@ -96,6 +100,12 @@ namespace PowerArgs.Cli.Physics
             this.Width = w;
             this.Height = h;
             this.Tag = tag;
+            Edges = new Edge[4];
+            Edges[0] = new Edge();
+            Edges[1] = new Edge();
+            Edges[2] = new Edge();
+            Edges[3] = new Edge();
+            Geometry.UpdateEdges(this, Edges);
         }
 
         public override bool Equals(object obj)
@@ -141,6 +151,24 @@ namespace PowerArgs.Cli.Physics
 
         public static int Round(float f) => (int)Math.Round(f, MidpointRounding.AwayFromZero);
         public static int Round(double d) => (int)Math.Round(d, MidpointRounding.AwayFromZero);
+
+        public static void UpdateEdges(IRectangularF rect, Edge[] edgeBuffer)
+        {
+            edgeBuffer[0].From = rect.TopLeft();
+            edgeBuffer[0].To = rect.TopRight();
+
+            edgeBuffer[1].From = rect.TopRight();
+            edgeBuffer[1].To = rect.BottomRight();
+
+
+            edgeBuffer[2].From = rect.BottomRight();
+            edgeBuffer[2].To = rect.BottomLeft();
+
+
+            edgeBuffer[3].From = rect.BottomLeft();
+            edgeBuffer[3].To = rect.TopLeft();
+        }
+
         public static IRectangularF ToRect(this ILocationF loc, float w, float h)
         {
             var left = loc.Left - w / 2;

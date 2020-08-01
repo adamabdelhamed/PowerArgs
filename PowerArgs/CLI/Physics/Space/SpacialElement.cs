@@ -50,6 +50,7 @@ namespace PowerArgs.Cli.Physics
 
         public void SetProperty<T>(string key, T val) => ObservableProperties.Set(val, key);
 
+        public Edge[] Edges { get; private set; }
 
 
         public SpacialElement(float w = 1, float h = 1, float x = 0, float y = 0, int z = 0)
@@ -60,11 +61,19 @@ namespace PowerArgs.Cli.Physics
             Top = y;
             ZIndex = z;
             this.InternalState = new SpacialElementInternalState();
+            Edges = new Edge[4];
+            Edges[0] = new Edge();
+            Edges[1] = new Edge();
+            Edges[2] = new Edge();
+            Edges[3] = new Edge();
+
+            Geometry.UpdateEdges(this, Edges);
+            SizeOrPositionChanged.SubscribeForLifetime(()=> Geometry.UpdateEdges(this, Edges), this.Lifetime);
         }
 
 
         
-    
+     
 
         public IRectangularF GetObstacleIfMovedTo(IRectangularF f, int? z = null)
         {
@@ -139,7 +148,7 @@ namespace PowerArgs.Cli.Physics
             var right = float.MinValue;
             var bottom = float.MinValue;
 
-            foreach (var part in mass.Elements.As<ISpacialElement>().Union(new ISpacialElement[] { mass }))
+            foreach (var part in mass.Elements.As<ISpacialElement>().Concat(new ISpacialElement[] { mass }))
             {
                 left = Math.Min(left, part.Left);
                 top = Math.Min(top, part.Top);
@@ -152,6 +161,12 @@ namespace PowerArgs.Cli.Physics
         }
     }
 
+
+    public class Edge
+    {
+        public ILocationF From;
+        public ILocationF To;
+    }
 
     public interface IAmMass : ISpacialElement
     {

@@ -160,11 +160,21 @@ namespace PowerArgs.Cli.Physics
                 {
                     if (hitPrediction.LKG != null && Element.TopLeft().Equals(hitPrediction.LKG) == false)
                     {
-                        if (Element.GetObstacleIfMovedTo(RectangularF.Create(hitPrediction.LKG.Left, hitPrediction.LKG.Top, Element.Width, Element.Height)) == null)
+                        var lkgd = hitPrediction.LKGD;
+                        var problem = Element.GetObstacleIfMovedTo(RectangularF.Create(hitPrediction.LKG.Left, hitPrediction.LKG.Top, Element.Width, Element.Height));
+                        
+                        while(problem != null && lkgd > 0)
+                        {
+                            lkgd -= .1f;
+                            var lkg = Element.MoveTowards(Angle, lkgd, normalized: false);
+                            problem = Element.GetObstacleIfMovedTo(RectangularF.Create(lkg.Left, lkg.Top, Element.Width, Element.Height));
+                        }
+                        
+                        if (problem == null)
                         {
                             Element.MoveTo(hitPrediction.LKG.Left, hitPrediction.LKG.Top);
                             haveMovedSinceLastHitDetection = true;
-                        }
+                        }               
                     }
 
                     float angle = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
