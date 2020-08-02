@@ -45,19 +45,7 @@ namespace PowerArgs
             }
         }
 
-        public static Task Then(this Task t, Action a)
-        {
-            return t.ContinueWith((t2) => a(), TaskScheduler.FromCurrentSynchronizationContext());
-        }
-
-        public static Task Then<T>(this Task<T> t, Action<T> a)
-        {
-            return t.ContinueWith((t2) =>
-            {
-                a(t.Result);
-
-            }, TaskScheduler.FromCurrentSynchronizationContext());
-        }
+      
 
         public static Task<Task> WhenAny(params Task[] tasks) => WhenAny((IEnumerable<Task>)tasks);
 

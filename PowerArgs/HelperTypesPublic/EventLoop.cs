@@ -158,10 +158,7 @@ namespace PowerArgs
                     }
                     else if (handling == EventLoopExceptionHandling.Stop)
                     {
-                        stopRequested = true;
-                        pendingWorkItems.Clear();
-                        workQueue.Clear();
-                        return;
+                        break;
                     }
                     else if (handling == EventLoopExceptionHandling.Swallow)
                     {
@@ -192,7 +189,6 @@ namespace PowerArgs
                         }
                         else if (handling == EventLoopExceptionHandling.Stop)
                         {
-                            stopRequested = true;
                             return;
                         }
                         else if (handling == EventLoopExceptionHandling.Swallow)
@@ -244,7 +240,6 @@ namespace PowerArgs
                         }
                         else if (handling == EventLoopExceptionHandling.Stop)
                         {
-                            stopRequested = true;
                             return;
                         }
                         else if (handling == EventLoopExceptionHandling.Swallow)
@@ -267,7 +262,6 @@ namespace PowerArgs
                     }
                     else if (handling == EventLoopExceptionHandling.Stop)
                     {
-                        stopRequested = true;
                         return;
                     }
                     else if (handling == EventLoopExceptionHandling.Swallow)
@@ -348,6 +342,8 @@ namespace PowerArgs
             if(cleaned.Count == 1 && cleaned[0] is StopLoopException)
             {
                 stopRequested = true;
+                pendingWorkItems.Clear();
+                workQueue.Clear();
                 return EventLoopExceptionHandling.Stop;
             }
 

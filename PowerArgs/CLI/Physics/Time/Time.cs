@@ -106,6 +106,33 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
+        public void DelayThen(float delay, Action then)
+        {
+            Invoke(async () =>
+            {
+                await DelayAsync(delay);
+                then();
+            });
+        }
+
+        public void DelayOrYieldThen(float delay, Action then)
+        {
+            Invoke(async () =>
+            {
+                await this.DelayOrYield(delay);
+                then();
+            });
+        }
+
+        public void DelayThen(Func<bool> condition, Action then, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
+        {
+            Invoke(async () =>
+            {
+                await DelayAsync(condition, timeout, evalFrequency);
+                then();
+            });
+        }
+
         public async Task<bool> TryDelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
         {
             var startTime = Now;

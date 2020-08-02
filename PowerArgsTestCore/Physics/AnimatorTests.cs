@@ -66,6 +66,11 @@ namespace ArgsTests.CLI
             await app.PaintAndRecordKeyFrameAsync();
             await Time.CurrentTime.DelayFuzzyAsync(ms, maxDeltaPercentage);
         }
+
+        public void DelayThen(float delay, Action then)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [TestClass]
