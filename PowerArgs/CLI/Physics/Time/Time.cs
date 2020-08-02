@@ -48,9 +48,7 @@ namespace PowerArgs.Cli.Physics
         private List<ITimeFunction> timeFunctions = new List<ITimeFunction>();
         private Random rand = new Random();
         private Dictionary<string, ITimeFunction> idMap = new Dictionary<string, ITimeFunction>();
-        private Lifetime myLifetime;
-
-        /// <summary>
+         /// <summary>
         /// Creates a new time model, optionally providing a starting time and increment
         /// </summary>
         /// <param name="increment">The amount of time to increment on each iteration, defaults to one 100 nanosecond tick</param>
@@ -61,30 +59,38 @@ namespace PowerArgs.Cli.Physics
             Increment = increment.HasValue ? increment.Value : TimeSpan.FromTicks(1);
             Now = now.HasValue ? now.Value : TimeSpan.Zero;
             InvokeNextCycle(() => current = this);
-            myLifetime = new Lifetime();
-            EndOfCycle.SubscribeForLifetime(() => Now = Now.Add(Increment), myLifetime);
+ 
+            EndOfCycle.SubscribeForLifetime(() => Now = Now.Add(Increment), this);
+
+            this.OnDisposed(() =>
+            {
+                foreach(var func in Functions)
+                {
+                    func.Lifetime.TryDispose();
+                }
+            });
         }
 
-        public async Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1)
+        public Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1)
         {
             var maxDelta = maxDeltaPercentage * ms;
             var min = ms - maxDelta;
             var max = ms + maxDelta;
             var delay = rand.Next((int)min, (int)max);
             delay = Math.Max((int)Time.CurrentTime.Increment.TotalMilliseconds, delay);
-            await DelayAsync(delay);
+            return DelayAsync(delay);
         }
 
-        public async Task DelayAsync(double ms) => await DelayAsync(TimeSpan.FromMilliseconds(ms));
+        public Task DelayAsync(double ms) => DelayAsync(TimeSpan.FromMilliseconds(ms));
 
-        public async Task DelayAsync(TimeSpan timeout)
+        public Task DelayAsync(TimeSpan timeout)
         {
             if (timeout == TimeSpan.Zero) throw new ArgumentException("Delay for a time span of zero is not supported because there's a good chance you're putting it in a loop on the time thread, which will block the thread. You may want to call DelayOrYield (extension method).");
             var startTime = Now;
-            await DelayAsync(() => Now - startTime >= timeout);
+            return DelayAsync(() => Now - startTime >= timeout);
         }
 
-        public async Task DelayAsync(Event ev, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
+        public Task DelayAsync(Event ev, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
         {
             var fired = false;
 
@@ -93,11 +99,10 @@ namespace PowerArgs.Cli.Physics
                 fired = true;
             });
 
-            await DelayAsync(() => fired, timeout, evalFrequency);
+            return DelayAsync(() => fired, timeout, evalFrequency);
         }
 
-        public async Task YieldAsync() => await Task.Yield();
-
+    
         public async Task DelayAsync(Func<bool> condition, TimeSpan? timeout = null, TimeSpan? evalFrequency = null)
         {
             if (await TryDelayAsync(condition, timeout, evalFrequency) == false)
@@ -137,11 +142,11 @@ namespace PowerArgs.Cli.Physics
         {
             var startTime = Now;
             var governor = evalFrequency.HasValue ? new RateGovernor(evalFrequency.Value, lastFireTime: startTime) : null;
-            while (true)
+            while (IsRunning && IsDrainingOrDrained == false)
             {
                 if (governor != null && governor.ShouldFire(Now) == false)
                 {
-                    await Task.Yield();
+                    await YieldAsync();
                 }
                 else if (condition())
                 {
@@ -153,9 +158,10 @@ namespace PowerArgs.Cli.Physics
                 }
                 else
                 {
-                    await Task.Yield();
+                    await YieldAsync();
                 }
             }
+            return true;
         }
 
 

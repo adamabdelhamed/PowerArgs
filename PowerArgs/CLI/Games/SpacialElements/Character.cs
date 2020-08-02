@@ -69,6 +69,7 @@ namespace PowerArgs.Games
         public Character()
         {
             observable = new ObservableObject(this);
+            this.Lifetime.OnDisposed(observable.Dispose);
             IsVisible = true;
             this.SubscribeForLifetime(nameof(Inventory), () => this.Inventory.Owner = this, this.Lifetime);
             Inventory = new Inventory();

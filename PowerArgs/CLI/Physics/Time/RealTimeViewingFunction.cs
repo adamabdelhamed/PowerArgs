@@ -99,7 +99,7 @@ namespace PowerArgs.Cli.Physics
 
             t.Invoke(async () =>
             {
-                while(impl != null)
+                while(t.IsRunning && t.IsDrainingOrDrained == false && impl != null)
                 {
                     Evaluate();
                     await t.YieldAsync();

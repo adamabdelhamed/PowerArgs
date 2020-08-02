@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
+using PowerArgs.Cli.Physics;
+
 namespace PowerArgs
 {
     /// <summary>
@@ -266,7 +268,14 @@ namespace PowerArgs
         {
             while (myDeferred.IsFulfilled == false)
             {
-                await Task.Yield();
+                if (Time.CurrentTime != null)
+                {
+                    await Time.CurrentTime.YieldAsync();
+                }
+                else
+                {
+                    await Task.Yield();
+                }
             }
 
             if (myDeferred.Exception != null)
@@ -541,7 +550,14 @@ namespace PowerArgs
             {
                 while (myDeferred.IsFulfilled == false)
                 {
-                    await Task.Yield();
+                    if (Time.CurrentTime != null)
+                    {
+                        await Time.CurrentTime.YieldAsync();
+                    }
+                    else
+                    {
+                        await Task.Yield();
+                    }
                 }
 
                 if (myDeferred.Exception != null)

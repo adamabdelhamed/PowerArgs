@@ -68,7 +68,7 @@ namespace PowerArgs.Cli.Physics
 #if DEBUG
             Time.AssertTimeThread();
 #endif
-
+           
             foreach (var element in SpaceTime.CurrentSpaceTime.Elements)
             {
                 ConnectToElement(element);
@@ -76,6 +76,7 @@ namespace PowerArgs.Cli.Physics
 
             SpaceTime.CurrentSpaceTime.SpacialElementAdded
                 .SubscribeForLifetime((element) => ConnectToElement(element), this);
+            this.OnDisposed(ClearChanges);
         }
 
         public void ClearChanges()

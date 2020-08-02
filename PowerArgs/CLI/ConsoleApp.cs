@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
@@ -494,7 +495,16 @@ namespace PowerArgs.Cli
         /// <returns>A handle that can be passed to ClearInterval if you want to cancel the work</returns>
         public IDisposable SetInterval(Action a, TimeSpan interval)
         {
-            return new TimerDisposer(new Timer((o) => Invoke(a), null, (int)interval.TotalMilliseconds, (int)interval.TotalMilliseconds), timerHandles);
+            var lt = new Lifetime();
+            Invoke(async () =>
+            {
+                while(IsRunning && IsDrainingOrDrained == false && lt.IsExpired == false)
+                {
+                    await Task.Delay(interval);
+                    a();
+                }
+            });
+            return lt;
         }
 
         /// <summary>
@@ -505,7 +515,14 @@ namespace PowerArgs.Cli
         /// <returns></returns>
         public IDisposable SetTimeout(Action a, TimeSpan period)
         {
-            return new TimerDisposer(new Timer((o) => Invoke(a), null, (int)period.TotalMilliseconds, Timeout.Infinite), timerHandles);
+            var lt = new Lifetime();
+            Invoke(async () =>
+            {
+                if(IsRunning && IsDrainingOrDrained == false && lt.IsExpired == false)
+                await Task.Delay(period);
+                a();    
+            });
+            return lt;
         }
 
         /// <summary>

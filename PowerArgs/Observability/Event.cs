@@ -28,9 +28,13 @@ namespace PowerArgs
         /// </summary>
         public void Fire()
         {
-            foreach (var subscriber in subscribers.Keys.ToArray())
+            var subs = subscribers?.Keys?.ToArray();
+            if (subs != null)
             {
-                subscriber();
+                for(var i = 0; i < subs.Length; i++)
+                {
+                    subs[i]?.Invoke();
+                }
             }
         }
 
@@ -125,9 +129,13 @@ namespace PowerArgs
         /// <param name="item">the data payload</param>
         public void Fire(T item)
         {
-            foreach (var subscriber in subscribers.Keys.ToArray())
+            var subs = subscribers?.Keys?.ToArray();
+            if (subs != null)
             {
-                subscriber(item);
+                for (var i = 0; i < subs.Length; i++)
+                {
+                    subs[i]?.Invoke(item);
+                }
             }
         }
 

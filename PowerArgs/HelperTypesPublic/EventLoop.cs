@@ -51,13 +51,20 @@ namespace PowerArgs
             public CustomSyncContext(EventLoop loop)
             {
                 this.loop = loop;
+                loop.OnDisposed(() => this.loop = null);
             }
 
-            public override void Post(SendOrPostCallback d, object state) => loop.InvokeNextCycle(() =>  d.Invoke(state));
+            public override void Post(SendOrPostCallback d, object state)
+            {
+                if (loop != null && loop.IsRunning && loop.IsDrainingOrDrained == false)
+                {
+                    loop.InvokeNextCycle(() => d.Invoke(state));
+                }
+            }
             
             public override void Send(SendOrPostCallback d, object state)
             {
-                if (Thread.CurrentThread != loop.Thread)
+                if (Thread.CurrentThread != loop?.Thread && loop != null && loop.IsRunning && loop.IsDrainingOrDrained == false)
                 {
                     loop.InvokeNextCycle(() => d.Invoke(state));
                 }
@@ -69,9 +76,10 @@ namespace PowerArgs
         }
 
         public Event<EventLoopExceptionArgs> UnhandledException { get; private set; } = new Event<EventLoopExceptionArgs>();
-        public Event StartOfCycle { get; set; } = new Event();
-        public Event EndOfCycle { get; set; } = new Event();
-        public Event LoopStarted { get; set; } = new Event();
+        public Event StartOfCycle { get; private set; } = new Event();
+        public Event EndOfCycle { get; private set; } = new Event();
+        public Event LoopStarted { get; private set; } = new Event();
+        public Event LoopStopped { get; private set; } = new Event();
         public Thread Thread { get; private set; }
 
         public ThreadPriority Priority { get; set; } = ThreadPriority.AboveNormal;
@@ -82,7 +90,9 @@ namespace PowerArgs
         private List<SynchronizedEvent> pendingWorkItems = new List<SynchronizedEvent>();
         private Deferred runDeferred;
         private bool stopRequested;
-
+        
+        public bool IsDrainingOrDrained { get; private set; }
+        private List<TaskCompletionSource<bool>> pendingYields = new List<TaskCompletionSource<bool>>();
 
         /// <summary>
         /// Runs the event loop on a new thread
@@ -116,8 +126,7 @@ namespace PowerArgs
 
         private void RunCommon()
         {
-            var syncContext = new CustomSyncContext(this);
-            SynchronizationContext.SetSynchronizationContext(syncContext);
+            SynchronizationContext.SetSynchronizationContext(new CustomSyncContext(this));
             try
             {
                 Loop();
@@ -131,109 +140,133 @@ namespace PowerArgs
 
         private void Loop()
         {
-            stopRequested = false;
-            Cycle = -1;
-            LoopStarted.Fire();
-            while (stopRequested == false)
+            try
             {
-                if (Cycle == long.MaxValue)
+                stopRequested = false;
+                Cycle = -1;
+                LoopStarted.Fire();
+                while (stopRequested == false)
                 {
-                    Cycle = 0;
-                }
-                else
-                {
-                    Cycle++;
-                }
-
-                try
-                {
-                    StartOfCycle.Fire();
-                }
-                catch (Exception ex)
-                {
-                    var handling = HandleWorkItemException(ex, null);
-                    if (handling == EventLoopExceptionHandling.Throw)
+                    if (Cycle == long.MaxValue)
                     {
-                        throw;
+                        Cycle = 0;
                     }
-                    else if (handling == EventLoopExceptionHandling.Stop)
+                    else
                     {
-                        break;
+                        Cycle++;
                     }
-                    else if (handling == EventLoopExceptionHandling.Swallow)
+
+                    try
                     {
-                        // swallow
+                        StartOfCycle.Fire();
                     }
-                }
-
-
-                List<SynchronizedEvent> todoOnThisCycle = new List<SynchronizedEvent>();
-                lock (workQueue)
-                {
-                    while (workQueue.Count > 0)
+                    catch (Exception ex)
                     {
-                        var workItem = workQueue[0];
-                        workQueue.RemoveAt(0);
-                        todoOnThisCycle.Add(workItem);
-                    }
-                }
-
-                for (var i = 0; i < pendingWorkItems.Count; i++)
-                {
-                    if (pendingWorkItems[i].IsFinished && pendingWorkItems[i].IsFailed)
-                    {
-                        var handling = HandleWorkItemException(pendingWorkItems[i].Exception, pendingWorkItems[i]);
+                        var handling = HandleWorkItemException(ex, null);
                         if (handling == EventLoopExceptionHandling.Throw)
                         {
-                            ExceptionDispatchInfo.Capture(pendingWorkItems[i].Exception).Throw(); 
+                            throw;
                         }
                         else if (handling == EventLoopExceptionHandling.Stop)
                         {
-                            return;
+                            break;
                         }
                         else if (handling == EventLoopExceptionHandling.Swallow)
                         {
                             // swallow
                         }
+                    }
 
-                        pendingWorkItems.RemoveAt(i--);
-                        if (stopRequested)
+
+                    List<SynchronizedEvent> todoOnThisCycle = new List<SynchronizedEvent>();
+                    lock (workQueue)
+                    {
+                        while (workQueue.Count > 0)
                         {
-                            return;
+                            var workItem = workQueue[0];
+                            workQueue.RemoveAt(0);
+                            todoOnThisCycle.Add(workItem);
                         }
                     }
-                    else if (pendingWorkItems[i].IsFinished)
-                    {
-                        pendingWorkItems[i].Deferred.Resolve();
-                        pendingWorkItems.RemoveAt(i--);
-                        if (stopRequested)
-                        {
-                            return;
-                        }
-                    }
-                }
 
-                foreach (var workItem in todoOnThisCycle)
-                {
-                    try
+                    for (var i = 0; i < pendingWorkItems.Count; i++)
                     {
-                        workItem.Run();
-                        if (workItem.IsFinished == false)
+                        if (pendingWorkItems[i].IsFinished && pendingWorkItems[i].IsFailed)
                         {
-                            pendingWorkItems.Add(workItem);
+                            var handling = HandleWorkItemException(pendingWorkItems[i].Exception, pendingWorkItems[i]);
+                            if (handling == EventLoopExceptionHandling.Throw)
+                            {
+                                ExceptionDispatchInfo.Capture(pendingWorkItems[i].Exception).Throw();
+                            }
+                            else if (handling == EventLoopExceptionHandling.Stop)
+                            {
+                                return;
+                            }
+                            else if (handling == EventLoopExceptionHandling.Swallow)
+                            {
+                                // swallow
+                            }
+
+                            pendingWorkItems.RemoveAt(i--);
+                            if (stopRequested)
+                            {
+                                return;
+                            }
                         }
-                        else
+                        else if (pendingWorkItems[i].IsFinished)
                         {
-                            workItem.Deferred.Resolve();
+                            pendingWorkItems[i].Deferred.Resolve();
+                            pendingWorkItems.RemoveAt(i--);
                             if (stopRequested)
                             {
                                 return;
                             }
                         }
                     }
+
+                    foreach (var workItem in todoOnThisCycle)
+                    {
+                        try
+                        {
+                            workItem.Run();
+                            if (workItem.IsFinished == false)
+                            {
+                                pendingWorkItems.Add(workItem);
+                            }
+                            else
+                            {
+                                workItem.Deferred.Resolve();
+                                if (stopRequested)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            var handling = HandleWorkItemException(ex, workItem);
+                            if (handling == EventLoopExceptionHandling.Throw)
+                            {
+                                throw;
+                            }
+                            else if (handling == EventLoopExceptionHandling.Stop)
+                            {
+                                return;
+                            }
+                            else if (handling == EventLoopExceptionHandling.Swallow)
+                            {
+                                // swallow
+                            }
+                        }
+                    }
+
+                    try
+                    {
+                        EndOfCycle.Fire();
+                    }
                     catch (Exception ex)
                     {
-                        var handling = HandleWorkItemException(ex, workItem);
+                        var handling = HandleWorkItemException(ex, null);
                         if (handling == EventLoopExceptionHandling.Throw)
                         {
                             throw;
@@ -248,27 +281,17 @@ namespace PowerArgs
                         }
                     }
                 }
-
-                try
+            }
+            finally
+            {
+                IsDrainingOrDrained = true;
+                foreach (var tcs in pendingYields.ToArray())
                 {
-                    EndOfCycle.Fire();
+                    tcs.SetResult(false);
+                    pendingYields.Remove(tcs);
                 }
-                catch (Exception ex)
-                {
-                    var handling = HandleWorkItemException(ex, null);
-                    if (handling == EventLoopExceptionHandling.Throw)
-                    {
-                        throw;
-                    }
-                    else if (handling == EventLoopExceptionHandling.Stop)
-                    {
-                        return;
-                    }
-                    else if (handling == EventLoopExceptionHandling.Swallow)
-                    {
-                        // swallow
-                    }
-                }
+                LoopStopped.Fire();
+                SynchronizationContext.SetSynchronizationContext(null);
             }
         }
 
@@ -289,6 +312,25 @@ namespace PowerArgs
             return Task.CompletedTask;
         });
 
+        public Task YieldAsync()
+        {
+            if (IsRunning && !IsDrainingOrDrained)
+            {
+                var tcs = new TaskCompletionSource<bool>();
+                pendingYields.Add(tcs);
+                InvokeNextCycle(() =>
+                {
+                    tcs.SetResult(true);
+                    pendingYields.Remove(tcs);
+                });
+                return tcs.Task;
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
+        }
+
         public Promise InvokeNextCycle(Action work)
         {
             return InvokeNextCycle(() =>
@@ -300,6 +342,13 @@ namespace PowerArgs
 
         public Promise InvokeNextCycle(Func<Task> work)
         {
+            if (IsRunning == false && IsDrainingOrDrained)
+            {
+                var d = Deferred.Create();
+                d.Resolve();
+                return d.Promise;
+            }
+
             var workItem = new SynchronizedEvent(work);
             lock (workQueue)
             {
@@ -311,6 +360,12 @@ namespace PowerArgs
 
         public Promise Invoke(Func<Task> work)
         {
+            if(IsRunning == false && IsDrainingOrDrained)
+            {
+                var d = Deferred.Create();
+                d.Resolve();
+                return d.Promise;
+            }
             var workItem = new SynchronizedEvent(work);
 
             if (Thread.CurrentThread == Thread)
