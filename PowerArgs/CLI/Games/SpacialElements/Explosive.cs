@@ -20,7 +20,6 @@ namespace PowerArgs.Games
         public ConsoleString ProjectilePen { get; set; }
         public Explosive(Weapon w) : base(w) 
         {
-            this.AngleIncrement = 5;
             Velocity.GlobalImpactOccurred.SubscribeForLifetime((impact) =>
             {
                 if(impact.MovingObject == this && CausesExplosion(impact.ObstacleHit))

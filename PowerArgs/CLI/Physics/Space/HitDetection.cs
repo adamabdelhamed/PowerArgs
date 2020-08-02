@@ -37,25 +37,31 @@ namespace PowerArgs.Cli.Physics
         public IEnumerable<IRectangularF> Obstacles { get; set; }
         public float Angle { get; set; }
         public float Visibility { get; set; } 
-        public float Precision { get; set; } = .2f;
+
+        public CastingMode Mode { get; set; } = CastingMode.Precise;
+    }
+
+    public enum CastingMode
+    {
+        Rough,
+        Precise
     }
 
     public static class HitDetection
     {
-        public static bool HasLineOfSight(this Velocity from, IRectangularF to, float? precision = null) => HasLineOfSight(from.Element, to, from.GetObstacles(), precision);
-        public static bool HasLineOfSight(this SpacialElement from, IRectangularF to, float? precision = null) => HasLineOfSight(from, to, from.GetObstacles(), precision);
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles, float? precision = null) => GetLineOfSightObstruction(from, to, obstacles, precision) == null;
+        public static bool HasLineOfSight(this Velocity from, IRectangularF to) => HasLineOfSight(from.Element, to, from.GetObstacles());
+        public static bool HasLineOfSight(this SpacialElement from, IRectangularF to) => HasLineOfSight(from, to, from.GetObstacles());
+        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles) => GetLineOfSightObstruction(from, to, obstacles) == null;
 
-        public static IRectangularF GetLineOfSightObstruction(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles, float? precision = null)
+        public static IRectangularF GetLineOfSightObstruction(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles)
         {
-            var effectivePrecision = precision.HasValue ? precision.Value : .2f;
             var prediction = PredictHit(new HitDetectionOptions()
             {
                 MovingObject = from,
                 Angle = from.Center().CalculateAngleTo(to.Center()),
                 Obstacles = obstacles.Union(new IRectangularF[] { to }),
                 Visibility = 3 * from.Center().CalculateDistanceTo(to.Center()),
-                Precision = effectivePrecision,
+                Mode = CastingMode.Rough,
             });
 
             if (prediction.Type == HitType.None)
@@ -80,80 +86,6 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public static HitPrediction PredictHitOld(HitDetectionOptions options)
-        {
-            HitPrediction prediction = new HitPrediction();
-            prediction.LKG = options.MovingObject.CopyBounds().TopLeft();
-            prediction.MovingObjectPosition = options.MovingObject.CopyBounds();
-            prediction.Visibility = options.Visibility;
-            if (options.Visibility == 0)
-            {
-                prediction.Direction = Direction.None;
-                prediction.Type = HitType.None;
-                return prediction;
-            }
-
-            var maxD = options.Visibility + options.Precision;
-            var effectiveObstacles = options.Obstacles.Where(o => o.CalculateDistanceTo(options.MovingObject) <= maxD).ToArray();
-
-            var endPoint = options.MovingObject.MoveTowards(options.Angle, options.Visibility);
-
-            for (var dPrime = options.Precision; dPrime <= maxD; dPrime += options.Precision)
-            {
-                var testArea = options.MovingObject.MoveTowards(options.Angle, dPrime);
-                prediction.Path.Add(testArea);
-
-                IRectangularF obstacleHit = null;
-
-                for (var i = 0; i < effectiveObstacles.Length; i++)
-                {
-                    var o = effectiveObstacles[i];
-                    var simpleTest = o.Touches(testArea);
-                    if (simpleTest == false) continue;
-
-                    if (o.Touches(options.MovingObject))
-                    {
-                        prediction.ElementWasAlreadyObstructed = true;
-                        var overlapBefore = options.MovingObject.NumberOfPixelsThatOverlap(o);
-                        var overlapAfter = testArea.NumberOfPixelsThatOverlap(o);
-
-                        IRectangularF testArea2 = null;
-                        while (overlapBefore == overlapAfter)
-                        {
-                            testArea2 = testArea2 ?? testArea.CopyBounds();
-                            testArea2 = testArea2.MoveTowards(options.Angle, options.Precision);
-                            overlapAfter = testArea2.NumberOfPixelsThatOverlap(o);
-                        }
-
-                        if (overlapAfter > overlapBefore)
-                        {
-                            obstacleHit = o;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        obstacleHit = o;
-                        break;
-                    }
-                }
-
-                if (obstacleHit != null)
-                {
-
-                    prediction.Type = HitType.Obstacle;
-                    prediction.ObstacleHit = obstacleHit;
-                    return prediction;
-                }
-                else
-                {
-                    prediction.LKG = testArea.TopLeft();
-                }
-            }
-
-            prediction.Type = HitType.None;
-            return prediction;
-        }
 
 
         public static HitPrediction PredictHit(HitDetectionOptions options)
@@ -169,36 +101,51 @@ namespace PowerArgs.Cli.Physics
                 return prediction;
             }
 
-            var viz = options.Visibility + options.Precision;
-
 
             var mov = options.MovingObject;
-            var rays = new List<Edge>()
+
+            List<Edge> rays;
+            if (options.Mode == CastingMode.Precise)
             {
-                new Edge() { From = mov.TopLeft(), To = mov.TopLeft().MoveTowards(options.Angle, viz, normalized:false) },
-                new Edge() { From = mov.TopRight(), To = mov.TopRight().MoveTowards(options.Angle, viz, normalized:false) },
-                new Edge() { From = mov.BottomLeft(), To = mov.BottomLeft().MoveTowards(options.Angle, viz, normalized:false) },
-                new Edge() { From = mov.BottomRight(), To = mov.BottomRight().MoveTowards(options.Angle, viz, normalized:false) },
+                rays = new List<Edge>()
+            {
+                new Edge() { From = mov.TopLeft(), To = mov.TopLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                new Edge() { From = mov.TopRight(), To = mov.TopRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                new Edge() { From = mov.BottomLeft(), To = mov.BottomLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                new Edge() { From = mov.BottomRight(), To = mov.BottomRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
             };
- 
-            var granularity = .5f;
 
-            for(var x = mov.Left+granularity ; x < mov.Left + mov.Width; x+= granularity)
-            {
-                var top = LocationF.Create(x, mov.Top);
-                var bot = LocationF.Create(x, mov.Bottom());
+                var granularity = .5f;
 
-                rays.Add(new Edge() { From = top, To = top.MoveTowards(options.Angle, viz, normalized: false) });
-                rays.Add(new Edge() { From = bot, To = bot.MoveTowards(options.Angle, viz, normalized: false) });
+                for (var x = mov.Left + granularity; x < mov.Left + mov.Width; x += granularity)
+                {
+                    var top = LocationF.Create(x, mov.Top);
+                    var bot = LocationF.Create(x, mov.Bottom());
+
+                    rays.Add(new Edge() { From = top, To = top.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                    rays.Add(new Edge() { From = bot, To = bot.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                }
+
+                for (var y = mov.Top + granularity; y < mov.Top + mov.Height; y += granularity)
+                {
+                    var left = LocationF.Create(mov.Left, y);
+                    var right = LocationF.Create(mov.Right(), y);
+
+                    rays.Add(new Edge() { From = left, To = left.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                    rays.Add(new Edge() { From = right, To = right.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                }
             }
-
-            for (var y = mov.Top + granularity; y < mov.Top + mov.Height; y += granularity)
+            else
             {
-                var left = LocationF.Create(mov.Left, y);
-                var right = LocationF.Create(mov.Right(), y);
-
-                rays.Add(new Edge() { From = left, To = left.MoveTowards(options.Angle, viz, normalized: false) });
-                rays.Add(new Edge() { From = right, To = right.MoveTowards(options.Angle, viz, normalized: false) });
+                var center = options.MovingObject.Center();
+                rays = new List<Edge>() 
+                {
+                    new Edge() { From = mov.TopLeft(), To = mov.TopLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                    new Edge() { From = mov.TopRight(), To = mov.TopRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                    new Edge() { From = mov.BottomLeft(), To = mov.BottomLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                    new Edge() { From = mov.BottomRight(), To = mov.BottomRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                    new Edge() { From = center, To = center.MoveTowards(options.Angle, options.Visibility, normalized: false) }
+                };
             }
 
             var closestIntersectionDistance = float.MaxValue;
@@ -218,7 +165,7 @@ namespace PowerArgs.Cli.Physics
                         if (intersection != null)
                         {
                             var d = ray.From.CalculateDistanceTo(intersection);
-                            if (d < closestIntersectionDistance && d <= viz)
+                            if (d < closestIntersectionDistance && d <= options.Visibility)
                             {
                                 closestIntersectionDistance = d;
                                 closestIntersectingElement = obstacle;
