@@ -1,9 +1,8 @@
 ﻿using System;
-using System.ComponentModel;
 
 namespace PowerArgs
 {
-    public class PropertyChangedSubscription : Subscription
+    public class PropertyChangedSubscription : Lifetime
     {
         public Action ChangeListener { get; private set; }
         public string PropertyName { get; private set; }
@@ -11,10 +10,11 @@ namespace PowerArgs
         {
             this.PropertyName = propertyName;
             this.ChangeListener = changeListener;
-            this.unsubscribeHandler = ()=>
+
+            this.OnDisposed(() =>
             {
                 unsubscribeCallback(this);
-            } ;
+            });
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace PowerArgs
 {
-    public interface ILifetime : ILifetimeManager
+    public interface ILifetime : ILifetimeManager, IDisposable
     {
         bool TryDispose();
         void Dispose();
@@ -227,9 +227,9 @@ namespace PowerArgs
                 IsExpiring = true;
                 try
                 {
-                    foreach (var item in _manager.ManagedItems.ToArray())
+                    foreach (var item in _manager.cleanupItems.ToArray())
                     {
-                        item?.Dispose();
+                        item();
                     }
                     _manager = null;
                 }

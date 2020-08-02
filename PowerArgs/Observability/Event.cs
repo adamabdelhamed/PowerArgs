@@ -10,7 +10,7 @@ namespace PowerArgs
     public class Event
     {
 
-        private Dictionary<Action, Subscription> subscribers;
+        private Dictionary<Action, ILifetimeManager> subscribers;
 
         /// <summary>
         /// returns true if there is at least one subscriber
@@ -39,7 +39,7 @@ namespace PowerArgs
         /// </summary>
         public Event()
         {
-            subscribers = new Dictionary<Action, Subscription>();
+            subscribers = new Dictionary<Action, ILifetimeManager>();
         }
 
         /// <summary>
@@ -47,9 +47,10 @@ namespace PowerArgs
         /// </summary>
         /// <param name="handler">the action to run when the event fires</param>
         /// <returns>A subscription that can be disposed when you no loner want to be notified from this event</returns>
-        public Subscription SubscribeUnmanaged(Action handler)
+        public ILifetime SubscribeUnmanaged(Action handler)
         {
-            var sub = new Subscription(() => { subscribers.Remove(handler); });
+            var sub = new Lifetime();
+            sub.OnDisposed(() => subscribers.Remove(handler));
             subscribers.Add(handler, sub);
             return sub;
         }
@@ -62,8 +63,11 @@ namespace PowerArgs
         /// <param name="lifetimeManager">the lifetime manager that determines when to stop being notified</param>
         public void SubscribeForLifetime(Action handler, ILifetimeManager lifetimeManager)
         {
-            var sub = SubscribeUnmanaged(handler);
-            lifetimeManager.OnDisposed(sub.Dispose);
+            if (lifetimeManager.IsExpired == false)
+            {
+                subscribers.Add(handler, lifetimeManager);
+                lifetimeManager.OnDisposed(() => subscribers.Remove(handler));
+            }
         }
 
         /// <summary>
@@ -102,7 +106,7 @@ namespace PowerArgs
     public class Event<T>
     {
 
-        private Dictionary<Action<T>, Subscription> subscribers;
+        private Dictionary<Action<T>, ILifetimeManager> subscribers;
 
         /// <summary>
         /// returns true if there is at least one subscriber
@@ -132,7 +136,7 @@ namespace PowerArgs
         /// </summary>
         public Event()
         {
-            subscribers = new Dictionary<Action<T>, Subscription>();
+            subscribers = new Dictionary<Action<T>, ILifetimeManager>();
         }
 
 
@@ -141,9 +145,10 @@ namespace PowerArgs
         /// </summary>
         /// <param name="handler">the action to run when the event fires</param>
         /// <returns>a subscription that can be disposed when you no longer want to be notified from this event</returns>
-        public Subscription SubscribeUnmanaged(Action<T> handler)
+        public ILifetime SubscribeUnmanaged(Action<T> handler)
         {
-            var sub = new Subscription(() => { subscribers.Remove(handler); });
+            var sub = new Lifetime();
+            sub.OnDisposed(() => subscribers.Remove(handler));
             subscribers.Add(handler, sub);
             return sub;
         }
@@ -156,8 +161,11 @@ namespace PowerArgs
         /// <param name="lifetimeManager">the lifetime manager that determines when to stop being notified by this event</param>
         public void SubscribeForLifetime(Action<T> handler, ILifetimeManager lifetimeManager)
         {
-            var sub = SubscribeUnmanaged(handler);
-            lifetimeManager.OnDisposed(sub.Dispose);
+            if (lifetimeManager.IsExpired == false)
+            {
+                subscribers.Add(handler, lifetimeManager);
+                lifetimeManager.OnDisposed(() => subscribers.Remove(handler));
+            }
         }
 
         /// <summary>

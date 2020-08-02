@@ -28,11 +28,24 @@ namespace PowerArgs.Cli.Physics
             renderers = new Dictionary<SpacialElement, SpacialElementRenderer>();
             thingBinder = new SpacialElementBinder();
             resetHandle = new AutoResetEvent(false);
-            this.SpaceTime = time ?? new SpaceTime(w, h, increment: TimeSpan.FromSeconds(.05));
+           
+            this.SpaceTime = time;
+            if (this.SpaceTime == null)
+            {
+                this.SpaceTime = new SpaceTime(w, h, increment: TimeSpan.FromSeconds(.05));
+                this.OnDisposed(() =>
+                {
+                    if(this.SpaceTime.IsRunning)
+                    {
+                        this.SpaceTime.Stop();
+                    }
+                    this.SpaceTime = null;
+                });
+            }
+
             this.SpaceTime.Invoke(() =>
             {
                 RealTimeViewing = new RealTimeViewingFunction(this.SpaceTime) { Enabled = true };
-                this.SpaceTime.ChangeTrackingEnabled = true;
                 this.SpaceTime.EndOfCycle.SubscribeForLifetime(() => UpdateViewInternal(), this);
              });
 
@@ -41,19 +54,21 @@ namespace PowerArgs.Cli.Physics
                 this.OnDisposed(()=> resetHandle.Set());
             }, this);
 
-            this.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>
-            {
-                resetHandle.Set();
-                Application?.InvokeNextCycle(() =>
-                {
-                    if (PropagateExceptions)
-                    {
-                        throw new AggregateException(ex.Exception);
-                    }
-                });
-            }, this);
+            this.SpaceTime.UnhandledException.SubscribeForLifetime(OnSpaceTimeException, this);
 
             this.SubscribeForLifetime(nameof(Bounds), () => { resizedSinceLastRender = false; }, this);
+        }
+
+        private void OnSpaceTimeException(EventLoop.EventLoopExceptionArgs  ex)
+        {
+            resetHandle.Set();
+            Application?.InvokeNextCycle(() =>
+            {
+                if (PropagateExceptions)
+                {
+                    throw new AggregateException(ex.Exception);
+                }
+            });
         }
 
         private void UpdateViewInternal()

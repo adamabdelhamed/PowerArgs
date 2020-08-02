@@ -35,6 +35,15 @@ namespace PowerArgs.Cli
             Controls.Added.SubscribeForLifetime((c) => { c.Parent = this; }, this);
             Controls.AssignedToIndex.SubscribeForLifetime((assignment) => throw new NotSupportedException("Index assignment is not supported in Controls collection"), this);
             Controls.Removed.SubscribeForLifetime((c) => { c.Parent = null; }, this);
+
+            this.OnDisposed(() =>
+            {
+                foreach(var child in Controls.ToArray())
+                {
+                    child.TryDispose();
+                }
+            });
+
             this.CanFocus = false;
         }
 

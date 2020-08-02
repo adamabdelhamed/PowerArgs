@@ -15,13 +15,13 @@ namespace PowerArgs.Cli.Physics
         public float Height { get; private set; }
         public IRectangularF Bounds { get; private set; }
         public void ClearChanges() => ChangeTracker.ClearChanges();
-        public bool ChangeTrackingEnabled { get => ChangeTracker.Enabled; set => ChangeTracker.Enabled = value; }
+ 
         public IReadOnlyList<SpacialElement> ChangedElements => ChangeTracker.ChangedElements;
         public IReadOnlyList<SpacialElement> AddedElements => ChangeTracker.AddedElements;
         public IReadOnlyList<SpacialElement> RemovedElements => ChangeTracker.RemovedElements;
         public IEnumerable<SpacialElement> Elements => Functions.Where(f => f is SpacialElement).Select(f => f as SpacialElement);
 
-        private SpacialChangeTracker ChangeTracker { get; set; } = new SpacialChangeTracker();
+        private SpacialChangeTracker ChangeTracker { get; set; } 
         private IDisposable addedSub, removedSub;
 
         public SpaceTime(float width, float height, TimeSpan? increment = null, TimeSpan? now = null) : base(increment, now)
@@ -29,6 +29,11 @@ namespace PowerArgs.Cli.Physics
             this.Width = width;
             this.Height = height;
             this.Bounds = RectangularF.Create(0, 0, Width, Height);
+            Invoke(() =>
+            {
+                this.ChangeTracker = new SpacialChangeTracker();
+                this.OnDisposed(ChangeTracker.Dispose);
+            });
             addedSub = this.TimeFunctionAdded.SubscribeUnmanaged((f) =>
             {
                 if (f is SpacialElement)
@@ -43,39 +48,35 @@ namespace PowerArgs.Cli.Physics
                 {
                     SpacialElementRemoved.Fire(f as SpacialElement);
                 }
-            });
+            });  
         }
     }
 
-    public class SpacialChangeTracker
+    public class SpacialChangeTracker : Lifetime
     {
         private List<SpacialElement> added = new List<SpacialElement>();
         private List<SpacialElement> removed = new List<SpacialElement>();
         private List<SpacialElement> changed = new List<SpacialElement>();
-        private Lifetime enablementLifetime = null;
-
-        public bool Enabled
-        {
-            get
-            {
-                return enablementLifetime != null;
-            }
-            set
-            {
-                if (value && !Enabled)
-                {
-                    Enable();
-                }
-                else if (!value && Enabled)
-                {
-                    Disable();
-                }
-            }
-        }
+  
 
         public IReadOnlyList<SpacialElement> ChangedElements => changed.AsReadOnly();
         public IReadOnlyList<SpacialElement> AddedElements => added.AsReadOnly();
         public IReadOnlyList<SpacialElement> RemovedElements => removed.AsReadOnly();
+
+        public SpacialChangeTracker()
+        {
+#if DEBUG
+            Time.AssertTimeThread();
+#endif
+
+            foreach (var element in SpaceTime.CurrentSpaceTime.Elements)
+            {
+                ConnectToElement(element);
+            }
+
+            SpaceTime.CurrentSpaceTime.SpacialElementAdded
+                .SubscribeForLifetime((element) => ConnectToElement(element), this);
+        }
 
         public void ClearChanges()
         {
@@ -89,29 +90,8 @@ namespace PowerArgs.Cli.Physics
             changed.Clear();
         }
 
-        private void Enable()
-        {
-#if DEBUG
-            Time.AssertTimeThread();
-#endif
-            enablementLifetime = new Lifetime();
-            enablementLifetime.OnDisposed(() => { enablementLifetime = null; });
-            foreach (var element in SpaceTime.CurrentSpaceTime.Elements)
-            {
-                ConnectToElement(element);
-            }
-
-            SpaceTime.CurrentSpaceTime.SpacialElementAdded
-                .SubscribeForLifetime((element) => ConnectToElement(element), enablementLifetime);
-        }
-
-        private void Disable()
-        {
-#if DEBUG
-            Time.AssertTimeThread();
-#endif
-            enablementLifetime.Dispose();
-        }
+    
+ 
 
         private void ConnectToElement(SpacialElement element)
         {
@@ -134,7 +114,7 @@ namespace PowerArgs.Cli.Physics
                     changed.Add(element);
                     element.InternalSpacialState.Changed = true;
                 }
-            }, Lifetime.EarliestOf(enablementLifetime, element.Lifetime));
+            }, Lifetime.EarliestOf(this, element.Lifetime));
         }
     }
 }

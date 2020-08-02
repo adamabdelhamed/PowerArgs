@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PowerArgs
 {
-    public class EventLoop
+    public class EventLoop : Lifetime
     {
         private class SynchronizedEvent
         {
@@ -159,6 +159,8 @@ namespace PowerArgs
                     else if (handling == EventLoopExceptionHandling.Stop)
                     {
                         stopRequested = true;
+                        pendingWorkItems.Clear();
+                        workQueue.Clear();
                         return;
                     }
                     else if (handling == EventLoopExceptionHandling.Swallow)

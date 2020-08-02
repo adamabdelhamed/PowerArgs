@@ -52,27 +52,20 @@ namespace PowerArgs
     /// </summary>
     public class LifetimeManager : ILifetimeManager
     {
-        private List<IDisposable> _managedItems;
+        internal List<Action> cleanupItems;
 
         /// <summary>
         /// returns true if expired
         /// </summary>
         public bool IsExpired { get; internal set; }
 
-        internal IReadOnlyCollection<IDisposable> ManagedItems
-        {
-            get
-            {
-                return _managedItems.AsReadOnly();
-            }
-        }
 
         /// <summary>
         /// Creates the lifetime manager
         /// </summary>
         public LifetimeManager()
         {
-            _managedItems = new List<IDisposable>();
+            cleanupItems = new List<Action>();
         }
 
         /// <summary>
@@ -92,11 +85,11 @@ namespace PowerArgs
         public Promise OnDisposed(Action cleanupCode)
         {
             var d = Deferred.Create();
-            _managedItems.Add(new Subscription(()=>
+            cleanupItems.Add(()=>
             {
                 cleanupCode();
                 d.Resolve();
-            }));
+            });
             return d.Promise;
         }
     }

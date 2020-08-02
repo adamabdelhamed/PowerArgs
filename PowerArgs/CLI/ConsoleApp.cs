@@ -9,7 +9,7 @@ namespace PowerArgs.Cli
     /// <summary>
     /// A class representing a console application that uses a message pump to synchronize work on a UI thread
     /// </summary>
-    public class ConsoleApp : EventLoop, IObservableObject, ILifetime
+    public class ConsoleApp : EventLoop, IObservableObject
     {
         [ThreadStatic]
         private static ConsoleApp _current;
@@ -425,6 +425,7 @@ namespace PowerArgs.Cli
                 Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             }
             _current = null;
+            LayoutRoot.Dispose();
             Stopped.Fire();
             Dispose();
         }
@@ -556,15 +557,8 @@ namespace PowerArgs.Cli
 
         public T Get<T>([CallerMemberName]string name = null) => observable.Get<T>(name);
         public void Set<T>(T value, [CallerMemberName]string name = null) => observable.Set<T>(value, name);
+ 
 
-        private Lifetime lifetime = new Lifetime();
-        public Promise OnDisposed(Action cleanupCode) => lifetime.OnDisposed(cleanupCode);
-        public Promise OnDisposed(IDisposable obj) => lifetime.OnDisposed(obj);
-        public bool IsExpired => lifetime.IsExpired;
-        public bool TryDispose() => lifetime.TryDispose();
-        public void Dispose() => lifetime.Dispose();
-
-      
     }
 
     internal class TimerDisposer : Disposable

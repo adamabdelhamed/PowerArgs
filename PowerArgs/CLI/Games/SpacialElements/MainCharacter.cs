@@ -38,26 +38,19 @@ namespace PowerArgs.Games
 
         public ConsoleColor Color { get; set; } = ConsoleColor.Magenta;
 
-        private static Dictionary<SpaceTime, MainCharacter> mainCharacters = new Dictionary<SpaceTime, MainCharacter>();
+        [ThreadStatic]
+        private static MainCharacter _current;
         public static MainCharacter Current
         {
             get
             {
-                if (SpaceTime.CurrentSpaceTime == null) return null;
-                else if (mainCharacters.ContainsKey(SpaceTime.CurrentSpaceTime) == false) return null;
-                return mainCharacters[SpaceTime.CurrentSpaceTime];
+                return _current;
             }
             private set
             {
                 SpaceTime.AssertTimeThread();
-                if (mainCharacters.ContainsKey(SpaceTime.CurrentSpaceTime))
-                {
-                    mainCharacters[SpaceTime.CurrentSpaceTime] = value;
-                }
-                else
-                {
-                    mainCharacters.Add(SpaceTime.CurrentSpaceTime, value);
-                }
+                if (_current != null) throw new Exception("Already a Main character");
+                _current = value;
             }
         }
 
@@ -71,6 +64,13 @@ namespace PowerArgs.Games
             this.Added.SubscribeForLifetime(() =>
             {
                 Current = this;
+                this.Lifetime.OnDisposed(() =>
+                {
+                    if(_current == this)
+                    {
+                        _current = null;
+                    }
+                });
             }, this.Lifetime);
 
             this.Inventory.SubscribeForLifetime(nameof(Inventory.PrimaryWeapon), () =>

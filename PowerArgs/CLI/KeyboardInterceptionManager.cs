@@ -62,7 +62,7 @@ namespace PowerArgs.Cli
         }
 
         
-        internal Subscription PushUnmanaged(ConsoleKey key, ConsoleModifiers? modifier, Action<ConsoleKeyInfo> handler)
+        internal ILifetime PushUnmanaged(ConsoleKey key, ConsoleModifiers? modifier, Action<ConsoleKeyInfo> handler)
         {
             Dictionary<ConsoleKey, Stack<Action<ConsoleKeyInfo>>> target;
 
@@ -80,15 +80,17 @@ namespace PowerArgs.Cli
             }
 
             targetStack.Push(handler);
-            var sub = new Subscription(() => 
+            var lt = new Lifetime();
+            lt.OnDisposed(() =>
             {
                 targetStack.Pop();
-                if(targetStack.Count == 0)
+                if (targetStack.Count == 0)
                 {
                     target.Remove(key);
                 }
             });
-            return sub;
+
+            return lt;
         }
 
         /// <summary>
@@ -110,7 +112,7 @@ namespace PowerArgs.Cli
         /// <param name="modifier">the modifier, or null if you want to handle the unmodified keypress</param>
         /// <param name="handler">the code to run when the key input is intercepted</param>
         /// <returns>A subscription that you should dispose when you no longer want this interception to happen</returns>
-        public Subscription PushUnmanaged(ConsoleKey key, ConsoleModifiers? modifier, Action handler)
+        public ILifetime PushUnmanaged(ConsoleKey key, ConsoleModifiers? modifier, Action handler)
         {
             return PushUnmanaged(key, modifier, (k) => { handler(); });
         }
