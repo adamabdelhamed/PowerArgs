@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PowerArgs
 {
-    public class EventLoop : Lifetime
+    public class EventLoop : Lifetime, IYieldProvider
     {
         private class SynchronizedEvent
         {
@@ -102,7 +102,6 @@ namespace PowerArgs
         public virtual Promise Start()
         {
             runDeferred = Deferred.Create();
-            runDeferred.Promise.Finally((p) => { runDeferred = null; });
             Thread = new Thread(RunCommon) { Name = Name };
             Thread.Priority = Priority;
             Thread.IsBackground = true;
@@ -118,7 +117,7 @@ namespace PowerArgs
             runDeferred = Deferred.Create();
             runDeferred.Promise.Finally((p) => { runDeferred = null; });
             RunCommon();
-            if(runDeferred.Exception != null)
+            if (runDeferred.Exception != null)
             {
                 throw new PromiseWaitException(runDeferred.Exception);
             }
@@ -135,6 +134,10 @@ namespace PowerArgs
             catch (Exception ex)
             {
                 runDeferred.Reject(ex);
+            }
+            finally
+            {
+                runDeferred = null;
             }
         }
 
@@ -401,6 +404,8 @@ namespace PowerArgs
                 workQueue.Clear();
                 return EventLoopExceptionHandling.Stop;
             }
+
+            if (IsDrainingOrDrained) return EventLoopExceptionHandling.Swallow;
 
             if (workItem != null && workItem.Deferred.HasExceptionListeners)
             {

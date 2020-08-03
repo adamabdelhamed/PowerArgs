@@ -3,10 +3,19 @@ using System.Threading.Tasks;
 
 namespace PowerArgs
 {
+    public interface IYieldProvider
+    {
+        /// <summary>
+        /// Yields immidiately
+        /// </summary>
+        /// <returns>an async task</returns>
+        Task YieldAsync();
+    }
+
     /// <summary>
     /// An abstraction for time delay so that we can have a consistent delay API across wall clock time and Time simulation time
     /// </summary>
-    public interface IDelayProvider
+    public interface IDelayProvider : IYieldProvider
     {
         /// <summary>
         /// Delays for the given time
@@ -56,12 +65,6 @@ namespace PowerArgs
         /// <param name="maxDeltaPercentage">max variance</param>
         /// <returns>an async task</returns>
         Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1);
-
-        /// <summary>
-        /// Yields immidiately
-        /// </summary>
-        /// <returns>an async task</returns>
-        Task YieldAsync();
 
         void DelayThen(float delay, Action then);
     }
