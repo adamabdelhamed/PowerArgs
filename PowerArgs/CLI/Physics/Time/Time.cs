@@ -29,6 +29,7 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         public Event<ITimeFunction> TimeFunctionRemoved { get; private set; } = new Event<ITimeFunction>();
 
+        public static bool CanInvoke => SpaceTime.CurrentSpaceTime != null && SpaceTime.CurrentSpaceTime.IsDrainingOrDrained == false;
 
         /// <summary>
         /// The current time

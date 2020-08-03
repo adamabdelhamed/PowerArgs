@@ -237,7 +237,7 @@ namespace PowerArgs.Cli
             this.Id = GetType().FullName+"-"+ Guid.NewGuid().ToString();
             this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> 
             {
-                if (Application != null && Application.IsRunning)
+                if (Application != null && Application.IsRunning && Application.IsDrainingOrDrained == false)
                 {
                     ConsoleApp.AssertAppThread(Application);
                     Application.Paint();
