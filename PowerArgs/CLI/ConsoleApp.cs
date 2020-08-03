@@ -45,7 +45,7 @@ namespace PowerArgs.Cli
 
         private IConsoleProvider console;
         private int lastConsoleWidth, lastConsoleHeight;
- 
+
         private List<IDisposable> timerHandles = new List<IDisposable>();
 
         private FrameRateMeter cycleRateMeter;
@@ -174,7 +174,7 @@ namespace PowerArgs.Cli
         /// <param name="y">The right position on the target console to bound this app</param>
         /// <param name="w">The width of the app</param>
         /// <param name="h">The height of the app</param>
-        public ConsoleApp(int x, int y, int w, int h) 
+        public ConsoleApp(int x, int y, int w, int h)
         {
             this.Name = GetType().Name;
             this.console = ConsoleProvider.Current;
@@ -192,7 +192,7 @@ namespace PowerArgs.Cli
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
             AutoFillOnConsoleResize = false;
-            FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), ()=> Paint(), this);
+            FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), () => Paint(), this);
             LayoutRoot.Controls.BeforeAdded.SubscribeForLifetime((c) => { c.Application = this; c.BeforeAddedToVisualTreeInternal(); }, this);
             LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, this);
             LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, this);
@@ -204,10 +204,10 @@ namespace PowerArgs.Cli
 
         private void DrainPaints()
         {
-            if(paintRequests.Count > 0)
+            if (paintRequests.Count > 0)
             {
                 PaintInternal();
-                foreach(var request in paintRequests)
+                foreach (var request in paintRequests)
                 {
                     request.Resolve();
                 }
@@ -226,7 +226,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Creates a full screen console app that will automatically adjust its layout if the window size changes
         /// </summary>
-        public ConsoleApp() : this(0,0,ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight-1)
+        public ConsoleApp() : this(0, 0, ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight - 1)
         {
             this.AutoFillOnConsoleResize = true;
         }
@@ -249,11 +249,11 @@ namespace PowerArgs.Cli
         public static void Show(Action<ConsoleApp> init)
         {
             var app = new ConsoleApp();
-            app.InvokeNextCycle(()=>init(app));
+            app.InvokeNextCycle(() => init(app));
             app.Start().Wait();
         }
 
-   
+
 
         /// <summary>
         /// Starts the app, asynchronously.
@@ -263,7 +263,7 @@ namespace PowerArgs.Cli
         {
             if (SetFocusOnStart)
             {
-                InvokeNextCycle(() => 
+                InvokeNextCycle(() =>
                 {
                     FocusManager.TryMoveFocus();
                 });
@@ -271,7 +271,7 @@ namespace PowerArgs.Cli
 
             Paint();
 
-            return base.Start().Finally((p)=>
+            return base.Start().Finally((p) =>
             {
                 ExitInternal();
             });
@@ -279,14 +279,14 @@ namespace PowerArgs.Cli
 
         private void HandleDebouncedResize()
         {
-            if(Bitmap.Console.BufferWidth < 1 || Bitmap.Console.WindowHeight - 1 < 1)
+            if (Bitmap.Console.BufferWidth < 1 || Bitmap.Console.WindowHeight - 1 < 1)
             {
                 return;
             }
 
-            if(AutoFillOnConsoleResize)
+            if (AutoFillOnConsoleResize)
             {
-               
+
                 Bitmap.Resize(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
                 this.LayoutRoot.Size = new Size(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
             }
@@ -310,7 +310,7 @@ namespace PowerArgs.Cli
             c.Application = this;
             c.OnDisposed(() =>
             {
-                if(c.Application == this && c.Parent != null && c.Parent.Application == this)
+                if (c.Application == this && c.Parent != null && c.Parent.Application == this)
                 {
                     if (c.Parent is ConsolePanel)
                     {
@@ -328,7 +328,7 @@ namespace PowerArgs.Cli
                 var childPanel = c as ConsolePanel;
                 childPanel.Controls.SynchronizeForLifetime((cp) => { ControlAddedToVisualTree(cp); }, (cp) => { ControlRemovedFromVisualTree(cp); }, () => { }, c);
             }
-            else if(c is ProtectedConsolePanel)
+            else if (c is ProtectedConsolePanel)
             {
                 var childPanel = c as ProtectedConsolePanel;
                 ControlAddedToVisualTree(childPanel.ProtectedPanelInternal);
@@ -493,18 +493,28 @@ namespace PowerArgs.Cli
         /// <param name="a">The action to schedule for periodic processing</param>
         /// <param name="interval">the execution interval for the action</param>
         /// <returns>A handle that can be passed to ClearInterval if you want to cancel the work</returns>
-        public IDisposable SetInterval(Action a, TimeSpan interval)
+        public SetIntervalHandle SetInterval(Action a, TimeSpan interval)
         {
-            var lt = new Lifetime();
+            var handle = new SetIntervalHandle(interval);
             Invoke(async () =>
             {
-                while(IsRunning && IsDrainingOrDrained == false && lt.IsExpired == false)
+                while (IsRunning && IsDrainingOrDrained == false && handle.IsExpired == false)
                 {
-                    await Task.Delay(interval);
+                    await Task.Delay(handle.Interval);
                     a();
                 }
             });
-            return lt;
+            return handle;
+        }
+
+        /// <summary>
+        /// Updates a previously scheduled interval
+        /// </summary>
+        /// <param name="handle">the handle that was returned by a previous call to setInterval</param>
+        /// <param name="newInterval">the new interval</param>
+        public void ChangeInterval(SetIntervalHandle handle, TimeSpan newInterval)
+        {
+            handle.Interval = newInterval;
         }
 
         /// <summary>
@@ -518,24 +528,14 @@ namespace PowerArgs.Cli
             var lt = new Lifetime();
             Invoke(async () =>
             {
-                if(IsRunning && IsDrainingOrDrained == false && lt.IsExpired == false)
-                await Task.Delay(period);
-                a();    
+                if (IsRunning && IsDrainingOrDrained == false && lt.IsExpired == false)
+                    await Task.Delay(period);
+                a();
             });
             return lt;
         }
 
-        /// <summary>
-        /// Updates a previously scheduled interval
-        /// </summary>
-        /// <param name="handle">the handle that was returned by a previous call to setInterval</param>
-        /// <param name="newInterval">the new interval</param>
-        public void ChangeInterval(IDisposable handle, TimeSpan newInterval)
-        {
-            var disposer = handle as TimerDisposer;
-            if (disposer == null) throw new ArgumentException($"The argument was not provided by {nameof(SetInterval)}");
-            disposer.Timer.Change(newInterval, newInterval);
-        }
+
 
 
 
@@ -572,32 +572,19 @@ namespace PowerArgs.Cli
         public object GetPrevious(string propertyName) => ((IObservableObject)observable).GetPrevious(propertyName);
         public Lifetime GetPropertyValueLifetime(string propertyName) => observable.GetPropertyValueLifetime(propertyName);
 
-        public T Get<T>([CallerMemberName]string name = null) => observable.Get<T>(name);
-        public void Set<T>(T value, [CallerMemberName]string name = null) => observable.Set<T>(value, name);
- 
+        public T Get<T>([CallerMemberName] string name = null) => observable.Get<T>(name);
+        public void Set<T>(T value, [CallerMemberName] string name = null) => observable.Set<T>(value, name);
+
 
     }
 
-    internal class TimerDisposer : Disposable
+    public class SetIntervalHandle : Lifetime
     {
-        public Timer Timer { get; private set; }
-        private List<IDisposable> tracker;
-        public TimerDisposer(Timer t, List<IDisposable> tracker)
+        public TimeSpan Interval { get; internal set; }
+
+        public SetIntervalHandle(TimeSpan interval)
         {
-            this.Timer = t;
-            this.tracker = tracker;
-            lock (tracker)
-            {
-                tracker.Add(this);
-            }
-        }
-        protected override void DisposeManagedResources()
-        {
-            Timer.Dispose();
-            lock (tracker)
-            {
-                tracker.Remove(this);
-            }
+            this.Interval = interval;
         }
     }
 }

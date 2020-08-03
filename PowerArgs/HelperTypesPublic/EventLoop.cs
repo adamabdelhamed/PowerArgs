@@ -290,7 +290,7 @@ namespace PowerArgs
                 IsDrainingOrDrained = true;
                 foreach (var tcs in pendingYields.ToArray())
                 {
-                    tcs.SetResult(false);
+                    tcs.SetException(new StopLoopException());
                     pendingYields.Remove(tcs);
                 }
                 LoopStopped.Fire();
@@ -365,9 +365,7 @@ namespace PowerArgs
         {
             if(IsRunning == false && IsDrainingOrDrained)
             {
-                var d = Deferred.Create();
-                d.Resolve();
-                return d.Promise;
+                throw new StopLoopException();
             }
             var workItem = new SynchronizedEvent(work);
 

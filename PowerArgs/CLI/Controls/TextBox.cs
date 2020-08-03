@@ -14,7 +14,7 @@ namespace PowerArgs.Cli
         private RichTextEditor textState;
         private bool blinkState;
 
-        private IDisposable blinkTimerHandle;
+        private SetIntervalHandle blinkTimerHandle;
 
         /// <summary>
         /// Gets the editor object that controls the rich text capabilities of the text box
