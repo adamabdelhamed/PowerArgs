@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -47,7 +48,14 @@ namespace PowerArgs
         {
             while (manager != null && manager.IsExpired == false)
             {
-                await Task.Delay(10);
+                if (Time.CurrentTime != null)
+                {
+                    await Time.CurrentTime.YieldAsync();
+                }
+                else
+                {
+                    await Task.Yield();
+                }
             }
         }
     }
