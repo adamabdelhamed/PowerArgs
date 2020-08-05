@@ -30,6 +30,11 @@ namespace PowerArgs
         /// returns true if expired
         /// </summary>
         bool IsExpired { get;  }
+
+        /// <summary>
+        /// returns true if expiring
+        /// </summary>
+        bool IsExpiring { get; }
     }
 
     public static class ILifetimeManagerEx
@@ -58,7 +63,7 @@ namespace PowerArgs
         /// returns true if expired
         /// </summary>
         public bool IsExpired { get; internal set; }
-
+        public bool IsExpiring { get; internal set; }
 
         /// <summary>
         /// Creates the lifetime manager

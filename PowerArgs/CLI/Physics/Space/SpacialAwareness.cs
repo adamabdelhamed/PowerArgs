@@ -300,9 +300,9 @@ namespace PowerArgs.Cli.Physics
 
         public static ILocationF GetNudgeLocation(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0, int? z = null)
         {
-            desiredLocation = desiredLocation ?? el;
+            desiredLocation = desiredLocation ?? el.EffectiveBounds();
             var obstacles = el.GetObstacles(z: z);
-            if (obstacles.Where(o => o.Touches(desiredLocation)).Any())
+            if (obstacles.Where(o => o.Touches(desiredLocation)).Any() || SpaceTime.CurrentSpaceTime.Bounds.Contains(desiredLocation) == false)
             {
                 foreach (var angle in Enumerate360Angles(optimalAngle))
                 {

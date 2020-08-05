@@ -225,6 +225,7 @@ namespace PowerArgs
             if (!IsExpired)
             {
                 IsExpiring = true;
+                _manager.IsExpiring = true;
                 try
                 {
                     foreach (var item in _manager.cleanupItems.ToArray())
