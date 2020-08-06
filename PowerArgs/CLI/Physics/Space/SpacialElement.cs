@@ -141,14 +141,18 @@ namespace PowerArgs.Cli.Physics
 
     public static class IHaveMassBoundsEx
     {
-        public static IRectangularF CalculateMassBounds(this IHaveMassBounds mass)
+        public static IRectangularF CalculateMassBounds(this IHaveMassBounds mass) => CalculateMassBounds(mass.Elements.As<ISpacialElement>().Concat(new ISpacialElement[] { mass }));
+
+        public static IRectangularF CalculateMassBounds(params IRectangularF[] parts) => parts.CalculateMassBounds();
+        
+        public static IRectangularF CalculateMassBounds(this IEnumerable<IRectangularF> parts)
         {
             var left = float.MaxValue;
             var top = float.MaxValue;
             var right = float.MinValue;
             var bottom = float.MinValue;
 
-            foreach (var part in mass.Elements.As<ISpacialElement>().Concat(new ISpacialElement[] { mass }))
+            foreach (var part in parts)
             {
                 left = Math.Min(left, part.Left);
                 top = Math.Min(top, part.Top);

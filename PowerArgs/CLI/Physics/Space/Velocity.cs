@@ -44,6 +44,8 @@ namespace PowerArgs.Cli.Physics
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
         public Func<IEnumerable<SpacialElement>> HitDetectionDynamicExclusions { get; set; }
 
+        public Func<IRectangularF> BoundsTransform { get; set; }
+
         public Event OnAngleChanged { get; private set; } = new Event();
         public Event OnSpeedChanged { get; private set; } = new Event();
         private float angle;
@@ -127,7 +129,7 @@ namespace PowerArgs.Cli.Physics
             while (this.Lifetime.IsExpired == false)
             {
                 await Time.CurrentTime.YieldAsync();
-
+                if (this.Lifetime.IsExpired) return;
                 if (MovementTakeover != null)
                 {
                     await MovementTakeover();
@@ -146,7 +148,9 @@ namespace PowerArgs.Cli.Physics
 
                 var obstacles = GetObstacles();
 
-                var bounds = Element;
+                var bounds = BoundsTransform != null ? BoundsTransform() : Element;
+                var dx = BoundsTransform != null ? bounds.Left - Element.Left : 0;
+                var dy = BoundsTransform != null ? bounds.Top - Element.Top : 0;
 
                 var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
                 {
@@ -158,26 +162,19 @@ namespace PowerArgs.Cli.Physics
                 LastPrediction = hitPrediction;
                 if (hitPrediction.Type != HitType.None)
                 {
-                    if (hitPrediction.LKG != null && Element.TopLeft().Equals(hitPrediction.LKG) == false)
+                    var proposedBounds = BoundsTransform != null ? BoundsTransform() : Element;
+                    var distanceToObstacleHit = proposedBounds.CalculateDistanceTo(hitPrediction.ObstacleHit);
+                    if (distanceToObstacleHit > .5f)
                     {
-                        var lkgd = hitPrediction.LKGD;
-                        var problem = Element.GetObstacleIfMovedTo(RectangularF.Create(hitPrediction.LKG.Left, hitPrediction.LKG.Top, Element.Width, Element.Height));
-                        
-                        while(problem != null && lkgd > 0)
-                        {
-                            lkgd -= .1f;
-                            var lkg = Element.MoveTowards(Angle, lkgd, normalized: false);
-                            problem = Element.GetObstacleIfMovedTo(RectangularF.Create(lkg.Left, lkg.Top, Element.Width, Element.Height));
-                        }
-                        
-                        if (problem == null)
-                        {
-                            Element.MoveTo(hitPrediction.LKG.Left, hitPrediction.LKG.Top);
-                            haveMovedSinceLastHitDetection = true;
-                        }               
+                        proposedBounds = proposedBounds.MoveTowards(Angle, distanceToObstacleHit-.5f, false);
                     }
 
-                    float angle = Element.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
+                    var dx2 = BoundsTransform != null ? proposedBounds.Left - Element.Left : 0;
+                    var dy2 = BoundsTransform != null ? proposedBounds.Top - Element.Top : 0;
+                    Element.MoveTo(proposedBounds.Left - dx, proposedBounds.Top - dy);
+
+                    haveMovedSinceLastHitDetection = true;
+                    float angle = bounds.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
 
 
                     if (haveMovedSinceLastHitDetection)
@@ -190,15 +187,16 @@ namespace PowerArgs.Cli.Physics
                             HitType = hitPrediction.Type,
                         };
 
-                         SpaceTime.CurrentSpaceTime.Functions
-                            .WhereAs<Velocity>().Where(v => v.Element == hitPrediction.ObstacleHit)
-                            .FirstOrDefault()?.ImpactOccurred.Fire(new Impact()
+                        if (hitPrediction.ObstacleHit is SpacialElement)
+                        {
+                            Velocity.For(hitPrediction.ObstacleHit as SpacialElement)?.ImpactOccurred.Fire(new Impact()
                             {
                                 Angle = angle.GetOppositeAngle(),
                                 MovingObject = hitPrediction.ObstacleHit as SpacialElement,
                                 ObstacleHit = Element,
                                 HitType = hitPrediction.Type,
                             });
+                        }
 
                         ImpactOccurred?.Fire(LastImpact);
                         GlobalImpactOccurred.Fire(LastImpact);
