@@ -86,6 +86,8 @@ namespace PowerArgs.Cli.Physics
 
         public Impact LastImpact { get; private set; }
 
+        public bool Bounce { get; set; }
+
         public Func<Task> MovementTakeover { get; private set; }
 
         public Velocity(SpacialElement t) : base(t)
@@ -205,7 +207,23 @@ namespace PowerArgs.Cli.Physics
                         Element.SizeOrPositionChanged.Fire();
                     }
 
-                    Stop();
+                    if (Bounce)
+                    {
+                        var side = Geometry.GetSideGivenEdgeIndex(hitPrediction.EdgeIndex);
+
+                        if (side == Side.Top|| side == Side.Bottom)
+                        {
+                            Angle = 0.AddToAngle(-Angle);
+                        }
+                        else
+                        {
+                            Angle = 180.AddToAngle(-Angle);
+                        }
+                    }
+                    else
+                    {
+                        Stop();
+                    }
                 }
                 else
                 {

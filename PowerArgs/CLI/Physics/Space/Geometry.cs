@@ -121,6 +121,14 @@ namespace PowerArgs.Cli.Physics
         public static IRectangularF Create(ILocationF location, ISizeF size) => new RectangularF(location.Left, location.Top, size.Width, size.Height);
     }
 
+    public enum Side
+    {
+        Top,
+        Bottom,
+        Left,
+        Right
+    }
+
     public static class Geometry
     {
         public static float Right(this IRectangularF rectangle) => rectangle.Left + rectangle.Width;
@@ -151,6 +159,15 @@ namespace PowerArgs.Cli.Physics
 
         public static int Round(float f) => (int)Math.Round(f, MidpointRounding.AwayFromZero);
         public static int Round(double d) => (int)Math.Round(d, MidpointRounding.AwayFromZero);
+ 
+        public static Side GetSideGivenEdgeIndex(int index)
+        {
+            if (index == 0) return Side.Top;
+            if (index == 1) return Side.Right;
+            if (index == 2) return Side.Bottom;
+            if (index == 3) return Side.Left;
+            throw new NotSupportedException("index must be >=0 && <= 3");
+        }
 
         public static void UpdateEdges(IRectangularF rect, Edge[] edgeBuffer)
         {

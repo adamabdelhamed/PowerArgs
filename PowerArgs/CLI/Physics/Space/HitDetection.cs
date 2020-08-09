@@ -28,6 +28,8 @@ namespace PowerArgs.Cli.Physics
         public float Visibility { get; set; }
         public bool ElementWasAlreadyObstructed { get; set; }
 
+        public int EdgeIndex { get; set; }
+
         public List<IRectangularF> Path { get; set; } = new List<IRectangularF>();
     }
 
@@ -150,7 +152,7 @@ namespace PowerArgs.Cli.Physics
 
             var closestIntersectionDistance = float.MaxValue;
             IRectangularF closestIntersectingElement = null;
-
+            var closestEdgeIndex = -1;
             var effectiveObstacles = options.Obstacles.ToArray();
             for (var i = 0; i < effectiveObstacles.Length; i++)
             {
@@ -169,6 +171,7 @@ namespace PowerArgs.Cli.Physics
                             {
                                 closestIntersectionDistance = d;
                                 closestIntersectingElement = obstacle;
+                                closestEdgeIndex = j;
                             }
                         }
                     }
@@ -181,6 +184,7 @@ namespace PowerArgs.Cli.Physics
                 prediction.LKGD = closestIntersectionDistance - .1f;
                 prediction.LKG = options.MovingObject.MoveTowards(options.Angle, prediction.LKGD, normalized:false).TopLeft();
                 prediction.Type = HitType.Obstacle;
+                prediction.EdgeIndex = closestEdgeIndex;
             }
 
             return prediction;
