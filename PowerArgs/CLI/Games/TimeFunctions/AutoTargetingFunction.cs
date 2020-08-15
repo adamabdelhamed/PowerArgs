@@ -32,7 +32,7 @@ namespace PowerArgs.Games
         {
             this.Options = options;
 
-            Delay = options.Source.Element is MainCharacter ? (int)Time.CurrentTime.Increment.TotalMilliseconds : 500;
+            Delay = options.Source.Element is MainCharacter ? (int)Time.CurrentTime.Increment.TotalMilliseconds : 100;
             this.Added.SubscribeOnce(async () =>
             {
                 while(this.Lifetime.IsExpired == false)
