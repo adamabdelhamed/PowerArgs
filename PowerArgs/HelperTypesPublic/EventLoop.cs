@@ -290,7 +290,7 @@ namespace PowerArgs
                 IsDrainingOrDrained = true;
                 foreach (var tcs in pendingYields.ToArray())
                 {
-                    tcs.SetException(new StopLoopException());
+                    tcs.TrySetCanceled();
                     pendingYields.Remove(tcs);
                 }
                 LoopStopped.Fire();
