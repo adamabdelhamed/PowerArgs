@@ -133,7 +133,10 @@ namespace PowerArgs
             }
             catch (Exception ex)
             {
-                runDeferred.Reject(ex);
+                if (runDeferred.IsFulfilled == false)
+                {
+                    runDeferred.Reject(ex);
+                }
             }
             finally
             {
