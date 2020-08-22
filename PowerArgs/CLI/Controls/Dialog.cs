@@ -239,6 +239,8 @@ namespace PowerArgs.Cli
         private Button closeButton;
         private int myFocusStackDepth;
 
+        public bool WasEscapeUsedToClose { get; set; }
+
         /// <summary>
         /// Gets the topmost dialog on the current app
         /// </summary>
@@ -316,6 +318,7 @@ namespace PowerArgs.Cli
         {
             if (options.AllowEscapeToCancel)
             {
+                WasEscapeUsedToClose = true;
                 ConsoleApp.Current.LayoutRoot.Controls.Remove(this);
             }
         }
@@ -363,8 +366,9 @@ namespace PowerArgs.Cli
         public static Promise<DialogOption> ShowMessage(DialogButtonOptions options)
         {
             var d = Deferred<DialogOption>.Create();
-            var rawPromise = new Dialog(options).Show();
-            rawPromise.Then(() => d.Resolve(options.SelectedOption));
+            var dialog = new Dialog(options);
+            var rawPromise = dialog.Show();
+            rawPromise.Then(() => d.Resolve(dialog.WasEscapeUsedToClose ? null : options.SelectedOption));
             return d.Promise;
         }
 
@@ -477,8 +481,9 @@ namespace PowerArgs.Cli
         public static Promise<ConsoleString> ShowRichTextInput(RichTextDialogOptions options)
         {
             var d = Deferred<ConsoleString>.Create();
-            var rawPromise = new Dialog(options).Show();
-            rawPromise.Then(() => d.Resolve(options.TextBox.Value));
+            var dialog = new Dialog(options);
+            var rawPromise = dialog.Show();
+            rawPromise.Then(() => d.Resolve( dialog.WasEscapeUsedToClose ? null : options.TextBox.Value));
             return d.Promise;
         }
     }
