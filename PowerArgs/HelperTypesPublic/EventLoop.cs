@@ -135,7 +135,7 @@ namespace PowerArgs
             {
                 if (runDeferred.IsFulfilled == false)
                 {
-                    runDeferred.Reject(ex);
+                     runDeferred.Reject(ex);                    
                 }
             }
             finally
@@ -238,6 +238,10 @@ namespace PowerArgs
                             if (workItem.IsFinished == false)
                             {
                                 pendingWorkItems.Add(workItem);
+                            }
+                            else if(workItem.Exception != null)
+                            {
+                                throw new AggregateException(workItem.Exception);
                             }
                             else
                             {
@@ -368,7 +372,9 @@ namespace PowerArgs
         {
             if(IsRunning == false && IsDrainingOrDrained)
             {
-                throw new StopLoopException();
+                var d = Deferred.Create();
+                d.Resolve();
+                return d.Promise;
             }
             var workItem = new SynchronizedEvent(work);
 
