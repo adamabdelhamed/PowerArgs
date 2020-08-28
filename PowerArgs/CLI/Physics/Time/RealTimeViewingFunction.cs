@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli.Physics
 {
@@ -28,8 +28,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public int currentSecondBin = -1;
-        public List<DataPoint> SleepHistory { get; private set; } = new List<DataPoint>();
+        public List<DataPoint> SleepHistory { get; set; } 
 
         public int ZeroSleepCycles { get; private set; }
         public int SleepCycles { get; private set; }
@@ -73,6 +72,8 @@ namespace PowerArgs.Cli.Physics
         private Time t;
         private Lifetime impl;
 
+        private Queue<TaskCompletionSource<bool>> invokeSoonQueue = new Queue<TaskCompletionSource<bool>>();
+
         /// <summary>
         /// Creates a realtime viewing function
         /// </summary>
@@ -89,6 +90,13 @@ namespace PowerArgs.Cli.Physics
                 CoolDownAmount = fallBehindCooldownPeriod.HasValue ? fallBehindCooldownPeriod.Value.TotalMilliseconds : 30, // we're not back on track until we are within 70 ms of wall clock time
             };
             this.t = t;
+        }
+
+        public Task WaitForFreeTime()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            invokeSoonQueue.Enqueue(tcs);
+            return tcs.Task;
         }
 
         private void Enable()
@@ -125,8 +133,31 @@ namespace PowerArgs.Cli.Physics
             if (Enabled && simulationTimeElapsed > wallClockTimeElapsed)
             {
                 var sleepTime = simulationTimeElapsed - wallClockTimeElapsed;
-                Thread.Sleep(sleepTime);
-                slept = true;
+
+                while (sleepTime.TotalMilliseconds > Time.CurrentTime.Increment.TotalMilliseconds*.2 && invokeSoonQueue.Count > 0)
+                {
+                    var todo = invokeSoonQueue.Dequeue();
+                    todo.SetResult(true);
+                    realTimeNow = DateTime.UtcNow;
+                    wallClockTimeElapsed = TimeSpan.FromSeconds(1 * (realTimeNow - wallClockSample).TotalSeconds);
+                    simulationTimeElapsed = TimeSpan.FromSeconds(SlowMoRatio * (t.Now - simulationTimeSample).TotalSeconds);
+                    sleepTime = simulationTimeElapsed - wallClockTimeElapsed;
+                }
+
+                if (sleepTime >= TimeSpan.Zero)
+                {
+                    Thread.Sleep(sleepTime);
+                    slept = true;
+                    SleepHistory?.Add(new DataPoint() { X = Time.CurrentTime.Now.Ticks, Y = Geometry.Round(sleepTime.TotalMilliseconds) });
+                }
+                else
+                {
+                    SleepHistory?.Add(new DataPoint() { X = Time.CurrentTime.Now.Ticks, Y = 0});
+                }
+            }
+            else
+            {
+                SleepHistory?.Add(new DataPoint() { X = Time.CurrentTime.Now.Ticks, Y = 0 });
             }
 
             wallClockTimeElapsed = DateTime.UtcNow - wallClockSample;
@@ -142,20 +173,7 @@ namespace PowerArgs.Cli.Physics
 
             var idleTime = Math.Min(t.Increment.TotalMilliseconds, (DateTime.UtcNow - realTimeNow).TotalMilliseconds);
 
-            if((int)t.Now.TotalSeconds != currentSecondBin)
-            {
-                SleepHistory.Add(new DataPoint() { X = t.Now.Ticks, Y = idleTime });
-                currentSecondBin = (int)t.Now.TotalSeconds;
-            }
-            else
-            {
-                var current = SleepHistory.Last();
-                if(idleTime < current.Y)
-                {
-                    current.Y = idleTime;
-                }
-            }
-        
+
             busyPercentageAverage.AddSample(1 - (idleTime / t.Increment.TotalMilliseconds));
             sleepTimeAverage.AddSample(idleTime);
             simulationTimeElapsed = t.Now - simulationTimeSample;

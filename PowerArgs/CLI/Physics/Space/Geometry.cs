@@ -146,7 +146,8 @@ namespace PowerArgs.Cli.Physics
         public static float AddToAngle(this int a, float b) => AddToAngle((float)a, b);
         public static float CalculateNormalizedDistanceTo(ILocationF a, ILocationF b) => NormalizeQuantity(a.CalculateDistanceTo(b), a.CalculateAngleTo(b), true);
         public static float CalculateNormalizedDistanceTo(IRectangularF a, IRectangularF b) => NormalizeQuantity(a.CalculateDistanceTo(b), a.CalculateAngleTo(b), true);
-        public static float CalculateDistanceTo(this ILocationF start, ILocationF end) => (float)Math.Sqrt(((start.Left - end.Left) * (start.Left - end.Left)) + ((start.Top - end.Top) * (start.Top - end.Top)));
+        public static float CalculateDistanceTo(this ILocationF start, ILocationF end) => CalculateDistanceTo(start.Left, start.Top, end.Left, end.Top);
+        public static float CalculateDistanceTo(float x1, float y1, float x2, float y2) => (float)Math.Sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)));
         public static Direction GetDirection(float a) => Enums.GetEnumValues<Direction>().OrderBy(slice => ((float)slice + 15).DiffAngle(a)).First();
         public static Direction GetHitDirection(this IRectangularF rectangle, IRectangularF other) => GetDirection(rectangle.CalculateAngleTo(other));
         public static float NormalizeQuantity(this int quantity, float angle, bool reverse = false) => NormalizeQuantity((float)quantity, angle, reverse);
@@ -397,13 +398,13 @@ namespace PowerArgs.Cli.Physics
             var bottom = b.Bottom() < a.Top;
             var top = a.Bottom() < b.Top;
             if (top && left)
-                return LocationF.Create(a.Left, a.Bottom()).CalculateDistanceTo(LocationF.Create(b.Right(), b.Top));
+                return CalculateDistanceTo(a.Left, a.Bottom(), b.Right(), b.Top);
             else if (left && bottom)
-                return LocationF.Create(a.Left, a.Top).CalculateDistanceTo(LocationF.Create(b.Right(), b.Bottom()));
+                return CalculateDistanceTo(a.Left, a.Top, b.Right(), b.Bottom());
             else if (bottom && right)
-                return LocationF.Create(a.Right(), a.Top).CalculateDistanceTo(LocationF.Create(b.Left, b.Bottom()));
+                return CalculateDistanceTo(a.Right(), a.Top, b.Left, b.Bottom());
             else if (right && top)
-                return LocationF.Create(a.Right(), a.Bottom()).CalculateDistanceTo(LocationF.Create(b.Left, b.Top));
+                return CalculateDistanceTo(a.Right(), a.Bottom(), b.Left, b.Top);
             else if (left)
                 return a.Left - b.Right();
             else if (right)
