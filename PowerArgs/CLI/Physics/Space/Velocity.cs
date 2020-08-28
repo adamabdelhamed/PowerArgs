@@ -160,6 +160,7 @@ namespace PowerArgs.Cli.Physics
                     Obstacles = obstacles,
                     Angle = Angle,
                     Visibility = d,
+                    Mode = CastingMode.Precise,
                 });
                 LastPrediction = hitPrediction;
                 if (hitPrediction.Type != HitType.None)

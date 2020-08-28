@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PowerArgs.Cli.Physics
@@ -45,6 +46,7 @@ namespace PowerArgs.Cli.Physics
 
     public enum CastingMode
     {
+        SingleRay,
         Rough,
         Precise
     }
@@ -110,12 +112,12 @@ namespace PowerArgs.Cli.Physics
             if (options.Mode == CastingMode.Precise)
             {
                 rays = new List<Edge>()
-            {
-                new Edge() { From = mov.TopLeft(), To = mov.TopLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                new Edge() { From = mov.TopRight(), To = mov.TopRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                new Edge() { From = mov.BottomLeft(), To = mov.BottomLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                new Edge() { From = mov.BottomRight(), To = mov.BottomRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-            };
+                {
+                    new Edge() { From = mov.TopLeft(), To = mov.TopLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                    new Edge() { From = mov.TopRight(), To = mov.TopRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                    new Edge() { From = mov.BottomLeft(), To = mov.BottomLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                    new Edge() { From = mov.BottomRight(), To = mov.BottomRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                };
 
                 var granularity = .5f;
 
@@ -137,7 +139,7 @@ namespace PowerArgs.Cli.Physics
                     rays.Add(new Edge() { From = right, To = right.MoveTowards(options.Angle, options.Visibility, normalized: false) });
                 }
             }
-            else
+            else if (options.Mode == CastingMode.Rough)
             {
                 var center = options.MovingObject.Center();
                 rays = new List<Edge>() 
@@ -148,6 +150,18 @@ namespace PowerArgs.Cli.Physics
                     new Edge() { From = mov.BottomRight(), To = mov.BottomRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
                     new Edge() { From = center, To = center.MoveTowards(options.Angle, options.Visibility, normalized: false) }
                 };
+            }
+            else if(options.Mode == CastingMode.SingleRay)
+            {
+                var center = options.MovingObject.Center();
+                rays = new List<Edge>()
+                {
+                    new Edge() { From = center, To = center.MoveTowards(options.Angle, options.Visibility, normalized: false) }
+                };
+            }
+            else
+            {
+                throw new NotSupportedException("Unknown mide: "+options.Mode);
             }
 
             var closestIntersectionDistance = float.MaxValue;

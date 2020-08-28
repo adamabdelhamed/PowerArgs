@@ -90,12 +90,20 @@ namespace PowerArgs.Cli.Physics
                 CoolDownAmount = fallBehindCooldownPeriod.HasValue ? fallBehindCooldownPeriod.Value.TotalMilliseconds : 30, // we're not back on track until we are within 70 ms of wall clock time
             };
             this.t = t;
+
+            t.OnDisposed(() =>
+            {
+                foreach(var tcs in invokeSoonQueue)
+                {
+                    tcs.SetCanceled();
+                }
+            });
         }
 
         public Task WaitForFreeTime()
         {
             var tcs = new TaskCompletionSource<bool>();
-            invokeSoonQueue.Enqueue(tcs);
+            Time.CurrentTime.DelayThen((int)Time.CurrentTime.Increment.TotalMilliseconds, () => invokeSoonQueue.Enqueue(tcs));
             return tcs.Task;
         }
 
@@ -144,7 +152,7 @@ namespace PowerArgs.Cli.Physics
                     sleepTime = simulationTimeElapsed - wallClockTimeElapsed;
                 }
 
-                if (sleepTime >= TimeSpan.Zero)
+                if (sleepTime > TimeSpan.Zero)
                 {
                     Thread.Sleep(sleepTime);
                     slept = true;
