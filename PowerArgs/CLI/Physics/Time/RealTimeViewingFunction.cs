@@ -161,7 +161,7 @@ namespace PowerArgs.Cli.Physics
                 }
             }
 
-            if (Time.CurrentTime.Now > TimeSpan.Zero)
+            if (Time.CurrentTime.Now > TimeSpan.FromSeconds(1))
             {
                 SleepHistory?.Add(new DataPoint() { X = Time.CurrentTime.Now.Ticks, Y = Geometry.Round(sleepTime.TotalMilliseconds) });
             }
