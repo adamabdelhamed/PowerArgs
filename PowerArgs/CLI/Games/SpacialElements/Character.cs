@@ -100,6 +100,7 @@ namespace PowerArgs.Games
 
         public void MoveLeft()
         {
+            var oldAngle = Velocity.Angle;
             if (FreeAimCursor != null)
             {
                 FreeAimCursor.MoveBy(-1, 0);
@@ -125,11 +126,12 @@ namespace PowerArgs.Games
             }
 
             TrySendBounds();
-            OnMove.Fire(180);
+            OnMove.Fire(oldAngle);
         }
 
         public void MoveRight()
         {
+            var oldAngle = Velocity.Angle;
             if (FreeAimCursor != null)
             {
                 FreeAimCursor.MoveBy(1, 0);
@@ -155,11 +157,12 @@ namespace PowerArgs.Games
             }
 
             TrySendBounds();
-            OnMove.Fire(0);
+            OnMove.Fire(oldAngle);
         }
 
         public void MoveDown()
         {
+            var oldAngle = Velocity.Angle;
             if (FreeAimCursor != null)
             {
                 FreeAimCursor.MoveBy(0, 1);
@@ -185,11 +188,12 @@ namespace PowerArgs.Games
             }
 
             TrySendBounds();
-            OnMove.Fire(90);
+            OnMove.Fire(oldAngle);
         }
 
         public void MoveUp()
         {
+            var oldAngle = Velocity.Angle;
             if (FreeAimCursor != null)
             {
                 FreeAimCursor.MoveBy(0, -1);
@@ -215,7 +219,7 @@ namespace PowerArgs.Games
             }
 
             TrySendBounds();
-            OnMove.Fire(270);
+            OnMove.Fire(oldAngle);
         }
 
         public void RoundOff()
