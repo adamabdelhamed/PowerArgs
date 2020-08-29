@@ -107,6 +107,8 @@ namespace PowerArgs.Cli.Physics
             return tcs.Task;
         }
 
+        public bool SignalPauseFrame { get; set; }
+
         private void Enable()
         {
             wallClockSample = DateTime.UtcNow;
@@ -138,10 +140,10 @@ namespace PowerArgs.Cli.Physics
             var simulationTimeElapsed = TimeSpan.FromSeconds(SlowMoRatio * (t.Now - simulationTimeSample).TotalSeconds);
             var slept = false;
 
+            var sleepTime = SignalPauseFrame ? Time.CurrentTime.Increment : simulationTimeElapsed - wallClockTimeElapsed;
+            SignalPauseFrame = false;
             if (Enabled && simulationTimeElapsed > wallClockTimeElapsed)
             {
-                var sleepTime = simulationTimeElapsed - wallClockTimeElapsed;
-
                 while (sleepTime.TotalMilliseconds > Time.CurrentTime.Increment.TotalMilliseconds*.2 && invokeSoonQueue.Count > 0)
                 {
                     var todo = invokeSoonQueue.Dequeue();
@@ -156,16 +158,12 @@ namespace PowerArgs.Cli.Physics
                 {
                     Thread.Sleep(sleepTime);
                     slept = true;
-                    SleepHistory?.Add(new DataPoint() { X = Time.CurrentTime.Now.Ticks, Y = Geometry.Round(sleepTime.TotalMilliseconds) });
-                }
-                else
-                {
-                    SleepHistory?.Add(new DataPoint() { X = Time.CurrentTime.Now.Ticks, Y = 0});
                 }
             }
-            else
+
+            if (Time.CurrentTime.Now > TimeSpan.Zero)
             {
-                SleepHistory?.Add(new DataPoint() { X = Time.CurrentTime.Now.Ticks, Y = 0 });
+                SleepHistory?.Add(new DataPoint() { X = Time.CurrentTime.Now.Ticks, Y = Geometry.Round(sleepTime.TotalMilliseconds) });
             }
 
             wallClockTimeElapsed = DateTime.UtcNow - wallClockSample;
