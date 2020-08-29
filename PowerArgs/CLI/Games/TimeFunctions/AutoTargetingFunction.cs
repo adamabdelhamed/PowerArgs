@@ -68,7 +68,7 @@ namespace PowerArgs.Games
                     MovingObject = sb,
                     Obstacles = obstacles,
                     Visibility = 3 * SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
-                    Mode = CastingMode.SingleRay,
+                    Mode = CastingMode.Rough,
                 });
 
                 var elementHit = prediction.ObstacleHit as SpacialElement;
