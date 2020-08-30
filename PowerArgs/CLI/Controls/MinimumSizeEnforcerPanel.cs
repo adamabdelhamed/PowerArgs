@@ -64,7 +64,7 @@ namespace PowerArgs.Cli
             while(tooSmallLifetime != null && tooSmallLifetime.IsExpired == false)
             {
                 ConsoleString msg = ConsoleString.Empty;
-                if (Width >= 66)
+                if (Width >= 75)
                 {
                     var widthNeeded = options.MinWidth - Width;
                     var heightNeeded = options.MinHeight - Height;
@@ -72,17 +72,17 @@ namespace PowerArgs.Cli
                     {
                         var colStr = widthNeeded == 1 ? "column" : "columns";
                         var rowStr = heightNeeded == 1 ? "row" : "rows";
-                        msg = $"Please make the screen {widthNeeded} {colStr} wider and {heightNeeded} {rowStr} taller".ToYellow();
+                        msg = $"Please zoom out or make the screen {widthNeeded} {colStr} wider and {heightNeeded} {rowStr} taller".ToYellow();
                     }
                     else if (widthNeeded > 0)
                     {
                         var colStr = widthNeeded == 1 ? "column" : "columns";
-                        msg = $"Please make the screen {widthNeeded} {colStr} wider".ToYellow();
+                        msg = $"Please zoom out or make the screen {widthNeeded} {colStr} wider".ToYellow();
                     }
                     else if (heightNeeded > 0)
                     {
                         var rowStr = heightNeeded == 1 ? "row" : "rows";
-                        msg = $"Please make the screen {heightNeeded} {rowStr} taller".ToYellow();
+                        msg = $"Please zoom out or make the screen {heightNeeded} {rowStr} taller".ToYellow();
                     }
                     else
                     {
