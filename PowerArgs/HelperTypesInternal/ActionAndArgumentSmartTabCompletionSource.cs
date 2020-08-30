@@ -13,8 +13,8 @@ namespace PowerArgs
         {
             if(actionSource == null)
             {
-                actionSource = new SimpleTabCompletionSource(FindActions(context.Definition)) { MinCharsBeforeCyclingBegins = 0 };
-                globalArgumentSource = new SimpleTabCompletionSource(FindGlobalArguments(context.Definition)) { MinCharsBeforeCyclingBegins = 0 };
+                actionSource = new SimpleTabCompletionSource(()=> FindActions(context.Definition)) { MinCharsBeforeCyclingBegins = 0 };
+                globalArgumentSource = new SimpleTabCompletionSource(()=> FindGlobalArguments(context.Definition)) { MinCharsBeforeCyclingBegins = 0 };
                 actionSpecificArgumentSources = FindActionSpecificSources(context.Definition);
             }
 
@@ -67,7 +67,7 @@ namespace PowerArgs
 
                     arguments.Add(argIndicator + argument.Aliases.First());
                 }
-                ret.Add(action, new SimpleTabCompletionSource(arguments) { MinCharsBeforeCyclingBegins = 0 });
+                ret.Add(action, new SimpleTabCompletionSource(()=> arguments) { MinCharsBeforeCyclingBegins = 0 });
             }
 
             return ret;

@@ -39,7 +39,7 @@ namespace PowerArgs
         /// Creates a simple tab completion source given a function used to evaluate the candidates.
         /// </summary>
         /// <param name="candidateFunction">The function used to evaluate the completions where the input is a string parameter that represents the incomplete token</param>
-        protected SimpleTabCompletionSource(Func<IEnumerable<string>> candidateFunction) : this()
+        public SimpleTabCompletionSource(Func<IEnumerable<string>> candidateFunction) : this()
         {
             // TODO P0 - This is exercised by a sample, but not by a test
             this.CandidateFunction = candidateFunction;
