@@ -385,6 +385,10 @@ namespace PowerArgs
                 {
                     pendingWorkItems.Add(workItem);
                 }
+                else if(workItem.IsFailed)
+                {
+                    throw new AggregateException(workItem.Exception);
+                }
                 else
                 {
                     workItem.Deferred.Resolve();
