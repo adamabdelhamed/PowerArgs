@@ -170,13 +170,9 @@ namespace PowerArgs.Cli.Physics
                     if (distanceToObstacleHit > .5f)
                     {
                         proposedBounds = proposedBounds.MoveTowards(Angle, distanceToObstacleHit-.5f, false);
+                        Element.MoveTo(proposedBounds.Left - dx, proposedBounds.Top - dy);
+                        haveMovedSinceLastHitDetection = true;
                     }
-
-                    var dx2 = BoundsTransform != null ? proposedBounds.Left - Element.Left : 0;
-                    var dy2 = BoundsTransform != null ? proposedBounds.Top - Element.Top : 0;
-                    Element.MoveTo(proposedBounds.Left - dx, proposedBounds.Top - dy);
-
-                    haveMovedSinceLastHitDetection = true;
                     float angle = bounds.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
 
 
