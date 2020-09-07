@@ -12,6 +12,8 @@ namespace PowerArgs.Cli
         private CommandLineArgumentsDefinition def;
         private Label outputLabel;
         private Lifetime focusLt;
+        public ConsoleString WelcomeMessage { get; set; } = "Welcome to the console".ToWhite();
+        public ConsoleString EscapeMessage { get; set; } = "Press escape to resume".ToGray();
         public CompactConsole()
         {
             SubscribeForLifetime(nameof(Bounds),()=>HardRefresh(), this);
@@ -63,10 +65,10 @@ namespace PowerArgs.Cli
             gridLayout.Fill();
             gridLayout.RefreshLayout();
             var welcomePanel = gridLayout.Add(new ConsolePanel(), 1, 1);
-            welcomePanel.Add(new Label() { Text = "Welcome to the console".ToWhite() }).CenterHorizontally();
+            welcomePanel.Add(new Label() { Text = WelcomeMessage }).CenterHorizontally();
 
             var escapePanel = gridLayout.Add(new ConsolePanel(), 1, 2);
-            escapePanel.Add(new Label() { Text = "Press escape to resume".ToGray() }).CenterHorizontally();
+            escapePanel.Add(new Label() { Text = EscapeMessage }).CenterHorizontally(); 
 
             var inputPanel = gridLayout.Add(new ConsolePanel() { }, 1, 4);
             inputPanel.Add(new Label() { Text = "CMD> ".ToConsoleString() });

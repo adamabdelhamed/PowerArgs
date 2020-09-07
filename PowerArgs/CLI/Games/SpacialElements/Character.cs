@@ -79,20 +79,15 @@ namespace PowerArgs.Games
 
         public float CalculateAngleToTarget()
         {
-            var realTarget = Target is IAmMass ? (Target as IAmMass).Parent : (ISpacialElement)Target;
+            var realTarget = Target;
 
             var angle = realTarget != null ?
-                this.EffectiveBounds().Center().CalculateAngleTo(realTarget.EffectiveBounds().Center()) :
+                this.EffectiveBounds().Center().CalculateAngleTo(realTarget.Center()) :
                 Velocity.Angle;
 
             if (this == MainCharacter.Current && MainCharacter.Current.FreeAimCursor != null)
             {
                 angle = this.Center().CalculateAngleTo(MainCharacter.Current.FreeAimCursor.Center());
-            }
-            else if (realTarget is IHaveVelocity && (realTarget as IHaveVelocity).Velocity.Speed > 0)
-            {
-                var targetEl = realTarget as IHaveVelocity;
-                var oldAngle = angle;
             }
 
             return angle;
