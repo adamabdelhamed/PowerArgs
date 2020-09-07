@@ -26,7 +26,7 @@ namespace PowerArgs.Games
             });
         }
 
-        private void Evaluate()
+        protected virtual void Evaluate()
         {
             var target = SpaceTime.CurrentSpaceTime.Elements
                 .Where(e =>

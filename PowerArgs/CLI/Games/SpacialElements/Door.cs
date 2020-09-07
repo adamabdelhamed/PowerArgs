@@ -44,6 +44,7 @@ namespace PowerArgs.Games
                 {
                     Sound.Play("opendoor");
                     this.MoveTo(OpenBounds.Left, OpenBounds.Top, ZIndex);
+                    this.ResizeTo(OpenBounds.Width, OpenBounds.Height);
                     FindCieling().ForEach(c => c.IsVisible = false);
                     thresholdInteractable = SpaceTime.CurrentSpaceTime.Add(new Interactable() { InteractionPoint = ClosedBounds, MaxInteractDistance = this.MaxInteractDistance,  BackgroundColor = RGB.Black, InteractFunc = Interact });
                     this.Lifetime.OnDisposed(() => thresholdInteractable?.Lifetime.TryDispose());
@@ -56,6 +57,7 @@ namespace PowerArgs.Games
                 {
                     Sound.Play("closedoor");
                     this.MoveTo(ClosedBounds.Left, ClosedBounds.Top, ZIndex);
+                    this.ResizeTo(ClosedBounds.Width, ClosedBounds.Height);
                     FindCieling().ForEach(c => c.IsVisible = true);
                 }
                 state = value;
