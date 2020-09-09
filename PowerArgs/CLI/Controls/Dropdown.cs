@@ -18,6 +18,8 @@ namespace PowerArgs.Cli
         /// </summary>
         public DialogOption Value { get => Get<DialogOption>(); set => Set(value); }
 
+        public bool EnableWAndSKeysForUpDown { get; set; }
+
         /// <summary>
         /// Creates a new Dropdown
         /// </summary>
@@ -39,6 +41,11 @@ namespace PowerArgs.Cli
                 {
                     Open();
                 }
+                else if(EnableWAndSKeysForUpDown && (k.Key == ConsoleKey.W || k.Key == ConsoleKey.S))
+                {
+                    Open();
+                }
+
             }, this);
         }
 
@@ -154,6 +161,12 @@ namespace PowerArgs.Cli
                         syncSelectedIndex();
                     }
                 };
+
+                if (EnableWAndSKeysForUpDown)
+                {
+                    Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.W, null, up, popup);
+                    Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.S, null, down, popup);
+                }
 
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.UpArrow, null, up, popup);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.DownArrow, null, down, popup);
