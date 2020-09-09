@@ -218,6 +218,8 @@ namespace PowerArgs.Cli.Physics
                 From = 0,
                 To = 1,
                 IsCancelled = options.IsCancelled,
+                IsPaused = options.IsPaused,
+                OnSet = options.OnSet,
                 Setter = v =>
                 {
                     var dest = options.Destination();
@@ -384,5 +386,15 @@ namespace PowerArgs.Cli.Physics
         /// A callback that indicates that the animation should end early
         /// </summary>
         public Func<bool> IsCancelled { get; set; }
+
+        /// <summary>
+        /// A callback that indicates that the animation should pause
+        /// </summary>
+        public Func<bool> IsPaused { get; set; }
+
+        /// <summary>
+        /// A callback that is called before a value is set. The parameter is the percentage done.
+        /// </summary>
+        public Action<float> OnSet { get; set; }
     }
 }

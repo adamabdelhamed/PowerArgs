@@ -54,6 +54,16 @@ namespace PowerArgs.Cli
         /// </summary>
         public Func<bool> IsCancelled { get; set; }
 
+        /// <summary>
+        /// A callback that is called before a value is set. The parameter is the percentage done.
+        /// </summary>
+        public Action<float> OnSet { get; set; }
+
+        /// <summary>
+        /// A callback that indicates that the animation should pause
+        /// </summary>
+        public Func<bool> IsPaused { get; set; }
+
         internal abstract void Set(float value);
 
         internal Action<string> Debug { get; set; }
@@ -63,6 +73,33 @@ namespace PowerArgs.Cli
         /// Forward is the default so this will not fire with false unless the animation loops.
         /// </summary>
         public Action<bool> OnReversedChanged { get; set; }
+
+        public async Task<bool> HandlePause()
+        {
+            var ret = false;
+            while (IsPaused != null && IsPaused.Invoke())
+            {
+                ret = true;
+                await DelayProvider.YieldAsync();
+            }
+            return ret;
+        }
+
+        public async Task YieldAsync()
+        {
+            if (await HandlePause() == false)
+            {
+                await DelayProvider.YieldAsync();
+            }
+        }
+
+        public async Task DelayAsync(TimeSpan ts)
+        {
+            if (await HandlePause() == false)
+            {
+                await DelayProvider.DelayAsync(ts);
+            }
+        }
     }
 
     /// <summary>
@@ -164,7 +201,7 @@ namespace PowerArgs.Cli
                     {
                         if (options.AutoReverseDelay > 0)
                         {
-                            await options.DelayProvider.DelayAsync(TimeSpan.FromMilliseconds(options.AutoReverseDelay));
+                            await options.DelayAsync(TimeSpan.FromMilliseconds(options.AutoReverseDelay));
                         }
 
                         var temp = options.From;
@@ -175,7 +212,7 @@ namespace PowerArgs.Cli
 
                         if (options.AutoReverseDelay > 0)
                         {
-                            await options.DelayProvider.DelayAsync(TimeSpan.FromMilliseconds(options.AutoReverseDelay));
+                            await options.DelayAsync(TimeSpan.FromMilliseconds(options.AutoReverseDelay));
                         }
 
                         options.From = originalFrom;
@@ -233,6 +270,7 @@ namespace PowerArgs.Cli
 
                 var scheduledTimeAfterThisFrame = TimeSpan.FromMilliseconds(timeBetweenFrames.TotalMilliseconds * i);
                 var newValue = initialValue + (delta * percentageDone);
+                options.OnSet?.Invoke(percentageDone);
                 options.Set(newValue);
 #if DEBUG
                 options.Debug?.Invoke($"Set value to {newValue} at percentage {percentageDone}");
@@ -248,11 +286,11 @@ namespace PowerArgs.Cli
                 }
                 if (delayTime == TimeSpan.Zero)
                 {
-                    await options.DelayProvider.YieldAsync();
+                    await options.YieldAsync();
                 }
                 else
                 {
-                    await options.DelayProvider.DelayAsync(delayTime);
+                    await options.DelayAsync(delayTime);
                 }
             }
         }
