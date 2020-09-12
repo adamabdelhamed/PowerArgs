@@ -48,6 +48,9 @@ namespace PowerArgs.Cli.Physics
 
         public Event OnAngleChanged { get; private set; } = new Event();
         public Event OnSpeedChanged { get; private set; } = new Event();
+
+        public Event<ILifetimeManager> OnTakeover { get; private set; } = new Event<ILifetimeManager>();
+
         private float angle;
         public float Angle
         {
@@ -109,8 +112,9 @@ namespace PowerArgs.Cli.Physics
 
         public Task Takeover(Func<Task> movementTakeover)
         {
-            Deferred d = Deferred.Create();
             if (MovementTakeover != null) throw new ArgumentException("Movement has already been taken over");
+            Deferred d = Deferred.Create();
+            OnTakeover.Fire(d.Promise.ToLifetime());
             MovementTakeover = async () =>
             {
                 await movementTakeover();
