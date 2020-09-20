@@ -21,6 +21,11 @@ namespace PowerArgs.Cli
     public class FormReadOnlyAttribute : Attribute { }
 
     /// <summary>
+    /// An attribute that tells the form generator to use yes no labels for a toggle
+    /// </summary>
+    public class FormYesNoAttribute : Attribute { }
+
+    /// <summary>
     /// An attribute that tells the form generator to give this
     /// property a specific value width
     /// </summary>
@@ -219,6 +224,13 @@ namespace PowerArgs.Cli
                 else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType == typeof(bool))
                 {
                     var toggle = new ToggleControl();
+
+                    if(property.HasAttr<FormYesNoAttribute>())
+                    {
+                        toggle.OnLabel =  " Yes ";
+                        toggle.OffLabel = " No  ";
+                    }
+
                     toggle.SubscribeForLifetime(nameof(toggle.On), () => property.SetValue(o, toggle.On), toggle);
                     (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () => toggle.On = (bool)property.GetValue(o), toggle);
                     editControl = toggle;

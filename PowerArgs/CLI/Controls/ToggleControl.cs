@@ -15,6 +15,10 @@ namespace PowerArgs.Cli
         public bool On { get => Get<bool>(); set => Set(value); }
         private Label valueLabel;
 
+        public string OnLabel { get; set; } =  " On  " ;
+
+        public string OffLabel { get; set; } =  " Off " ;
+
         /// <summary>
         /// Creates a new ToggleControl
         /// </summary>
@@ -69,7 +73,7 @@ namespace PowerArgs.Cli
                 newFg = RGB.Black;
             }
 
-            valueLabel.Text = On ? " On  ".ToConsoleString(newFg, HasFocus ? RGB.Cyan : newLabelBg) : " Off ".ToConsoleString(newFg, HasFocus ? RGB.Cyan : newLabelBg);
+            valueLabel.Text = On ? OnLabel.ToConsoleString(newFg, HasFocus ? RGB.Cyan : newLabelBg) : OffLabel.ToConsoleString(newFg, HasFocus ? RGB.Cyan : newLabelBg);
 
             if (Application == null)
             {
