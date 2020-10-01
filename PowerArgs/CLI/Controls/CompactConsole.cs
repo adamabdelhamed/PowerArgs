@@ -14,9 +14,12 @@ namespace PowerArgs.Cli
         private Lifetime focusLt;
         public ConsoleString WelcomeMessage { get; set; } = "Welcome to the console".ToWhite();
         public ConsoleString EscapeMessage { get; set; } = "Press escape to resume".ToGray();
+
+        public bool SuperCompact { get; set; }
+
         public CompactConsole()
         {
-            SubscribeForLifetime(nameof(Bounds),()=>HardRefresh(), this);
+            SubscribeForLifetime(nameof(Bounds), () => HardRefresh(), this);
         }
 
         protected abstract CommandLineArgumentsDefinition CreateDefinition();
@@ -33,16 +36,20 @@ namespace PowerArgs.Cli
         }
 
         Lifetime refreshLt = new Lifetime();
-        private void HardRefresh(ConsoleString outputValue = null)
+        public void HardRefresh(ConsoleString outputValue = null)
         {
             refreshLt?.Dispose();
             refreshLt = new Lifetime();
             var myLt = refreshLt;
             Controls.Clear();
-            if (Width < 10 || Height < 5) return;
+
+            var minHeight = SuperCompact ? 1 : 5;
+
+            if (Width < 10 || Height < minHeight) return;
 
             def = CreateDefinition();
-            var gridLayout = Add(new GridLayout(new GridLayoutOptions()
+
+            var options = new GridLayoutOptions()
             {
                 Columns = new System.Collections.Generic.List<GridColumnDefinition>()
                 {
@@ -61,25 +68,49 @@ namespace PowerArgs.Cli
                     new GridRowDefinition(){ Type = GridValueType.RemainderValue, Height = 1, },// 6 output
                     new GridRowDefinition(){ Type = GridValueType.Pixels, Height = 1, },        // 7 empty
                 }
-            }));
+            };
+
+            if (SuperCompact)
+            {
+                options.Rows.RemoveAt(0); // empty
+                options.Rows.RemoveAt(0); // welcome
+                options.Rows.RemoveAt(0); // press escape
+                options.Rows.RemoveAt(0); // empty
+                options.Rows.RemoveAt(options.Rows.Count - 1); // empty
+                options.Rows.RemoveAt(options.Rows.Count - 1); // output
+                options.Rows.RemoveAt(options.Rows.Count - 1); // empty
+            }
+
+            var gridLayout = Add(new GridLayout(options));
+
+
+
             gridLayout.Fill();
             gridLayout.RefreshLayout();
-            var welcomePanel = gridLayout.Add(new ConsolePanel(), 1, 1);
-            welcomePanel.Add(new Label() { Text = WelcomeMessage }).CenterHorizontally();
 
-            var escapePanel = gridLayout.Add(new ConsolePanel(), 1, 2);
-            escapePanel.Add(new Label() { Text = EscapeMessage }).CenterHorizontally(); 
+            var top = SuperCompact ? 0 : 1;
 
-            var inputPanel = gridLayout.Add(new ConsolePanel() { }, 1, 4);
+            if (SuperCompact == false)
+            {
+                var welcomePanel = gridLayout.Add(new ConsolePanel(), 1, top++);
+                welcomePanel.Add(new Label() { Text = WelcomeMessage }).CenterHorizontally();
+
+                var escapePanel = gridLayout.Add(new ConsolePanel(), 1, top++);
+                escapePanel.Add(new Label() { Text = EscapeMessage }).CenterHorizontally();
+
+                top++;
+            }
+
+            var inputPanel = gridLayout.Add(new ConsolePanel() { }, 1, top++);
             inputPanel.Add(new Label() { Text = "CMD> ".ToConsoleString() });
             InputBox = inputPanel.Add(new TextBox() { X = "CMD> ".Length, Width = inputPanel.Width - "CMD> ".Length, Foreground = ConsoleColor.Gray, Background = ConsoleColor.Black });
             InputBox.RichTextEditor.TabHandler.TabCompletionHandlers.Add(new PowerArgsRichCommandLineReader(def, new List<ConsoleString>(), false));
+
+            top++;
             ConsoleApp.Current.InvokeNextCycle(() =>
             {
                 if (myLt == refreshLt)
                 {
-
-
                     InputBox.Focused.SubscribeForLifetime(() =>
                     {
                         if (focusLt != null && focusLt.IsExpired == false && focusLt.IsExpiring == false)
@@ -113,10 +144,16 @@ namespace PowerArgs.Cli
                 }
             });
 
-            var outputPanel = gridLayout.Add(new ConsolePanel() { Background = ConsoleColor.Black }, 1, 6);
-            outputLabel = outputPanel.Add(new Label() { Text = string.IsNullOrWhiteSpace(outputValue?.StringValue) == false ? outputValue : outputLabel?.Text ?? UpdateAssistiveText(), Mode = LabelRenderMode.MultiLineSmartWrap }).Fill();
-
-            InputBox.KeyInputReceived.SubscribeForLifetime(async (keyInfo)=>await OnHandleHey(keyInfo), InputBox);
+            if (SuperCompact == false)
+            {
+                var outputPanel = gridLayout.Add(new ConsolePanel() { Background = ConsoleColor.Black }, 1, top);
+                outputLabel = outputPanel.Add(new Label() { Text = 
+                    string.IsNullOrWhiteSpace(outputValue?.StringValue) == false ? outputValue : 
+                    string.IsNullOrWhiteSpace(outputLabel?.Text.StringValue) == false ? outputLabel?.Text : 
+                    CreateAssistiveText(), 
+                Mode = LabelRenderMode.MultiLineSmartWrap }).Fill();
+            }
+            InputBox.KeyInputReceived.SubscribeForLifetime(async (keyInfo) => await OnHandleHey(keyInfo), InputBox);
         }
 
         private async Task OnHandleHey(ConsoleKeyInfo keyInfo)
@@ -131,7 +168,7 @@ namespace PowerArgs.Cli
                     var args = Args.Convert(InputBox.Value.ToString());
                     AddHistory(InputBox.Value.ToString());
 
-                    if(def.ExceptionBehavior?.Policy == ArgExceptionPolicy.StandardExceptionHandling)
+                    if (def.ExceptionBehavior?.Policy == ArgExceptionPolicy.StandardExceptionHandling)
                     {
                         def.ExceptionBehavior = new ArgExceptionBehavior(ArgExceptionPolicy.DontHandleExceptions);
                     }
@@ -167,12 +204,12 @@ namespace PowerArgs.Cli
                 {
 
                     var inner = ex;
-                    if(ex is AggregateException && (ex as AggregateException).InnerExceptions.Count == 1)
+                    if (ex is AggregateException && (ex as AggregateException).InnerExceptions.Count == 1)
                     {
                         inner = ex.InnerException;
                     }
 
-                    if(ex is ArgException == false)
+                    if (ex is ArgException == false)
                     {
                         throw;
                     }
@@ -197,7 +234,7 @@ namespace PowerArgs.Cli
                 if (HasHistory())
                 {
                     InputBox.Value = GetHistoryPrevious();
-                    outputLabel.Text = UpdateAssistiveText();
+                    SetOutput(CreateAssistiveText());
                 }
             }
             else if (keyInfo.Key == ConsoleKey.DownArrow)
@@ -205,25 +242,42 @@ namespace PowerArgs.Cli
                 if (HasHistory())
                 {
                     InputBox.Value = GetHistoryNext();
-                    outputLabel.Text = UpdateAssistiveText();
+                    SetOutput(CreateAssistiveText());
                 }
             }
             else if (RichTextCommandLineReader.IsWriteable(keyInfo))
             {
-                outputLabel.Text = UpdateAssistiveText();
+                SetOutput(CreateAssistiveText());
+            }
+        }
+
+        private void SetOutput(ConsoleString text)
+        {
+            if (outputLabel != null)
+            {
+                outputLabel.Text = text;
             }
         }
 
         public void Write(ConsoleString text)
         {
-            outputLabel.Text += text;
+            if (outputLabel != null)
+            {
+                outputLabel.Text += text;
+            }
         }
         public void WriteLine(ConsoleString text) => Write(text + "\n");
-        public void Clear() =>  outputLabel.Text = ConsoleString.Empty;
+        public void Clear()
+        {
+            if (outputLabel != null)
+            {
+                outputLabel.Text = ConsoleString.Empty;
+            }
+        }
 
         protected virtual ConsoleString Parse(string content) => ConsoleString.Parse(content);
 
-        private ConsoleString UpdateAssistiveText()
+        public ConsoleString CreateAssistiveText()
         {
             if(IsAssistanceEnabled == false)
             {
