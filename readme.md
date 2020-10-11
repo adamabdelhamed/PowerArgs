@@ -4,7 +4,7 @@ PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages
 As of version 3.0.0 PowerArgs targets [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) so that it can run cross platform. Version 3.0 requires VS 15.3 if you want to use PowerArgs from .NET 4.6.1.
 ### Overview
 
-PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility.
+PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility. You can even build a full-blown, interactive text UI application like [this one](https://doubleslashhash.com/cliborg?src=powerargs).
 
 It can also orchestrate the execution of your program. Giving you the following benefits:
 
