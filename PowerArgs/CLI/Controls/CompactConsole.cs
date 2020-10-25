@@ -20,6 +20,11 @@ namespace PowerArgs.Cli
         public CompactConsole()
         {
             SubscribeForLifetime(nameof(Bounds), () => HardRefresh(), this);
+            this.Ready.SubscribeOnce(async () =>
+            {
+                await Task.Yield();
+                HardRefresh();
+            });
         }
 
         protected abstract CommandLineArgumentsDefinition CreateDefinition();
@@ -31,7 +36,7 @@ namespace PowerArgs.Cli
         protected virtual Task Run(ArgAction toRun)
         {
             toRun.Invoke();
-            WriteLine("Command finished".ToCyan());
+            SetOutput(null);
             return Task.CompletedTask;
         }
 
@@ -149,7 +154,7 @@ namespace PowerArgs.Cli
                 var outputPanel = gridLayout.Add(new ConsolePanel() { Background = ConsoleColor.Black }, 1, top);
                 outputLabel = outputPanel.Add(new Label() { Text = 
                     string.IsNullOrWhiteSpace(outputValue?.StringValue) == false ? outputValue : 
-                    string.IsNullOrWhiteSpace(outputLabel?.Text.StringValue) == false ? outputLabel?.Text : 
+                    string.IsNullOrWhiteSpace(outputLabel?.Text?.StringValue) == false ? outputLabel?.Text : 
                     CreateAssistiveText(), 
                 Mode = LabelRenderMode.MultiLineSmartWrap }).Fill();
             }
