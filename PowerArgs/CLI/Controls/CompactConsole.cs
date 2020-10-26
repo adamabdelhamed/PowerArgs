@@ -164,7 +164,7 @@ namespace PowerArgs.Cli
         private async Task OnHandleHey(ConsoleKeyInfo keyInfo)
         {
             if (InputBox.IsInputBlocked) return;
-
+            OnKeyPress(keyInfo);
             if (keyInfo.Key == ConsoleKey.Enter)
             {
                 ConsoleString output = ConsoleString.Empty;
@@ -254,7 +254,11 @@ namespace PowerArgs.Cli
             {
                 SetOutput(CreateAssistiveText());
             }
+            AfterKeyPress(keyInfo);
         }
+
+        protected virtual void OnKeyPress(ConsoleKeyInfo info) { }
+        protected virtual void AfterKeyPress(ConsoleKeyInfo info) { }
 
         private void SetOutput(ConsoleString text)
         {
