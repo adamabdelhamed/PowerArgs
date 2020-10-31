@@ -480,6 +480,18 @@ namespace PowerArgs.Cli
             return ret;
         }
 
+        public void CloneTo(ConsoleBitmap ret)
+        {
+            for (var x = 0; x < Width; x++)
+            {
+                for (var y = 0; y < Height; y++)
+                {
+                    ret.Pen = this.GetPixel(x, y).Value.HasValue ? this.GetPixel(x, y).Value.Value : new ConsoleCharacter(' ');
+                    ret.DrawPoint(x, y);
+                }
+            }
+        }
+
         private class Chunk
         {
             public RGB FG;
