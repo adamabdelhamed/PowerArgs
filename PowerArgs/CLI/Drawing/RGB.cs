@@ -206,6 +206,11 @@ namespace PowerArgs
         }
 
         public string ToRGBString() => $"{R},{G},{B}";
+       
+        public string ToWebString()
+        {
+            return "#"+BitConverter.ToString(new byte[] { R, G, B }).Replace("-", "");
+        }
             
         /// <summary>
         /// Converts this color to a new color that is closer to the other
