@@ -25,14 +25,14 @@ namespace ArgsTests.CLI.Physics
             bool handled = false;
             st.UnhandledException.SubscribeOnce((data) =>
             {
-                var ex = PromiseWaitException.Clean(data.Exception).Single();
+                var ex = data.Exception.Clean().Single();
                 Assert.AreEqual(message, ex.Message);
                 data.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
                 handled = true;
                 st.Stop();
             });
 
-            await st.Start().AsAwaitable();
+            await st.Start();
             Assert.IsTrue(handled);
         }
 
@@ -51,14 +51,14 @@ namespace ArgsTests.CLI.Physics
                 bool handled = false;
                 st.UnhandledException.SubscribeForLifetime((data) =>
                 {
-                    var ex = PromiseWaitException.Clean(data.Exception).Single();
+                    var ex = data.Exception.Clean().Single();
                     Assert.AreEqual(message, ex.Message);
                     data.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
                     handled = true;
                     st.Stop();
                 }, lt);
 
-                await st.Start().AsAwaitable();
+                await st.Start();
                 Assert.IsTrue(handled);
             }
         }
@@ -80,14 +80,14 @@ namespace ArgsTests.CLI.Physics
             bool handled = false;
             st.UnhandledException.SubscribeOnce((data) =>
             {
-                var ex = PromiseWaitException.Clean(data.Exception).Single();
+                var ex = data.Exception.Clean().Single();
                 Assert.AreEqual(message, ex.Message);
                 data.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
                 handled = true;
                 st.Stop();
             });
 
-            await st.Start().AsAwaitable();
+            await st.Start();
             Assert.IsTrue(handled);
         }
 
@@ -113,14 +113,14 @@ namespace ArgsTests.CLI.Physics
             bool handled = false;
             st.UnhandledException.SubscribeOnce((data) =>
             {
-                var ex = PromiseWaitException.Clean(data.Exception).Single();
+                var ex = data.Exception.Clean().Single();
                 Assert.AreEqual(message, ex.Message);
                 data.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
                 handled = true;
                 st.Stop();
             });
 
-            await st.Start().AsAwaitable();
+            await st.Start();
             Assert.IsTrue(handled);
         }
     }

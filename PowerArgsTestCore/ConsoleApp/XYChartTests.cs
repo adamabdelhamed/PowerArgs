@@ -154,7 +154,7 @@ namespace ArgsTests.CLI.Controls
             app.InvokeNextCycle(() => app.LayoutRoot.Add(new XYChart(options)).Fill());
             app.InvokeNextCycle(async () =>
             {
-                await app.Paint().AsAwaitable();
+                await app.Paint();
                 app.RecordKeyFrame();
                 app.Stop();
             });

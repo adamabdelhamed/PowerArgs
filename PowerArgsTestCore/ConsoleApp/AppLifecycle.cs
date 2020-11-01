@@ -16,19 +16,19 @@ namespace ArgsTests.CLI.Apps
             var testCli = new CliUnitTestConsole(80, 4);
             ConsoleProvider.Current = testCli;
             ConsoleApp app = new ConsoleApp();
-            var promise = app.Start();
+            app.Start();
 
-            app.InvokeNextCycle(() =>
+            var task = app.InvokeNextCycle(() =>
             {
                 throw new FormatException("Some fake exception");
             });
 
             try
             {
-                promise.Wait();
+                task.Wait();
                 Assert.Fail("An exception should have been thrown");
             }
-            catch (PromiseWaitException ex)
+            catch (AggregateException ex)
             {
                 Assert.AreEqual(typeof(FormatException), ex.InnerException.GetType());
                 Assert.AreEqual("Some fake exception", ex.InnerException.Message);

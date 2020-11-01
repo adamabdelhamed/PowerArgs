@@ -33,7 +33,7 @@ namespace ArgsTests.CLI.Physics
                 app.Stop();
             });
 
-            await app.Start().AsAwaitable();
+            await app.Start();
             app.AssertThisTestMatchesLKG();
         }
 

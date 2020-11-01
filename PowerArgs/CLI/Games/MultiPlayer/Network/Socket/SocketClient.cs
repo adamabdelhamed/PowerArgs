@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using PowerArgs.Cli;
 
 namespace PowerArgs.Games
@@ -17,9 +18,9 @@ namespace PowerArgs.Games
         public Event<string> MessageReceived { get; private set; } = new Event<string>();
 
         private Socket client;
-        public Promise Connect(ServerInfo server)
+        public Task Connect(ServerInfo server)
         {
-            var d = Deferred.Create();
+            var d = new TaskCompletionSource<bool>();
             try
             {
                 client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -39,17 +40,17 @@ namespace PowerArgs.Games
             }
             catch (Exception ex)
             {
-                d.Reject(ex);
+                d.SetException(ex);
             }
-            return d.Promise;
+            return d.Task;
         }
 
         private void ListenForMessages(object deferred)
         {
             try
             {
-                Deferred d = deferred as Deferred;
-                d.Resolve();
+                var d = deferred as TaskCompletionSource<bool>;
+                d.SetResult(true);
                 byte[] buffer = new byte[1024 * 1024];
                 while (this.IsExpired == false)
                 {

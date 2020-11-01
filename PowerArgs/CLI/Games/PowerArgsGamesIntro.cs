@@ -4,12 +4,13 @@ using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
     public class PowerArgsGamesIntro : SpaceTimePanel
     {
-        private Deferred introDeferred;
+        private TaskCompletionSource<bool> introDeferred;
         private static readonly Level level = new GeneratedLevels.PowerArgsGameIntroSeed();
         private SceneFactory factory;
         private Character character;
@@ -30,12 +31,12 @@ namespace PowerArgs.Games
             });
 
         }
-        public Promise Play()
+        public Task Play()
         {
-            introDeferred = Deferred.Create();
+            introDeferred = new TaskCompletionSource<bool>();
             SpaceTime.InvokeNextCycle(PlaySceneInternal);
             SpaceTime.Start();
-            return introDeferred.Promise;
+            return introDeferred.Task;
         }
 
         private void PlaySceneInternal()
@@ -110,16 +111,25 @@ namespace PowerArgs.Games
 
             SpaceTime.InvokeNextCycle(() =>
             {
-                if (introDeferred.IsFulfilled)
+                if (introDeferred.Task.IsFulfilled())
                 {
                     return;
                 }
 
                 SpaceTime.Elements.ToList().ForEach(e => e.Lifetime.Dispose());
                 SpaceTime.Stop()
-                .Then(introDeferred.Resolve)
-                .Fail((ex => introDeferred.Reject(ex)))
-                .Finally((p) => this.Dispose());
+                .ContinueWith(t =>
+                {
+                    if (t.Exception != null)
+                    {
+                        introDeferred.SetException(t.Exception);
+                    }
+                    else
+                    {
+                        introDeferred.SetResult(true);
+                    }
+                    this.Dispose();
+                }, TaskContinuationOptions.ExecuteSynchronously);
             });
         }
     }

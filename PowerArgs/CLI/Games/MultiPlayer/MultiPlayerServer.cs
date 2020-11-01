@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
@@ -46,7 +47,7 @@ namespace PowerArgs.Games
             this.MessageRouter.NotFound.SubscribeForLifetime(OnNotFound, this);
         }
 
-        public Promise OpenForNewConnections()
+        public Task OpenForNewConnections()
         {
             Info.Fire("Opening...");
             var ret = serverNetworkProvider.OpenForNewConnections();
@@ -54,7 +55,7 @@ namespace PowerArgs.Games
             return ret;
         }
 
-        public Promise CloseForNewConnections()
+        public Task CloseForNewConnections()
         {
             Info.Fire("Closing...");
             var ret = serverNetworkProvider.CloseForNewConnections();

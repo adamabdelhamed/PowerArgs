@@ -11,7 +11,7 @@ namespace PowerArgs
         private class SynchronizedEvent
         {
             public Func<Task> Work { get; private  set; }
-            public Deferred Deferred { get; private set; }
+            public TaskCompletionSource<bool> Deferred { get; private set; }
             public Task Task { get; private set; }
             public bool IsFinished => Task != null && (Task.IsCompleted || Task.IsFaulted || Task.IsCanceled);
             public bool IsFailed => Task?.Exception != null;
@@ -20,7 +20,7 @@ namespace PowerArgs
             public SynchronizedEvent(Func<Task> work)
             {
                 this.Work = work;
-                this.Deferred = Deferred.Create();
+                this.Deferred = new TaskCompletionSource<bool>();
             }
 
             public void Run()
@@ -88,7 +88,7 @@ namespace PowerArgs
         protected string Name { get; set; }
         private List<SynchronizedEvent> workQueue = new List<SynchronizedEvent>();
         private List<SynchronizedEvent> pendingWorkItems = new List<SynchronizedEvent>();
-        private Deferred runDeferred;
+        private TaskCompletionSource<bool> runDeferred;
         private bool stopRequested;
         
         public bool IsDrainingOrDrained { get; private set; }
@@ -99,14 +99,14 @@ namespace PowerArgs
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public virtual Promise Start()
+        public virtual Task Start()
         {
-            runDeferred = Deferred.Create();
+            runDeferred = new TaskCompletionSource<bool>();
             Thread = new Thread(RunCommon) { Name = Name };
             Thread.Priority = Priority;
             Thread.IsBackground = true;
             Thread.Start();
-            return runDeferred.Promise;
+            return runDeferred.Task;
         }
 
         /// <summary>
@@ -114,12 +114,13 @@ namespace PowerArgs
         /// </summary>
         public void Run()
         {
-            runDeferred = Deferred.Create();
-            runDeferred.Promise.Finally((p) => { runDeferred = null; });
+            runDeferred = new TaskCompletionSource<bool>();
+            runDeferred.Task.ContinueWith(t2 => { runDeferred = null; }, TaskContinuationOptions.ExecuteSynchronously);
+             
             RunCommon();
-            if (runDeferred.Exception != null)
+            if (runDeferred.Task.Exception != null)
             {
-                throw new PromiseWaitException(runDeferred.Exception);
+                throw new AggregateException(runDeferred.Task.Exception);
             }
         }
 
@@ -129,13 +130,13 @@ namespace PowerArgs
             try
             {
                 Loop();
-                runDeferred.Resolve();
+                runDeferred.SetResult(true);
             }
             catch (Exception ex)
             {
-                if (runDeferred.IsFulfilled == false)
+                if (runDeferred.Task.IsCompleted == false && runDeferred.Task.IsFaulted == false && runDeferred.Task.IsCanceled == false)
                 {
-                     runDeferred.Reject(ex);                    
+                     runDeferred.SetException(ex);                    
                 }
             }
             finally
@@ -221,7 +222,7 @@ namespace PowerArgs
                         }
                         else if (pendingWorkItems[i].IsFinished)
                         {
-                            pendingWorkItems[i].Deferred.Resolve();
+                            pendingWorkItems[i].Deferred.SetResult(true);
                             pendingWorkItems.RemoveAt(i--);
                             if (stopRequested)
                             {
@@ -245,7 +246,7 @@ namespace PowerArgs
                             }
                             else
                             {
-                                workItem.Deferred.Resolve();
+                                workItem.Deferred.SetResult(true);
                                 if (stopRequested)
                                 {
                                     return;
@@ -305,18 +306,18 @@ namespace PowerArgs
             }
         }
 
-        public Promise Stop()
+        public Task Stop()
         {
             if(IsRunning == false)
             {
                 throw new Exception("Not running");
             }
-            var ret = runDeferred;
+         
             Invoke(() => throw new StopLoopException());
-            return ret.Promise;
+            return runDeferred.Task;
         }
 
-        public Promise Invoke(Action work) => Invoke(()=>
+        public Task Invoke(Action work) => Invoke(()=>
         {
             work();
             return Task.CompletedTask;
@@ -341,7 +342,7 @@ namespace PowerArgs
             }
         }
 
-        public Promise InvokeNextCycle(Action work)
+        public Task InvokeNextCycle(Action work)
         {
             return InvokeNextCycle(() =>
             {
@@ -350,13 +351,11 @@ namespace PowerArgs
             });
         }
 
-        public Promise InvokeNextCycle(Func<Task> work)
+        public Task InvokeNextCycle(Func<Task> work)
         {
             if (IsRunning == false && IsDrainingOrDrained)
             {
-                var d = Deferred.Create();
-                d.Resolve();
-                return d.Promise;
+                return Task.CompletedTask;
             }
 
             var workItem = new SynchronizedEvent(work);
@@ -364,17 +363,15 @@ namespace PowerArgs
             {
                 workQueue.Add(workItem);
             }
-            return workItem.Deferred.Promise;
+            return workItem.Deferred.Task;
         }
         
 
-        public Promise Invoke(Func<Task> work)
+        public Task Invoke(Func<Task> work)
         {
             if(IsRunning == false && IsDrainingOrDrained)
             {
-                var d = Deferred.Create();
-                d.Resolve();
-                return d.Promise;
+                return Task.CompletedTask;
             }
             var workItem = new SynchronizedEvent(work);
 
@@ -391,7 +388,7 @@ namespace PowerArgs
                 }
                 else
                 {
-                    workItem.Deferred.Resolve();
+                    workItem.Deferred.SetResult(true);
                 }
             }
             else
@@ -401,12 +398,12 @@ namespace PowerArgs
                     workQueue.Add(workItem);
                 }
             }
-            return workItem.Deferred.Promise;
+            return workItem.Deferred.Task;
         }
 
         private EventLoopExceptionHandling HandleWorkItemException(Exception ex, SynchronizedEvent workItem)
         {
-            var cleaned = PromiseWaitException.Clean(ex);
+            var cleaned = ex.Clean();
 
             if(cleaned.Count == 1 && cleaned[0] is StopLoopException)
             {
@@ -418,10 +415,10 @@ namespace PowerArgs
 
             if (IsDrainingOrDrained) return EventLoopExceptionHandling.Swallow;
 
-            if (workItem != null && workItem.Deferred.HasExceptionListeners)
+            if (workItem != null)
             {
-                workItem.Deferred.Reject(ex);
-                return EventLoopExceptionHandling.Swallow;
+                workItem.Deferred.SetException(ex);
+                return EventLoopExceptionHandling.Throw;
             }
             else
             {

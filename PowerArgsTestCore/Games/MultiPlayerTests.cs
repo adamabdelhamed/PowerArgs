@@ -80,9 +80,9 @@ namespace ArgsTests.CLI.Games
             var client2SeesClient1Task = client2.EventRouter.GetAwaitable<NewUserMessage>();
 
             // both clients connect, which should trigger the start of the game
-            await client1.Connect(serverInfo).AsAwaitable();
+            await client1.Connect(serverInfo);
             Console.WriteLine("client 1 connected");
-            await client2.Connect(serverInfo).AsAwaitable();
+            await client2.Connect(serverInfo);
             Console.WriteLine("client 2 connected");
 
             // make sure both clients got the start event
@@ -102,7 +102,7 @@ namespace ArgsTests.CLI.Games
             {
                 DamagedClient = client2.ClientId,
                 NewHP = 0
-            }, timeout: TimeSpan.FromDays(1)).AsAwaitable();
+            }, timeout: TimeSpan.FromDays(1));
  
             // make sure both clients got the game over event event
             await Task.WhenAll(client1GameOverTask, client2GameOverTask);
@@ -119,15 +119,15 @@ namespace ArgsTests.CLI.Games
 
         private async Task TestRequestResponse(MultiPlayerServer server, ServerInfo serverInfo, MultiPlayerClient client)
         {
-            await server.OpenForNewConnections().AsAwaitable();
+            await server.OpenForNewConnections();
             Console.WriteLine("server is listening");
-            await client.Connect(serverInfo).AsAwaitable();
+            await client.Connect(serverInfo);
 
 
             try
             {
                 var sw = Stopwatch.StartNew();
-                var response = await client.SendRequest(new PingMessage(), timeout: TimeSpan.FromDays(1)).AsAwaitable();
+                var response = await client.SendRequest(new PingMessage(), timeout: TimeSpan.FromDays(1));
                 sw.Stop();
                 Console.WriteLine("ping took " + sw.ElapsedMilliseconds + " ms");
             }
@@ -140,10 +140,10 @@ namespace ArgsTests.CLI.Games
 
             try
             {
-                await client.SendRequest(new PingMessage() { Delay = 300 }, timeout: TimeSpan.FromSeconds(.1)).AsAwaitable();
+                await client.SendRequest(new PingMessage() { Delay = 300 }, timeout: TimeSpan.FromSeconds(.1));
                 Assert.Fail("A timeout exception should have been thrown");
             }
-            catch (PromiseWaitException ex)
+            catch (AggregateException ex)
             {
                 Assert.AreEqual(1, ex.InnerExceptions.Count);
                 Assert.IsTrue(ex.InnerException is TimeoutException);

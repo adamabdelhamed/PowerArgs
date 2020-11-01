@@ -113,7 +113,7 @@ namespace ArgsTests.CLI
                 });
             });
 
-            await app.Start().AsAwaitable();
+            await app.Start();
             app.AssertThisTestMatchesLKG();
             Console.WriteLine(delayProvider.DelayCount+" delays");
             Console.WriteLine(app.TotalPaints + " paints");

@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using PowerArgs.Cli;
 
 namespace PowerArgs.Games
@@ -19,7 +20,7 @@ namespace PowerArgs.Games
         private Dictionary<string, RemoteSocketConnection> connections = new Dictionary<string, RemoteSocketConnection>();
         private TcpListener listener;
         private bool isListening;
-        private Deferred listeningDeferred;
+        private TaskCompletionSource<bool> listeningDeferred;
         private int port;
         private IPHostEntry ipHostInfo;
         private IPEndPoint localEP;
@@ -36,11 +37,11 @@ namespace PowerArgs.Games
             this.ServerId = "http://" + Dns.GetHostName() + ":" + port;
         }
 
-        public Promise OpenForNewConnections()
+        public Task OpenForNewConnections()
         {
             isListening = true;
-            listeningDeferred = Deferred.Create();
-            var startListeningDeferred = Deferred.Create();
+            listeningDeferred = new TaskCompletionSource<bool>();
+            var startListeningDeferred = new TaskCompletionSource<bool>();
             BackgroundThread t = null;
             t = new BackgroundThread(() =>
             {
@@ -51,12 +52,12 @@ namespace PowerArgs.Games
                 }
                 catch (Exception ex)
                 {
-                    startListeningDeferred.Reject(ex);
+                    startListeningDeferred.SetException(ex);
                     return;
                 }
 
                 // we have started listening
-                startListeningDeferred.Resolve();
+                startListeningDeferred.SetResult(true);
 
                 try
                 {
@@ -84,11 +85,11 @@ namespace PowerArgs.Games
                         ClientConnected.Fire(connection);
                     }
                     listener.Stop();
-                    listeningDeferred.Resolve();
+                    listeningDeferred.SetResult(true);
                 }
                 catch(Exception ex)
                 {
-                    listeningDeferred.Reject(ex);
+                    listeningDeferred.SetException(ex);
                 }
                 finally
                 {
@@ -97,13 +98,13 @@ namespace PowerArgs.Games
             });
             this.OnDisposed(t.Dispose);
             t.Start();
-            return startListeningDeferred.Promise;
+            return startListeningDeferred.Task;
         }
 
-        public Promise CloseForNewConnections()
+        public Task CloseForNewConnections()
         {
             isListening = false;
-            return listeningDeferred.Promise;
+            return listeningDeferred.Task;
         }
 
         public void SendMessageToClient(string message, MultiPlayerClientConnection client)
@@ -129,7 +130,7 @@ namespace PowerArgs.Games
 
         public Event<string> MessageReceived { get; set; }
 
-        public Promise Listen() => new BackgroundThread(ListenThread).Start();
+        public Task Listen() => new BackgroundThread(ListenThread).Start();
         
         private void ListenThread()
         {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Samples;
+using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
@@ -64,6 +65,69 @@ namespace PowerArgs
             var lt = new Lifetime();
             t.ContinueWith((t2) => lt.Dispose(), TaskScheduler.FromCurrentSynchronizationContext());
             return lt;
+        }
+
+        public static bool IsFulfilled(this Task t) => t.IsCanceled || t.IsCompleted || t.IsFaulted;
+
+        public static Task Then(this Task t, Action a)
+        {
+            return t.ContinueWith(t2 =>
+            {
+                if(t2.Status == TaskStatus.RanToCompletion)
+                {
+                    a();
+                }
+            }, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        public static Task Fail(this Task t, Action<Exception> a)
+        {
+            return t.ContinueWith(t2 =>
+            {
+                if (t2.Status == TaskStatus.Faulted)
+                {
+                    a(t2.Exception);
+                }
+            }, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        public static Task Finally(this Task t, Action<Task> a)
+        {
+            return t.ContinueWith(t2 =>
+            {
+                a(t);
+            }, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+
+        public static Task Then<T>(this Task<T> t, Action<T> a)
+        {
+            return t.ContinueWith(t2 =>
+            {
+                if (t2.Status == TaskStatus.RanToCompletion)
+                {
+                    a(t.Result);
+                }
+            }, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        public static Task Fail<T>(this Task<T> t, Action<Exception> a)
+        {
+            return t.ContinueWith(t2 =>
+            {
+                if (t2.Status == TaskStatus.Faulted)
+                {
+                    a(t2.Exception);
+                }
+            }, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        public static Task Finally<T>(this Task<T> t, Action<Task<T>> a)
+        {
+            return t.ContinueWith(t2 =>
+            {
+                a(t);
+            }, TaskContinuationOptions.ExecuteSynchronously);
         }
     }
 }

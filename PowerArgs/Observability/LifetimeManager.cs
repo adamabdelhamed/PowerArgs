@@ -16,16 +16,16 @@ namespace PowerArgs
         /// managed by this manager ends
         /// </summary>
         /// <param name="cleanupCode">the code to run</param>
-        /// <returns>a promise that resolves after the cleanup code runs</returns>
-        Promise OnDisposed(Action cleanupCode);
+        /// <returns>a Task that resolves after the cleanup code runs</returns>
+        Task OnDisposed(Action cleanupCode);
 
         /// <summary>
         /// Registers the given disposable to dispose when the lifetime being
         /// managed by this manager ends
         /// </summary>
         /// <param name="obj">the object to dispose</param>
-        /// <returns>a promise that resolves after the object is disposed</returns>
-        Promise OnDisposed(IDisposable obj);
+        /// <returns>a Task that resolves after the object is disposed</returns>
+        Task OnDisposed(IDisposable obj);
 
         /// <summary>
         /// returns true if expired
@@ -86,24 +86,24 @@ namespace PowerArgs
         /// managed by this manager ends
         /// </summary>
         /// <param name="obj">the object to dispose</param>
-        /// <returns>a promise that resolves after the object is disposed</returns>
-        public Promise OnDisposed(IDisposable obj) => OnDisposed(() => obj.Dispose());
+        /// <returns>a Task that resolves after the object is disposed</returns>
+        public Task OnDisposed(IDisposable obj) => OnDisposed(() => obj.Dispose());
 
         /// <summary>
         /// Registers the given cleanup code to run when the lifetime being
         /// managed by this manager ends
         /// </summary>
         /// <param name="cleanupCode">the code to run</param>
-        /// <returns>a promise that resolves after the cleanup code runs</returns>
-        public Promise OnDisposed(Action cleanupCode)
+        /// <returns>a Task that resolves after the cleanup code runs</returns>
+        public Task OnDisposed(Action cleanupCode)
         {
-            var d = Deferred.Create();
+            var d = new TaskCompletionSource<bool>();
             cleanupItems.Add(()=>
             {
                 cleanupCode();
-                d.Resolve();
+                d.SetResult(true);
             });
-            return d.Promise;
+            return d.Task;
         }
     }
 }

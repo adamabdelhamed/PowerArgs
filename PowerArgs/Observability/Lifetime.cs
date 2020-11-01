@@ -100,7 +100,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="cleanupCode">code to run when this lifetime ends</param>
         /// <returns>a promis that will resolve after the cleanup code has run</returns>
-        public Promise OnDisposed(Action cleanupCode)
+        public Task OnDisposed(Action cleanupCode)
         {
             if (IsExpired == false)
             {
@@ -108,10 +108,7 @@ namespace PowerArgs
             }
             else
             {
-                cleanupCode();
-                var d = Deferred.Create();
-                d.Resolve();
-                return d.Promise;
+                return Task.CompletedTask;
             }
         }
 
@@ -119,8 +116,8 @@ namespace PowerArgs
         /// Registers a disposable to be disposed when this lifetime ends
         /// </summary>
         /// <param name="cleanupCode">an object to dispose when this lifetime ends</param>
-        /// <returns>a promise that will resolve when the given object is disposed</returns>
-        public Promise OnDisposed(IDisposable cleanupCode)
+        /// <returns>a Task that will resolve when the given object is disposed</returns>
+        public Task OnDisposed(IDisposable cleanupCode)
         {
             if (IsExpired == false)
             {
@@ -128,10 +125,7 @@ namespace PowerArgs
             }
             else
             {
-                cleanupCode.Dispose();
-                var d = Deferred.Create();
-                d.Resolve();
-                return d.Promise;
+                return Task.CompletedTask;
             }
         }
 

@@ -2,6 +2,7 @@
 using PowerArgs;
 using PowerArgs.Cli;
 using System;
+using System.Threading.Tasks;
 
 namespace ArgsTests.CLI.Controls
 {
@@ -18,18 +19,18 @@ namespace ArgsTests.CLI.Controls
 
             app.InvokeNextCycle(async () =>
             {
-                Promise dialogPromise;
+                Task dialogTask;
 
                 // show hello world message, wait for a paint, then take a keyframe of the screen, which 
                 // should have the dialog shown
-                dialogPromise = Dialog.ShowMessage("Hello world");
+                dialogTask = Dialog.ShowMessage("Hello world");
                 await app.PaintAndRecordKeyFrameAsync();
-                Assert.IsFalse(dialogPromise.IsFulfilled);
+                Assert.IsFalse(dialogTask.IsFulfilled());
 
                 // simulate an enter keypress, which should clear the dialog
                 app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.Enter, false, false, false));
                 await app.PaintAndRecordKeyFrameAsync();
-                await dialogPromise.AsAwaitable();
+                await dialogTask;
                 app.Stop();
             });
 
@@ -44,25 +45,25 @@ namespace ArgsTests.CLI.Controls
 
             app.InvokeNextCycle(async () =>
             {
-                Promise dialogPromise;
+                Task dialogTask;
 
-                dialogPromise = Dialog.ShowYesConfirmation("Yes or no, no will be clicked");
+                dialogTask = Dialog.ShowYesConfirmation("Yes or no, no will be clicked");
                 await app.PaintAndRecordKeyFrameAsync();
-                Assert.IsFalse(dialogPromise.IsFulfilled);
+                Assert.IsFalse(dialogTask.IsFulfilled());
 
                 var noRejected = false;
-                dialogPromise.Fail((ex) => noRejected = true);
+                dialogTask.Fail((ex) => noRejected = true);
 
                 // simulate an enter keypress, which should clear the dialog, but should not trigger 
-                // the promise to resolve since yes was not chosen
+                // the Task to resolve since yes was not chosen
                 app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.Enter, false, false, false));
                 await app.PaintAndRecordKeyFrameAsync();
-                Assert.IsTrue(dialogPromise.IsFulfilled);
-                Assert.IsTrue(noRejected); // the promise should reject on no
+                Assert.IsTrue(dialogTask.IsFulfilled());
+                Assert.IsTrue(noRejected); // the Task should reject on no
 
-                dialogPromise = Dialog.ShowYesConfirmation("Yes or no, yes will be clicked");
+                dialogTask = Dialog.ShowYesConfirmation("Yes or no, yes will be clicked");
                 await app.PaintAndRecordKeyFrameAsync();
-                Assert.IsFalse(dialogPromise.IsFulfilled);
+                Assert.IsFalse(dialogTask.IsFulfilled());
                 // give focus to the yes option
                 app.SendKey(new ConsoleKeyInfo('\t', ConsoleKey.Tab, true, false, false));
                 await app.PaintAndRecordKeyFrameAsync();
@@ -70,7 +71,7 @@ namespace ArgsTests.CLI.Controls
                 // dismiss the dialog
                 app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.Enter, false, false, false));
                 await app.PaintAndRecordKeyFrameAsync();
-                await dialogPromise.AsAwaitable();
+                await dialogTask;
                 app.Stop();
             });
 
@@ -86,13 +87,13 @@ namespace ArgsTests.CLI.Controls
 
             app.InvokeNextCycle(async () =>
             {
-                Promise<ConsoleString> dialogPromise;
-                dialogPromise = Dialog.ShowRichTextInput(new RichTextDialogOptions()
+                Task<ConsoleString> dialogTask;
+                dialogTask = Dialog.ShowRichTextInput(new RichTextDialogOptions()
                 {
                     Message = "Rich text input prompt text".ToGreen(),
                 });
                 await app.PaintAndRecordKeyFrameAsync();
-                Assert.IsFalse(dialogPromise.IsFulfilled);
+                Assert.IsFalse(dialogTask.IsFulfilled());
                 app.SendKey(new ConsoleKeyInfo('A', ConsoleKey.A, false, false, false));
                 await app.PaintAndRecordKeyFrameAsync();
                 app.SendKey(new ConsoleKeyInfo('d', ConsoleKey.D, false, false, false));
@@ -101,10 +102,10 @@ namespace ArgsTests.CLI.Controls
                 await app.PaintAndRecordKeyFrameAsync();
                 app.SendKey(new ConsoleKeyInfo('m', ConsoleKey.M, false, false, false));
                 await app.PaintAndRecordKeyFrameAsync();
-                Assert.IsFalse(dialogPromise.IsFulfilled);
+                Assert.IsFalse(dialogTask.IsFulfilled());
                 app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.Enter, false, false, false));
-                var stringVal = (await dialogPromise.AsAwaitable()).ToString();
-                await app.Paint().AsAwaitable();
+                var stringVal = (await dialogTask).ToString();
+                await app.Paint();
                 app.RecordKeyFrame();
                 Assert.AreEqual("Adam", stringVal);
                 app.Stop();
@@ -121,10 +122,10 @@ namespace ArgsTests.CLI.Controls
 
             app.InvokeNextCycle(async () =>
             {
-                Promise<ConsoleColor?> dialogPromise;
-                dialogPromise = Dialog.ShowEnumOptions<ConsoleColor>("Enum option picker".ToGreen());
+                Task<ConsoleColor?> dialogTask;
+                dialogTask = Dialog.ShowEnumOptions<ConsoleColor>("Enum option picker".ToGreen());
                 await app.PaintAndRecordKeyFrameAsync();
-                Assert.IsFalse(dialogPromise.IsFulfilled);
+                Assert.IsFalse(dialogTask.IsFulfilled());
 
                 for (var i = 0; i < 6; i++)
                 {
@@ -135,7 +136,7 @@ namespace ArgsTests.CLI.Controls
                 app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.Enter, false, false, false));
                 await app.PaintAndRecordKeyFrameAsync();
 
-                var enumValue = (await dialogPromise.AsAwaitable());
+                var enumValue = (await dialogTask);
                 Assert.AreEqual(ConsoleColor.DarkGreen, enumValue);
                 app.Stop();
             });

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
 {
@@ -260,14 +261,14 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Shows the dialog on top of the current app
         /// </summary>
-        /// <returns>a promise that resolves when this dialog is dismissed. This promise never rejects.</returns>
-        private Promise Show()
+        /// <returns>a Task that resolves when this dialog is dismissed. This Task never rejects.</returns>
+        private Task Show()
         {
             ConsoleApp.AssertAppThread();
-            var deferred = Deferred.Create();
+            var deferred = new TaskCompletionSource<bool>();
             ConsoleApp.Current.LayoutRoot.Add(this);
-            RemovedFromVisualTree.SubscribeForLifetime(deferred.Resolve, this);
-            return deferred.Promise;
+            RemovedFromVisualTree.SubscribeForLifetime(()=>deferred.SetResult(true), this);
+            return deferred.Task;
         }
 
         private void OnBeforeAddedToVisualTree()
@@ -356,62 +357,62 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="options">the options that configure the dialog's behavior</param>
         /// <returns></returns>
-        public static Promise Show(ControlDialogOptions options) => new Dialog(options).Show();
+        public static Task Show(ControlDialogOptions options) => new Dialog(options).Show();
 
         /// <summary>
         /// Shows a dialog with a message and a set of options for the user to choose from
         /// </summary>
         /// <param name="options">the options used to configure the dialog</param>
-        /// <returns>a promise that resolves with the selected option or null if the dialog was cancelled. The promise never rejects.</returns>
-        public static Promise<DialogOption> ShowMessage(DialogButtonOptions options)
+        /// <returns>a Task that resolves with the selected option or null if the dialog was cancelled. The Task never rejects.</returns>
+        public static Task<DialogOption> ShowMessage(DialogButtonOptions options)
         {
-            var d = Deferred<DialogOption>.Create();
+            var d = new TaskCompletionSource<DialogOption>();
             var dialog = new Dialog(options);
-            var rawPromise = dialog.Show();
-            rawPromise.Then(() => d.Resolve(dialog.WasEscapeUsedToClose ? null : options.SelectedOption));
-            return d.Promise;
+            var rawTask = dialog.Show();
+            rawTask.Then(() => d.SetResult(dialog.WasEscapeUsedToClose ? null : options.SelectedOption));
+            return d.Task;
         }
 
         /// <summary>
         /// Shows a dialog with a message and an ok button
         /// </summary>
         /// <param name="message">the message to show</param>
-        /// <returns>a promise that resolves when the dialog is dismissed. The promise never rejects.</returns>
-        public static Promise ShowMessage(ConsoleString message)
+        /// <returns>a Task that resolves when the dialog is dismissed. The Task never rejects.</returns>
+        public static Task ShowMessage(ConsoleString message)
         {
-            var d = Deferred.Create();
-            var buttonPromise = ShowMessage(new DialogButtonOptions()
+            var d = new TaskCompletionSource<bool>();
+            var buttonTask = ShowMessage(new DialogButtonOptions()
             {
                 Message = message,
                 Options = new List<DialogOption>() { DialogButtonOptions.OK }
             });
-            buttonPromise.Then((button) => d.Resolve());
-            return d.Promise;
+            buttonTask.Then(() => d.SetResult(true));
+            return d.Task;
         }
 
         /// <summary>
         /// Shows a dialog with a message and an ok button
         /// </summary>
         /// <param name="message">the message to show</param>
-        /// <returns>a promise that resolves when the dialog is dismissed. The promise never rejects.</returns>
-        public static Promise ShowMessage(string message) => ShowMessage(message.ToConsoleString());
+        /// <returns>a Task that resolves when the dialog is dismissed. The Task never rejects.</returns>
+        public static Task ShowMessage(string message) => ShowMessage(message.ToConsoleString());
 
         /// <summary>
         /// Shows a dialog with the given message and provides the user with a yes and no option
         /// </summary>
         /// <param name="message">the message to show</param>
-        /// <returns>a promise that resolves if the yes option was cicked. it rejects if no was clicked or if the dialog was cancelled</returns>
-        public static Promise ShowYesConfirmation(string message) => ShowYesConfirmation(message.ToConsoleString());
+        /// <returns>a Task that resolves if the yes option was cicked. it rejects if no was clicked or if the dialog was cancelled</returns>
+        public static Task ShowYesConfirmation(string message) => ShowYesConfirmation(message.ToConsoleString());
 
         /// <summary>
         /// Shows a dialog with the given message and provides the user with a yes and no option
         /// </summary>
         /// <param name="message">the message to show</param>
-        /// <returns>a promise that resolves if the yes option was cicked. it rejects if no was clicked or if the dialog was cancelled</returns>
-        public static Promise ShowYesConfirmation(ConsoleString message)
+        /// <returns>a Task that resolves if the yes option was cicked. it rejects if no was clicked or if the dialog was cancelled</returns>
+        public static Task ShowYesConfirmation(ConsoleString message)
         {
-            var d = Deferred.Create();
-            var buttonPromise = ShowMessage(new DialogButtonOptions()
+            var d = new TaskCompletionSource<bool>();
+            var buttonTask = ShowMessage(new DialogButtonOptions()
             {
                 Message = message,
                 Options = new List<DialogOption>()
@@ -420,18 +421,18 @@ namespace PowerArgs.Cli
                     DialogButtonOptions.No
                 }
             });
-            buttonPromise.Then((button) =>
+            buttonTask.Then((button) =>
             {
                 if (button != null && button.Equals(DialogButtonOptions.Yes))
                 {
-                    d.Resolve();
+                    d.SetResult(true);
                 }
                 else
                 {
-                    d.Reject(new Exception("No was selected"));
+                    d.SetException(new Exception("No was selected"));
                 }
             });
-            return d.Promise;
+            return d.Task;
         }
 
         /// <summary>
@@ -439,13 +440,13 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <typeparam name="T">the enum type</typeparam>
         /// <param name="message">the message to show</param>
-        /// <returns>A promise that resolves with the selected value or null if the dialog was cancelled. The promise never rejects.</returns>
-        public static Promise<T?> ShowEnumOptions<T>(ConsoleString message) where T : struct
+        /// <returns>A Task that resolves with the selected value or null if the dialog was cancelled. The Task never rejects.</returns>
+        public static Task<T?> ShowEnumOptions<T>(ConsoleString message) where T : struct
         {
-            var d = Deferred<T?>.Create();
-            var rawPromise = ShowEnumOptions(message, typeof(T));
-            rawPromise.Then((o) => d.Resolve(o == null ? new T?() : (T)o));
-            return d.Promise;
+            var d = new TaskCompletionSource<T?>();
+            var rawTask = ShowEnumOptions(message, typeof(T));
+            rawTask.Then((o) => d.SetResult(o == null ? new T?() : (T)o));
+            return d.Task;
         }
 
         /// <summary>
@@ -453,38 +454,38 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="message">the message to show</param>
         /// <param name="enumType">the enum type</param>
-        /// <returns>A promise that resolves with the selected value or null if the dialog was cancelled. The promise never rejects.</returns>
-        public static Promise<object> ShowEnumOptions(ConsoleString message, Type enumType)
+        /// <returns>A Task that resolves with the selected value or null if the dialog was cancelled. The Task never rejects.</returns>
+        public static Task<object> ShowEnumOptions(ConsoleString message, Type enumType)
         {
-            Deferred<object> deferred = Deferred<object>.Create();
-            var rawPromise = ShowMessage(new DialogButtonOptions()
+            TaskCompletionSource<object> deferred = new TaskCompletionSource<object>();
+            var rawTask = ShowMessage(new DialogButtonOptions()
             {
                 Message = message,
                 Mode = DialogButtonsPresentationMode.Grid,
                 Options = Enums.GetEnumValues(enumType).OrderBy(e => e.ToString()).Select(e => new DialogOption() { Id = e.ToString(), DisplayText = e.ToString().ToConsoleString(), Value = e }).ToList()
             });
 
-            rawPromise.Then((b) =>
+            rawTask.Then((b) =>
             {
-                if (b == null) deferred.Resolve(null);
-                else deferred.Resolve(b.Value);
+                if (b == null) deferred.SetResult(null);
+                else deferred.SetResult(b.Value);
             });
 
-            return deferred.Promise;
+            return deferred.Task;
         }
 
         /// <summary>
         /// Shows a dialog that presents the user with a message and a text box
         /// </summary>
         /// <param name="options">the options used to configure the dialog</param>
-        /// <returns>a promise that resolves with the value of the text box at the time of dismissal. This promise never rejects.</returns>
-        public static Promise<ConsoleString> ShowRichTextInput(RichTextDialogOptions options)
+        /// <returns>a Task that resolves with the value of the text box at the time of dismissal. This Task never rejects.</returns>
+        public static Task<ConsoleString> ShowRichTextInput(RichTextDialogOptions options)
         {
-            var d = Deferred<ConsoleString>.Create();
+            var d = new TaskCompletionSource<ConsoleString>();
             var dialog = new Dialog(options);
-            var rawPromise = dialog.Show();
-            rawPromise.Then(() => d.Resolve( dialog.WasEscapeUsedToClose ? null : options.TextBox.Value));
-            return d.Promise;
+            var rawTask = dialog.Show();
+            rawTask.Then(() => d.SetResult( dialog.WasEscapeUsedToClose ? null : options.TextBox.Value));
+            return d.Task;
         }
     }
 }

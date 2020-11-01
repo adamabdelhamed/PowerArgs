@@ -1,6 +1,7 @@
 ﻿using PowerArgs;
 using PowerArgs.Cli;
 using System;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
@@ -24,14 +25,14 @@ namespace PowerArgs.Games
         /// Plays the sound associated with the given id immediately and once
         /// </summary>
         /// <param name="soundId">a sound id</param>
-        public static Promise<Lifetime> Play(string soundId, float volume = 1) => Provider.Play(soundId.ToLower(), volume);
+        public static Task<Lifetime> Play(string soundId, float volume = 1) => Provider.Play(soundId.ToLower(), volume);
 
         /// <summary>
         /// Plays the sound associated with the given id immidiately and in a loop
         /// </summary>
         /// <param name="soundId">a sound id</param>
         /// <returns>a promist to a disposable that can be used to stop the loop</returns>
-        public static Promise<IDisposable> Loop(string soundId, float volume = .1f) => Provider.Loop(soundId.ToLower(), volume);
+        public static Task<IDisposable> Loop(string soundId, float volume = .1f) => Provider.Loop(soundId.ToLower(), volume);
         
         /// <summary>
         /// Disposes the current provider and resets the provider to a no op provider
@@ -53,14 +54,14 @@ namespace PowerArgs.Games
         /// Plays the sound associated with the given id immediately and once
         /// </summary>
         /// <param name="soundId">a sound id</param>
-        Promise<Lifetime> Play(string soundId, float volume);
+        Task<Lifetime> Play(string soundId, float volume);
 
         /// <summary>
         /// Plays the sound associated with the given id immidiately and in a loop
         /// </summary>
         /// <param name="soundId">a sound id</param>
         /// <returns>a promist to a disposable that can be used to stop the loop</returns>
-        Promise<IDisposable> Loop(string soundId, float volume);
+        Task<IDisposable> Loop(string soundId, float volume);
     }
 
     /// <summary>
@@ -79,25 +80,25 @@ namespace PowerArgs.Games
         /// Does nothing
         /// </summary>
         /// <param name="soundId">unused</param>
-        public Promise<Lifetime> Play(string soundId, float volume)
+        public Task<Lifetime> Play(string soundId, float volume)
         {
-            var d = Deferred<Lifetime>.Create();
+            var d = new TaskCompletionSource<Lifetime>();
             var l = new Lifetime();
             l.Dispose();
-            d.Resolve(l);
-            return d.Promise;
+            d.SetResult(l);
+            return d.Task;
         }
 
         /// <summary>
         /// Does nothing
         /// </summary>
         /// <param name="soundId">unused</param>
-        /// <returns>a promise that resolves immediately to a dummy disposable</returns>
-        public Promise<IDisposable> Loop(string soundId, float volume)
+        /// <returns>a Task that resolves immediately to a dummy disposable</returns>
+        public Task<IDisposable> Loop(string soundId, float volume)
         {
-            var d = Deferred<IDisposable>.Create();
-            d.Resolve(new DummyDisposable());
-            return d.Promise;
+            var d = new TaskCompletionSource<IDisposable>();
+            d.SetResult(new DummyDisposable());
+            return d.Task;
         }
     }
 }

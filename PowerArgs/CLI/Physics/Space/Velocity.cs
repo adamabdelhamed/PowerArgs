@@ -113,15 +113,15 @@ namespace PowerArgs.Cli.Physics
         public Task Takeover(Func<Task> movementTakeover)
         {
             if (MovementTakeover != null) throw new ArgumentException("Movement has already been taken over");
-            Deferred d = Deferred.Create();
-            OnTakeover.Fire(d.Promise.ToLifetime());
+            TaskCompletionSource<bool> d = new TaskCompletionSource<bool>();
+            OnTakeover.Fire(d.Task.ToLifetime());
             MovementTakeover = async () =>
             {
                 await movementTakeover();
                 MovementTakeover = null;
-                d.Resolve();
+                d.SetResult(true);
             };
-            return d.Promise.AsAwaitable();
+            return d.Task;
         }
 
         public void Stop()

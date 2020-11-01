@@ -1,5 +1,6 @@
 ﻿using PowerArgs.Cli;
 using System;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
@@ -11,8 +12,8 @@ namespace PowerArgs.Games
         Event<MultiPlayerClientConnection> ClientConnected { get; }
 
         // listen / stop
-        Promise OpenForNewConnections();
-        Promise CloseForNewConnections();
+        Task OpenForNewConnections();
+        Task CloseForNewConnections();
 
         // send / receive
         Event<string> MessageReceived { get; }
@@ -24,7 +25,7 @@ namespace PowerArgs.Games
         Event<Exception> Disconnected { get;  }
         string ClientId { get; }
 
-        Promise Connect(ServerInfo server);
+        Task Connect(ServerInfo server);
         Event<string> MessageReceived { get; }
 
         void SendMessage(string message);

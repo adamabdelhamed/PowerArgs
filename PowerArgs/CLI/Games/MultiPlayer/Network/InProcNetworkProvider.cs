@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using PowerArgs.Cli;
 
 namespace PowerArgs.Games
@@ -34,20 +35,20 @@ namespace PowerArgs.Games
             });
         }
 
-        public Promise OpenForNewConnections()
+        public Task OpenForNewConnections()
         {
-            var d = Deferred.Create();
+            var d = new TaskCompletionSource<bool>();
             allowNewConnections = true;
-            d.Resolve();
-            return d.Promise;
+            d.SetResult(true);
+            return d.Task;
         }
 
-        public Promise CloseForNewConnections()
+        public Task CloseForNewConnections()
         {
-            var d = Deferred.Create();
+            var d = new TaskCompletionSource<bool>();
             allowNewConnections = false;
-            d.Resolve();
-            return d.Promise;
+            d.SetResult(true);
+            return d.Task;
         }
 
         public void SendMessageToClient(string message, MultiPlayerClientConnection client)
@@ -74,9 +75,9 @@ namespace PowerArgs.Games
             }
         }
 
-        internal static Promise AcceptConnection(InProcClientNetworkProvider inProcClient, ServerInfo serverInfo)
+        internal static Task AcceptConnection(InProcClientNetworkProvider inProcClient, ServerInfo serverInfo)
         {
-            var d = Deferred.Create();
+            var d = new TaskCompletionSource<bool>();
             try
             {
                 var server = servers[serverInfo.Server+":"+serverInfo.Port];
@@ -89,13 +90,13 @@ namespace PowerArgs.Games
                 {
                     throw new IOException("new connections not allowed");
                 }
-                d.Resolve();
+                d.SetResult(true);
             }
             catch (Exception ex)
             {
-                d.Reject(ex);
+                d.SetException(ex);
             }
-            return d.Promise;
+            return d.Task;
         }
     }
 
@@ -110,7 +111,7 @@ namespace PowerArgs.Games
         }
 
         public Event<string> MessageReceived { get; private set; } = new Event<string>();
-        public Promise Connect(ServerInfo server) => InProcServerNetworkProvider.AcceptConnection(this, server);
+        public Task Connect(ServerInfo server) => InProcServerNetworkProvider.AcceptConnection(this, server);
         public void SendMessage(string message) => InProcServerNetworkProvider.AcceptMessage(this.ClientId, message);
         protected override void DisposeManagedResources() { }
     }

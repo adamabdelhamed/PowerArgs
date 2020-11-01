@@ -109,8 +109,8 @@ namespace ArgsTests.CLI
 
         public async Task PaintAndRecordKeyFrameAsync()
         {
-            await Paint().AsAwaitable();
-            await Paint().AsAwaitable();
+            await Paint();
+            await Paint();
 
             if (ConsoleApp.Current == this)
             {
@@ -118,7 +118,7 @@ namespace ArgsTests.CLI
             }
             else
             {
-                await InvokeNextCycle(RecordKeyFrame).AsAwaitable();
+                await InvokeNextCycle(RecordKeyFrame);
             }
         }
 

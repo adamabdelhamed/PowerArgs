@@ -17,14 +17,14 @@ namespace ArgsTests.CLI.Physics
             app.SecondsBetweenKeyframes = DefaultTimeIncrement.TotalSeconds;
             app.InvokeNextCycle(async () =>
             {
-                Deferred d = Deferred.Create();
+                var d = new TaskCompletionSource<bool>();
                 var spaceTimePanel = app.LayoutRoot.Add(new SpaceTimePanel(app.LayoutRoot.Width, app.LayoutRoot.Height));
                 spaceTimePanel.SpaceTime.Increment = DefaultTimeIncrement;
                 spaceTimePanel.SpaceTime.Start();
                 spaceTimePanel.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>
                 {
                     spaceTimePanel.SpaceTime.Stop();
-                    d.Resolve();
+                    d.SetResult(true);
                     ex.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
                     stEx = ex.Exception;
                 }, app);
@@ -54,10 +54,10 @@ namespace ArgsTests.CLI.Physics
                         stEx = ex;
                     }
 
-                    await app.Paint().AsAwaitable();
-                    d.Resolve();
+                    await app.Paint();
+                    d.SetResult(true);
                 });
-                await d.Promise.AsAwaitable();
+                await d.Task;
                 await spaceTimePanel.SpaceTime.YieldAsync();
                 await app.PaintAndRecordKeyFrameAsync();
                 spaceTimePanel.SpaceTime.Stop();
@@ -66,7 +66,7 @@ namespace ArgsTests.CLI.Physics
                 app.Stop();
             });
 
-            await app.Start().AsAwaitable();
+            await app.Start();
             if (stEx != null)
             {
                 app.Abandon();

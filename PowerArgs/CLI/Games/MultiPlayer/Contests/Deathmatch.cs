@@ -17,7 +17,7 @@ namespace PowerArgs.Games
         public Task Start()
         {
             StartGameInternal();
-            return Options.Server.OpenForNewConnections().AsAwaitable();
+            return Options.Server.OpenForNewConnections();
         }
        
 
@@ -50,7 +50,7 @@ namespace PowerArgs.Games
             }, lobbyLifetime);
           
             await lobbyLifetime.AwaitEndOfLifetime();
-            await Options.Server.CloseForNewConnections().AsAwaitable();
+            await Options.Server.CloseForNewConnections();
         }
 
         private void InitializeHealthPoints()

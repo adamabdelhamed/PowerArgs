@@ -14,7 +14,7 @@ namespace ArgsTests.CLI
         public void TestAsyncAwaitWithinApp()
         {
             var app = new ConsoleApp(1, 1);
-            var appPromise = app.Start();
+            var appTask = app.Start();
 
             app.InvokeNextCycle(async () =>
             {
@@ -29,14 +29,14 @@ namespace ArgsTests.CLI
                 app.Stop();
             });
 
-            appPromise.Wait();
+            appTask.Wait();
         }
 
         [TestMethod]
         public void TestAsyncAwaitWithinAppExceptionPath()
         {
             var app = new ConsoleApp(1, 1);
-            var appPromise = app.Start();
+            var appTask = app.Start();
 
             app.InvokeNextCycle(async () =>
             {
@@ -56,7 +56,7 @@ namespace ArgsTests.CLI
                 app.Stop();
             });
 
-            appPromise.Wait();
+            appTask.Wait();
         }
 
         [TestMethod]

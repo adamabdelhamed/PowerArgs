@@ -22,18 +22,7 @@ namespace ArgsTests.CLI
             Assert.AreEqual(1, count);
         }
 
-        [TestMethod]
-        public void TestSetTimeoutCancelling()
-        {
-            var app = new ConsoleApp(0, 0, 1, 1);
-            var promise = app.Start();
-            var count = 0;
-            app.SetTimeout(() => { count++; }, TimeSpan.FromMilliseconds(50)).Dispose();
-            Thread.Sleep(100);
-            app.Stop();
-            promise.Wait();
-            Assert.AreEqual(0, count);
-        }
+      
 
         [TestMethod]
         public void TestSetInterval()

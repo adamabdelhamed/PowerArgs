@@ -54,7 +54,7 @@ namespace ArgsTests.CLI.Controls
 
             app.InvokeNextCycle(async () =>
             {
-                await app.Paint().AsAwaitable();
+                await app.Paint();
                 app.RecordKeyFrame();
                 app.Stop();
             });

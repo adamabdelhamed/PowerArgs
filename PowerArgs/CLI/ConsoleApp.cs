@@ -16,7 +16,7 @@ namespace PowerArgs.Cli
         private static ConsoleApp _current;
 
 
-        private List<Deferred> paintRequests = new List<Deferred>();
+        private List<TaskCompletionSource<bool>> paintRequests = new List<TaskCompletionSource<bool>>();
         private FrameRateMeter paintRateMeter = new FrameRateMeter();
         private Queue<ConsoleKeyInfo> sendKeys = new Queue<ConsoleKeyInfo>();
 
@@ -207,11 +207,19 @@ namespace PowerArgs.Cli
             if (paintRequests.Count > 0)
             {
                 PaintInternal();
-                foreach (var request in paintRequests)
+
+                TaskCompletionSource<bool>[] paintRequestsCopy;
+                lock(paintRequests)
                 {
-                    request.Resolve();
+                    paintRequestsCopy = paintRequests.ToArray();
+                    paintRequests.Clear();
                 }
-                paintRequests.Clear();
+                 
+                for(var i = 0; i < paintRequestsCopy.Length; i++)
+                {
+                    paintRequestsCopy[i].SetResult(true);
+                }
+               
                 paintRateMeter.Increment();
             }
         }
@@ -259,7 +267,7 @@ namespace PowerArgs.Cli
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>
-        public override Promise Start()
+        public override Task Start()
         {
             if (SetFocusOnStart)
             {
@@ -271,10 +279,10 @@ namespace PowerArgs.Cli
 
             Paint();
 
-            return base.Start().Finally((p) =>
+            return base.Start().ContinueWith((p) =>
             {
                 ExitInternal();
-            });
+            }, TaskContinuationOptions.ExecuteSynchronously);
         }
 
         private void HandleDebouncedResize()
@@ -296,13 +304,19 @@ namespace PowerArgs.Cli
 
         /// <summary>
         /// Queues up a request to paint the app.  The system will dedupe multiple paint requests when there are multiple in the pump's work queue
-        /// <returns>a promise that resolves after the paint happens</returns>
+        /// <returns>a Task that resolves after the paint happens</returns>
         /// </summary>
-        public Promise Paint()
+        public Task Paint()
         {
-            var d = Deferred.Create();
-            Invoke(() => paintRequests.Add(d));
-            return d.Promise;
+            var d = new TaskCompletionSource<bool>();
+            Invoke(() =>
+            {
+                lock (paintRequests)
+                {
+                    paintRequests.Add(d);
+                }
+            });
+            return d.Task;
         }
 
         private void ControlAddedToVisualTree(ConsoleControl c)
@@ -484,7 +498,7 @@ namespace PowerArgs.Cli
         /// Simulates a key press
         /// </summary>
         /// <param name="key">the key press info</param>
-        public Promise SendKey(ConsoleKeyInfo key) => Invoke(() => { sendKeys.Enqueue(key); });
+        public Task SendKey(ConsoleKeyInfo key) => Invoke(() => { sendKeys.Enqueue(key); });
 
 
         /// <summary>

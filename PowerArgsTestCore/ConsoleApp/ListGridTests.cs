@@ -22,26 +22,26 @@ namespace ArgsTests.CLI.Controls
                 this.items = items;
             }
 
-            protected override Promise<int> FetchCountAsync()
+            protected override Task<int> FetchCountAsync()
             {
-                var d = Deferred<int>.Create();
+                var d = new TaskCompletionSource<int>();
                 new Thread(() =>
                 {
                     Thread.Sleep(50);
-                    d.Resolve(items.Count);
+                    d.SetResult(items.Count);
                 }).Start();
-                return d.Promise;
+                return d.Task;
             }
 
-            protected override Promise<List<T>> FetchRangeAsync(int min, int count)
+            protected override Task<List<T>> FetchRangeAsync(int min, int count)
             {
-                var d = Deferred<List<T>>.Create();
+                var d = new TaskCompletionSource<List<T>>();
                 new Thread(() =>
                 {
                     Thread.Sleep(50);
-                    d.Resolve(items.Skip(min).Take(count).ToList());
+                    d.SetResult(items.Skip(min).Take(count).ToList());
                 }).Start();
-                return d.Promise;
+                return d.Task;
             }
         }
 
@@ -105,13 +105,13 @@ namespace ArgsTests.CLI.Controls
 
                 for(var i = 0; i < items.Count-1; i++)
                 {
-                    await app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.DownArrow, false, false, false)).AsAwaitable();
+                    await app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.DownArrow, false, false, false));
                     await app.PaintAndRecordKeyFrameAsync();
                 }
 
                 for (var i = 0; i < items.Count - 1; i++)
                 {
-                    await app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.UpArrow, false, false, false)).AsAwaitable();
+                    await app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.UpArrow, false, false, false));
                     await app.PaintAndRecordKeyFrameAsync();
                 }
                 app.Stop();

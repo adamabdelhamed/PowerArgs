@@ -20,17 +20,17 @@ namespace ArgsTests.CLI.Games
         public async Task TestPowerArgsIntroCompletesOnItsOwn()
         {
             var app = new ConsoleApp(80, 30);
-            var appTask = app.Start().AsAwaitable();
+            var appTask = app.Start();
 
             PowerArgsGamesIntro intro = null;
-            await app.InvokeNextCycle(() => intro = app.LayoutRoot.Add(new PowerArgsGamesIntro()).CenterVertically()).AsAwaitable();
+            await app.InvokeNextCycle(() => intro = app.LayoutRoot.Add(new PowerArgsGamesIntro()).CenterVertically());
             Assert.IsNotNull(intro);
        
             await app.InvokeNextCycle(async () =>
             {
-                await intro.Play().AsAwaitable();
+                await intro.Play();
                 app.Stop();
-            }).AsAwaitable();
+            });
 
             await appTask;
         }
@@ -47,8 +47,8 @@ namespace ArgsTests.CLI.Games
                 {
                     var app = new ConsoleApp(80, 30);
                     var intro = app.LayoutRoot.Add(new PowerArgsGamesIntro()).CenterVertically();
-                    var appTask = app.Start().AsAwaitable();
-                    var playTask = intro.Play().AsAwaitable();
+                    var appTask = app.Start();
+                    var playTask = intro.Play();
 
                     await Task.Delay(10);
                     app.InvokeNextCycle(() => intro.Cleanup());

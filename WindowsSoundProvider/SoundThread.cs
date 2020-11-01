@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using System.Linq;
 using PowerArgs;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace WindowsSoundProvider
 {
@@ -26,10 +27,10 @@ namespace WindowsSoundProvider
 
     internal class SoundThread : Lifetime
     {
-        public bool IsReady => startDeferred.IsFulfilled;
+        public bool IsReady => startTaskCompletionSource.Task.IsFulfilled();
 
-        private Deferred startDeferred = Deferred.Create();
-        public Promise StartPromise => startDeferred.Promise;
+        private TaskCompletionSource<bool> startTaskCompletionSource = new TaskCompletionSource<bool>();
+        public Task StartTask => startTaskCompletionSource.Task;
  
         [ThreadStatic]
         private static SoundThread _current;
@@ -101,9 +102,9 @@ namespace WindowsSoundProvider
             }
         }
 
-        public Promise<Lifetime> Play(string name, float volume)
+        public Task<Lifetime> Play(string name, float volume)
         {
-            var d = Deferred<Lifetime>.Create();
+            var d = new TaskCompletionSource<Lifetime>();
             if (players.ContainsKey(name))
             {
                 EnqueueSoundThreadAction(() =>
@@ -112,22 +113,22 @@ namespace WindowsSoundProvider
                     players[name] = PreLoad(name);
                     var soundLifetime = new SoundPlaybackLifetime(player, false, this, volume);
                     CurrentlyPlayingSounds.Add(soundLifetime);
-                    d.Resolve(soundLifetime);
+                    d.SetResult(soundLifetime);
                 });
             }
             else
             {
                 var lifetime = new Lifetime();
                 lifetime.Dispose();
-                d.Resolve(lifetime);
+                d.SetResult(lifetime);
             }
 
-            return d.Promise;
+            return d.Task;
         }
 
-        public Promise<IDisposable> Loop(string name, float volume)
+        public Task<IDisposable> Loop(string name, float volume)
         {
-            var d = Deferred<IDisposable>.Create();
+            var d = new TaskCompletionSource<IDisposable>();
             if (players.ContainsKey(name))
             {
                 EnqueueSoundThreadAction(() =>
@@ -136,17 +137,17 @@ namespace WindowsSoundProvider
                     players[name] = PreLoad(name);
                     var soundLifetime = new SoundPlaybackLifetime(player, true, this, volume);
                     CurrentlyPlayingSounds.Add(soundLifetime);
-                    d.Resolve(soundLifetime);
+                    d.SetResult(soundLifetime);
                 });
             }
             else
             {
                 var lifetime = new Lifetime();
                 lifetime.Dispose();
-                d.Resolve(lifetime);
+                d.SetResult(lifetime);
             }
 
-            return d.Promise;
+            return d.Task;
         }
 
         public void EnqueueSoundThreadAction(Action soundPlayingAction)
@@ -207,7 +208,7 @@ namespace WindowsSoundProvider
             };
             hiddenWindow.Show();
             hiddenWindow.Visibility = Visibility.Hidden;
-            startDeferred.Resolve();
+            startTaskCompletionSource.SetResult(true);
             Dispatcher.Run();
         }
 

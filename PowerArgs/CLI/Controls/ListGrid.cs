@@ -29,7 +29,7 @@ namespace PowerArgs.Cli
     {
         bool HasDataForRange(int min, int count);
         ListPageLoadResult<T> GetRange(int min, int count);
-        Promise LoadRangeAsync(int min, int count);
+        Task LoadRangeAsync(int min, int count);
     }
 
     public abstract class CachedRemoteList<T> : IListDataSource<T> where T : class
@@ -67,9 +67,9 @@ namespace PowerArgs.Cli
             return true;
         }
 
-        public Promise LoadRangeAsync(int min, int count)
+        public Task LoadRangeAsync(int min, int count)
         {
-            var d = Deferred.Create();
+            var d = new TaskCompletionSource<bool>();
             var waitCount = 1;
             Exception countException = null;
             Exception dataException = null;
@@ -85,11 +85,11 @@ namespace PowerArgs.Cli
                         {
                             if (dataException == null)
                             {
-                                d.Resolve();
+                                d.SetResult(true);
                             }
                             else
                             {
-                                d.Reject(dataException);
+                                d.SetException(dataException);
                             }
                         }
                     }
@@ -98,7 +98,7 @@ namespace PowerArgs.Cli
                         countException = p.Exception;
                         if (Interlocked.Decrement(ref waitCount) == 0)
                         {
-                            d.Reject(countException);
+                            d.SetException(countException);
                         }
                     }
                 });
@@ -128,11 +128,11 @@ namespace PowerArgs.Cli
                     {
                         if (countException == null)
                         {
-                            d.Resolve();
+                            d.SetResult(true);
                         }
                         else
                         {
-                            d.Reject(countException);
+                            d.SetException(countException);
                         }
                     }
                 }
@@ -141,16 +141,16 @@ namespace PowerArgs.Cli
                     dataException = p.Exception;
                     if (Interlocked.Decrement(ref waitCount) == 0)
                     {
-                        d.Reject(dataException);
+                        d.SetException(dataException);
                     }
                 }
             });
 
-            return d.Promise;
+            return d.Task;
         }
 
-        protected abstract Promise<int> FetchCountAsync();
-        protected abstract Promise<List<T>> FetchRangeAsync(int min, int count);
+        protected abstract Task<int> FetchCountAsync();
+        protected abstract Task<List<T>> FetchRangeAsync(int min, int count);
     }
 
     public class SyncList<T> : IListDataSource<T> where T : class
@@ -169,7 +169,7 @@ namespace PowerArgs.Cli
 
         public bool HasDataForRange(int min, int count) => true;
 
-        public Promise LoadRangeAsync(int min, int count)
+        public Task LoadRangeAsync(int min, int count)
         {
             throw new NotImplementedException("This data source always has data for its range");
         }
@@ -193,7 +193,7 @@ namespace PowerArgs.Cli
         private int topOfPageDataIndex = 0;
         private int listCount = -1;
         private DataGridPresenter presenter;
-        private Promise latestLoadingPromise;
+        private Task latestLoadingTask;
         private Exception dataLoadException;
         private List<ConsoleControl> highlightedControls;
         private List<Lifetime> highlightLifetimes = new List<Lifetime>();
@@ -287,7 +287,7 @@ namespace PowerArgs.Cli
         {
             ConsoleApp.AssertAppThread(Application);
             this.dataLoadException = null;
-            latestLoadingPromise = null;
+            latestLoadingTask = null;
             presenter.Recompose();
         }
 
@@ -388,18 +388,18 @@ namespace PowerArgs.Cli
         {
             presenter.Options.IsLoading = true;
             presenter.Options.LoadingMessage = options.LoadingMessage;
-            var myPromise = options.DataSource.LoadRangeAsync(topOfPageDataIndex, presenter.MaxRowsThatCanBePresented);
+            var myTask = options.DataSource.LoadRangeAsync(topOfPageDataIndex, presenter.MaxRowsThatCanBePresented);
 
-            myPromise.Finally((p) => Application.InvokeNextCycle(() =>
+            myTask.Finally((p) => Application.InvokeNextCycle(() =>
             {
-                if (myPromise == latestLoadingPromise)
+                if (myTask == latestLoadingTask)
                 {
                     dataLoadException = p.Exception;
                     presenter.Recompose();
                 }
             }));
 
-            latestLoadingPromise = myPromise;
+            latestLoadingTask = myTask;
         }
 
         private void UpdateHighlightedRowsToReflectCurrentFocus() => Highlight(highlightedControls);

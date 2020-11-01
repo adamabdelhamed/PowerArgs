@@ -4,6 +4,7 @@ using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace ArgsTests.CLI.Physics
 {
@@ -19,7 +20,7 @@ namespace ArgsTests.CLI.Physics
 
         public static void Run(TestContext context, Action<ConsoleApp, SpaceTimePanel> testCode, [CallerMemberName]string testName = null, int w = 80, int h = 30)
         {
-            Promise spaceTimePromise = null;
+            Task spaceTimeTask = null;
             Run(context, (app) =>
             {
                 var panel = app.LayoutRoot.Add(new SpaceTimePanel(w, h));
@@ -27,13 +28,13 @@ namespace ArgsTests.CLI.Physics
                 {
                     testCode(app, panel);
                 });
-                spaceTimePromise = panel.SpaceTime.Start();
-                spaceTimePromise.Finally((p) => app.Stop());
+                spaceTimeTask = panel.SpaceTime.Start();
+                spaceTimeTask.Finally((p) => app.Stop());
 
             }, testName, w, h);
 
-            Assert.IsNotNull(spaceTimePromise);
-            spaceTimePromise.Wait();
+            Assert.IsNotNull(spaceTimeTask);
+            spaceTimeTask.Wait();
         }
     }
 }

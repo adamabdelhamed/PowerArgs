@@ -3,6 +3,7 @@ using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
@@ -12,7 +13,7 @@ namespace PowerArgs.Games
         private TimeSpan duration;
         private TimeSpan initTime;
         public char? SymbolOverride { get; set; }
-        private static Promise<Lifetime> currentSound;
+        private static Task<Lifetime> currentSound;
 
         public Fire(TimeSpan duration)
         {

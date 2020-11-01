@@ -44,10 +44,11 @@ namespace ArgsTests.CLI.Controls
         {
             var app = new CliTestHarness(this.TestContext, 9, 1);
 
-            app.InvokeNextCycle(() =>
+            app.InvokeNextCycle(async () =>
             {
                 app.LayoutRoot.Add(new TextBox() { Value = "SomeText".ToWhite() }).Fill();
-                app.Stop();
+                await app.Paint();
+                await app.Stop();
             });
 
             app.Start().Wait();

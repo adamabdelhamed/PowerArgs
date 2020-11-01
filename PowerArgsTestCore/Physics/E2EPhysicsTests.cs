@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
-
+using PowerArgs;
 namespace ArgsTests.CLI.Physics
 {
     [TestClass]

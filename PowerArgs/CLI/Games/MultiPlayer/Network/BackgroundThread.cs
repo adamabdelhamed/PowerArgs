@@ -1,12 +1,13 @@
 ﻿using PowerArgs.Cli;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerArgs
 {
     /// <summary>
     /// A wrapper around a thread that models the thread as a lifetime
-    /// and offers a promise based call pattern
+    /// and offers a Task based call pattern
     /// </summary>
     public class BackgroundThread : Lifetime
     {
@@ -25,20 +26,20 @@ namespace PowerArgs
         /// <summary>
         /// Starts the background thread
         /// </summary>
-        /// <returns>A promise that will resolve if the thread completes normally and will reject if an exception bubbles to the top</returns>
-        public Promise Start()
+        /// <returns>A Task that will resolve if the thread completes normally and will reject if an exception bubbles to the top</returns>
+        public Task Start()
         {
-            var d = Deferred.Create();
+            var d = new TaskCompletionSource<bool>();
             var t = new Thread(()=>
             {
                 try
                 {
                     backgroundImpl();
-                    d.Resolve();
+                    d.SetResult(true);
                 }
                 catch(Exception ex)
                 {
-                    d.Reject(ex);
+                    d.SetException(ex);
                 }
                 finally
                 {
@@ -47,7 +48,7 @@ namespace PowerArgs
             });
             t.IsBackground = true;
             t.Start();
-            return d.Promise;
+            return d.Task;
         }
     }
 }

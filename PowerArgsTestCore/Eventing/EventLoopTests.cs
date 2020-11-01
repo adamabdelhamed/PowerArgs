@@ -24,7 +24,7 @@ namespace ArgsTests
                 loop.Stop();
             });
 
-            await loop.Start().AsAwaitable();
+            await loop.Start();
             Assert.AreEqual(2, fired);
         }
 
@@ -36,12 +36,12 @@ namespace ArgsTests
             loop.Invoke(() => throw new Exception(expectedError));
             try
             {
-                await loop.Start().AsAwaitable();
+                await loop.Start();
                 Assert.Fail("An exception should have been thrown");
             }
             catch(Exception ex)
             {
-                Assert.AreEqual(expectedError, PromiseWaitException.Clean(ex).Single().Message);
+                Assert.AreEqual(expectedError, ex.Clean().Single().Message);
             }
         }
 
@@ -57,12 +57,12 @@ namespace ArgsTests
             });
             try
             {
-                await loop.Start().AsAwaitable();
+                await loop.Start();
                 Assert.Fail("An exception should have been thrown");
             }
             catch (Exception ex)
             {
-                Assert.AreEqual(expectedError, PromiseWaitException.Clean(ex).Single().Message);
+                Assert.AreEqual(expectedError, ex.Clean().Single().Message);
             }
         }
     }

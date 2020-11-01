@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Games
 {
@@ -22,7 +23,7 @@ namespace PowerArgs.Games
             public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(2);
             public string Id { get; set; }
             private Stopwatch timer;
-            public Deferred<MultiPlayerMessage> ResponseDeferred { get; set; }
+            public TaskCompletionSource<MultiPlayerMessage> ResponseDeferred { get; set; }
 
             public PendingRequest()
             {
@@ -33,13 +34,13 @@ namespace PowerArgs.Games
             public void Complete(MultiPlayerMessage response)
             {
                 timer.Stop();
-                ResponseDeferred.Resolve(response);
+                ResponseDeferred.SetResult(response);
             }
 
             public void Fail(Exception error)
             {
                 timer.Stop();
-                ResponseDeferred.Reject(error);
+                ResponseDeferred.SetException(error);
             }
 
             public bool IsTimedOut()
@@ -47,7 +48,7 @@ namespace PowerArgs.Games
                 if(timer.Elapsed >= Timeout)
                 {
                     timer.Stop();
-                    ResponseDeferred.Reject(new TimeoutException());
+                    ResponseDeferred.SetException(new TimeoutException());
                     return true;
                 }
                 return false;
@@ -86,16 +87,16 @@ namespace PowerArgs.Games
             EventRouter.Register<Ack>(OnAck, this);
         }
 
-        public Promise Connect(ServerInfo server)
+        public Task Connect(ServerInfo server)
         {
             var ret = clientNetworkProvider.Connect(server);
-            ret.Then(() =>
+            ret.ContinueWith((t) =>
             {
                 isConnected = true;
                 timeoutChecker?.Dispose();
                 timeoutChecker = new Timer((o) => EvaluateTimeouts(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
                 this.OnDisposed(timeoutChecker.Dispose);
-            });
+            }, TaskContinuationOptions.ExecuteSynchronously);
             return ret;
         }
 
@@ -119,7 +120,7 @@ namespace PowerArgs.Games
             }
         }
 
-        public Promise<MultiPlayerMessage> SendRequest(MultiPlayerMessage message, TimeSpan? timeout = null)
+        public Task<MultiPlayerMessage> SendRequest(MultiPlayerMessage message, TimeSpan? timeout = null)
         {
             try
             {
@@ -128,7 +129,7 @@ namespace PowerArgs.Games
                 var pendingRequest = new PendingRequest()
                 {
                     Id = message.RequestId,
-                    ResponseDeferred = Deferred<MultiPlayerMessage>.Create(),
+                    ResponseDeferred = new TaskCompletionSource<MultiPlayerMessage>(),
                 };
 
                 if (timeout.HasValue)
@@ -140,13 +141,13 @@ namespace PowerArgs.Games
                     pendingRequests.Add(message.RequestId, pendingRequest);
                 }
                 SendMessage(message);
-                return pendingRequest.ResponseDeferred.Promise;
+                return pendingRequest.ResponseDeferred.Task;
             }
             catch (Exception ex)
             {
-                var d = Deferred<MultiPlayerMessage>.Create();
-                d.Reject(ex);
-                return d.Promise;
+                var d = new TaskCompletionSource<MultiPlayerMessage>();
+                d.SetException(ex);
+                return d.Task;
             }
         }
 
