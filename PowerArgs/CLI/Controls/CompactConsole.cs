@@ -33,6 +33,7 @@ namespace PowerArgs.Cli
         protected virtual ConsoleString GetHistoryPrevious() => throw new NotImplementedException();
         protected virtual ConsoleString GetHistoryNext() => throw new NotImplementedException();
 
+        protected virtual void OnInputBoxReady() { }
         protected virtual Task Run(ArgAction toRun)
         {
             toRun.Invoke();
@@ -110,7 +111,7 @@ namespace PowerArgs.Cli
             inputPanel.Add(new Label() { Text = "CMD> ".ToConsoleString() });
             InputBox = inputPanel.Add(new TextBox() { X = "CMD> ".Length, Width = inputPanel.Width - "CMD> ".Length, Foreground = ConsoleColor.Gray, Background = ConsoleColor.Black });
             InputBox.RichTextEditor.TabHandler.TabCompletionHandlers.Add(new PowerArgsRichCommandLineReader(def, new List<ConsoleString>(), false));
-
+            OnInputBoxReady();
             top++;
             ConsoleApp.Current.InvokeNextCycle(() =>
             {

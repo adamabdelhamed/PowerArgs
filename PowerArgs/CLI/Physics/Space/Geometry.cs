@@ -131,6 +131,8 @@ namespace PowerArgs.Cli.Physics
 
     public static class Geometry
     {
+        public static Rectangle Offset(this Rectangle rectangle, int dx, int dy) => new Rectangle(rectangle.Left + dx, rectangle.Top + dy, rectangle.Width, rectangle.Height);
+        public static IRectangularF Offset(this IRectangularF rectangle, float dx, float dy) => RectangularF.Create(rectangle.Left + dx, rectangle.Top + dy, rectangle.Width, rectangle.Height);
         public static float Right(this IRectangularF rectangle) => rectangle.Left + rectangle.Width;
         public static float Bottom(this IRectangularF rectangle) => rectangle.Top + rectangle.Height;
         public static float CenterX(this IRectangularF rectangular) => rectangular.Left + (rectangular.Width / 2);
