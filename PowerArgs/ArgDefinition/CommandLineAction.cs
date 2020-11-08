@@ -155,10 +155,21 @@ namespace PowerArgs
             }
         }
 
+        private List<ICommandLineActionMetadata> metadata;
         /// <summary>
         /// The list of metadata that can be used to inject behavior into the action
         /// </summary>
-        public List<ICommandLineActionMetadata> Metadata { get; private set; }
+        public List<ICommandLineActionMetadata> Metadata
+        {
+            get
+            {
+                return metadata;
+            }
+            private set
+            {
+                metadata = value;
+            }
+        }
 
 
         /// <summary>
@@ -210,15 +221,7 @@ namespace PowerArgs
             }
         }
 
-        /// <summary>
-        /// Creates a new command line action given an implementation.
-        /// </summary>
-        /// <param name="actionHandler">The implementation of the action.</param>
-        public CommandLineAction(Action<CommandLineArgumentsDefinition> actionHandler) : this()
-        {
-            ActionMethod = new ActionMethodInfo(actionHandler);
-            Source = ActionMethod;
-        }
+
 
         /// <summary>
         /// Gets a string representation of this action.
@@ -259,6 +262,21 @@ namespace PowerArgs
             overrides = new AttrOverride(GetType());
             Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>().ToList(); }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);
             PropertyInitializer.InitializeFields(this, 1);
+            IgnoreCase = true;
+            Metadata = new List<ICommandLineActionMetadata>();
+            Arguments = new List<CommandLineArgument>();
+        }
+
+        /// <summary>
+        /// Creates a new command line action given an implementation.
+        /// </summary>
+        /// <param name="actionHandler">The implementation of the action.</param>
+        public CommandLineAction(Action<CommandLineArgumentsDefinition> actionHandler) : this()
+        {
+            overrides = new AttrOverride(GetType());
+            PropertyInitializer.InitializeFields(this, 1);
+            ActionMethod = new ActionMethodInfo(actionHandler);
+            Source = ActionMethod;
             IgnoreCase = true;
         }
 
