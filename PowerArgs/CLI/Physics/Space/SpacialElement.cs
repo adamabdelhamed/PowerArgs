@@ -25,7 +25,7 @@ namespace PowerArgs.Cli.Physics
 
         public ConsoleCharacter? Pen { get; set; }
 
-        internal SpacialElementRenderer Renderer { get; set; }
+        public SpacialElementRenderer Renderer { get; internal set; }
 
         public IRectangularF Bounds => RectangularF.Create(Left, Top, Width, Height);
 

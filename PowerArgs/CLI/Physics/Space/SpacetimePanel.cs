@@ -212,6 +212,7 @@ namespace PowerArgs.Cli.Physics
             }
 
             SpacialElementRenderer ret = Activator.CreateInstance(binding) as SpacialElementRenderer;
+            t.Renderer = ret;
             ret.Element = t;
             ret.Spacetime = spaceTime;
             ret.OnBind();

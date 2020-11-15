@@ -11,6 +11,7 @@ namespace PowerArgs.Cli.Physics
         public static SpaceTime CurrentSpaceTime => CurrentTime as SpaceTime;
         public Event<SpacialElement> SpacialElementAdded { get; private set; } = new Event<SpacialElement>();
         public Event<SpacialElement> SpacialElementRemoved { get; private set; } = new Event<SpacialElement>();
+        public Event<SpacialElement> SpacialElementChanged { get; private set; } = new Event<SpacialElement>();
         public float Width { get; private set; }
         public float Height { get; private set; }
         public IRectangularF Bounds { get; private set; }
@@ -31,7 +32,7 @@ namespace PowerArgs.Cli.Physics
             this.Bounds = RectangularF.Create(0, 0, Width, Height);
             Invoke(() =>
             {
-                this.ChangeTracker = new SpacialChangeTracker();
+                this.ChangeTracker = new SpacialChangeTracker(SpacialElementChanged);
                 this.OnDisposed(ChangeTracker.Dispose);
             });
             addedSub = this.TimeFunctionAdded.SubscribeUnmanaged((f) =>
@@ -39,6 +40,7 @@ namespace PowerArgs.Cli.Physics
                 if (f is SpacialElement)
                 {
                     SpacialElementAdded.Fire(f as SpacialElement);
+                    SpacialElementChanged.Fire(f as SpacialElement);
                 }
             });
 
@@ -47,6 +49,7 @@ namespace PowerArgs.Cli.Physics
                 if (f is SpacialElement)
                 {
                     SpacialElementRemoved.Fire(f as SpacialElement);
+                    SpacialElementChanged.Fire(f as SpacialElement);
                 }
             });  
         }
@@ -63,12 +66,14 @@ namespace PowerArgs.Cli.Physics
         public IReadOnlyList<SpacialElement> AddedElements => added.AsReadOnly();
         public IReadOnlyList<SpacialElement> RemovedElements => removed.AsReadOnly();
 
-        public SpacialChangeTracker()
+        private Event<SpacialElement> changedEvent;
+        public SpacialChangeTracker(Event<SpacialElement> changedEvent)
         {
 #if DEBUG
             Time.AssertTimeThread();
 #endif
-           
+
+            this.changedEvent = changedEvent;
             foreach (var element in SpaceTime.CurrentSpaceTime.Elements)
             {
                 ConnectToElement(element);
@@ -109,7 +114,7 @@ namespace PowerArgs.Cli.Physics
                 {
                     throw new InvalidOperationException("Change did not occur on the time thread");
                 }
-
+                changedEvent.Fire(element);
                 if (element.InternalSpacialState.Changed == false)
                 {
                     changed.Add(element);
