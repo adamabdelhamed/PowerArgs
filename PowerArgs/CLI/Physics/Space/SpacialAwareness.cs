@@ -160,6 +160,16 @@ namespace PowerArgs.Cli.Physics
                     // Characters can't hit their own weapon elements
                     continue;
                 }
+                else if(e is WeaponElement && element is Character && (element as Character).Minions.Where(m => m == (e as WeaponElement).Weapon?.Holder).Any())
+                {
+                    // Characters can't hit their minions' weapon elements
+                    continue;
+                }
+                else if (e is WeaponElement && element is WeaponElement && (element as WeaponElement).Weapon.Holder.Minions.Where(m => m == (e as WeaponElement).Weapon?.Holder).Any())
+                {
+                    // Characters can't hit their minions' weapon elements
+                    continue;
+                }
                 else if (e is WeaponElement && element is WeaponElement &&
                   (e as WeaponElement).Weapon?.Holder == (element as WeaponElement).Weapon?.Holder)
                 {

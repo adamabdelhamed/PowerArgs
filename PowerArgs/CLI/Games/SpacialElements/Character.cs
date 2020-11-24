@@ -1,5 +1,6 @@
 ﻿using PowerArgs.Cli.Physics;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -29,6 +30,8 @@ namespace PowerArgs.Games
         public void SubscribeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SubscribeForLifetime(propertyName, handler, lifetimeManager);
         public IDisposable SynchronizeUnmanaged(string propertyName, Action handler) => observable.SynchronizeUnmanaged(propertyName, handler);
         public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager) => observable.SynchronizeForLifetime(propertyName, handler, lifetimeManager);
+
+        public HashSet<Character> Minions { get; private set; } = new HashSet<Character>();
 
         public T Get<T>([CallerMemberName]string name = null) => observable.Get<T>(name);
         public void Set<T>(T value, [CallerMemberName]string name = null) => observable.Set<T>(value, name);
