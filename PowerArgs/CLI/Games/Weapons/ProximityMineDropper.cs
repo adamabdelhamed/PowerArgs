@@ -15,7 +15,7 @@ namespace PowerArgs.Games
             OnWeaponElementEmitted.Fire(mine);
         }
 
-        public static void PlaceMineSafe(SpacialElement mine, Character holder, bool throwElement)
+        public static void PlaceMineSafe(SpacialElement mine, Character holder, bool throwElement, float speed = 50f)
         {
             if (throwElement == false)
             {
@@ -42,7 +42,7 @@ namespace PowerArgs.Games
                 var initialPlacement = holder.TopLeft().MoveTowards(holder.Velocity.Angle, 1f);
                 mine.MoveTo(initialPlacement.Left, initialPlacement.Top);
                 var v = new Velocity(mine);
-                v.Speed = holder.Velocity.Speed + 50;
+                v.Speed = holder.Velocity.Speed + speed;
                 v.Angle = holder.TargetAngle;
                 new Friction(v);
             }
