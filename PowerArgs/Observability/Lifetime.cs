@@ -100,15 +100,11 @@ namespace PowerArgs
         /// </summary>
         /// <param name="cleanupCode">code to run when this lifetime ends</param>
         /// <returns>a promis that will resolve after the cleanup code has run</returns>
-        public Task OnDisposed(Action cleanupCode)
+        public void OnDisposed(Action cleanupCode)
         {
             if (IsExpired == false)
             {
-                return _manager.OnDisposed(cleanupCode);
-            }
-            else
-            {
-                return Task.CompletedTask;
+                _manager.OnDisposed(cleanupCode);
             }
         }
 
@@ -116,16 +112,11 @@ namespace PowerArgs
         /// Registers a disposable to be disposed when this lifetime ends
         /// </summary>
         /// <param name="cleanupCode">an object to dispose when this lifetime ends</param>
-        /// <returns>a Task that will resolve when the given object is disposed</returns>
-        public Task OnDisposed(IDisposable cleanupCode)
+        public void OnDisposed(IDisposable cleanupCode)
         {
             if (IsExpired == false)
             {
-                return _manager.OnDisposed(cleanupCode);
-            }
-            else
-            {
-                return Task.CompletedTask;
+                _manager.OnDisposed(cleanupCode);
             }
         }
 

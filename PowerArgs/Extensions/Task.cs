@@ -63,19 +63,19 @@ namespace PowerArgs
         public static ILifetimeManager ToLifetime(this Task t)
         {
             var lt = new Lifetime();
-            var ignored = t.Finally((t2) => lt.Dispose());
+            t.Finally((t2) => lt.Dispose());
             return lt;
         }
 
         public static bool IsFulfilled(this Task t) => t.IsCanceled || t.IsCompleted || t.IsFaulted;
 
-        public static async Task Then(this Task t, Action a)
+        public static async void Then(this Task t, Action a)
         {
             await t;
             a();
         }
 
-        public static async Task Fail(this Task t, Action<Exception> a)
+        public static async void Fail(this Task t, Action<Exception> a)
         {
             try
             {
@@ -87,7 +87,7 @@ namespace PowerArgs
             }
         }
 
-        public static async Task Finally(this Task t, Action<Task> a)
+        public static async void Finally(this Task t, Action<Task> a)
         {
             try
             {
@@ -101,13 +101,13 @@ namespace PowerArgs
         }
 
 
-        public static async Task Then<T>(this Task<T> t, Action<T> a)
+        public static async void Then<T>(this Task<T> t, Action<T> a)
         {
             await t;
             a(t.Result);
         }
 
-        public static async Task Fail<T>(this Task<T> t, Action<Exception> a)
+        public static async void Fail<T>(this Task<T> t, Action<Exception> a)
         {
             try
             {
@@ -118,7 +118,7 @@ namespace PowerArgs
             }
         }
 
-        public static async Task Finally<T>(this Task<T> t, Action<Task<T>> a)
+        public static async void Finally<T>(this Task<T> t, Action<Task<T>> a)
         {
              try
              {

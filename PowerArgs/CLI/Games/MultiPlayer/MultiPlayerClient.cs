@@ -87,16 +87,14 @@ namespace PowerArgs.Games
             EventRouter.Register<Ack>(OnAck, this);
         }
 
-        public Task Connect(ServerInfo server)
+        public async Task Connect(ServerInfo server)
         {
-            var ret = clientNetworkProvider.Connect(server);
-            return ret.Then(() =>
-            {
-                isConnected = true;
-                timeoutChecker?.Dispose();
-                timeoutChecker = new Timer((o) => EvaluateTimeouts(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
-                this.OnDisposed(timeoutChecker.Dispose);
-            });
+            await clientNetworkProvider.Connect(server);
+
+            isConnected = true;
+            timeoutChecker?.Dispose();
+            timeoutChecker = new Timer((o) => EvaluateTimeouts(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
+            this.OnDisposed(timeoutChecker.Dispose);
         }
 
         public void SendMessage(MultiPlayerMessage message)

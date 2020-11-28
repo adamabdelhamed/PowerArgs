@@ -17,7 +17,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="cleanupCode">the code to run</param>
         /// <returns>a Task that resolves after the cleanup code runs</returns>
-        Task OnDisposed(Action cleanupCode);
+        void OnDisposed(Action cleanupCode);
 
         /// <summary>
         /// Registers the given disposable to dispose when the lifetime being
@@ -25,7 +25,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="obj">the object to dispose</param>
         /// <returns>a Task that resolves after the object is disposed</returns>
-        Task OnDisposed(IDisposable obj);
+        void OnDisposed(IDisposable obj);
 
         /// <summary>
         /// returns true if expired
@@ -86,24 +86,19 @@ namespace PowerArgs
         /// managed by this manager ends
         /// </summary>
         /// <param name="obj">the object to dispose</param>
-        /// <returns>a Task that resolves after the object is disposed</returns>
-        public Task OnDisposed(IDisposable obj) => OnDisposed(() => obj.Dispose());
+        public void OnDisposed(IDisposable obj) => OnDisposed(() => obj.Dispose());
 
         /// <summary>
         /// Registers the given cleanup code to run when the lifetime being
         /// managed by this manager ends
         /// </summary>
         /// <param name="cleanupCode">the code to run</param>
-        /// <returns>a Task that resolves after the cleanup code runs</returns>
-        public Task OnDisposed(Action cleanupCode)
+        public void OnDisposed(Action cleanupCode)
         {
-            var d = new TaskCompletionSource<bool>();
             cleanupItems.Add(()=>
             {
                 cleanupCode();
-                d.SetResult(true);
             });
-            return d.Task;
         }
     }
 }
