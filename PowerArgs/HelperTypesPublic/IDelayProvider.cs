@@ -65,8 +65,6 @@ namespace PowerArgs
         /// <param name="maxDeltaPercentage">max variance</param>
         /// <returns>an async task</returns>
         Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1);
-
-        void DelayThen(float delay, Action then);
     }
 
     /// <summary>
@@ -165,11 +163,6 @@ namespace PowerArgs
         /// </summary>
         /// <returns>an async task</returns>
         public async Task YieldAsync() => await Task.Yield();
-
-        public void DelayThen(float delay, Action then)
-        {
-            Task.Delay((int)delay).ContinueWith(t => then());
-        }
     }
 
     public class NonDelayProvider : IDelayProvider
@@ -182,11 +175,6 @@ namespace PowerArgs
         public Task YieldAsync() => Task.CompletedTask;
 
         public Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = .1) => Task.CompletedTask;
-
-        public void DelayThen(float delay, Action then)
-        {
-            then();
-        }
     }
 
     public static class IDelayProviderEx

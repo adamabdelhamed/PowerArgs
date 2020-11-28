@@ -90,14 +90,13 @@ namespace PowerArgs.Games
         public Task Connect(ServerInfo server)
         {
             var ret = clientNetworkProvider.Connect(server);
-            ret.ContinueWith((t) =>
+            return ret.Then(() =>
             {
                 isConnected = true;
                 timeoutChecker?.Dispose();
                 timeoutChecker = new Timer((o) => EvaluateTimeouts(), null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
                 this.OnDisposed(timeoutChecker.Dispose);
-            }, TaskContinuationOptions.ExecuteSynchronously);
-            return ret;
+            });
         }
 
         public void SendMessage(MultiPlayerMessage message)

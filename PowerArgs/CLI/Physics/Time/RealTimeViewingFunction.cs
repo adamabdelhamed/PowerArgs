@@ -100,11 +100,12 @@ namespace PowerArgs.Cli.Physics
             });
         }
 
-        public Task WaitForFreeTime()
+        public async Task WaitForFreeTime()
         {
             var tcs = new TaskCompletionSource<bool>();
-            Time.CurrentTime.DelayThen((int)Time.CurrentTime.Increment.TotalMilliseconds, () => invokeSoonQueue.Enqueue(tcs));
-            return tcs.Task;
+            await Time.CurrentTime.DelayAsync((int)Time.CurrentTime.Increment.TotalMilliseconds);
+            invokeSoonQueue.Enqueue(tcs);
+            await tcs.Task;
         }
 
         public bool SignalPauseFrame { get; set; }

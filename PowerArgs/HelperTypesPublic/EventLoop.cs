@@ -114,13 +114,12 @@ namespace PowerArgs
         public void Run()
         {
             runDeferred = new TaskCompletionSource<bool>();
-            runDeferred.Task.ContinueWith(t2 => { runDeferred = null; }, TaskContinuationOptions.ExecuteSynchronously);
-             
             RunCommon();
             if (runDeferred.Task.Exception != null)
             {
                 throw new AggregateException(runDeferred.Task.Exception);
             }
+            runDeferred = null;
         }
 
         private void RunCommon()
