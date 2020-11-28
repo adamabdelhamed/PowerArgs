@@ -171,7 +171,7 @@ namespace PowerArgs
                         }
                         else if (handling == EventLoopExceptionHandling.Stop)
                         {
-                            break;
+                            return;
                         }
                         else if (handling == EventLoopExceptionHandling.Swallow)
                         {
@@ -377,7 +377,19 @@ namespace PowerArgs
                 }
                 else if(workItem.IsFailed)
                 {
-                    throw new AggregateException(workItem.Exception);
+                    var handling = HandleWorkItemException(workItem.Exception, workItem);
+                    if (handling == EventLoopExceptionHandling.Throw)
+                    {
+                        throw new AggregateException(workItem.Exception);
+                    }
+                    else if (handling == EventLoopExceptionHandling.Stop)
+                    {
+                        return;
+                    }
+                    else if (handling == EventLoopExceptionHandling.Swallow)
+                    {
+                        // swallow
+                    }
                 }
                 else
                 {
