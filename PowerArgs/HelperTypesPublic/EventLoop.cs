@@ -75,7 +75,6 @@ namespace PowerArgs
             }
         }
 
-        public Event<EventLoopExceptionArgs> UnhandledException { get; private set; } = new Event<EventLoopExceptionArgs>();
         public Event StartOfCycle { get; private set; } = new Event();
         public Event EndOfCycle { get; private set; } = new Event();
         public Event LoopStarted { get; private set; } = new Event();
@@ -134,10 +133,7 @@ namespace PowerArgs
             }
             catch (Exception ex)
             {
-                if (runDeferred.Task.IsCompleted == false && runDeferred.Task.IsFaulted == false && runDeferred.Task.IsCanceled == false)
-                {
-                     runDeferred.SetException(ex);                    
-                }
+                 runDeferred.SetException(ex);                    
             }
             finally
             {
@@ -306,7 +302,7 @@ namespace PowerArgs
             }
         }
 
-        public Task Stop()
+        public void Stop()
         {
             if(IsRunning == false)
             {
@@ -314,10 +310,9 @@ namespace PowerArgs
             }
          
             Invoke(() => throw new StopLoopException());
-            return runDeferred.Task;
         }
 
-        public Task Invoke(Action work) => Invoke(()=>
+        public void Invoke(Action work) => Invoke(()=>
         {
             work();
             return Task.CompletedTask;
@@ -342,20 +337,20 @@ namespace PowerArgs
             }
         }
 
-        public Task InvokeNextCycle(Action work)
+        public void InvokeNextCycle(Action work)
         {
-            return InvokeNextCycle(() =>
+            InvokeNextCycle(() =>
             {
                 work();
                 return Task.CompletedTask;
             });
         }
 
-        public Task InvokeNextCycle(Func<Task> work)
+        public void InvokeNextCycle(Func<Task> work)
         {
             if (IsRunning == false && IsDrainingOrDrained)
             {
-                return Task.CompletedTask;
+                return;
             }
 
             var workItem = new SynchronizedEvent(work);
@@ -363,15 +358,14 @@ namespace PowerArgs
             {
                 workQueue.Add(workItem);
             }
-            return workItem.Deferred.Task;
         }
         
 
-        public Task Invoke(Func<Task> work)
+        public void Invoke(Func<Task> work)
         {
             if(IsRunning == false && IsDrainingOrDrained)
             {
-                return Task.CompletedTask;
+                return;
             }
             var workItem = new SynchronizedEvent(work);
 
@@ -398,7 +392,6 @@ namespace PowerArgs
                     workQueue.Add(workItem);
                 }
             }
-            return workItem.Deferred.Task;
         }
 
         private EventLoopExceptionHandling HandleWorkItemException(Exception ex, SynchronizedEvent workItem)
@@ -414,18 +407,8 @@ namespace PowerArgs
             }
 
             if (IsDrainingOrDrained) return EventLoopExceptionHandling.Swallow;
-
-            if (workItem != null)
-            {
-                workItem.Deferred.SetException(ex);
-                return EventLoopExceptionHandling.Throw;
-            }
-            else
-            {
-                var args = new EventLoopExceptionArgs() { Exception = ex };
-                UnhandledException.Fire(args);
-                return args.Handling;
-            }
+            workItem?.Deferred.SetException(ex);
+            return EventLoopExceptionHandling.Throw;
         }
     }
 }

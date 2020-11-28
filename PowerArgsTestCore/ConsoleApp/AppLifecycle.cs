@@ -16,9 +16,9 @@ namespace ArgsTests.CLI.Apps
             var testCli = new CliUnitTestConsole(80, 4);
             ConsoleProvider.Current = testCli;
             ConsoleApp app = new ConsoleApp();
-            app.Start();
+            var task = app.Start();
 
-            var task = app.InvokeNextCycle(() =>
+            app.InvokeNextCycle(() =>
             {
                 throw new FormatException("Some fake exception");
             });

@@ -20,15 +20,8 @@ namespace ArgsTests.CLI.Physics
                 var d = new TaskCompletionSource<bool>();
                 var spaceTimePanel = app.LayoutRoot.Add(new SpaceTimePanel(app.LayoutRoot.Width, app.LayoutRoot.Height));
                 spaceTimePanel.SpaceTime.Increment = DefaultTimeIncrement;
-                spaceTimePanel.SpaceTime.Start();
-                spaceTimePanel.SpaceTime.UnhandledException.SubscribeForLifetime((ex) =>
-                {
-                    spaceTimePanel.SpaceTime.Stop();
-                    d.SetResult(true);
-                    ex.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
-                    stEx = ex.Exception;
-                }, app);
-
+                var stTask = spaceTimePanel.SpaceTime.Start();
+          
 
                 var justUpdated = false;
                 spaceTimePanel.AfterUpdate.SubscribeForLifetime(() => justUpdated = true, app);
@@ -57,7 +50,17 @@ namespace ArgsTests.CLI.Physics
                     await app.Paint();
                     d.SetResult(true);
                 });
+
                 await d.Task;
+                try
+                {
+                    await stTask;
+                }catch(Exception exc)
+                {
+                    spaceTimePanel.SpaceTime.Stop();
+                    d.SetResult(true);
+                    stEx = exc;
+                }
                 await spaceTimePanel.SpaceTime.YieldAsync();
                 await app.PaintAndRecordKeyFrameAsync();
                 spaceTimePanel.SpaceTime.Stop();

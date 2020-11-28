@@ -18,8 +18,6 @@ namespace PowerArgs.Cli.Physics
 
         public Event AfterUpdate { get; private set; } = new Event();
 
-        public bool PropagateExceptions { get; set; } = true;
-
         public SpaceTimePanel(int w, int h, SpaceTime time = null)
         {
             this.Width = w;
@@ -54,21 +52,8 @@ namespace PowerArgs.Cli.Physics
                 this.OnDisposed(()=> resetHandle.Set());
             }, this);
 
-            this.SpaceTime.UnhandledException.SubscribeForLifetime(OnSpaceTimeException, this);
 
             this.SubscribeForLifetime(nameof(Bounds), () => { resizedSinceLastRender = false; }, this);
-        }
-
-        private void OnSpaceTimeException(EventLoop.EventLoopExceptionArgs  ex)
-        {
-            resetHandle.Set();
-            Application?.InvokeNextCycle(() =>
-            {
-                if (PropagateExceptions)
-                {
-                    throw new AggregateException(ex.Exception);
-                }
-            });
         }
 
         private void UpdateViewInternal()

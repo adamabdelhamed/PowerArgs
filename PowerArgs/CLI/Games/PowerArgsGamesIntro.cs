@@ -109,7 +109,7 @@ namespace PowerArgs.Games
                 return;
             }
 
-            SpaceTime.InvokeNextCycle(() =>
+            SpaceTime.Invoke(async () =>
             {
                 if (introDeferred.Task.IsFulfilled())
                 {
@@ -117,19 +117,9 @@ namespace PowerArgs.Games
                 }
 
                 SpaceTime.Elements.ToList().ForEach(e => e.Lifetime.Dispose());
-                SpaceTime.Stop()
-                .ContinueWith(t =>
-                {
-                    if (t.Exception != null)
-                    {
-                        introDeferred.SetException(t.Exception);
-                    }
-                    else
-                    {
-                        introDeferred.SetResult(true);
-                    }
-                    this.Dispose();
-                }, TaskContinuationOptions.ExecuteSynchronously);
+                introDeferred.SetResult(true);
+                SpaceTime.Stop();
+                this.Dispose();
             });
         }
     }

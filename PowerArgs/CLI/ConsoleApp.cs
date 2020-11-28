@@ -18,7 +18,13 @@ namespace PowerArgs.Cli
 
         private List<TaskCompletionSource<bool>> paintRequests = new List<TaskCompletionSource<bool>>();
         private FrameRateMeter paintRateMeter = new FrameRateMeter();
-        private Queue<ConsoleKeyInfo> sendKeys = new Queue<ConsoleKeyInfo>();
+        
+        private class KeyRequest
+        {
+            public ConsoleKeyInfo Info { get; set; }
+            public TaskCompletionSource<bool> TaskSource { get; set; }
+        }
+        private Queue<KeyRequest> sendKeys = new Queue<KeyRequest>();
 
         /// <summary>
         /// True by default. When true, discards key presses that come in too fast
@@ -267,7 +273,7 @@ namespace PowerArgs.Cli
         /// Starts the app, asynchronously.
         /// </summary>
         /// <returns>A task that will complete when the app exits</returns>
-        public override Task Start()
+        public override async Task Start()
         {
             if (SetFocusOnStart)
             {
@@ -279,10 +285,8 @@ namespace PowerArgs.Cli
 
             Paint();
 
-            return base.Start().ContinueWith((p) =>
-            {
-                ExitInternal();
-            }, TaskContinuationOptions.ExecuteSynchronously);
+            await base.Start();
+            ExitInternal();
         }
 
         private void HandleDebouncedResize()
@@ -487,8 +491,12 @@ namespace PowerArgs.Cli
             }
             else if (sendKeys.Count > 0)
             {
-                var info = sendKeys.Dequeue();
-                InvokeNextCycle(() => HandleKeyInput(info));
+                var request = sendKeys.Dequeue();
+                InvokeNextCycle(() =>
+                {
+                    HandleKeyInput(request.Info);
+                    request.TaskSource.SetResult(true);
+                });
             }
         }
 
@@ -498,7 +506,15 @@ namespace PowerArgs.Cli
         /// Simulates a key press
         /// </summary>
         /// <param name="key">the key press info</param>
-        public Task SendKey(ConsoleKeyInfo key) => Invoke(() => { sendKeys.Enqueue(key); });
+        public Task SendKey(ConsoleKeyInfo key)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            Invoke(() => 
+            {
+                sendKeys.Enqueue(new KeyRequest() { Info = key, TaskSource = tcs });
+            });
+            return tcs.Task;
+        }
 
 
         /// <summary>

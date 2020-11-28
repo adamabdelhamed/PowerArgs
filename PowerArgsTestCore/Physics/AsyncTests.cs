@@ -23,16 +23,17 @@ namespace ArgsTests.CLI.Physics
             var st = new SpaceTime(80, 40);
             st.Invoke(() => throw new Exception(message));
             bool handled = false;
-            st.UnhandledException.SubscribeOnce((data) =>
-            {
-                var ex = data.Exception.Clean().Single();
-                Assert.AreEqual(message, ex.Message);
-                data.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
-                handled = true;
-                st.Stop();
-            });
 
-            await st.Start();
+            try
+            {
+                await st.Start();
+            }
+            catch(Exception exc)
+            {
+                var ex = exc.Clean().Single();
+                Assert.AreEqual(message, ex.Message);
+                handled = true;
+            }
             Assert.IsTrue(handled);
         }
 
@@ -49,16 +50,16 @@ namespace ArgsTests.CLI.Physics
                     throw new Exception(message);
                 });
                 bool handled = false;
-                st.UnhandledException.SubscribeForLifetime((data) =>
-                {
-                    var ex = data.Exception.Clean().Single();
-                    Assert.AreEqual(message, ex.Message);
-                    data.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
-                    handled = true;
-                    st.Stop();
-                }, lt);
 
-                await st.Start();
+                try
+                {
+                    await st.Start();
+                }catch(Exception exc)
+                {
+                    var ex = exc.Clean().Single();
+                    Assert.AreEqual(message, ex.Message);
+                     handled = true;
+                }
                 Assert.IsTrue(handled);
             }
         }
@@ -71,23 +72,21 @@ namespace ArgsTests.CLI.Physics
             var st = new SpaceTime(80, 40);
             st.Invoke( async () =>
             {
-                st.Invoke(async () =>
-                {
-                    await TaskEx.WhenAny(Task.Delay(100), Task.Delay(10));
-                    throw new Exception(message);
-                });
+                await Task.Delay(100);
+                throw new Exception(message);
             });
             bool handled = false;
-            st.UnhandledException.SubscribeOnce((data) =>
-            {
-                var ex = data.Exception.Clean().Single();
-                Assert.AreEqual(message, ex.Message);
-                data.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
-                handled = true;
-                st.Stop();
-            });
 
-            await st.Start();
+            try
+            {
+                await st.Start();
+            }
+            catch(Exception exc)
+            {
+                var ex = exc.Clean().Single();
+                Assert.AreEqual(message, ex.Message);
+                handled = true;
+            }
             Assert.IsTrue(handled);
         }
 
@@ -98,29 +97,26 @@ namespace ArgsTests.CLI.Physics
             var st = new SpaceTime(80, 40);
             st.Invoke(async () =>
             {
-                st.Invoke( async () =>
+                try
                 {
-                    try
-                    {
-                        await TaskEx.WhenAny(Task.Delay(100), Task.Delay(10));
-                    }
-                    finally
-                    {
-                        throw new Exception(message);
-                    }
-                });
+                    await TaskEx.WhenAny(Task.Delay(100), Task.Delay(10));
+                }
+                finally
+                {
+                    throw new Exception(message);
+                }
             });
             bool handled = false;
-            st.UnhandledException.SubscribeOnce((data) =>
-            {
-                var ex = data.Exception.Clean().Single();
-                Assert.AreEqual(message, ex.Message);
-                data.Handling = EventLoop.EventLoopExceptionHandling.Swallow;
-                handled = true;
-                st.Stop();
-            });
 
-            await st.Start();
+            try
+            {
+                await st.Start();
+            }catch(Exception exc)
+            {
+                var ex = exc.Clean().Single();
+                Assert.AreEqual(message, ex.Message);
+                handled = true;
+            }
             Assert.IsTrue(handled);
         }
     }

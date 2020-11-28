@@ -48,7 +48,7 @@ namespace ArgsTests.CLI.Controls
             {
                 app.LayoutRoot.Add(new TextBox() { Value = "SomeText".ToWhite() }).Fill();
                 await app.Paint();
-                await app.Stop();
+                app.Stop();
             });
 
             app.Start().Wait();

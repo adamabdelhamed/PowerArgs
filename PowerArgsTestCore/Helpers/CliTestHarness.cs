@@ -118,7 +118,7 @@ namespace ArgsTests.CLI
             }
             else
             {
-                await InvokeNextCycle(RecordKeyFrame);
+                throw new Exception("Wrong thread");
             }
         }
 

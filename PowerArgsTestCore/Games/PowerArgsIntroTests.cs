@@ -1,14 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PowerArgs;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs.Cli;
-using PowerArgs.Cli.Physics;
 using PowerArgs.Games;
-using System.Linq;
+using System;
+using System.Threading.Tasks;
 
 namespace ArgsTests.CLI.Games
 {
@@ -20,19 +14,15 @@ namespace ArgsTests.CLI.Games
         public async Task TestPowerArgsIntroCompletesOnItsOwn()
         {
             var app = new ConsoleApp(80, 30);
-            var appTask = app.Start();
 
-            PowerArgsGamesIntro intro = null;
-            await app.InvokeNextCycle(() => intro = app.LayoutRoot.Add(new PowerArgsGamesIntro()).CenterVertically());
-            Assert.IsNotNull(intro);
-       
-            await app.InvokeNextCycle(async () =>
+            app.Invoke(async () =>
             {
+                var intro = app.LayoutRoot.Add(new PowerArgsGamesIntro()).CenterVertically();
                 await intro.Play();
                 app.Stop();
             });
 
-            await appTask;
+            await app.Start();
         }
 
        
