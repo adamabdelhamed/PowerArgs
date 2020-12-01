@@ -144,6 +144,7 @@ namespace ArgsTests
 
         public class ArgShortcutAttributeArgs
         {
+            [ArgShortcut("s")]
             public string SomeString { get; set; }
             [ArgShortcut("so")]
             public string SomeOtherString { get; set; }

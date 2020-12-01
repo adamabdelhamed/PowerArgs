@@ -69,6 +69,11 @@ namespace PowerArgs
         public Type HighlighterConfiguratorType { get; set; }
 
         /// <summary>
+        /// When enabled, will provide tab completion over the local file system. Defaults to enabled.
+        /// </summary>
+        public bool EnableFileSystemTabCompletion { get; set; } = true;
+
+        /// <summary>
         /// When this indicator is the only argument the user specifies that triggers the hook to enhance the command prompt.  By default, the indicator is the empty string.
         /// </summary>
         public string Indicator { get; set; }
@@ -203,7 +208,7 @@ namespace PowerArgs
                 }
             }
 
-            PowerArgsRichCommandLineReader reader = new PowerArgsRichCommandLineReader(context.Definition, LoadHistory());
+            PowerArgsRichCommandLineReader reader = new PowerArgsRichCommandLineReader(context.Definition, LoadHistory(), enableFileSystemTabCompletion: EnableFileSystemTabCompletion);
 
             IHighlighterConfigurator customConfigurator;
             if(HighlighterConfiguratorType.TryCreate<IHighlighterConfigurator>(out customConfigurator))

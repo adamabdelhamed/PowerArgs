@@ -178,25 +178,7 @@ namespace ArgsTests
             Assert.AreEqual("Adam", parsed.SomeParam);
             Assert.AreEqual(100, parsed.AnotherParam);
         }
-
-        [TestMethod]
-        public void TestMultiTabCycling()
-        {
-            // First tab goes to 'anotherParam', second tab advances since the first tab was completed by empty string
-            TestConsoleProvider.SimulateConsoleInput("\t 50 \t\t stringval");
-            var parsed = Args.Parse<TestArgs>("$");
-            Assert.AreEqual("stringval", parsed.SomeParam);
-            Assert.AreEqual(50, parsed.AnotherParam);
-        }
-
-        [TestMethod]
-        public void TestMultiTabCyclingBackwards()
-        {
-            TestConsoleProvider.SimulateConsoleInput("\t\t{shift}\t 50 \t\t stringval \t\t");
-            var parsed = Args.Parse<TestArgs>("$");
-            Assert.AreEqual("stringval", parsed.SomeParam);
-            Assert.AreEqual(50, parsed.AnotherParam);
-        }
+ 
 
         [TestMethod]
         public void TestMultiTabsFileSystem()

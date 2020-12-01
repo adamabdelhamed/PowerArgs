@@ -1,7 +1,7 @@
-﻿using PowerArgs.Cli;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace PowerArgs
 {
@@ -137,10 +137,19 @@ namespace PowerArgs
             {
                 context.CompletionCandidate = "";
             }
-
+            
             context.CommandLineText = new ConsoleString(innerContext.Buffer).ToString();
             context.TargetAction = FindContextualAction(innerContext.Tokens.FirstOrDefault().Value, definition);
-            context.TargetArgument = FindContextualArgument(context.PreviousToken, context.TargetAction, definition);
+            context.TargetArgument = FindContextualArgument(new FindContextualArgumentArgs()
+            {
+                ActionContext = context.TargetAction,
+                Definition = definition,
+                CommandLine = new ConsoleString(innerContext.Buffer).StringValue,
+                CurrentTokenIndex = innerContext.CurrentTokenIndex,
+                CurrentToken = innerContext.CurrentToken.Value,
+                PreviousToken = context.PreviousToken
+
+            });
             return context;
         }
 
@@ -221,40 +230,63 @@ namespace PowerArgs
             return currentTokenArgument;
         }
 
-        /// <summary>
-        /// A helper that detects the argument represented by the current token given a definition.  
-        /// </summary>
-        /// <param name="previousToken">The token to inspect.  If you pass null you will get null back.</param>
-        /// <param name="contextualAction">An action to inspect for a match if the current token does not match a global argument.  Pass null to only check global arguments.</param>
-        /// <param name="def">The definition to inspect.  If null, the ambient definition will be used.  If there is no ambient definition and null is passed then this method throws a NullReferenceException.</param>
-        /// <returns>An argument that is matched by the given token or null if there was no match</returns>
-        public static CommandLineArgument FindContextualArgument(string previousToken, CommandLineAction contextualAction, CommandLineArgumentsDefinition def = null)
+        public class FindContextualArgumentArgs
         {
-            def = PassThroughOrTryGetAmbientDefinition(def);
 
-            if (previousToken == null)
-            {
-                return null;
-            }
+            public int CurrentTokenIndex { get; set; }
+            public string CommandLine { get; set; }
+            public CommandLineAction ActionContext { get; set; }
+            public CommandLineArgumentsDefinition Definition { get; set; }
+            public string PreviousToken { get; set; }
+            public string CurrentToken { get; set; }
+        }
+    
+        public static CommandLineArgument FindContextualArgument(FindContextualArgumentArgs args)
+        {
+            args.Definition = PassThroughOrTryGetAmbientDefinition(args.Definition);
 
             string currentTokenArgumentNameValue = null;
-            if (previousToken.StartsWith("-"))
+            if (args.PreviousToken != null && args.PreviousToken.StartsWith("-"))
             {
-                currentTokenArgumentNameValue = previousToken.Substring(1);
+                currentTokenArgumentNameValue = args.PreviousToken.Substring(1);
             }
-            else if (previousToken.StartsWith("/"))
+            else if (args.PreviousToken != null && args.PreviousToken.StartsWith("/"))
             {
-                currentTokenArgumentNameValue = previousToken.Substring(1);
+                currentTokenArgumentNameValue = args.PreviousToken.Substring(1);
             }
+            else
+            {
+                // strange behavior outside of this method where we need to look back one if the current token has a non whitespace value
+                var targetPosition = string.IsNullOrWhiteSpace(args.CurrentToken) ? args.CurrentTokenIndex : args.CurrentTokenIndex - 1;
+                if (targetPosition < 0) return null;
+                var positionArg = args.ActionContext == null ?
+                    args.Definition.Arguments.Where(a => a.Position == targetPosition).FirstOrDefault() :
+                    args.ActionContext.Arguments.Where(a => a.Position == targetPosition).FirstOrDefault();
 
+                var argsArray = Args.Convert(args.CommandLine);
+
+                if (positionArg == null) return positionArg;
+
+                for(var i = 0; i < Math.Min(argsArray.Length, targetPosition+1); i++)
+                {
+                    // positional args must occur before any named args
+                    if(argsArray[i].StartsWith("/") || Regex.IsMatch(argsArray[i], @"^-[^\d]"))
+                    {
+                        return null;
+                    }
+                }
+
+                return positionArg;
+            }
+           
             CommandLineArgument currentTokenArgument = null;
             if (currentTokenArgumentNameValue != null)
             {
-                currentTokenArgument = def.Arguments.Where(arg => arg.IsMatch(currentTokenArgumentNameValue) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
+                currentTokenArgument = args.Definition.Arguments.Where(arg => arg.IsMatch(currentTokenArgumentNameValue) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
 
-                if (currentTokenArgument == null && contextualAction != null)
+                if (currentTokenArgument == null && args.ActionContext != null)
                 {
-                    currentTokenArgument = contextualAction.Arguments.Where(arg => arg.IsMatch(currentTokenArgumentNameValue) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
+                    currentTokenArgument = args.ActionContext.Arguments.Where(arg => arg.IsMatch(currentTokenArgumentNameValue) && arg.ArgumentType != typeof(bool)).SingleOrDefault();
                 }
             }
             return currentTokenArgument;
@@ -335,7 +367,15 @@ namespace PowerArgs
             var firstToken = readerContext.Tokens[0].Value;
 
             CommandLineAction contextualAction = PowerArgsRichCommandLineReader.FindContextualAction(firstToken, definition);
-            CommandLineArgument contextualArgument = PowerArgsRichCommandLineReader.FindContextualArgument(previousToken, contextualAction, definition);
+            CommandLineArgument contextualArgument = PowerArgsRichCommandLineReader.FindContextualArgument(new PowerArgsRichCommandLineReader.FindContextualArgumentArgs()
+            {
+                ActionContext = contextualAction,
+                Definition = definition,
+                CommandLine = new ConsoleString(readerContext.Buffer).StringValue,
+                CurrentTokenIndex = readerContext.CurrentTokenIndex,
+                CurrentToken = readerContext.CurrentToken.Value,
+                PreviousToken = previousToken,
+            });
 
             if (contextualArgument != null)
             {

@@ -22,7 +22,7 @@ namespace ArgsTests
     [TestCategory(Categories.Core)]
     public class NewAwesomeTabCompletionTests
     {
-        [TabCompletion("$", ExeName = "TestSuiteTestArgs.exe")]
+        [TabCompletion("$", ExeName = "TestSuiteTestArgs.exe", EnableFileSystemTabCompletion = false)]
         public class ConflictingArgumentsThatAwesomeTabCompletionMakesBetter
         {
             // this is just here to make sure that the tab after 'fruits' is smart enough to prefer '-apples' to '-applesglobal'
@@ -95,7 +95,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestAwesomeTabCompletionKnowsWhichActionIAmPerforming()
         {
-            ConsoleProvider.Current = new TestConsoleProvider("f\t \t \t"); // should expand to 'fruits -apples -bananas'
+            ConsoleProvider.Current = new TestConsoleProvider("f\t -a\t -b\t"); // should expand to 'fruits -apples -bananas'
             var parsed = Args.InvokeAction<ConflictingArgumentsThatAwesomeTabCompletionMakesBetter>("$");
             
             Assert.IsTrue(parsed.Args.apples);
@@ -103,7 +103,7 @@ namespace ArgsTests
             Assert.IsFalse(parsed.Args.asparagus);
             Assert.IsFalse(parsed.Args.beets);
 
-            ConsoleProvider.Current = new TestConsoleProvider("v\t \t \t"); // should expand to 'vegetables -asparagus -beets'
+            ConsoleProvider.Current = new TestConsoleProvider("v\t -a\t -b\t"); // should expand to 'vegetables -asparagus -beets'
             parsed = Args.InvokeAction<ConflictingArgumentsThatAwesomeTabCompletionMakesBetter>("$");
             Assert.IsFalse(parsed.Args.apples);
             Assert.IsFalse(parsed.Args.bananas);
@@ -114,12 +114,13 @@ namespace ArgsTests
         [TestMethod]
         public void TestArgumentAwareSmartTabCompletion()
         {
-            var input = "m\t -a\t \t"; // should expand to 'meats -animal Chicken;
+            var input = "m\t -a\t c\t"; // should expand to 'meats -animal Chicken;
             ConsoleProvider.Current = new TestConsoleProvider(input);
             var definition = new CommandLineArgumentsDefinition(typeof(ConflictingArgumentsThatAwesomeTabCompletionMakesBetter));
 
-            PowerArgsRichCommandLineReader reader = new PowerArgsRichCommandLineReader(definition, new List<ConsoleString>());
+            PowerArgsRichCommandLineReader reader = new PowerArgsRichCommandLineReader(definition, new List<ConsoleString>(), enableFileSystemTabCompletion:false);
             reader.ThrowOnSyntaxHighlightException = true;
+ 
             reader.TabHandler.ThrowOnTabCompletionHandlerException = true;
             var completed = string.Join(" ", reader.ReadCommandLine());
             Assert.AreEqual("meats -animal Chicken", completed);

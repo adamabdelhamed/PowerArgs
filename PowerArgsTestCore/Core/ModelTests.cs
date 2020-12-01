@@ -132,9 +132,15 @@ namespace ArgsTests
         [TestMethod]
         public void TestPowerArgsRichCommandLineReaderFindContextualArgument()
         {
+            var args = new PowerArgsRichCommandLineReader.FindContextualArgumentArgs()
+            {
+                CurrentTokenIndex = 0,
+                CommandLine = "-TheString",
+                PreviousToken = "-TheString",
+            };
             try
             {
-                PowerArgsRichCommandLineReader.FindContextualArgument("-TheString", null);
+                PowerArgsRichCommandLineReader.FindContextualArgument(args);
                 Assert.Fail("An exception should have been thrown");
             }
             catch(NullReferenceException ex)
@@ -146,14 +152,20 @@ namespace ArgsTests
             var globalArg = new CommandLineArgument(typeof(string), "TheString");
 
             def.Arguments.Add(globalArg);
-            var found = PowerArgsRichCommandLineReader.FindContextualArgument("-TheString", null, def);
+
+            args.Definition = def;
+            var found = PowerArgsRichCommandLineReader.FindContextualArgument(args);
             Assert.AreSame(globalArg, found);
 
-            found = PowerArgsRichCommandLineReader.FindContextualArgument("/TheString", null, def);
+            args.CommandLine = "/TheString";
+            args.PreviousToken = args.CommandLine;
+            found = PowerArgsRichCommandLineReader.FindContextualArgument(args);
             Assert.AreSame(globalArg, found);
 
-            Assert.IsNull(PowerArgsRichCommandLineReader.FindContextualArgument("-ActionInt", null, def));
-            Assert.IsNull(PowerArgsRichCommandLineReader.FindContextualArgument(null, null, def));
+            args.CommandLine = "-ActionInt";
+            args.PreviousToken = args.CommandLine;
+            Assert.IsNull(PowerArgsRichCommandLineReader.FindContextualArgument(args));
+            Assert.IsNull(PowerArgsRichCommandLineReader.FindContextualArgument(args));
 
             var action = new CommandLineAction((d) => { });
             action.Aliases.Add("TheAction");
@@ -162,10 +174,15 @@ namespace ArgsTests
             action.Arguments.Add(actionArg);
             def.Actions.Add(action);
 
-            found = PowerArgsRichCommandLineReader.FindContextualArgument("-TheString", action, def);
+            args.CommandLine = "-TheString";
+            args.PreviousToken = args.CommandLine;
+            args.ActionContext = action;
+            found = PowerArgsRichCommandLineReader.FindContextualArgument(args);
             Assert.AreSame(globalArg, found);
 
-            found = PowerArgsRichCommandLineReader.FindContextualArgument("-ActionInt", action, def);
+            args.CommandLine = "-ActionInt";
+            args.PreviousToken = args.CommandLine;
+            found = PowerArgsRichCommandLineReader.FindContextualArgument(args);
             Assert.AreSame(actionArg, found);
         }
 
