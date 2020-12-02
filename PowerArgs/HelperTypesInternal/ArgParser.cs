@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace PowerArgs
 {
@@ -34,7 +33,7 @@ namespace PowerArgs
                     result.ImplicitParameters.Add(0, token);
                     argumentPosition++;
                 }
-                else if (token.StartsWith("/"))
+                else if (token.StartsWith("/") && TreatSlashArgAsValueInsteadOfKey(token, argumentPosition, Definition, result) == false)
                 {
                     var param = ParseSlashExplicitOption(token);
                     if (result.ExplicitParameters.ContainsKey(param.Key)) throw new DuplicateArgException("Argument specified more than once: " + param.Key);
@@ -162,6 +161,44 @@ namespace PowerArgs
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// This handles an edge case that may be more common in Linux. If therer is a positional parameter
+        /// that is going to represent a file path then those paths sometimes start with a slash. PowerArgs
+        /// should be able to tell the difference between a positional arg value and a slash specified option.
+        /// 
+        /// It looks hacky, but I think this works. See comments in the code for how the heuristic works.
+        /// </summary>
+        /// <param name="arg">a command line argument</param>
+        /// <param name="position">the position of the argument</param>
+        /// <param name="definition">the argument definition</param>
+        /// <param name="resultContext">the parser result context</param>
+        /// <returns>true if this argument should be treated as an argument value, false if it should be treated as an explicit argument name key</returns>
+        private static bool TreatSlashArgAsValueInsteadOfKey(string arg, int position, CommandLineArgumentsDefinition definition, ParseResult resultContext)
+        {
+            if (arg.Length < 2 || arg[0] != '/' || position < 0) return false;
+            if (definition.AllGlobalAndActionArguments.Where(a => a.Position == position).None()) return false;
+            if (IsBool(arg.Substring(1), definition, resultContext)) return false;
+
+            var colonIndex = arg.IndexOf(':');
+
+            // if there is a colon in the middle then this might be an attempt to specify an explicit argument
+            if (colonIndex >= 1 && colonIndex < arg.Length - 1)
+            {
+                for(var i = 1; i < colonIndex; i++)
+                {
+                    if(char.IsLetterOrDigit(arg[i]) == false)
+                    {
+                        return true;
+                    }
+                }
+                // If we get here that means we have a '/' followed by one or more alphanumerics then a ':' 
+                // and then some more characters. We will assume this is an attempt at specifying an explicit argument.
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>

@@ -58,6 +58,14 @@ namespace ArgsTests
             public string Foo { get; set; }
         }
 
+        public class LinuxFSArgs
+        {
+            [ArgPosition(0)]
+            public string File { get; set; }
+
+            public string SomePath { get; set; }
+        }
+
         public class CustomType
         {
             public int IntVal { get; set; }
@@ -345,6 +353,18 @@ namespace ArgsTests
                 Assert.Fail("An exception should have been thrown");
             }
             catch (InvalidArgDefinitionException ex) { }
+        }
+
+        [TestMethod]
+        public void TestLinuxFilePathAsPositionalArg()
+        {
+            var parsed = Args.Parse<LinuxFSArgs>("/somepath");
+            Assert.AreEqual("/somepath", parsed.File);
+            Assert.AreEqual(null, parsed.SomePath);
+
+            var parsed2 = Args.Parse<LinuxFSArgs>("/somepath:value");
+            Assert.AreEqual(null, parsed2.File);
+            Assert.AreEqual("value", parsed2.SomePath);
         }
     }
 }
