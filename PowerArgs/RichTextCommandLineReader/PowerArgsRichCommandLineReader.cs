@@ -206,7 +206,7 @@ namespace PowerArgs
 
             string currentTokenArgumentNameValue = null;
             expectMatchingArg = false;
-            if (currentToken.StartsWith("-"))
+            if (ArgParser.IsDashSpecifiedArgumentIdentifier(currentToken))
             {
                 currentTokenArgumentNameValue = currentToken.Substring(1);
                 expectMatchingArg = true;
@@ -246,7 +246,7 @@ namespace PowerArgs
             args.Definition = PassThroughOrTryGetAmbientDefinition(args.Definition);
 
             string currentTokenArgumentNameValue = null;
-            if (args.PreviousToken != null && args.PreviousToken.StartsWith("-"))
+            if (args.PreviousToken != null && ArgParser.IsDashSpecifiedArgumentIdentifier(args.PreviousToken))
             {
                 currentTokenArgumentNameValue = args.PreviousToken.Substring(1);
             }

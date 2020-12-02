@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace PowerArgs
 {
@@ -40,12 +41,13 @@ namespace PowerArgs
                     result.ExplicitParameters.Add(param.Key, param.Value);
                     argumentPosition = -1;
                 }
-                else if (token.StartsWith("-"))
+                else if (token == "-")
+                {
+                    throw new ArgException("Missing argument value after '-'");
+                }
+                else if (IsDashSpecifiedArgumentIdentifier(token))
                 {
                     string key = token.Substring(1);
-
-                    if (key.Length == 0) throw new ArgException("Missing argument value after '-'");
-
                     string value;
 
                     // Handles long form syntax --argName=argValue.
@@ -95,7 +97,7 @@ namespace PowerArgs
                         {
                             var nextToken = args[i+1];
 
-                            if(nextToken.StartsWith("/") || nextToken.StartsWith("-"))
+                            if(nextToken.StartsWith("/") || IsDashSpecifiedArgumentIdentifier(nextToken))
                             {
                                 break;
                             }
@@ -131,7 +133,7 @@ namespace PowerArgs
                             {
                                 var nextToken = args[i + 1];
 
-                                if (nextToken.StartsWith("/") || nextToken.StartsWith("-"))
+                                if (nextToken.StartsWith("/") || IsDashSpecifiedArgumentIdentifier(nextToken))
                                 {
                                     break;
                                 }
@@ -162,9 +164,22 @@ namespace PowerArgs
             return result;
         }
 
+        /// <summary>
+        /// Since negative numbers and dash specified keys (e.g. -name & -1) both start with dashes
+        /// PowerArgs used to have cases where it would get confused because lots of code was just checking to
+        /// see if the token starts with a dash. This helper will only return true if the first character after 
+        /// an initial dash is a digit. 
+        /// </summary>
+        /// <param name="arg">the argument token to inspect</param>
+        /// <returns>true if the given token looks like a dash specified argument identifier</returns>
+        public static bool IsDashSpecifiedArgumentIdentifier(string arg)
+        {
+            return arg.Length > 1 && arg[0] == '-' && char.IsDigit(arg[1]) == false;
+        }
+
         internal static bool TryParseKey(string cmdLineArg, out string key)
         {
-            if(cmdLineArg.StartsWith("-") == false && cmdLineArg.StartsWith("/") == false)
+            if(IsDashSpecifiedArgumentIdentifier(cmdLineArg) == false && cmdLineArg.StartsWith("/") == false)
             {
                 key = null;
                 return false;
@@ -183,11 +198,9 @@ namespace PowerArgs
                 var param = ParseSlashExplicitOption(cmdLineArg);
                 return param.Key;
             }
-            else if (cmdLineArg.StartsWith("-"))
+            else if (IsDashSpecifiedArgumentIdentifier(cmdLineArg))
             {
                 string key = cmdLineArg.Substring(1);
-                if (key.Length == 0) throw new ArgException("Missing argument value after '-'");
-                
 
                 // Handles long form syntax --argName=argValue.
                 if (key.StartsWith("-") && key.Contains("="))
@@ -200,7 +213,7 @@ namespace PowerArgs
             }
             else
             {
-                throw new ArgException("Could not parse key '"+cmdLineArg+"' because it did not start with a - or a /");
+                throw new ArgException("Could not parse key '"+cmdLineArg+"'");
             }
         }
 

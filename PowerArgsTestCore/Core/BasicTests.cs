@@ -216,6 +216,13 @@ namespace ArgsTests
             public string Second { get; set; }
         }
 
+        public class PositionedIntArgs
+        {
+            [ArgPosition(0)]
+            public int SomeInteger { get; set; }
+ 
+        }
+
         [TestMethod]
         public void TestSlashColonStyle()
         {
@@ -792,6 +799,13 @@ namespace ArgsTests
             Args.InitializeDefaults(args);
             Assert.AreEqual(BasicEnum.Option2, args.Option);
             Assert.AreEqual(default(BasicEnum), args.Option2);
+        }
+
+        [TestMethod]
+        public void TestNegativeNumbersDontGetConfusedWithDashArgs()
+        {
+            var parsed = Args.Parse<PositionedIntArgs>("-111");
+            Assert.AreEqual(-111, parsed.SomeInteger);
         }
 
         private void AssertConversion(string commandLine, params string[] expectedResult)

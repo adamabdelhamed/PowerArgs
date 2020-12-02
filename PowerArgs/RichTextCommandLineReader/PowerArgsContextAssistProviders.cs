@@ -25,7 +25,7 @@ namespace PowerArgs
 
             CommandLineArgument targetArgument = null;
 
-            if (context.PreviousNonWhitespaceToken != null && context.PreviousNonWhitespaceToken.Value.StartsWith("-"))
+            if (context.PreviousNonWhitespaceToken != null && ArgParser.IsDashSpecifiedArgumentIdentifier(context.PreviousNonWhitespaceToken.Value))
             {
                 var candidate = context.PreviousNonWhitespaceToken.Value.Substring(1);
                 targetArgument = (from a in Definition.AllGlobalAndActionArguments where a.IsMatch(candidate) select a).SingleOrDefault();

@@ -35,7 +35,7 @@ namespace PowerArgs
         public bool TryComplete(TabCompletionContext context, out string completion)
         {
             var fixedUpCandidate = context.CompletionCandidate;
-            if (fixedUpCandidate.StartsWith("-"))
+            if (ArgParser.IsDashSpecifiedArgumentIdentifier(fixedUpCandidate))
             {
                 fixedUpCandidate = fixedUpCandidate.Substring(1);
             }
