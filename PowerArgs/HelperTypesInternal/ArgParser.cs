@@ -33,7 +33,8 @@ namespace PowerArgs
                     result.ImplicitParameters.Add(0, token);
                     argumentPosition++;
                 }
-                else if (token.StartsWith("/"))
+                // don't affect tokens on linux & macOS
+                else if (token.StartsWith("/") && OperatingSystem.IsWindows())  
                 {
                     var param = ParseSlashExplicitOption(token);
                     if (result.ExplicitParameters.ContainsKey(param.Key)) throw new DuplicateArgException("Argument specified more than once: " + param.Key);
