@@ -62,11 +62,11 @@ public class MyArgs
     [ArgRange(0,60)]
     public int IntArg {get;set; }
 
-	// This non-static Main method will be called and it will be able to access the parsed and populated instance level properties.
-	public void Main()
-	{
-	    Console.WriteLine("You entered string '{0}' and int '{1}'", this.StringArg, this.IntArg);
-	}
+    // This non-static Main method will be called and it will be able to access the parsed and populated instance level properties.
+    public void Main()
+    {
+        Console.WriteLine("You entered string '{0}' and int '{1}'", this.StringArg, this.IntArg);
+    }
 }
 
 class Program
@@ -143,8 +143,8 @@ If you wanted to, your action method could accept loose parameters in each actio
 ```cs
 [ArgActionMethod, ArgDescription("Adds the two operands")]
 public void Add(
-	[ArgRequired][ArgDescription("The first value to add"), ArgPosition(1)] double value1, 
-	[ArgRequired][ArgDescription("The second value to add"), ArgPosition(2)] double value2)
+    [ArgRequired][ArgDescription("The first value to add"), ArgPosition(1)] double value1, 
+    [ArgRequired][ArgDescription("The second value to add"), ArgPosition(2)] double value2)
 {
     Console.WriteLine(value1 + value2);
 }
