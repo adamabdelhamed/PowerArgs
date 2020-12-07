@@ -45,7 +45,7 @@ namespace PowerArgs.Games
 
         private void Evaluate()
         {
-            var obstacles = Options.Source.GetObstacles().Where(o => o is WeaponElement == false).ToArray();
+            var obstacles = Options.Source.GetObstacles().Where(o => o is SpacialElement && o is WeaponElement == false).ToArray();
 
             SpacialElement target = null;
             float winningCandidateProximity = float.MaxValue;
