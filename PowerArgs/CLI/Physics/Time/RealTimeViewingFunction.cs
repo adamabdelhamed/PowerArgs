@@ -14,17 +14,18 @@ namespace PowerArgs.Cli.Physics
         private RollingAverage busyPercentageAverage = new RollingAverage(30);
         public double BusyPercentage => busyPercentageAverage.Average;
 
-        private RollingAverage sleepTimeAverage = new RollingAverage(30);
+        public RollingAverage SleepTimeAverage { get; private set; } = new RollingAverage(20);
         public ConsoleString SleepSummary
         {
             get
             {
-                var min = Geometry.Round(sleepTimeAverage.Min);
-                var max = Geometry.Round(sleepTimeAverage.Max);
-                var avg = Geometry.Round(sleepTimeAverage.Average);
+                var min = Geometry.Round(SleepTimeAverage.Min);
+                var max = Geometry.Round(SleepTimeAverage.Max);
+                var avg = Geometry.Round(SleepTimeAverage.Average);
+                var p95 = Geometry.Round(SleepTimeAverage.Percentile(.95));
 
-                var color = min > 20 ? RGB.Green : min > 5 ? RGB.Yellow : RGB.Red;
-                return $"Min:{min}, Max:{max}, Avg:{avg}".ToConsoleString(color);
+                var color = p95 > 20 ? RGB.Green : p95 > 5 ? RGB.Yellow : RGB.Red;
+                return $"Min:{min}, Max:{max}, Avg:{avg}, P95: {p95}".ToConsoleString(color);
             }
         }
 
@@ -182,7 +183,7 @@ namespace PowerArgs.Cli.Physics
 
 
             busyPercentageAverage.AddSample(1 - (idleTime / t.Increment.TotalMilliseconds));
-            sleepTimeAverage.AddSample(idleTime);
+            SleepTimeAverage.AddSample(idleTime);
             simulationTimeElapsed = t.Now - simulationTimeSample;
 
             // At this point, we're sure that the wall clock is equal to or ahead of the simulation time.

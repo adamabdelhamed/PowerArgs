@@ -18,6 +18,7 @@ namespace PowerArgs.Games
         {
             this.Added.SubscribeOnce(async () =>
             {
+                await Time.CurrentTime.DelayAsync(500);
                 while (this.Lifetime.IsExpired == false)
                 {
                     Evaluate();

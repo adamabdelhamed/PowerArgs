@@ -1,4 +1,6 @@
-﻿namespace PowerArgs.Cli.Physics
+﻿using System;
+
+namespace PowerArgs.Cli.Physics
 {
     public class RollingAverage
     {
@@ -68,6 +70,17 @@
                 }
 
                 return max;
+            }
+        }
+
+        public double Percentile(double p)
+        {
+            lock (samples)
+            {
+                if (isWindowFull == false) return float.NaN;
+                Array.Sort(samples);
+                var i = (int)Geometry.Round((samples.Length - 1) * p);
+                return samples[i];
             }
         }
 

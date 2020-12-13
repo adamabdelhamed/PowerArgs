@@ -168,7 +168,6 @@ These attributes can be specified on argument properties. PowerArgs uses this me
 * `[ArgDefaultValue("SomeDefault")]` Specify the default value
 * `[ArgIgnore]` Don't populate this property as an arg
 * `[StickyArg]` Use the last used value if not specified.  This is preserved across sessions.  Data is stored in <User>/AppData/Roaming/PowerArgs by default.
-* `[Query(typeof(MyDataSource))]` Easily query a data source (see documentation below).
 * `[TabCompletion]` Enable tab completion for parameter names (see documentation below)
     
 ### Validator Attributes
