@@ -93,6 +93,8 @@ namespace PowerArgs.Cli.Physics
 
         public Func<Task> MovementTakeover { get; private set; }
 
+        public bool HitDetectionDisabled { get; set; }
+
         public Velocity(SpacialElement t) : base(t)
         {
             Time.CurrentTime.Invoke(async()=> await ExecuteAsync());
@@ -152,23 +154,30 @@ namespace PowerArgs.Cli.Physics
                     continue;
                 }
 
-                var obstacles = GetObstacles();
-
-                var bounds = BoundsTransform != null ? BoundsTransform() : Element;
-                var dx = BoundsTransform != null ? bounds.Left - Element.Left : 0;
-                var dy = BoundsTransform != null ? bounds.Top - Element.Top : 0;
-
-                var hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
+                HitPrediction hitPrediction = null;
+                IRectangularF bounds = null;
+                if (HitDetectionDisabled == false)
                 {
-                    MovingObject = bounds,
-                    Obstacles = obstacles,
-                    Angle = Angle,
-                    Visibility = d,
-                    Mode = CastingMode.Precise,
-                });
-                LastPrediction = hitPrediction;
-                if (hitPrediction.Type != HitType.None)
+                    var obstacles = GetObstacles();
+
+                    bounds = BoundsTransform != null ? BoundsTransform() : Element;
+                    hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
+                    {
+                        MovingObject = bounds,
+                        Obstacles = obstacles,
+                        Angle = Angle,
+                        Visibility = d,
+                        Mode = CastingMode.Precise,
+                    });
+                    LastPrediction = hitPrediction;
+                }
+
+
+                if (hitPrediction != null && hitPrediction.Type != HitType.None)
                 {
+                    var dx = BoundsTransform != null ? bounds.Left - Element.Left : 0;
+                    var dy = BoundsTransform != null ? bounds.Top - Element.Top : 0;
+
                     var proposedBounds = BoundsTransform != null ? BoundsTransform() : Element;
                     var distanceToObstacleHit = proposedBounds.CalculateDistanceTo(hitPrediction.ObstacleHit);
                     if (distanceToObstacleHit > .5f)
