@@ -59,6 +59,13 @@ namespace PowerArgs
             return sub;
         }
 
+        public ILifetime SynchronizeUnmanaged(Action handler)
+        {
+            handler();
+            return SynchronizeUnmanaged(handler);
+        }
+
+
         /// <summary>
         /// Subscribes to this event such that the given handler will be called when the event fires. Notifications will stop
         /// when the lifetime associated with the given lifetime manager is disposed.
@@ -72,6 +79,12 @@ namespace PowerArgs
                 subscribers.Add(handler, lifetimeManager);
                 lifetimeManager.OnDisposed(() => subscribers.Remove(handler));
             }
+        }
+
+        public void SynchronizeForLifetime(Action handler, ILifetimeManager lifetimeManager)
+        {
+            handler();
+            SubscribeForLifetime(handler, lifetimeManager);
         }
 
         /// <summary>
