@@ -183,7 +183,7 @@ namespace PowerArgs.Cli.Physics
 
         public SpacialElementRenderer Bind(SpacialElement t, SpaceTime spaceTime)
         {
-            if (t.Renderer != null)
+            if (t.Renderer != null && t.Renderer is DefaultRenderer == false)
             {
                 t.Renderer.Element = t;
                 t.Renderer.OnBind();
@@ -197,6 +197,10 @@ namespace PowerArgs.Cli.Physics
             }
 
             SpacialElementRenderer ret = Activator.CreateInstance(binding) as SpacialElementRenderer;
+            if (t.Renderer?.RenderFilters != null)
+            {
+                ret.RenderFilters.AddRange(t.Renderer.RenderFilters);
+            }
             t.Renderer = ret;
             ret.Element = t;
             ret.Spacetime = spaceTime;
