@@ -3,6 +3,8 @@ namespace PowerArgs.Games
 {
     public class SmartMineDropper : Weapon
     {
+        public float Range { get; set; } = 10;
+        public float AngleIncrement { get; set; } = 30;
         public override WeaponStyle Style => WeaponStyle.Explosive;
         public string TargetTag { get; set; } = "enemy";
 
@@ -10,7 +12,7 @@ namespace PowerArgs.Games
 
         public override void FireInternal(bool alt)
         {
-            var mine = new ProximityMine(this) { TargetTag = TargetTag };
+            var mine = new ProximityMine(this) { TargetTag = TargetTag, Range = Range, AngleIncrement = AngleIncrement };
             mine.SetProperty(nameof(Holder), this.Holder);
             ProximityMineDropper.PlaceMineSafe(mine, Holder, !alt, Speed);
             SpaceTime.CurrentSpaceTime.Add(mine);
