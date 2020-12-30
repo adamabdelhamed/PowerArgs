@@ -17,7 +17,7 @@ namespace PowerArgs.Cli.Physics
         public RealTimeViewingFunction RealTimeViewing { get; private set; }
 
         public Event AfterUpdate { get; private set; } = new Event();
-
+        public Event<SpacialElement> OnBind { get; private set; } = new Event<SpacialElement>();
         public SpaceTimePanel(int w, int h, SpaceTime time = null)
         {
             this.Width = w;
@@ -77,6 +77,7 @@ namespace PowerArgs.Cli.Physics
                     renderers.Add(e, renderer);
                     this.Controls.Add(renderer);
                     SizeAndLocate(renderer);
+                    OnBind.Fire(e);
                     renderer.OnRender();
                 }
 
@@ -183,7 +184,7 @@ namespace PowerArgs.Cli.Physics
 
         public SpacialElementRenderer Bind(SpacialElement t, SpaceTime spaceTime)
         {
-            if (t.Renderer != null && t.Renderer is DefaultRenderer == false)
+            if (t.Renderer != null)
             {
                 t.Renderer.Element = t;
                 t.Renderer.OnBind();
@@ -197,10 +198,6 @@ namespace PowerArgs.Cli.Physics
             }
 
             SpacialElementRenderer ret = Activator.CreateInstance(binding) as SpacialElementRenderer;
-            if (t.Renderer?.RenderFilters != null)
-            {
-                ret.RenderFilters.AddRange(t.Renderer.RenderFilters);
-            }
             t.Renderer = ret;
             ret.Element = t;
             ret.Spacetime = spaceTime;

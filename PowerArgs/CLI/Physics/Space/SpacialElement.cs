@@ -12,7 +12,7 @@ namespace PowerArgs.Cli.Physics
         void MoveTo(float x, float y, int? z = null);
     }
 
-    public class DefaultRenderer : SpacialElementRenderer { }
+ 
 
     public class SpacialElement : TimeFunction, ISpacialElement
     {
@@ -27,7 +27,7 @@ namespace PowerArgs.Cli.Physics
 
         public ConsoleCharacter? Pen { get; set; }
 
-        public SpacialElementRenderer Renderer { get; internal set; } = new DefaultRenderer();
+        public SpacialElementRenderer Renderer { get; internal set; } 
 
         public IRectangularF Bounds => RectangularF.Create(Left, Top, Width, Height);
 
