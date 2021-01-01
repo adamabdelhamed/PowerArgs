@@ -17,6 +17,15 @@ namespace PowerArgs
 
         private Timer endOfBurstTimerDetectionTimer;
 
+        /// <summary>
+        /// If you set this, then the debouncer will fire the callback in the event of an unexpectedly long burst occurs. Set the
+        /// value to a time that would be too long to wait for the action to fire.
+        /// </summary>
+        public TimeSpan? Guarantee { get; set; }
+
+        private DateTime? oldestPendingRequest;
+
+        private object lck = new object();
 
         /// <summary>
         /// Creates the debouncer given a bust time window and an action callback.
@@ -27,7 +36,18 @@ namespace PowerArgs
         {
             this.BurstTimeWindow = burstTimeWindow;
             this.callback = callback;
-            this.endOfBurstTimerDetectionTimer = new Timer((o) => { callback(); }, null, Timeout.Infinite, Timeout.Infinite);
+            this.endOfBurstTimerDetectionTimer = new Timer((o) => 
+            {
+                callback();
+
+                if (Guarantee.HasValue)
+                {
+                    lock (lck)
+                    {
+                        oldestPendingRequest = null;
+                    }
+                }
+            }, null, Timeout.Infinite, Timeout.Infinite);
         }
 
         /// <summary>
@@ -37,6 +57,23 @@ namespace PowerArgs
         /// </summary>
         public void Trigger()
         {
+            if (Guarantee.HasValue)
+            {
+                lock (lck)
+                {
+                    if (oldestPendingRequest.HasValue == false)
+                    {
+                        oldestPendingRequest = DateTime.UtcNow;
+                    }
+
+                    if(DateTime.UtcNow - oldestPendingRequest >= Guarantee)
+                    {
+                        endOfBurstTimerDetectionTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                        callback();
+                    }
+                }
+            }
+
             if (BurstTimeWindow == TimeSpan.Zero)
             {
                 callback();
