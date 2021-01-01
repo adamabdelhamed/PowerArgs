@@ -8,6 +8,10 @@ namespace PowerArgs.Cli.Physics
         private int index;
         private bool isWindowFull;
 
+        public double[] Samples => samples;
+
+        public bool IsWindowFull => isWindowFull;
+
         public double Average
         {
             get

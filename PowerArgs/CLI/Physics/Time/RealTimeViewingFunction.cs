@@ -4,32 +4,31 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace PowerArgs.Cli.Physics
-{
+{ 
     /// <summary>
     /// A time function that ensures that its target time simulation does not proceed
     /// faster than the system's wall clock
     /// </summary>
     public class RealTimeViewingFunction
     {
-        private RollingAverage busyPercentageAverage = new RollingAverage(30);
-        public double BusyPercentage => busyPercentageAverage.Average;
+        private RealTimeStateMachine rtStateMachine = new RealTimeStateMachine();
 
-        public RollingAverage SleepTimeAverage { get; private set; } = new RollingAverage(20);
+        public Event<RealTimeState> RealTimeStateChanged => rtStateMachine.StateChanged;
+
+        public RollingAverage SleepTimeWindow { get; private set; } = new RollingAverage(20);
         public ConsoleString SleepSummary
         {
             get
             {
-                var min = Geometry.Round(SleepTimeAverage.Min);
-                var max = Geometry.Round(SleepTimeAverage.Max);
-                var avg = Geometry.Round(SleepTimeAverage.Average);
-                var p95 = Geometry.Round(SleepTimeAverage.Percentile(.95));
+                var min = Geometry.Round(SleepTimeWindow.Min);
+                var max = Geometry.Round(SleepTimeWindow.Max);
+                var avg = Geometry.Round(SleepTimeWindow.Average);
+                var p95 = Geometry.Round(SleepTimeWindow.Percentile(.95));
 
                 var color = p95 > 20 ? RGB.Green : p95 > 5 ? RGB.Yellow : RGB.Red;
                 return $"Min:{min}, Max:{max}, Avg:{avg}, P95: {p95}".ToConsoleString(color);
             }
         }
-
-        public List<DataPoint> SleepHistory { get; set; } 
 
         public int ZeroSleepCycles { get; private set; }
         public int SleepCycles { get; private set; }
@@ -39,11 +38,6 @@ namespace PowerArgs.Cli.Physics
         /// </summary>
         public float SlowMoRatio { get; set; } = 1;
 
-        /// <summary>
-        /// An event that fires when the target time simulation falls behind or catches up to
-        /// the wall clock
-        /// </summary>
-        public Event<bool> Behind => behindSignal.ActiveChanged;
 
         /// <summary>
         /// Enables or disables the real time viewing function
@@ -66,8 +60,7 @@ namespace PowerArgs.Cli.Physics
                 }
             }
         }
-
-        private DebounceableSignal behindSignal;
+ 
         private DateTime wallClockSample;
         private TimeSpan simulationTimeSample;
         private Time t;
@@ -85,11 +78,6 @@ namespace PowerArgs.Cli.Physics
         /// by this amount before moving out of the behind state. This is a debouncing mechanism.</param>
         public RealTimeViewingFunction(Time t, TimeSpan? fallBehindThreshold = null, TimeSpan? fallBehindCooldownPeriod = null)
         {
-            behindSignal = new DebounceableSignal()
-            {
-                Threshold = fallBehindThreshold.HasValue ? fallBehindThreshold.Value.TotalMilliseconds : 100, // we've fallen behind if we're 100ms off of wall clock time
-                CoolDownAmount = fallBehindCooldownPeriod.HasValue ? fallBehindCooldownPeriod.Value.TotalMilliseconds : 30, // we're not back on track until we are within 70 ms of wall clock time
-            };
             this.t = t;
 
             t.OnDisposed(() =>
@@ -163,13 +151,6 @@ namespace PowerArgs.Cli.Physics
                 }
             }
 
-            if (Time.CurrentTime.Now > TimeSpan.FromSeconds(1))
-            {
-                SleepHistory?.Add(new DataPoint() { X = Time.CurrentTime.Now.Ticks, Y = Geometry.Round(sleepTime.TotalMilliseconds) });
-            }
-
-            wallClockTimeElapsed = DateTime.UtcNow - wallClockSample;
-
             if (slept == false)
             {
                 ZeroSleepCycles++;
@@ -179,22 +160,94 @@ namespace PowerArgs.Cli.Physics
                 SleepCycles++;
             }
 
-            var idleTime = Math.Min(t.Increment.TotalMilliseconds, (DateTime.UtcNow - realTimeNow).TotalMilliseconds);
-
-
-            busyPercentageAverage.AddSample(1 - (idleTime / t.Increment.TotalMilliseconds));
-            SleepTimeAverage.AddSample(idleTime);
-            simulationTimeElapsed = t.Now - simulationTimeSample;
+            SleepTimeWindow.AddSample(sleepTime.TotalMilliseconds);
+            if (Time.CurrentTime.Now >= TimeSpan.FromSeconds(1.5f))
+            {
+                rtStateMachine.Evaluate(SleepTimeWindow);
+            }
 
             // At this point, we're sure that the wall clock is equal to or ahead of the simulation time.
-
-            // If the wall clock is ahead by too much then the simulation is falling behind. Calculate the amount. 
-            var behindAmount = wallClockTimeElapsed - simulationTimeElapsed;
-
-            // Send the latest behind amount to the behind signal debouncer.
-            behindSignal.Update(behindAmount.TotalMilliseconds);
             wallClockSample = DateTime.UtcNow;
             simulationTimeSample = t.Now;
+        }
+    }
+
+    public enum RealTimeState
+    {
+        Cold,
+        Warm,
+        Hot
+    }
+
+    public class RealTimeStateMachine
+    {
+        public Event<RealTimeState> StateChanged { get; private set; } = new Event<RealTimeState>();
+        public RealTimeState State { get; set; } = RealTimeState.Cold;
+        private TimeSpan stateTime;
+
+        private bool StateHasSettled => Time.CurrentTime.Now - stateTime >= TimeSpan.FromSeconds(3);
+
+        private void ChangeState(RealTimeState newState)
+        {
+            State = newState;
+            stateTime = Time.CurrentTime.Now;
+            StateChanged.Fire(newState);
+        }
+
+        public void Evaluate(RollingAverage signal)
+        {
+            if (signal.IsWindowFull == false) return;
+
+            var negTotal = 0.0;
+            for(var i = 0; i < signal.Samples.Length; i++)
+            {
+                if(signal.Samples[i] < 0)
+                {
+                    negTotal += -signal.Samples[i];
+                }
+            }
+
+            var threshold = signal.Average;
+            var gettingWarmThreshold = 25f;   
+            var coolingDownThreshold = 40f;
+
+
+            var gettingWarmNegThreshold = 100f;
+            var gettingHotNegThreshold = 200f;
+
+            if (State == RealTimeState.Cold)
+            {
+                if(negTotal >= gettingHotNegThreshold)
+                {
+                    ChangeState(RealTimeState.Hot);
+                }
+                else if(threshold <= gettingWarmThreshold || negTotal >= gettingWarmNegThreshold)
+                {
+                    ChangeState(RealTimeState.Warm);
+                }
+            }
+            else if(State == RealTimeState.Warm)
+            {
+                if (negTotal >= gettingHotNegThreshold)
+                {
+                    ChangeState(RealTimeState.Hot);
+                }
+                else if (threshold > coolingDownThreshold && StateHasSettled)
+                {
+                    ChangeState(RealTimeState.Cold);
+                }
+            }
+            else if(State == RealTimeState.Hot)
+            {
+                if (negTotal == 0 && StateHasSettled)
+                {
+                    ChangeState(threshold > coolingDownThreshold ? RealTimeState.Cold : RealTimeState.Warm);
+                }
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
         }
     }
 }
