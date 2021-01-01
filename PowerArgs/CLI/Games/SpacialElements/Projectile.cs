@@ -23,6 +23,11 @@ namespace PowerArgs.Games
 
             if (w?.Holder != null)
             {
+                if (w.Holder.Velocity.Angle.DiffAngle(angle) < 45)
+                {
+                    speed += w.Holder.Velocity.Speed;
+                }
+
                 this.MoveTo(w.Holder.EffectiveBounds().CenterX() - Width / 2, w.Holder.EffectiveBounds().CenterY() - Height / 2, w.Holder.ZIndex);
                 var offset = this.MoveTowards(angle, 1, false);
                 this.MoveTo(offset.Left, offset.Top);
