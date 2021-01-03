@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 
 namespace PowerArgs.Cli
 {
     public partial class Grid : ConsoleControl
     {
-        private ActionDebouncer filterTextDebouncer;
+        TimerActionDebouncer filterTextDebouncer;
         private TextBox _filterTextBox;
 
         public TextBox FilterTextBox { get  { return _filterTextBox; } set {  SetFilterTextBox(value); } }
@@ -180,7 +179,7 @@ namespace PowerArgs.Cli
             MoreDataMessage = "more data below".ToConsoleString(DefaultColors.H1Color);
             this.KeyInputReceived.SubscribeForLifetime(OnKeyInputReceived, this);
 
-            this.filterTextDebouncer = new ActionDebouncer(TimeSpan.FromSeconds(0), () =>
+            this.filterTextDebouncer = new TimerActionDebouncer(TimeSpan.FromSeconds(0), () =>
             {
                 if (Application != null && FilterTextBox != null)
                 {

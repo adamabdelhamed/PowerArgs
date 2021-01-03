@@ -576,7 +576,7 @@ namespace PowerArgs.Cli
         {
             console.Clear();
             bool done = false;
-            ActionDebouncer debouncer = new ActionDebouncer(TimeSpan.FromSeconds(.25), () =>
+            var debouncer = new TimerActionDebouncer(TimeSpan.FromSeconds(.25), () =>
             {
                 done = true;
             });
