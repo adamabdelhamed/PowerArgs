@@ -14,6 +14,7 @@ namespace PowerArgs
     {
         const int STD_OUTPUT_HANDLE = -11;
 
+        private ConsoleColor fg = Console.ForegroundColor;
         /// <summary>
         /// Gets or sets the console foreground color
         /// </summary>
@@ -21,14 +22,17 @@ namespace PowerArgs
         {
             get
             {
-                return Console.ForegroundColor;
+                return fg;
             }
             set
             {
+                if (fg == value) return;
                 Console.ForegroundColor = value;
+                fg = value;
             }
         }
 
+        private ConsoleColor bg = Console.BackgroundColor;
         /// <summary>
         /// Gets or sets the console background color
         /// </summary>
@@ -36,14 +40,16 @@ namespace PowerArgs
         {
             get
             {
-                return Console.BackgroundColor;
+                return bg;
             }
             set
             {
+                if (bg == value) return;
                 Console.BackgroundColor = value;
+                bg = value;
             }
         }
-
+ 
         /// <summary>
         /// Used for internal implementation, but marked public for testing, please do not use.
         /// </summary>
