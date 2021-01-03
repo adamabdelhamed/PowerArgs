@@ -24,7 +24,7 @@ namespace PowerArgs
     /// <summary>
     /// A wrapper for char that encapsulates foreground and background colors.
     /// </summary>
-    public struct ConsoleCharacter : ICanBeAConsoleString
+    public struct ConsoleCharacter : ICanBeAConsoleString, IEquatable<ConsoleCharacter>
     {
         /// <summary>
         /// The value of the character
@@ -349,6 +349,14 @@ namespace PowerArgs
             if (obj is ConsoleCharacter == false) return false;
             var other = (ConsoleCharacter)obj;
 
+            return this.Value == other.Value &&
+                   this.ForegroundColor == other.ForegroundColor &&
+                   this.BackgroundColor == other.BackgroundColor &&
+                   this.IsUnderlined == other.IsUnderlined;
+        }
+
+        public bool Equals(ConsoleCharacter other)
+        {
             return this.Value == other.Value &&
                    this.ForegroundColor == other.ForegroundColor &&
                    this.BackgroundColor == other.BackgroundColor &&
