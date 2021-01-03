@@ -86,7 +86,8 @@ namespace PowerArgs.Cli
                 for (var y = minY; y < maxY; y++)
                 {
                     var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y).Value;
-                    Bitmap.DrawPointUnsafe(controlPixel.Value, x, y);
+                    Bitmap.Pen = controlPixel.Value;
+                    Bitmap.DrawPointUnsafe(x, y);
                 }
             }
         }
@@ -105,7 +106,8 @@ namespace PowerArgs.Cli
 
                     if (controlPixel?.BackgroundColor != ConsoleString.DefaultBackgroundColor)
                     {
-                        Bitmap.DrawPointUnsafe(controlPixel.Value, x, y);
+                        Bitmap.Pen = controlPixel.Value;
+                        Bitmap.DrawPointUnsafe(x, y);
                     }
                     else
                     {
@@ -113,11 +115,13 @@ namespace PowerArgs.Cli
                         if (myPixel.HasValue && myPixel.Value.BackgroundColor != ConsoleString.DefaultBackgroundColor)
                         {
                             var composedValue = new ConsoleCharacter(controlPixel.Value.Value, controlPixel.Value.ForegroundColor, myPixel.Value.BackgroundColor);
-                            Bitmap.DrawPointUnsafe(composedValue, x, y);
+                            Bitmap.Pen = composedValue;
+                            Bitmap.DrawPointUnsafe(x, y);
                         }
                         else
                         {
-                            Bitmap.DrawPointUnsafe(controlPixel.Value, x, y);
+                            Bitmap.Pen = controlPixel.Value;
+                            Bitmap.DrawPointUnsafe(x, y);
                         }
                     }
                 }
@@ -157,7 +161,8 @@ namespace PowerArgs.Cli
  
                     if (controlPixelHasRenderableContent)
                     {
-                        Bitmap.DrawPointUnsafe(controlPixel.Value.Value, x, y);
+                        Bitmap.Pen = controlPixel.Value.Value;
+                        Bitmap.DrawPointUnsafe(x, y);
                     }
                 }
             }
