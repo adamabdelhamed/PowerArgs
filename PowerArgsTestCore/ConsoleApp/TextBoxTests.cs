@@ -17,7 +17,7 @@ namespace ArgsTests.CLI.Controls
         {
             var testCli = new CliUnitTestConsole(80, 1);
             ConsoleProvider.Current = testCli;
-            var app = new ConsoleApp(0, 0, 80, 1);
+            var app = new ConsoleApp(80, 1);
             app.LayoutRoot.Add(new TextBox()).Fill();
             var task = app.Start();
 

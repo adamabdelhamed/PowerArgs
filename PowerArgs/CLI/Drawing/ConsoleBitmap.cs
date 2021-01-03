@@ -24,15 +24,6 @@ namespace PowerArgs.Cli
         /// </summary>
         public int Height { get; private set; }
 
-        /// <summary>
-        /// The left of the image, in number of character pixels
-        /// </summary>
-        public int X { get; private set; }
-
-        /// <summary>
-        /// The top of the image, in number of character pixels
-        /// </summary>
-        public int Y { get; private set; }
 
         /// <summary>
         /// The character to draw when calling the various Draw methods
@@ -48,32 +39,20 @@ namespace PowerArgs.Cli
 
         private int lastBufferWidth;
 
-        /// <summary>
-        /// Creates a new ConsoleBitmap
-        /// </summary>
-        /// <param name="x">the left offset to use when painting</param>
-        /// <param name="y">the top offset to use when painting</param>
-        /// <param name="w">the width of the image</param>
-        /// <param name="h">the height of the image</param>
-        public ConsoleBitmap(int x, int y, int w, int h) : this(new Rectangle(x, y, w, h)) { }
 
         /// <summary>
         /// Creates a new ConsoleBitmap
         /// </summary>
         /// <param name="w">the width of the image</param>
         /// <param name="h">the height of the image</param>
-        public ConsoleBitmap(int w, int h) : this(new Rectangle(0, 0, w, h)) { }
+        public ConsoleBitmap(int w, int h) : this(new Size(w, h)) { }
 
         /// <summary>
         /// Creates a new ConsoleBitmap
         /// </summary>
         /// <param name="bounds">the area of the image</param>
-        public ConsoleBitmap(Rectangle bounds)
+        public ConsoleBitmap(Size bounds)
         {
-            bounds = new Rectangle(0, 0, bounds.Width, bounds.Height);
-
-            this.X = bounds.X;
-            this.Y = bounds.Y;
             this.Width = bounds.Width;
             this.Height = bounds.Height;
             this.Console = ConsoleProvider.Current;
@@ -192,7 +171,7 @@ namespace PowerArgs.Cli
         /// <returns>a snapshot of the cursor positon</returns>
         public ConsoleSnapshot CreateSnapshot()
         {
-            var snapshot = new ConsoleSnapshot(X, Y, Console);
+            var snapshot = new ConsoleSnapshot(0, 0, Console);
             return snapshot;
         }
 
@@ -500,7 +479,7 @@ namespace PowerArgs.Cli
         /// <returns>a copy of this bitmap</returns>
         public ConsoleBitmap Clone()
         {
-            var ret = new ConsoleBitmap(X,Y,Width,Height);
+            var ret = new ConsoleBitmap(Width,Height);
             for (var x = 0; x < Width; x++)
             {
                 for (var y = 0; y < Height; y++)
@@ -670,8 +649,8 @@ namespace PowerArgs.Cli
 
                 if (changed)
                 {
-                    Console.CursorLeft = X;
-                    Console.CursorTop = Y;
+                    Console.CursorLeft = 0;
+                    Console.CursorTop = 0;
                     Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
                     Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
                 }

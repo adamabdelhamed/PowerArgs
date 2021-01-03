@@ -52,14 +52,9 @@ namespace ArgsTests.CLI
         public string CurrentTestRecordingLKGFilePath => Path.Combine(CurrentTestLKGPath, "Recording.cv");
         public string CurrentTestMetadataLKGFilePath => Path.Combine(CurrentTestLKGPath, "Metadata.json");
 
-        public CliTestHarness(TestContext testContext, int x, int y, int w, int h, bool keyframeMode = false) : base(x,y,w,h)
+        public CliTestHarness(TestContext testContext,int w, int h, bool keyframeMode = false) : base(w,h)
         {
             Init(testContext, keyframeMode);
-        }
-
-        public CliTestHarness(TestContext testContext, int w, int h, bool keyFrameMode = false) : base(w, h)
-        {
-            Init(testContext, keyFrameMode);
         }
 
         public CliTestHarness(TestContext testContext, bool keyframeMode = false) 

@@ -43,7 +43,7 @@ namespace PowerArgs.Cli
         /// <returns>the same bitmap you passed in or one that was created for you</returns>
         public override ConsoleBitmap Paint(ref ConsoleBitmap bitmap)
         {
-            bitmap = bitmap ?? new ConsoleBitmap(0, 0, Pixels.Length, Pixels[0].Length);
+            bitmap = bitmap ?? new ConsoleBitmap(Pixels.Length, Pixels[0].Length);
             for(var x = 0; x < Pixels.Length; x++)
             {
                 for (var y = 0; y < Pixels[0].Length; y++)

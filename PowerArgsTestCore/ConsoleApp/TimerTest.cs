@@ -14,7 +14,7 @@ namespace ArgsTests.CLI
         [TestMethod]
         public void TestSetTimeout()
         {
-            var app = new ConsoleApp(0,0,1,1);
+            var app = new ConsoleApp(1,1);
             var promise = app.Start();
             var count = 0;
             app.SetTimeout(() => { count++; app.Stop(); }, TimeSpan.FromMilliseconds(50));
@@ -27,7 +27,7 @@ namespace ArgsTests.CLI
         [TestMethod]
         public void TestSetInterval()
         {
-            var app = new ConsoleApp(0, 0, 1, 1);
+            var app = new ConsoleApp(1, 1);
             var promise = app.Start();
             var count = 0;
             app.SetInterval(() => { count++; if (count == 5) { app.Stop(); } }, TimeSpan.FromMilliseconds(50));
@@ -38,7 +38,7 @@ namespace ArgsTests.CLI
         [TestMethod]
         public void TestSetIntervalCancelling()
         {
-            var app = new ConsoleApp(0, 0, 1, 1);
+            var app = new ConsoleApp(1, 1);
             var promise = app.Start();
             var count = 0;
             IDisposable handle = null;

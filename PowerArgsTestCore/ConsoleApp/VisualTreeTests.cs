@@ -14,7 +14,7 @@ namespace ArgsTests.CLI
         public void ConsoleAppLifecycleTestBasic()
         {
             ConsoleProvider.Current = new CliUnitTestConsole();
-            ConsoleApp app = new ConsoleApp(0, 0, 80, 10);
+            ConsoleApp app = new ConsoleApp(80, 10);
 
             int addCounter = 0, removeCounter = 0;
 
@@ -60,7 +60,7 @@ namespace ArgsTests.CLI
         public void EnsureCantReuseControls()
         {
             ConsoleProvider.Current = new CliUnitTestConsole();
-            ConsoleApp app = new ConsoleApp(0, 0, 80, 10);
+            ConsoleApp app = new ConsoleApp(80, 10);
             var panel = app.LayoutRoot.Add(new ConsolePanel());
             var button = panel.Add(new Button());
 

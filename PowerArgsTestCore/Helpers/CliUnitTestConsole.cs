@@ -44,7 +44,7 @@ namespace ArgsTests.CLI
         
         public void Clear()
         {
-            Buffer = new ConsoleBitmap(0, 0, this.BufferWidth, this.WindowHeight);
+            Buffer = new ConsoleBitmap(this.BufferWidth, this.WindowHeight);
             this.BufferWidth = Buffer.Width;
             this.CursorLeft = 0;
             this.CursorTop = 0;

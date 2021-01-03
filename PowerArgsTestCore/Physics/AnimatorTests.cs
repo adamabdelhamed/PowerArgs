@@ -84,7 +84,7 @@ namespace ArgsTests.CLI
         [TestMethod]
         public async Task TestAnimatorInTimeAsync()
         {
-            var app = new CliTestHarness(TestContext, 0, 0, 40, 1, true);
+            var app = new CliTestHarness(TestContext, 40, 1, true);
             var delayProvider = new KeyframeDelayProvider(app);
             app.InvokeNextCycle(() =>
             {

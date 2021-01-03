@@ -161,7 +161,7 @@ namespace PowerArgs.Cli
         /// whole window and respond to window size changes.  If you use the constructor that takes in coordinates and boudnds
         /// then it is set to false and it is assumed that you only want the app to live within those bounds
         /// </summary>
-        public bool AutoFillOnConsoleResize { get; set; }
+        private bool isFullScreen;
 
         /// <summary>
         /// Gets or set whether or not to give focus to a control when the app starts.  The default is true.
@@ -176,11 +176,9 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Creates a new console app given a set of boundaries
         /// </summary>
-        /// <param name="x">The left position on the target console to bound this app</param>
-        /// <param name="y">The right position on the target console to bound this app</param>
         /// <param name="w">The width of the app</param>
         /// <param name="h">The height of the app</param>
-        public ConsoleApp(int x, int y, int w, int h)
+        public ConsoleApp(int w, int h)
         {
             this.Name = GetType().Name;
             this.console = ConsoleProvider.Current;
@@ -193,11 +191,11 @@ namespace PowerArgs.Cli
             this.StartOfCycle.SubscribeForLifetime(Cycle, this);
 
             SetFocusOnStart = true;
-            Bitmap = new ConsoleBitmap(x, y, w, h);
+            Bitmap = new ConsoleBitmap(w, h);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
-            AutoFillOnConsoleResize = false;
+            isFullScreen = false;
             FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), () => Paint(), this);
             LayoutRoot.Controls.BeforeAdded.SubscribeForLifetime((c) => { c.Application = this; c.BeforeAddedToVisualTreeInternal(); }, this);
             LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, this);
@@ -231,18 +229,11 @@ namespace PowerArgs.Cli
         }
 
         /// <summary>
-        /// Creates a new console app of the given width and height, positioned at x=0,y=0
-        /// </summary>
-        /// <param name="w">The width of the app</param>
-        /// <param name="h">The height of the app</param>
-        public ConsoleApp(int w, int h) : this(0, 0, w, h) { }
-
-        /// <summary>
         /// Creates a full screen console app that will automatically adjust its layout if the window size changes
         /// </summary>
-        public ConsoleApp() : this(0, 0, ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight - 1)
+        public ConsoleApp() : this(ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight - 1)
         {
-            this.AutoFillOnConsoleResize = true;
+            this.isFullScreen = true;
         }
 
         /// <summary>
@@ -296,9 +287,8 @@ namespace PowerArgs.Cli
                 return;
             }
 
-            if (AutoFillOnConsoleResize)
+            if (isFullScreen)
             {
-
                 Bitmap.Resize(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
                 this.LayoutRoot.Size = new Size(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
             }
