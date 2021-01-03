@@ -113,13 +113,9 @@ namespace PowerArgs
         /// </summary>
         public void Run()
         {
+            Thread = System.Threading.Thread.CurrentThread;
             runDeferred = new TaskCompletionSource<bool>();
             RunCommon();
-            if (runDeferred.Task.Exception != null)
-            {
-                throw new AggregateException(runDeferred.Task.Exception);
-            }
-            runDeferred = null;
         }
 
         private void RunCommon()
@@ -307,8 +303,11 @@ namespace PowerArgs
             {
                 throw new Exception("Not running");
             }
-         
-            Invoke(() => throw new StopLoopException());
+
+            Invoke(() =>
+            {
+                throw new StopLoopException();
+            });
         }
 
         public void Invoke(Action work) => Invoke(()=>
@@ -362,7 +361,7 @@ namespace PowerArgs
 
         public void Invoke(Func<Task> work)
         {
-            if(IsRunning == false && IsDrainingOrDrained)
+            if (IsRunning == false && IsDrainingOrDrained)
             {
                 return;
             }
