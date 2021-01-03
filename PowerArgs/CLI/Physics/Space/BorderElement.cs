@@ -13,7 +13,7 @@
         protected override void OnPaint(ConsoleBitmap context)
         {
             context.Pen = new ConsoleCharacter(' ', backgroundColor: BorderElement.BackgroundColor);
-            context.FillRect(0, 0, Width, Height);
+            context.FillRectUnsafe(0, 0, Width, Height);
             context.Pen = new ConsoleCharacter(' ', backgroundColor: BorderElement.BorderColor);
             context.DrawLine(0, 0, 0, Height);
             context.DrawLine(1, 0, 1, Height);

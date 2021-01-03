@@ -205,9 +205,7 @@ namespace PowerArgs.Cli
 
         public bool IsInBounds(int x, int y)
         {
-            if (x < 0 || x >= Width) return false;
-            if (y < 0 || y >= Height) return false;
-            return true;
+            return x >= 0 && x < Width && y >= 0 && y < Height;
         }
 
         /// <summary>
@@ -232,16 +230,39 @@ namespace PowerArgs.Cli
         /// <param name="h">the height of the rectangle</param>
         public void FillRect(int x, int y, int w, int h)
         {
+            var maxX = Math.Min(x + w, Width);
+            var maxY = Math.Min(y + h, Height);
+
+            var minX = Math.Max(x, 0);
+            var minY = Math.Max(y, 0);
+
+
+            for (int xd = minX; xd < maxX; xd++)
+            {
+                for(var yd = minY; yd < maxY; yd++)
+                {
+                    Compose(xd, yd, Pen);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Draws a filled in rectangle bounded by the given coordinates
+        /// using the current pen, without performing bounds checks
+        /// </summary>
+        /// <param name="x">the left of the rectangle</param>
+        /// <param name="y">the top of the rectangle</param>
+        /// <param name="w">the width of the rectangle</param>
+        /// <param name="h">the height of the rectangle</param>
+        public void FillRectUnsafe(int x, int y, int w, int h)
+        {
             var maxX = x + w;
             var maxY = y + h;
             for (int xd = x; xd < maxX; xd++)
             {
-                for(var yd = y; yd < maxY; yd++)
+                for (var yd = y; yd < maxY; yd++)
                 {
-                    if (IsInBounds(xd, yd))
-                    {
-                        Compose(xd, yd, Pen);
-                    }
+                    Compose(xd, yd, Pen);
                 }
             }
         }
@@ -326,6 +347,17 @@ namespace PowerArgs.Cli
                     else x++;
                 }
             }
+        }
+
+        /// <summary>
+        /// Draw a single pixel value at the given point using the current pen, skipping the bounds check. Only call this if you've
+        /// already done a bounds check
+        /// </summary>
+        /// <param name="x">the x coordinate</param>
+        /// <param name="y">the y coordinate</param>
+        public void DrawPointUnsafe(int x, int y)
+        {
+            Compose(x, y, Pen);
         }
 
         /// <summary>
@@ -963,6 +995,22 @@ namespace PowerArgs.Cli
             {
                 this.Pen = character;
                 DrawPoint(x, y);
+            }
+            finally
+            {
+                this.Pen = oldPen;
+            }
+
+            return this;
+        }
+
+        public ConsoleBitmap DrawPointUnsafe(ConsoleCharacter character, int x, int y)
+        {
+            var oldPen = this.Pen;
+            try
+            {
+                this.Pen = character;
+                DrawPointUnsafe(x, y);
             }
             finally
             {

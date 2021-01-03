@@ -169,7 +169,7 @@ namespace PowerArgs.Games
         protected override void OnPaint(ConsoleBitmap context)
         {
             context.Pen = (Element as FlammableLetter).Symbol;
-            context.FillRect(0, 0, Width, Height);
+            context.FillRectUnsafe(0, 0, Width, Height);
         }
     }
 }

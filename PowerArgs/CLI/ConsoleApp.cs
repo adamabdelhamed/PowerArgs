@@ -454,7 +454,7 @@ namespace PowerArgs.Cli
         {
             LayoutRoot.Bitmap = Bitmap;
             Bitmap.Pen = defaultPen;
-            Bitmap.FillRect(0, 0, LayoutRoot.Width, LayoutRoot.Height);
+            Bitmap.FillRectUnsafe(0, 0, LayoutRoot.Width, LayoutRoot.Height);
             LayoutRoot.Paint();
 
             Recorder?.WriteFrame(Bitmap);

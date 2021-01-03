@@ -267,7 +267,7 @@ namespace PowerArgs.Cli
             if (HasFocus)
             {
                 context.Pen = new ConsoleCharacter(' ', backgroundColor: DefaultColors.FocusColor);
-                context.FillRect(0, 0, Width, Height);
+                context.FillRectUnsafe(0, 0, Width, Height);
             }
         }
 

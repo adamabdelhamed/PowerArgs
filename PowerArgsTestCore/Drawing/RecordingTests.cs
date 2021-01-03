@@ -93,7 +93,7 @@ namespace ArgsTests.CLI.Recording
                 for(var i = 0; i < bitmap.Width; i++)
                 {
                     bitmap.Pen = new ConsoleCharacter(' ');
-                    bitmap.FillRect(0, 0, bitmap.Width, bitmap.Height);
+                    bitmap.FillRectUnsafe(0, 0, bitmap.Width, bitmap.Height);
                     bitmap.Pen = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Red);
                     bitmap.DrawPoint(i, 0);
                     writer.WriteFrame(bitmap, true, TimeSpan.FromSeconds(.5*i));

@@ -389,7 +389,7 @@ namespace PowerArgs.Cli
             if (TransparentBackground == false)
             {
                 Bitmap.Pen = new ConsoleCharacter(' ', null, Background);
-                Bitmap.FillRect(0, 0, Width, Height);
+                Bitmap.FillRectUnsafe(0, 0, Width, Height);
             }
 
             OnPaint(Bitmap);

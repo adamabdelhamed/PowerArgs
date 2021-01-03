@@ -46,7 +46,7 @@ namespace PowerArgs.Games
                 context.Pen = Style;
             }
  
-            context.FillRect(0, 0, Width, Height);
+            context.FillRectUnsafe(0, 0, Width, Height);
         }
     }
 

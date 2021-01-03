@@ -77,36 +77,35 @@ namespace PowerArgs.Cli
 
         private void ComposePaintOver(ConsoleControl control)
         {
-            var maxX = control.X + control.Width;
-            var maxY = control.Y + control.Height;
-            for (var x = control.X; x < maxX; x++)
+            var minX = Math.Max(control.X, 0);
+            var minY = Math.Max(control.Y, 0);
+            var maxX = Math.Min(Width, control.X + control.Width);
+            var maxY = Math.Min(Height, control.Y + control.Height);
+            for (var x = minX; x < maxX; x++)
             {
-                for (var y = control.Y; y < maxY; y++)
+                for (var y = minY; y < maxY; y++)
                 {
-
                     var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y).Value;
-                    Bitmap.DrawPoint(controlPixel.Value, x, y);
+                    Bitmap.DrawPointUnsafe(controlPixel.Value, x, y);
                 }
             }
         }
 
         private void ComposeBlendBackground (ConsoleControl control)
         {
-            var maxX = control.X + control.Width;
-            var maxY = control.Y + control.Height;
-            for (var x = control.X; x < maxX; x++)
+            var minX = Math.Max(control.X, 0);
+            var minY = Math.Max(control.Y, 0);
+            var maxX = Math.Min(Width, control.X + control.Width);
+            var maxY = Math.Min(Height, control.Y + control.Height);
+            for (var x = minX; x < maxX; x++)
             {
-                for (var y = control.Y; y < maxY; y++)
+                for (var y = minY; y < maxY; y++)
                 {
-                    if (Bitmap.IsInBounds(x, y) == false)
-                    {
-                        continue;
-                    }
                     var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y).Value;
 
                     if (controlPixel?.BackgroundColor != ConsoleString.DefaultBackgroundColor)
                     {
-                        Bitmap.DrawPoint(controlPixel.Value, x, y);
+                        Bitmap.DrawPointUnsafe(controlPixel.Value, x, y);
                     }
                     else
                     {
@@ -114,11 +113,11 @@ namespace PowerArgs.Cli
                         if (myPixel.HasValue && myPixel.Value.BackgroundColor != ConsoleString.DefaultBackgroundColor)
                         {
                             var composedValue = new ConsoleCharacter(controlPixel.Value.Value, controlPixel.Value.ForegroundColor, myPixel.Value.BackgroundColor);
-                            Bitmap.DrawPoint(composedValue, x, y);
+                            Bitmap.DrawPointUnsafe(composedValue, x, y);
                         }
                         else
                         {
-                            Bitmap.DrawPoint(controlPixel.Value, x, y);
+                            Bitmap.DrawPointUnsafe(controlPixel.Value, x, y);
                         }
                     }
                 }
@@ -143,16 +142,14 @@ namespace PowerArgs.Cli
 
         private void ComposeBlendVisible(ConsoleControl control)
         {
-            var maxX = control.X + control.Width;
-            var maxY = control.Y + control.Height;
-            for (var x = control.X; x < maxX; x++)
+            var minX = Math.Max(control.X, 0);
+            var minY = Math.Max(control.Y, 0);
+            var maxX = Math.Min(Width, control.X + control.Width);
+            var maxY = Math.Min(Height, control.Y + control.Height);
+            for (var x = minX; x < maxX; x++)
             {
-                for (var y = control.Y; y < maxY; y++)
+                for (var y = minY; y < maxY; y++)
                 {
-                    if (Bitmap.IsInBounds(x, y) == false)
-                    {
-                        continue;
-                    }
                     var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y);
 
                     var controlPixelHasRenderableContent = IsVisibleOnMyPanel(controlPixel);
@@ -160,7 +157,7 @@ namespace PowerArgs.Cli
  
                     if (controlPixelHasRenderableContent)
                     {
-                        Bitmap.DrawPoint(controlPixel.Value.Value, x, y);
+                        Bitmap.DrawPointUnsafe(controlPixel.Value.Value, x, y);
                     }
                 }
             }

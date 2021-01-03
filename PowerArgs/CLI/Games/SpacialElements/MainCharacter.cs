@@ -130,7 +130,7 @@ namespace PowerArgs.Games
             if (Character.IsVisible == false)
             {
                 context.Pen = new ConsoleCharacter(' ', RGB.Black);
-                context.FillRect(0, 0, Width, Height);
+                context.FillRectUnsafe(0, 0, Width, Height);
                 return;
             }
             char c;
@@ -140,7 +140,7 @@ namespace PowerArgs.Games
             c = Geometry.GetArrowPointedAt(angle);
 
             context.Pen = Character.Pen.HasValue ? Character.Pen.Value : new ConsoleCharacter(c, Character.Color);
-            context.FillRect(0, 0, Width, Height);
+            context.FillRectUnsafe(0, 0, Width, Height);
         }
     }
 

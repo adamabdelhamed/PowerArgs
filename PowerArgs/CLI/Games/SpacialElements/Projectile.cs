@@ -89,7 +89,7 @@ namespace PowerArgs.Games
             {
                 context.Pen = (Element as Projectile).Pen[0];
             }
-            context.FillRect(0, 0, Width,Height);
+            context.FillRectUnsafe(0, 0, Width,Height);
         }
     }
 }
