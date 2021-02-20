@@ -1,7 +1,4 @@
-﻿using PowerArgs.Cli;
-using PowerArgs;
-using System.Linq;
-using System;
+﻿using System.Linq;
 
 namespace PowerArgs.Games
 {
@@ -122,21 +119,21 @@ namespace PowerArgs.Games
                 weapon.Holder = this.Owner;
                 if (weapon.Style == WeaponStyle.Primary)
                 {
-                    if (PrimaryWeapon == null || PrimaryWeapon.AmmoAmount == 0 || weapon.PowerRanking > highestPrimaryWeapon.PowerRanking)
+                    if (PrimaryWeapon == null || PrimaryWeapon.AmmoAmount == 0 || weapon.Strength > highestPrimaryWeapon.Strength)
                     {
                         PrimaryWeapon = weapon;
                     }
                 }
                 else if(weapon.Style == WeaponStyle.Explosive)
                 {
-                    if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0 || weapon.PowerRanking > highestExplosiveWeapon.PowerRanking)
+                    if (ExplosiveWeapon == null || ExplosiveWeapon.AmmoAmount == 0 || weapon.Strength > highestExplosiveWeapon.Strength)
                     {
                         ExplosiveWeapon = weapon;
                     }
                 }
                 else if (weapon.Style == WeaponStyle.Shield)
                 {
-                    if (highestShieldWeapon == null || weapon.PowerRanking > highestShieldWeapon.PowerRanking)
+                    if (highestShieldWeapon == null || weapon.Strength > highestShieldWeapon.Strength)
                     {
                         ShieldWeapon = weapon;
                     }
