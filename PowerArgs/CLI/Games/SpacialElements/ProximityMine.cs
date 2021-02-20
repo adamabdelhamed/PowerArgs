@@ -54,7 +54,15 @@ namespace PowerArgs.Games
 
                         if (d < mine.Range * .9f)
                         {
-                            mine.Explode();
+                            Time.CurrentTime.Invoke(async () =>
+                            {
+                                await mine.AnimateAsync(new SpacialElementAnimationOptions()
+                                {
+                                    Destination = ()=>closest,
+                                    Duration = 200,
+                                });
+                                mine.Explode();
+                            });
                         }
                         else if (d < mine.Range * 3f)
                         {
