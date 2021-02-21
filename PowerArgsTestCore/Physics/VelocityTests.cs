@@ -5,7 +5,6 @@ using PowerArgs;
 using System.Threading;
 using PowerArgs.Cli.Physics;
 using System.Threading.Tasks;
-using PowerArgs.Games;
 
 namespace ArgsTests.CLI.Physics
 {
@@ -41,7 +40,6 @@ namespace ArgsTests.CLI.Physics
 
         private async Task TestCantGoThroughWalls(Direction d, CliTestHarness app, SpaceTimePanel stPanel)
         {
-            SpacialAwareness.OnNudge.SubscribeForLifetime((ev) => Assert.Fail("Nudging not allowed"), app);
             var st = stPanel.SpaceTime;
             var wall = st.Add(new SpacialElement() { BackgroundColor = RGB.DarkRed });
             ILocationF movingObjectLocation;

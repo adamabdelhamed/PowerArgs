@@ -1,5 +1,4 @@
-﻿using PowerArgs.Games;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -96,117 +95,7 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        public static List<IRectangularF> GetObstacles(this SpacialElement element, float? z = null)
-        {
-            float effectiveZ = z.HasValue ? z.Value : element.ZIndex;
-            var v = Velocity.For(element);
-            IEnumerable<SpacialElement> exclusions = v?.HitDetectionExclusions;
-            IEnumerable<Type> excludedTypes = v?.HitDetectionExclusionTypes;
-            Func<IEnumerable<SpacialElement>> dynamicExclusions =  v?.HitDetectionDynamicExclusions;
 
-            var ret = new List<IRectangularF>();
-            var dynamicEx = dynamicExclusions != null ? dynamicExclusions.Invoke() : null;
-            foreach (var e in SpaceTime.CurrentSpaceTime.Elements)
-            {
-                if(e == element)
-                {
-                    continue;
-                }
-                else if (e.ZIndex != effectiveZ)
-                {
-                    continue;
-                }
-                else if(exclusions != null && exclusions.Contains(e))
-                {
-                    continue;
-                }
-                else if(e.HasSimpleTag(PassThruTag))
-                {
-                    continue;
-                }
-                else if(excludedTypes != null && excludedTypes.Where(t => e.GetType() == t || e.GetType().IsSubclassOf(t) || e.GetType().GetInterfaces().Contains(t)).Any())
-                {
-                    continue;
-                }
-                else if(dynamicEx != null && dynamicEx.Contains(e))
-                {
-                    continue;
-                }
-                else if(element is IHaveMassBounds && (element as IHaveMassBounds).IsPartOfMass(e))
-                {
-                    // own mass can't obstruct itself
-                    continue;
-                }
-                else if (e is WeaponElement && (e as WeaponElement).Weapon?.Holder == element)
-                {
-                    // Characters can't hit their own weapon elements
-                    continue;
-                }
-                else if (e is WeaponElement && (e as WeaponElement).Weapon?.Holder != null && element is IHaveMassBounds && (element as IHaveMassBounds).IsPartOfMass((e as WeaponElement).Weapon?.Holder))
-                {
-                    // Characters can't hit their own weapon elements
-                    continue;
-                }
-                else if (element is WeaponElement && e.HasSimpleTag(WeaponsPassThruTag))
-                {
-                    continue;
-                }
-                else if (element is Character && e.HasSimpleTag(WeaponsPassThruTag))
-                {
-                    continue;
-                }
-                else if (element is WeaponElement && (element as WeaponElement).Weapon?.Holder == e)
-                {
-                    // Characters can't hit their own weapon elements
-                    continue;
-                }
-                else if(e is WeaponElement && element is Character && (element as Character).Minions.Where(m => m == (e as WeaponElement).Weapon?.Holder).Any())
-                {
-                    // Characters can't hit their minions' weapon elements
-                    continue;
-                }
-                else if (e is WeaponElement && element is WeaponElement && (element as WeaponElement).Weapon.Holder.Minions.Where(m => m == (e as WeaponElement).Weapon?.Holder).Any())
-                {
-                    // Characters can't hit their minions' weapon elements
-                    continue;
-                }
-                else if (e is WeaponElement && element is WeaponElement &&
-                  (e as WeaponElement).Weapon?.Holder == (element as WeaponElement).Weapon?.Holder)
-                {
-                    if (e is Explosive || element is Explosive)
-                    {
-                        if (e is WeaponElement && (e as WeaponElement).Weapon?.Style == WeaponStyle.Shield)
-                        {
-                            continue;
-                        }
-                        else if (e is WeaponElement && (e as WeaponElement).Weapon?.Style == WeaponStyle.Shield)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            ret.Add(e);
-                        }
-                    }
-                    else
-                    {
-                        // WeaponElements from the same holder don't collide with each other
-                        continue;
-                    }
-                }
-                else
-                {
-                    ret.Add(e);
-                }
-            }
-
-            ret.Add(RectangularF.Create(0,-1,SpaceTime.CurrentSpaceTime.Width,1)); // top boundary
-            ret.Add(RectangularF.Create(0, SpaceTime.CurrentSpaceTime.Height, SpaceTime.CurrentSpaceTime.Width, 1)); // bottom boundary
-            ret.Add(RectangularF.Create(-1,0,1,SpaceTime.CurrentSpaceTime.Height)); // left boundary
-            ret.Add(RectangularF.Create(SpaceTime.CurrentSpaceTime.Width, 0, 1, SpaceTime.CurrentSpaceTime.Height)); // right boundary
-
-            return ret;
-        }
 
 
 
@@ -275,68 +164,8 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public class NudgeEvent
-        {
-            public SpacialElement Element { get; set; }
-            public bool Success { get; set; }
-        }
-
-        public static Event<NudgeEvent> OnNudge { get; private set; } = new Event<NudgeEvent>();
-        public static NudgeEvent NudgeFree(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0, int? z = null)
-        {
-            var loc = GetNudgeLocation(el, desiredLocation, optimalAngle, z);
-            if (loc != null)
-            {
-                if (el is IHaveMassBounds == false)
-                {
-                    el.MoveTo(loc.Left, loc.Top, z);
-                }
-                else
-                {
-                    var elBounds = el.EffectiveBounds();
-                    var dx =  el.Left - elBounds.Left;
-                    var dy = el.Top - elBounds.Top;
-                    el.MoveTo(loc.Left + dx, loc.Top + dy, z);
-                }
-                var ev = new NudgeEvent() { Element = el, Success = true };
-                OnNudge.Fire(ev);
-                return ev;
-            }
-            else
-            {
-                var ev = new NudgeEvent() { Element = el, Success = false };
-                OnNudge.Fire(ev);
-                return ev;
-            }
-        }
-
-        public static ILocationF GetNudgeLocation(this SpacialElement el, IRectangularF desiredLocation = null, float optimalAngle = 0, int? z = null)
-        {
-            desiredLocation = desiredLocation ?? el.EffectiveBounds();
-            var obstacles = el.GetObstacles(z: z);
-            if (obstacles.Where(o => o.Touches(desiredLocation)).Any() || SpaceTime.CurrentSpaceTime.Bounds.Contains(desiredLocation) == false)
-            {
-                foreach (var angle in Enumerate360Angles(optimalAngle))
-                {
-                    for (var d = .1f; d < 15f; d+=.1f)
-                    {
-                        var effectiveAngle = angle % 360;
-                        var testLoc = desiredLocation.MoveTowards(effectiveAngle, d);
-                        var testArea = RectangularF.Create(testLoc.Left, testLoc.Top, desiredLocation.Width, desiredLocation.Height);
-                        if (obstacles.Where(o => o.Touches(testArea)).None() && SpaceTime.CurrentSpaceTime.Bounds.Contains(testArea))
-                        {
-                            return testLoc.TopLeft();
-                        }
-                    }
-                }
-                return null;
-            }
-            else
-            {
-                return el.TopLeft();
-            }
-        }
- 
+     
+      
     }
 
     public class SpacialElementAnimationOptions : RectangularAnimationOptions

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using PowerArgs.Cli;
-using PowerArgs.Games;
 
 namespace ArgsTests.CLI.Games
 {

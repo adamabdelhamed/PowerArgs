@@ -13,9 +13,23 @@ namespace PowerArgs.Cli.Physics
     }
 
  
+    public interface IObstacleResolver
+    {
+        List<IRectangularF> GetObstacles(SpacialElement e, float? z = null);
+    }
+
+    public class DefaultObstacleResolver : IObstacleResolver
+    {
+        public List<IRectangularF> GetObstacles(SpacialElement e, float? z = null)
+        {
+            var ez = z.HasValue ? z.Value : e.ZIndex;
+            return SpaceTime.CurrentSpaceTime.Elements.Where(el => el != e && el.ZIndex == ez).As<IRectangularF>().ToList();
+        }
+    }
 
     public class SpacialElement : TimeFunction, ISpacialElement
     {
+        public static IObstacleResolver ObstacleResolver { get; set; }
         public Event SizeOrPositionChanged { get; private set; } = new Event();
         public float Left { get; private set; }
         public float Top { get; private set; }
@@ -49,6 +63,8 @@ namespace PowerArgs.Cli.Physics
                 return ObservableProperties.Get<T>(key);
             }
         }
+
+        public List<IRectangularF> GetObstacles(float? z = null) => ObstacleResolver.GetObstacles(this, z);
 
         public void SetProperty<T>(string key, T val) => ObservableProperties.Set(val, key);
 

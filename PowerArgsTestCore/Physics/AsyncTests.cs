@@ -5,7 +5,6 @@ using PowerArgs;
 using System.Threading;
 using PowerArgs.Cli.Physics;
 using System.Threading.Tasks;
-using PowerArgs.Games;
 using System.Linq;
 namespace ArgsTests.CLI.Physics
 {
