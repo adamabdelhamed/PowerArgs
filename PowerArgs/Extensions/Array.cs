@@ -50,5 +50,16 @@ namespace PowerArgs
                 yield return currentBatch;
             }
         }
+        private static Random r = new Random();
+        public static void Shuffle<T>(this IList<T> list)
+        {
+            for (var i = 0; i < list.Count; i++)
+            {
+                var randomIndex = r.Next(0, list.Count);
+                var temp = list[i];
+                list[i] = list[randomIndex];
+                list[randomIndex] = temp;
+            }
+        }
     }
 }
