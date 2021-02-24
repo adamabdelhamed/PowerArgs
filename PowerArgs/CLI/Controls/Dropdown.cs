@@ -51,14 +51,13 @@ namespace PowerArgs.Cli
 
         private void SyncValueLabel()
         {
-            if (Width == 0 || Height == 0) return;
             var text = Value.DisplayText.StringValue;
-            if (text.Length > Width-3)
+            if (text.Length > Width-3 && Width > 0)
             {
                 text = text.Substring(0, Width - 3);
             }
 
-            while(text.Length < Width-2)
+            while(text.Length < Width-2 && Width > 0)
             {
                 text += " ";
             }
