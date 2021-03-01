@@ -30,8 +30,6 @@ namespace PowerArgs.Cli.Physics
         public bool ElementWasAlreadyObstructed { get; set; }
 
         public int EdgeIndex { get; set; }
-
-        public List<IRectangularF> Path { get; set; } = new List<IRectangularF>();
     }
 
     public class HitDetectionOptions
