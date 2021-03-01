@@ -37,6 +37,8 @@ namespace PowerArgs.Cli
                     focusLt = new Lifetime();
                     Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.RightArrow, null, SlideUp, focusLt);
                     Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.LeftArrow, null, SlideDown, focusLt);
+                    Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.UpArrow, null, SlideUp, focusLt);
+                    Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.DownArrow, null, SlideDown, focusLt);
                     if (EnableWAndSKeysForUpDown)
                     {
                         Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.D, null, SlideUp, focusLt);
