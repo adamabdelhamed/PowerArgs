@@ -40,7 +40,7 @@ namespace PowerArgs.Cli
                     if (EnableWAndSKeysForUpDown)
                     {
                         Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.D, null, SlideUp, focusLt);
-                        Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.A, null, SlideUp, focusLt);
+                        Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.A, null, SlideDown, focusLt);
                     }
                 }, this);
 
