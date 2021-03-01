@@ -25,6 +25,31 @@ namespace PowerArgs.Cli
     /// </summary>
     public class FormYesNoAttribute : Attribute { }
 
+    public class FormSliderAttribute : Attribute 
+    {
+        public RGB BarColor { get; set; } = RGB.White;
+        public RGB HandleColor { get; set; } = RGB.Gray;
+        public float Min { get; set; } = 0;
+        public float Max { get; set; } = 100;
+        public float Value { get; set; } = 0;
+        public float Increment { get; set; } = 10;
+        public bool EnableWAndSKeysForUpDown { get; set; } = false;
+
+        public Slider Factory()
+        {
+            return new Slider()
+            {
+                BarColor = BarColor,
+                HandleColor = HandleColor, 
+                Min = Min,
+                Max = Max,
+                Value = Value,
+                Increment = Increment,
+                EnableWAndSKeysForUpDown = EnableWAndSKeysForUpDown
+            };
+        }
+    }
+
     /// <summary>
     /// An attribute that tells the form generator to give this
     /// property a specific value width
@@ -48,7 +73,7 @@ namespace PowerArgs.Cli
     /// An attribute that lets you override the display string 
     /// on a form element
     /// </summary>
-    [AttributeUsage(AttributeTargets.Property)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Enum | AttributeTargets.Field)]
     public class FormLabelAttribute : Attribute
     {
         /// <summary>
@@ -142,65 +167,90 @@ namespace PowerArgs.Cli
                 }
                 else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType == typeof(int))
                 {
-                    var value = (int)property.GetValue(o);
-                    var textBox = new TextBox() { Foreground = ConsoleColor.White, Value = value.ToString().ToWhite() };
-                    textBox.SynchronizeForLifetime(nameof(textBox.Value), () =>
+                    if (property.HasAttr<FormSliderAttribute>())
                     {
-
-                        if (textBox.Value.Length > 0 && int.TryParse(textBox.Value.ToString(), out int result))
+                        var value = (int)property.GetValue(o);
+                        var slider = property.Attr<FormSliderAttribute>().Factory();
+                        slider.Value = value;
+                        slider.SynchronizeForLifetime(nameof(slider.Value), () =>
                         {
-                            property.SetValue(o, result);
-                        }
-                        else if (textBox.Value.Length > 0)
+                             property.SetValue(o, (int)slider.Value);
+                        }, slider);
+                        (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () =>
                         {
-                            textBox.Value = property.GetValue(o).ToString().ToWhite();
-                        }
-                    }, textBox);
-                    (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () =>
+                            var valueRead = (int)property.GetValue(o);
+                            slider.Value = valueRead;
+                        }, slider);
+                        editControl = slider;
+                    }
+                    else
                     {
-                        var valueRead = property.GetValue(o);
-                        if (valueRead is ICanBeAConsoleString)
+                        var value = (int)property.GetValue(o);
+                        var textBox = new TextBox() { Foreground = ConsoleColor.White, Value = value.ToString().ToWhite() };
+                        textBox.SynchronizeForLifetime(nameof(textBox.Value), () =>
                         {
-                            textBox.Value = (valueRead as ICanBeAConsoleString).ToConsoleString();
-                        }
-                        else
-                        {
-                            textBox.Value = (valueRead + "").ToConsoleString();
-                        }
-                    }, textBox);
-
-                    textBox.AddedToVisualTree.SubscribeForLifetime(() =>
-                    {
-                        var previouslyFocusedControl = textBox.Application.FocusManager.FocusedControl;
-
-                        var emptyStringAction = new Action(() =>
-                        {
-                            if (previouslyFocusedControl == textBox && textBox.Application.FocusManager.FocusedControl != textBox)
+                            if (textBox.Value.Length == 0)
                             {
-                                if (textBox.Value.Length == 0)
-                                {
-                                    textBox.Value = "0".ToConsoleString();
-                                    property.SetValue(o, 0);
-                                }
+                                textBox.Value = "0".ToConsoleString();
                             }
+                            if (textBox.Value.Length > 0 && int.TryParse(textBox.Value.ToString(), out int result))
+                            {
+                                property.SetValue(o, result);
+                            }
+                            else if (textBox.Value.Length > 0)
+                            {
+                                textBox.Value = property.GetValue(o).ToString().ToWhite();
+                            }
+                        }, textBox);
+                        (o as IObservableObject)?.SynchronizeForLifetime(property.Name, () =>
+                        {
+                            var valueRead = property.GetValue(o);
+                            if (valueRead is ICanBeAConsoleString)
+                            {
+                                textBox.Value = (valueRead as ICanBeAConsoleString).ToConsoleString();
+                            }
+                            else
+                            {
+                                textBox.Value = (valueRead + "").ToConsoleString();
+                            }
+                        }, textBox);
 
-                            previouslyFocusedControl = textBox.Application.FocusManager.FocusedControl;
+                        textBox.AddedToVisualTree.SubscribeForLifetime(() =>
+                        {
+                            var previouslyFocusedControl = textBox.Application.FocusManager.FocusedControl;
 
-                        });
+                            var emptyStringAction = new Action(() =>
+                            {
+                                if (previouslyFocusedControl == textBox && textBox.Application.FocusManager.FocusedControl != textBox)
+                                {
+                                    if (textBox.Value.Length == 0)
+                                    {
+                                        textBox.Value = "0".ToConsoleString();
+                                        property.SetValue(o, 0);
+                                    }
+                                }
 
-                        textBox.Application.FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), emptyStringAction, textBox);
-                    }, textBox);
+                                previouslyFocusedControl = textBox.Application.FocusManager.FocusedControl;
 
-                    editControl = textBox;
+                            });
+
+                            textBox.Application.FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), emptyStringAction, textBox);
+                        }, textBox);
+
+                        editControl = textBox;
+                    }
                 }
                 else if (property.HasAttr<FormReadOnlyAttribute>() == false && property.PropertyType.IsEnum)
                 {
                     var options = new List<DialogOption>();
                     foreach(var val in Enum.GetValues(property.PropertyType))
                     {
+                        var enumField = property.PropertyType.GetField(Enum.GetName(property.PropertyType, val));
+                        var display = enumField.HasAttr<FormLabelAttribute>() ? enumField.Attr<FormLabelAttribute>().Label.ToConsoleString() : (val + "").ToConsoleString();
+
                         options.Add(new DialogOption()
                         {
-                            DisplayText = (val+"").ToConsoleString(),
+                            DisplayText = display,
                             Id = val.ToString(),
                             Value = val,
                         });
