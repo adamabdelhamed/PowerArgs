@@ -8,7 +8,7 @@
         /// <summary>
         /// The bitmap to render
         /// </summary>
-        public ConsoleBitmap Bitmap { get; set; }
+        public ConsoleBitmap Bitmap { get => Get<ConsoleBitmap>(); set => Set(value); }
 
         /// <summary>
         /// Creates a new console bitmap viewer
@@ -28,7 +28,7 @@
 
             for(var x = 0; x < Width && x < Bitmap.Width; x++)
             {
-                for(var y = 0; y < Height & Y < Bitmap.Height; y++)
+                for(var y = 0; y < Height && y < Bitmap.Height; y++)
                 {
                     var c = Bitmap.GetPixel(x, y).Value;
                     if(c.HasValue)
