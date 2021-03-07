@@ -58,6 +58,17 @@ namespace ArgsTests.CLI.Physics
         }
 
         [TestMethod]
+        public void TestAngleBisect()
+        {
+            Assert.AreEqual(0, 315f.Bisect(45));
+            Assert.AreEqual(90, 1f.Bisect(179));
+            Assert.AreEqual(270, 359f.Bisect(181));
+            Assert.AreEqual(22.5f, 0f.Bisect(45));
+            Assert.AreEqual(90, 0f.Bisect(180));
+            Assert.AreEqual(270, 180f.Bisect(360));
+        }
+
+        [TestMethod]
         public void TestDistanceGeometry()
         {
             Assert.AreEqual(0, RectangularF.Create(0, 0, 1, 1).CalculateDistanceTo(RectangularF.Create(0, 0, 1, 1)));
