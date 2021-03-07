@@ -240,6 +240,26 @@ namespace PowerArgs.Cli.Physics
             return Direction.None;
         }
 
+        /// <summary>
+        /// Finds the angle that is between these two angles
+        /// </summary>
+        /// <param name="from">the starting angle</param>
+        /// <param name="to">the ending angle</param>
+        /// <returns>the angle that is between these two angles</returns>
+        public static float Bisect(this float from, float to)
+        {
+            var max = Math.Max(from, to);
+            var min = Math.Min(from, to);
+            var range = max - min;
+            if (range > 180)
+            {
+                min += 360;
+            }
+            var ret = (max + min) / 2;
+            ret = ret % 360;
+            return ret;
+        }
+
         public static char GetArrowPointedAt(float angle)
         {
             if (angle >= 315 || angle < 45)
