@@ -210,7 +210,7 @@ namespace PowerArgs
         /// <summary>
         /// An escape sequence identifier.  By default it is '\'
         /// </summary>
-        public char EscapeSequenceIndicator { get; set; }
+        public char? EscapeSequenceIndicator { get; set; }
 
         /// <summary>
         /// A string that describes the source location for the given document
@@ -303,7 +303,7 @@ namespace PowerArgs
 
         private bool IsEscapeSequence(char current, char? next)
         {
-            if (current != EscapeSequenceIndicator)
+            if (EscapeSequenceIndicator.HasValue == false || current != EscapeSequenceIndicator.Value)
             {
                 return false;
             }
