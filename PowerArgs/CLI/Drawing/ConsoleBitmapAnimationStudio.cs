@@ -558,13 +558,12 @@ namespace PowerArgs.Cli
             private int frameIndex;
             private float amount;
             private ConsoleBitmapAnimationStudio studio;
-            TimeSpan previousTime;
+            private bool shifted;
             public ShiftTimeStampBackwardAction(ConsoleBitmapAnimationStudio studio, int frameIndex, float amount)
             {
                 this.studio = studio;
                 this.frameIndex = frameIndex;
                 this.amount = amount;
-                previousTime = studio.animation.Frames[frameIndex].FrameTime;
             }
 
             public void Do()
@@ -573,7 +572,15 @@ namespace PowerArgs.Cli
                 var proposedTime = studio.animation.Frames[frameIndex].FrameTime.Add(TimeSpan.FromMilliseconds(-amount));
                 if (proposedTime > minTime)
                 {
-                    studio.animation.Frames[frameIndex].FrameTime = proposedTime;
+                    shifted = true;
+                    for (var i = frameIndex; i < studio.animation.Frames.Count; i++)
+                    {
+                        studio.animation.Frames[i].FrameTime = studio.animation.Frames[i].FrameTime.Add(TimeSpan.FromMilliseconds(-amount));
+                    }
+                }
+                else
+                {
+                    shifted = false;
                 }
             }
 
@@ -584,7 +591,13 @@ namespace PowerArgs.Cli
 
             public void Undo()
             {
-                studio.animation.Frames[frameIndex].FrameTime = previousTime;
+                if(shifted)
+                {
+                    for (var i = frameIndex; i < studio.animation.Frames.Count; i++)
+                    {
+                        studio.animation.Frames[i].FrameTime = studio.animation.Frames[i].FrameTime.Add(TimeSpan.FromMilliseconds(amount));
+                    }
+                }
             }
         }
 
