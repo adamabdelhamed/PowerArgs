@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace PowerArgs
 {
@@ -21,6 +22,9 @@ namespace PowerArgs
         void Redo();
     }
 
+    [AttributeUsage(AttributeTargets.Class)]
+    public class TransientUndoRedoAction : Attribute { }
+
     /// <summary>
     /// A class that models the standard undo / redo pattern found in many applications
     /// </summary>
@@ -28,6 +32,9 @@ namespace PowerArgs
     {
         private Stack<IUndoRedoAction> undoStack;
         private Stack<IUndoRedoAction> redoStack;
+
+        public Event OnUndoRedoAction { get; private set; } = new Event();
+        public Event OnEmptyUndoStack { get; private set; } = new Event();
 
         /// <summary>
         /// Gets the elements currently in the undo stack
@@ -56,8 +63,14 @@ namespace PowerArgs
         public void Do(IUndoRedoAction action)
         {
             action.Do();
+            Done(action);
+        }
+
+        public void Done(IUndoRedoAction action)
+        {
             undoStack.Push(action);
             redoStack.Clear();
+            OnUndoRedoAction.Fire();
         }
 
         /// <summary>
@@ -71,6 +84,17 @@ namespace PowerArgs
             var toUndo = undoStack.Pop();
             toUndo.Undo();
             redoStack.Push(toUndo);
+            OnUndoRedoAction.Fire();
+
+            if(toUndo.GetType().HasAttr<TransientUndoRedoAction>())
+            {
+                Undo();
+            }
+
+            if(undoStack.None())
+            {
+                OnEmptyUndoStack.Fire();
+            }
 
             return true;
         }
@@ -85,6 +109,12 @@ namespace PowerArgs
             var toRedo = redoStack.Pop();
             toRedo.Redo();
             undoStack.Push(toRedo);
+            OnUndoRedoAction.Fire();
+
+            if (redoStack.Count > 0 && redoStack.Peek().GetType().HasAttr<TransientUndoRedoAction>())
+            {
+                Redo();
+            }
             return true;
         }
 
