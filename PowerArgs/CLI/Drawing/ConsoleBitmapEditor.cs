@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PowerArgs.Cli
 {
@@ -30,8 +31,7 @@ namespace PowerArgs.Cli
         /// An event that fires when a change has been made to the bitmap by way
         /// of a user edit
         /// </summary>
-        public Event BitmapChanged { get; private set; } = new Event();
-
+        public Event<ConsoleBitmapChange> BitmapChanged { get; private set; } = new Event<ConsoleBitmapChange>();
         private PixelControl cursor;
         private ConsolePanel frame;
         private ConsoleBitmapViewer viewer;
@@ -53,11 +53,11 @@ namespace PowerArgs.Cli
         {
             this.Bitmap = bitmap;
             this.Width = bitmap.Width + 2;
-            this.Height = bitmap.Height + 3;
+            this.Height = bitmap.Height + 2;
             currentFg = ConsoleString.DefaultForegroundColor;
             currentBg = ConsoleString.DefaultBackgroundColor;
 
-            frame = Add(new ConsolePanel() { Background = ConsoleColor.White }).Fill(padding: new Thickness(0, 0, 1, 0));
+            frame = Add(new ConsolePanel() { Background = ConsoleColor.White }).Fill();
             viewer = frame.Add(new ConsoleBitmapViewer() { Bitmap = bitmap }).Fill(padding: new Thickness(1, 1, 1, 1));
             cursor = frame.Add(new PixelControl() { IsVisible = false, X = 1, Y = 1, Value = new ConsoleCharacter('C', ConsoleColor.White, ConsoleColor.Cyan) }); // place at top left
             frame.CanFocus = true;
@@ -82,6 +82,31 @@ namespace PowerArgs.Cli
             });
         }
 
+        private class ColorObject
+        {
+            [FormLabel("")]
+            public ConsoleColor Color { get; set; }
+        }
+
+        public void UpdateBitmap(ConsoleBitmap bitmap)
+        {
+            this.Bitmap = bitmap;
+            viewer.Bitmap = bitmap;
+            this.Width = bitmap.Width + 2;
+            this.Height = bitmap.Height + 2;
+
+            if(cursor.X > Bitmap.Width+1)
+            {
+                cursor.X = 0;
+                CursorMoved.Fire();
+            }
+            else if(cursor.Y > Bitmap.Height + 1)
+            {
+                cursor.Y = 0;
+                CursorMoved.Fire();
+            }
+        }
+
         /// <summary>
         /// Creates a set of standard buttons that a wrapped control can include.
         /// </summary>
@@ -90,11 +115,23 @@ namespace PowerArgs.Cli
         {
             var changeFgButton = new Button() { Shortcut = new KeyboardShortcut(ConsoleKey.F, ConsoleModifiers.Alt) };
 
-            changeFgButton.Pressed.SubscribeForLifetime(() =>
+            changeFgButton.Pressed.SubscribeForLifetime(async () =>
             {
-                Dialog.ShowEnumOptions<ConsoleColor>("Choose a color".ToConsoleString()).Then((newColor) =>
+                var colorObj = new ColorObject() { Color = currentFg };
+                var form = ConsoleApp.Current.LayoutRoot.Add(new Form(FormOptions.FromObject(colorObj)));
+                form.Width = 30;
+                form.Height = 1;
+                form.X = changeFgButton.AbsoluteX;
+                form.Y = changeFgButton.AbsoluteY;
+                form.ZIndex = int.MinValue;
+                var dd = form.Descendents.WhereAs<Dropdown>().First();
+                var focusWorked = dd.TryFocus();
+                dd.KeyInputReceived.Fire(new ConsoleKeyInfo(' ', ConsoleKey.Enter, false, false, false));
+                dd.Focused.SubscribeOnce(() =>
                 {
-                    currentFg = newColor.HasValue ? (RGB)newColor.Value : currentFg;
+                    currentFg = colorObj.Color;
+                    form.Dispose();
+                    frame.TryFocus();
                 });
             }, this);
 
@@ -102,20 +139,32 @@ namespace PowerArgs.Cli
 
             changeBgButton.Pressed.SubscribeForLifetime(() =>
             {
-                Dialog.ShowEnumOptions<ConsoleColor>("Choose a color".ToConsoleString()).Then((newColor) =>
+                var colorObj = new ColorObject() { Color = currentBg };
+                var form = ConsoleApp.Current.LayoutRoot.Add(new Form(FormOptions.FromObject(colorObj)));
+                form.Width = 30;
+                form.Height = 1;
+                form.X = changeFgButton.AbsoluteX;
+                form.Y = changeFgButton.AbsoluteY;
+                form.ZIndex = int.MinValue;
+                var dd = form.Descendents.WhereAs<Dropdown>().First();
+                var focusWorked = dd.TryFocus();
+                dd.KeyInputReceived.Fire(new ConsoleKeyInfo(' ', ConsoleKey.Enter, false, false, false));
+                dd.Focused.SubscribeOnce(() =>
                 {
-                    currentBg = newColor.HasValue ? (RGB)newColor : currentBg;
+                    currentBg = colorObj.Color;
+                    form.Dispose();
+                    frame.TryFocus();
                 });
             }, this);
 
             this.SynchronizeForLifetime(nameof(currentFg), () =>
             {
-                var displayColor = currentFg == this.Background ? this.Foreground : currentFg;
+                var displayColor = Foreground;
                 changeFgButton.Text = "FG: ".ToConsoleString() + currentFg.ToString().ToConsoleString(displayColor);
             }, this);
             this.SynchronizeForLifetime(nameof(currentBg), () =>
             {
-                var displayColor = currentBg == this.Background ? this.Foreground : currentBg;
+                var displayColor = Foreground;
                 changeBgButton.Text = "BG: ".ToConsoleString() + currentBg.ToString().ToConsoleString(displayColor);
             }, this);
 
@@ -165,9 +214,13 @@ namespace PowerArgs.Cli
             {
                 var targetX = cursor.X - 1;
                 var targetY = cursor.Y - 1;
+                var previous = Bitmap.GetPixel(targetX, targetY).Value;
                 Bitmap.Pen = new ConsoleCharacter(key.KeyChar, currentFg, currentBg);
                 Bitmap.DrawPoint(targetX, targetY);
-                BitmapChanged.Fire();
+                if (Bitmap.Pen.Equals(previous) == false)
+                {
+                    BitmapChanged.Fire(new ConsoleBitmapChange(targetX, targetY, previous, Bitmap.Pen, Bitmap));
+                }
                 cursor.X = cursor.X < Bitmap.Width ? cursor.X + 1 : cursor.X;
                 CursorMoved.Fire();
             }
@@ -179,5 +232,25 @@ namespace PowerArgs.Cli
             if (key.Key == ConsoleKey.Enter) return true;
             return false;
         }
+    }
+
+    public class ConsoleBitmapChange : IUndoRedoAction
+    {
+        private int x;
+        private int y;
+        ConsoleCharacter? previousValue;
+        ConsoleCharacter newValue;
+        ConsoleBitmap bitmap;
+        public ConsoleBitmapChange(int x, int y, ConsoleCharacter? previousValue, ConsoleCharacter newValue, ConsoleBitmap bitmap)
+        {
+            this.x = x;
+            this.y = y;
+            this.previousValue = previousValue;
+            this.newValue = newValue;
+            this.bitmap = bitmap;
+        }
+        public void Do() => bitmap.DrawPoint(newValue, x, y);
+        public void Redo() => Do();
+        public void Undo() => bitmap.DrawPoint(previousValue.HasValue ? previousValue.Value : new ConsoleCharacter(' '), x, y);
     }
 }
