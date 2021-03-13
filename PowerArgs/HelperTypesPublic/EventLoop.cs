@@ -111,7 +111,7 @@ namespace PowerArgs
         /// <summary>
         /// Runs the event loop using the current thread
         /// </summary>
-        public void Run()
+        public virtual void Run()
         {
             Thread = System.Threading.Thread.CurrentThread;
             runDeferred = new TaskCompletionSource<bool>();

@@ -231,9 +231,13 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Creates a full screen console app that will automatically adjust its layout if the window size changes
         /// </summary>
-        public ConsoleApp() : this(ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight - 1)
+        public ConsoleApp(Action init = null) : this(ConsoleProvider.Current.BufferWidth, ConsoleProvider.Current.WindowHeight - 1)
         {
             this.isFullScreen = true;
+            if (init != null)
+            {
+                Invoke(init);
+            }
         }
 
         /// <summary>
@@ -277,6 +281,22 @@ namespace PowerArgs.Cli
             Paint();
 
             await base.Start();
+            ExitInternal();
+        }
+
+        public override void Run()
+        {
+            if (SetFocusOnStart)
+            {
+                InvokeNextCycle(() =>
+                {
+                    FocusManager.TryMoveFocus();
+                });
+            }
+
+            Paint();
+
+            base.Run();
             ExitInternal();
         }
 
