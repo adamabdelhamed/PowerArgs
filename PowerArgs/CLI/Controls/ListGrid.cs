@@ -12,6 +12,7 @@ namespace PowerArgs.Cli
     {
         public bool ShowColumnHeaders { get; set; } = true;
         public bool ShowPager { get; set; } = true;
+        public bool EnablePagerKeyboardShortcuts { get; set; } = true;
         public DataGridSelectionMode SelectionMode { get; set; } = DataGridSelectionMode.Row;
         public List<ListGridColumnDefinition<T>> Columns { get; set; }
         public ConsoleString LoadingMessage { get; set; } = "Loading...".ToConsoleString();
@@ -221,6 +222,7 @@ namespace PowerArgs.Cli
                 Columns = options.Columns.Select(c => c as DataGridColumnDefinition).ToList(),  
                 ShowColumnHeaders = options.ShowColumnHeaders,
                 ShowPager=options.ShowPager,
+                EnablePagerKeyboardShortcuts = options.EnablePagerKeyboardShortcuts,
             })).Fill();
 
             presenter.BeforeRecompose.SubscribeForLifetime(BeforeRecompose, this);

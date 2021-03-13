@@ -8,6 +8,7 @@ namespace PowerArgs.Cli
     {
         public bool ShowColumnHeaders { get; set; } = true;
         public bool ShowPager { get; set; } = true;
+        public bool EnablePagerKeyboardShortcuts { get; set; } = true;
         public List<DataGridColumnDefinition> Columns { get; set; }
         public List<DataGridPresentationRow> Rows { get; set; }
         public PagerState PagerState { get; set; }
@@ -175,7 +176,7 @@ namespace PowerArgs.Cli
         {
             pagerContainer = gridLayout.Add(new ConsolePanel(), 0, Height-1, gridLayout.Options.Columns.Count, 1);
             recomposableControls.Add(pagerContainer);
-            pager = pagerContainer.Add(new RandomAccessPager()).CenterHorizontally();
+            pager = pagerContainer.Add(new RandomAccessPager(Options.EnablePagerKeyboardShortcuts)).CenterHorizontally();
             pager.IsVisible = Options.ShowPager;
             pager.FirstPageButton.Pressed.SubscribeForLifetime(FirstPageClicked.Fire, pager);
             pager.PreviousPageButton.Pressed.SubscribeForLifetime(PreviousPageClicked.Fire, pager);
@@ -205,16 +206,24 @@ namespace PowerArgs.Cli
             public Button NextPageButton { get; private set; }
             public Button LastPageButton { get; private set; }
 
-            public RandomAccessPager()
+            public RandomAccessPager(bool enableShortcuts)
             {
                 AutoSize = true;
                 Margin = 2;
                 Orientation = Orientation.Horizontal;
-                FirstPageButton = Add(new Button() { Text = "<<".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.Home) });
-                PreviousPageButton = Add(new Button() { Text = "<".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.PageUp) });
+                FirstPageButton = Add(new Button() { Text = "<<".ToConsoleString() });
+                PreviousPageButton = Add(new Button() { Text = "<".ToConsoleString() });
                 CurrentPageLabel = Add(new Label() { Text = "Page 1 of 1".ToConsoleString() });
-                NextPageButton = Add(new Button() { Text = ">".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.PageDown) });
-                LastPageButton = Add(new Button() { Text = ">>".ToConsoleString(), Shortcut = new KeyboardShortcut(ConsoleKey.End) });
+                NextPageButton = Add(new Button() { Text = ">".ToConsoleString() });
+                LastPageButton = Add(new Button() { Text = ">>".ToConsoleString() });
+
+                if(enableShortcuts)
+                {
+                    FirstPageButton.Shortcut = new KeyboardShortcut(ConsoleKey.Home);
+                    PreviousPageButton.Shortcut = new KeyboardShortcut(ConsoleKey.PageUp);
+                    NextPageButton.Shortcut = new KeyboardShortcut(ConsoleKey.PageDown);
+                    LastPageButton.Shortcut = new KeyboardShortcut(ConsoleKey.End);
+                }
             }
         }
     }
