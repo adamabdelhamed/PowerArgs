@@ -20,6 +20,7 @@ namespace PowerArgs.Cli
         public ConsoleBitmapFrameSerializer()
         {
             tokenizer = new Tokenizer<Token>();
+            tokenizer.EscapeSequenceIndicator = null;
             tokenizer.WhitespaceBehavior = WhitespaceBehavior.Include;
             tokenizer.Delimiters.Add("[");
             tokenizer.Delimiters.Add("]");
