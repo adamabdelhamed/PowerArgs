@@ -43,6 +43,19 @@ namespace PowerArgs.Cli.Physics
         float Top { get; }
     }
 
+    public static class LocationEx
+    {
+        public static ILocationF GetRounded(this ILocationF loc)
+        {
+            return LocationF.Create(Geometry.Round(loc.Left), Geometry.Round(loc.Top));
+        }
+
+        public static ILocationF GetFloor(this ILocationF loc)
+        {
+            return LocationF.Create((int)(loc.Left), (int)(loc.Top));
+        }
+    }
+
     public static class LocationF
     {
         private class LocationImpl : ILocationF
@@ -56,6 +69,13 @@ namespace PowerArgs.Cli.Physics
                 if (other == null) return false;
                 return Left == other.Left && Top == other.Top;
             }
+
+            public override int GetHashCode()
+            {
+                return (Left * Top).GetHashCode();
+            }
+
+            public override string ToString() => $"{Left},{Top}";
         }
 
         public static ILocationF Create(float x, float y) => new LocationImpl() { Left = x, Top = y };
@@ -162,7 +182,50 @@ namespace PowerArgs.Cli.Physics
 
         public static int Round(float f) => (int)Math.Round(f, MidpointRounding.AwayFromZero);
         public static int Round(double d) => (int)Math.Round(d, MidpointRounding.AwayFromZero);
- 
+
+        public static int FindLineCircleIntersections(float cx, float cy, float radius, ILocationF point1, ILocationF point2, out ILocationF intersection1, out ILocationF intersection2)
+        {
+            float dx, dy, A, B, C, det, t;
+
+            dx = point2.Left - point1.Left;
+            dy = point2.Top - point1.Top;
+
+            A = dx * dx + dy * dy;
+            B = 2 * (dx * (point1.Left - cx) + dy * (point1.Top - cy));
+            C = (point1.Left - cx) * (point1.Left - cx) +
+                (point1.Top - cy) * (point1.Top - cy) -
+                radius * radius;
+
+            det = B * B - 4 * A * C;
+            if ((A <= 0.0000001) || (det < 0))
+            {
+                // No real solutions.
+                intersection1 = LocationF.Create(float.NaN, float.NaN);
+                intersection2 = LocationF.Create(float.NaN, float.NaN);
+                return 0;
+            }
+            else if (det == 0)
+            {
+                // One solution.
+                t = -B / (2 * A);
+                intersection1 =
+                    LocationF.Create(point1.Left + t * dx, point1.Top + t * dy);
+                intersection2 = LocationF.Create(float.NaN, float.NaN);
+                return 1;
+            }
+            else
+            {
+                // Two solutions.
+                t = (float)((-B + Math.Sqrt(det)) / (2 * A));
+                intersection1 =
+                    LocationF.Create(point1.Left + t * dx, point1.Top + t * dy);
+                t = (float)((-B - Math.Sqrt(det)) / (2 * A));
+                intersection2 =
+                    LocationF.Create(point1.Left + t * dx, point1.Top + t * dy);
+                return 2;
+            }
+        }
+
         public static Side GetSideGivenEdgeIndex(int index)
         {
             if (index == 0) return Side.Top;
