@@ -85,7 +85,18 @@ namespace PowerArgs.Cli.Physics
 
         public List<IRectangularF> GetObstacles() => Element.GetObstacles();
 
-        public HitPrediction LastPrediction { get; set; }
+        public HitPrediction NextCollision { get; set; }
+
+        public TimeSpan NextCollisionETA
+        {
+            get
+            {
+                if (NextCollision == null || NextCollision.ObstacleHit == null) return TimeSpan.MaxValue;
+                var d = NextCollision.LKGD;
+                var seconds = d / speed;
+                return TimeSpan.FromSeconds(seconds);
+            }
+        }
 
         public Impact LastImpact { get; private set; }
 
@@ -166,14 +177,14 @@ namespace PowerArgs.Cli.Physics
                         MovingObject = bounds,
                         Obstacles = obstacles,
                         Angle = Angle,
-                        Visibility = d,
+                        Visibility = 50,
                         Mode = CastingMode.Precise,
                     });
-                    LastPrediction = hitPrediction;
+                    NextCollision = hitPrediction;
                 }
 
 
-                if (hitPrediction != null && hitPrediction.Type != HitType.None)
+                if (hitPrediction != null && hitPrediction.Type != HitType.None && hitPrediction.LKGD <= d)
                 {
                     var dx = BoundsTransform != null ? bounds.Left - Element.Left : 0;
                     var dy = BoundsTransform != null ? bounds.Top - Element.Top : 0;
