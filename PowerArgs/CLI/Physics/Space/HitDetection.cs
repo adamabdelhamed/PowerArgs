@@ -30,6 +30,9 @@ namespace PowerArgs.Cli.Physics
         public bool ElementWasAlreadyObstructed { get; set; }
 
         public int EdgeIndex { get; set; }
+        public ILocationF Intersection { get; set; }
+        public List<Edge> RaysCast { get; set; }
+        public List<Edge> RaysHit { get; set; }
     }
 
     public class HitDetectionOptions
@@ -55,7 +58,7 @@ namespace PowerArgs.Cli.Physics
         public static bool HasLineOfSight(this SpacialElement from, IRectangularF to) => HasLineOfSight(from, to, from.GetObstacles());
         public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles) => GetLineOfSightObstruction(from, to, obstacles) == null;
 
-        public static IRectangularF GetLineOfSightObstruction(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles)
+        public static IRectangularF GetLineOfSightObstruction(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles, CastingMode castingMode = CastingMode.Rough)
         {
             var prediction = PredictHit(new HitDetectionOptions()
             {
@@ -63,7 +66,7 @@ namespace PowerArgs.Cli.Physics
                 Angle = from.Center().CalculateAngleTo(to.Center()),
                 Obstacles = obstacles.Union(new IRectangularF[] { to }),
                 Visibility = 3 * from.Center().CalculateDistanceTo(to.Center()),
-                Mode = CastingMode.Rough,
+                Mode = castingMode,
             });
 
             if (prediction.Type == HitType.None)
@@ -106,10 +109,10 @@ namespace PowerArgs.Cli.Physics
 
             var mov = options.MovingObject;
 
-            List<Edge> rays;
+            prediction.RaysHit = new List<Edge>();
             if (options.Mode == CastingMode.Precise)
             {
-                rays = new List<Edge>()
+                prediction.RaysCast = new List<Edge>()
                 {
                     new Edge() { From = mov.TopLeft(), To = mov.TopLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
                     new Edge() { From = mov.TopRight(), To = mov.TopRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
@@ -124,8 +127,8 @@ namespace PowerArgs.Cli.Physics
                     var top = LocationF.Create(x, mov.Top);
                     var bot = LocationF.Create(x, mov.Bottom());
 
-                    rays.Add(new Edge() { From = top, To = top.MoveTowards(options.Angle, options.Visibility, normalized: false) });
-                    rays.Add(new Edge() { From = bot, To = bot.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                    prediction.RaysCast.Add(new Edge() { From = top, To = top.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                    prediction.RaysCast.Add(new Edge() { From = bot, To = bot.MoveTowards(options.Angle, options.Visibility, normalized: false) });
                 }
 
                 for (var y = mov.Top + granularity; y < mov.Top + mov.Height; y += granularity)
@@ -133,14 +136,14 @@ namespace PowerArgs.Cli.Physics
                     var left = LocationF.Create(mov.Left, y);
                     var right = LocationF.Create(mov.Right(), y);
 
-                    rays.Add(new Edge() { From = left, To = left.MoveTowards(options.Angle, options.Visibility, normalized: false) });
-                    rays.Add(new Edge() { From = right, To = right.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                    prediction.RaysCast.Add(new Edge() { From = left, To = left.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                    prediction.RaysCast.Add(new Edge() { From = right, To = right.MoveTowards(options.Angle, options.Visibility, normalized: false) });
                 }
             }
             else if (options.Mode == CastingMode.Rough)
             {
                 var center = options.MovingObject.Center();
-                rays = new List<Edge>() 
+                prediction.RaysCast = new List<Edge>() 
                 {
                     new Edge() { From = mov.TopLeft(), To = mov.TopLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
                     new Edge() { From = mov.TopRight(), To = mov.TopRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
@@ -152,7 +155,7 @@ namespace PowerArgs.Cli.Physics
             else if(options.Mode == CastingMode.SingleRay)
             {
                 var center = options.MovingObject.Center();
-                rays = new List<Edge>()
+                prediction.RaysCast = new List<Edge>()
                 {
                     new Edge() { From = center, To = center.MoveTowards(options.Angle, options.Visibility, normalized: false) }
                 };
@@ -165,6 +168,7 @@ namespace PowerArgs.Cli.Physics
             var closestIntersectionDistance = float.MaxValue;
             IRectangularF closestIntersectingElement = null;
             var closestEdgeIndex = -1;
+            ILocationF closestIntersection = null;
             var effectiveObstacles = options.Obstacles.ToArray();
             for (var i = 0; i < effectiveObstacles.Length; i++)
             {
@@ -172,18 +176,20 @@ namespace PowerArgs.Cli.Physics
                 for(var j = 0; j < obstacle.Edges.Length; j++)
                 {
                     var edge = obstacle.Edges[j];
-                    for(var k = 0; k < rays.Count; k++)
+                    for(var k = 0; k < prediction.RaysCast.Count; k++)
                     {
-                        var ray = rays[k];
+                        var ray = prediction.RaysCast[k];
                         var intersection = FindIntersectionPoint(ray, edge);
                         if (intersection != null)
                         {
+                            prediction.RaysHit.Add(ray);
                             var d = ray.From.CalculateDistanceTo(intersection);
                             if (d < closestIntersectionDistance && d <= options.Visibility)
                             {
                                 closestIntersectionDistance = d;
                                 closestIntersectingElement = obstacle;
                                 closestEdgeIndex = j;
+                                closestIntersection = intersection;
                             }
                         }
                     }
@@ -197,6 +203,7 @@ namespace PowerArgs.Cli.Physics
                 prediction.LKG = options.MovingObject.MoveTowards(options.Angle, prediction.LKGD, normalized:false).TopLeft();
                 prediction.Type = HitType.Obstacle;
                 prediction.EdgeIndex = closestEdgeIndex;
+                prediction.Intersection = closestIntersection;
             }
 
             return prediction;
