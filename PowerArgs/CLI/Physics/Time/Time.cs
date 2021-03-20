@@ -59,7 +59,7 @@ namespace PowerArgs.Cli.Physics
             this.Name = "TimeThread";
             Increment = increment.HasValue ? increment.Value : TimeSpan.FromTicks(1);
             Now = now.HasValue ? now.Value : TimeSpan.Zero;
-            InvokeNextCycle(() => current = this);
+            StartOfCycle.SubscribeOnce(() => current = this);
  
             EndOfCycle.SubscribeForLifetime(() => Now = Now.Add(Increment), this);
 
