@@ -31,6 +31,26 @@ namespace PowerArgs
             return ret;
         }
 
+        public static T MaxOrDefault<T>(this IEnumerable<T> src, T defaultVal = default(T)) where T : IComparable
+        {
+            var max = defaultVal;
+            foreach(var val in src)
+            {
+                max = val.CompareTo(max) > 0 ? val : max;
+            }
+            return max;
+        }
+
+        public static T MinOrDefault<T>(this IEnumerable<T> src, T defaultVal = default(T)) where T : IComparable
+        {
+            var min = defaultVal;
+            foreach (var val in src)
+            {
+                min = val.CompareTo(min) < 0 ? val : min;
+            }
+            return min;
+        }
+
         public static IEnumerable<List<T>> ToBatchesOf<T>(this IEnumerable<T> items, int n)
         {
             var currentBatch = new List<T>();
