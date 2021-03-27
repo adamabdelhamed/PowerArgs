@@ -72,7 +72,7 @@ namespace PowerArgs.Cli.Physics
 
             if (prediction.Type == HitType.None)
             {
-                return SpaceTime.CurrentSpaceTime?.Bounds;
+                return null;
             }
             else
             {
