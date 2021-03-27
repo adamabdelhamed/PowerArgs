@@ -48,7 +48,7 @@ namespace PowerArgs.Cli.Physics
 
         public Event OnAngleChanged { get; private set; } = new Event();
         public Event OnSpeedChanged { get; private set; } = new Event();
-
+        public Event BeforeMove { get; private set; } = new Event();
         public Event<ILifetimeManager> OnTakeover { get; private set; } = new Event<ILifetimeManager>();
 
         private float angle;
@@ -91,7 +91,7 @@ namespace PowerArgs.Cli.Physics
         {
             get
             {
-                if (NextCollision == null || NextCollision.ObstacleHit == null) return TimeSpan.MaxValue;
+                if (NextCollision == null || Speed == 0 || NextCollision.ObstacleHit == null) return TimeSpan.MaxValue;
                 var d = NextCollision.LKGD;
                 var seconds = d / speed;
                 return TimeSpan.FromSeconds(seconds);
@@ -161,6 +161,7 @@ namespace PowerArgs.Cli.Physics
 
                 if (d == 0)
                 {
+                    BeforeMove.Fire();
                     OnVelocityEnforced?.Fire();
                     continue;
                 }
@@ -177,10 +178,11 @@ namespace PowerArgs.Cli.Physics
                         MovingObject = bounds,
                         Obstacles = obstacles,
                         Angle = Angle,
-                        Visibility = 50,
+                        Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
                         Mode = CastingMode.Precise,
                     });
                     NextCollision = hitPrediction;
+                    BeforeMove.Fire();
                 }
 
 
@@ -208,6 +210,7 @@ namespace PowerArgs.Cli.Physics
                             MovingObject = Element,
                             ObstacleHit = hitPrediction.ObstacleHit,
                             HitType = hitPrediction.Type,
+                            Prediction = hitPrediction,
                         };
 
                         if (hitPrediction.ObstacleHit is SpacialElement)

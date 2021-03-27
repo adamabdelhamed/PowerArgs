@@ -16,6 +16,7 @@ namespace PowerArgs.Cli.Physics
         public SpacialElement MovingObject { get; set; }
         public IRectangularF ObstacleHit { get; set; }
         public HitType HitType { get; set; }
+        public HitPrediction Prediction { get; set; }
     }
 
     public class HitPrediction
