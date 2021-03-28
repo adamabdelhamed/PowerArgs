@@ -153,24 +153,31 @@ namespace PowerArgs
             }
         }
 
+        private static BooleanExpressionTokenizer tokenizer = new BooleanExpressionTokenizer();
         private static List<BooleanExpressionToken> Tokenize(string expressionText)
         {
-            List<string> delimiters = (from val in Enum.GetValues(typeof(BooleanExpressionTokenType)).ToList<BooleanExpressionTokenType>()
-                                        where val != BooleanExpressionTokenType.Variable
-                                        select ""+((char)val)).ToList();
+            return tokenizer.Tokenize(expressionText);
+        }
 
-            Tokenizer<BooleanExpressionToken> tokenizer = new Tokenizer<BooleanExpressionToken>();
-            tokenizer.Delimiters.AddRange(delimiters);
-            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
-            tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
-            tokenizer.TokenFactory = (Token currentToken, List<BooleanExpressionToken> previousTokens) =>
+        private class BooleanExpressionTokenizer : Tokenizer<BooleanExpressionToken>
+        {
+            public BooleanExpressionTokenizer()
             {
-                var ret = currentToken.As<BooleanExpressionToken>();
+                Delimiters.AddRange((from val in Enum.GetValues(typeof(BooleanExpressionTokenType)).ToList<BooleanExpressionTokenType>()
+                                     where val != BooleanExpressionTokenType.Variable
+                                     select "" + ((char)val)).ToList());
+                WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
+                DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
+            }
 
-                if(delimiters.Contains(currentToken.Value))
+            protected override BooleanExpressionToken TokenFactoryImpl(Token current, List<BooleanExpressionToken> tokens)
+            {
+                var ret = new BooleanExpressionToken(current.Value, current.StartIndex, current.Line, current.Column);
+
+                if (Delimiters.Contains(current.Value))
                 {
-                    var asChar = currentToken.Value[0];
-                    ret.Type = (BooleanExpressionTokenType)Enum.ToObject(typeof(BooleanExpressionTokenType), ((int)asChar));    
+                    var asChar = current.Value[0];
+                    ret.Type = (BooleanExpressionTokenType)Enum.ToObject(typeof(BooleanExpressionTokenType), ((int)asChar));
                 }
                 else
                 {
@@ -178,9 +185,7 @@ namespace PowerArgs
                 }
 
                 return ret;
-            };
-
-            return tokenizer.Tokenize(expressionText);
+            }
         }
     }
 
