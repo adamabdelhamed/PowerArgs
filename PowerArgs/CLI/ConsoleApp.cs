@@ -40,6 +40,15 @@ namespace PowerArgs.Cli
         /// </summary>
         public TimeSpan MinTimeBetweenKeyPresses { get; set; } = TimeSpan.FromMilliseconds(35);
 
+        /// <summary>
+        /// If true, paint requests will be honored. Defaults to true.
+        /// </summary>
+        public bool PaintEnabled { get; set; } = true;
+
+        /// <summary>
+        /// If true, clears the console when the app exits. Defaults to true.
+        /// </summary>
+        public bool ClearOnExit { get; set; } = true;
         public Event OnKeyInputThrottled { get; private set; } = new Event();
         private ConsoleKey lastKey;
         private DateTime lastKeyPressTime = DateTime.MinValue;
@@ -322,6 +331,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public Task Paint()
         {
+            if (PaintEnabled == false) return Task.CompletedTask;
             var d = new TaskCompletionSource<bool>();
             Invoke(() =>
             {
@@ -447,12 +457,13 @@ namespace PowerArgs.Cli
             Stopping.Fire();
             Recorder?.WriteFrame(Bitmap, true);
             Recorder?.Dispose();
-            using (var snapshot = Bitmap.CreateSnapshot())
+
+            if (ClearOnExit)
             {
                 ConsoleProvider.Current.Clear();
-                Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
-                Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             }
+            Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
+            Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             _current = null;
             LayoutRoot.Dispose();
             Stopped.Fire();
