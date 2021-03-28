@@ -61,7 +61,7 @@ namespace PowerArgs
         /// <returns>The list of attributes that you asked for</returns>
         public static List<T> Attrs<T>(this MemberInfo info)
         {
-            string cacheKey = (info is Type ? ((Type)info).FullName : info.DeclaringType.FullName + "." + info.Name) + "<" + typeof(T).FullName + ">";
+            string cacheKey = (info is Type ? ((Type)info).FullName : info.DeclaringType.FullName + "." + info.Name) + ":" + typeof(T).FullName;
 
             lock(CachedAttributes)
             {
