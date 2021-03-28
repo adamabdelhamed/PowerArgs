@@ -665,7 +665,8 @@ namespace PowerArgs
         {
             List<string> ret = new List<string>();
 
-            bool excludeName = info.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Any();
+            var shortcuts = info.Attrs<ArgShortcut>();
+            bool excludeName = shortcuts.Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Any();
 
             if (excludeName == false)
             {
@@ -680,10 +681,8 @@ namespace PowerArgs
                     ret.Add(info.Name);
                 }
             }
-
-            var attrs = info.Attrs<ArgShortcut>();
-
-            if (attrs.Count == 0)
+ 
+            if (shortcuts.Count == 0)
             {
                 var shortcut = GenerateShortcutAlias(info.Name, knownShortcuts, ignoreCase);
                 if (shortcut != null)
