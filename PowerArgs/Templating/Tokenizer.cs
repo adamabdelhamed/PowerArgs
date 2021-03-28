@@ -131,18 +131,6 @@ namespace PowerArgs
         {
             return "---> '" + Value + "'<--- - " + Position;
         }
-
-        /// <summary>
-        /// Creates a new instance of the strongly typed token and copies all of the base token's properties to the new value
-        /// </summary>
-        /// <typeparam name="T">The type of the derived token.</typeparam>
-        /// <returns>The strongly typed token</returns>
-        public T As<T>() where T : Token
-        {
-            var ret = (T)Activator.CreateInstance(typeof(T), this.Value, this.StartIndex, this.Line, this.Column);
-            ret.SourceFileLocation = this.SourceFileLocation;
-            return ret;
-        }
     }
 
     /// <summary>
@@ -193,11 +181,6 @@ namespace PowerArgs
         public List<string> Delimiters { get; private set; }
 
         /// <summary>
-        /// A function that given a plain token can transform it into the strongly typed token
-        /// </summary>
-        public Func<Token, List<T>, T> TokenFactory { get; set; }
-
-        /// <summary>
         /// Gets or sets the option that describes how whitespace should be treated.
         /// </summary>
         public WhitespaceBehavior WhitespaceBehavior { get; set; }
@@ -226,15 +209,6 @@ namespace PowerArgs
         {
             this.Delimiters = new List<string>();
             this.SourceFileLocation = "Not source location specified";
-            if (typeof(T) == typeof(Token))
-            {
-                this.TokenFactory = (token, previousTokens) => (T)token;
-            }
-            else
-            {
-                this.TokenFactory = (token, previousTokens) => token.As<T>();
-            }
-
             this.EscapeSequenceIndicator = '\\';
         }
 
@@ -246,7 +220,7 @@ namespace PowerArgs
         public List<T> Tokenize(string input)
         {
             List<T> tokens = new List<T>();
-            Token currentToken = null;
+            T currentToken = null;
 
             insideStringLiteral = false;
 
@@ -270,29 +244,29 @@ namespace PowerArgs
                 currentColumn++;
                 if(currentCharacter == '\n')
                 {
-                    Tokenize_Whitespace(input, ref currentIndex, ref currentCharacter, ref currentLine, ref currentColumn, ref currentToken, tokens);
+                    Tokenize_Whitespace(input, ref currentIndex, ref currentCharacter, currentLine, ref currentColumn, ref currentToken, tokens);
                     currentLine++;
                     currentColumn = 0;
                 }
                 else if (IsEscapeSequence(currentCharacter, nextCharacter))
                 {
-                    Tokenize_EscapeCharacter(input, ref currentIndex, ref currentCharacter, ref currentLine, ref currentColumn, ref currentToken, tokens);
+                    Tokenize_EscapeCharacter(input, ref currentIndex, ref currentCharacter, currentLine, ref currentColumn, ref currentToken, tokens);
                 }
                 else if(insideStringLiteral)
                 {
-                    Tokenize_Plain(input, ref currentIndex, ref currentCharacter, ref currentLine, ref currentColumn, ref currentToken, tokens);
+                    Tokenize_Plain(input, ref currentIndex, ref currentCharacter, currentLine, ref currentColumn, ref currentToken, tokens);
                 }
                 else if (Delimiters.Contains("" + currentCharacter))
                 {
-                    Tokenize_DelimiterCharacter(input, ref currentIndex, ref currentCharacter, ref currentLine, ref currentColumn, ref currentToken, tokens);
+                    Tokenize_DelimiterCharacter(input, ref currentIndex, ref currentCharacter, currentLine, ref currentColumn, ref currentToken, tokens);
                 }
                 else if (char.IsWhiteSpace(currentCharacter))
                 {
-                    Tokenize_Whitespace(input, ref currentIndex, ref currentCharacter, ref currentLine, ref currentColumn, ref currentToken, tokens);
+                    Tokenize_Whitespace(input, ref currentIndex, ref currentCharacter, currentLine, ref currentColumn, ref currentToken, tokens);
                 }
                 else
                 {
-                    Tokenize_Plain(input, ref currentIndex, ref currentCharacter, ref currentLine, ref currentColumn, ref currentToken, tokens);
+                    Tokenize_Plain(input, ref currentIndex, ref currentCharacter, currentLine, ref currentColumn, ref currentToken, tokens);
                 }
             }
 
@@ -325,7 +299,7 @@ namespace PowerArgs
             }
         }
 
-        private void Tokenize_EscapeCharacter(string input, ref int currentIndex, ref char currentCharacter, ref int line, ref int col, ref Token currentToken, List<T> tokens)
+        private void Tokenize_EscapeCharacter(string input, ref int currentIndex, ref char currentCharacter, int line, ref int col, ref T currentToken, List<T> tokens)
         {
             char nextCharacter;
             if (TryReadCharacter(input, ref currentIndex, out nextCharacter) == false)
@@ -340,7 +314,7 @@ namespace PowerArgs
         }
 
         private static string[] Empty = new string[0];
-        private void Tokenize_Plain(string input, ref int currentIndex, ref char currentCharacter, ref int line, ref int col, ref Token currentToken, List<T> tokens)
+        private void Tokenize_Plain(string input, ref int currentIndex, ref char currentCharacter, int line, ref int col, ref T currentToken, List<T> tokens)
         {
             if (currentCharacter == '"' && DoubleQuoteBehavior != PowerArgs.DoubleQuoteBehavior.NoSpecialHandling)
             {
@@ -390,7 +364,7 @@ namespace PowerArgs
                             currentToken.Value = currentToken.Value.Substring(0, currentToken.Value.Length - delimiter.Length);
                             var prevToken = currentToken;
                             FinalizeTokenIfNotNull(ref currentToken, tokens);
-                            currentToken = CreateTokenForTokenizer(delimiter, prevToken.StartIndex + prevToken.Value.Length, prevToken.Line, prevToken.Column + prevToken.Value.Length);
+                            currentToken = TokenFactory(delimiter, prevToken.StartIndex + prevToken.Value.Length, prevToken.Line, prevToken.Column + prevToken.Value.Length);
                             FinalizeTokenIfNotNull(ref currentToken, tokens);
                         }
                     }
@@ -398,14 +372,14 @@ namespace PowerArgs
             }
         }
 
-        private void Tokenize_DelimiterCharacter(string input, ref int currentIndex, ref char currentCharacter, ref int line, ref int col, ref Token currentToken, List<T> tokens)
+        private void Tokenize_DelimiterCharacter(string input, ref int currentIndex, ref char currentCharacter, int line, ref int col, ref T currentToken, List<T> tokens)
         {
             FinalizeTokenIfNotNull(ref currentToken, tokens);
             currentToken = CreateTokenForTokenizer(currentCharacter,currentIndex, line, col);
             FinalizeTokenIfNotNull(ref currentToken, tokens);
         }
 
-        private void Tokenize_Whitespace(string input, ref int currentIndex, ref char currentCharacter, ref int line, ref int col, ref Token currentToken, List<T> tokens)
+        private void Tokenize_Whitespace(string input, ref int currentIndex, ref char currentCharacter, int line, ref int col, ref T currentToken, List<T> tokens)
         {
             if (WhitespaceBehavior == WhitespaceBehavior.DelimitAndExclude)
             {
@@ -427,22 +401,18 @@ namespace PowerArgs
             }
         }
 
-        private void FinalizeTokenIfNotNull(ref Token currentToken, List<T> tokens)
+        private void FinalizeTokenIfNotNull(ref T currentToken, List<T> tokens)
         {
             if (currentToken != null)
             {
-                tokens.Add(TokenFactoryImpl(currentToken, tokens));
+                tokens.Add(currentToken);
             }
          
             currentToken = null;
         }
+ 
 
-        protected virtual T TokenFactoryImpl(Token current, List<T> tokens)
-        {
-            return TokenFactory(current, tokens);
-        }
-
-        private void AppendToTokenSafe(ref Token currentToken, char toAppend, int startIndex, int line, int col)
+        private void AppendToTokenSafe(ref T currentToken, char toAppend, int startIndex, int line, int col)
         {
             if (currentToken == null)
             {
@@ -485,16 +455,16 @@ namespace PowerArgs
             }
         }
 
-        private Token CreateTokenForTokenizer(string currentCharacter, int currentIndex, int line, int col)
+        protected virtual T TokenFactory(string currentCharacter, int currentIndex, int line, int col)
         {
-            var ret = new Token(currentCharacter, currentIndex, line, col);
+            var ret = (T)Activator.CreateInstance(typeof(T), currentCharacter, currentIndex, line, col);
             ret.SourceFileLocation = this.SourceFileLocation;
             return ret;
         }
 
-        private Token CreateTokenForTokenizer(char currentCharacter,int currentIndex, int line, int col)
+        private T CreateTokenForTokenizer(char currentCharacter,int currentIndex, int line, int col)
         {
-            return CreateTokenForTokenizer(currentCharacter + "", currentIndex, line, col);
+            return TokenFactory(currentCharacter + "", currentIndex, line, col);
         }
     }
 }

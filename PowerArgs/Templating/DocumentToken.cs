@@ -149,14 +149,52 @@ namespace PowerArgs
         /// <returns>A list of tokens</returns>
         public static List<DocumentToken> Tokenize(string text, string sourceLocation)
         {
-            Tokenizer<DocumentToken> tokenizer = new Tokenizer<DocumentToken>();
+            var tokenizer = new DocumentTokenizer();
             tokenizer.SourceFileLocation = sourceLocation;
             tokenizer.Delimiters.AddRange(DocumentToken.Delimiters);
             tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndInclude;
-            tokenizer.TokenFactory = DocumentToken.TokenFactoryImpl;
+     
             List<DocumentToken> tokens = tokenizer.Tokenize(text);
+            foreach(var token in tokens)
+            {
+                AssignTokenTypes(token, tokens);
+            }
             List<DocumentToken> filtered = RemoveLinesThatOnlyContainReplacements(tokens);
             return filtered;
+        }
+
+        private static void AssignTokenTypes(DocumentToken token, List<DocumentToken> tokens)
+        {
+            DocumentTokenType? previousNonWhitespaceTokenType = null;
+
+            var myIndex = tokens.IndexOf(token);
+            for (var i = myIndex - 1; i >= 0; i--)
+            {
+                var current = tokens[i];
+                if (string.IsNullOrWhiteSpace(current.Value) == false)
+                {
+                    previousNonWhitespaceTokenType = current.TokenType;
+                    break;
+                }
+            }
+
+            DocumentTokenType constantValueType;
+            if (TryParseDocumentTokenType(token.Value, out constantValueType))
+            {
+                token.TokenType = constantValueType;
+            }
+            else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginReplacementSegment || previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginTerminateReplacementSegment))
+            {
+                token.TokenType = DocumentTokenType.ReplacementKey;
+            }
+            else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementKey || previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementParameter))
+            {
+                token.TokenType = DocumentTokenType.ReplacementParameter;
+            }
+            else
+            {
+                token.TokenType = DocumentTokenType.PlainText;
+            }
         }
 
         private static List<string> Delimiters
@@ -177,42 +215,6 @@ namespace PowerArgs
             }
         }
 
-        private static DocumentToken TokenFactoryImpl(Token token, List<DocumentToken> previous)
-        {
-            var utToken = token.As<DocumentToken>();
-
-            DocumentTokenType? previousNonWhitespaceTokenType = null;
-
-            for(var i = previous.Count-1;i >= 0; i--)
-            {
-                var current = previous[i];
-                if(string.IsNullOrWhiteSpace(current.Value) == false)
-                {
-                    previousNonWhitespaceTokenType = current.TokenType;
-                    break;
-                }
-            }
-
-            DocumentTokenType constantValueType;
-            if(TryParseDocumentTokenType(token.Value, out constantValueType))
-            {
-                utToken.TokenType = constantValueType;
-            }
-            else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginReplacementSegment || previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginTerminateReplacementSegment))
-            {
-                utToken.TokenType = DocumentTokenType.ReplacementKey;
-            }
-            else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementKey || previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementParameter))
-            {
-                utToken.TokenType = DocumentTokenType.ReplacementParameter;
-            }
-            else
-            {
-                utToken.TokenType = DocumentTokenType.PlainText;
-            }
-
-            return utToken;
-        }
 
         private static List<DocumentToken> RemoveLinesThatOnlyContainReplacements(List<DocumentToken> tokens)
         {
@@ -294,6 +296,14 @@ namespace PowerArgs
                     token.TokenType == DocumentTokenType.QuickTerminateReplacementSegment ||
                     token.TokenType == DocumentTokenType.ReplacementKey ||
                     token.TokenType == DocumentTokenType.ReplacementParameter;
+        }
+
+        private class DocumentTokenizer : Tokenizer<DocumentToken>
+        {
+            protected override DocumentToken TokenFactory(string currentCharacter, int currentIndex, int line, int col)
+            {
+                return new DocumentToken(currentCharacter, currentIndex, line, col);
+            }
         }
     }
 }

@@ -45,7 +45,7 @@ namespace PowerArgs
         /// <summary>
         /// Gets the type of token
         /// </summary>
-        public ObjectPathTokenType TokenType { get; private set; }
+        public ObjectPathTokenType TokenType { get; internal set; }
 
         /// <summary>
         /// Creates an object path token
@@ -56,39 +56,14 @@ namespace PowerArgs
         /// <param name="col">The column within the line that this token is on</param>
         public ObjectPathToken(string initialValue, int startIndex, int line, int col) : base(initialValue, startIndex, line, col) { }
 
-        /// <summary>
-        /// A method that can determine which type of token the given value is
-        /// </summary>
-        /// <param name="token">The token to classify</param>
-        /// <param name="previous">Previously classified tokens in the source string</param>
-        /// <returns>The classified token</returns>
-        public static ObjectPathToken TokenFactoryImpl(Token token, List<ObjectPathToken> previous)
+    
+    }
+
+    public class ObjectPathTokenizer : Tokenizer<ObjectPathToken>
+    {
+        protected override ObjectPathToken TokenFactory(string currentCharacter, int currentIndex, int line, int col)
         {
-            var ret = token.As<ObjectPathToken>();
-            if (ret.Value == "[")
-            {
-                ret.TokenType = ObjectPathTokenType.IndexerOpen;
-            }
-            else if (ret.Value == "]")
-            {
-                ret.TokenType = ObjectPathTokenType.IndexerClose;
-            }
-            else if (ret.Value == ".")
-            {
-                ret.TokenType = ObjectPathTokenType.NavigationElement;
-            }
-            else if (ret.Value.StartsWith("\"") && ret.Value.EndsWith("\"") && ret.Value.Length > 1)
-            {
-                ret.TokenType = ObjectPathTokenType.StringLiteral;
-            }
-            else if (string.IsNullOrWhiteSpace(ret.Value))
-            {
-                ret.TokenType = ObjectPathTokenType.Whitespace;
-            }
-            else
-            {
-                ret.TokenType = ObjectPathTokenType.Identifier;
-            }
+            var ret = new ObjectPathToken(currentCharacter, currentIndex, line, col);
             return ret;
         }
     }
@@ -122,14 +97,41 @@ namespace PowerArgs
             if (expression == null) throw new ArgumentNullException("path cannot be null");
             if (expression.Length == 0) throw new FormatException("Cannot parse empty string");
 
-            Tokenizer<ObjectPathToken> tokenizer = new Tokenizer<ObjectPathToken>();
-            tokenizer.TokenFactory = ObjectPathToken.TokenFactoryImpl;
+            Tokenizer<ObjectPathToken> tokenizer = new ObjectPathTokenizer();
             tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndInclude;
             tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
             tokenizer.Delimiters.Add("[");
             tokenizer.Delimiters.Add("]");
             tokenizer.Delimiters.Add(".");
             List<ObjectPathToken> tokens = tokenizer.Tokenize(expression);
+
+            foreach(var token in tokens)
+            {
+                if (token.Value == "[")
+                {
+                    token.TokenType = ObjectPathTokenType.IndexerOpen;
+                }
+                else if (token.Value == "]")
+                {
+                    token.TokenType = ObjectPathTokenType.IndexerClose;
+                }
+                else if (token.Value == ".")
+                {
+                    token.TokenType = ObjectPathTokenType.NavigationElement;
+                }
+                else if (token.Value.StartsWith("\"") && token.Value.EndsWith("\"") && token.Value.Length > 1)
+                {
+                    token.TokenType = ObjectPathTokenType.StringLiteral;
+                }
+                else if (string.IsNullOrWhiteSpace(token.Value))
+                {
+                    token.TokenType = ObjectPathTokenType.Whitespace;
+                }
+                else
+                {
+                    token.TokenType = ObjectPathTokenType.Identifier;
+                }
+            }
 
             TokenReader<ObjectPathToken> reader = new TokenReader<ObjectPathToken>(tokens);
 

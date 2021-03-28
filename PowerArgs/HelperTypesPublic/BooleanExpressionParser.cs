@@ -170,13 +170,13 @@ namespace PowerArgs
                 DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
             }
 
-            protected override BooleanExpressionToken TokenFactoryImpl(Token current, List<BooleanExpressionToken> tokens)
+            protected override BooleanExpressionToken TokenFactory(string currentCharacter, int currentIndex, int line, int col)
             {
-                var ret = new BooleanExpressionToken(current.Value, current.StartIndex, current.Line, current.Column);
+                var ret = new BooleanExpressionToken(currentCharacter, currentIndex, line, col);
 
-                if (Delimiters.Contains(current.Value))
+                if (Delimiters.Contains(currentCharacter))
                 {
-                    var asChar = current.Value[0];
+                    var asChar = currentCharacter[0];
                     ret.Type = (BooleanExpressionTokenType)Enum.ToObject(typeof(BooleanExpressionTokenType), ((int)asChar));
                 }
                 else
