@@ -175,12 +175,9 @@ namespace PowerArgs.Cli.Physics
 
     public class SpacialElementBinder
     {
-        Dictionary<Type, Type> Bindings;
+        private static Dictionary<Type, Type> Bindings = LoadBindings();
 
-        public SpacialElementBinder()
-        {
-            Bindings = LoadBindings();
-        }
+        public SpacialElementBinder() { }
 
         public SpacialElementRenderer Bind(SpacialElement t, SpaceTime spaceTime)
         {
@@ -205,7 +202,7 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        private Dictionary<Type, Type> LoadBindings()
+        private static Dictionary<Type, Type> LoadBindings()
         {
             Dictionary<Type, Type> ret = new Dictionary<Type, Type>();
             List<Type> rendererTypes = new List<Type>();
@@ -236,12 +233,12 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-        private bool IsRendererType(Type type)
+        private static bool IsRendererType(Type type)
         {
             return type.GetTypeInfo().IsSubclassOf(typeof(SpacialElementRenderer));
         }
 
-        private Type FindMatchingBinder(List<Type> rendererTypes, Type thingType)
+        private static Type FindMatchingBinder(List<Type> rendererTypes, Type thingType)
         {
             var match = (from renderer in rendererTypes where (renderer.GetTypeInfo().GetCustomAttributes(typeof(SpacialElementBindingAttribute), true).First() as SpacialElementBindingAttribute).ThingType == thingType select renderer).SingleOrDefault();
             if (match == null && thingType.GetTypeInfo().BaseType.GetTypeInfo().IsSubclassOf(typeof(SpacialElement)))
