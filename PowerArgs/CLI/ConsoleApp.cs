@@ -449,7 +449,7 @@ namespace PowerArgs.Cli
             Recorder?.Dispose();
             using (var snapshot = Bitmap.CreateSnapshot())
             {
-                Bitmap.CreateWiper().Wipe();
+                ConsoleProvider.Current.Clear();
                 Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
                 Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             }
