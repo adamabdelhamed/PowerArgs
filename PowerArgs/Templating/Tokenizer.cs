@@ -315,7 +315,7 @@ namespace PowerArgs
             {
                 return true;
             }
-            else if (Delimiters.Contains(next.Value + ""))
+            else if (Delimiters.Count > 0 && Delimiters.Contains(next.Value + ""))
             {
                 return true;
             }
@@ -339,6 +339,7 @@ namespace PowerArgs
             }
         }
 
+        private static string[] Empty = new string[0];
         private void Tokenize_Plain(string input, ref int currentIndex, ref char currentCharacter, ref int line, ref int col, ref Token currentToken, List<T> tokens)
         {
             if (currentCharacter == '"' && DoubleQuoteBehavior != PowerArgs.DoubleQuoteBehavior.NoSpecialHandling)
@@ -370,9 +371,10 @@ namespace PowerArgs
                 if (insideStringLiteral == false)
                 {
                     var t = currentToken;
-                    var delimiterMatch = (from d in Delimiters where t.EndsWithDelimiter(d) select d).OrderByDescending(d => d.Length);
 
-                    if (delimiterMatch.Count() == 0)
+                    var delimiterMatch = Delimiters.Count == 0 ? Empty : (from d in Delimiters where t.EndsWithDelimiter(d) select d).OrderByDescending(d => d.Length).ToArray();
+
+                    if (delimiterMatch.None())
                     {
                         // do nothing
                     }
@@ -429,10 +431,15 @@ namespace PowerArgs
         {
             if (currentToken != null)
             {
-                tokens.Add(TokenFactory(currentToken, tokens));
+                tokens.Add(TokenFactoryImpl(currentToken, tokens));
             }
          
             currentToken = null;
+        }
+
+        protected virtual T TokenFactoryImpl(Token current, List<T> tokens)
+        {
+            return TokenFactory(current, tokens);
         }
 
         private void AppendToTokenSafe(ref Token currentToken, char toAppend, int startIndex, int line, int col)
