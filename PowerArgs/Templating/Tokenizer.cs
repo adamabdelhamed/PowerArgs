@@ -374,7 +374,7 @@ namespace PowerArgs
 
                     var delimiterMatch = Delimiters.Count == 0 ? Empty : (from d in Delimiters where t.EndsWithDelimiter(d) select d).OrderByDescending(d => d.Length).ToArray();
 
-                    if (delimiterMatch.None())
+                    if (Delimiters.Count == 0 || delimiterMatch.None())
                     {
                         // do nothing
                     }
