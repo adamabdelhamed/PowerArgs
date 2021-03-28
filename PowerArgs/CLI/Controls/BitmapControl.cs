@@ -48,11 +48,8 @@ namespace PowerArgs.Cli
                 for (var y = 0; y < Bitmap.Height && y < this.Height; y++)
                 {
                     var pixel = Bitmap.GetPixel(x, y).Value;
-                    if (pixel.HasValue)
-                    {
-                        context.Pen = pixel.Value;
-                        context.DrawPoint(x, y);
-                    }
+                    context.Pen = pixel;
+                    context.DrawPoint(x, y);
                 }
             }
         }

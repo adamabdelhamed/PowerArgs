@@ -9,7 +9,6 @@ namespace PowerArgs.Cli
     /// </summary>
     public class ConsoleBitmapStreamWriter : Lifetime
     {
-        private static readonly ConsoleCharacter defaultChar = new ConsoleCharacter(' ');
         public const int DurationLineLength = 30;
         private DateTime? firstFrameTime;
         private ConsoleBitmapRawFrame lastFrame;
@@ -182,7 +181,7 @@ namespace PowerArgs.Cli
                 for (int y = 0; y < GetEffectiveHeight(bitmap); y++)
                 {
                     var pixel = bitmap.GetPixel(GetEffectiveLeft + x, GetEffectiveTop + y);
-                    var pixelValue = pixel.Value.HasValue ? pixel.Value.Value : defaultChar;
+                    var pixelValue =  pixel.Value;
                     rawFrame.Pixels[x][y] = pixelValue;
                 }
             }
@@ -202,18 +201,15 @@ namespace PowerArgs.Cli
                     var hasPreviousPixel = previous.Pixels.Length == GetEffectiveWidth(bitmap) && previous.Pixels[0].Length == GetEffectiveHeight(bitmap);
                     var previousPixel = hasPreviousPixel ? previous.Pixels[x][y] : default(ConsoleCharacter);
 
-                    if (pixel.HasChanged || hasPreviousPixel == false || (pixel.Value.HasValue && pixel.Value.Value.Equals(previousPixel) == false))
+                    if (pixel.HasChanged || hasPreviousPixel == false || (pixel.Value.Equals(previousPixel) == false))
                     {
                         changes++;
-                        if (pixel.Value.HasValue)
+                        diff.Diffs.Add(new ConsoleBitmapPixelDiff()
                         {
-                            diff.Diffs.Add(new ConsoleBitmapPixelDiff()
-                            {
-                                X = x,
-                                Y = y,
-                                Value = pixel.Value.Value
-                            });
-                        }
+                            X = x,
+                            Y = y,
+                            Value = pixel.Value
+                        });
                     }
                 }
             }

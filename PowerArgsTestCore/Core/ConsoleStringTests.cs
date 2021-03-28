@@ -386,19 +386,19 @@ namespace ArgsTests
             var bmp = str.ToConsoleBitmap();
             Assert.AreEqual(8, bmp.Width);
             Assert.AreEqual(1, bmp.Height);
-            Assert.AreEqual('A', bmp.GetPixel(0, 0).Value.Value.Value);
-            Assert.AreEqual('d', bmp.GetPixel(1, 0).Value.Value.Value);
-            Assert.AreEqual('a', bmp.GetPixel(2, 0).Value.Value.Value);
-            Assert.AreEqual('m', bmp.GetPixel(3, 0).Value.Value.Value);
-            Assert.AreEqual(' ', bmp.GetPixel(4, 0).Value.Value.Value);
-            Assert.AreEqual(' ', bmp.GetPixel(5, 0).Value.Value.Value);
-            Assert.AreEqual(' ', bmp.GetPixel(6, 0).Value.Value.Value);
-            Assert.AreEqual(' ', bmp.GetPixel(7, 0).Value.Value.Value);
+            Assert.AreEqual('A', bmp.GetPixel(0, 0).Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(1, 0).Value.Value);
+            Assert.AreEqual('a', bmp.GetPixel(2, 0).Value.Value);
+            Assert.AreEqual('m', bmp.GetPixel(3, 0).Value.Value);
+            Assert.AreEqual(' ', bmp.GetPixel(4, 0).Value.Value);
+            Assert.AreEqual(' ', bmp.GetPixel(5, 0).Value.Value);
+            Assert.AreEqual(' ', bmp.GetPixel(6, 0).Value.Value);
+            Assert.AreEqual(' ', bmp.GetPixel(7, 0).Value.Value);
 
             for (var x = 0; x < "Adam".Length; x++)
             {
-                Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, 0).Value.Value.ForegroundColor);
-                Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, 0).Value.Value.BackgroundColor);
+                Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, 0).Value.ForegroundColor);
+                Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, 0).Value.BackgroundColor);
             }
 
             // the last 4 characters should get trimmed here
@@ -413,32 +413,32 @@ namespace ArgsTests
             var bmp = str.ToConsoleBitmap();
             Assert.AreEqual(10, bmp.Width);
             Assert.AreEqual(2, bmp.Height);
-            Assert.AreEqual('A', bmp.GetPixel(0, 0).Value.Value.Value);
-            Assert.AreEqual('d', bmp.GetPixel(1, 0).Value.Value.Value);
-            Assert.AreEqual('a', bmp.GetPixel(2, 0).Value.Value.Value);
-            Assert.AreEqual('m', bmp.GetPixel(3, 0).Value.Value.Value);
+            Assert.AreEqual('A', bmp.GetPixel(0, 0).Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(1, 0).Value.Value);
+            Assert.AreEqual('a', bmp.GetPixel(2, 0).Value.Value);
+            Assert.AreEqual('m', bmp.GetPixel(3, 0).Value.Value);
 
-            Assert.AreEqual('A', bmp.GetPixel(0, 1).Value.Value.Value);
-            Assert.AreEqual('b', bmp.GetPixel(1, 1).Value.Value.Value);
-            Assert.AreEqual('d', bmp.GetPixel(2, 1).Value.Value.Value);
-            Assert.AreEqual('e', bmp.GetPixel(3, 1).Value.Value.Value);
-            Assert.AreEqual('l', bmp.GetPixel(4, 1).Value.Value.Value);
-            Assert.AreEqual('h', bmp.GetPixel(5, 1).Value.Value.Value);
-            Assert.AreEqual('a', bmp.GetPixel(6, 1).Value.Value.Value);
-            Assert.AreEqual('m', bmp.GetPixel(7, 1).Value.Value.Value);
-            Assert.AreEqual('e', bmp.GetPixel(8, 1).Value.Value.Value);
-            Assert.AreEqual('d', bmp.GetPixel(9, 1).Value.Value.Value);
+            Assert.AreEqual('A', bmp.GetPixel(0, 1).Value.Value);
+            Assert.AreEqual('b', bmp.GetPixel(1, 1).Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(2, 1).Value.Value);
+            Assert.AreEqual('e', bmp.GetPixel(3, 1).Value.Value);
+            Assert.AreEqual('l', bmp.GetPixel(4, 1).Value.Value);
+            Assert.AreEqual('h', bmp.GetPixel(5, 1).Value.Value);
+            Assert.AreEqual('a', bmp.GetPixel(6, 1).Value.Value);
+            Assert.AreEqual('m', bmp.GetPixel(7, 1).Value.Value);
+            Assert.AreEqual('e', bmp.GetPixel(8, 1).Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(9, 1).Value.Value);
 
             var pixelsWithValueCount = 0;
             for (var x = 0; x < bmp.Width; x++)
             {
                 for (var y = 0; y < bmp.Height; y++)
                 {
-                    if (bmp.GetPixel(x, y).Value.HasValue && bmp.GetPixel(x, y).Value.Value != ' ')
+                    if (bmp.GetPixel(x, y).Value != ' ')
                     {
                         pixelsWithValueCount++;
-                        Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, y).Value.Value.ForegroundColor);
-                        Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, y).Value.Value.BackgroundColor);
+                        Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, y).Value.ForegroundColor);
+                        Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, y).Value.BackgroundColor);
                     }
                 }
             }
@@ -454,15 +454,15 @@ namespace ArgsTests
             var bmp = str.ToConsoleBitmap();
             Assert.AreEqual(4, bmp.Width);
             Assert.AreEqual(1, bmp.Height);
-            Assert.AreEqual('A', bmp.GetPixel(0, 0).Value.Value.Value);
-            Assert.AreEqual('d', bmp.GetPixel(1, 0).Value.Value.Value);
-            Assert.AreEqual('a', bmp.GetPixel(2, 0).Value.Value.Value);
-            Assert.AreEqual('m', bmp.GetPixel(3, 0).Value.Value.Value);
+            Assert.AreEqual('A', bmp.GetPixel(0, 0).Value.Value);
+            Assert.AreEqual('d', bmp.GetPixel(1, 0).Value.Value);
+            Assert.AreEqual('a', bmp.GetPixel(2, 0).Value.Value);
+            Assert.AreEqual('m', bmp.GetPixel(3, 0).Value.Value);
 
             for (var x = 0; x < bmp.Width; x++)
             {
-                Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, 0).Value.Value.ForegroundColor);
-                Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, 0).Value.Value.BackgroundColor);
+                Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, 0).Value.ForegroundColor);
+                Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, 0).Value.BackgroundColor);
             }
 
             var readBack = bmp.ToConsoleString();

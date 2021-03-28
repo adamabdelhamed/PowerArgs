@@ -197,7 +197,7 @@ namespace PowerArgs.Cli
             }
             else if (key.Key == ConsoleKey.Backspace)
             {
-                Bitmap.GetPixel(CursorPosition.X, CursorPosition.Y).Value = null;
+                Bitmap.GetPixel(CursorPosition.X, CursorPosition.Y).Value = new ConsoleCharacter(' ');
 
                 if (cursor.X > 1)
                 {

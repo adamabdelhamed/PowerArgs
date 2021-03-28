@@ -88,7 +88,7 @@ namespace PowerArgs.Cli
                     else
                     {
                         var pixel = this.GetPixel(x, y);
-                        var pixelValue = pixel.Value.HasValue ? pixel.Value.Value : new ConsoleCharacter(' ');
+                        var pixelValue = pixel.Value;
                         chars.Add(pixelValue);
                     }
                 }
@@ -107,11 +107,7 @@ namespace PowerArgs.Cli
 
             for (var x = xStart; x < this.Width; x++)
             {
-                if (this.GetPixel(x, y).Value.HasValue == false)
-                {
-                    // this is whitespace
-                }
-                else if (char.IsWhiteSpace(this.GetPixel(x, y).Value.Value.Value) && this.GetPixel(x, y).Value.Value.BackgroundColor == defaultBg)
+                if (char.IsWhiteSpace(this.GetPixel(x, y).Value.Value) && this.GetPixel(x, y).Value.BackgroundColor == defaultBg)
                 {
                     // this is whitespace
                 }
@@ -131,6 +127,7 @@ namespace PowerArgs.Cli
         /// <param name="h">the new height</param>
         public void Resize(int w, int h)
         {
+            if (w == Width && h == Height) return;
             var newPixels = new ConsolePixel[w][];
             for (int x = 0; x < w; x++)
             {
@@ -477,7 +474,7 @@ namespace PowerArgs.Cli
             {
                 for (var y = 0; y < Height; y++)
                 {
-                    ret.Pen = this.GetPixel(x, y).Value.HasValue ? this.GetPixel(x, y).Value.Value : new ConsoleCharacter(' ');
+                    ret.Pen = this.GetPixel(x, y).Value;
                     ret.DrawPoint(x, y);
                 }
             }
@@ -490,7 +487,7 @@ namespace PowerArgs.Cli
             {
                 for (var y = 0; y < Height; y++)
                 {
-                    ret.Pen = this.GetPixel(x, y).Value.HasValue ? this.GetPixel(x, y).Value.Value : new ConsoleCharacter(' ');
+                    ret.Pen = this.GetPixel(x, y).Value;
                     ret.DrawPoint(x, y);
                 }
             }
@@ -565,9 +562,9 @@ namespace PowerArgs.Cli
                         pixel = pixels[x][y];
                         pixelChanged = pixel.HasChanged;
                         changeOnLine = changeOnLine || pixelChanged;
-                        val = pixel.Value.HasValue ? pixel.Value.Value.Value : ' ';
-                        fg = pixel.Value.HasValue ? pixel.Value.Value.ForegroundColor : ConsoleString.DefaultForegroundColor;
-                        bg = pixel.Value.HasValue ? pixel.Value.Value.BackgroundColor : ConsoleString.DefaultBackgroundColor;
+                        val = pixel.Value.Value;
+                        fg = pixel.Value.ForegroundColor;
+                        bg = pixel.Value.BackgroundColor;
                         if (currentChunk == null)
                         {
                             // first pixel always gets added to the current empty chunk
@@ -693,20 +690,10 @@ namespace PowerArgs.Cli
                         pixelChanged = pixel.HasChanged;
                         changeOnLine = changeOnLine || pixelChanged;
                         
-                        if(pixel.Value.HasValue)
-                        {
-                            val = pixel.Value.Value.Value;
-                            fg = pixel.Value.Value.ForegroundColor;
-                            bg = pixel.Value.Value.BackgroundColor;
-                            underlined = pixel.Value.Value.IsUnderlined;
-                        }
-                        else
-                        {
-                            val = ' ';
-                            fg = ConsoleString.DefaultForegroundColor;
-                            bg = ConsoleString.DefaultBackgroundColor;
-                            underlined = false;
-                        }
+                        val = pixel.Value.Value;
+                        fg = pixel.Value.ForegroundColor;
+                        bg = pixel.Value.BackgroundColor;
+                        underlined = pixel.Value.IsUnderlined;
 
                         if (currentChunk == null)
                         {
@@ -839,11 +826,7 @@ namespace PowerArgs.Cli
                 {
                     var thisVal = this.GetPixel(x, y).Value;
                     var otherVal = other.GetPixel(x, y).Value;
-
-                    if (thisVal.HasValue != otherVal.HasValue) return false;
-
-                    if (thisVal.HasValue && thisVal.Value != otherVal.Value) return false;
-
+                    if (thisVal.Value != otherVal.Value) return false;
                 }
             }
 

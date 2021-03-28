@@ -8,7 +8,7 @@
         /// <summary>
         /// The value of the pixel
         /// </summary>
-        public ConsoleCharacter? Value;
+        public ConsoleCharacter Value;
 
         /// <summary>
         /// The last value that was painted. This facilitates a double
@@ -24,21 +24,13 @@
         {
             get
             {
-                if(Value.HasValue == false && LastDrawnValue.HasValue == false)
-                {
-                    return false;
-                }
-                else if(LastDrawnValue.HasValue ^ Value.HasValue)
+                if(LastDrawnValue.HasValue == false)
                 {
                     return true;
-                }
-                else if(LastDrawnValue.Value.Equals(Value.Value))
-                {
-                    return false;
                 }
                 else
                 {
-                    return true;
+                    return !LastDrawnValue.Value.Equals(Value);
                 }
             }
         }

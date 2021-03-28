@@ -31,11 +31,8 @@
                 for(var y = 0; y < Height && y < Bitmap.Height; y++)
                 {
                     var c = Bitmap.GetPixel(x, y).Value;
-                    if(c.HasValue)
-                    {
-                        context.Pen = c.Value;
-                        context.DrawPoint(x, y);
-                    }
+                    context.Pen = c;
+                    context.DrawPoint(x, y);
                 }
             }
         }

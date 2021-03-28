@@ -21,18 +21,17 @@
                 for (var y = 0; y < bitmap.Height; y++)
                 {
                     var pixel = bitmap.GetPixel(x, y);
-                    if (pixel.Value.HasValue)
+                   
+                    if (pixel.Value.BackgroundColor != pixel.Value.ForegroundColor && pixel.Value.BackgroundColor == RGB.Black && pixel.Value.Value != ' ')
                     {
-                        if (pixel.Value.Value.BackgroundColor != pixel.Value.Value.ForegroundColor && pixel.Value.Value.BackgroundColor == RGB.Black && pixel.Value.Value != ' ')
-                        {
-                            pixel.Value = new ConsoleCharacter(pixel.Value.Value.Value, Color);
-                        }
-
-                        if (pixel.Value.Value.BackgroundColor != RGB.Black)
-                        {
-                            pixel.Value = new ConsoleCharacter(pixel.Value.Value.Value, pixel.Value.Value.ForegroundColor, Color);
-                        }
+                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, Color);
                     }
+
+                    if (pixel.Value.BackgroundColor != RGB.Black)
+                    {
+                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor, Color);
+                    }
+                    
                 }
             }
         }

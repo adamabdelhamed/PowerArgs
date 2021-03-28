@@ -209,16 +209,7 @@ namespace PowerArgs.Cli
                     }
 
                     var scrolledPixel = ScrollableContent.Bitmap.GetPixel(scrollX, scrollY);
-
-                    if (scrolledPixel.Value.HasValue)
-                    {
-                        context.Pen = scrolledPixel.Value.Value;
-                    }
-                    else
-                    {
-                        context.Pen = new ConsoleCharacter(' ', backgroundColor: Background);
-                    }
-
+                    context.Pen = scrolledPixel.Value;
                     context.DrawPoint(x, y);
                 }
             }
@@ -236,7 +227,7 @@ namespace PowerArgs.Cli
             {
                 for (int y = 0; y < bar.Height; y++)
                 {
-                    context.DrawPoint(bar.Bitmap.GetPixel(x, y).Value.Value, x + bar.X, y + bar.Y);
+                    context.DrawPoint(bar.Bitmap.GetPixel(x, y).Value, x + bar.X, y + bar.Y);
                 }
             }
         }

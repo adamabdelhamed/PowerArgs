@@ -35,9 +35,9 @@ namespace PowerArgs.Cli
                 for (var x = 0; x < bmp.Width; x++)
                 {
                     var pix = bmp.GetPixel(x, y);
-                    var fg = pix.Value.HasValue ? pix.Value.Value.ForegroundColor : ConsoleString.DefaultForegroundColor;
-                    var bg = pix.Value.HasValue ? pix.Value.Value.BackgroundColor : ConsoleString.DefaultBackgroundColor;
-                    var val = pix.Value.HasValue ? pix.Value.Value.Value : ' ';
+                    var fg =  pix.Value.ForegroundColor;
+                    var bg =  pix.Value.BackgroundColor;
+                    var val = pix.Value.Value;
 
                     visuals += val;
                     colors += pallate.LookupFormatted(fg, bg);
@@ -218,8 +218,8 @@ namespace PowerArgs.Cli
                     for (var x = 0; x < bmp.Width; x++)
                     {
                         var pixel = bmp.GetPixel(x, y);
-                        var fg = pixel.Value.HasValue ? pixel.Value.Value.ForegroundColor : ConsoleString.DefaultForegroundColor;
-                        var bg = pixel.Value.HasValue ? pixel.Value.Value.BackgroundColor : ConsoleString.DefaultBackgroundColor;
+                        var fg = pixel.Value.ForegroundColor;
+                        var bg = pixel.Value.BackgroundColor;
                         ret.Add(fg, bg);
                     }
                 }
