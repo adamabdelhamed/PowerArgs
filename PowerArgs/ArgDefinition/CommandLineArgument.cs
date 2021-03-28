@@ -36,7 +36,7 @@ namespace PowerArgs
         /// <summary>
         /// Metadata that has been injected into this Argument
         /// </summary>
-        public List<ICommandLineArgumentMetadata> Metadata { get; private set; }
+        public List<ICommandLineArgumentMetadata> Metadata { get; private set; } = new List<ICommandLineArgumentMetadata>();
 
         /// <summary>
         /// Gets a friendly type name for this argument.
@@ -343,7 +343,6 @@ namespace PowerArgs
             MustBeRevivable = true;
             overrides = new AttrOverride(GetType());
             Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>().ToList(); }, () => { return IgnoreCase; });
-            PropertyInitializer.InitializeFields(this, 1);
             ArgumentType = typeof(string);
             Position = -1;
         }
@@ -404,7 +403,7 @@ namespace PowerArgs
 
         internal static CommandLineArgument Create(PropertyInfo property, List<string> knownAliases)
         {
-            var ret = PropertyInitializer.CreateInstance<CommandLineArgument>();
+            var ret = new CommandLineArgument();
             ret.DefaultValue = property.HasAttr<DefaultValueAttribute>() ? property.Attr<DefaultValueAttribute>().Value : null;
             ret.Position = property.HasAttr<ArgPosition>() ? property.Attr<ArgPosition>().Position : -1;
             ret.Source = property;

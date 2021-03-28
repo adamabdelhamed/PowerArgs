@@ -270,7 +270,7 @@ namespace PowerArgs
         /// <summary>
         /// The command line arguments that are global to this definition.
         /// </summary>
-        public List<CommandLineArgument> Arguments { get; private set; }
+        public List<CommandLineArgument> Arguments { get; private set; } = new List<CommandLineArgument>();
 
         /// <summary>
         /// Gets the list of arguments, filtering out those that have the ArgHiddenFromUsage attribute
@@ -313,11 +313,11 @@ namespace PowerArgs
                 return new ReadOnlyCollection<ArgHook>(Metadata.Metas<ArgHook>().ToList());
             }
         }
-        
+
         /// <summary>
         /// Actions that are defined for this definition.  If you have at least one action then the end user must specify the action as the first argument to your program.
         /// </summary>
-        public List<CommandLineAction> Actions { get; private set; }
+        public List<CommandLineAction> Actions { get; private set; } = new List<CommandLineAction>();
 
         public List<CommandLineAction>  UsageActions =>
             (from action in Actions where !action.OmitFromUsage select action).ToList();
@@ -325,7 +325,7 @@ namespace PowerArgs
         /// <summary>
         /// Arbitrary metadata that has been added to the definition
         /// </summary>
-        public List<ICommandLineArgumentsDefinitionMetadata> Metadata { get; private set; }
+        public List<ICommandLineArgumentsDefinitionMetadata> Metadata { get; private set; } = new List<ICommandLineArgumentsDefinitionMetadata>();
 
         /// <summary>
         /// Returns true if there is at least 1 example registered for this definition
@@ -417,7 +417,6 @@ namespace PowerArgs
         /// </summary>
         public CommandLineArgumentsDefinition()
         {
-            PropertyInitializer.InitializeFields(this, 1);
             overrides = new AttrOverride(GetType());
         }
 
@@ -632,10 +631,16 @@ namespace PowerArgs
                 knownAliases.AddRange(prop.Attrs<ArgShortcut>().Select(s => s.Shortcut));
             }
 
-            var ret = from p in t.GetProperties(flags) 
-                      where  CommandLineArgument.IsArgument(p) 
-                      select CommandLineArgument.Create(p, knownAliases);
-            return ret.ToList();
+            var ret = new List<CommandLineArgument>();
+            foreach(var p in t.GetProperties(flags))
+            {
+                if(CommandLineArgument.IsArgument(p))
+                {
+                    ret.Add(CommandLineArgument.Create(p, knownAliases));
+                }
+            }
+
+            return ret;
         }
 
         private void ValidateActionAliases()
