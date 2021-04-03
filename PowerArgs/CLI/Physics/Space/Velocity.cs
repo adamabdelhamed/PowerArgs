@@ -77,8 +77,6 @@ namespace PowerArgs.Cli.Physics
 
         public bool Bounce { get; set; }
 
-        public Func<Task> MovementTakeover { get; private set; }
-
         public bool HitDetectionDisabled { get; set; }
 
         [ThreadStatic]
