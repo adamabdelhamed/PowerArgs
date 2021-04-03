@@ -10,36 +10,12 @@ namespace PowerArgs.Cli.Physics
         Velocity Velocity { get; }
     }
 
-    public static class VelocityEx
-    {
-        public static async Task<bool> TryControlVelocity(this SpacialElement el, Func<Velocity, Task> takeoverAction, ILifetimeManager lt)
-        {
-            Velocity tempV = new Velocity(el);
-            lt.OnDisposed(tempV.Lifetime.Dispose);
-            if (el is IHaveVelocity)
-            {
-                if ((el as IHaveVelocity).Velocity.MovementTakeover != null)
-                {
-                    return false;
-                }
-                tempV.HitDetectionDynamicExclusions = (el as IHaveVelocity).Velocity.HitDetectionDynamicExclusions;
-                tempV.HitDetectionExclusions.AddRange((el as IHaveVelocity).Velocity.HitDetectionExclusions);
-                tempV.HitDetectionExclusionTypes.AddRange((el as IHaveVelocity).Velocity.HitDetectionExclusionTypes);
-                await (el as IHaveVelocity).Velocity.Takeover(() => takeoverAction(tempV));
-            }
-            else
-            {
-                await takeoverAction(tempV);
-            }
-            return true;
-        }
-    }
     public class Velocity : SpacialElementFunction
     {
         public Event OnVelocityEnforced { get; private set; } = new Event();
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
         public static Event<Impact> GlobalImpactOccurred { get; private set; } = new Event<Impact>();
-
+       
         public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
         public Func<IEnumerable<SpacialElement>> HitDetectionDynamicExclusions { get; set; }
@@ -49,7 +25,6 @@ namespace PowerArgs.Cli.Physics
         public Event OnAngleChanged { get; private set; } = new Event();
         public Event OnSpeedChanged { get; private set; } = new Event();
         public Event BeforeMove { get; private set; } = new Event();
-        public Event<ILifetimeManager> OnTakeover { get; private set; } = new Event<ILifetimeManager>();
 
         private float angle;
         public float Angle
@@ -106,9 +81,18 @@ namespace PowerArgs.Cli.Physics
 
         public bool HitDetectionDisabled { get; set; }
 
+        [ThreadStatic]
+        private static bool isEvaluating;
         public Velocity(SpacialElement t) : base(t)
         {
-            Time.CurrentTime.Invoke(async()=> await ExecuteAsync());
+            Added.SubscribeOnce(() =>
+            {
+                if(isEvaluating == false)
+                {
+                    isEvaluating = true;
+                    ExecuteAsync();
+                }
+            });
         }
 
         public static Velocity For(SpacialElement el)
@@ -123,198 +107,125 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public Task Takeover(Func<Task> movementTakeover)
-        {
-            if (MovementTakeover != null) throw new ArgumentException("Movement has already been taken over");
-            TaskCompletionSource<bool> d = new TaskCompletionSource<bool>();
-            OnTakeover.Fire(d.Task.ToLifetime());
-            MovementTakeover = async () =>
-            {
-                await movementTakeover();
-                MovementTakeover = null;
-                d.SetResult(true);
-            };
-            return d.Task;
-        }
-
         public void Stop()
         {
             Speed = 0;
         }
 
-
-        private async Task ExecuteAsync()
+        private static async void ExecuteAsync()
         {
-            while (this.Lifetime.IsExpired == false)
+            while (Time.CurrentTime.IsExpired == false)
             {
                 await Task.Yield();
-                if (this.Lifetime.IsExpired) return;
-                if (MovementTakeover != null)
-                {
-                    await MovementTakeover();
-                    continue;
-                }
-
                 float dt = (float)Time.CurrentTime.Increment.TotalSeconds;
                 if (dt == 0) dt = (float)Time.CurrentTime.Increment.TotalSeconds;
-                float d = Speed * dt;
 
-                if (d == 0)
+                foreach (var velocity in Time.CurrentTime.Functions.WhereAs<Velocity>())
                 {
-                    BeforeMove.Fire();
-                    OnVelocityEnforced?.Fire();
-                    continue;
-                }
+                    if (velocity.Lifetime.IsExpired) continue;
+                    float d = velocity.Speed * dt;
 
-                HitPrediction hitPrediction = null;
-                IRectangularF bounds = null;
-                if (HitDetectionDisabled == false)
-                {
-                    var obstacles = GetObstacles();
-
-                    bounds = BoundsTransform != null ? BoundsTransform() : Element;
-                    hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
+                    if (d == 0)
                     {
-                        MovingObject = bounds,
-                        Obstacles = obstacles,
-                        Angle = Angle,
-                        Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
-                        Mode = CastingMode.Precise,
-                    });
-                    NextCollision = hitPrediction;
-                    BeforeMove.Fire();
-                }
-
-
-                if (hitPrediction != null && hitPrediction.Type != HitType.None && hitPrediction.LKGD <= d)
-                {
-                    var dx = BoundsTransform != null ? bounds.Left - Element.Left : 0;
-                    var dy = BoundsTransform != null ? bounds.Top - Element.Top : 0;
-
-                    var proposedBounds = BoundsTransform != null ? BoundsTransform() : Element;
-                    var distanceToObstacleHit = proposedBounds.CalculateDistanceTo(hitPrediction.ObstacleHit);
-                    if (distanceToObstacleHit > .5f)
-                    {
-                        proposedBounds = proposedBounds.MoveTowards(Angle, distanceToObstacleHit-.5f, false);
-                        Element.MoveTo(proposedBounds.Left - dx, proposedBounds.Top - dy);
-                        haveMovedSinceLastHitDetection = true;
+                        velocity.BeforeMove.Fire();
+                        velocity.OnVelocityEnforced?.Fire();
+                        continue;
                     }
-                    float angle = bounds.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
 
-
-                    if (haveMovedSinceLastHitDetection)
+                    HitPrediction hitPrediction = null;
+                    IRectangularF bounds = null;
+                    if (velocity.HitDetectionDisabled == false)
                     {
-                        LastImpact = new Impact()
-                        {
-                            Angle = angle,
-                            MovingObject = Element,
-                            ObstacleHit = hitPrediction.ObstacleHit,
-                            HitType = hitPrediction.Type,
-                            Prediction = hitPrediction,
-                        };
+                        var obstacles = velocity.GetObstacles();
 
-                        if (hitPrediction.ObstacleHit is SpacialElement)
+                        bounds = velocity.BoundsTransform != null ? velocity.BoundsTransform() : velocity.Element;
+                        hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
                         {
-                            Velocity.For(hitPrediction.ObstacleHit as SpacialElement)?.ImpactOccurred.Fire(new Impact()
+                            MovingObject = bounds,
+                            Obstacles = obstacles,
+                            Angle = velocity.Angle,
+                            Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
+                            Mode = CastingMode.Precise,
+                        });
+                        velocity.NextCollision = hitPrediction;
+                        velocity.BeforeMove.Fire();
+                    }
+
+
+                    if (hitPrediction != null && hitPrediction.Type != HitType.None && hitPrediction.LKGD <= d)
+                    {
+                        var dx = velocity.BoundsTransform != null ? bounds.Left - velocity.Element.Left : 0;
+                        var dy = velocity.BoundsTransform != null ? bounds.Top - velocity.Element.Top : 0;
+
+                        var proposedBounds = velocity.BoundsTransform != null ? velocity.BoundsTransform() : velocity.Element;
+                        var distanceToObstacleHit = proposedBounds.CalculateDistanceTo(hitPrediction.ObstacleHit);
+                        if (distanceToObstacleHit > .5f)
+                        {
+                            proposedBounds = proposedBounds.MoveTowards(velocity.Angle, distanceToObstacleHit - .5f, false);
+                            velocity.Element.MoveTo(proposedBounds.Left - dx, proposedBounds.Top - dy);
+                            velocity.haveMovedSinceLastHitDetection = true;
+                        }
+                        float angle = bounds.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
+
+
+                        if (velocity.haveMovedSinceLastHitDetection)
+                        {
+                            velocity.LastImpact = new Impact()
                             {
-                                Angle = angle.GetOppositeAngle(),
-                                MovingObject = hitPrediction.ObstacleHit as SpacialElement,
-                                ObstacleHit = Element,
+                                Angle = angle,
+                                MovingObject = velocity.Element,
+                                ObstacleHit = hitPrediction.ObstacleHit,
                                 HitType = hitPrediction.Type,
-                            });
+                                Prediction = hitPrediction,
+                            };
+
+                            if (hitPrediction.ObstacleHit is SpacialElement)
+                            {
+                                Velocity.For(hitPrediction.ObstacleHit as SpacialElement)?.ImpactOccurred.Fire(new Impact()
+                                {
+                                    Angle = angle.GetOppositeAngle(),
+                                    MovingObject = hitPrediction.ObstacleHit as SpacialElement,
+                                    ObstacleHit = velocity.Element,
+                                    HitType = hitPrediction.Type,
+                                });
+                            }
+
+                            velocity.ImpactOccurred?.Fire(velocity.LastImpact);
+                            GlobalImpactOccurred.Fire(velocity.LastImpact);
+
+                            velocity.haveMovedSinceLastHitDetection = false;
+                            velocity.Element.SizeOrPositionChanged.Fire();
                         }
 
-                        ImpactOccurred?.Fire(LastImpact);
-                        GlobalImpactOccurred.Fire(LastImpact);
-
-                        haveMovedSinceLastHitDetection = false;
-                        Element.SizeOrPositionChanged.Fire();
-                    }
-
-                    if (Bounce)
-                    {
-                        var side = Geometry.GetSideGivenEdgeIndex(hitPrediction.EdgeIndex);
-
-                        if (side == Side.Top|| side == Side.Bottom)
+                        if (velocity.Bounce)
                         {
-                            Angle = 0.AddToAngle(-Angle);
+                            var side = Geometry.GetSideGivenEdgeIndex(hitPrediction.EdgeIndex);
+
+                            if (side == Side.Top || side == Side.Bottom)
+                            {
+                                velocity.Angle = 0.AddToAngle(-velocity.Angle);
+                            }
+                            else
+                            {
+                                velocity.Angle = 180.AddToAngle(-velocity.Angle);
+                            }
                         }
                         else
                         {
-                            Angle = 180.AddToAngle(-Angle);
+                            velocity.Stop();
                         }
                     }
                     else
                     {
-                        Stop();
+                        var newLocation = velocity.Element.MoveTowards(velocity.Angle, d);
+                        velocity.Element.MoveTo(newLocation.Left, newLocation.Top);
+                        velocity.haveMovedSinceLastHitDetection = true;
                     }
+
+                    velocity.OnVelocityEnforced?.Fire();
                 }
-                else
-                {
-                    var newLocation = Element.MoveTowards(Angle, d);
-                    Element.MoveTo(newLocation.Left, newLocation.Top);
-                    haveMovedSinceLastHitDetection = true;
-                }
-
-                OnVelocityEnforced?.Fire();
             }
         }
 
-        internal static void FindEdgesGivenHyp(float hyp, float angle, out float dx, out float dy)
-        {
-            if(angle == 360)
-            {
-                angle = 0;
-            }
-            float angleTemp, d1, d2;
-            if (angle >= 0 && angle < 90)
-            {
-                angleTemp = angle;
-                FindDeltas(angleTemp, hyp, out d1, out d2);
-                dx = d1;
-                dy = d2;
-            }
-            else if (angle >= 90 && angle < 180)
-            {
-                angleTemp = angle - 90;
-                FindDeltas(angleTemp, hyp, out d1, out d2);
-                dx = -d2;
-                dy = d1;
-            }
-            else if (angle >= 180 && angle < 270)
-            {
-                angleTemp = angle - 180;
-                FindDeltas(angleTemp, hyp, out d1, out d2);
-                dx = -d1;
-                dy = -d2;
-            }
-            else if (angle >= 270 && angle < 360)
-            {
-                angleTemp = angle - 270;
-                FindDeltas(angleTemp, hyp, out d1, out d2);
-                dx = d2;
-                dy = -d1;
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("Angle must be >= 0 and < 360");
-            }
-        }
-
-        public bool IsComingTowards(IRectangularF target)
-        {
-            var d = Element.CalculateDistanceTo(target);
-            var projectedLocation = this.Element.TopLeft().MoveTowards(this.Angle, d);
-            var projectedRect = RectangularF.Create(projectedLocation.Left, projectedLocation.Top, Element.Width, Element.Height);
-            var ret = projectedRect.CalculateDistanceTo(target);
-            return ret < .5;
-        }
-
-        private static void FindDeltas(float angle, float hyp, out float adj, out float opp)
-        {
-            float radians = 3.1415926535897932f * angle / 180.0f;
-            opp = (float)(hyp * Math.Sin(radians));
-            adj = (float)(Math.Sqrt((hyp * hyp) - (opp * opp)));
-        }
     }
 }
