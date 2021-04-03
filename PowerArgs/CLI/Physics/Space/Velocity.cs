@@ -85,6 +85,13 @@ namespace PowerArgs.Cli.Physics
         {
             Added.SubscribeOnce(() =>
             {
+                if(t is IHaveVelocity == false)
+                {
+                    dynamicVelocities.Add(t, this);
+                    this.Lifetime.OnDisposed(()=> dynamicVelocities.Remove(t));
+                    t.Lifetime.OnDisposed(() => dynamicVelocities.Remove(t));
+                }
+
                 if(isEvaluating == false)
                 {
                     isEvaluating = true;
@@ -93,15 +100,20 @@ namespace PowerArgs.Cli.Physics
             });
         }
 
+        private static Dictionary<SpacialElement, Velocity> dynamicVelocities = new Dictionary<SpacialElement, Velocity>();
         public static Velocity For(SpacialElement el)
         {
             if(el is IHaveVelocity)
             {
                 return (el as IHaveVelocity).Velocity;
             }
+            else if(dynamicVelocities.TryGetValue(el, out Velocity v))
+            {
+                return v;
+            }
             else
             {
-                return Time.CurrentTime.Functions.WhereAs<Velocity>().Where(v => v.Element == el).FirstOrDefault();
+                return null;
             }
         }
 
