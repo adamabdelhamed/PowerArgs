@@ -26,7 +26,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// The easing function to apply
         /// </summary>
-        public Func<float, float> EasingFunction { get; set; } = Animator.EaseInOut;
+        public EasingFunction EasingFunction { get; set; } = Animator.EaseInOut;
 
         /// <summary>
         /// If true then the animation will automatically reverse itself when done
@@ -127,6 +127,8 @@ namespace PowerArgs.Cli
         internal override void Set(float value) => Setter(Geometry.Round(value));
     }
 
+
+    public delegate float EasingFunction(float f);
 
     /// <summary>
     /// An animation utility for async code

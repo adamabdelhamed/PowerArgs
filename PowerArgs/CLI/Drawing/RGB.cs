@@ -333,7 +333,7 @@ namespace PowerArgs
         /// <summary>
         /// The easing function to apply
         /// </summary>
-        public Func<float, float> EasingFunction { get; set; } = Animator.EaseInOut;
+        public EasingFunction EasingFunction { get; set; } = Animator.EaseInOut;
 
         /// <summary>
         /// If true then the animation will automatically reverse itself when done

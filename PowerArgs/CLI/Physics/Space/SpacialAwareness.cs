@@ -197,7 +197,7 @@ namespace PowerArgs.Cli.Physics
 
         public abstract void Setter(IRectangularF target, IRectangularF bounds);
 
-        public Func<float, float> EasingFunction { get; set; } = new FloatAnimatorOptions().EasingFunction;
+        public EasingFunction EasingFunction { get; set; } = new FloatAnimatorOptions().EasingFunction;
         public double Duration { get; set; } = new FloatAnimatorOptions().Duration;
  
         /// <summary>
