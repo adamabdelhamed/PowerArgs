@@ -105,6 +105,12 @@ namespace PowerArgs.Cli
                     Compose(control);
                 }
             }
+
+            foreach (var filter in RenderFilters)
+            {
+                filter.Control = this;
+                filter.Filter(Bitmap);
+            }
         }
     }
 
