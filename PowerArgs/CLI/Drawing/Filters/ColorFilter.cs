@@ -102,7 +102,7 @@ namespace PowerArgs.Cli
 
     public static class FadeEx
     {
-        public static async Task FadeIn(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null)
+        public static async Task<IConsoleControlFilter> FadeIn(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null)
         {
             easingFunction = easingFunction ?? Animator.Linear;
             var filter = new FadeInFilter();
@@ -120,10 +120,10 @@ namespace PowerArgs.Cli
                     ConsoleApp.Current.Paint();
                 }
             });
-            c.RenderFilters.Remove(filter);
+            return filter;
         }
 
-        public static async Task FadeOut(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null)
+        public static async Task<IConsoleControlFilter> FadeOut(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null)
         {
             easingFunction = easingFunction ?? Animator.Linear;
             var filter = new FadeOutFilter();
@@ -141,7 +141,7 @@ namespace PowerArgs.Cli
                     ConsoleApp.Current.Paint();
                 }
             });
-            c.RenderFilters.Remove(filter);
+            return filter;
         }
     }
 }
