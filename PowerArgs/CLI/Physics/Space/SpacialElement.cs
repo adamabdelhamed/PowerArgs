@@ -29,7 +29,7 @@ namespace PowerArgs.Cli.Physics
 
     public class SpacialElement : TimeFunction, ISpacialElement
     {
-        public static IObstacleResolver ObstacleResolver { get; set; }
+        public static IObstacleResolver ObstacleResolver { get; set; } = new DefaultObstacleResolver();
         public Event SizeOrPositionChanged { get; private set; } = new Event();
         public float Left { get; private set; }
         public float Top { get; private set; }

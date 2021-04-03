@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs.Cli;
 using PowerArgs.Cli.Physics;
 using PowerArgs;
+using System.Threading.Tasks;
+
 namespace ArgsTests.CLI.Physics
 {
     [TestClass]
@@ -30,7 +32,7 @@ namespace ArgsTests.CLI.Physics
                     {
                         Time.CurrentTime.Stop();
                     }
-                    await Time.CurrentTime.YieldAsync();
+                    await Task.Yield();
                 });
              });
 

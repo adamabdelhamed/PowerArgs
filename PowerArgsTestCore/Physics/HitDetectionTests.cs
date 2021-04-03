@@ -78,7 +78,7 @@ namespace ArgsTests.CLI.Physics
                     }
                 }
 
-                await Time.CurrentTime.YieldAsync();
+                await Task.Yield();
             }
         });
     }

@@ -80,7 +80,7 @@ namespace PowerArgs.Cli
             while (IsPaused != null && IsPaused.Invoke())
             {
                 ret = true;
-                await DelayProvider.YieldAsync();
+                await Task.Yield();
             }
             return ret;
         }
@@ -89,7 +89,7 @@ namespace PowerArgs.Cli
         {
             if (await HandlePause() == false)
             {
-                await DelayProvider.YieldAsync();
+                await Task.Yield();
             }
         }
 

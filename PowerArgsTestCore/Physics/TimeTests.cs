@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using PowerArgs.Cli;
@@ -24,7 +25,7 @@ namespace ArgsTests.CLI.Physics
                     Assert.AreEqual(now, t.Now);
                     assertions++;
                     now = now.Add(t.Increment);
-                    await t.YieldAsync();
+                    await Task.Yield();
                 }
                 t.Stop();
             });
@@ -50,7 +51,7 @@ namespace ArgsTests.CLI.Physics
                 {
                     Assert.AreEqual(now, t.Now);
                     now = now.Add(t.Increment);
-                    await t.YieldAsync();
+                    await Task.Yield();
                 }
                 t.Stop();
             });

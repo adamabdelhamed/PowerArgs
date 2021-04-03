@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PowerArgs
 {
-    public class EventLoop : Lifetime, IYieldProvider
+    public class EventLoop : Lifetime
     {
         private class SynchronizedEvent
         {
@@ -48,6 +48,9 @@ namespace PowerArgs
         {
             private EventLoop loop;
 
+            public long Posts;
+            public long Sends;
+
             public CustomSyncContext(EventLoop loop)
             {
                 this.loop = loop;
@@ -58,6 +61,7 @@ namespace PowerArgs
             {
                 if (loop != null && loop.IsRunning && loop.IsDrainingOrDrained == false)
                 {
+                    Posts++;
                     loop.InvokeNextCycle(() => d.Invoke(state));
                 }
             }
@@ -66,6 +70,7 @@ namespace PowerArgs
             {
                 if (Thread.CurrentThread != loop?.Thread && loop != null && loop.IsRunning && loop.IsDrainingOrDrained == false)
                 {
+                    Sends++;
                     loop.InvokeNextCycle(() => d.Invoke(state));
                 }
                 else
@@ -80,6 +85,10 @@ namespace PowerArgs
         public Event LoopStarted { get; private set; } = new Event();
         public Event LoopStopped { get; private set; } = new Event();
         public Thread Thread { get; private set; }
+        public long Posts => syncContext.Posts;
+        public long Sends => syncContext.Sends;
+
+        public long AsyncContinuations => Posts + Sends;
 
         public ThreadPriority Priority { get; set; } = ThreadPriority.AboveNormal;
         public bool IsRunning => runDeferred != null;
@@ -89,9 +98,8 @@ namespace PowerArgs
         private List<SynchronizedEvent> pendingWorkItems = new List<SynchronizedEvent>();
         private TaskCompletionSource<bool> runDeferred;
         private bool stopRequested;
-        
+        private CustomSyncContext syncContext;
         public bool IsDrainingOrDrained { get; private set; }
-        private List<TaskCompletionSource<bool>> pendingYields = new List<TaskCompletionSource<bool>>();
 
         /// <summary>
         /// Runs the event loop on a new thread
@@ -120,7 +128,8 @@ namespace PowerArgs
 
         private void RunCommon()
         {
-            SynchronizationContext.SetSynchronizationContext(new CustomSyncContext(this));
+            syncContext = new CustomSyncContext(this);
+            SynchronizationContext.SetSynchronizationContext(syncContext);
             try
             {
                 Loop();
@@ -287,11 +296,6 @@ namespace PowerArgs
             finally
             {
                 IsDrainingOrDrained = true;
-                foreach (var tcs in pendingYields.ToArray())
-                {
-                    tcs.TrySetCanceled();
-                    pendingYields.Remove(tcs);
-                }
                 LoopStopped.Fire();
                 SynchronizationContext.SetSynchronizationContext(null);
             }
@@ -315,25 +319,6 @@ namespace PowerArgs
             work();
             return Task.CompletedTask;
         });
-
-        public Task YieldAsync()
-        {
-            if (IsRunning && !IsDrainingOrDrained)
-            {
-                var tcs = new TaskCompletionSource<bool>();
-                pendingYields.Add(tcs);
-                InvokeNextCycle(() =>
-                {
-                    tcs.SetResult(true);
-                    pendingYields.Remove(tcs);
-                });
-                return tcs.Task;
-            }
-            else
-            {
-                return Task.CompletedTask;
-            }
-        }
 
         public void InvokeNextCycle(Action work)
         {

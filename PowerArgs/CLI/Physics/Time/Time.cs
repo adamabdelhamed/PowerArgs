@@ -120,7 +120,7 @@ namespace PowerArgs.Cli.Physics
             {
                 if (governor != null && governor.ShouldFire(Now) == false)
                 {
-                    await YieldAsync();
+                    await Task.Yield();
                 }
                 else if (condition())
                 {
@@ -132,7 +132,7 @@ namespace PowerArgs.Cli.Physics
                 }
                 else
                 {
-                    await YieldAsync();
+                    await Task.Yield();
                 }
             }
             return true;

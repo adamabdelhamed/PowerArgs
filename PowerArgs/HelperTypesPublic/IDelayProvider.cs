@@ -3,19 +3,10 @@ using System.Threading.Tasks;
 
 namespace PowerArgs
 {
-    public interface IYieldProvider
-    {
-        /// <summary>
-        /// Yields immidiately
-        /// </summary>
-        /// <returns>an async task</returns>
-        Task YieldAsync();
-    }
-
     /// <summary>
     /// An abstraction for time delay so that we can have a consistent delay API across wall clock time and Time simulation time
     /// </summary>
-    public interface IDelayProvider : IYieldProvider
+    public interface IDelayProvider
     {
         /// <summary>
         /// Delays for the given time
@@ -180,6 +171,15 @@ namespace PowerArgs
     public static class IDelayProviderEx
     {
         public static Task DelayOrYield(this IDelayProvider provider, float ms) => DelayOrYield(provider, TimeSpan.FromMilliseconds(ms));
-        public static Task DelayOrYield(this IDelayProvider provider, TimeSpan delay) => delay == TimeSpan.Zero ? provider.YieldAsync() : provider.DelayAsync(delay);
+        public static async Task DelayOrYield(this IDelayProvider provider, TimeSpan delay)
+        {
+            if(delay == TimeSpan.Zero)
+            {
+                await Task.Yield();
+            } 
+            else
+            { await provider.DelayAsync(delay); 
+            }
+        }
     }
 }

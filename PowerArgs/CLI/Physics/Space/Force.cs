@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace PowerArgs.Cli.Physics
 {
@@ -42,7 +43,7 @@ namespace PowerArgs.Cli.Physics
                 while (this.Lifetime.IsExpired == false)
                 {
                     Evaluate();
-                    await Time.CurrentTime.YieldAsync();
+                    await Task.Yield();
                 }
             });
         }

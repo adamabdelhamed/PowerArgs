@@ -110,7 +110,7 @@ namespace PowerArgs.Cli.Physics
                 while(t.IsRunning && t.IsDrainingOrDrained == false && impl != null)
                 {
                     Evaluate();
-                    await t.YieldAsync();
+                    await Task.Yield();
                 }
             });
         }

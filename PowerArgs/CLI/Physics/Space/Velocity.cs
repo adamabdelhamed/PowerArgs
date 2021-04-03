@@ -147,7 +147,7 @@ namespace PowerArgs.Cli.Physics
         {
             while (this.Lifetime.IsExpired == false)
             {
-                await Time.CurrentTime.YieldAsync();
+                await Task.Yield();
                 if (this.Lifetime.IsExpired) return;
                 if (MovementTakeover != null)
                 {

@@ -48,14 +48,7 @@ namespace PowerArgs
         {
             while (manager != null && manager.IsExpired == false)
             {
-                if (Time.CurrentTime != null)
-                {
-                    await Time.CurrentTime.YieldAsync();
-                }
-                else
-                {
-                    await Task.Yield();
-                }
+                await Task.Yield();
             }
         }
     }

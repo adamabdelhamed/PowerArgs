@@ -61,7 +61,7 @@ namespace ArgsTests.CLI.Physics
                     d.SetResult(true);
                     stEx = exc;
                 }
-                await spaceTimePanel.SpaceTime.YieldAsync();
+                await Task.Yield();
                 await app.PaintAndRecordKeyFrameAsync();
                 spaceTimePanel.SpaceTime.Stop();
 

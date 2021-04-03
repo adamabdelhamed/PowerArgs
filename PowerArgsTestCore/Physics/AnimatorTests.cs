@@ -57,7 +57,7 @@ namespace ArgsTests.CLI
         {
             DelayCount++;
             await app.PaintAndRecordKeyFrameAsync();
-            await Time.CurrentTime.YieldAsync();
+            await Task.Yield();
         }
 
         public async Task DelayFuzzyAsync(float ms, double maxDeltaPercentage = 0.1)
