@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -121,7 +122,8 @@ namespace PowerArgs.Cli.Physics
             impl.Dispose();
             impl = null;
         }
-    
+
+        private Stopwatch rtsw = new Stopwatch();
         private void Evaluate()
         {
             var realTimeNow = DateTime.UtcNow;
@@ -130,7 +132,7 @@ namespace PowerArgs.Cli.Physics
             var simulationTimeElapsed = TimeSpan.FromSeconds(SlowMoRatio * (t.Now - simulationTimeSample).TotalSeconds);
             var slept = false;
 
-            var sleepTime = SignalPauseFrame ? Time.CurrentTime.Increment : simulationTimeElapsed - wallClockTimeElapsed;
+            var sleepTime = SignalPauseFrame ? Time.CurrentTime.Increment : (simulationTimeElapsed - wallClockTimeElapsed);
             SignalPauseFrame = false;
             if (Enabled && simulationTimeElapsed > wallClockTimeElapsed)
             {
@@ -146,7 +148,17 @@ namespace PowerArgs.Cli.Physics
 
                 if (sleepTime > TimeSpan.Zero)
                 {
-                    Thread.Sleep(sleepTime);
+                    rtsw.Restart();
+                    var togo = sleepTime.TotalMilliseconds - rtsw.ElapsedMilliseconds;
+                    while(togo > 0)
+                    {
+                        if(togo > 25)
+                        {
+                            Thread.Sleep(1);
+                        }
+                        togo = sleepTime.TotalMilliseconds - rtsw.ElapsedMilliseconds;
+                    }
+                    rtsw.Stop();
                     slept = true;
                 }
             }
