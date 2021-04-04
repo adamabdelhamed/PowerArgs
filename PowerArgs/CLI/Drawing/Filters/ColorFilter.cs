@@ -62,7 +62,7 @@ namespace PowerArgs.Cli
 
                     if (pixel.Value.BackgroundColor != RGB.Black)
                     {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor, pixel.Value.BackgroundColor.ToOther(RGB.Black, Percentage));
+                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor.ToOther(RGB.Black, Percentage), pixel.Value.BackgroundColor.ToOther(RGB.Black, Percentage));
                     }
                 }
             }
@@ -93,7 +93,7 @@ namespace PowerArgs.Cli
 
                     if (pixel.Value.BackgroundColor != RGB.Black)
                     {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor, RGB.Black.ToOther(pixel.Value.BackgroundColor, Percentage));
+                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, RGB.Black.ToOther(pixel.Value.ForegroundColor, Percentage), RGB.Black.ToOther(pixel.Value.BackgroundColor, Percentage));
                     }
                 }
             }
