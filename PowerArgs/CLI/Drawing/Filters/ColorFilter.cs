@@ -55,15 +55,9 @@ namespace PowerArgs.Cli
                 {
                     var pixel = bitmap.GetPixel(x, y);
 
-                    if (pixel.Value.BackgroundColor != pixel.Value.ForegroundColor && pixel.Value.BackgroundColor == RGB.Black && pixel.Value.Value != ' ')
-                    {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor.ToOther(RGB.Black, Percentage));
-                    }
-
-                    if (pixel.Value.BackgroundColor != RGB.Black)
-                    {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor.ToOther(RGB.Black, Percentage), pixel.Value.BackgroundColor.ToOther(RGB.Black, Percentage));
-                    }
+                    pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor.ToOther(RGB.Black, Percentage),
+                        pixel.Value.BackgroundColor.ToOther(RGB.Black, Percentage));
+                
                 }
             }
         }
@@ -85,16 +79,8 @@ namespace PowerArgs.Cli
                 for (var y = 0; y < bitmap.Height; y++)
                 {
                     var pixel = bitmap.GetPixel(x, y);
-
-                    if (pixel.Value.BackgroundColor != pixel.Value.ForegroundColor && pixel.Value.BackgroundColor == RGB.Black && pixel.Value.Value != ' ')
-                    {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, RGB.Black.ToOther(pixel.Value.ForegroundColor, Percentage));
-                    }
-
-                    if (pixel.Value.BackgroundColor != RGB.Black)
-                    {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, RGB.Black.ToOther(pixel.Value.ForegroundColor, Percentage), RGB.Black.ToOther(pixel.Value.BackgroundColor, Percentage));
-                    }
+                    pixel.Value = new ConsoleCharacter(pixel.Value.Value, RGB.Black.ToOther(pixel.Value.ForegroundColor, Percentage),
+                        RGB.Black.ToOther(pixel.Value.BackgroundColor, Percentage));
                 }
             }
         }
