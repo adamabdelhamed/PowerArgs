@@ -154,7 +154,7 @@ namespace PowerArgs.Cli.Physics
                     {
                         if(togo > 25)
                         {
-                            Thread.Sleep(1);
+                            Thread.Yield();
                         }
                         togo = sleepTime.TotalMilliseconds - rtsw.ElapsedMilliseconds;
                     }
