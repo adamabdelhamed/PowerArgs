@@ -171,7 +171,7 @@ namespace PowerArgs.Cli
         /// <returns>the eased percentage</returns>
         public static float EaseInOut(float percentage) => percentage < .5 ? 4 * percentage * percentage * percentage : (percentage - 1) * (2 * percentage - 2) * (2 * percentage - 2) + 1;
 
-        private const int TargetFramesPerSecond = 15;
+        private const int TargetFramesPerSecond = 20;
         
         /// <summary>
         /// Performs the animation specified in the options
