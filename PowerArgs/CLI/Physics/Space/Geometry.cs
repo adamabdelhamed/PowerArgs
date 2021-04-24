@@ -99,15 +99,26 @@ namespace PowerArgs.Cli.Physics
         public static ISizeF Create(float w, float h) => new SizeImpl() { Width = w, Height = h };
     }
 
-    public class RectangularF : IRectangularF
+    public interface IWriteableRectangularF : IRectangularF
     {
-        public float Left { get; private set; }
+        new float Left { get; set; }
 
-        public float Top { get; private set; }
+        new float Top { get; set; }
 
-        public float Width { get; private set; }
+        new float Width { get; set; }
 
-        public float Height { get; private set; }
+        new float Height { get; set; }
+    }
+
+    public class RectangularF : IWriteableRectangularF
+    {
+        public float Left { get; set; }
+
+        public float Top { get; set; }
+
+        public float Width { get; set; }
+
+        public float Height { get; set; }
 
         public object Tag { get; private set; }
 
@@ -137,8 +148,8 @@ namespace PowerArgs.Cli.Physics
 
         public override string ToString() => $"X={Left}, Y={Top}, W={Width}, H={Height}";
 
-        public static IRectangularF Create(float x, float y, float w, float h) => new RectangularF(x, y, w, h);
-        public static IRectangularF Create(ILocationF location, ISizeF size) => new RectangularF(location.Left, location.Top, size.Width, size.Height);
+        public static IWriteableRectangularF Create(float x, float y, float w, float h) => new RectangularF(x, y, w, h);
+        public static IWriteableRectangularF Create(ILocationF location, ISizeF size) => new RectangularF(location.Left, location.Top, size.Width, size.Height);
     }
 
     public enum Side
