@@ -37,8 +37,14 @@ namespace PowerArgs.Cli
     public class MonthCalendar : ProtectedConsolePanel
     {
         private const string DayOfWeekTag = "DayOfWeekLabel";
-        private const int MinWidth = 30;
-        private const int MinHeight = 13;
+        /// <summary>
+        /// The minimum supported width of the MonthCalendar control
+        /// </summary>
+        public const int MinWidth = 30;
+        /// <summary>
+        /// /// The minimum supported Height of the MonthCalendar control
+        /// </summary>
+        public const int MinHeight = 15;
 
         /// <summary>
         /// The options object that was passed to the constructor
@@ -108,7 +114,7 @@ namespace PowerArgs.Cli
             {
                 var dayOfWeekHeight = 3;
                 var leftOuterBorderWidth = 2;
-                if (Width < MinWidth || Height <= MinHeight) return;
+                if (Width < MinWidth || Height < MinHeight) return;
                 var cellWidth = (Width - leftOuterBorderWidth) / 7;
                 var rowHeight = (Height - dayOfWeekHeight) / CalculateNubmerOfRowsNeeded();
 

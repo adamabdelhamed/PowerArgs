@@ -1,8 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PowerArgs;
 using PowerArgs.Cli;
-using System;
-using System.Collections.Generic;
 
 namespace ArgsTests.CLI.Controls
 {
@@ -15,7 +12,7 @@ namespace ArgsTests.CLI.Controls
         [TestMethod]
         public void TestMonthCalendarBasicRender()
         {
-            var app = new CliTestHarness(this.TestContext, 40, 20, true);
+            var app = new CliTestHarness(this.TestContext, MonthCalendar.MinWidth, MonthCalendar.MinHeight, true);
             app.InvokeNextCycle(() => app.LayoutRoot.Add(new MonthCalendar(new MonthCalendarOptions() { Year = 2000, Month = 1 })).Fill());
             app.InvokeNextCycle(async () =>
             {
