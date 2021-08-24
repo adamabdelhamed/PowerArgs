@@ -12,7 +12,8 @@ namespace PowerArgs.Cli
     /// </summary>
     public class ConsoleBitmap
     {
-        private const double DrawPrecision = .25;
+        // larger is faster, but may cause gaps
+        private const double DrawPrecision = .5;
 
         /// <summary>
         /// The width of the image, in number of character pixels
@@ -246,6 +247,9 @@ namespace PowerArgs.Cli
         /// <param name="h">the height of the rectangle</param>
         public void DrawRect(int x, int y, int w, int h)
         {
+            //todo - Perf win, do the bounds check up front like in FillRect.
+            //       Then remove the if checks from all loops below.
+
             var maxX = x + w;
             var maxY = y + h;
             
