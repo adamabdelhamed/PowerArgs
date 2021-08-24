@@ -16,7 +16,7 @@ namespace PowerArgs
         public static DateTime Round(this DateTime date, TimeSpan span)
         {
             long ticks = (date.Ticks + (span.Ticks / 2) + 1) / span.Ticks;
-            return new DateTime(ticks * span.Ticks);
+            return new DateTime(ticks * span.Ticks, date.Kind);
         }
         /// <summary>
         /// Gets the floor value of the given date time using a given time span to decide the granularity
@@ -27,7 +27,7 @@ namespace PowerArgs
         public static DateTime Floor(this DateTime date, TimeSpan span)
         {
             long ticks = (date.Ticks / span.Ticks);
-            return new DateTime(ticks * span.Ticks);
+            return new DateTime(ticks * span.Ticks, date.Kind);
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace PowerArgs
         public static DateTime Ceil(this DateTime date, TimeSpan span)
         {
             long ticks = (date.Ticks + span.Ticks - 1) / span.Ticks;
-            return new DateTime(ticks * span.Ticks);
+            return new DateTime(ticks * span.Ticks, date.Kind);
         }
 
         /// <summary>
