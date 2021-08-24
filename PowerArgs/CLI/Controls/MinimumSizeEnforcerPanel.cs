@@ -37,7 +37,7 @@ namespace PowerArgs.Cli
                     Application.InvokeNextCycle(() => this.TryFocus());
                     Application.FocusManager.Push();
                     Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Escape, null, () => { }, this);
-                    options.OnMinimumSizeNotMet();
+                    options.OnMinimumSizeNotMet?.Invoke();
                     OnTooSmall();
                 }
             }
@@ -50,11 +50,11 @@ namespace PowerArgs.Cli
                     tooSmallLifetime.Dispose();
                     tooSmallLifetime = null;
                     Application.FocusManager.Pop();
-                    options.OnMinimumSizeMet();
+                    options.OnMinimumSizeMet?.Invoke();
                 }
                 else
                 {
-                    options.OnMinimumSizeMet();
+                    options.OnMinimumSizeMet?.Invoke();
                 }
             }
         }
