@@ -75,5 +75,28 @@ namespace ArgsTests.CLI.Physics
             Assert.AreEqual(0, RectangularF.Create(0, 0, 1, 1).CalculateDistanceTo(RectangularF.Create(1, 1, 1, 1)));
             Assert.AreEqual(1, RectangularF.Create(0, 0, 1, 1).CalculateDistanceTo(RectangularF.Create(2, 0, 1, 1)));
         }
+
+        [TestMethod]
+        public void TestRectangleConversion()
+        {
+            var rect = new Rectangle(5, 6, 7, 8);
+            var rectF = rect.ToIRectangularF();
+            Assert.AreEqual(5, rectF.Left);
+            Assert.AreEqual(6, rectF.Top);
+            Assert.AreEqual(7, rectF.Width);
+            Assert.AreEqual(8, rectF.Height);
+            var convertedBack = rectF.ToIRectangular();
+            Assert.AreEqual(5, convertedBack.X);
+            Assert.AreEqual(6, convertedBack.Y);
+            Assert.AreEqual(7, convertedBack.Width);
+            Assert.AreEqual(8, convertedBack.Height);
+            Assert.AreEqual(rect, convertedBack);
+            var convertedBackF = convertedBack.ToIRectangularF();
+            Assert.AreEqual(5, convertedBackF.Left);
+            Assert.AreEqual(6, convertedBackF.Top);
+            Assert.AreEqual(7, convertedBackF.Width);
+            Assert.AreEqual(8, convertedBackF.Height);
+            Assert.AreEqual(convertedBackF, rectF);
+        }
     }
 }
