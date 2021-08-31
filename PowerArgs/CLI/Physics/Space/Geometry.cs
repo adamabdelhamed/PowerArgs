@@ -270,6 +270,9 @@ namespace PowerArgs.Cli.Physics
             return RectangularF.Create(left, top, w, h);
         }
 
+        public static IRectangularF ToIRectangularF(this IRectangular rect) => RectangularF.Create(rect.X, rect.Y, rect.Width, rect.Height);
+        public static IRectangular ToIRectangular(this IRectangularF rect) => new Rectangle(Round(rect.Left), Round(rect.Top), Round(rect.Width), Round(rect.Height));
+
         public static Direction GetNearestDirectionFromAngle(this float orig)
         {
             var effectiveAngle = (orig % 360).RoundAngleToNearest(45);
