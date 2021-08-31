@@ -134,6 +134,8 @@ namespace PowerArgs.Cli
             ProtectedPanel = new ConsolePanel();
             ProtectedPanel.Parent = this;
             ProtectedPanel.Fill();
+            this.SubscribeForLifetime(nameof(Background), () => ProtectedPanel.Background = Background, this);
+            this.SubscribeForLifetime(nameof(Foreground), () => ProtectedPanel.Foreground = Foreground, this);
         }
 
         protected override void OnPaint(ConsoleBitmap context)
