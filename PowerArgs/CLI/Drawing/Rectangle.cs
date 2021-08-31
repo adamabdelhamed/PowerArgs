@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PowerArgs.Cli
 {
-    public struct Rectangle
+    public struct Rectangle : IRectangular
     {
         public Size Size{get;set;}
         public Point Location{get;set;}
