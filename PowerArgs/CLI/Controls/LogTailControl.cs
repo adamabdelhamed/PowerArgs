@@ -1,5 +1,6 @@
 ﻿using PowerArgs.Cli;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 namespace PowerArgs.Cli
 {
@@ -8,45 +9,79 @@ namespace PowerArgs.Cli
         public int MaxLines { get; set; } = 100;
         private ScrollablePanel scrollPanel;
 
-        private StackPanel logStack;
+        private Label logLabel;
 
-        public Label CurrentLine => logStack.Controls.WhereAs<Label>().LastOrDefault();
-          
+        private List<ConsoleString> logLines = new List<ConsoleString>() { ConsoleString.Empty };
         public LogTailControl()
         {
             scrollPanel = Add(new ScrollablePanel()).Fill();
-            logStack = scrollPanel.ScrollableContent.Add(new StackPanel() { Orientation = Orientation.Vertical }).FillHorizontally();
+            logLabel = scrollPanel.ScrollableContent.Add(new Label() { Text = ConsoleString.Empty, Mode = LabelRenderMode.ManualSizing }).FillHorizontally();
+            this.SubscribeForLifetime(nameof(Background),() => 
+            {
+                scrollPanel.Background = Background;
+                logLabel.Background = Background;
+            }, this);
         }
 
         public void AppendLine(ConsoleString str) => Append(str + "\n".ToConsoleString());
 
         public void Append(ConsoleString str)
         {
-            if (CurrentLine == null) AddLine();
-
-            var lines = str.Split("\n");
-            for(var i = 0; i < lines.Count; i++)
+            foreach (var ch in str)
             {
-                var line = lines[i];
-                CurrentLine.Text += line;
-                AddLine();
+                var c = ch.ToConsoleString();
+                if (c.StringValue == "\n")
+                {
+                    WriteNewlineInternal();
+                }
+                else
+                {
+                    if (logLines[logLines.Count - 1].Length > logLabel.Width - 10 && c.StringValue == " ")
+                    {
+                        WriteNewlineInternal();
+                    }
+                    else if (logLines[logLines.Count - 1].Length > logLabel.Width - 3)
+                    {
+                        WriteNewlineInternal();
+                        logLines[logLines.Count - 1] = (logLines[logLines.Count - 1]) + c;
+                    }
+                    else
+                    {
+                        logLines[logLines.Count - 1] = (logLines[logLines.Count - 1]) + c;
+                    }
+                }
             }
-
-            while(logStack.Controls.Count > MaxLines+1) // +1 accounts for the empty line we usually have
+            var linesUsed = 0;
+            var text = ConsoleString.Empty;
+            for (var i = logLines.Count - 1; i >= 0; i--)
             {
-                logStack.Controls.RemoveAt(0);
+                var line = logLines[i];
+                text = line + "\n" + text;
+                linesUsed++;
+                
             }
-
-            
-            scrollPanel.VerticalScrollUnits = Math.Max(0, logStack.Height - this.Height);
-           
-           
+            logLabel.Text = text;
+            logLabel.Height = linesUsed;
+            scrollPanel.ScrollableContent.Height = linesUsed;
+            var focused = Application.FocusManager.FocusedControl;
+            if (focused is Scrollbar && Descendents.Contains(focused))
+            {
+                // do nothing since the scrollbar is in focus
+            }
+            else
+            {
+                scrollPanel.VerticalScrollUnits = Math.Max(0, logLabel.Height - this.Height);
+            }
+            this.FirePropertyChanged(nameof(Bounds));
         }
 
-        private void AddLine()
+        private void WriteNewlineInternal()
         {
-            logStack.Add(new Label() { Text = ConsoleString.Empty, Mode = LabelRenderMode.ManualSizing }).FillHorizontally();
-            logStack.Height = logStack.Controls.Count;
+            logLines.Add(ConsoleString.Empty);
+            while (logLines.Count > MaxLines)
+            {
+                logLines.RemoveAt(0);
+            }
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace PowerArgs.Cli
@@ -183,6 +183,22 @@ namespace PowerArgs.Cli
         public Event AfterPaint { get; private set; } = new Event();
 
         /// <summary>
+        /// True by default, enables ALT+SHIFT+D to show debug panel. Standard output
+        /// is redirected by the App Thread. The debug panel will show whatever is going out
+        /// via Console.Write().
+        /// </summary>
+        public bool DebugEnabled { get; set; } = true;
+        
+        private DebugPanel debugPanel;
+        private TextWriter consoleWriter;
+        private TextBroacaster interceptor;
+
+        /// <summary>
+        /// An event that fires when Console.Write() has been called. 
+        /// </summary>
+        public Event<ConsoleString> ConsoleOutTextReady => interceptor.TextReady;
+
+        /// <summary>
         /// Creates a new console app given a set of boundaries
         /// </summary>
         /// <param name="w">The width of the app</param>
@@ -191,6 +207,9 @@ namespace PowerArgs.Cli
         {
             this.Name = GetType().Name;
             this.console = ConsoleProvider.Current;
+            consoleWriter = Console.Out;
+            interceptor = new TextBroacaster();
+            LoopStarted.SubscribeOnce(()=> Console.SetOut(interceptor));
             this.lastConsoleWidth = this.console.BufferWidth;
             this.lastConsoleHeight = this.console.WindowHeight;
             this.observable = new ObservableObject(this);
@@ -214,6 +233,33 @@ namespace PowerArgs.Cli
             this.LoopStarted.SubscribeOnce(() => _current = this);
             this.EndOfCycle.SubscribeForLifetime(DrainPaints, this);
         }
+
+        /// <summary>
+        /// Writes the string to the debug output which can be seen if DebugEnabled is true and
+        /// the user presses SHIFT+ALT+D.
+        /// </summary>
+        /// <param name="s">the string to write</param>
+        public static void Debug(string s) => (s ?? "<null>").ToConsoleString(DebugPanel.ForegroundColor, DebugPanel.BackgroundColor).Write();
+        /// <summary>
+        /// Writes the string plus a newline to the debug output which can be seen if DebugEnabled is true and
+        /// the user presses SHIFT+ALT+D.
+        /// </summary>
+        /// <param name="s">the string to write</param>
+        public static void DebugLine(string s) => Debug((s ?? "<null>") + "\n");
+
+        /// <summary>
+        /// Writes the object as a ToString() to the debug output which can be seen if DebugEnabled is true and
+        /// the user presses SHIFT+ALT+D.
+        /// </summary>
+        /// <param name="o">the object to stringify</param>
+        public static void Debug(object o) => Debug(o?.ToString());
+
+        /// <summary>
+        /// Writes the object as a ToString() plus a newline to the debug output which can be seen if DebugEnabled is true and
+        /// the user presses SHIFT+ALT+D.
+        /// </summary>
+        /// <param name="o">the object to stringify</param>
+        public static void DebugLine(object o) => DebugLine(o?.ToString());
 
         private void DrainPaints()
         {
@@ -425,6 +471,21 @@ namespace PowerArgs.Cli
         /// <param name="info">The key that was pressed</param>
         protected virtual void HandleKeyInput(ConsoleKeyInfo info)
         {
+
+            if(DebugEnabled && info.Key == ConsoleKey.D && info.Modifiers.HasFlag(ConsoleModifiers.Alt) && info.Modifiers.HasFlag(ConsoleModifiers.Shift))
+            {
+                if (debugPanel == null)
+                {
+                    debugPanel = LayoutRoot.Add(new DebugPanel() { Height = 15 }).FillHorizontally().DockToBottom();
+                }
+                else
+                {
+                    debugPanel.Dispose();
+                    debugPanel = null;
+                }
+                return;
+            }
+
             if (FocusManager.GlobalKeyHandlers.TryIntercept(info))
             {
                 // great, it was handled
@@ -479,7 +540,9 @@ namespace PowerArgs.Cli
             LayoutRoot.Paint();
 
             Recorder?.WriteFrame(Bitmap);
+            Console.SetOut(consoleWriter);
             Bitmap.Paint();
+            Console.SetOut(interceptor);
             AfterPaint.Fire();
         }
 
