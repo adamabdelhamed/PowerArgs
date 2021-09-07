@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace PowerArgs.Cli
@@ -13,7 +14,7 @@ namespace PowerArgs.Cli
     public class ConsoleBitmap
     {
         // larger is faster, but may cause gaps
-        private const double DrawPrecision = .5;
+        private const float DrawPrecision = .5f;
 
         /// <summary>
         /// The width of the image, in number of character pixels
@@ -209,7 +210,7 @@ namespace PowerArgs.Cli
 
             for (int xd = minX; xd < maxX; xd++)
             {
-                for(var yd = minY; yd < maxY; yd++)
+                for (var yd = minY; yd < maxY; yd++)
                 {
                     Compose(xd, yd, Pen);
                 }
@@ -247,47 +248,33 @@ namespace PowerArgs.Cli
         /// <param name="h">the height of the rectangle</param>
         public void DrawRect(int x, int y, int w, int h)
         {
-            //todo - Perf win, do the bounds check up front like in FillRect.
-            //       Then remove the if checks from all loops below.
+            var maxX = Math.Min(x + w, Width);
+            var maxY = Math.Min(y + h, Height);
+            var minX = Math.Max(x, 0);
+            var minY = Math.Max(y, 0);
 
-            var maxX = x + w;
-            var maxY = y + h;
-            
             // left vertical line
-            for (var yd = y; yd < maxY; yd++)
+            for (var yd = minY; yd < maxY; yd++)
             {
-                if (IsInBounds(x, yd))
-                {
-                    Compose(x, yd, Pen);
-                }
+                Compose(minX, yd, Pen);
             }
 
             // right vertical line
-            for (var yd = y; yd < maxY; yd++)
+            for (var yd = minY; yd < maxY; yd++)
             {
-                if (IsInBounds(maxX-1, yd))
-                {
-                    Compose(maxX - 1, yd, Pen);
-                }
+                Compose(maxX - 1, yd, Pen);
             }
 
-
             // top horizontal line
-            for (int xd = x; xd < maxX; xd++)
+            for (int xd = minX; xd < maxX; xd++)
             {
-                if (IsInBounds(xd, y))
-                {
-                    Compose(xd,y, Pen);
-                }
+                Compose(xd, minY, Pen);
             }
 
             // bottom horizontal line
-            for (int xd = x; xd < maxX; xd++)
+            for (int xd = minX; xd < maxX; xd++)
             {
-                if (IsInBounds(xd, maxY-1))
-                {
-                    Compose(xd,maxY - 1,  Pen);
-                }
+                Compose(xd, maxY - 1, Pen);
             }
         }
 
@@ -345,9 +332,10 @@ namespace PowerArgs.Cli
                 Compose(x, y, Pen);
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Compose(int x, int y, ConsoleCharacter pen)
         {
-           pixels[x][y].Value = pen;
+            pixels[x][y].Value = pen;
         }
 
         [ThreadStatic]
@@ -364,7 +352,7 @@ namespace PowerArgs.Cli
         {
             var len = DefineLineBuffered(x1, y1, x2, y2);
             Point point;
-            for(var i = 0; i < len; i++)
+            for (var i = 0; i < len; i++)
             {
                 point = LineBuffer[i];
                 if (IsInBounds(point.X, point.Y))
@@ -378,7 +366,7 @@ namespace PowerArgs.Cli
         {
             LineBuffer = LineBuffer ?? new Point[10000];
             buffer = buffer ?? LineBuffer;
-   
+
             var ret = 0;
             if (x1 == x2)
             {
@@ -400,7 +388,7 @@ namespace PowerArgs.Cli
             }
             else
             {
-                double slope = ((double)y2 - y1) / ((double)x2 - x1);
+                float slope = ((float)y2 - y1) / ((float)x2 - x1);
 
                 int dx = Math.Abs(x1 - x2);
                 int dy = Math.Abs(y1 - y2);
@@ -408,9 +396,9 @@ namespace PowerArgs.Cli
                 Point last = new Point();
                 if (dy > dx)
                 {
-                    for (double x = x1; x < x2; x += DrawPrecision)
+                    for (float x = x1; x < x2; x += DrawPrecision)
                     {
-                        double y = slope + (x - x1) + y1;
+                        float y = slope + (x - x1) + y1;
                         int xInt = Geometry.Round(x);
                         int yInt = Geometry.Round(y);
                         var p = new Point(xInt, yInt);
@@ -421,9 +409,9 @@ namespace PowerArgs.Cli
                         }
                     }
 
-                    for (double x = x2; x < x1; x += DrawPrecision)
+                    for (float x = x2; x < x1; x += DrawPrecision)
                     {
-                        double y = slope + (x - x1) + y1;
+                        float y = slope + (x - x1) + y1;
                         int xInt = Geometry.Round(x);
                         int yInt = Geometry.Round(y);
                         var p = new Point(xInt, yInt);
@@ -436,9 +424,9 @@ namespace PowerArgs.Cli
                 }
                 else
                 {
-                    for (double y = y1; y < y2; y += DrawPrecision)
+                    for (float y = y1; y < y2; y += DrawPrecision)
                     {
-                        double x = ((y - y1) / slope) + x1;
+                        float x = ((y - y1) / slope) + x1;
                         int xInt = Geometry.Round(x);
                         int yInt = Geometry.Round(y);
                         var p = new Point(xInt, yInt);
@@ -449,9 +437,9 @@ namespace PowerArgs.Cli
                         }
                     }
 
-                    for (double y = y2; y < y1; y += DrawPrecision)
+                    for (float y = y2; y < y1; y += DrawPrecision)
                     {
-                        double x = ((y - y1) / slope) + x1;
+                        float x = ((y - y1) / slope) + x1;
                         int xInt = Geometry.Round(x);
                         int yInt = Geometry.Round(y);
                         var p = new Point(xInt, yInt);
@@ -473,7 +461,7 @@ namespace PowerArgs.Cli
         /// <returns>a copy of this bitmap</returns>
         public ConsoleBitmap Clone()
         {
-            var ret = new ConsoleBitmap(Width,Height);
+            var ret = new ConsoleBitmap(Width, Height);
             for (var x = 0; x < Width; x++)
             {
                 for (var y = 0; y < Height; y++)
@@ -513,14 +501,14 @@ namespace PowerArgs.Cli
         private bool wasFancy;
         public void Paint()
         {
-            if(ConsoleProvider.Fancy != wasFancy)
+            if (ConsoleProvider.Fancy != wasFancy)
             {
                 this.Invalidate();
                 wasFancy = ConsoleProvider.Fancy;
 
-                if(ConsoleProvider.Fancy)
+                if (ConsoleProvider.Fancy)
                 {
-                    System.Console.Write(Ansi.Cursor.Hide.EscapeSequence + Ansi.Text.BlinkOff.EscapeSequence);
+                    Console.Write(Ansi.Cursor.Hide.EscapeSequence + Ansi.Text.BlinkOff.EscapeSequence);
                 }
             }
 
@@ -649,7 +637,7 @@ namespace PowerArgs.Cli
                     Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
                 }
             }
-            catch(IOException)
+            catch (IOException)
             {
                 Invalidate();
                 PaintOld();
@@ -661,18 +649,18 @@ namespace PowerArgs.Cli
             }
         }
 
- 
+
         public void PaintNew()
         {
             if (Console.WindowHeight == 0) return;
-             
+
             if (lastBufferWidth != this.Console.BufferWidth)
             {
                 lastBufferWidth = this.Console.BufferWidth;
                 Invalidate();
                 this.Console.Clear();
             }
-       
+
             try
             {
                 var stringBuilder = new StringBuilder();
@@ -693,7 +681,7 @@ namespace PowerArgs.Cli
                         pixel = pixels[x][y];
                         pixelChanged = pixel.HasChanged;
                         changeOnLine = changeOnLine || pixelChanged;
-                        
+
                         val = pixel.Value.Value;
                         fg = pixel.Value.ForegroundColor;
                         bg = pixel.Value.BackgroundColor;
@@ -732,7 +720,7 @@ namespace PowerArgs.Cli
                         pixel.LastDrawnValue = pixel.Value;
                     }
 
-                    if (currentChunk.Length> 0)
+                    if (currentChunk.Length > 0)
                     {
                         chunksOnLine.Add(currentChunk);
                     }
@@ -747,13 +735,13 @@ namespace PowerArgs.Cli
                             var chunk = chunksOnLine[i];
                             if (chunk.HasChanged)
                             {
-                             
-                                if(chunk.Underlined)
+
+                                if (chunk.Underlined)
                                 {
                                     stringBuilder.Append(Ansi.Text.UnderlinedOn.EscapeSequence);
                                 }
 
-                                stringBuilder.Append(Ansi.Cursor.Move.ToLocation(left+1, y+1).EscapeSequence);
+                                stringBuilder.Append(Ansi.Cursor.Move.ToLocation(left + 1, y + 1).EscapeSequence);
                                 stringBuilder.Append(Ansi.Color.Foreground.Rgb(chunk.FG.R, chunk.FG.G, chunk.FG.B).EscapeSequence);
                                 stringBuilder.Append(Ansi.Color.Background.Rgb(chunk.BG.R, chunk.BG.G, chunk.BG.B).EscapeSequence);
                                 stringBuilder.Append(chunk.ToString());
@@ -766,11 +754,10 @@ namespace PowerArgs.Cli
                             left += chunk.Length;
                         }
                     }
-             
+
                     chunksOnLine.Clear();
                 }
-
-                System.Console.Write(stringBuilder.ToString());
+                Console.Write(stringBuilder.ToString());
             }
             catch (IOException)
             {
