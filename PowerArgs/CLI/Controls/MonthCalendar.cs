@@ -29,6 +29,32 @@ namespace PowerArgs.Cli
         /// An optional callback that lets you customize the content area of a specific day on the calendar
         /// </summary>
         public Action<DateTime, ConsolePanel> CustomizeContent { get; set; }
+
+        /// <summary>
+        /// Sets the minimum month that the calendar will support. The
+        /// built in seek functions will not allow the user to seek to an
+        /// earlier month.
+        /// </summary>
+        public DateTime MinMonth { get; set; } = DateTime.MinValue;
+        /// <summary>
+        /// Sets the maximum month that the calendar will support. The
+        /// built in seek functions will not allow the user to seek to a
+        /// later month.
+        /// </summary>
+        public DateTime MaxMonth { get; set; } = DateTime.MaxValue;
+        
+        /// <summary>
+        /// The keyboard key that will allow the user to move the calendar
+        /// to a later month when the calendar has focus. Set this option to null
+        /// if you want to disable keyboard navigation and focus.
+        /// </summary>
+        public KeyboardShortcut AdvanceMonthForwardKey { get; set; } = new KeyboardShortcut(ConsoleKey.RightArrow, null);
+        /// <summary>
+        /// The keyboard key that will allow the user to move the calendar
+        /// to an earlier month when the calendar has focus. Set this option to null
+        /// if you want to disable keyboard navigation and focus.
+        /// </summary>
+        public KeyboardShortcut AdvanceMonthBackwardKey { get; set; } = new KeyboardShortcut(ConsoleKey.LeftArrow, null);
     }
 
     /// <summary>
@@ -45,6 +71,8 @@ namespace PowerArgs.Cli
         /// /// The minimum supported Height of the MonthCalendar control
         /// </summary>
         public const int MinHeight = 15;
+
+        private const int NumberOfRowsNeeded = 6;
 
         /// <summary>
         /// The options object that was passed to the constructor
@@ -63,6 +91,55 @@ namespace PowerArgs.Cli
             var now = DateTime.Today;
             this.Options = options ?? new MonthCalendarOptions() { Year = now.Year, Month = now.Month };
             Refresh();
+            SetupKeyboardInput();
+        }
+
+        /// <summary>
+        /// Seeks the calendar forward or backward by a number of months.
+        /// Use a positive number to go forward. Use a negative number to go backwards.
+        /// </summary>
+        /// <param name="numberOfMonths">the number of months to seek by</param>
+        /// <returns>true if the seek happened, false if it did not because it would have gone beyond the min
+        /// or max months</returns>
+        public bool SeekByMonths(int numberOfMonths)
+        {
+            var currentDate = new DateTime(Options.Year, Options.Month, 1);
+            var newDate = currentDate.AddMonths(numberOfMonths);
+            if (newDate < Options.MinMonth || newDate > Options.MaxMonth) return false;
+
+            Options.Year = newDate.Year;
+            Options.Month = newDate.Month;
+            Refresh();
+            return true;
+        }
+
+        private void SetupKeyboardInput()
+        {
+            if (Options.AdvanceMonthBackwardKey == null || Options.AdvanceMonthForwardKey == null) return;
+            CanFocus = true;
+
+            this.KeyInputReceived.SubscribeForLifetime(key =>
+            {
+                var back = Options.AdvanceMonthBackwardKey;
+                var fw = Options.AdvanceMonthForwardKey;
+
+                var backModifierMatch = back.Modifier == null || key.Modifiers.HasFlag(back.Modifier);
+                if (key.Key == back.Key && backModifierMatch) SeekByMonths(-1);
+
+                var fwModifierMatch = fw.Modifier == null || key.Modifiers.HasFlag(fw.Modifier);
+                if (key.Key == fw.Key && fwModifierMatch) SeekByMonths(1);
+
+            }, this);
+
+            this.Focused.SubscribeForLifetime(() =>
+            {  
+                Refresh();
+            }, this);
+
+            this.Unfocused.SubscribeForLifetime(() =>
+            {
+                Refresh();
+            }, this);
         }
 
         /// <summary>
@@ -97,7 +174,7 @@ namespace PowerArgs.Cli
             gridOptions.Rows.Add(new GridRowDefinition() { Height = 3, Type = GridValueType.Pixels });
 
             // rows for weeks changes depending on the days of the month and the day of week of 1st day
-            var rowCount = CalculateNubmerOfRowsNeeded();
+            var rowCount = NumberOfRowsNeeded;
             for (var i = 0; i < rowCount; i++)
             {
                 gridOptions.Rows.Add(new GridRowDefinition() { Height = 1, Type = GridValueType.Pixels });
@@ -116,7 +193,7 @@ namespace PowerArgs.Cli
                 var leftOuterBorderWidth = 2;
                 if (Width < MinWidth || Height < MinHeight) return;
                 var cellWidth = (Width - leftOuterBorderWidth) / 7;
-                var rowHeight = (Height - dayOfWeekHeight) / CalculateNubmerOfRowsNeeded();
+                var rowHeight = (Height - dayOfWeekHeight) / NumberOfRowsNeeded;
 
                 for (var i = 0; i < gridOptions.Columns.Count; i++)
                 {
@@ -132,7 +209,7 @@ namespace PowerArgs.Cli
                     row.Type = GridValueType.Pixels;
                 }
                 gridLayout.Width = leftOuterBorderWidth + (cellWidth * 7);
-                gridLayout.Height = (rowHeight * CalculateNubmerOfRowsNeeded()) + dayOfWeekHeight;
+                gridLayout.Height = (rowHeight * NumberOfRowsNeeded) + dayOfWeekHeight;
                 gridLayout.RefreshLayout();
             }, gridLayout);
         }
@@ -191,7 +268,7 @@ namespace PowerArgs.Cli
                 CalculateGridCoordinatesForDate(current, out int row, out int col);
                 var key = GetKeyForCoordinates(row, col);
                 var cellPanel = dateCells[key];
-                var extensiblePanel = cellPanel.Add(new ConsolePanel()).Fill(padding: new Thickness(0, 0, 1, 0));
+                var extensiblePanel = cellPanel.Add(new ConsolePanel()).Fill(padding: new Thickness(0, 1, 1, 0));
                 Options.CustomizeContent?.Invoke(current, extensiblePanel);
                 cellPanel.Background = Background;
                 cellPanel.Add(new Label() { Tag = DayOfWeekTag, Text = ("" + current.Day).ToConsoleString(Foreground, Background) }).DockToTop();
@@ -210,23 +287,35 @@ namespace PowerArgs.Cli
             }
         }
 
+        private Label monthAndYearLabel;
         private void PopulateMonthAndYearLabel()
         {
             var date = new DateTime(Options.Year, Options.Month, 1);
-            var label = ProtectedPanel.Add(new Label() { Text = date.ToString("Y").ToConsoleString(Background, Foreground) });
+            var monthAndYearLabel = ProtectedPanel.Add(new Label() { Text = date.ToString("Y").ToConsoleString(HasFocus ? RGB.Black : Background, HasFocus ? RGB.Cyan : Foreground) });
             gridLayout.SynchronizeForLifetime(nameof(Bounds), () =>
             {
-                label.X = gridLayout.X + gridLayout.Width - label.Width;
-                label.Y = + gridLayout.Y + gridLayout.Height - 1;
+                monthAndYearLabel.X = gridLayout.X + gridLayout.Width - monthAndYearLabel.Width;
+                monthAndYearLabel.Y = + gridLayout.Y + gridLayout.Height - 1;
             }, gridLayout);
         }
 
         private void SetupMinimumSizeExperience()
         {
-            ProtectedPanel.Add(new MinimumSizeEnforcerPanel(new MinimumSizeEnforcerPanelOptions()
+            ConsolePanel shield = null;
+            ConsoleControl min = null;
+            min = ProtectedPanel.Add(new MinimumSizeEnforcerPanel(new MinimumSizeEnforcerPanelOptions()
             {
                 MinWidth = MinWidth,
                 MinHeight = MinHeight,
+                OnMinimumSizeNotMet = ()=>
+                {
+                    if (min == null) return;
+                    min.IsVisible = false;
+                    shield = ProtectedPanel.Add(new ConsolePanel() { Background = Foreground }).Fill();
+                    var date = new DateTime(Options.Year, Options.Month, 1);
+                    shield.Add(new Label() { Text = date.ToString("Y").ToConsoleString(Background, Foreground) }).CenterBoth();
+                },
+                OnMinimumSizeMet = ()=> shield?.Dispose()
             })).Fill();
         }
 
@@ -268,23 +357,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        private int CalculateNubmerOfRowsNeeded()
-        {
-            var weeks = 1;
-            var current = new DateTime(Options.Year, Options.Month, 1);
-            while(current.Month == Options.Month)
-            {
-                var tomorrowIsSameMonth = current.AddDays(1).Month == Options.Month;
-                var isLastDayOfWeek = current.DayOfWeek == DayOfWeek.Saturday;
-                current = current.AddDays(1);
-                if (isLastDayOfWeek && tomorrowIsSameMonth)
-                {
-                    weeks++;
-                }
-            }
-            return weeks;
-        }
-
+      
         private string GetKeyForDate(DateTime date)
         {
             CalculateGridCoordinatesForDate(date, out int row, out int col);

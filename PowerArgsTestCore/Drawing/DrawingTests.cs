@@ -206,5 +206,27 @@ namespace ArgsTests.CLI.Controls
             app.Start().Wait();
             app.AssertThisTestMatchesLKG();
         }
+
+        [TestMethod]
+        public void TestDrawRect()
+        {
+            var bitmap = new ConsoleBitmap(80, 30);
+            var app = new CliTestHarness(TestContext, bitmap.Width, bitmap.Height, true);
+
+            app.InvokeNextCycle(async () =>
+            {
+                app.LayoutRoot.Add(new BitmapControl() { Bitmap = bitmap }).Fill();
+                bitmap.Pen = new ConsoleCharacter('X', ConsoleColor.Green);
+                for (var i = 0; i < 500000; i++)
+                {
+                    bitmap.DrawRect(0, 0, bitmap.Width, bitmap.Height);
+                }
+                await app.PaintAndRecordKeyFrameAsync();
+                app.Stop();
+            });
+
+            app.Start().Wait();
+            app.AssertThisTestMatchesLKG();
+        }
     }
 }
