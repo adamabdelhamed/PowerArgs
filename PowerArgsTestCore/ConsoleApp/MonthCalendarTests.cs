@@ -54,7 +54,7 @@ namespace ArgsTests.CLI.Controls
             var app = new CliTestHarness(this.TestContext, 120, 40);
             app.InvokeNextCycle(async () =>
             {
-                var carousel = new ThreeMonthCarousel(new ThreeMonthCarouselOptions());
+                var carousel = new ThreeMonthCarousel(new ThreeMonthCarouselOptions() { Month = 1, Year = 2000 });
                 var start = carousel.Options.Month + "/" + carousel.Options.Year;
                 await Task.Delay(1000);
                 app.LayoutRoot.Add(new FixedAspectRatioPanel(4f / 1f, carousel)).Fill();
@@ -85,7 +85,7 @@ namespace ArgsTests.CLI.Controls
                 app.Stop();
             });
             app.Start().Wait();
-            app.AssertThisTestMatchesLKG();
+            app.AssertThisTestMatchesLKGFirstAndLastFrame();
         }
     }
 }
