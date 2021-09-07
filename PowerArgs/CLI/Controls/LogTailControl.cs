@@ -1,12 +1,11 @@
-﻿using PowerArgs.Cli;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 namespace PowerArgs.Cli
 {
     public class LogTailControl : ConsolePanel
     {
-        public int MaxLines { get; set; } = 100;
+        public int MaxLines { get; set; } = 1000;
         private ScrollablePanel scrollPanel;
 
         private Label logLabel;
