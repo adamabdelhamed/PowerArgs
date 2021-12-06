@@ -57,7 +57,7 @@ namespace PowerArgs.Cli.Physics
         public Time(TimeSpan? increment = null, TimeSpan? now = null) : base()
         {
             this.Name = "TimeThread";
-            Increment = increment.HasValue ? increment.Value : TimeSpan.FromTicks(1);
+            Increment = increment.HasValue ? increment.Value : TimeSpan.FromSeconds(.05f);
             Now = now.HasValue ? now.Value : TimeSpan.Zero;
             StartOfCycle.SubscribeOnce(() => current = this);
  

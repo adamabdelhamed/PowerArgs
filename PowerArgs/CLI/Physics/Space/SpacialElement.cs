@@ -23,7 +23,12 @@ namespace PowerArgs.Cli.Physics
         public List<IRectangularF> GetObstacles(SpacialElement e, float? z = null)
         {
             var ez = z.HasValue ? z.Value : e.ZIndex;
-            return SpaceTime.CurrentSpaceTime.Elements.Where(el => el != e && el.ZIndex == ez).As<IRectangularF>().ToList();
+            var ret =  SpaceTime.CurrentSpaceTime.Elements.Where(el => el != e && el.ZIndex == ez).As<IRectangularF>().ToList();
+            ret.Add(RectangularF.Create(0, -1, SpaceTime.CurrentSpaceTime.Width, 1)); // top boundary
+            ret.Add(RectangularF.Create(0, SpaceTime.CurrentSpaceTime.Height, SpaceTime.CurrentSpaceTime.Width, 1)); // bottom boundary
+            ret.Add(RectangularF.Create(-1, 0, 1, SpaceTime.CurrentSpaceTime.Height)); // left boundary
+            ret.Add(RectangularF.Create(SpaceTime.CurrentSpaceTime.Width, 0, 1, SpaceTime.CurrentSpaceTime.Height)); // right boundary
+            return ret;
         }
     }
 
