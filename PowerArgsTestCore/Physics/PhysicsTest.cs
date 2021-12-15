@@ -18,7 +18,7 @@ namespace ArgsTests.CLI.Physics
             app.InvokeNextCycle(async () =>
             {
                 var d = new TaskCompletionSource<bool>();
-                var spaceTimePanel = app.LayoutRoot.Add(new SpaceTimePanel(app.LayoutRoot.Width, app.LayoutRoot.Height));
+                var spaceTimePanel = app.LayoutRoot.Add(new SpaceTimePanel(new SpaceTime(app.LayoutRoot.Width, app.LayoutRoot.Height)));
                 spaceTimePanel.SpaceTime.Increment = DefaultTimeIncrement;
                 var stTask = spaceTimePanel.SpaceTime.Start();
           
@@ -52,15 +52,6 @@ namespace ArgsTests.CLI.Physics
                 });
 
                 await d.Task;
-                try
-                {
-                    await stTask;
-                }catch(Exception exc)
-                {
-                    spaceTimePanel.SpaceTime.Stop();
-                    d.SetResult(true);
-                    stEx = exc;
-                }
                 await Task.Yield();
                 await app.PaintAndRecordKeyFrameAsync();
                 spaceTimePanel.SpaceTime.Stop();

@@ -529,6 +529,7 @@ namespace PowerArgs.Cli
             LayoutRoot.Dispose();
             Stopped.Fire();
             Dispose();
+            Console.SetOut(consoleWriter);
         }
 
         private ConsoleCharacter defaultPen = new ConsoleCharacter(' ', null, DefaultColors.BackgroundColor);

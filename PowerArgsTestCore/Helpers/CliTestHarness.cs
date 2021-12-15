@@ -113,7 +113,7 @@ namespace ArgsTests.CLI
             }
             else
             {
-                throw new Exception("Wrong thread");
+                await InvokeAsync(RecordKeyFrame);
             }
         }
 

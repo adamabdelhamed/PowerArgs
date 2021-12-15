@@ -88,9 +88,10 @@ namespace ArgsTests.CLI
             var delayProvider = new KeyframeDelayProvider(app);
             app.InvokeNextCycle(() =>
             {
-                var panel = app.LayoutRoot.Add(new SpaceTimePanel(40, 1));
+                var panel = app.LayoutRoot.Add(new SpaceTimePanel(new SpaceTime(40, 1)));
                 panel.SpaceTime.Start();
                 app.SecondsBetweenKeyframes = panel.SpaceTime.Increment.TotalSeconds;
+                app.OnDisposed(() => panel.SpaceTime.Dispose());
                 panel.SpaceTime.Invoke(async ()=>
                 {
                     panel.RealTimeViewing.Enabled = false;
@@ -108,7 +109,6 @@ namespace ArgsTests.CLI
                         AutoReverse = true,
                         AutoReverseDelay = 1000,
                     });
-                    panel.SpaceTime.Stop();
                     app.Stop();
                 });
             });

@@ -17,7 +17,7 @@ namespace ArgsTests.CLI.Physics
         public void E2ESimplestApp()
         {
             var app = new ConsoleApp(1,1);
-            var panel = app.LayoutRoot.Add(new SpaceTimePanel(1, 1));
+            var panel = app.LayoutRoot.Add(new SpaceTimePanel(new SpaceTime(1, 1)));
             SpacialElement element;
             TimeSpan lastAge = TimeSpan.Zero;
             panel.SpaceTime.InvokeNextCycle(() =>
@@ -27,12 +27,15 @@ namespace ArgsTests.CLI.Physics
 
                 panel.SpaceTime.Invoke(async () => 
                 {
-                    lastAge = element.CalculateAge();
-                    if(Time.CurrentTime.Now == TimeSpan.FromSeconds(.5))
+                    while (true)
                     {
-                        Time.CurrentTime.Stop();
+                        lastAge = element.CalculateAge();
+                        if (Time.CurrentTime.Now == TimeSpan.FromSeconds(.5))
+                        {
+                            Time.CurrentTime.Stop();
+                        }
+                        await Task.Yield();
                     }
-                    await Task.Yield();
                 });
              });
 

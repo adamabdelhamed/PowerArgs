@@ -100,7 +100,28 @@ namespace ArgsTests.CLI.Physics
                 v.Angle = movementAngle;
                 v.Speed = speed;
                 await st.DelayAsync(20000);
-                PhysicsTest.AssertClose(expected, actual(movingObject), .2f);
+
+                if(d == Direction.Down)
+                {
+                    Assert.IsTrue(movingObject.Bottom() < wall.Top);
+                }
+                else if(d == Direction.Up)
+                {
+                    Assert.IsTrue(movingObject.Top > wall.Bottom());
+                }
+                else if(d == Direction.Left)
+                {
+                    Assert.IsTrue(movingObject.Left > wall.Right());
+                }
+                else if(d == Direction.Right)
+                {
+                    Assert.IsTrue(movingObject.Right() < wall.Left);
+                }
+                else
+                {
+                    Assert.Fail();
+                }
+
                 Console.WriteLine($"Wall.Left == {expected}, movingObject.Right() == {actual(movingObject)}");
                 movingObject.Lifetime.Dispose();
             }

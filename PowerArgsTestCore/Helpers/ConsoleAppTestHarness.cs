@@ -23,11 +23,9 @@ namespace ArgsTests.CLI.Physics
             Task spaceTimeTask = null;
             Run(context, (app) =>
             {
-                var panel = app.LayoutRoot.Add(new SpaceTimePanel(w, h));
-                panel.SpaceTime.InvokeNextCycle(() =>
-                {
-                    testCode(app, panel);
-                });
+                var st = new SpaceTime(w, h, TimeSpan.FromSeconds(.05f));
+                var panel = app.LayoutRoot.Add(new SpaceTimePanel(st));
+                st.InvokeNextCycle(() => testCode(app, panel) );
                 spaceTimeTask = panel.SpaceTime.Start();
                 spaceTimeTask.Finally((p) => app.Stop());
 

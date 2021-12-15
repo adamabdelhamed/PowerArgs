@@ -2,151 +2,62 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 
 namespace PowerArgs.Cli.Physics
 {
-    public class SpaceTimePanel : ConsolePanel
+    public class SpaceTimePanel : ConsolePanel, ISpaceTimeUI
     {
-        public bool HeadlessMode { get; set; }
         public SpaceTime SpaceTime { get; private set; }
-        private bool resizedSinceLastRender;
+        public RealTimeViewingFunction RealTimeViewing { get; set; }
+
         private Dictionary<SpacialElement, SpacialElementRenderer> renderers;
         private SpacialElementBinder thingBinder;
-        private AutoResetEvent resetHandle;
-        public RealTimeViewingFunction RealTimeViewing { get; private set; }
+        public Event<SpacialElement> OnBind { get; private set; } = new Event<SpacialElement>();
+        public Event SizeChanged { get; private set; } = new Event();
 
         public Event AfterUpdate { get; private set; } = new Event();
-        public Event<SpacialElement> OnBind { get; private set; } = new Event<SpacialElement>();
-        public SpaceTimePanel(int w, int h, SpaceTime time = null)
+
+        float ISpaceTimeUI.Width => Width;
+
+        float ISpaceTimeUI.Height => Height;
+
+        public SpaceTimePanel(SpaceTime st)
         {
-            this.Width = w;
-            this.Height = h;
+            this.SpaceTime = st;
+            this.Width = Geometry.Round(st.Width);
+            this.Height = Geometry.Round(st.Height);
             Background = ConsoleColor.White;
             renderers = new Dictionary<SpacialElement, SpacialElementRenderer>();
             thingBinder = new SpacialElementBinder();
-            resetHandle = new AutoResetEvent(false);
-           
-            this.SpaceTime = time;
-            if (this.SpaceTime == null)
-            {
-                this.SpaceTime = new SpaceTime(w, h, increment: TimeSpan.FromSeconds(.05));
-                this.OnDisposed(() =>
-                {
-                    if(this.SpaceTime.IsRunning)
-                    {
-                        this.SpaceTime.Stop();
-                    }
-                    this.SpaceTime = null;
-                });
-            }
-
-            this.SpaceTime.Invoke(() =>
-            {
-                RealTimeViewing = new RealTimeViewingFunction(this.SpaceTime) { Enabled = true };
-                this.SpaceTime.EndOfCycle.SubscribeForLifetime(() => UpdateViewInternal(), this);
-             });
-
-            this.AddedToVisualTree.SubscribeForLifetime(() =>
-            {
-                this.OnDisposed(()=> resetHandle.Set());
-            }, this);
-
-
-            this.SubscribeForLifetime(nameof(Bounds), () => { resizedSinceLastRender = false; }, this);
+            SubscribeForLifetime(nameof(Bounds), SizeChanged.Fire, this);
+            new SpaceTimeUIHost(this);
         }
 
-        private void UpdateViewInternal()
+        public void Invoke(Action a) => Application.InvokeNextCycle(a);
+
+        public void Add(SpacialElement element)
         {
-            if(HeadlessMode)
-            {
-                SpaceTime.ClearChanges();
-                return;
-            }
-
-            if(SpaceTime.AddedElements.Count == 0 && SpaceTime.ChangedElements.Count == 0 && SpaceTime.RemovedElements.Count == 0)
-            {
-                return;
-            }
-            resetHandle.Reset();
-            Application.InvokeNextCycle(() =>
-            {
-                foreach (var e in SpaceTime.AddedElements)
-                {
-                    var renderer = thingBinder.Bind(e, SpaceTime);
-                    renderers.Add(e, renderer);
-                    this.Controls.Add(renderer);
-                    SizeAndLocate(renderer);
-                    OnBind.Fire(e);
-                    renderer.OnRender();
-                }
-
-                foreach (var e in SpaceTime.ChangedElements)
-                {
-                    SizeAndLocate(renderers[e]);
-                    renderers[e].OnRender();
-                }
-
-                foreach (var e in SpaceTime.RemovedElements)
-                {
-                    var renderer = renderers[e];
-                    renderers.Remove(e);
-                    Controls.Remove(renderer);
-                }
-
-                if (resizedSinceLastRender)
-                {
-                    foreach (var r in renderers.Values)
-                    {
-                        SizeAndLocate(r);
-                    }
-                }
-                Application.Paint();
-                resetHandle.Set();
-            });
-
-            resetHandle.WaitOne();
-            resizedSinceLastRender = false;
-            SpaceTime.ClearChanges();
-            AfterUpdate.Fire();
+            var renderer = thingBinder.Bind(element, SpaceTime);
+            renderers.Add(element, renderer);
+            this.Controls.Add(renderer);
+            OnBind.Fire(element);
+            renderer.OnRender();
         }
 
-        private bool SizeAndLocate(SpacialElementRenderer r)
+        public void Remove(SpacialElement element)
         {
-            float eW = r.Element.Width;
-            float eH = r.Element.Height;
+            Controls.Remove(renderers[element]);
+            renderers.Remove(element);
+        }
 
-            float eL = r.Element.Left;
-            float eT = r.Element.Top;
+        public void UpdateBounds(SpacialElement e, float xf, float yf, int z, float wf, float hf)
+        {
+            var x = Geometry.Round(xf);
+            var y = Geometry.Round(yf);
+            var w = Geometry.Round(wf);
+            var h = Geometry.Round(hf);
 
-            if (eW < .5f && eW > 0)
-            {
-                eL -= .5f;
-                eW = 1;
-            }
-
-            if (eH < .5f && eH > 0)
-            {
-                eT -= .5f;
-                eH = 1;
-            }
-
-            float wPer = eW / SpaceTime.Width;
-            float hPer = eH / SpaceTime.Height;
-
-            float xPer = eL / SpaceTime.Width;
-            float yPer = eT / SpaceTime.Height;
-
-
-            int x = Geometry.Round(xPer * (float)Width);
-            int y = Geometry.Round(yPer * (float)Height);
-            int w = Geometry.Round(wPer * (float)Width);
-            int h = Geometry.Round(hPer * (float)Height);
-
-
-
-            r.ZIndex = r.Element.ZIndex;
-
+            var r = renderers[e];
             if (x != r.X || y != r.Y || w != r.Width || h != r.Height)
             {
                 r.Width = w;
@@ -157,13 +68,8 @@ namespace PowerArgs.Cli.Physics
 
                 r.X = x;
                 r.Y = y;
-
-                return true;
             }
-            else
-            {
-                return false;
-            }
+            r.OnRender();
         }
     }
 
@@ -181,13 +87,6 @@ namespace PowerArgs.Cli.Physics
 
         public SpacialElementRenderer Bind(SpacialElement t, SpaceTime spaceTime)
         {
-            if (t.Renderer != null)
-            {
-                t.Renderer.Element = t;
-                t.Renderer.OnBind();
-                return t.Renderer;
-            }
-
             Type binding;
             if (Bindings.TryGetValue(t.GetType(), out binding) == false)
             {
@@ -255,6 +154,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
     }
+
 
     public class SpacialElementRenderer : ConsolePanel
     {

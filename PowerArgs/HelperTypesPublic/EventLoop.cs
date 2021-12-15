@@ -343,6 +343,34 @@ namespace PowerArgs
             }
         }
         
+        public Task InvokeAsync(Action a)
+        {
+            return InvokeAsync(() =>
+            {
+                a();
+                return Task.CompletedTask;
+            });
+        }
+
+        public Task InvokeAsync(Func<Task> work)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            Invoke(() =>
+            {
+                try
+                {
+                    var ret = work();
+                    tcs.SetResult(true);
+                    return ret;
+                }
+                catch(Exception ex)
+                {
+                    tcs.SetException(ex);
+                    throw;
+                }
+            });
+            return tcs.Task;
+        }
 
         public void Invoke(Func<Task> work)
         {
