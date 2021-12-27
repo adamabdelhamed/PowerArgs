@@ -21,6 +21,8 @@ namespace PowerArgs.Cli.Physics
 
         float ISpaceTimeUI.Height => Height;
 
+        public ILocationF Camera { get; set; }
+
         public SpaceTimePanel(SpaceTime st)
         {
             this.SpaceTime = st;
