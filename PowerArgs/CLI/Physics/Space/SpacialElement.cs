@@ -20,14 +20,53 @@ namespace PowerArgs.Cli.Physics
 
     public class DefaultObstacleResolver : IObstacleResolver
     {
-        public List<IRectangularF> GetObstacles(SpacialElement e, float? z = null)
+        public List<IRectangularF> GetObstacles(SpacialElement element, float? z = null)
         {
-            var ez = z.HasValue ? z.Value : e.ZIndex;
-            var ret =  SpaceTime.CurrentSpaceTime.Elements.Where(el => el != e && el.ZIndex == ez).As<IRectangularF>().ToList();
+            float effectiveZ = z.HasValue ? z.Value : element.ZIndex;
+            var v = Velocity.For(element);
+            IEnumerable<SpacialElement> exclusions = v?.HitDetectionExclusions;
+            IEnumerable<Type> excludedTypes = v?.HitDetectionExclusionTypes;
+            Func<IEnumerable<SpacialElement>> dynamicExclusions = v?.HitDetectionDynamicExclusions;
+
+            var ret = new List<IRectangularF>();
+            var dynamicEx = dynamicExclusions != null ? dynamicExclusions.Invoke() : null;
+            foreach (var e in SpaceTime.CurrentSpaceTime.Elements)
+            {
+                if (e == element)
+                {
+                    continue;
+                }
+                else if (e.ZIndex != effectiveZ)
+                {
+                    continue;
+                }
+                else if (exclusions != null && exclusions.Contains(e))
+                {
+                    continue;
+                }
+                else if (e.HasSimpleTag(SpacialAwareness.PassThruTag))
+                {
+                    continue;
+                }
+                else if (excludedTypes != null && excludedTypes.Where(t => e.GetType() == t || e.GetType().IsSubclassOf(t) || e.GetType().GetInterfaces().Contains(t)).Any())
+                {
+                    continue;
+                }
+                else if (dynamicEx != null && dynamicEx.Contains(e))
+                {
+                    continue;
+                }
+                else
+                {
+                    ret.Add(e);
+                }
+            }
+
             ret.Add(RectangularF.Create(0, -1, SpaceTime.CurrentSpaceTime.Width, 1)); // top boundary
             ret.Add(RectangularF.Create(0, SpaceTime.CurrentSpaceTime.Height, SpaceTime.CurrentSpaceTime.Width, 1)); // bottom boundary
             ret.Add(RectangularF.Create(-1, 0, 1, SpaceTime.CurrentSpaceTime.Height)); // left boundary
             ret.Add(RectangularF.Create(SpaceTime.CurrentSpaceTime.Width, 0, 1, SpaceTime.CurrentSpaceTime.Height)); // right boundary
+
             return ret;
         }
     }
