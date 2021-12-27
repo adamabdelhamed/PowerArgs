@@ -216,8 +216,7 @@ namespace PowerArgs.Cli
 
             cycleRateMeter = new FrameRateMeter();
 
-            this.StartOfCycle.SubscribeForLifetime(Cycle, this);
-
+            this.EndOfCycle.SubscribeForLifetime(Cycle, this);
             SetFocusOnStart = true;
             Bitmap = new ConsoleBitmap(w, h);
             LayoutRoot = new ConsolePanel { Width = w, Height = h };
@@ -377,7 +376,6 @@ namespace PowerArgs.Cli
         /// </summary>
         public Task Paint()
         {
-            if (PaintEnabled == false) return Task.CompletedTask;
             var d = new TaskCompletionSource<bool>();
             Invoke(() =>
             {
@@ -541,9 +539,12 @@ namespace PowerArgs.Cli
             LayoutRoot.Paint();
 
             Recorder?.WriteFrame(Bitmap);
-            Console.SetOut(consoleWriter);
-            Bitmap.Paint();
-            Console.SetOut(interceptor);
+            if (PaintEnabled)
+            {
+                Console.SetOut(consoleWriter);
+                Bitmap.Paint();
+                Console.SetOut(interceptor);
+            }
             AfterPaint.Fire();
         }
 
@@ -574,7 +575,8 @@ namespace PowerArgs.Cli
                     InvokeNextCycle(() => HandleKeyInput(info));
                 }
             }
-            else if (sendKeys.Count > 0)
+            
+            if (sendKeys.Count > 0)
             {
                 var request = sendKeys.Dequeue();
                 InvokeNextCycle(() =>
@@ -655,7 +657,7 @@ namespace PowerArgs.Cli
 
 
 
-
+    
 
         private void DebounceResize()
         {
