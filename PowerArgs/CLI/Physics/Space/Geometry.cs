@@ -409,7 +409,7 @@ namespace PowerArgs.Cli.Physics
 
         public static float RoundAngleToNearest(this float a, float nearest)
         {
-            return (float)Geometry.Round(a / nearest) * nearest;
+            return ((float)Geometry.Round(a / nearest) * nearest) % 360;
         }
 
         public static float AddToAngle(this float angle, float toAdd)
