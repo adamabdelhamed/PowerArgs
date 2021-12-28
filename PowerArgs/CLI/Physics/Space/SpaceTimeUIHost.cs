@@ -15,7 +15,7 @@ namespace PowerArgs.Cli.Physics
         SpaceTime SpaceTime { get; }
         RealTimeViewingFunction RealTimeViewing { get; set; }
         Event AfterUpdate { get; }
-        ILocationF Camera { get; set; }
+        ILocationF CameraTopLeft { get; set; }
     }
 
     public class SpaceTimeUIHost
@@ -65,10 +65,10 @@ namespace PowerArgs.Cli.Physics
                     ui.Remove(e);
                 }
 
-                var cameraChanged = (ui.Camera == null ^ lastCamera == null) || (ui.Camera != null && ui.Camera.Equals(lastCamera) == false);
+                var cameraChanged = (ui.CameraTopLeft == null ^ lastCamera == null) || (ui.CameraTopLeft != null && ui.CameraTopLeft.Equals(lastCamera) == false);
                 if (resizedSinceLastRender || cameraChanged)
                 {
-                    lastCamera = ui.Camera;
+                    lastCamera = ui.CameraTopLeft;
                     foreach(var e in ui.SpaceTime.Elements)
                     {
                         SizeAndLocate(e);
@@ -115,10 +115,10 @@ namespace PowerArgs.Cli.Physics
             float w = wPer * ui.Width;
             float h = hPer * ui.Height;
 
-            if(ui.Camera != null)
+            if(ui.CameraTopLeft != null)
             {
-                x -= (ui.Camera.Left - ui.SpaceTime.Width/2);
-                y -= (ui.Camera.Top - ui.SpaceTime.Height/2);
+                x -= (ui.CameraTopLeft.Left - ui.SpaceTime.Width/2);
+                y -= (ui.CameraTopLeft.Top - ui.SpaceTime.Height/2);
             }
 
             ui.UpdateBounds(e, x, y, e.ZIndex, w, h);

@@ -21,7 +21,26 @@ namespace PowerArgs.Cli.Physics
 
         float ISpaceTimeUI.Height => Height;
 
-        public ILocationF Camera { get; set; }
+        public ILocationF CameraTopLeft { get; set; }
+
+        public IRectangularF CameraBounds
+        {
+            get
+            {
+                if (CameraTopLeft == null) return SpaceTime.Bounds;
+                var c = CameraTopLeft;
+                var st = SpaceTime.CurrentSpaceTime;
+                var l = c.Left - st.Width / 2f;
+                var t = c.Top - st.Height / 2f;
+                return RectangularF.Create(l, t, st.Width, st.Height);
+            }
+            set
+            {
+                var st = SpaceTime.CurrentSpaceTime;
+                var newCam = value.TopLeft().GetOffsetByPixels(st.Width / 2f, st.Height / 2f).GetRounded();
+                CameraTopLeft = newCam;
+            }
+        }
 
         public SpaceTimePanel(SpaceTime st)
         {
