@@ -137,7 +137,7 @@ namespace PowerArgs
             }
             catch (Exception ex)
             {
-                 runDeferred.SetException(ex);                    
+                runDeferred.SetException(ex);
             }
             finally
             {
@@ -152,6 +152,7 @@ namespace PowerArgs
                 stopRequested = false;
                 Cycle = -1;
                 LoopStarted.Fire();
+                List<SynchronizedEvent> todoOnThisCycle = new List<SynchronizedEvent>();
                 while (stopRequested == false)
                 {
                     if (Cycle == long.MaxValue)
@@ -184,8 +185,8 @@ namespace PowerArgs
                         }
                     }
 
-
-                    List<SynchronizedEvent> todoOnThisCycle = new List<SynchronizedEvent>();
+                    todoOnThisCycle.Clear();
+                    
                     lock (workQueue)
                     {
                         while (workQueue.Count > 0)
