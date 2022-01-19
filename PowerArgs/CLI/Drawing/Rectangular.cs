@@ -18,9 +18,10 @@ namespace PowerArgs.Cli
 
     public class Rectangular : ObservableObject, IRectangular, IRectangularF
     {
+        private Rectangle bounds;
         public Rectangle Bounds
         {
-            get { return Get<Rectangle>(); }
+            get { return bounds; }
             set
             {
                 if(value.Width < 0 || value.Height < 0)
@@ -28,7 +29,7 @@ namespace PowerArgs.Cli
                     throw new ArgumentOutOfRangeException("Width and height cannot be negative");
                 }
 
-                Set(value);
+                Set(ref bounds, value);
             }
         }
 
