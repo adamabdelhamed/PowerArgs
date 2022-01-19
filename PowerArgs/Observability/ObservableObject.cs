@@ -47,7 +47,10 @@ namespace PowerArgs
         /// </summary>
         public IObservableObject DeepObservableRoot { get; private set; }
 
-        public IReadOnlyDictionary<string, object> ToDictionary() => new ReadOnlyDictionary<string,object>(values);
+        public IReadOnlyDictionary<string, object> ToDictionary() => new ReadOnlyDictionary<string, object>(values);
+
+        public string CurrentlyChangingPropertyName { get; private set; }
+        public object CurrentlyChangingPropertyValue { get; private set; }
 
         /// <summary>
         /// Creates a new bag and optionally sets the notifier object.
@@ -78,7 +81,7 @@ namespace PowerArgs
         /// <returns>true if this object has a property with the given key and val was populated</returns>
         public bool TryGetValue<T>(string key, out T val)
         {
-            if(values.TryGetValue(key, out object oVal))
+            if (values.TryGetValue(key, out object oVal))
             {
                 val = (T)oVal;
                 return true;
@@ -97,12 +100,12 @@ namespace PowerArgs
         /// <typeparam name="T">The type of property to get</typeparam>
         /// <param name="name">The name of the property to get</param>
         /// <returns>The property's current value</returns>
-        public T Get<T>([CallerMemberName]string name = "")
+        public T Get<T>([CallerMemberName] string name = "")
         {
             object ret;
-            if(values.TryGetValue(name, out ret))
+            if (values.TryGetValue(name, out ret))
             {
-                if(ret is T)
+                if (ret is T)
                 {
                     return (T)ret;
                 }
@@ -123,7 +126,7 @@ namespace PowerArgs
         /// <typeparam name="T">the type of property to get</typeparam>
         /// <param name="name">the name of the property</param>
         /// <returns>the previous value or default(T) if there was none</returns>
-        public T GetPrevious<T>([CallerMemberName]string name = "")
+        public T GetPrevious<T>([CallerMemberName] string name = "")
         {
             object ret;
             if (previousValues.TryGetValue(name, out ret))
@@ -144,14 +147,13 @@ namespace PowerArgs
         /// <typeparam name="T">The type of property to set</typeparam>
         /// <param name="value">The value to set</param>
         /// <param name="name">The name of the property to set</param>
-        public void Set<T>(T value,[CallerMemberName] string name = "")
+        public void Set<T>(T value, [CallerMemberName] string name = "")
         {
             var current = Get<object>(name);
             var isEqualChange = EqualsSafe(current, value);
 
             if (values.ContainsKey(name))
             {
-                var previousValue = values[name];
                 if (SuppressEqualChanges == false || isEqualChange == false)
                 {
                     previousValues[name] = current;
@@ -165,6 +167,27 @@ namespace PowerArgs
 
             if (SuppressEqualChanges == false || isEqualChange == false)
             {
+                CurrentlyChangingPropertyName = name;
+                CurrentlyChangingPropertyValue = value;
+                FirePropertyChanged(name);
+            }
+        }
+
+        public void Set<T>(ref T current, T value, [CallerMemberName] string name = "")
+        {
+            var isEqualChange = EqualsSafe(current, value);
+
+            if (SuppressEqualChanges == false || isEqualChange == false)
+            {
+                previousValues[name] = current;
+            }
+
+            current = value;
+
+            if (SuppressEqualChanges == false || isEqualChange == false)
+            {
+                CurrentlyChangingPropertyName = name;
+                CurrentlyChangingPropertyValue = value;
                 FirePropertyChanged(name);
             }
         }
@@ -248,7 +271,7 @@ namespace PowerArgs
 
                 currentObservable = eval.Value as IObservableObject;
 
-                if(currentObservable == null)
+                if (currentObservable == null)
                 {
                     break;
                 }
@@ -333,7 +356,7 @@ namespace PowerArgs
 
             return ret;
         }
-       
+
         /// <summary>
         /// Fires the PropertyChanged event with the given property name.
         /// </summary>
@@ -341,7 +364,7 @@ namespace PowerArgs
         public void FirePropertyChanged(string propertyName)
         {
             List<PropertyChangedSubscription> filteredSubs;
-            if(subscribers.TryGetValue(propertyName, out filteredSubs))
+            if (subscribers.TryGetValue(propertyName, out filteredSubs))
             {
                 foreach (var sub in filteredSubs.ToArray())
                 {
@@ -349,7 +372,7 @@ namespace PowerArgs
                 }
             }
 
-            if(subscribers.TryGetValue(AnyProperty, out filteredSubs))
+            if (subscribers.TryGetValue(AnyProperty, out filteredSubs))
             {
                 foreach (var sub in filteredSubs.ToArray())
                 {
