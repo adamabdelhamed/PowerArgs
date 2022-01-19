@@ -78,6 +78,7 @@ namespace PowerArgs.Cli
             this.SubscribeForLifetime(nameof(MaxHeight), HandleTextChanged, this);
             this.SubscribeForLifetime(nameof(MaxWidth), HandleTextChanged, this);
             this.SynchronizeForLifetime(nameof(Bounds), HandleTextChanged, this);
+            Text = ConsoleString.Empty;
         }
 
         public static ConsolePanel CreatePanelWithCenteredLabel(ConsoleString str)
