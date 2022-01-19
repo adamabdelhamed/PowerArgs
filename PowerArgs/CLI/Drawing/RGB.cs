@@ -87,7 +87,22 @@ namespace PowerArgs
             return this.R == other.R && this.G == other.G && this.B == other.B;
         }
 
-        public override int GetHashCode() => $"{R}/{G}/{B}".GetHashCode();
+        public bool Equals(RGB obj)
+        {
+            return this.R == obj.R && this.G == obj.G && this.B == obj.B;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 23 + R.GetHashCode();
+                hash = hash * 23 + G.GetHashCode();
+                hash = hash * 23 + B.GetHashCode();
+                return hash;
+            }
+        }
 
         public float CalculateDistanceTo(RGB other) => (float)Math.Sqrt(
                 Math.Pow(R - other.R, 2) +
@@ -141,7 +156,7 @@ namespace PowerArgs
         }
         public static implicit operator RGB(ConsoleColor color) => (int)color < ConsoleColorMap.Length ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
 
-        private static readonly Regex RGBRegex = new Regex(@"^\s*(?<r>\d+)\s*,\s*(?<g>\d+)\s*,\s*(?<b>\d+)\s*$");
+        private static Regex RGBRegex;
 
         public static RGB Parse(string value)
         {
@@ -157,6 +172,7 @@ namespace PowerArgs
 
         public static bool TryParse(string value, out RGB ret)
         {
+            RGBRegex = RGBRegex ?? new Regex(@"^\s*(?<r>\d+)\s*,\s*(?<g>\d+)\s*,\s*(?<b>\d+)\s*$");
             var match = RGBRegex.Match(value);
             if (match.Success)
             {
