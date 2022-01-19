@@ -10,31 +10,23 @@ namespace PowerArgs
     public class Event
     {
 
-        private Dictionary<Action, ILifetimeManager> subscribers;
+        private int tail;
+        private int subCount;
+        private (Action, ILifetimeManager)[] subscribers;
 
         /// <summary>
         /// returns true if there is at least one subscriber
         /// </summary>
-        public bool HasSubscriptions
-        {
-            get
-            {
-                return subscribers.Count > 0;
-            }
-        }
-
+        public bool HasSubscriptions => subCount > 0;
+         
         /// <summary>
         /// Fires the event. All subscribers will be notified
         /// </summary>
         public void Fire()
         {
-            var subs = subscribers?.Keys?.ToArray();
-            if (subs != null)
+            for (var i = 0; i < tail; i++)
             {
-                for(var i = 0; i < subs.Length; i++)
-                {
-                    subs[i]?.Invoke();
-                }
+                subscribers[i].Item1?.Invoke();
             }
         }
 
@@ -43,7 +35,7 @@ namespace PowerArgs
         /// </summary>
         public Event()
         {
-            subscribers = new Dictionary<Action, ILifetimeManager>();
+            subscribers = new (Action, ILifetimeManager)[10];
         }
 
         /// <summary>
@@ -53,10 +45,27 @@ namespace PowerArgs
         /// <returns>A subscription that can be disposed when you no loner want to be notified from this event</returns>
         public ILifetime SubscribeUnmanaged(Action handler)
         {
+            EnsureRoomForMore();
             var sub = new Lifetime();
-            sub.OnDisposed(() => subscribers.Remove(handler));
-            subscribers.Add(handler, sub);
+            var myI = tail++;
+            subCount++;
+            subscribers[myI] = (handler, sub);
+            sub.OnDisposed(() =>
+            {
+                subscribers[myI] = default;
+                subCount--;
+            });
             return sub;
+        }
+
+        private void EnsureRoomForMore()
+        {
+            if(tail == subscribers.Length)
+            {
+                var tmp = subscribers;
+                subscribers = new (Action, ILifetimeManager)[tmp.Length * 2];
+                Array.Copy(tmp, subscribers, tmp.Length);
+            }
         }
 
         public ILifetime SynchronizeUnmanaged(Action handler)
@@ -76,8 +85,15 @@ namespace PowerArgs
         {
             if (lifetimeManager.IsExpired == false)
             {
-                subscribers.Add(handler, lifetimeManager);
-                lifetimeManager.OnDisposed(() => subscribers.Remove(handler));
+                EnsureRoomForMore();
+                var myI = tail++;
+                subCount++;
+                subscribers[myI] = (handler, lifetimeManager);
+                lifetimeManager.OnDisposed(() =>
+                {
+                    subscribers[myI] = default;
+                    subCount--;
+                });
             }
         }
 
@@ -94,13 +110,20 @@ namespace PowerArgs
         public void SubscribeOnce(Action handler)
         {
             Action wrappedAction = null;
+            var lt = new Lifetime();
             wrappedAction = () =>
             {
-                handler();
-                subscribers.Remove(wrappedAction);
+                try
+                {
+                    handler();
+                }
+                finally
+                {
+                    lt.Dispose();
+                }
             };
 
-            SubscribeUnmanaged(wrappedAction);
+            SubscribeForLifetime(wrappedAction, lt);
         }
 
         /// <summary>
@@ -115,7 +138,7 @@ namespace PowerArgs
             return lifetime;
         }
     }
-    
+
     /// <summary>
     /// A lifetime aware event that can deliver a data payload to subscribers
     /// </summary>
