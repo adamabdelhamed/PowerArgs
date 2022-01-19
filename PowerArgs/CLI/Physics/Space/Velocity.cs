@@ -10,6 +10,15 @@ namespace PowerArgs.Cli.Physics
         Velocity Velocity { get; }
     }
 
+    public static class IHaveVelocityEx
+    {
+        public static ILifetimeManager CreateNextVelocityChangedLifetime(this IHaveVelocity el)
+        {
+            var lt = Lifetime.EarliestOf(el.Velocity.OnAngleChanged.CreateNextFireLifetime(), el.Velocity.OnSpeedChanged.CreateNextFireLifetime());
+            return lt;
+        }
+    }
+
     public class Velocity : SpacialElementFunction
     {
         public Event OnVelocityEnforced { get; private set; } = new Event();
