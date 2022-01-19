@@ -53,17 +53,19 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
-
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static IRectangularF GetOffsetByPixels(this IRectangularF r, float dx, float dy)
         {
             return RectangularF.Create(r.Left + dx, r.Top + dy, r.Width, r.Height);
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ILocationF GetOffsetByPixels(this ILocationF r, float dx, float dy)
         {
             return LocationF.Create(r.Left + dx, r.Top + dy);
         }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoOptimization)]
+
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static ILocationF MoveTowards(this ILocationF a, float angle, float distance, bool normalized = true)
         {
             while(angle < 0)
@@ -75,7 +77,7 @@ namespace PowerArgs.Cli.Physics
             {
                 angle -= 360;
             }
-
+        
             if (normalized)
             {
                 distance = Geometry.NormalizeQuantity(distance, angle);
