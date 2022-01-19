@@ -173,6 +173,36 @@ namespace PowerArgs
             return true;
         }
 
+        /// <summary>
+        /// Tries to look backward for a previous token
+        /// </summary>
+        /// <param name="ret">the previous token, if found</param>
+        /// <param name="lastPeekIndex">an out variable that will be set to the index of the previous token if found</param>
+        /// <param name="lookBehind">the number of positions to move backward</param>
+        /// <param name="skipWhitespace">don't count whitespace</param>
+        /// <returns>true if a previous token was found, false otherwise</returns>
+        public bool TryPeekBehind(out T ret, out int lastPeekIndex, int lookBehind = 1, bool skipWhitespace = false)
+        {
+            if (lookBehind <= 0)
+            {
+                throw new ArgumentOutOfRangeException("lookBehind must be >= 1");
+            }
+
+            ret = null;
+            lastPeekIndex = -1;
+
+            for (int i = 0; i < lookBehind; i++)
+            {
+                if (TryPeekBehindOnce(out ret, out lastPeekIndex, skipWhitespace) == false)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+ 
+
         private bool TryPeekOnce(out T ret, out int lastPeekIndex, bool skipWhitespace = false)
         {
             int peekIndex = currentIndex;
@@ -180,6 +210,26 @@ namespace PowerArgs
             {
                 peekIndex++;
                 if (peekIndex >= Tokens.Count)
+                {
+                    ret = null;
+                    lastPeekIndex = -1;
+                    return false;
+                }
+            }
+            while (skipWhitespace && string.IsNullOrWhiteSpace(Tokens[peekIndex].Value));
+
+            ret = Tokens[peekIndex];
+            lastPeekIndex = peekIndex;
+            return true;
+        }
+
+        private bool TryPeekBehindOnce(out T ret, out int lastPeekIndex, bool skipWhitespace = false)
+        {
+            int peekIndex = currentIndex;
+            do
+            {
+                peekIndex--;
+                if (peekIndex < 0)
                 {
                     ret = null;
                     lastPeekIndex = -1;
