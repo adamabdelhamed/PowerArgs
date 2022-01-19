@@ -14,31 +14,14 @@
         /// The last value that was painted. This facilitates a double
         /// buffering strategy for better performance
         /// </summary>
-        public ConsoleCharacter? LastDrawnValue;
+        public ConsoleCharacter LastDrawnValue;
 
         /// <summary>
         /// returns true if this pixel has changed since the last time it
         /// was drawn, false otherwise
         /// </summary>
-        public bool HasChanged
-        {
-            get
-            {
-                if(LastDrawnValue.HasValue == false)
-                {
-                    return true;
-                }
-                else
-                {
-                    return !LastDrawnValue.Value.Equals(Value);
-                }
-            }
-        }
-
-        internal ConsolePixel()
-        {
-
-        }
+        public bool HasChanged => !LastDrawnValue.Equals(Value);
+        internal ConsolePixel() { }
 
         public override string ToString() => $"{Value} - HasChanged = {HasChanged}";
     }

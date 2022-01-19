@@ -66,9 +66,23 @@ namespace PowerArgs.Cli
                 pixels[x] = new ConsolePixel[this.Height];
                 for (int y = 0; y < pixels[x].Length; y++)
                 {
-                    pixels[x][y] = new ConsolePixel() { Value = new ConsoleCharacter(' ') };
+                    var p = ConsolePixelPool.Default.Rent();
+                    p.Value = new ConsoleCharacter(' ');
+                    pixels[x][y] = p;
                 }
             }
+        }
+
+        public void Return()
+        {
+            for (int x = 0; x < this.Width; x++)
+            {
+                for (int y = 0; y < pixels[x].Length; y++)
+                {
+                    ConsolePixelPool.Default.Return(pixels[x][y]);
+                }
+            }
+            pixels = null;
         }
 
         /// <summary>
@@ -130,20 +144,24 @@ namespace PowerArgs.Cli
         public void Resize(int w, int h)
         {
             if (w == Width && h == Height) return;
+
+            for (int x = 0; x < Width; x++)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    ConsolePixelPool.Default.Return(pixels[x][y]);
+                }
+            }
+
             var newPixels = new ConsolePixel[w][];
             for (int x = 0; x < w; x++)
             {
                 newPixels[x] = new ConsolePixel[h];
                 for (int y = 0; y < newPixels[x].Length; y++)
                 {
-                    if (IsInBounds(x, y))
-                    {
-                        newPixels[x][y] = pixels[x][y];
-                    }
-                    else
-                    {
-                        newPixels[x][y] = new ConsolePixel() { Value = new ConsoleCharacter(' ') };
-                    }
+                    var newPix = ConsolePixelPool.Default.Rent();
+                    newPix.Value = new ConsoleCharacter(' ');
+                    newPixels[x][y] = newPix;   
                 }
             }
 
@@ -493,7 +511,10 @@ namespace PowerArgs.Cli
             public short Length;
             private char[] buffer;
             public bool Underlined;
-            public Chunk(int maxWidth) => buffer = new char[maxWidth];
+            public Chunk(int maxWidth)
+            {
+                buffer = new char[maxWidth];
+            }
             public void Add(char c) => buffer[Length++] = c;
             public override string ToString() => new string(buffer, 0, Length);
         }
@@ -783,7 +804,7 @@ namespace PowerArgs.Cli
                 for (int x = 0; x < Width; x++)
                 {
                     var pixel = pixels[x][y];
-                    pixel.LastDrawnValue = null;
+                    pixel.LastDrawnValue = default;
                 }
             }
         }
@@ -964,6 +985,56 @@ namespace PowerArgs.Cli
             }
 
             return this;
+        }
+    }
+
+    public class ConsolePixelPool
+    {
+        private static Lazy<ConsolePixelPool> _pool = new Lazy<ConsolePixelPool>();
+
+        public static ConsolePixelPool Default => _pool.Value;
+
+        private List<ConsolePixel> pool;
+
+#if DEBUG
+        private long hits;
+        private long misses;
+        private long returns;
+        private double HitRate => Geometry.Round(100 * hits / (hits + misses));
+#endif
+
+
+        public ConsolePixelPool()
+        {
+            pool = new List<ConsolePixel>();
+        }
+        
+        public ConsolePixel Rent()
+        {
+            if(pool.Count > 0)
+            {
+#if DEBUG
+                hits++;
+#endif
+                var ret = pool[pool.Count - 1];
+                pool.RemoveAt(pool.Count - 1);
+                return ret;
+            }
+            else
+            {
+#if DEBUG
+                misses++;
+#endif
+                return new ConsolePixel();
+            }
+        }
+
+        public void Return(ConsolePixel p)
+        {
+#if DEBUG
+            returns++;
+#endif
+            pool.Add(p);
         }
     }
 }
