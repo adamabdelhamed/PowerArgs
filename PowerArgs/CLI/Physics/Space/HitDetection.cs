@@ -113,63 +113,70 @@ namespace PowerArgs.Cli.Physics
             prediction.RaysHit = new List<Edge>();
             if (options.Mode == CastingMode.Precise)
             {
+                var tl = mov.TopLeft();
+                var delta = tl.MoveTowards(options.Angle, options.Visibility, normalized: false);
+                var dx = delta.Left - tl.Left;
+                var dy = delta.Top - tl.Top;
                 prediction.RaysCast = new List<Edge>()
                 {
-                    new Edge() { From = mov.TopLeft(), To = mov.TopLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                    new Edge() { From = mov.TopRight(), To = mov.TopRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                    new Edge() { From = mov.BottomLeft(), To = mov.BottomLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                    new Edge() { From = mov.BottomRight(), To = mov.BottomRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
+                    new Edge() { X1 = mov.Left, Y1 = mov.Top, X2 = mov.Left + dx, Y2 = mov.Top + dy},
+                    new Edge() { X1 = mov.Right(), Y1 = mov.Top, X2 = mov.Right()+dx, Y2 = mov.Top+dy },
+                    new Edge() { X1 = mov.Left, Y1 = mov.Bottom(), X2 = mov.Left+dx, Y2 = mov.Bottom()+dy },
+                    new Edge() { X1 = mov.Right(), Y1 = mov.Bottom(), X2 = mov.Right()+dx, Y2 = mov.Bottom()+dy },
                 };
 
                 var granularity = .5f;
 
                 for (var x = mov.Left + granularity; x < mov.Left + mov.Width; x += granularity)
                 {
-                    var top = LocationF.Create(x, mov.Top);
-                    var bot = LocationF.Create(x, mov.Bottom());
-
-                    prediction.RaysCast.Add(new Edge() { From = top, To = top.MoveTowards(options.Angle, options.Visibility, normalized: false) });
-                    prediction.RaysCast.Add(new Edge() { From = bot, To = bot.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                    prediction.RaysCast.Add(new Edge() { X1 = x, Y1 = mov.Top, X2 = x+dx, Y2 = mov.Top+dy });
+                    prediction.RaysCast.Add(new Edge() { X1 = x, Y1 = mov.Bottom(), X2 = x + dx, Y2 = mov.Bottom() + dy });
                 }
 
                 for (var y = mov.Top + granularity; y < mov.Top + mov.Height; y += granularity)
                 {
-                    var left = LocationF.Create(mov.Left, y);
-                    var right = LocationF.Create(mov.Right(), y);
-
-                    prediction.RaysCast.Add(new Edge() { From = left, To = left.MoveTowards(options.Angle, options.Visibility, normalized: false) });
-                    prediction.RaysCast.Add(new Edge() { From = right, To = right.MoveTowards(options.Angle, options.Visibility, normalized: false) });
+                    prediction.RaysCast.Add(new Edge() { X1 = mov.Left, Y1 = y, X2 = mov.Left+dx, Y2 = y+dy });
+                    prediction.RaysCast.Add(new Edge() { X1 = mov.Right(), Y1 = y, X2 = mov.Right() + dx, Y2 = y + dy });
                 }
             }
             else if (options.Mode == CastingMode.Rough)
             {
+                var tl = mov.TopLeft();
+                var delta = tl.MoveTowards(options.Angle, options.Visibility, normalized: false);
+                var dx = delta.Left - tl.Left;
+                var dy = delta.Top - tl.Top;
+
                 var center = options.MovingObject.Center();
                 prediction.RaysCast = new List<Edge>() 
                 {
-                    new Edge() { From = mov.TopLeft(), To = mov.TopLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                    new Edge() { From = mov.TopRight(), To = mov.TopRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                    new Edge() { From = mov.BottomLeft(), To = mov.BottomLeft().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                    new Edge() { From = mov.BottomRight(), To = mov.BottomRight().MoveTowards(options.Angle, options.Visibility, normalized:false) },
-                    new Edge() { From = center, To = center.MoveTowards(options.Angle, options.Visibility, normalized: false) }
+                    new Edge() { X1 = mov.Left, Y1 = mov.Top, X2 = mov.Left + dx, Y2 = mov.Top + dy},
+                    new Edge() { X1 = mov.Right(), Y1 = mov.Top, X2 = mov.Right()+dx, Y2 = mov.Top+dy },
+                    new Edge() { X1 = mov.Left, Y1 = mov.Bottom(), X2 = mov.Left+dx, Y2 = mov.Bottom()+dy },
+                    new Edge() { X1 = mov.Right(), Y1 = mov.Bottom(), X2 = mov.Right()+dx, Y2 = mov.Bottom()+dy },
+                    new Edge() { X1 = mov.CenterX(), Y1 = mov.CenterY(), X2 = mov.CenterX()+dx, Y2 = mov.CenterY()+dy },
                 };
             }
             else if(options.Mode == CastingMode.SingleRay)
             {
-                var center = options.MovingObject.Center();
+                var tl = mov.TopLeft();
+                var delta = tl.MoveTowards(options.Angle, options.Visibility, normalized: false);
+                var dx = delta.Left - tl.Left;
+                var dy = delta.Top - tl.Top;
                 prediction.RaysCast = new List<Edge>()
                 {
-                    new Edge() { From = center, To = center.MoveTowards(options.Angle, options.Visibility, normalized: false) }
+                    new Edge() { X1 = mov.CenterX(), Y1 = mov.CenterY(), X2 = mov.CenterX()+dx, Y2 = mov.CenterY()+dy },
                 };
             }
             else
             {
-                throw new NotSupportedException("Unknown mide: "+options.Mode);
+                throw new NotSupportedException("Unknown mode: "+options.Mode);
             }
 
             var closestIntersectionDistance = float.MaxValue;
             IRectangularF closestIntersectingElement = null;
             var closestEdgeIndex = -1;
-            ILocationF closestIntersection = null;
+            float closestIntersectionX = 0;
+            float closestIntersectionY = 0;
             var effectiveObstacles = options.Obstacles.ToArray();
             for (var i = 0; i < effectiveObstacles.Length; i++)
             {
@@ -180,17 +187,19 @@ namespace PowerArgs.Cli.Physics
                     for(var k = 0; k < prediction.RaysCast.Count; k++)
                     {
                         var ray = prediction.RaysCast[k];
-                        var intersection = FindIntersectionPoint(ray, edge);
-                        if (intersection != null)
+                        var success = TryFindIntersectionPoint(ray, edge, out float ix, out float iy);
+                        if (success)
                         {
                             prediction.RaysHit.Add(ray);
-                            var d = ray.From.CalculateDistanceTo(intersection);
+                            var d = Geometry.CalculateDistanceTo(ray.X1, ray.Y1, ix, iy);
+ 
                             if (d < closestIntersectionDistance && d <= options.Visibility)
                             {
                                 closestIntersectionDistance = d;
                                 closestIntersectingElement = obstacle;
                                 closestEdgeIndex = j;
-                                closestIntersection = intersection;
+                                closestIntersectionX = ix;
+                                closestIntersectionY = iy;
                             }
                         }
                     }
@@ -204,44 +213,52 @@ namespace PowerArgs.Cli.Physics
                 prediction.LKG = options.MovingObject.MoveTowards(options.Angle, prediction.LKGD, normalized:false).TopLeft();
                 prediction.Type = HitType.Obstacle;
                 prediction.EdgeIndex = closestEdgeIndex;
-                prediction.Intersection = closestIntersection;
+                prediction.Intersection = LocationF.Create(closestIntersectionX, closestIntersectionY);
             }
 
             return prediction;
         }
 
-        private static ILocationF FindIntersectionPoint(Edge a, Edge b)
+        private static bool TryFindIntersectionPoint(Edge a, Edge b, out float x, out float y)
         {
-            var x1 = a.From.Left;
-            var y1 = a.From.Top;
-            var x2 = a.To.Left;
-            var y2 = a.To.Top;
+            var x1 = a.X1;
+            var y1 = a.Y1;
+            var x2 = a.X2;
+            var y2 = a.Y2;
 
-            var x3 = b.From.Left;
-            var y3 = b.From.Top;
-            var x4 = b.To.Left;
-            var y4 = b.To.Top;
+            var x3 = b.X1;
+            var y3 = b.Y1;
+            var x4 = b.X2;
+            var y4 = b.Y2;
 
             var den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
             if (den == 0)
             {
-                return null;
+                x = 0;
+                y = 0;
+                return false;
             }
 
             var t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
             if(t <= 0 || t >= 1)
             {
-                return null;
+                x = 0;
+                y = 0;
+                return false;
             }
 
             var u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den;
             if (u > 0 && u < 1)
             {
-                return  LocationF.Create(x1 + t * (x2 - x1), y1 + t * (y2 - y1));
+                x = x1 + t * (x2 - x1);
+                y = y1 + t * (y2 - y1);
+                return true;
             }
             else
             {
-                return null;
+                x = 0;
+                y = 0;
+                return false;
             }
         }
     }

@@ -194,48 +194,58 @@ namespace PowerArgs.Cli.Physics
         public static int Round(float f) => (int)Math.Round(f, MidpointRounding.AwayFromZero);
         public static int Round(double d) => (int)Math.Round(d, MidpointRounding.AwayFromZero);
 
-        public static int FindLineCircleIntersections(float cx, float cy, float radius, ILocationF point1, ILocationF point2, out ILocationF intersection1, out ILocationF intersection2)
+         
+        public static int FindLineCircleIntersections(float cx, float cy, float radius, float x1, float y1, float x2, float y2, out float ox1, out float oy1, out float ox2, out float oy2)
         {
             float dx, dy, A, B, C, det, t;
 
-            dx = point2.Left - point1.Left;
-            dy = point2.Top - point1.Top;
+            dx = x2 - x1;
+            dy = y2 - y1;
 
             A = dx * dx + dy * dy;
-            B = 2 * (dx * (point1.Left - cx) + dy * (point1.Top - cy));
-            C = (point1.Left - cx) * (point1.Left - cx) +
-                (point1.Top - cy) * (point1.Top - cy) -
+            B = 2 * (dx * (x1 - cx) + dy * (y1 - cy));
+            C = (x1 - cx) * (x1 - cx) +
+                (y1 - cy) * (y1 - cy) -
                 radius * radius;
 
             det = B * B - 4 * A * C;
             if ((A <= 0.0000001) || (det < 0))
             {
                 // No real solutions.
-                intersection1 = LocationF.Create(float.NaN, float.NaN);
-                intersection2 = LocationF.Create(float.NaN, float.NaN);
+                ox1 = float.NaN;
+                ox2 = float.NaN;
+                oy1 = float.NaN;
+                oy2 = float.NaN;
                 return 0;
             }
             else if (det == 0)
             {
                 // One solution.
                 t = -B / (2 * A);
-                intersection1 =
-                    LocationF.Create(point1.Left + t * dx, point1.Top + t * dy);
-                intersection2 = LocationF.Create(float.NaN, float.NaN);
+
+                ox1 = x1 + t * dx;
+                oy1 = y1 + t * dy;
+
+                ox2 = float.NaN;
+                oy2 = float.NaN;
                 return 1;
             }
             else
             {
                 // Two solutions.
                 t = (float)((-B + Math.Sqrt(det)) / (2 * A));
-                intersection1 =
-                    LocationF.Create(point1.Left + t * dx, point1.Top + t * dy);
+
+                ox1 = x1 + t * dx;
+                oy1 = y1 + t * dy;
+ 
                 t = (float)((-B - Math.Sqrt(det)) / (2 * A));
-                intersection2 =
-                    LocationF.Create(point1.Left + t * dx, point1.Top + t * dy);
+
+                ox2 = x1 + t * dx;
+                oy2 = y1 + t * dy;
                 return 2;
             }
         }
+
 
         public static Side GetSideGivenEdgeIndex(int index)
         {
@@ -248,19 +258,36 @@ namespace PowerArgs.Cli.Physics
 
         public static void UpdateEdges(IRectangularF rect, Edge[] edgeBuffer)
         {
-            edgeBuffer[0].From = rect.TopLeft();
-            edgeBuffer[0].To = rect.TopRight();
+            edgeBuffer[0].X1 = rect.Left;
+            edgeBuffer[0].Y1 = rect.Top;
 
-            edgeBuffer[1].From = rect.TopRight();
-            edgeBuffer[1].To = rect.BottomRight();
-
-
-            edgeBuffer[2].From = rect.BottomRight();
-            edgeBuffer[2].To = rect.BottomLeft();
+            edgeBuffer[0].X2 = rect.Right();
+            edgeBuffer[0].Y2 = rect.Top;
 
 
-            edgeBuffer[3].From = rect.BottomLeft();
-            edgeBuffer[3].To = rect.TopLeft();
+
+            edgeBuffer[1].X1 = rect.Right();
+            edgeBuffer[1].Y1 = rect.Top;
+
+            edgeBuffer[1].X2 = rect.Right();
+            edgeBuffer[1].Y2 = rect.Bottom();
+
+
+
+            edgeBuffer[2].X1 = rect.Right();
+            edgeBuffer[2].Y1 = rect.Bottom();
+
+            edgeBuffer[2].X2 = rect.Left;
+            edgeBuffer[2].Y2 = rect.Bottom();
+
+
+
+
+            edgeBuffer[3].X1 = rect.Left;
+            edgeBuffer[3].Y1 = rect.Bottom();
+
+            edgeBuffer[3].X2 = rect.Left;
+            edgeBuffer[3].Y2 = rect.Top;
         }
 
         public static IRectangularF ToRect(this ILocationF loc, float w, float h)

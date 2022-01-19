@@ -230,8 +230,11 @@ namespace PowerArgs.Cli.Physics
 
     public class Edge
     {
-        public ILocationF From;
-        public ILocationF To;
+        public float X1;
+        public float Y1;
+
+        public float X2;
+        public float Y2;
     }
 
     public interface IAmMass : ISpacialElement
