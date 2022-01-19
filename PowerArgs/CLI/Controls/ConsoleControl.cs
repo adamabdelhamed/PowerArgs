@@ -216,13 +216,16 @@ namespace PowerArgs.Cli
 
         public ConsoleBitmap Bitmap { get; internal set; }
 
+        public ConsoleControl() : this(1, 1) { }
         /// <summary>
         /// Creates a new ConsoleControl
         /// </summary>
-        public ConsoleControl()
+        public ConsoleControl(int w, int h)
         {
             CanFocus = true;
-            this.Bitmap = new ConsoleBitmap(1, 1);
+            this.Bitmap = new ConsoleBitmap(w, h);
+            this.Width = w;
+            this.Height = h;
             this.SubscribeForLifetime(nameof(Bounds), () =>
             {
                 if (Width > 0 && Height > 0)
@@ -231,6 +234,7 @@ namespace PowerArgs.Cli
                 }
  
             }, this);
+            this.OnDisposed(this.Bitmap.Return);
             Background = DefaultColors.BackgroundColor;
             this.Foreground = DefaultColors.ForegroundColor;
             this.IsVisible = true;

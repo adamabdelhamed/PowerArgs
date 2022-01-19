@@ -150,7 +150,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// Gets the bitmap that will be painted to the console
         /// </summary>
-        public ConsoleBitmap Bitmap { get; private set; }
+        public ConsoleBitmap Bitmap => LayoutRoot.Bitmap;
 
         /// <summary>
         /// Gets the root panel that contains the controls being used by the app
@@ -218,8 +218,7 @@ namespace PowerArgs.Cli
 
             this.EndOfCycle.SubscribeForLifetime(Cycle, this);
             SetFocusOnStart = true;
-            Bitmap = new ConsoleBitmap(w, h);
-            LayoutRoot = new ConsolePanel { Width = w, Height = h };
+            LayoutRoot = new ConsolePanel(w,h);
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
             isFullScreen = false;
@@ -363,7 +362,6 @@ namespace PowerArgs.Cli
 
             if (isFullScreen)
             {
-                Bitmap.Resize(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
                 this.LayoutRoot.Size = new Size(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
             }
 
@@ -533,7 +531,6 @@ namespace PowerArgs.Cli
         private ConsoleCharacter defaultPen = new ConsoleCharacter(' ', null, DefaultColors.BackgroundColor);
         private void PaintInternal()
         {
-            LayoutRoot.Bitmap = Bitmap;
             Bitmap.Pen = defaultPen;
             Bitmap.FillRectUnsafe(0, 0, LayoutRoot.Width, LayoutRoot.Height);
             LayoutRoot.Paint();
@@ -552,6 +549,7 @@ namespace PowerArgs.Cli
         private void Cycle()
         {
             cycleRateMeter.Increment();
+            // todo - if evaluation showed up on a profile. Consider checking this at most twice per second.
             if ((lastConsoleWidth != this.console.BufferWidth || lastConsoleHeight != this.console.WindowHeight))
             {
                 DebounceResize();

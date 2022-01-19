@@ -5,7 +5,9 @@ namespace PowerArgs.Cli
 {
     public abstract class Container : ConsoleControl
     {
-        internal Container() { }
+        internal Container(): this(1,1) { }
+
+        internal Container(int w, int h) : base(w,h) { }
         public abstract IEnumerable<ConsoleControl> Children { get; }
 
         public IEnumerable<ConsoleControl> Descendents
