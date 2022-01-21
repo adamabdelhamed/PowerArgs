@@ -54,7 +54,7 @@ namespace PowerArgs.Cli
             var text = Value.DisplayText.StringValue;
             if (text.Length > Width-3 && Width > 0)
             {
-                text = text.Substring(0, Width - 3);
+                text = text.Substring(0, Math.Max(0, Width - 3));
             }
 
             while(text.Length < Width-2 && Width > 0)

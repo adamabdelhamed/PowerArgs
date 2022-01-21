@@ -112,7 +112,7 @@ namespace PowerArgs.Cli
             content.Add(TextBox).CenterHorizontally();
             TextBox.Y = 4;
 
-            content.SynchronizeForLifetime(nameof(content.Bounds), () => { TextBox.Width = content.Width - 4; }, content);
+            content.SynchronizeForLifetime(nameof(content.Bounds), () => { TextBox.Width = Math.Max(0, content.Width - 4); }, content);
 
             TextBox.KeyInputReceived.SubscribeForLifetime((k) =>
             {
