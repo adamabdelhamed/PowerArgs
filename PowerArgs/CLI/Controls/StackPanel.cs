@@ -55,6 +55,7 @@ namespace PowerArgs.Cli
 
         private void RedoLayout()
         {
+            if (this.IsExpired || this.IsExpiring) return;
             if(Orientation == Orientation.Vertical)
             {
                 int h = Layout.StackVertically(Margin, Controls);

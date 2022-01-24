@@ -228,6 +228,7 @@ namespace PowerArgs.Cli
             this.Height = h;
             this.SubscribeForLifetime(nameof(Bounds), () =>
             {
+                if (this.IsExpired || this.IsExpiring) return;
                 if (Width > 0 && Height > 0)
                 {
                     this.Bitmap.Resize(Width, Height);
