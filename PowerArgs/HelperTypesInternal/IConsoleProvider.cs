@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace PowerArgs
 {
@@ -120,7 +121,72 @@ namespace PowerArgs
         /// </summary>
         public static IConsoleProvider Current = new StdConsoleProvider();
 
-        public static bool Fancy { get; set; }
- 
+        private const int STD_OUTPUT_HANDLE = -11;
+        private const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
+        private const uint DISABLE_NEWLINE_AUTO_RETURN = 0x0008;
+
+        [DllImport("kernel32.dll")]
+        private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr GetStdHandle(int nStdHandle);
+
+        [DllImport("kernel32.dll")]
+        public static extern uint GetLastError();
+
+        private static bool? _fancy;
+
+        public static bool Fancy 
+        { 
+            get
+            {
+                if(_fancy.HasValue == false)
+                {
+                    if(TryEnsureAnsiSupport() == false)
+                    {
+                        _fancy = false;
+                        return _fancy.Value;
+                    }  
+                }
+
+                return _fancy.Value;
+            }
+            set
+            {
+                if(_fancy.HasValue == false && value == true)
+                {
+                    _fancy = TryEnsureAnsiSupport() ? true : throw new NotSupportedException("Console does not support ansi");
+                }
+
+                _fancy = value;
+            }
+        }
+
+        private static bool TryEnsureAnsiSupport()
+        {
+            try
+            {
+                var iStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+                if (!GetConsoleMode(iStdOut, out uint outConsoleMode))
+                {
+                    return false;
+                }
+
+                outConsoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING | DISABLE_NEWLINE_AUTO_RETURN;
+                if (!SetConsoleMode(iStdOut, outConsoleMode))
+                {
+                    return false;
+                }
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }
