@@ -1,5 +1,4 @@
-﻿using PowerArgs.Cli.Physics;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -59,6 +58,7 @@ namespace PowerArgs
     public class LifetimeManager : ILifetimeManager
     {
         internal List<Action> cleanupItems;
+        internal List<IDisposable> cleanupItems2;
 
         /// <summary>
         /// returns true if expired
@@ -72,6 +72,7 @@ namespace PowerArgs
         public LifetimeManager()
         {
             cleanupItems = new List<Action>();
+            cleanupItems2 = new List<IDisposable>();
         }
 
         /// <summary>
@@ -79,19 +80,13 @@ namespace PowerArgs
         /// managed by this manager ends
         /// </summary>
         /// <param name="obj">the object to dispose</param>
-        public void OnDisposed(IDisposable obj) => OnDisposed(() => obj.Dispose());
+        public void OnDisposed(IDisposable obj) => cleanupItems2.Add(obj);
 
         /// <summary>
         /// Registers the given cleanup code to run when the lifetime being
         /// managed by this manager ends
         /// </summary>
         /// <param name="cleanupCode">the code to run</param>
-        public void OnDisposed(Action cleanupCode)
-        {
-            cleanupItems.Add(()=>
-            {
-                cleanupCode();
-            });
-        }
+        public void OnDisposed(Action cleanupCode) => cleanupItems.Add(cleanupCode);
     }
 }

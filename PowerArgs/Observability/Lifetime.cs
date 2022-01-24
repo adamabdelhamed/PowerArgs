@@ -80,7 +80,12 @@ namespace PowerArgs
         public Lifetime()
         {
             _manager = new LifetimeManager();
-            OnDisposed(() => _manager.IsExpired = true);
+            OnDisposed(SetExpired);
+        }
+
+        private void SetExpired()
+        {
+            _manager.IsExpired = true;
         }
 
         /// <summary>
@@ -150,23 +155,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="others">the lifetimes to use to generate this new lifetime</param>
         /// <returns>a new lifetime that will end when all of the given lifetimes end</returns>
-        public static Lifetime WhenAll(params ILifetimeManager[] others)
-        {
-            var togo = others.Length;
-            var ret = new Lifetime();
-            foreach (var lifetime in others)
-            {
-                lifetime.OnDisposed(() =>
-                {
-                    if(Interlocked.Decrement(ref togo) == 0)
-                    {
-                        ret.Dispose();
-                    }
-                });
-            }
-
-            return ret;
-        }
+        public static Lifetime WhenAll(params ILifetimeManager[] others) => new WhenAllTracker(others);
 
         /// <summary>
         /// Creates a new lifetime that will end when any of the given
@@ -177,27 +166,50 @@ namespace PowerArgs
         /// lifetimes ends</returns>
         public static Lifetime EarliestOf(IEnumerable<ILifetimeManager> others)
         {
-            Lifetime ret = new Lifetime();
-            var count = 0;
-            foreach (var other in others)
+            return new EarliestOfTracker(others.ToArray());
+        }
+
+        private class EarliestOfTracker : Lifetime
+        {
+            public EarliestOfTracker(ILifetimeManager[] lts)
             {
-                if (other != null)
+                if (lts.Length == 0)
                 {
-                    count++;
-                    other.OnDisposed(() =>
-                    {
-                        if (ret.IsExpired == false)
-                        {
-                            ret.Dispose();
-                        }
-                    });
+                    Dispose();
+                    return;
+                }
+
+                foreach (var lt in lts)
+                {
+                    lt?.OnDisposed(()=> TryDispose());
                 }
             }
-            if(count == 0)
+        }
+
+        private class WhenAllTracker : Lifetime
+        {
+            int remaining;
+            public WhenAllTracker(ILifetimeManager[] lts)
             {
-                ret.Dispose();
+                if (lts.Length == 0)
+                {
+                    Dispose();
+                    return;
+                }
+                remaining = lts.Length;
+                foreach(var lt in lts)
+                {
+                    lt.OnDisposed(Count);
+                }
             }
-            return ret;
+
+            private void Count()
+            {
+                if(Interlocked.Decrement(ref remaining) == 0)
+                {
+                    Dispose();
+                }
+            }
         }
 
       
@@ -217,6 +229,12 @@ namespace PowerArgs
                     {
                         item();
                     }
+
+                    foreach (var item in _manager.cleanupItems2.ToArray())
+                    {
+                        item.Dispose();
+                    }
+
                     _manager = null;
                 }
                 finally

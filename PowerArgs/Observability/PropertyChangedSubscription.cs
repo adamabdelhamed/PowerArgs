@@ -6,15 +6,19 @@ namespace PowerArgs
     {
         public Action ChangeListener { get; private set; }
         public string PropertyName { get; private set; }
+
+        private Action<PropertyChangedSubscription> unsubscribeCallback;
         public PropertyChangedSubscription(string propertyName, Action changeListener, Action<PropertyChangedSubscription> unsubscribeCallback)
         {
             this.PropertyName = propertyName;
             this.ChangeListener = changeListener;
+            this.unsubscribeCallback = unsubscribeCallback;
+            this.OnDisposed(Unsubscribe);
+        }
 
-            this.OnDisposed(() =>
-            {
-                unsubscribeCallback(this);
-            });
+        private void Unsubscribe()
+        {
+            unsubscribeCallback(this);
         }
     }
 }
