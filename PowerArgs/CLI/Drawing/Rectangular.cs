@@ -111,18 +111,17 @@ namespace PowerArgs.Cli
 
         float IRectangularF.Height => Height;
 
-        public Edge[] Edges { get; private set; }
+ 
+
+        public Edge TopEdge { get; set; }
+        public Edge BottomEdge { get; set; }
+        public Edge LeftEdge { get; set; }
+        public Edge RightEdge { get; set; }
 
         public Rectangular()
         {
-            Edges = new Edge[4];
-            Edges[0] = new Edge();
-            Edges[1] = new Edge();
-            Edges[2] = new Edge();
-            Edges[3] = new Edge();
-
-            Geometry.UpdateEdges(this, Edges);
-            SubscribeForLifetime(ObservableObject.AnyProperty, () => Geometry.UpdateEdges(this, Edges), this);
+            Geometry.UpdateEdges(this);
+            SubscribeForLifetime(ObservableObject.AnyProperty, () => Geometry.UpdateEdges(this), this);
         }
     }
 }

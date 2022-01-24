@@ -28,7 +28,10 @@ namespace PowerArgs.Cli.Physics
         float Width { get; }
         float Height { get; }
 
-        Edge[] Edges { get; }
+        Edge TopEdge { get; set; }
+        Edge BottomEdge { get; set; }
+        Edge LeftEdge { get; set; }
+        Edge RightEdge { get; set; }
     }
 
     public interface ISizeF
@@ -99,18 +102,9 @@ namespace PowerArgs.Cli.Physics
         public static ISizeF Create(float w, float h) => new SizeImpl() { Width = w, Height = h };
     }
 
-    public interface IWriteableRectangularF : IRectangularF
-    {
-        new float Left { get; set; }
+   
 
-        new float Top { get; set; }
-
-        new float Width { get; set; }
-
-        new float Height { get; set; }
-    }
-
-    public class RectangularF : IWriteableRectangularF
+    public struct RectangularF : IRectangularF
     {
         public float Left { get; set; }
 
@@ -120,23 +114,23 @@ namespace PowerArgs.Cli.Physics
 
         public float Height { get; set; }
 
-        public object Tag { get; private set; }
 
-        public Edge[] Edges { get; private set; }
+        public Edge TopEdge { get; set; }
+        public Edge BottomEdge { get; set; }
+        public Edge LeftEdge { get; set; }
+        public Edge RightEdge { get; set; }
 
-        private RectangularF(float x, float y, float w, float h, object tag = null)
+        private RectangularF(float x, float y, float w, float h)
         {
             this.Left = x;
             this.Top = y;
             this.Width = w;
             this.Height = h;
-            this.Tag = tag;
-            Edges = new Edge[4];
-            Edges[0] = new Edge();
-            Edges[1] = new Edge();
-            Edges[2] = new Edge();
-            Edges[3] = new Edge();
-            Geometry.UpdateEdges(this, Edges);
+            this.TopEdge = default;
+            this.BottomEdge = default;
+            this.LeftEdge = default;
+            this.RightEdge = default;
+            Geometry.UpdateEdges(this);
         }
 
         public override bool Equals(object obj)
@@ -148,8 +142,8 @@ namespace PowerArgs.Cli.Physics
 
         public override string ToString() => $"X={Left}, Y={Top}, W={Width}, H={Height}";
 
-        public static IWriteableRectangularF Create(float x, float y, float w, float h) => new RectangularF(x, y, w, h);
-        public static IWriteableRectangularF Create(ILocationF location, ISizeF size) => new RectangularF(location.Left, location.Top, size.Width, size.Height);
+        public static IRectangularF Create(float x, float y, float w, float h) => new RectangularF(x, y, w, h);
+        public static IRectangularF Create(ILocationF location, ISizeF size) => new RectangularF(location.Left, location.Top, size.Width, size.Height);
     }
 
     public enum Side
@@ -177,6 +171,7 @@ namespace PowerArgs.Cli.Physics
         public static float Hypotenous(this IRectangularF rectangular) => (float)Math.Sqrt(rectangular.Width * rectangular.Width + rectangular.Height * rectangular.Height);
         public static float DiffAngle(this int a, float b) => DiffAngle((float)a, b);
         public static float AddToAngle(this int a, float b) => AddToAngle((float)a, b);
+        public static float CalculateNormalizedDistanceTo(float x1, float y1, float x2, float y2) => NormalizeQuantity(CalculateDistanceTo(x1,y1,x2,y2), CalculateAngleTo(x1,y1,x2,y2), true);
         public static float CalculateNormalizedDistanceTo(ILocationF a, ILocationF b) => NormalizeQuantity(a.CalculateDistanceTo(b), a.CalculateAngleTo(b), true);
         public static float CalculateNormalizedDistanceTo(IRectangularF a, IRectangularF b) => NormalizeQuantity(a.CalculateDistanceTo(b), a.CalculateAngleTo(b), true);
         public static float CalculateDistanceTo(this ILocationF start, ILocationF end) => CalculateDistanceTo(start.Left, start.Top, end.Left, end.Top);
@@ -247,47 +242,14 @@ namespace PowerArgs.Cli.Physics
         }
 
 
-        public static Side GetSideGivenEdgeIndex(int index)
+        public static void UpdateEdges(IRectangularF rect)
         {
-            if (index == 0) return Side.Top;
-            if (index == 1) return Side.Right;
-            if (index == 2) return Side.Bottom;
-            if (index == 3) return Side.Left;
-            throw new NotSupportedException("index must be >=0 && <= 3");
-        }
-
-        public static void UpdateEdges(IRectangularF rect, Edge[] edgeBuffer)
-        {
-            edgeBuffer[0].X1 = rect.Left;
-            edgeBuffer[0].Y1 = rect.Top;
-
-            edgeBuffer[0].X2 = rect.Right();
-            edgeBuffer[0].Y2 = rect.Top;
-
-
-
-            edgeBuffer[1].X1 = rect.Right();
-            edgeBuffer[1].Y1 = rect.Top;
-
-            edgeBuffer[1].X2 = rect.Right();
-            edgeBuffer[1].Y2 = rect.Bottom();
-
-
-
-            edgeBuffer[2].X1 = rect.Right();
-            edgeBuffer[2].Y1 = rect.Bottom();
-
-            edgeBuffer[2].X2 = rect.Left;
-            edgeBuffer[2].Y2 = rect.Bottom();
-
-
-
-
-            edgeBuffer[3].X1 = rect.Left;
-            edgeBuffer[3].Y1 = rect.Bottom();
-
-            edgeBuffer[3].X2 = rect.Left;
-            edgeBuffer[3].Y2 = rect.Top;
+            var r = rect.Right();
+            var b = rect.Bottom();
+            rect.TopEdge = new Edge() { X1 = rect.Left, Y1 = rect.Top, X2 = r, Y2 = rect.Top };
+            rect.BottomEdge = new Edge() { X1 = rect.Left, Y1 = b, X2 = r, Y2 = rect.Top };
+            rect.LeftEdge = new Edge() { X1 = rect.Left, Y1 = rect.Top, X2 = rect.Left, Y2 = b };
+            rect.RightEdge = new Edge() { X1 = r, Y1 = rect.Top, X2 = r, Y2 = b };
         }
 
         public static IRectangularF ToRect(this ILocationF loc, float w, float h)
@@ -456,9 +418,14 @@ namespace PowerArgs.Cli.Physics
         public static float CalculateAngleTo(this IRectangularF from, IRectangularF to) => CalculateAngleTo(from.Center(), to.Center());
         public static float CalculateAngleTo(this ILocationF start, ILocationF end)
         {
-            float dx = end.Left - start.Left;
-            float dy = end.Top - start.Top;
-            float d = CalculateDistanceTo(start, end);
+            return CalculateAngleTo(start.Left, start.Top, end.Left, end.Top);
+        }
+
+        public static float CalculateAngleTo(float x1, float y1, float x2, float y2)
+        {
+            float dx = x2 - x1;
+            float dy = y2 - y1;
+            float d = CalculateDistanceTo(x1, y1, x2, y2);
 
             if (dy == 0 && dx > 0) return 0;
             else if (dy == 0) return 180;
@@ -491,7 +458,7 @@ namespace PowerArgs.Cli.Physics
             }
             else
             {
-                throw new Exception($"Failed to calculate angle from {start?.Left},{start?.Top} to {end?.Left},{end?.Top}");
+                throw new Exception($"Failed to calculate angle from {x1},{y1} to {x2},{y2}");
             }
 
             var ret = (float)(increment + radians * 180 / Math.PI);
@@ -519,26 +486,36 @@ namespace PowerArgs.Cli.Physics
 
         public static float CalculateDistanceTo(this IRectangularF a, IRectangularF b)
         {
-            var left = b.Right() < a.Left;
-            var right = a.Right() < b.Left;
-            var bottom = b.Bottom() < a.Top;
-            var top = a.Bottom() < b.Top;
+            return CalculateDistanceTo(a.Left, a.Top, a.Width, a.Height, b.Left, b.Top, b.Width, b.Height);
+        }
+        public static float CalculateDistanceTo(float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh)
+        {
+            var ar = ax + aw;
+            var ab = ay + ah;
+
+            var br = bx + bw;
+            var bb = by + bh;
+
+            var left = br < ax;
+            var right = ar < bx;
+            var bottom = bb < ay;
+            var top = ab < by;
             if (top && left)
-                return CalculateDistanceTo(a.Left, a.Bottom(), b.Right(), b.Top);
+                return CalculateDistanceTo(ax, ab, br, by);
             else if (left && bottom)
-                return CalculateDistanceTo(a.Left, a.Top, b.Right(), b.Bottom());
+                return CalculateDistanceTo(ax, ay, br, bb);
             else if (bottom && right)
-                return CalculateDistanceTo(a.Right(), a.Top, b.Left, b.Bottom());
+                return CalculateDistanceTo(ar, ay, bx, bb);
             else if (right && top)
-                return CalculateDistanceTo(a.Right(), a.Bottom(), b.Left, b.Top);
+                return CalculateDistanceTo(ar, ab, bx, by);
             else if (left)
-                return a.Left - b.Right();
+                return ax - br;
             else if (right)
-                return b.Left - a.Right();
+                return bx - ar;
             else if (bottom)
-                return a.Top - b.Bottom();
+                return ay - bb;
             else if (top)
-                return b.Top - a.Bottom();
+                return by - ab;
             else
                 return 0;
         }

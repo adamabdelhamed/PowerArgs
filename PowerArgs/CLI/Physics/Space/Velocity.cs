@@ -218,9 +218,7 @@ namespace PowerArgs.Cli.Physics
 
                         if (velocity.Bounce)
                         {
-                            var side = Geometry.GetSideGivenEdgeIndex(hitPrediction.EdgeIndex);
-
-                            if (side == Side.Top || side == Side.Bottom)
+                            if (hitPrediction.Side == Side.Top || hitPrediction.Side == Side.Bottom)
                             {
                                 velocity.Angle = 0.AddToAngle(-velocity.Angle);
                             }

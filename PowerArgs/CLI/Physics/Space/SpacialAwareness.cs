@@ -97,8 +97,36 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        public static (float,float) MoveTowardsFast(float x, float y, float angle, float distance, bool normalized = true)
+        {
+            while (angle < 0)
+            {
+                angle += 360;
+            }
 
+            while (angle > 360)
+            {
+                angle -= 360;
+            }
 
+            if (normalized)
+            {
+                distance = Geometry.NormalizeQuantity(distance, angle);
+            }
+            var forward = angle > 270 || angle < 90;
+            var up = angle > 180;
+
+            // convert to radians
+            angle = (float)(angle * Math.PI / 180);
+            float dy = (float)Math.Abs(distance * Math.Sin(angle));
+            float dx = (float)Math.Sqrt((distance * distance) - (dy * dy));
+
+            float x2 = forward ? x + dx : x - dx;
+            float y2 = up ? y - dy : y + dy;
+
+            return (x2,y2);
+        }
 
 
         public static async Task AnimateAsync(this IRectangularF rectangular, RectangularAnimationOptions options)

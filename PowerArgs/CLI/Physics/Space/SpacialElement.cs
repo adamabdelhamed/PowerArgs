@@ -112,7 +112,10 @@ namespace PowerArgs.Cli.Physics
 
         public void SetProperty<T>(string key, T val) => ObservableProperties.Set(val, key);
 
-        public Edge[] Edges { get; private set; }
+        public Edge TopEdge { get; set; }
+        public Edge BottomEdge { get; set; }
+        public Edge LeftEdge { get; set; }
+        public Edge RightEdge { get; set; }
 
 
         public SpacialElement(float w = 1, float h = 1, float x = 0, float y = 0, int z = 0)
@@ -123,14 +126,9 @@ namespace PowerArgs.Cli.Physics
             Top = y;
             ZIndex = z;
             this.InternalState = new SpacialElementInternalState();
-            Edges = new Edge[4];
-            Edges[0] = new Edge();
-            Edges[1] = new Edge();
-            Edges[2] = new Edge();
-            Edges[3] = new Edge();
 
-            Geometry.UpdateEdges(this, Edges);
-            SizeOrPositionChanged.SubscribeForLifetime(()=> Geometry.UpdateEdges(this, Edges), this.Lifetime);
+            Geometry.UpdateEdges(this);
+            SizeOrPositionChanged.SubscribeForLifetime(()=> Geometry.UpdateEdges(this), this.Lifetime);
         }
 
 
@@ -228,7 +226,7 @@ namespace PowerArgs.Cli.Physics
     }
 
 
-    public class Edge
+    public struct Edge
     {
         public float X1;
         public float Y1;
