@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "PowerArgsVideoPlayer": {
-      "commandName": "Project",
-      "commandLineArgs": "C:\\Users\\adama\\Source\\Repos\\PowerArgs\\LKGCliResults\\ArgsTests.CLI.GridTests.TestBasicGrid\\LKG\\Recording.cv"
-    }
-  }
-}

@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Samples": {
-      "commandName": "Project",
-      "commandLineArgs": "-mode VirtualTerminal"
-    }
-  }
-}

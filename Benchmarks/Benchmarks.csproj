@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PowerArgs\PowerArgs.csproj" />
   </ItemGroup>
 

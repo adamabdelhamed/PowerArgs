@@ -1,28 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageVersion>3.6.0</PackageVersion>
-    <PackageId>PowerArgs</PackageId>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>3.7</Version>
     <Authors>Adam Abdelhamed</Authors>
+    <Company>Adam Abdelhamed</Company>
+    <Product>PowerArgs</Product>
     <Description>The ultimate command line application framework</Description>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Minor fixes and performance improvements to the PowerArgs.Cli namespace</PackageReleaseNotes>
-    <Copyright>Copyright 2017 (c) Adam Abdelhamed. All rights reserved.</Copyright>
-    <PackageTags>command line arguments parser CLI .NET Core Standard</PackageTags>
+    <Copyright>Copyright 2022 (c) Adam Abdelhamed. All rights reserved.</Copyright>
     <PackageProjectUrl>https://github.com/adamabdelhamed/powerargs</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/adamabdelhamed/PowerArgs/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageTags>command line; arguments parser; CLI; .NET</PackageTags>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/adamabdelhamed/powerargs</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netstandard2.0\PowerArgs.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Prototypes\" />
+    <None Include="..\readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
+ 
+
 </Project>

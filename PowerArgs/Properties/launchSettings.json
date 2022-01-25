@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "PowerArgs": {
-      "commandName": "Project",
-      "commandLineArgs": "-r http://adamab2018:8080"
-    }
-  }
-}
