@@ -226,11 +226,14 @@ namespace PowerArgs.Cli
             var minY = Math.Max(y, 0);
 
 
-            for (int xd = minX; xd < maxX; xd++)
+            Span<ConsolePixel[]> xSpan = pixels.AsSpan().Slice(minX, maxX - minX);
+
+            for (int xd = 0; xd < xSpan.Length; xd++)
             {
-                for (var yd = minY; yd < maxY; yd++)
+                var ySpan = xSpan[xd].AsSpan(minY, maxY - minY);
+                for (var yd = 0; yd < ySpan.Length; yd++)
                 {
-                    Compose(xd, yd, Pen);
+                    ySpan[yd].Value = Pen;
                 }
             }
         }
@@ -247,11 +250,15 @@ namespace PowerArgs.Cli
         {
             var maxX = x + w;
             var maxY = y + h;
-            for (int xd = x; xd < maxX; xd++)
+
+            Span<ConsolePixel[]> xSpan = pixels.AsSpan().Slice(x, maxX - x);
+
+            for (int xd = 0; xd < xSpan.Length; xd++)
             {
-                for (var yd = y; yd < maxY; yd++)
+                var ySpan = xSpan[xd].AsSpan(y, maxY - y);
+                for (var yd = 0; yd < ySpan.Length; yd++)
                 {
-                    Compose(xd, yd, Pen);
+                    ySpan[yd].Value = Pen;
                 }
             }
         }
@@ -271,6 +278,9 @@ namespace PowerArgs.Cli
             var minX = Math.Max(x, 0);
             var minY = Math.Max(y, 0);
 
+            var xEndIndex = maxX - 1;
+            var yEndIndex = maxY - 1;
+
             // left vertical line
             for (var yd = minY; yd < maxY; yd++)
             {
@@ -280,19 +290,20 @@ namespace PowerArgs.Cli
             // right vertical line
             for (var yd = minY; yd < maxY; yd++)
             {
-                Compose(maxX - 1, yd, Pen);
+                Compose(xEndIndex, yd, Pen);
             }
 
+            var xSpan = pixels.AsSpan(minX, maxX - minX);
             // top horizontal line
-            for (int xd = minX; xd < maxX; xd++)
+            for (int xd = 0; xd < xSpan.Length; xd++)
             {
-                Compose(xd, minY, Pen);
+                xSpan[xd][minY].Value = Pen;
             }
 
             // bottom horizontal line
-            for (int xd = minX; xd < maxX; xd++)
+            for (int xd = 0; xd < xSpan.Length; xd++)
             {
-                Compose(xd, maxY - 1, Pen);
+                xSpan[xd][yEndIndex].Value = Pen;
             }
         }
 
@@ -778,6 +789,7 @@ namespace PowerArgs.Cli
 
                     chunksOnLine.Clear();
                 }
+                stringBuilder.Append(Ansi.Cursor.Move.ToLocation(Width-1, Height-1).EscapeSequence);
                 Console.Write(stringBuilder.ToString());
             }
             catch (IOException)
