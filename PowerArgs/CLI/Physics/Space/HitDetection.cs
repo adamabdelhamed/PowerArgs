@@ -69,9 +69,9 @@ namespace PowerArgs.Cli.Physics
             var prediction = PredictHit(new HitDetectionOptions()
             {
                 MovingObject = from,
-                Angle = from.Center().CalculateAngleTo(to.Center()),
+                Angle = Geometry.CalculateAngleTo(from.Left, from.Top, from.Width, from.Height, to.Left, to.Top, to.Width, to.Height),
                 Obstacles = obstacles.Union(new IRectangularF[] { to }),
-                Visibility = 3 * from.Center().CalculateDistanceTo(to.Center()),
+                Visibility = 3 * Geometry.CalculateDistanceTo(from.Left, from.Top, from.Width, from.Height, to.Left, to.Top, to.Width, to.Height),
                 Mode = castingMode,
             });
 
