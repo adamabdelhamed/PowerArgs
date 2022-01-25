@@ -120,8 +120,18 @@ namespace PowerArgs.Cli
 
         public Rectangular()
         {
-            Geometry.UpdateEdges(this);
-            SubscribeForLifetime(ObservableObject.AnyProperty, () => Geometry.UpdateEdges(this), this);
+            UpdateEdges();
+            SubscribeForLifetime(AnyProperty, UpdateEdges, this);
+        }
+
+        private void UpdateEdges()
+        {
+            Edge t, b, l, r;
+            Geometry.FindEdges(Left, Top, Width, Height, out t, out b, out l, out r);
+            TopEdge = t;
+            BottomEdge = b;
+            LeftEdge = l;
+            RightEdge = r;
         }
     }
 }

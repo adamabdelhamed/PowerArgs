@@ -28,10 +28,10 @@ namespace PowerArgs.Cli.Physics
         float Width { get; }
         float Height { get; }
 
-        Edge TopEdge { get; set; }
-        Edge BottomEdge { get; set; }
-        Edge LeftEdge { get; set; }
-        Edge RightEdge { get; set; }
+        Edge TopEdge { get; }
+        Edge BottomEdge { get; }
+        Edge LeftEdge { get; }
+        Edge RightEdge { get; }
     }
 
     public interface ISizeF
@@ -126,11 +126,14 @@ namespace PowerArgs.Cli.Physics
             this.Top = y;
             this.Width = w;
             this.Height = h;
-            this.TopEdge = default;
-            this.BottomEdge = default;
-            this.LeftEdge = default;
-            this.RightEdge = default;
-            Geometry.UpdateEdges(this);
+
+            Edge t, b, l, r;
+            Geometry.FindEdges(x,y,w,h, out t, out b, out l, out r);
+
+            this.TopEdge = t;
+            this.BottomEdge = b;
+            this.LeftEdge = l;
+            this.RightEdge = r;
         }
 
         public override bool Equals(object obj)
@@ -241,15 +244,14 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-
-        public static void UpdateEdges(IRectangularF rect)
+        public static void FindEdges(float x, float y, float w, float h, out Edge top, out Edge bottom, out Edge left, out Edge right)
         {
-            var r = rect.Right();
-            var b = rect.Bottom();
-            rect.TopEdge = new Edge() { X1 = rect.Left, Y1 = rect.Top, X2 = r, Y2 = rect.Top };
-            rect.BottomEdge = new Edge() { X1 = rect.Left, Y1 = b, X2 = r, Y2 = rect.Top };
-            rect.LeftEdge = new Edge() { X1 = rect.Left, Y1 = rect.Top, X2 = rect.Left, Y2 = b };
-            rect.RightEdge = new Edge() { X1 = r, Y1 = rect.Top, X2 = r, Y2 = b };
+            var r = x + w;
+            var b = y + h;
+            top = new Edge() { X1 = x, Y1 = y, X2 = r, Y2 = y };
+            bottom = new Edge() { X1 = x, Y1 = b, X2 = r, Y2 = y };
+            left = new Edge() { X1 = x, Y1 = y, X2 = x, Y2 = b };
+            right = new Edge() { X1 = r, Y1 = y, X2 = r, Y2 = b };
         }
 
         public static IRectangularF ToRect(this ILocationF loc, float w, float h)

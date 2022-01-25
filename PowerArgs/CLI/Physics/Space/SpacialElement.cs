@@ -127,13 +127,22 @@ namespace PowerArgs.Cli.Physics
             ZIndex = z;
             this.InternalState = new SpacialElementInternalState();
 
-            Geometry.UpdateEdges(this);
-            SizeOrPositionChanged.SubscribeForLifetime(()=> Geometry.UpdateEdges(this), this.Lifetime);
+            UpdateEdges();
+            SizeOrPositionChanged.SubscribeForLifetime(UpdateEdges, this.Lifetime);
+        }
+
+        private void UpdateEdges()
+        {
+            Edge t, b, l, r;
+            Geometry.FindEdges(Left, Top, Width, Height, out t, out b, out l, out r);
+            TopEdge = t;
+            BottomEdge = b;
+            LeftEdge = l;
+            RightEdge = r;
         }
 
 
-        
-     
+
 
         public IRectangularF GetObstacleIfMovedTo(IRectangularF f, int? z = null)
         {
