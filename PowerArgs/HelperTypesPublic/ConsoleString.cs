@@ -471,6 +471,8 @@ namespace PowerArgs
             { ConsoleColor.Yellow, "yellow" },
         };
 
+        public ReadOnlySpan<ConsoleCharacter> AsSpan() => characters.AsSpan();
+
         static ConsoleString ()
         {
             ConsoleProvider = new StdConsoleProvider();
@@ -496,40 +498,25 @@ namespace PowerArgs
         /// </summary>
         public static readonly ConsoleString NewLine = new ConsoleString("\n");
 
-        private List<ConsoleCharacter> characters;
+        private ConsoleCharacter[] characters;
 
         /// <summary>
         /// Gets the string value of this ConsoleString.  Useful when using the debugger.
         /// </summary>
-        public string StringValue
-        {
-            get
-            {
-                return ToString();
-            }
-        }
-
+        public string StringValue => ToString();
+         
         /// <summary>
         /// The length of the string.
         /// </summary>
-        public int Length
-        {
-            get
-            {
-                return characters.Count;
-            }
-        }
-
-        private bool ContentSet { get; set; }
+        public int Length => characters.Length;
+        
 
         /// <summary>
         /// Create a new empty ConsoleString
         /// </summary>
         public ConsoleString()
         {
-            characters = new List<ConsoleCharacter>();
-            ContentSet = false;
-            Append(string.Empty);
+            characters = new ConsoleCharacter[0];
         }
 
         public ConsoleString Darker
@@ -548,34 +535,17 @@ namespace PowerArgs
         /// <summary>
         /// Returns true if all characters have the default foreground and background color
         /// </summary>
-        public bool IsUnstyled
-        {
-            get
-            {
-                return this.Where(c => c.ForegroundColor != DefaultForegroundColor || c.BackgroundColor != DefaultBackgroundColor).Count() == 0;
-            }
-        }
-
+        public bool IsUnstyled => this.Where(c => c.ForegroundColor != DefaultForegroundColor || c.BackgroundColor != DefaultBackgroundColor).Count() == 0;
+         
         /// <summary>
         /// Creates a new ConsoleString from a collection of ConsoleCharacter objects
         /// </summary>
         /// <param name="chars">The value to use to seed this string</param>
         public ConsoleString(IEnumerable<ConsoleCharacter> chars)
         {
-            characters = new List<ConsoleCharacter>();
-            ContentSet = false;
-            Append(chars);
+            characters = chars.ToArray();
         }
 
-        /// <summary>
-        /// Creates a new ConsoleString from a list of ConsoleCharacter objects
-        /// </summary>
-        /// <param name="chars">The value to use to seed this string</param>
-        public ConsoleString(List<ConsoleCharacter> chars)
-        {
-            characters = chars;
-            ContentSet = true;
-        }
 
         /// <summary>
         /// Create a ConsoleString given an initial text value and optional color info.
@@ -586,9 +556,11 @@ namespace PowerArgs
         /// <param name="underline">If true then underlines in an Ansi supported console.</param>
         public ConsoleString(string value = "", RGB? foregroundColor = null, RGB? backgroundColor = null, bool underline = false)
         {
-            characters = new List<ConsoleCharacter>();
-            ContentSet = false;
-            Append(value, foregroundColor, backgroundColor, underline);
+            characters = new ConsoleCharacter[value.Length];
+            for(var i = 0; i < value.Length; i++)
+            {
+                characters[i] = new ConsoleCharacter(value[i], foregroundColor, backgroundColor, underline);
+            }
         }
 
         /// <summary>
@@ -631,21 +603,21 @@ namespace PowerArgs
         /// <returns>A new ConsoleString with the replacements.</returns>
         public ConsoleString Replace(string toFind, string toReplace, RGB? foregroundColor = null, RGB? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            ConsoleString ret = new ConsoleString(this);
+            var ret = new List<ConsoleCharacter>(this);
 
             int startIndex = 0;
 
             while (true)
             {
-                string toString = ret.ToString();
+                string toString = new string(ret.Select(r => r.Value).ToArray());
                 int currentIndex = toString.IndexOf(toFind, startIndex, comparison);
                 if (currentIndex < 0) break;
-                for (int i = 0; i < toFind.Length; i++) ret.characters.RemoveAt(currentIndex);
-                ret.characters.InsertRange(currentIndex, toReplace.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
+                for (int i = 0; i < toFind.Length; i++) ret.RemoveAt(currentIndex);
+                ret.InsertRange(currentIndex, toReplace.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
                 startIndex = currentIndex + toReplace.Length;
             }
 
-            return ret;
+            return new ConsoleString(ret);
         }
 
 
@@ -659,31 +631,31 @@ namespace PowerArgs
         /// <returns>A new ConsoleString with the highlights.</returns>
         public ConsoleString Highlight(string toFind,RGB? foregroundColor = null, RGB? backgroundColor = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            ConsoleString ret = new ConsoleString(this);
-            if(toFind == null || toFind.Length == 0)
+            var ret = new List<ConsoleCharacter>(this);
+            if (toFind == null || toFind.Length == 0)
             {
-                return ret;
+                return new ConsoleString(ret);
             }
 
             int startIndex = 0;
 
             while (true)
             {
-                string toString = ret.ToString();
+                string toString = new string(ret.Select(r => r.Value).ToArray());
                 int currentIndex = toString.IndexOf(toFind, startIndex, comparison);
                 if (currentIndex < 0) break;
 
                 string replacement = "";
                 for (int i = 0; i < toFind.Length; i++)
                 {
-                    replacement += ret.characters[currentIndex].Value;
-                    ret.characters.RemoveAt(currentIndex);
+                    replacement += ret[currentIndex].Value;
+                    ret.RemoveAt(currentIndex);
                 }
-                ret.characters.InsertRange(currentIndex, replacement.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
+                ret.InsertRange(currentIndex, replacement.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
                 startIndex = currentIndex + replacement.Length;
             }
 
-            return ret;
+            return new ConsoleString(ret);
         }
 
         /// <summary>
@@ -880,13 +852,13 @@ namespace PowerArgs
         /// <returns>A new ConsoleString representing the substring requested.</returns>
         public ConsoleString Substring(int start, int length)
         {
-            ConsoleString ret = new ConsoleString();
+            var ret = new List<ConsoleCharacter>();
             for(int i = start; i < start + length;i++)
             {
-                ret.characters.Add(this.characters[i]);
+                ret.Add(this.characters[i]);
             }
 
-            return ret;
+            return new ConsoleString(ret);
         }
         
         /// <summary>
@@ -1749,40 +1721,26 @@ namespace PowerArgs
 
         private ConsoleString ImmutableAppend(string value, RGB? foregroundColor = null, RGB? backgroundColor = null)
         {
-            ConsoleString str = new ConsoleString(this);
-            str.ContentSet = false;
-            str.Append(value, foregroundColor, backgroundColor);
-            return str;
+            var ret = new List<ConsoleCharacter>(this);
+            foreach(var c in value)
+            {
+                ret.Add(new ConsoleCharacter(c,foregroundColor, backgroundColor));
+            }
+            
+            return new ConsoleString(ret);
         }
 
         private ConsoleString ImmutableAppend(ConsoleString other)
         {
-            ConsoleString str = new ConsoleString(this);
-            str.ContentSet = false;
-            str.Append(other);
-            return str;
-        }
-
-
-        private void Append(string value, RGB? foregroundColor = null, RGB? backgroundColor = null, bool underline = false)
-        {
-            if (ContentSet) throw new Exception("ConsoleStrings are immutable");
-            foreach (var c in value)
+            var ret = new List<ConsoleCharacter>(this);
+            foreach (var c in other)
             {
-                this.characters.Add(new ConsoleCharacter(c, foregroundColor, backgroundColor, underline));
+                ret.Add(c);
             }
-            ContentSet = true;
-        }
 
-        private void Append(IEnumerable<ConsoleCharacter> chars)
-        {
-            if (ContentSet) throw new Exception("ConsoleStrings are immutable");
-            foreach (var c in chars)
-            {
-                this.characters.Add(c);
-            }
-            ContentSet = true;
+            return new ConsoleString(ret);
         }
+ 
 
         /// <summary>
         /// Gets an enumerator for this string
@@ -1790,7 +1748,7 @@ namespace PowerArgs
         /// <returns>an enumerator for this string</returns>
         public IEnumerator<ConsoleCharacter> GetEnumerator()
         {
-            return characters.GetEnumerator();
+            return ((IEnumerable<ConsoleCharacter>)characters).GetEnumerator();
         }
 
         /// <summary>
