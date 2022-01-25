@@ -242,6 +242,22 @@ namespace PowerArgs.Cli.Physics
 
         public float X2;
         public float Y2;
+
+        public Edge()
+        {
+            X1 = default;
+            Y1 = default;
+            X2 = default;
+            Y2 = default;
+        }
+
+        public Edge(float x1, float y1, float x2, float y2)
+        {
+            X1 = x1;
+            Y1 = y1;
+            X2 = x2;
+            Y2 = y2;
+        }
     }
 
     public interface IAmMass : ISpacialElement
