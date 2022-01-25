@@ -53,6 +53,16 @@ namespace PowerArgs.Cli.Physics
             return ret;
         }
 
+        public static (float, float, float, float) MoveTowardsFast(IRectangularF rect, float angle, float distance, bool normalized = true)
+        {
+            return MoveTowardsFast(rect.Left, rect.Top, rect.Width, rect.Height, angle, distance, normalized);
+        }
+        public static (float,float,float,float) MoveTowardsFast(float x, float y, float w, float h, float angle, float distance, bool normalized = true)
+        {
+            var newLoc = MoveTowardsFast(x,y, angle, distance, normalized);
+            return (newLoc.Item1, newLoc.Item2, w, h);
+        }
+
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static IRectangularF GetOffsetByPixels(this IRectangularF r, float dx, float dy)
         {
