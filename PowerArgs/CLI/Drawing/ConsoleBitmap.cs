@@ -318,8 +318,11 @@ namespace PowerArgs.Cli
         {
             var xStart = x;
 
-            foreach (var character in str)
+
+            var span = str.AsSpan();
+            for(var i = 0; i < span.Length; i++)
             {
+                var character = span[i];
                 if (character.Value == '\n')
                 {
                     y++;
