@@ -48,12 +48,11 @@ namespace ArgsTests.CLI.Controls
             {
                 app.LayoutRoot.Add(new TextBox() { Value = "SomeText".ToWhite() }).Fill();
                 await app.Paint();
+                Assert.IsTrue(app.Find("SomeText".ToWhite()).HasValue);
                 app.Stop();
             });
 
             app.Start().Wait();
-            Assert.IsTrue(app.Find("SomeText".ToWhite()).HasValue);
-
             app.AssertThisTestMatchesLKG();
         }
 
