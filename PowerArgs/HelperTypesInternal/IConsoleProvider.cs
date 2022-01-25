@@ -149,7 +149,11 @@ namespace PowerArgs
                     {
                         _fancy = false;
                         return _fancy.Value;
-                    }  
+                    }
+                    else
+                    {
+                        _fancy = true;
+                    }
                 }
 
                 return _fancy.Value;
