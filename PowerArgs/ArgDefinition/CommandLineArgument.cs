@@ -585,8 +585,7 @@ namespace PowerArgs
             string cacheKey = null;
             if(propSource != null)
             {
-                cacheKey = propSource.PropertyType.FullName + propSource.Name + "/" + key;
-                if (matchMemo.TryGetValue(cacheKey, out bool cachedVal))
+                if (matchMemo.TryGetValue(key, out bool cachedVal))
                 {
                     return cachedVal;
                 }
@@ -595,7 +594,7 @@ namespace PowerArgs
             ret = Aliases.Where(a => a.Equals(key, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Any();
             if (cacheKey != null)
             {
-                matchMemo.Add(cacheKey, ret);
+                matchMemo.Add(key, ret);
             }
             return ret;
         }
