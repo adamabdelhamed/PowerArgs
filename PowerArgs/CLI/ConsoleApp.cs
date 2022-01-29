@@ -333,8 +333,14 @@ namespace PowerArgs.Cli
 
             Paint();
 
-            await base.Start();
-            ExitInternal();
+            try
+            {
+                await base.Start();
+            }
+            finally
+            {
+                ExitInternal();
+            }
         }
 
         public override void Run()
@@ -349,8 +355,14 @@ namespace PowerArgs.Cli
 
             Paint();
 
-            base.Run();
-            ExitInternal();
+            try
+            {
+                base.Run();
+            }
+            finally
+            {
+                ExitInternal();
+            }
         }
 
         private void HandleDebouncedResize()
