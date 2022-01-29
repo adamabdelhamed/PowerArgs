@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -98,6 +99,8 @@ namespace PowerArgs.Cli
             this.Location = location;
             this.Size = size;
         }
+
+        public RectF ToRectF() => new RectF(X, Y, Width, Height);
 
         public bool Contains(int x, int y)
         {

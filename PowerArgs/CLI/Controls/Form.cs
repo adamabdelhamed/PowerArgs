@@ -339,8 +339,8 @@ namespace PowerArgs.Cli
 
             this.SynchronizeForLifetime(nameof(this.Bounds), () =>
             {
-                var labelColumnWidth = Geometry.Round(this.Width * this.Options.LabelColumnPercentage);
-                var valueColumnWidth = Geometry.Round(this.Width * (1 - this.Options.LabelColumnPercentage));
+                var labelColumnWidth = Geo.Round(this.Width * this.Options.LabelColumnPercentage);
+                var valueColumnWidth = Geo.Round(this.Width * (1 - this.Options.LabelColumnPercentage));
 
                 while (labelColumnWidth + valueColumnWidth > this.Width)
                 {

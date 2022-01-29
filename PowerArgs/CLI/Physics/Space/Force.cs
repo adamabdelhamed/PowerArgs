@@ -6,13 +6,13 @@ namespace PowerArgs.Cli.Physics
     public class Force : SpacialElementFunction
     {
         public float Accelleration { get; set; }
-        public float Angle { get; set; }
+        public Angle Angle { get; set; }
         public TimeSpan Duration { get; set; }
         public TimeSpan EndTime { get; set; }
         public bool IsPermanentForce { get; set; }
         Velocity tracker;
 
-        public Force(Velocity tracker, float accelleration, float angle, TimeSpan? duration = null) : base(tracker.Element)
+        public Force(Velocity tracker, float accelleration, Angle angle, TimeSpan? duration = null) : base(tracker.Element)
         {
             this.Accelleration = accelleration;
             this.Angle = angle;
@@ -30,9 +30,9 @@ namespace PowerArgs.Cli.Physics
 
             if (Duration == TimeSpan.Zero)
             {
-                var end = tracker.Element.MoveTowards(tracker.Angle, tracker.Speed).MoveTowards(angle, accelleration);
-                var newAngle = tracker.Element.CalculateAngleTo(end);
-                var newSpeed = tracker.Element.CalculateDistanceTo(end);
+                var end = tracker.Element.Bounds.OffsetByAngleAndDistance(tracker.Angle, tracker.Speed).OffsetByAngleAndDistance(angle, accelleration);
+                var newAngle = tracker.Element.Bounds.CalculateAngleTo(end);
+                var newSpeed = tracker.Element.Bounds.CalculateDistanceTo(end);
                 tracker.Angle = newAngle;
                 tracker.Speed = newSpeed;
                 this.Lifetime.Dispose();
@@ -61,9 +61,9 @@ namespace PowerArgs.Cli.Physics
 
             float dt = (float)(Time.CurrentTime.Now.TotalSeconds - Time.CurrentTime.Increment.TotalSeconds);
             float dSpeed = (Accelleration * dt);
-            var end = tracker.Element.MoveTowards(tracker.Angle, tracker.Speed).MoveTowards(Angle, dSpeed);
-            var newAngle = tracker.Element.CalculateAngleTo(end);
-            var newSpeed = tracker.Element.CalculateDistanceTo(end);
+            var end = tracker.Element.Bounds.OffsetByAngleAndDistance(tracker.Angle, tracker.Speed).OffsetByAngleAndDistance(Angle, dSpeed);
+            var newAngle = tracker.Element.Bounds.CalculateAngleTo(end);
+            var newSpeed = tracker.Element.Bounds.CalculateDistanceTo(end);
             tracker.Angle = newAngle;
             tracker.Speed = newSpeed;
         }

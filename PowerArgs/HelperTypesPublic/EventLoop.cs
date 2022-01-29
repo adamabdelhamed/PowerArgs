@@ -116,14 +116,18 @@ namespace PowerArgs
             return runDeferred.Task;
         }
 
+        private bool runMode;
+        private Task runTask;
         /// <summary>
         /// Runs the event loop using the current thread
         /// </summary>
         public virtual void Run()
         {
+            runMode = true;
             Thread = System.Threading.Thread.CurrentThread;
             runDeferred = new TaskCompletionSource<bool>();
             RunCommon();
+            runTask.Wait();
         }
 
         private void RunCommon()
@@ -141,6 +145,10 @@ namespace PowerArgs
             }
             finally
             {
+                if (runMode)
+                {
+                    runTask = runDeferred.Task;
+                }
                 runDeferred = null;
             }
         }

@@ -69,7 +69,7 @@ namespace PowerArgs.Cli
             var delta = Value - Min;
             var range = Max - Min;
             var percentage = delta / range;
-            var left = (int)Geometry.Round(percentage * (Width - 1));
+            var left = (int)Geo.Round(percentage * (Width - 1));
 
             var barColor = HasFocus ? RGB.Cyan : BarColor;
             context.DrawPoint(new ConsoleCharacter(' ', Background, barColor), left, 0);

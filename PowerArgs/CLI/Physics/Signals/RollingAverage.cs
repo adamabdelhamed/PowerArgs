@@ -83,7 +83,7 @@ namespace PowerArgs.Cli.Physics
             {
                 if (isWindowFull == false) return float.NaN;
                 Array.Sort(samples);
-                var i = (int)Geometry.Round((samples.Length - 1) * p);
+                var i = (int)Geo.Round((samples.Length - 1) * p);
                 return samples[i];
             }
         }

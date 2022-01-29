@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace PowerArgs.Cli.Physics
 {
-    public interface ISpacialElement : IRectangularF
+    public interface ISpacialElement : ICollider
     {
         Lifetime Lifetime { get; }
 
@@ -15,12 +15,12 @@ namespace PowerArgs.Cli.Physics
  
     public interface IObstacleResolver
     {
-        List<IRectangularF> GetObstacles(SpacialElement e, float? z = null);
+        List<ICollider> GetObstacles(SpacialElement e, float? z = null);
     }
 
     public class DefaultObstacleResolver : IObstacleResolver
     {
-        public List<IRectangularF> GetObstacles(SpacialElement element, float? z = null)
+        public List<ICollider> GetObstacles(SpacialElement element, float? z = null)
         {
             float effectiveZ = z.HasValue ? z.Value : element.ZIndex;
             var v = Velocity.For(element);
@@ -28,7 +28,7 @@ namespace PowerArgs.Cli.Physics
             IEnumerable<Type> excludedTypes = v?.HitDetectionExclusionTypes;
             Func<IEnumerable<SpacialElement>> dynamicExclusions = v?.HitDetectionDynamicExclusions;
 
-            var ret = new List<IRectangularF>();
+            var ret = new List<ICollider>();
             var dynamicEx = dynamicExclusions != null ? dynamicExclusions.Invoke() : null;
             foreach (var e in SpaceTime.CurrentSpaceTime.Elements)
             {
@@ -62,10 +62,10 @@ namespace PowerArgs.Cli.Physics
                 }
             }
 
-            ret.Add(RectangularF.Create(0, -1, SpaceTime.CurrentSpaceTime.Width, 1)); // top boundary
-            ret.Add(RectangularF.Create(0, SpaceTime.CurrentSpaceTime.Height, SpaceTime.CurrentSpaceTime.Width, 1)); // bottom boundary
-            ret.Add(RectangularF.Create(-1, 0, 1, SpaceTime.CurrentSpaceTime.Height)); // left boundary
-            ret.Add(RectangularF.Create(SpaceTime.CurrentSpaceTime.Width, 0, 1, SpaceTime.CurrentSpaceTime.Height)); // right boundary
+            ret.Add(new ColliderBox(new RectF(0, -1, SpaceTime.CurrentSpaceTime.Width, 1))); // top boundary
+            ret.Add(new ColliderBox(new RectF(0, SpaceTime.CurrentSpaceTime.Height, SpaceTime.CurrentSpaceTime.Width, 1))); // bottom boundary
+            ret.Add(new ColliderBox(new RectF(-1, 0, 1, SpaceTime.CurrentSpaceTime.Height))); // left boundary
+            ret.Add(new ColliderBox(new RectF(SpaceTime.CurrentSpaceTime.Width, 0, 1, SpaceTime.CurrentSpaceTime.Height))); // right boundary
 
             return ret;
         }
@@ -87,12 +87,17 @@ namespace PowerArgs.Cli.Physics
 
         public SpacialElementRenderer Renderer { get; internal set; } 
 
-        public IRectangularF Bounds => RectangularF.Create(Left, Top, Width, Height);
+        public RectF Bounds => new RectF(Left, Top, Width, Height);
+        public RectF MassBounds => this is IHaveMassBounds ? (this as IHaveMassBounds).CalculateMassBounds() : this.Bounds;
 
         public float CenterX => Left + (Width / 2);
         public float CenterY => Top + (Height / 2);
 
         internal SpacialElementInternalState InternalSpacialState => InternalState as SpacialElementInternalState;
+
+        private Lifetime hypotheticalMovementLifetime;
+
+        public bool IsHypotheticallyMoving => hypotheticalMovementLifetime != null && hypotheticalMovementLifetime.IsExpired == false;
 
         public ObservableObject ObservableProperties { get; private set; } = new ObservableObject();
 
@@ -108,14 +113,9 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        public List<IRectangularF> GetObstacles(float? z = null) => ObstacleResolver.GetObstacles(this, z);
+        public List<ICollider> GetObstacles(float? z = null) => ObstacleResolver.GetObstacles(this, z);
 
         public void SetProperty<T>(string key, T val) => ObservableProperties.Set(val, key);
-
-        public Edge TopEdge { get; set; }
-        public Edge BottomEdge { get; set; }
-        public Edge LeftEdge { get; set; }
-        public Edge RightEdge { get; set; }
 
 
         public SpacialElement(float w = 1, float h = 1, float x = 0, float y = 0, int z = 0)
@@ -126,30 +126,13 @@ namespace PowerArgs.Cli.Physics
             Top = y;
             ZIndex = z;
             this.InternalState = new SpacialElementInternalState();
-
-            UpdateEdges();
-            SizeOrPositionChanged.SubscribeForLifetime(UpdateEdges, this.Lifetime);
         }
 
-        private void UpdateEdges()
+        public ICollider GetObstacleIfMovedTo(RectF f, int? z = null)
         {
-            Edge t, b, l, r;
-            Geometry.FindEdges(Left, Top, Width, Height, out t, out b, out l, out r);
-            TopEdge = t;
-            BottomEdge = b;
-            LeftEdge = l;
-            RightEdge = r;
-        }
-
-
-
-
-        public IRectangularF GetObstacleIfMovedTo(IRectangularF f, int? z = null)
-        {
-            var overlaps = this.GetObstacles(z).Where(e => e.EffectiveBounds().Touches(f)).ToArray();
+            var overlaps = this.GetObstacles(z).Where(e => e.MassBounds.Touches(f)).ToArray();
             return overlaps.FirstOrDefault();
         }
-
         public void MoveTo(float x, float y, int? z = null)
         {
             Time.AssertTimeThread();
@@ -171,6 +154,11 @@ namespace PowerArgs.Cli.Physics
                 this.ZIndex = z.Value;
             }
 
+            if(IsHypotheticallyMoving)
+            {
+                return;
+            }
+
             SizeOrPositionChanged.Fire();
         }
 
@@ -182,6 +170,11 @@ namespace PowerArgs.Cli.Physics
 
             this.Width = w;
             this.Height = h;
+
+            if (IsHypotheticallyMoving)
+            {
+                return;
+            }
             SizeOrPositionChanged.Fire();
         }
 
@@ -199,22 +192,29 @@ namespace PowerArgs.Cli.Physics
             var newH = Height + dh;
             ResizeTo(newW, newH);
         }
+
+        public IDisposable DoHypotheticalMovement()
+        {
+            hypotheticalMovementLifetime = new Lifetime();
+            return hypotheticalMovementLifetime; ;
+        }
     }
 
     public interface IHaveMassBounds : ISpacialElement
     {
-        IRectangularF MassBounds { get; }
+        RectF MassBounds { get; }
         bool IsPartOfMass(SpacialElement other);
         IEnumerable<SpacialElement> Elements { get; }
     }
 
     public static class IHaveMassBoundsEx
     {
-        public static IRectangularF CalculateMassBounds(this IHaveMassBounds mass) => CalculateMassBounds(mass.Elements.As<ISpacialElement>().Concat(new ISpacialElement[] { mass }));
+        public static RectF CalculateMassBounds(this IHaveMassBounds mass) => CalculateMassBounds(mass.Elements.As<ISpacialElement>().Concat(new ISpacialElement[] { mass }));
 
-        public static IRectangularF CalculateMassBounds(params IRectangularF[] parts) => parts.CalculateMassBounds();
+        public static RectF CalculateMassBounds(IEnumerable<ICollider> colliders) => colliders.Select(c => c.Bounds).CalculateMassBounds();
+        public static RectF CalculateMassBounds(params RectF[] parts) => parts.CalculateMassBounds();
         
-        public static IRectangularF CalculateMassBounds(this IEnumerable<IRectangularF> parts)
+        public static RectF CalculateMassBounds(this IEnumerable<RectF> parts)
         {
             var left = float.MaxValue;
             var top = float.MaxValue;
@@ -225,40 +225,15 @@ namespace PowerArgs.Cli.Physics
             {
                 left = Math.Min(left, part.Left);
                 top = Math.Min(top, part.Top);
-                right = Math.Max(right, part.Right());
-                bottom = Math.Max(bottom, part.Bottom());
+                right = Math.Max(right, part.Right);
+                bottom = Math.Max(bottom, part.Bottom);
             }
 
-            var bounds = RectangularF.Create(left, top, right - left, bottom - top);
+            var bounds = new RectF(left, top, right - left, bottom - top);
             return bounds;
         }
     }
 
-
-    public struct Edge
-    {
-        public float X1;
-        public float Y1;
-
-        public float X2;
-        public float Y2;
-
-        public Edge()
-        {
-            X1 = default;
-            Y1 = default;
-            X2 = default;
-            Y2 = default;
-        }
-
-        public Edge(float x1, float y1, float x2, float y2)
-        {
-            X1 = x1;
-            Y1 = y1;
-            X2 = x2;
-            Y2 = y2;
-        }
-    }
 
     public interface IAmMass : ISpacialElement
     {

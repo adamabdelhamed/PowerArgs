@@ -21,32 +21,14 @@ namespace PowerArgs.Cli.Physics
 
         float ISpaceTimeUI.Height => Height;
 
-        public ILocationF CameraTopLeft { get; set; }
-
-        public IRectangularF CameraBounds
-        {
-            get
-            {
-                if (CameraTopLeft == null) return SpaceTime.Bounds;
-                var c = CameraTopLeft;
-                var st = SpaceTime.CurrentSpaceTime;
-                var l = c.Left - st.Width / 2f;
-                var t = c.Top - st.Height / 2f;
-                return RectangularF.Create(l, t, st.Width, st.Height);
-            }
-            set
-            {
-                var st = SpaceTime.CurrentSpaceTime;
-                var newCam = value.TopLeft().GetOffsetByPixels(st.Width / 2f, st.Height / 2f).GetRounded();
-                CameraTopLeft = newCam;
-            }
-        }
+        public LocF CameraTopLeft { get; set; }
+        public RectF CameraBounds => new RectF(CameraTopLeft.Left, CameraTopLeft.Top, SpaceTime.Width, SpaceTime.Height);
 
         public SpaceTimePanel(SpaceTime st)
         {
             this.SpaceTime = st;
-            this.Width = Geometry.Round(st.Width);
-            this.Height = Geometry.Round(st.Height);
+            this.Width = Geo.Round(st.Width);
+            this.Height = Geo.Round(st.Height);
             Background = ConsoleColor.White;
             renderers = new Dictionary<SpacialElement, SpacialElementRenderer>();
             thingBinder = new SpacialElementBinder();
@@ -73,10 +55,10 @@ namespace PowerArgs.Cli.Physics
 
         public void UpdateBounds(SpacialElement e, float xf, float yf, int z, float wf, float hf)
         {
-            var x = Geometry.Round(xf);
-            var y = Geometry.Round(yf);
-            var w = Geometry.Round(wf);
-            var h = Geometry.Round(hf);
+            var x = Geo.Round(xf);
+            var y = Geo.Round(yf);
+            var w = Geo.Round(wf);
+            var h = Geo.Round(hf);
 
             var r = renderers[e];
             if (x != r.X || y != r.Y || w != r.Width || h != r.Height)

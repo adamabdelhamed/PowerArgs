@@ -17,74 +17,74 @@ namespace ArgsTests.CLI.Physics
         [TestMethod]
         public async Task TestCantGoThroughWallsRight() => await PhysicsTest.Test(50,25, TestContext, async (app, stPanel) =>
         {
-            await TestCantGoThroughWalls(Direction.Right, app, stPanel);
+            await TestCantGoThroughWalls(0, app, stPanel);
         });
 
         [TestMethod]
         public async Task TestCantGoThroughWallsLeft() => await PhysicsTest.Test(50, 25, TestContext, async (app, stPanel) =>
         {
-            await TestCantGoThroughWalls(Direction.Left, app, stPanel);
+            await TestCantGoThroughWalls(180, app, stPanel);
         });
 
         [TestMethod]
         public async Task TestCantGoThroughWallsUp() => await PhysicsTest.Test(50, 25, TestContext, async (app, stPanel) =>
         {
-            await TestCantGoThroughWalls(Direction.Up, app, stPanel);
+            await TestCantGoThroughWalls(270, app, stPanel);
         });
 
         [TestMethod]
         public async Task TestCantGoThroughWallsDown() => await PhysicsTest.Test(50, 25, TestContext, async (app, stPanel) =>
         {
-            await TestCantGoThroughWalls(Direction.Down, app, stPanel);
+            await TestCantGoThroughWalls(90, app, stPanel);
         });
 
-        private async Task TestCantGoThroughWalls(Direction d, CliTestHarness app, SpaceTimePanel stPanel)
+        private async Task TestCantGoThroughWalls(Angle a, CliTestHarness app, SpaceTimePanel stPanel)
         {
             var st = stPanel.SpaceTime;
             var wall = st.Add(new SpacialElement() { BackgroundColor = RGB.DarkRed });
-            ILocationF movingObjectLocation;
+            LocF movingObjectLocation;
             float movementAngle;
             float expected;
             Func<SpacialElement,float> actual;
-            if(d == Direction.Right)
+            if(a == 0)
             {
-                movingObjectLocation = LocationF.Create((int)(st.Width * .25f), st.Height * .5f - .5f);
+                movingObjectLocation = new LocF((int)(st.Width * .25f), st.Height * .5f - .5f);
                 movementAngle = 0;
                 wall.ResizeTo(.1f, st.Height);
                 wall.MoveTo((int)(st.Width * .75f), 0);
 
                 expected = wall.Left;
-                actual = m => m.Right();
+                actual = m => m.Bounds.Right;
             }
-            else if(d == Direction.Left)
+            else if(a == 180)
             {
-                movingObjectLocation = LocationF.Create((int)(st.Width * .75f), st.Height * .5f - .5f);
+                movingObjectLocation = new LocF((int)(st.Width * .75f), st.Height * .5f - .5f);
                 movementAngle = 180;
                 wall.ResizeTo(.1f, st.Height);
                 wall.MoveTo((int)(st.Width * .25f)-.1f, 0);
 
-                expected = wall.Right();
+                expected = wall.Bounds.Right;
                 actual = m => m.Left;
             }
-            else if (d == Direction.Up)
+            else if (a == 270)
             {
-                movingObjectLocation = LocationF.Create(st.Width * .5f - .5f, (int)(st.Height * .75f));
+                movingObjectLocation = new LocF(st.Width * .5f - .5f, (int)(st.Height * .75f));
                 movementAngle = 270;
                 wall.ResizeTo(st.Width, .1f);
                 wall.MoveTo(0, (int)(st.Height * .25f)-.1f);
 
-                expected = wall.Bottom();
+                expected = wall.Bounds.Bottom;
                 actual = m => m.Top;
             }
-            else if (d == Direction.Down)
+            else if (a == 90)
             {
-                movingObjectLocation = LocationF.Create(st.Width * .5f - .5f, (int)(st.Height * .25f));
+                movingObjectLocation = new LocF(st.Width * .5f - .5f, (int)(st.Height * .25f));
                 movementAngle = 90;
                 wall.ResizeTo(st.Width, .1f);
                 wall.MoveTo(0, (int)(st.Height * .75f));
 
                 expected = wall.Top;
-                actual = m => m.Bottom();
+                actual = m => m.Bounds.Bottom;
             }
             else
             {
@@ -101,21 +101,21 @@ namespace ArgsTests.CLI.Physics
                 v.Speed = speed;
                 await st.DelayAsync(20000);
 
-                if(d == Direction.Down)
+                if(a == 90)
                 {
-                    Assert.IsTrue(movingObject.Bottom() < wall.Top);
+                    Assert.IsTrue(movingObject.Bounds.Bottom < wall.Top);
                 }
-                else if(d == Direction.Up)
+                else if(a == 270)
                 {
-                    Assert.IsTrue(movingObject.Top > wall.Bottom());
+                    Assert.IsTrue(movingObject.Top > wall.Bounds.Bottom);
                 }
-                else if(d == Direction.Left)
+                else if(a == 180)
                 {
-                    Assert.IsTrue(movingObject.Left > wall.Right());
+                    Assert.IsTrue(movingObject.Left > wall.Bounds.Right);
                 }
-                else if(d == Direction.Right)
+                else if(a == 0)
                 {
-                    Assert.IsTrue(movingObject.Right() < wall.Left);
+                    Assert.IsTrue(movingObject.Bounds.Right < wall.Left);
                 }
                 else
                 {

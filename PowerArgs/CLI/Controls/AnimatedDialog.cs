@@ -81,14 +81,14 @@ namespace PowerArgs.Cli
                 content.IsVisible = false;
                 var dialogContainer = options.Parent.Add(new BorderPanel(content) {  BorderColor = handle.BorderColor, Background = content.Background, Width = 1, Height = 1 }).CenterBoth();
                 dialogContainer.ZIndex = options.ZIndex;
-                await Forward(300 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Width = Math.Max(1, Geometry.Round((4+content.Width) * percentage)));
-                await Forward(200 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Height = Math.Max(1, Geometry.Round((2+content.Height) * percentage)));
+                await Forward(300 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Width = Math.Max(1, Geo.Round((4+content.Width) * percentage)));
+                await Forward(200 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Height = Math.Max(1, Geo.Round((2+content.Height) * percentage)));
                 content.IsVisible = true;
                 await handle.CallerLifetime.AwaitEndOfLifetime();
                 content.IsVisible = false;
                 await Reverse(150 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Height = Math.Max(1, (int)Math.Floor((2 + content.Height) * percentage)));
                 await Task.Delay((int)(200 * options.SpeedPercentage));
-                await Reverse(200 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Width = Math.Max(1, Geometry.Round((4 + content.Width) * percentage)));
+                await Reverse(200 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Width = Math.Max(1, Geo.Round((4 + content.Width) * percentage)));
                 dialogContainer.Dispose();
             }
         }

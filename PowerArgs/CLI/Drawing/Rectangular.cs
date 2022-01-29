@@ -16,8 +16,10 @@ namespace PowerArgs.Cli
         Size Size { get; set; }
     }
 
-    public class Rectangular : ObservableObject, IRectangular, IRectangularF
+    public class Rectangular : ObservableObject, IRectangular, ICollider
     {
+        public RectF ToRectF() => new RectF(X, Y, Width, Height);
+
         private Rectangle bounds;
         public Rectangle Bounds
         {
@@ -106,32 +108,8 @@ namespace PowerArgs.Cli
 
         public float Top => Y;
 
-        float IRectangularF.Width => Width;
+        RectF ICollider.Bounds => new RectF(X,Y,Width, Height);
 
-
-        float IRectangularF.Height => Height;
-
- 
-
-        public Edge TopEdge { get; set; }
-        public Edge BottomEdge { get; set; }
-        public Edge LeftEdge { get; set; }
-        public Edge RightEdge { get; set; }
-
-        public Rectangular()
-        {
-            UpdateEdges();
-            SubscribeForLifetime(AnyProperty, UpdateEdges, this);
-        }
-
-        private void UpdateEdges()
-        {
-            Edge t, b, l, r;
-            Geometry.FindEdges(Left, Top, Width, Height, out t, out b, out l, out r);
-            TopEdge = t;
-            BottomEdge = b;
-            LeftEdge = l;
-            RightEdge = r;
-        }
+        public RectF MassBounds => new RectF(X, Y, Width, Height);
     }
 }

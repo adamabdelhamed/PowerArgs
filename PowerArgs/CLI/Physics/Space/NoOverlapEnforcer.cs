@@ -7,7 +7,7 @@ namespace PowerArgs.Cli.Physics
         public class OverlapInfo
         {
             public SpacialElement DetectingElement { get; set; }
-            public IRectangularF OverlappingElement { get; set; }
+            public ICollider OverlappingElement { get; set; }
         }
 
         public static void EnableForLifetime(Func<SpacialElement, bool> filter, Action<OverlapInfo> handler, ILifetimeManager lt)
@@ -24,9 +24,9 @@ namespace PowerArgs.Cli.Physics
             }, lt);
         }
 
-        private static IRectangularF GetObstacleIfMovedTo(SpacialElement el, int? z = null)
+        private static ICollider GetObstacleIfMovedTo(SpacialElement el, int? z = null)
         {
-            var overlaps = el.GetObstacles(z).Where(e => e.EffectiveBounds().Touches(el)).ToArray();
+            var overlaps = el.GetObstacles(z).Where(e => e.MassBounds.Touches(el.Bounds)).ToArray();
             return overlaps.FirstOrDefault();
         }
 

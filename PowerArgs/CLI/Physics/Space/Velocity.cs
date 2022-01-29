@@ -29,14 +29,14 @@ namespace PowerArgs.Cli.Physics
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
         public Func<IEnumerable<SpacialElement>> HitDetectionDynamicExclusions { get; set; }
 
-        public Func<IRectangularF> BoundsTransform { get; set; }
+        public Func<RectF> BoundsTransform { get; set; }
 
         public Event OnAngleChanged { get; private set; } = new Event();
         public Event OnSpeedChanged { get; private set; } = new Event();
         public Event BeforeMove { get; private set; } = new Event();
 
-        private float angle;
-        public float Angle
+        private Angle angle;
+        public Angle Angle
         {
             get
             {
@@ -46,6 +46,12 @@ namespace PowerArgs.Cli.Physics
             {
                 if (value == angle) return;
                 angle = value;
+
+                if(Element.IsHypotheticallyMoving)
+                {
+                    return;
+                }
+
                 OnAngleChanged.Fire();
             }
         }
@@ -63,11 +69,17 @@ namespace PowerArgs.Cli.Physics
             {
                 if (value == speed) return;
                 speed = value;
+
+                if (Element.IsHypotheticallyMoving)
+                {
+                    return;
+                }
+
                 OnSpeedChanged.Fire();
             }
         }
 
-        public List<IRectangularF> GetObstacles() => Element.GetObstacles();
+        public List<ICollider> GetObstacles() => Element.GetObstacles();
 
         public HitPrediction NextCollision { get; set; }
 
@@ -75,7 +87,7 @@ namespace PowerArgs.Cli.Physics
         {
             get
             {
-                if (NextCollision == null || Speed == 0 || NextCollision.ObstacleHit == null) return TimeSpan.MaxValue;
+                if (NextCollision == null || Speed == 0 || NextCollision.Type == HitType.None) return TimeSpan.MaxValue;
                 var d = NextCollision.LKGD;
                 var seconds = d / speed;
                 return TimeSpan.FromSeconds(seconds);
@@ -152,20 +164,16 @@ namespace PowerArgs.Cli.Physics
                     }
 
                     HitPrediction hitPrediction = null;
-                    IRectangularF bounds = null;
+                    RectF bounds = default;
                     if (velocity.HitDetectionDisabled == false)
                     {
                         var obstacles = velocity.GetObstacles();
-
-                        bounds = velocity.BoundsTransform != null ? velocity.BoundsTransform() : velocity.Element;
-                        hitPrediction = HitDetection.PredictHit(new HitDetectionOptions()
-                        {
-                            MovingObject = bounds,
-                            Obstacles = obstacles,
-                            Angle = velocity.Angle,
-                            Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous(),
-                            Mode = CastingMode.Precise,
-                        });
+                        bounds = velocity.BoundsTransform != null ? velocity.BoundsTransform() : velocity.Element.Bounds;
+                        var options = new HitDetectionOptions(new ColliderBox(bounds), obstacles);
+                        options.Angle = velocity.Angle;
+                        options.Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous;
+                        options.Mode = CastingMode.Precise;
+                        hitPrediction = HitDetection.PredictHit(options);
                         velocity.NextCollision = hitPrediction;
                         velocity.BeforeMove.Fire();
                     }
@@ -173,18 +181,19 @@ namespace PowerArgs.Cli.Physics
 
                     if (hitPrediction != null && hitPrediction.Type != HitType.None && hitPrediction.LKGD <= d)
                     {
+                        var obstacleHit = hitPrediction.ColliderHit;
                         var dx = velocity.BoundsTransform != null ? bounds.Left - velocity.Element.Left : 0;
                         var dy = velocity.BoundsTransform != null ? bounds.Top - velocity.Element.Top : 0;
 
-                        var proposedBounds = velocity.BoundsTransform != null ? velocity.BoundsTransform() : velocity.Element;
-                        var distanceToObstacleHit = proposedBounds.CalculateDistanceTo(hitPrediction.ObstacleHit);
+                        var proposedBounds = velocity.BoundsTransform != null ? velocity.BoundsTransform() : velocity.Element.Bounds;
+                        var distanceToObstacleHit = proposedBounds.CalculateDistanceTo(obstacleHit.Bounds);
                         if (distanceToObstacleHit > .5f)
                         {
-                            proposedBounds = proposedBounds.MoveTowards(velocity.Angle, distanceToObstacleHit - .5f, false);
+                            proposedBounds = proposedBounds.OffsetByAngleAndDistance(velocity.Angle, distanceToObstacleHit - .5f, false);
                             velocity.Element.MoveTo(proposedBounds.Left - dx, proposedBounds.Top - dy);
                             velocity.haveMovedSinceLastHitDetection = true;
                         }
-                        float angle = bounds.Center().CalculateAngleTo(hitPrediction.ObstacleHit.Center());
+                        var angle = bounds.CalculateAngleTo(obstacleHit.Bounds);
 
 
                         if (velocity.haveMovedSinceLastHitDetection)
@@ -193,18 +202,18 @@ namespace PowerArgs.Cli.Physics
                             {
                                 Angle = angle,
                                 MovingObject = velocity.Element,
-                                ObstacleHit = hitPrediction.ObstacleHit,
+                                ColliderHit = obstacleHit,
                                 HitType = hitPrediction.Type,
                                 Prediction = hitPrediction,
                             };
 
-                            if (hitPrediction.ObstacleHit is SpacialElement)
+                            if (obstacleHit is SpacialElement)
                             {
-                                Velocity.For(hitPrediction.ObstacleHit as SpacialElement)?.ImpactOccurred.Fire(new Impact()
+                                Velocity.For(obstacleHit as SpacialElement)?.ImpactOccurred.Fire(new Impact()
                                 {
-                                    Angle = angle.GetOppositeAngle(),
-                                    MovingObject = hitPrediction.ObstacleHit as SpacialElement,
-                                    ObstacleHit = velocity.Element,
+                                    Angle = angle.Opposite(),
+                                    MovingObject = obstacleHit as SpacialElement,
+                                    ColliderHit = velocity.Element,
                                     HitType = hitPrediction.Type,
                                 });
                             }
@@ -218,13 +227,13 @@ namespace PowerArgs.Cli.Physics
 
                         if (velocity.Bounce)
                         {
-                            if (hitPrediction.Side == Side.Top || hitPrediction.Side == Side.Bottom)
+                            if (hitPrediction.Edge == obstacleHit.Bounds.TopEdge || hitPrediction.Edge == obstacleHit.Bounds.BottomEdge)
                             {
-                                velocity.Angle = 0.AddToAngle(-velocity.Angle);
+                                velocity.Angle = new Angle(0).Add(-velocity.Angle.Value);
                             }
                             else
                             {
-                                velocity.Angle = 180.AddToAngle(-velocity.Angle);
+                                velocity.Angle = new Angle(180).Add(-velocity.Angle.Value);
                             }
                         }
                         else
@@ -234,7 +243,7 @@ namespace PowerArgs.Cli.Physics
                     }
                     else
                     {
-                        var newLocation = velocity.Element.MoveTowards(velocity.Angle, d);
+                        var newLocation = velocity.Element.Bounds.OffsetByAngleAndDistance(velocity.Angle, d);
                         velocity.Element.MoveTo(newLocation.Left, newLocation.Top);
                         velocity.haveMovedSinceLastHitDetection = true;
                     }

@@ -35,8 +35,8 @@ namespace PowerArgs.Cli
                 w = h * widthOverHeight;
             }
 
-            content.Width = Math.Min(Width, Geometry.Round(w));
-            content.Height = Math.Min(Height, Geometry.Round(h));
+            content.Width = Math.Min(Width, Geo.Round(w));
+            content.Height = Math.Min(Height, Geo.Round(h));
         }
     }
 }

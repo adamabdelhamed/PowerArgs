@@ -15,7 +15,7 @@ namespace PowerArgs.Cli.Physics
         SpaceTime SpaceTime { get; }
         RealTimeViewingFunction RealTimeViewing { get; set; }
         Event AfterUpdate { get; }
-        ILocationF CameraTopLeft { get; set; }
+        LocF CameraTopLeft { get; set; }
     }
 
     public class SpaceTimeUIHost
@@ -23,7 +23,7 @@ namespace PowerArgs.Cli.Physics
         private AutoResetEvent resetHandle;
         private bool resizedSinceLastRender;
         private ISpaceTimeUI ui;
-        private ILocationF lastCamera;
+        private LocF lastCamera;
         public SpaceTimeUIHost(ISpaceTimeUI ui)
         {
             this.ui = ui;
@@ -115,11 +115,8 @@ namespace PowerArgs.Cli.Physics
             float w = wPer * ui.Width;
             float h = hPer * ui.Height;
 
-            if(ui.CameraTopLeft != null)
-            {
-                x -= (ui.CameraTopLeft.Left - ui.SpaceTime.Width/2);
-                y -= (ui.CameraTopLeft.Top - ui.SpaceTime.Height/2);
-            }
+            x -= ui.CameraTopLeft.Left;
+            y -= ui.CameraTopLeft.Top;            
 
             ui.UpdateBounds(e, x, y, e.ZIndex, w, h);
         }

@@ -21,10 +21,10 @@ namespace PowerArgs.Cli.Physics
         {
             get
             {
-                var min = Geometry.Round(SleepTimeWindow.Min);
-                var max = Geometry.Round(SleepTimeWindow.Max);
-                var avg = Geometry.Round(SleepTimeWindow.Average);
-                var p95 = Geometry.Round(SleepTimeWindow.Percentile(.95));
+                var min = Geo.Round(SleepTimeWindow.Min);
+                var max = Geo.Round(SleepTimeWindow.Max);
+                var avg = Geo.Round(SleepTimeWindow.Average);
+                var p95 = Geo.Round(SleepTimeWindow.Percentile(.95));
 
                 var color = p95 > 20 ? RGB.Green : p95 > 5 ? RGB.Yellow : RGB.Red;
                 return $"Min:{min}, Max:{max}, Avg:{avg}, P95: {p95}".ToConsoleString(color);

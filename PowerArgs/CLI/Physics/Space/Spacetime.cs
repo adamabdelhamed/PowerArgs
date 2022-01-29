@@ -14,7 +14,7 @@ namespace PowerArgs.Cli.Physics
         public Event<SpacialElement> SpacialElementChanged { get; private set; } = new Event<SpacialElement>();
         public float Width { get; private set; }
         public float Height { get; private set; }
-        public IRectangularF Bounds { get; private set; }
+        public RectF Bounds { get; private set; }
         public void ClearChanges() => ChangeTracker.ClearChanges();
  
         public IReadOnlyList<SpacialElement> ChangedElements => ChangeTracker.ChangedElements;
@@ -29,7 +29,7 @@ namespace PowerArgs.Cli.Physics
         {
             this.Width = width;
             this.Height = height;
-            this.Bounds = RectangularF.Create(0, 0, Width, Height);
+            this.Bounds = new RectF(0, 0, Width, Height);
             Invoke(() =>
             {
                 this.ChangeTracker = new SpacialChangeTracker(SpacialElementChanged);

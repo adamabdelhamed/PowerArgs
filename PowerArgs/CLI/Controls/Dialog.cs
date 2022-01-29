@@ -61,6 +61,11 @@ namespace PowerArgs.Cli
         /// </summary>
         public bool AllowEscapeToCancel { get; set; } = true;
 
+        /// <summary>
+        /// When provided, the dialog will automatically dismiss when this task completes.
+        /// </summary>
+        public Task AutoDismissTask { get; set; }
+
         public Action<Dialog> OnPosition { get; set; } = (d) =>
         {
             d.FillHorizontally();
@@ -180,9 +185,14 @@ namespace PowerArgs.Cli
 
         internal override ConsoleControl GetContent()
         {
-            if (Options == null || Options.Count == 0)
+            if (Options == null)
             {
-                throw new ArgumentException("You need to specify at least one button");
+                throw new ArgumentException("Options cannot be null");
+            }
+
+            if (Mode == DialogButtonsPresentationMode.Grid && Options.Count == 0)
+            {
+                throw new ArgumentException("You need to specify at least one button for grid mode");
             }
 
             if (Mode == DialogButtonsPresentationMode.Buttons)
@@ -190,21 +200,24 @@ namespace PowerArgs.Cli
                 ConsolePanel dialogContent = new ConsolePanel();
                 ScrollablePanel messagePanel = dialogContent.Add(new ScrollablePanel()).Fill(padding: new Thickness(0, 0, 1, 3));
                 Label messageLabel = messagePanel.ScrollableContent.Add(new Label() { Mode = LabelRenderMode.MultiLineSmartWrap, Text = Message }).FillHorizontally(padding: new Thickness(3, 3, 0, 0));
-                StackPanel buttonPanel = dialogContent.Add(new StackPanel() { Margin = 1, Height = 1, Orientation = Orientation.Horizontal }).FillHorizontally(padding: new Thickness(1, 0, 0, 0)).DockToBottom(padding: 1);
-
-                foreach (var option in Options)
+                if (Options.Count > 0)
                 {
-                    var myOption = option;
-                    Button b = new Button() { Text = option.DisplayText };
-                    b.Pressed.SubscribeOnce(() =>
-                    {
-                        SelectedOption = myOption;
-                        Dialog.Dismiss();
-                    });
-                    buttonPanel.Controls.Add(b);
-                }
+                    StackPanel buttonPanel = dialogContent.Add(new StackPanel() { Margin = 1, Height = 1, Orientation = Orientation.Horizontal }).FillHorizontally(padding: new Thickness(1, 0, 0, 0)).DockToBottom(padding: 1);
 
-                buttonPanel.Controls.Last().AddedToVisualTree.SubscribeOnce(() => buttonPanel.Application.InvokeNextCycle(()=>{ buttonPanel.Controls.Last().TryFocus(); }));
+                    foreach (var option in Options)
+                    {
+                        var myOption = option;
+                        Button b = new Button() { Text = option.DisplayText };
+                        b.Pressed.SubscribeOnce(() =>
+                        {
+                            SelectedOption = myOption;
+                            Dialog.Dismiss();
+                        });
+                        buttonPanel.Controls.Add(b);
+                    }
+
+                    buttonPanel.Controls.Last().AddedToVisualTree.SubscribeOnce(() => buttonPanel.Application.InvokeNextCycle(() => { buttonPanel.Controls.Last().TryFocus(); }));
+                }
                 return dialogContent;
             }
             else
@@ -251,8 +264,11 @@ namespace PowerArgs.Cli
         {
             this.options = options;
             Add(options.GetContent()).Fill(padding: new Thickness(0, 0, 1, 1));
-            closeButton = Add(new Button() { Text = "Close (ESC)".ToConsoleString(),Background = DefaultColors.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
-            closeButton.Pressed.SubscribeForLifetime(Escape, this);
+            if (options.AllowEscapeToCancel)
+            {
+                closeButton = Add(new Button() { Text = "Close (ESC)".ToConsoleString(), Background = DefaultColors.H1Color, Foreground = ConsoleColor.Black }).DockToRight(padding: 1);
+                closeButton.Pressed.SubscribeForLifetime(Escape, this);
+            }
             BeforeAddedToVisualTree.SubscribeForLifetime(OnBeforeAddedToVisualTree, this);
             AddedToVisualTree.SubscribeForLifetime(OnAddedToVisualTree, this);
             RemovedFromVisualTree.SubscribeForLifetime(OnRemovedFromVisualTree, this);
@@ -267,7 +283,18 @@ namespace PowerArgs.Cli
             ConsoleApp.AssertAppThread();
             var deferred = new TaskCompletionSource<bool>();
             ConsoleApp.Current.LayoutRoot.Add(this);
-            RemovedFromVisualTree.SubscribeForLifetime(()=>deferred.SetResult(true), this);
+            RemovedFromVisualTree.SubscribeForLifetime(()=>deferred.TrySetResult(true), this);
+
+            if(options.AutoDismissTask != null)
+            {
+                ConsoleApp.Current.Invoke(async () =>
+                {
+                    await options.AutoDismissTask;
+                    this.TryDispose();
+                    deferred.TrySetResult(true);
+                });
+            }
+
             return deferred.Task;
         }
 
@@ -298,6 +325,7 @@ namespace PowerArgs.Cli
             ConsoleApp.Current.FocusManager.TryMoveFocus();
             Application.FocusManager.SubscribeForLifetime(nameof(FocusManager.StackDepth), () =>
             {
+                if (this.IsBeingRemoved) return;
                 if(Application.FocusManager.StackDepth != myFocusStackDepth)
                 {
                     closeButton.Background = DefaultColors.DisabledColor;

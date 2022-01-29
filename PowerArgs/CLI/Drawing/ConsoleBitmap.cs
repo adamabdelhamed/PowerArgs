@@ -1,6 +1,8 @@
 ﻿using PowerArgs.Cli.Physics;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -431,8 +433,8 @@ namespace PowerArgs.Cli
                     for (float x = x1; x < x2; x += DrawPrecision)
                     {
                         float y = slope + (x - x1) + y1;
-                        int xInt = Geometry.Round(x);
-                        int yInt = Geometry.Round(y);
+                        int xInt = Geo.Round(x);
+                        int yInt = Geo.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -444,8 +446,8 @@ namespace PowerArgs.Cli
                     for (float x = x2; x < x1; x += DrawPrecision)
                     {
                         float y = slope + (x - x1) + y1;
-                        int xInt = Geometry.Round(x);
-                        int yInt = Geometry.Round(y);
+                        int xInt = Geo.Round(x);
+                        int yInt = Geo.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -459,8 +461,8 @@ namespace PowerArgs.Cli
                     for (float y = y1; y < y2; y += DrawPrecision)
                     {
                         float x = ((y - y1) / slope) + x1;
-                        int xInt = Geometry.Round(x);
-                        int yInt = Geometry.Round(y);
+                        int xInt = Geo.Round(x);
+                        int yInt = Geo.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -472,8 +474,8 @@ namespace PowerArgs.Cli
                     for (float y = y2; y < y1; y += DrawPrecision)
                     {
                         float x = ((y - y1) / slope) + x1;
-                        int xInt = Geometry.Round(x);
-                        int yInt = Geometry.Round(y);
+                        int xInt = Geo.Round(x);
+                        int yInt = Geo.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -684,6 +686,29 @@ namespace PowerArgs.Cli
             }
         }
 
+        public void Dump(string dest)
+        {
+            using (Bitmap b = new Bitmap(Width * 10, Height * 20))
+            using (var g = Graphics.FromImage(b))
+            {
+                g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+                for (int y = 0; y < Height; y++)
+                {
+                    for (int x = 0; x < Width; x++)
+                    {
+                        var pix = GetPixel(x, y);
+                        var bgColor = Color.FromArgb(pix.Value.BackgroundColor.R, pix.Value.BackgroundColor.G, pix.Value.BackgroundColor.B);
+                        var fgColor = Color.FromArgb(pix.Value.ForegroundColor.R, pix.Value.ForegroundColor.G, pix.Value.ForegroundColor.B);
+                        var imgX = x * 10;
+                        var imgY = y * 20;
+                        g.FillRectangle(new SolidBrush(bgColor), imgX, imgY, 10, 20);
+                        g.DrawString(pix.Value.Value.ToString(), new Font("Consolas", 12), new SolidBrush(fgColor), imgX-2, imgY);
+                    }
+                }
+                b.Save(dest, ImageFormat.Png);
+            }
+        }
 
         public void PaintNew()
         {
@@ -1015,7 +1040,7 @@ namespace PowerArgs.Cli
         private long hits;
         private long misses;
         private long returns;
-        private double HitRate => Geometry.Round(100 * hits / (hits + misses));
+        private double HitRate => Geo.Round(100 * hits / (hits + misses));
 #endif
 
 
@@ -1033,6 +1058,8 @@ namespace PowerArgs.Cli
 #endif
                 var ret = pool[pool.Count - 1];
                 pool.RemoveAt(pool.Count - 1);
+                ret.Value = default;
+                ret.LastDrawnValue = default;
                 return ret;
             }
             else

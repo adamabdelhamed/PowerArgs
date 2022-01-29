@@ -16,28 +16,116 @@ namespace ArgsTests.CLI.Physics
     {
         public TestContext TestContext { get; set; }
 
+
+        [TestMethod]
+        public void TestHitDetectionHitRight()
+        {
+            var options = new HitDetectionOptions()
+            {
+                MovingObject = new RectF(0, 0, 1, 1),
+                Obstacles = new RectF[]  { new RectF(10, 0, 1, 1) },
+                Angle = 0,
+                Visibility = 11,
+            };
+            var prediction = HitDetection.PredictHit(options);
+            Assert.AreEqual(HitType.Obstacle, prediction.Type);
+            Assert.AreEqual(prediction.ObstacleHitBounds, options.Obstacles[0]);
+        }
+
+        [TestMethod]
+        public void TestHitDetectionHitLeft()
+        {
+            var options = new HitDetectionOptions()
+            {
+                MovingObject = new RectF(0, 0, 1, 1),
+                Obstacles = new RectF[] { new RectF(-10, 0, 1, 1) },
+                Angle = 180,
+                Visibility = 21,
+            };
+            var prediction = HitDetection.PredictHit(options);
+            Assert.AreEqual(HitType.Obstacle, prediction.Type);
+            Assert.AreEqual(prediction.ObstacleHitBounds, options.Obstacles[0]);
+        }
+
+        [TestMethod]
+        public void TestHitDetectionMissRightShortVis()
+        {
+            var options = new HitDetectionOptions()
+            {
+                MovingObject = new RectF(0, 0, 1, 1),
+                Obstacles = new RectF[] { new RectF(10, 0, 1, 1) },
+                Angle = 0,
+                Visibility = 5,
+            };
+            var prediction = HitDetection.PredictHit(options);
+            Assert.AreEqual(HitType.None, prediction.Type);
+            Assert.AreNotEqual(prediction.ObstacleHitBounds, options.Obstacles[0]);
+        }
+
+        [TestMethod]
+        public void TestHitDetectionMissLeftShortVis()
+        {
+            var options = new HitDetectionOptions()
+            {
+                MovingObject = new RectF(0, 0, 1, 1),
+                Obstacles = new RectF[] { new RectF(-10, 0, 1, 1) },
+                Angle = 180,
+                Visibility = 5,
+            };
+            var prediction = HitDetection.PredictHit(options);
+            Assert.AreEqual(HitType.None, prediction.Type);
+            Assert.AreNotEqual(prediction.ObstacleHitBounds, options.Obstacles[0]);
+        }
+
+        [TestMethod]
+        public void TestHitDetectionMissRightNoCollide()
+        {
+            var options = new HitDetectionOptions()
+            {
+                MovingObject = new RectF(0, 0, 1, 1),
+                Obstacles = new RectF[] { new RectF(-10, 0, 1, 1) },
+                Angle = 0,
+                Visibility = 11,
+            };
+            var prediction = HitDetection.PredictHit(options);
+            Assert.AreEqual(HitType.None, prediction.Type);
+            Assert.AreNotEqual(prediction.ObstacleHitBounds, options.Obstacles[0]);
+        }
+
+        [TestMethod]
+        public void TestHitDetectionMissLeftNoCollide()
+        {
+            var options = new HitDetectionOptions()
+            {
+                MovingObject = new RectF(0, 0, 1, 1),
+                Obstacles = new RectF[] { new RectF(10, 0, 1, 1) },
+                Angle = 180,
+                Visibility = 21,
+            };
+            var prediction = HitDetection.PredictHit(options);
+            Assert.AreEqual(HitType.None, prediction.Type);
+            Assert.AreNotEqual(prediction.ObstacleHitBounds, options.Obstacles[0]);
+        }
+
+
         [TestMethod]
         public async Task TestHitDetectionSmallOverlaps() => await PhysicsTest.Test(50,25, TestContext, async (app, stPanel) =>
         {
             var e1 = SpaceTime.CurrentSpaceTime.Add(new SpacialElement(1, 1, 5, 5));
             var e2 = SpaceTime.CurrentSpaceTime.Add(new SpacialElement(1,1, 5.9f, 5.9f));
-            var expectHit = HitDetection.PredictHit(new HitDetectionOptions() 
-            { 
-                MovingObject = e2, 
-                Obstacles = new SpacialElement[] { e1 }, 
-                Angle = 225,
-                Visibility = 10
-            });
-            Assert.AreEqual(e1, expectHit.ObstacleHit);
 
-            var expectMiss = HitDetection.PredictHit(new HitDetectionOptions()
-            {
-                MovingObject = e2,
-                Obstacles = new SpacialElement[] { e1 },
-                Angle = 45,
-                Visibility = 10
-            });
-            Assert.AreEqual(null, expectMiss.ObstacleHit);
+            var options = new HitDetectionOptions(e2, new ICollider[] { e1 });
+            options.Angle = 225;
+            options.Visibility = 10;
+
+            var expectHit = HitDetection.PredictHit(options);
+            Assert.AreEqual(e1, expectHit.ColliderHit);
+
+            var options2 = new HitDetectionOptions(e2, new ICollider[] { e1 });
+            options.Angle = 45;
+            options.Visibility = 10;
+            var expectMiss = HitDetection.PredictHit(options2);
+            Assert.IsTrue(expectMiss.Type == HitType.None);
         });
 
         [TestMethod]
@@ -54,7 +142,7 @@ namespace ArgsTests.CLI.Physics
             var eye =  SpaceTime.CurrentSpaceTime.Add(new SpacialElement(x: 0, y: 12, w: 2, h: 1) { BackgroundColor = RGB.Red });
 
             var lines = new List<SpacialElement>();
-            while(eye.Right() < SpaceTime.CurrentSpaceTime.Width)
+            while(eye.Bounds.Right < SpaceTime.CurrentSpaceTime.Width)
             {
                 eye.MoveBy(.05f, 0);
                 foreach (var line in lines) { line.Lifetime.Dispose(); };
@@ -68,7 +156,7 @@ namespace ArgsTests.CLI.Physics
 
                 foreach (var obstacle in SpaceTime.CurrentSpaceTime.Elements.Where(e => e != eye).ToArray())
                 {
-                    var angle = eye.Center().CalculateAngleTo(obstacle.Center());
+                    var angle = eye.Bounds.CalculateAngleTo(obstacle.Bounds);
                     var los = HitDetection.HasLineOfSight(eye, obstacle);
 
                     if(los)

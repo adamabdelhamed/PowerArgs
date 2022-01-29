@@ -41,7 +41,7 @@ namespace PowerArgs.Cli.Physics
         {
             if (currentForce != null)
             {
-                new Force(RoamerSpeed, 1,  currentForce.Angle.GetOppositeAngle());
+                new Force(RoamerSpeed, 1,  currentForce.Angle.Opposite());
                 currentForce = null;
             }
 

@@ -10,141 +10,16 @@ namespace PowerArgs.Cli.Physics
         public const string PassThruTag = "passthru";
         public const string WeaponsPassThruTag = "WeaponsPassThru";
 
-
-        public static float LineOfSightVisibility(this IRectangularF from, float angle, IEnumerable<IRectangularF> obstacles, float range, float increment = .5f)
+        public static Task AnimateAsync(this RectF rectangular, RectangularAnimationOptions options)
         {
-            for (var d = increment; d < range; d += increment)
-            {
-                var testLocation = from.Center().MoveTowards(angle, d);
-                var testRect = RectangularF.Create(testLocation.Left - from.Width/2, testLocation.Top - from.Height/2, from.Width, from.Height);
-                if (obstacles.Where(o => o.Touches(testRect)).Any() || SpaceTime.CurrentSpaceTime.Bounds.Contains(testRect) == false)
-                {
-                    return d;
-                }
-            }
-
-            return range;
+            return AnimateAsync(new ColliderBox(rectangular), options);
         }
-
-
-
-        public static ILocationF MoveTowards(this ILocationF a, ILocationF b, float distance)
+        public static async Task AnimateAsync(this ICollider rectangular, RectangularAnimationOptions options)
         {
-            float slope = (a.Top - b.Top) / (a.Left - b.Left);
-            bool forward = a.Left <= b.Left;
-            bool up = a.Top <= b.Top;
-
-            float abDistance = Geometry.CalculateNormalizedDistanceTo(a,b);
-            double angle = Math.Asin(Math.Abs(b.Top - a.Top) / abDistance);
-            float dy = (float)Math.Abs(distance * Math.Sin(angle));
-            float dx = (float)Math.Sqrt((distance * distance) - (dy * dy));
-
-            float x2 = forward ? a.Left + dx : a.Left - dx;
-            float y2 = up ? a.Top + dy : a.Top - dy;
-
-            var ret = LocationF.Create(x2, y2);
-            return ret;
-        }
-
-        public static IRectangularF MoveTowards(this IRectangularF r, float angle, float distance, bool normalized = true)
-        {
-            var newLoc = MoveTowards(r.TopLeft(), angle, distance, normalized);
-            var ret = RectangularF.Create(newLoc.Left, newLoc.Top, r.Width, r.Height);
-            return ret;
-        }
-
-        public static (float, float, float, float) MoveTowardsFast(IRectangularF rect, float angle, float distance, bool normalized = true)
-        {
-            return MoveTowardsFast(rect.Left, rect.Top, rect.Width, rect.Height, angle, distance, normalized);
-        }
-        public static (float,float,float,float) MoveTowardsFast(float x, float y, float w, float h, float angle, float distance, bool normalized = true)
-        {
-            var newLoc = MoveTowardsFast(x,y, angle, distance, normalized);
-            return (newLoc.Item1, newLoc.Item2, w, h);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static IRectangularF GetOffsetByPixels(this IRectangularF r, float dx, float dy)
-        {
-            return RectangularF.Create(r.Left + dx, r.Top + dy, r.Width, r.Height);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ILocationF GetOffsetByPixels(this ILocationF r, float dx, float dy)
-        {
-            return LocationF.Create(r.Left + dx, r.Top + dy);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static ILocationF MoveTowards(this ILocationF a, float angle, float distance, bool normalized = true)
-        {
-            while(angle < 0)
-            {
-                angle += 360;
-            }
-
-            while(angle > 360)
-            {
-                angle -= 360;
-            }
-        
-            if (normalized)
-            {
-                distance = Geometry.NormalizeQuantity(distance, angle);
-            }
-            var forward = angle > 270 || angle < 90;
-            var up = angle > 180;
-
-            // convert to radians
-            angle = (float)(angle * Math.PI / 180);
-            float dy = (float)Math.Abs(distance * Math.Sin(angle));
-            float dx = (float)Math.Sqrt((distance * distance) - (dy * dy));
-
-            float x2 = forward ? a.Left + dx : a.Left - dx;
-            float y2 = up ? a.Top - dy : a.Top + dy;
-
-            var ret = LocationF.Create(x2, y2);
-            return ret;
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        public static (float,float) MoveTowardsFast(float x, float y, float angle, float distance, bool normalized = true)
-        {
-            while (angle < 0)
-            {
-                angle += 360;
-            }
-
-            while (angle > 360)
-            {
-                angle -= 360;
-            }
-
-            if (normalized)
-            {
-                distance = Geometry.NormalizeQuantity(distance, angle);
-            }
-            var forward = angle > 270 || angle < 90;
-            var up = angle > 180;
-
-            // convert to radians
-            angle = (float)(angle * Math.PI / 180);
-            float dy = (float)Math.Abs(distance * Math.Sin(angle));
-            float dx = (float)Math.Sqrt((distance * distance) - (dy * dy));
-
-            float x2 = forward ? x + dx : x - dx;
-            float y2 = up ? y - dy : y + dy;
-
-            return (x2,y2);
-        }
-
-
-        public static async Task AnimateAsync(this IRectangularF rectangular, RectangularAnimationOptions options)
-        {
-            var startX = rectangular.Left;
-            var startY = rectangular.Top;
-            var startW = rectangular.Width;
-            var startH = rectangular.Height;
+            var startX = rectangular.Left();
+            var startY = rectangular.Top();
+            var startW = rectangular.Bounds.Width;
+            var startH = rectangular.Bounds.Height;
 
             await Animator.AnimateAsync(new FloatAnimatorOptions()
             {
@@ -171,19 +46,15 @@ namespace PowerArgs.Cli.Physics
                     var frameY = startY + (v * yDelta);
                     var frameW = startW + (v * wDelta);
                     var frameH = startH + (v * hDelta);
-                    var frameBounds = RectangularF.Create(frameX, frameY, frameW, frameH);
+                    var frameBounds = new RectF(frameX, frameY, frameW, frameH);
                     options.Setter(rectangular, frameBounds);
                 }
             });
         }
 
-        public static IRectangularF EffectiveBounds(this IRectangularF rect) => rect is IHaveMassBounds ? (rect as IHaveMassBounds).MassBounds : rect;
-
-
-        public static IEnumerable<float> Enumerate360Angles(float initialAngle, int increments = 20)
+        public static IEnumerable<Angle> Enumerate360Angles(Angle initialAngle, int increments = 20)
         {
-            initialAngle = initialAngle % 360;
-            var opposite = initialAngle.GetOppositeAngle();
+            var opposite = initialAngle.Opposite();
 
             for(var i = 1; i <= increments; i++)
             {
@@ -198,22 +69,19 @@ namespace PowerArgs.Cli.Physics
                 else
                 {
                     var increment = 180f * i / increments;
-                    yield return initialAngle.AddToAngle(increment);
-                    yield return initialAngle.AddToAngle(-increment);
+                    yield return initialAngle.Add(increment);
+                    yield return initialAngle.Add(-increment);
                 }
             }
         }
-
-     
-      
     }
 
     public class SpacialElementAnimationOptions : RectangularAnimationOptions
     {
-        public override void Setter(IRectangularF target, IRectangularF bounds)
+        public override void Setter(ICollider target, RectF bounds)
         {
             (target as SpacialElement).MoveTo(bounds.Left, bounds.Top);
-            if (target.Width != bounds.Width || target.Height != bounds.Height)
+            if (target.Bounds.Width != bounds.Width || target.Bounds.Height != bounds.Height)
             {
                 (target as SpacialElement).ResizeTo(bounds.Width, bounds.Height);
             }
@@ -222,20 +90,20 @@ namespace PowerArgs.Cli.Physics
 
     public class ConsoleControlAnimationOptions : RectangularAnimationOptions
     {
-        public override void Setter(IRectangularF target, IRectangularF bounds)
+        public override void Setter(ICollider target, RectF bounds)
         {
-            (target as ConsoleControl).X = Geometry.Round(bounds.Left);
-            (target as ConsoleControl).Y = Geometry.Round(bounds.Top);
-            (target as ConsoleControl).Width = Geometry.Round(bounds.Width);
-            (target as ConsoleControl).Height = Geometry.Round(bounds.Height);
+            (target as ConsoleControl).X = Geo.Round(bounds.Left);
+            (target as ConsoleControl).Y = Geo.Round(bounds.Top);
+            (target as ConsoleControl).Width = Geo.Round(bounds.Width);
+            (target as ConsoleControl).Height = Geo.Round(bounds.Height);
         }
     }
 
     public abstract class RectangularAnimationOptions
     {
-        public Func<IRectangularF> Destination { get; set; }
+        public Func<RectF> Destination { get; set; }
 
-        public abstract void Setter(IRectangularF target, IRectangularF bounds);
+        public abstract void Setter(ICollider target, RectF bounds);
 
         public EasingFunction EasingFunction { get; set; } = new FloatAnimatorOptions().EasingFunction;
         public double Duration { get; set; } = new FloatAnimatorOptions().Duration;

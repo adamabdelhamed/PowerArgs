@@ -125,12 +125,12 @@ namespace PowerArgs.Cli
 
                 var aspectRatio = (float)child.Width / child.Height;
                 var newW = parent.Width - (effectivePadding.Left + effectivePadding.Right);
-                var newH = Geometry.Round(newW / aspectRatio);
+                var newH = Geo.Round(newW / aspectRatio);
 
                 if (newH > parent.Height)
                 {
                     newH = parent.Height;
-                    newW = Geometry.Round(newH * aspectRatio);
+                    newW = Geo.Round(newH * aspectRatio);
                 }
 
                 var newLeft = (parent.Width - newW) / 2;

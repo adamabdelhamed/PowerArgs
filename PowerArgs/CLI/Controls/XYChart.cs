@@ -678,7 +678,7 @@ namespace PowerArgs.Cli
             else
             {
                 double xConverted = XAxisLeft + (XAxisWidth * percentage);
-                return Geometry.Round(xConverted);
+                return Geo.Round(xConverted);
             }
         }
 
@@ -716,7 +716,7 @@ namespace PowerArgs.Cli
             else
             {
                 double yConverted = YAxisBottom - (YAxisHeight * percentage);
-                return Geometry.Round((float)yConverted);
+                return Geo.Round((float)yConverted);
             }
 
         }
@@ -892,7 +892,7 @@ namespace PowerArgs.Cli
         /// <returns>the formatted value</returns>
         public ConsoleString FormatValue(double min, double max, double value)
         {
-            if (value == Geometry.Round(value))
+            if (value == Geo.Round(value))
             {
                 return String.Format("{0:n0}", value).ToConsoleString();
             }

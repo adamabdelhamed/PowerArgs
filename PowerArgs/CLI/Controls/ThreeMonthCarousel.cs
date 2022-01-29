@@ -78,23 +78,23 @@ namespace PowerArgs.Cli
                 temp.Width = 2;
                 temp.Height = 1;
                 temp.X = !forward ? -temp.Width : Width + temp.Width;
-                temp.Y = Geometry.Round((Height - temp.Height) / 2f);
+                temp.Y = Geo.Round((Height - temp.Height) / 2f);
                 var tempDest = !forward ? leftDest : rightDest;
 
                 EasingFunction ease = Animator.EaseInOut;
                 var tempAnimation = temp.AnimateAsync(new ConsoleControlAnimationOptions()
                 {
                     IsCancelled = () => seekLt.IsExpired,
-                    Destination = () => tempDest.ToIRectangularF(),
+                    Destination = () => tempDest.ToRectF(),
                     Duration = duration,
                     EasingFunction = ease
                 });
 
                 if (!forward)
                 {
-                    var rightAnimationDest = RectangularF.Create(Width + 2, Height / 2, 2, 1);
-                    var centerAnimationDest = right.ToIRectangularF();
-                    var leftAnimationDest = center.ToIRectangularF();
+                    var rightAnimationDest = new RectF(Width + 2, Height / 2, 2, 1);
+                    var centerAnimationDest = right.Bounds.ToRectF();
+                    var leftAnimationDest = center.Bounds.ToRectF();
 
                     await Task.WhenAll
                     (
@@ -111,9 +111,9 @@ namespace PowerArgs.Cli
                 }
                 else
                 {
-                    var rightAnimationDest = center.ToIRectangularF();
-                    var centerAnimationDest = left.ToIRectangularF();
-                    var leftAnimationDest = RectangularF.Create(-2, Height / 2, 2, 1);
+                    var rightAnimationDest = ((ICollider)center).Bounds;
+                    var centerAnimationDest = ((ICollider)left).Bounds;
+                    var leftAnimationDest = new RectF(-2, Height / 2, 2, 1);
 
                     await Task.WhenAll
                     (

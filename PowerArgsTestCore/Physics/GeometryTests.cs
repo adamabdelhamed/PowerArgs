@@ -8,7 +8,7 @@ using PowerArgs.Cli.Physics;
 
 namespace ArgsTests.CLI.Physics
 {
-
+    /*
  
 
     [TestClass]
@@ -99,4 +99,5 @@ namespace ArgsTests.CLI.Physics
             Assert.AreEqual(convertedBackF, rectF);
         }
     }
+*/
 }

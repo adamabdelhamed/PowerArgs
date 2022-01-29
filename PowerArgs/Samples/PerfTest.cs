@@ -85,7 +85,7 @@ namespace PowerArgs.Samples
                     {
                         Loop = Lifetime.Forever,
                         Duration = 1000,
-                        Destination = ()=> RectangularF.Create((Width - ball.Width) - 1, ball.Y, ball.Width, ball.Height),
+                        Destination = ()=> new RectF((Width - ball.Width) - 1, ball.Y, ball.Width, ball.Height),
                         AutoReverse = true,
                         EasingFunction = Animator.EaseInOut,
                     });
@@ -123,15 +123,15 @@ namespace PowerArgs.Samples
 
             var animationPanel = Add(new ConsolePanel() { Background = ConsoleColor.Green, Width = 45, Height = 3 });
 
-            var centerX = Geometry.Round(Width / 2.0 - animationPanel.Width / 2.0);
-            var targetY = Geometry.Round((Height / 2.0 - animationPanel.Height / 2) - 5.0);
+            var centerX = Geo.Round(Width / 2.0 - animationPanel.Width / 2.0);
+            var targetY = Geo.Round((Height / 2.0 - animationPanel.Height / 2) - 5.0);
             animationPanel.X = centerX;
             animationPanel.Y = Height;
             var animationLabel = animationPanel.Add(new Label() { Text = "That's all folks".ToBlack(bg: ConsoleColor.Green) }).CenterBoth();
             await animationPanel.AnimateAsync(new ConsoleControlAnimationOptions()
             {
                 Duration = 1000,
-                Destination = () => RectangularF.Create(centerX, targetY, animationPanel.Width, animationPanel.Height),
+                Destination = () => new RectF(centerX, targetY, animationPanel.Width, animationPanel.Height),
             });
             if (animationPanel.IsExpired == false && animationPanel.Parent?.IsExpired == false)
             {

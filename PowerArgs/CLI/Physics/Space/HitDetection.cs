@@ -12,9 +12,9 @@ namespace PowerArgs.Cli.Physics
 
     public class Impact
     {
-        public float Angle { get; set; }
+        public Angle Angle { get; set; }
         public SpacialElement MovingObject { get; set; }
-        public IRectangularF ObstacleHit { get; set; }
+        public ICollider ColliderHit { get; set; }
         public HitType HitType { get; set; }
         public HitPrediction Prediction { get; set; }
     }
@@ -22,33 +22,51 @@ namespace PowerArgs.Cli.Physics
     public class HitPrediction
     {
         public HitType Type { get; set; }
-        public Direction Direction { get; set; }
-        public IRectangularF ObstacleHit { get; set; }
+        public RectF ObstacleHitBounds { get; set; }
+        public ICollider ColliderHit { get; set; }
         public float LKGX { get; set; }
         public float LKGY { get; set; }
         public float LKGD { get; set; }
         public float Visibility { get; set; }
         public bool ElementWasAlreadyObstructed { get; set; }
 
-        public Side Side { get; set; }
         public Edge Edge { get; set; }
 
         public float IntersectionX { get; set; }
         public float IntersectionY { get; set; }
 
-        public ILocationF Intersection => LocationF.Create(IntersectionX, IntersectionY);
+        public LocF Intersection => new LocF(IntersectionX, IntersectionY);
     }
 
     public class HitDetectionOptions
     {
-        public IRectangularF MovingObject { get; set; }
-        public IEnumerable<IRectangularF> Obstacles { get; set; }
-        public float Angle { get; set; }
+        public RectF MovingObject { get; set; }
+        public RectF[] Obstacles { get; set; }
+
+        internal ICollider[] Colliders { get; set; }
+
+        public Angle Angle { get; set; }
         public float Visibility { get; set; } 
 
         public CastingMode Mode { get; set; } = CastingMode.Precise;
 
         public List<Edge> EdgesHitOutput { get; set; }
+
+        public HitDetectionOptions()
+        {
+
+        }
+
+        public HitDetectionOptions(ICollider c, IEnumerable<ICollider> obstacles)
+        {
+            MovingObject = c.Bounds;
+            Colliders = obstacles.ToArray();
+            Obstacles = new RectF[Colliders.Length];
+            for (var i = 0; i < Colliders.Length; i++)
+            {
+                Obstacles[i] = Colliders[i].Bounds;
+            }
+        }
     }
 
     public enum CastingMode
@@ -58,22 +76,26 @@ namespace PowerArgs.Cli.Physics
         Precise
     }
 
+
+
     public static class HitDetection
     {
-        public static bool HasLineOfSight(this Velocity from, IRectangularF to) => HasLineOfSight(from.Element, to, from.GetObstacles());
-        public static bool HasLineOfSight(this SpacialElement from, IRectangularF to) => HasLineOfSight(from, to, from.GetObstacles());
-        public static bool HasLineOfSight(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles) => GetLineOfSightObstruction(from, to, obstacles) == null;
-
-        public static IRectangularF GetLineOfSightObstruction(this IRectangularF from, IRectangularF to, IEnumerable<IRectangularF> obstacles, CastingMode castingMode = CastingMode.Rough)
+        public static bool HasLineOfSight(this Velocity from, ICollider to) => HasLineOfSight(from.Element, to, from.GetObstacles());
+        public static bool HasLineOfSight(this SpacialElement from, ICollider to) => HasLineOfSight(from, to, from.GetObstacles());
+        public static bool HasLineOfSight(this SpacialElement from, RectF to) => HasLineOfSight(from, to, from.GetObstacles());
+        public static bool HasLineOfSight(this ICollider from, ICollider to, IEnumerable<ICollider> obstacles) => GetLineOfSightObstruction(from, to, obstacles) == null;
+        public static bool HasLineOfSight(this ICollider from, RectF to, IEnumerable<ICollider> obstacles) => GetLineOfSightObstruction(from, to, obstacles) == null;
+        public static bool HasLineOfSight(this RectF from, ICollider to, IEnumerable<ICollider> obstacles) => GetLineOfSightObstruction(from, to, obstacles) == null;
+        public static bool HasLineOfSight(this RectF from, RectF to, IEnumerable<ICollider> obstacles) => GetLineOfSightObstruction(from, to, obstacles) == null;
+        public static bool HasLineOfSight(this RectF from, RectF to, IEnumerable<RectF> obstacles) => GetLineOfSightObstruction(from, to, obstacles.Select(o => new ColliderBox(o))) == null;
+        public static ICollider GetLineOfSightObstruction(this ICollider from, ICollider to, IEnumerable<ICollider> obstacles, CastingMode castingMode = CastingMode.Rough)
         {
-            var prediction = PredictHit(new HitDetectionOptions()
-            {
-                MovingObject = from,
-                Angle = Geometry.CalculateAngleTo(from.Left, from.Top, from.Width, from.Height, to.Left, to.Top, to.Width, to.Height),
-                Obstacles = obstacles.Union(new IRectangularF[] { to }),
-                Visibility = 3 * Geometry.CalculateDistanceTo(from.Left, from.Top, from.Width, from.Height, to.Left, to.Top, to.Width, to.Height),
-                Mode = castingMode,
-            });
+            var options = new HitDetectionOptions(from, obstacles.Union(new[] { to }));
+            options.Mode = castingMode;
+            options.Angle = options.MovingObject.CalculateAngleTo(to.Bounds);
+            options.Visibility = 3 * options.MovingObject.CalculateDistanceTo(to.Bounds);
+
+            var prediction = PredictHit(options);
 
             if (prediction.Type == HitType.None)
             {
@@ -81,20 +103,40 @@ namespace PowerArgs.Cli.Physics
             }
             else
             {
-                if (to is IHaveMassBounds && prediction.ObstacleHit is SpacialElement && (to as IHaveMassBounds).IsPartOfMass(prediction.ObstacleHit as SpacialElement))
+                var obstacleHit = prediction.ColliderHit;
+                if (to is IHaveMassBounds && obstacleHit is SpacialElement && (to as IHaveMassBounds).IsPartOfMass(obstacleHit as SpacialElement))
                 {
                     return null;
                 }
 
-                if (prediction.ObstacleHit is SpacialElement && (to is IHaveMassBounds) && (to as IHaveMassBounds).IsPartOfMass((SpacialElement)prediction.ObstacleHit))
+                if (obstacleHit is SpacialElement && (to is IHaveMassBounds) && (to as IHaveMassBounds).IsPartOfMass((SpacialElement)obstacleHit))
                 {
                     return null;
                 }
                 else
                 {
-                    return prediction.ObstacleHit == to ? null : prediction.ObstacleHit;
+                    return obstacleHit == to ? null : obstacleHit;
                 }
             }
+        }
+
+        public static ICollider GetLineOfSightObstruction(this RectF from, ICollider to, IEnumerable<ICollider> obstacles, CastingMode castingMode = CastingMode.Rough)
+        {
+            var fromBox = new ColliderBox(from);
+            return GetLineOfSightObstruction(fromBox, to, obstacles, castingMode);
+        }
+
+        public static ICollider GetLineOfSightObstruction(this ICollider from, RectF to, IEnumerable<ICollider> obstacles, CastingMode castingMode = CastingMode.Rough)
+        {
+            var toBox = new ColliderBox(to);
+            return GetLineOfSightObstruction(from, toBox, obstacles, castingMode);
+        }
+
+        public static ICollider GetLineOfSightObstruction(this RectF from, RectF to, IEnumerable<ICollider> obstacles, CastingMode castingMode = CastingMode.Rough)
+        {
+            var fromBox = new ColliderBox(from);
+            var toBox = new ColliderBox(to);
+            return GetLineOfSightObstruction(fromBox, toBox, obstacles, castingMode);
         }
 
         [ThreadStatic]
@@ -102,10 +144,10 @@ namespace PowerArgs.Cli.Physics
 
         public static HitPrediction PredictHit(HitDetectionOptions options)
         {
-            return PredictHit(options.MovingObject, options.Obstacles.ToArray(), options.Angle, options.Visibility, options.Mode, options.EdgesHitOutput);
+            return PredictHit(options.MovingObject, options.Obstacles.ToArray(), options.Angle, options.Colliders, options.Visibility, options.Mode, options.EdgesHitOutput);
         }
 
-        public static HitPrediction PredictHit(IRectangularF movingObject, IRectangularF[] obstacles, float angle, float visibility = 10000f, CastingMode mode = CastingMode.Precise, List<Edge> edgesHitOutput = null)
+        public static HitPrediction PredictHit(RectF movingObject, RectF[] obstacles, Angle angle, ICollider[] colliders = null, float visibility = 10000f, CastingMode mode = CastingMode.Precise, List<Edge> edgesHitOutput = null)
         {
             HitPrediction prediction = new HitPrediction();
             prediction.LKGX = movingObject.Left;
@@ -115,7 +157,6 @@ namespace PowerArgs.Cli.Physics
             prediction.Visibility = visibility;
             if (visibility == 0)
             {
-                prediction.Direction = Direction.None;
                 prediction.Type = HitType.None;
                 return prediction;
             }
@@ -127,14 +168,14 @@ namespace PowerArgs.Cli.Physics
             castBuffer = castBuffer ??  new Edge[10000];
             if (mode == CastingMode.Precise)
             {
-                var delta = SpacialAwareness.MoveTowardsFast(mov.Left, mov.Top, angle, visibility, normalized: false);
-                var dx = delta.Item1 - mov.Left;
-                var dy = delta.Item2 - mov.Top;
+                var delta = mov.OffsetByAngleAndDistance(angle, visibility, normalized: false);
+                var dx = delta.Left - mov.Left;
+                var dy = delta.Top - mov.Top;
 
                 castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Top, X2 = mov.Left + dx, Y2 = mov.Top + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right(), Y1 = mov.Top, X2 = mov.Right() + dx, Y2 = mov.Top + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Bottom(), X2 = mov.Left + dx, Y2 = mov.Bottom() + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right(), Y1 = mov.Bottom(), X2 = mov.Right() + dx, Y2 = mov.Bottom() + dy };
+                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = mov.Top, X2 = mov.Right + dx, Y2 = mov.Top + dy };
+                castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Bottom, X2 = mov.Left + dx, Y2 = mov.Bottom + dy };
+                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = mov.Bottom, X2 = mov.Right + dx, Y2 = mov.Bottom + dy };
                  
 
                 var granularity = .5f;
@@ -142,34 +183,34 @@ namespace PowerArgs.Cli.Physics
                 for (var x = mov.Left + granularity; x < mov.Left + mov.Width; x += granularity)
                 {
                     castBuffer[rayIndex++] = new Edge() { X1 = x, Y1 = mov.Top, X2 = x+dx, Y2 = mov.Top+dy };
-                    castBuffer[rayIndex++] = new Edge() { X1 = x, Y1 = mov.Bottom(), X2 = x + dx, Y2 = mov.Bottom() + dy };
+                    castBuffer[rayIndex++] = new Edge() { X1 = x, Y1 = mov.Bottom, X2 = x + dx, Y2 = mov.Bottom + dy };
                 }
 
                 for (var y = mov.Top + granularity; y < mov.Top + mov.Height; y += granularity)
                 {
                     castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = y, X2 = mov.Left+dx, Y2 = y+dy };
-                    castBuffer[rayIndex++] = new Edge() { X1 = mov.Right(), Y1 = y, X2 = mov.Right() + dx, Y2 = y + dy };
+                    castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = y, X2 = mov.Right + dx, Y2 = y + dy };
                 }
             }
             else if (mode == CastingMode.Rough)
             {
-                var delta = SpacialAwareness.MoveTowardsFast(mov.Left, mov.Top, angle, visibility, normalized: false);
-                var dx = delta.Item1 - mov.Left;
-                var dy = delta.Item2 - mov.Top;
+                var delta = mov.OffsetByAngleAndDistance(angle, visibility, normalized: false);
+                var dx = delta.Left - mov.Left;
+                var dy = delta.Top - mov.Top;
 
                 castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Top, X2 = mov.Left + dx, Y2 = mov.Top + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right(), Y1 = mov.Top, X2 = mov.Right() + dx, Y2 = mov.Top + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Bottom(), X2 = mov.Left + dx, Y2 = mov.Bottom() + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right(), Y1 = mov.Bottom(), X2 = mov.Right() + dx, Y2 = mov.Bottom() + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.CenterX(), Y1 = mov.CenterY(), X2 = mov.CenterX() + dx, Y2 = mov.CenterY() + dy };
+                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = mov.Top, X2 = mov.Right + dx, Y2 = mov.Top + dy };
+                castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Bottom, X2 = mov.Left + dx, Y2 = mov.Bottom + dy };
+                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = mov.Bottom, X2 = mov.Right + dx, Y2 = mov.Bottom + dy };
+                castBuffer[rayIndex++] = new Edge() { X1 = mov.CenterX, Y1 = mov.CenterY, X2 = mov.CenterX + dx, Y2 = mov.CenterY + dy };
             }
             else if(mode == CastingMode.SingleRay)
             {
-                var delta = SpacialAwareness.MoveTowardsFast(mov.Left, mov.Top, angle, visibility, normalized: false);
-                var dx = delta.Item1 - mov.Left;
-                var dy = delta.Item2 - mov.Top;
+                var delta = mov.OffsetByAngleAndDistance(angle, visibility, normalized: false);
+                var dx = delta.Left - mov.Left;
+                var dy = delta.Top - mov.Top;
 
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.CenterX(), Y1 = mov.CenterY(), X2 = mov.CenterX() + dx, Y2 = mov.CenterY() + dy };
+                castBuffer[rayIndex++] = new Edge() { X1 = mov.CenterX, Y1 = mov.CenterY, X2 = mov.CenterX + dx, Y2 = mov.CenterY + dy };
             }
             else
             {
@@ -177,32 +218,31 @@ namespace PowerArgs.Cli.Physics
             }
 
             var closestIntersectionDistance = float.MaxValue;
-            IRectangularF closestIntersectingElement = null;
+            int closestIntersectingObstacleIndex = -1;
             Edge closestEdge = default;
-            Side closestSide = default;
             float closestIntersectionX = 0;
             float closestIntersectionY = 0;
             for (var i = 0; i < obstacles.Length; i++)
             {
                 var obstacle = obstacles[i];
-                ProcessEdge(obstacle.TopEdge, Side.Top, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingElement, ref closestEdge, ref closestSide, ref closestIntersectionX, ref closestIntersectionY, obstacle);
-                ProcessEdge(obstacle.BottomEdge, Side.Bottom, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingElement, ref closestEdge, ref closestSide, ref closestIntersectionX, ref closestIntersectionY, obstacle);
-                ProcessEdge(obstacle.LeftEdge, Side.Left, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingElement, ref closestEdge, ref closestSide, ref closestIntersectionX, ref closestIntersectionY, obstacle);
-                ProcessEdge(obstacle.RightEdge, Side.Right, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingElement, ref closestEdge, ref closestSide, ref closestIntersectionX, ref closestIntersectionY, obstacle);
+                ProcessEdge(i, obstacle.TopEdge, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
+                ProcessEdge(i, obstacle.BottomEdge, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
+                ProcessEdge(i, obstacle.LeftEdge, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
+                ProcessEdge(i, obstacle.RightEdge, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
 
             }
 
-            if(closestIntersectingElement != null)
+            if(closestIntersectingObstacleIndex >= 0)
             {
-                prediction.ObstacleHit = closestIntersectingElement;
+                prediction.ObstacleHitBounds = obstacles[closestIntersectingObstacleIndex];
+                prediction.ColliderHit = colliders == null ? null : colliders[closestIntersectingObstacleIndex];
                 prediction.LKGD = closestIntersectionDistance - .1f;
 
-                var lkg = SpacialAwareness.MoveTowardsFast(movingObject.Left, movingObject.Top, angle, prediction.LKGD, normalized: false);
-                prediction.LKGX = lkg.Item1;
-                prediction.LKGY = lkg.Item2;
+                var lkg = movingObject.OffsetByAngleAndDistance(angle, prediction.LKGD, normalized: false);
+                prediction.LKGX = lkg.Left;
+                prediction.LKGY = lkg.Top;
                 prediction.Type = HitType.Obstacle;
                 prediction.Edge = closestEdge;
-                prediction.Side = closestSide;
                 prediction.IntersectionX = closestIntersectionX;
                 prediction.IntersectionY = closestIntersectionY;
             }
@@ -210,7 +250,7 @@ namespace PowerArgs.Cli.Physics
             return prediction;
         }
 
-        private static void ProcessEdge(Edge edge, Side side, int castLength, List<Edge> edgesHitOutput, float visibility, HitPrediction prediction, ref float closestIntersectionDistance, ref IRectangularF closestIntersectingElement, ref Edge closestEdge, ref Side closestSide, ref float closestIntersectionX, ref float closestIntersectionY, IRectangularF obstacle)
+        private static void ProcessEdge(int i, Edge edge, int castLength, List<Edge> edgesHitOutput, float visibility, HitPrediction prediction, ref float closestIntersectionDistance, ref int closestIntersectingObstacleIndex, ref Edge closestEdge, ref float closestIntersectionX, ref float closestIntersectionY)
         {
             for (var k = 0; k < castLength; k++)
             {
@@ -219,14 +259,13 @@ namespace PowerArgs.Cli.Physics
                 if (success)
                 {
                     edgesHitOutput?.Add(ray);
-                    var d = Geometry.CalculateDistanceTo(ray.X1, ray.Y1, ix, iy);
+                    var d = LocF.CalculateDistanceTo(ray.X1, ray.Y1, ix, iy);
 
                     if (d < closestIntersectionDistance && d <= visibility)
                     {
                         closestIntersectionDistance = d;
-                        closestIntersectingElement = obstacle;
+                        closestIntersectingObstacleIndex = i;
                         closestEdge = edge;
-                        closestSide = side;
                         closestIntersectionX = ix;
                         closestIntersectionY = iy;
                     }

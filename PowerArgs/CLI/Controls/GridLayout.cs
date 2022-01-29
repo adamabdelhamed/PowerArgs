@@ -304,7 +304,7 @@ namespace PowerArgs.Cli
                 }
                 else if (definitions[i].Type == GridValueType.Percentage)
                 {
-                    size = Geometry.Round(definitions[i].Value * budget);
+                    size = Geo.Round(definitions[i].Value * budget);
                     results.Add(i, size);
                     remainingBudget -= size;
                 }
@@ -335,7 +335,7 @@ namespace PowerArgs.Cli
                 if (definitions[i].Type == GridValueType.RemainderValue)
                 {
                     var myShare = definitions[i].Value / remainderShares;
-                    var size = Geometry.Round(myShare * remainingBudget);
+                    var size = Geo.Round(myShare * remainingBudget);
                     results.Add(i, size);
                     remainderSum += size;
                     remaindersToProcess--;
