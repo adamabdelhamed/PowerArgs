@@ -92,10 +92,10 @@ namespace PowerArgs.Cli.Physics
     {
         public override void Setter(ICollider target, RectF bounds)
         {
-            (target as ConsoleControl).X = Geo.Round(bounds.Left);
-            (target as ConsoleControl).Y = Geo.Round(bounds.Top);
-            (target as ConsoleControl).Width = Geo.Round(bounds.Width);
-            (target as ConsoleControl).Height = Geo.Round(bounds.Height);
+            (target as ConsoleControl).X = ConsoleMath.Round(bounds.Left);
+            (target as ConsoleControl).Y = ConsoleMath.Round(bounds.Top);
+            (target as ConsoleControl).Width = ConsoleMath.Round(bounds.Width);
+            (target as ConsoleControl).Height = ConsoleMath.Round(bounds.Height);
         }
     }
 

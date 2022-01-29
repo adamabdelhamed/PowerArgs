@@ -105,10 +105,10 @@ namespace PowerArgs.Cli
                 var verticalPercentageScrolled = VerticalScrollUnits / (double)contentSize.Height;
 
 
-                var verticalScrollbarHeight = Geo.Round(Height * verticalPercentageShowing);
+                var verticalScrollbarHeight = ConsoleMath.Round(Height * verticalPercentageShowing);
  
                 verticalScrollbar.Height = verticalScrollbarHeight;
-                verticalScrollbar.Y = Geo.Round(Height * verticalPercentageScrolled);
+                verticalScrollbar.Y = ConsoleMath.Round(Height * verticalPercentageScrolled);
 
                 if(verticalScrollbar.Y == Height && verticalPercentageScrolled < 1)
                 {

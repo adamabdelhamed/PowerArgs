@@ -78,7 +78,7 @@ namespace PowerArgs.Cli
                 temp.Width = 2;
                 temp.Height = 1;
                 temp.X = !forward ? -temp.Width : Width + temp.Width;
-                temp.Y = Geo.Round((Height - temp.Height) / 2f);
+                temp.Y = ConsoleMath.Round((Height - temp.Height) / 2f);
                 var tempDest = !forward ? leftDest : rightDest;
 
                 EasingFunction ease = Animator.EaseInOut;

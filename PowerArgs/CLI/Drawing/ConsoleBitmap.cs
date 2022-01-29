@@ -433,8 +433,8 @@ namespace PowerArgs.Cli
                     for (float x = x1; x < x2; x += DrawPrecision)
                     {
                         float y = slope + (x - x1) + y1;
-                        int xInt = Geo.Round(x);
-                        int yInt = Geo.Round(y);
+                        int xInt = ConsoleMath.Round(x);
+                        int yInt = ConsoleMath.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -446,8 +446,8 @@ namespace PowerArgs.Cli
                     for (float x = x2; x < x1; x += DrawPrecision)
                     {
                         float y = slope + (x - x1) + y1;
-                        int xInt = Geo.Round(x);
-                        int yInt = Geo.Round(y);
+                        int xInt = ConsoleMath.Round(x);
+                        int yInt = ConsoleMath.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -461,8 +461,8 @@ namespace PowerArgs.Cli
                     for (float y = y1; y < y2; y += DrawPrecision)
                     {
                         float x = ((y - y1) / slope) + x1;
-                        int xInt = Geo.Round(x);
-                        int yInt = Geo.Round(y);
+                        int xInt = ConsoleMath.Round(x);
+                        int yInt = ConsoleMath.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -474,8 +474,8 @@ namespace PowerArgs.Cli
                     for (float y = y2; y < y1; y += DrawPrecision)
                     {
                         float x = ((y - y1) / slope) + x1;
-                        int xInt = Geo.Round(x);
-                        int yInt = Geo.Round(y);
+                        int xInt = ConsoleMath.Round(x);
+                        int yInt = ConsoleMath.Round(y);
                         var p = new Point(xInt, yInt);
                         if (p.Equals(last) == false)
                         {
@@ -1040,7 +1040,7 @@ namespace PowerArgs.Cli
         private long hits;
         private long misses;
         private long returns;
-        private double HitRate => Geo.Round(100 * hits / (hits + misses));
+        private double HitRate => ConsoleMath.Round(100 * hits / (hits + misses));
 #endif
 
 

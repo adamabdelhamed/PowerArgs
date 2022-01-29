@@ -124,7 +124,7 @@ namespace PowerArgs.Cli
         /// The function that implements changing the value. It will be called throughout the animation process.
         /// </summary>
         public Action<int> Setter { get; set; }
-        internal override void Set(float value) => Setter(Geo.Round(value));
+        internal override void Set(float value) => Setter(ConsoleMath.Round(value));
     }
 
 
@@ -243,12 +243,12 @@ namespace PowerArgs.Cli
                 options.Set(options.To);
             }
 
-            var numberOfFrames = (float)(Geo.Round(animationTime.TotalSeconds * TargetFramesPerSecond));
+            var numberOfFrames = (float)(ConsoleMath.Round(animationTime.TotalSeconds * TargetFramesPerSecond));
             numberOfFrames = Math.Max(numberOfFrames, 2);
 #if DEBUG
             options.Debug?.Invoke($"Frames: {numberOfFrames}");
 #endif
-            var timeBetweenFrames = TimeSpan.FromMilliseconds(Geo.Round(animationTime.TotalMilliseconds / numberOfFrames));
+            var timeBetweenFrames = TimeSpan.FromMilliseconds(ConsoleMath.Round(animationTime.TotalMilliseconds / numberOfFrames));
 #if DEBUG
             options.Debug?.Invoke($"Time between frames: {timeBetweenFrames.TotalMilliseconds} ms");
 #endif

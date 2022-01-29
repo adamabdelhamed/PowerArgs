@@ -27,8 +27,8 @@ namespace PowerArgs.Cli.Physics
         public SpaceTimePanel(SpaceTime st)
         {
             this.SpaceTime = st;
-            this.Width = Geo.Round(st.Width);
-            this.Height = Geo.Round(st.Height);
+            this.Width = ConsoleMath.Round(st.Width);
+            this.Height = ConsoleMath.Round(st.Height);
             Background = ConsoleColor.White;
             renderers = new Dictionary<SpacialElement, SpacialElementRenderer>();
             thingBinder = new SpacialElementBinder();
@@ -55,10 +55,10 @@ namespace PowerArgs.Cli.Physics
 
         public void UpdateBounds(SpacialElement e, float xf, float yf, int z, float wf, float hf)
         {
-            var x = Geo.Round(xf);
-            var y = Geo.Round(yf);
-            var w = Geo.Round(wf);
-            var h = Geo.Round(hf);
+            var x = ConsoleMath.Round(xf);
+            var y = ConsoleMath.Round(yf);
+            var w = ConsoleMath.Round(wf);
+            var h = ConsoleMath.Round(hf);
 
             var r = renderers[e];
             if (x != r.X || y != r.Y || w != r.Width || h != r.Height)

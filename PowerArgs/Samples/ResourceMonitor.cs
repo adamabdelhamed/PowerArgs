@@ -185,7 +185,7 @@ namespace PowerArgs.Samples
     
         public ConsoleString GetFormattedSample()
         {
-            return (Geo.Round(lastSample) + " %").ToConsoleString(lastSample < 50 ? ConsoleColor.Green : lastSample < 90 ? ConsoleColor.Yellow : ConsoleColor.Red);
+            return (ConsoleMath.Round(lastSample) + " %").ToConsoleString(lastSample < 50 ? ConsoleColor.Green : lastSample < 90 ? ConsoleColor.Yellow : ConsoleColor.Red);
         }
 
         public float GetSample()
