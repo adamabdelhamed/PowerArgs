@@ -80,10 +80,9 @@ namespace PowerArgs
         public Lifetime()
         {
             _manager = new LifetimeManager();
-            OnDisposed(SetExpired);
         }
 
-        private void SetExpired()
+        protected override void AfterDispose()
         {
             _manager.IsExpired = true;
         }
@@ -225,16 +224,20 @@ namespace PowerArgs
                 _manager.IsExpiring = true;
                 try
                 {
-                    foreach (var item in _manager.cleanupItems.ToArray())
+                    if (_manager.cleanupItems != null)
                     {
-                        item();
+                        foreach (var item in _manager.cleanupItems.ToArray())
+                        {
+                            item();
+                        }
                     }
-
-                    foreach (var item in _manager.cleanupItems2.ToArray())
+                    if (_manager.cleanupItems2 != null)
                     {
-                        item.Dispose();
+                        foreach (var item in _manager.cleanupItems2.ToArray())
+                        {
+                            item.Dispose();
+                        }
                     }
-
                     _manager = null;
                 }
                 finally

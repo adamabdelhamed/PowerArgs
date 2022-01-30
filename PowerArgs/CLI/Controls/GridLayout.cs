@@ -256,12 +256,12 @@ namespace PowerArgs.Cli
             }
         }
 
-        private Rectangle GetCellArea(GridLayoutAssignment assignment)
+        private RectF GetCellArea(GridLayoutAssignment assignment)
         {
             return GetCellArea(assignment.Column, assignment.Row, assignment.ColumnSpan, assignment.RowSpan);
         }
 
-        private Rectangle GetCellArea(int column, int row, int columnSpan = 1, int rowSpan = 1)
+        private RectF GetCellArea(int column, int row, int columnSpan = 1, int rowSpan = 1)
         {
             var xOffset = 0;
             for(var x = 0; x < column; x++) { xOffset += columnWidths[x]; }
@@ -276,7 +276,7 @@ namespace PowerArgs.Cli
             if (height < 0) height = 0;
             if (width < 0) width = 0;
 
-            return new Rectangle(xOffset, yOffset, width, height);
+            return new RectF(xOffset, yOffset, width, height);
         }
 
         /// <summary>

@@ -34,6 +34,7 @@ namespace PowerArgs
         public const string AnyProperty = "*";
 
         private Dictionary<string, List<PropertyChangedSubscription>> subscribers;
+        private Dictionary<string, List<PropertyChangedSubscriptionWithParam>> subscribersWithParams;
         private Dictionary<string, object> values;
         private Dictionary<string, object> previousValues;
 
@@ -59,6 +60,7 @@ namespace PowerArgs
         {
             SuppressEqualChanges = true;
             subscribers = new Dictionary<string, List<PropertyChangedSubscription>>();
+            subscribersWithParams = new Dictionary<string, List<PropertyChangedSubscriptionWithParam>>();
             values = new Dictionary<string, object>();
             previousValues = new Dictionary<string, object>();
             DeepObservableRoot = proxy;
@@ -192,6 +194,15 @@ namespace PowerArgs
             }
         }
 
+        public void SetHardIf<T>(ref T current, T value, bool condition, [CallerMemberName] string name = "")
+        {
+            if (condition == false) return;
+            current = value;
+            CurrentlyChangingPropertyName = name;
+            CurrentlyChangingPropertyValue = value;
+            FirePropertyChanged(name); 
+        }
+
         /// <summary>
         /// Subscribes to be notified when the given property changes.
         /// </summary>
@@ -200,9 +211,9 @@ namespace PowerArgs
         /// <returns>A subscription that will receive notifications until it is disposed</returns>
         public IDisposable SubscribeUnmanaged(string propertyName, Action handler)
         {
-            if (propertyName.Contains(".") == false)
+            if (propertyName.Contains('.') == false)
             {
-                var sub = new PropertyChangedSubscription(propertyName, handler, CleanupSubscription);
+                var sub = new PropertyChangedSubscription(propertyName, handler, CleanupSubAction, this);
 
                 List<PropertyChangedSubscription> subsForProperty;
                 if (subscribers.TryGetValue(propertyName, out subsForProperty) == false)
@@ -221,6 +232,28 @@ namespace PowerArgs
             }
         }
 
+        public IDisposable SubscribeUnmanaged(string propertyName, Action<object> handler, object param)
+        {
+            if (propertyName.Contains('.') == false)
+            {
+                var sub = new PropertyChangedSubscriptionWithParam(propertyName, handler, param, CleanupSubWithParamAction, this);
+
+                List<PropertyChangedSubscriptionWithParam> subsForProperty;
+                if (subscribersWithParams.TryGetValue(propertyName, out subsForProperty) == false)
+                {
+                    subsForProperty = new List<PropertyChangedSubscriptionWithParam>();
+                    subscribersWithParams.Add(propertyName, subsForProperty);
+                }
+
+                subsForProperty.Add(sub);
+
+                return sub;
+            }
+            else
+            {
+                throw new NotSupportedException("SubscribeUnmanaged does not support param based handlers... yet!");
+            }
+        }
         private IDisposable DeepSubscribeInternal(string path, Action handler, Lifetime rootLifetime = null)
         {
             rootLifetime = rootLifetime ?? new Lifetime();
@@ -293,6 +326,13 @@ namespace PowerArgs
             lifetimeManager.OnDisposed(sub);
         }
 
+        public void SubscribeForLifetime(string propertyName, Action<object> handler, object param, ILifetimeManager lifetimeManager)
+        {
+            var sub = SubscribeUnmanaged(propertyName, handler, param);
+            lifetimeManager.OnDisposed(sub);
+        }
+
+
         /// <summary>
         ///  Subscribes to be notified once when the given property changes.   
         /// </summary>
@@ -330,6 +370,12 @@ namespace PowerArgs
             return SubscribeUnmanaged(propertyName, handler);
         }
 
+        public IDisposable SynchronizeUnmanaged(string propertyName, Action<object> handler, object param)
+        {
+            handler(param);
+            return SubscribeUnmanaged(propertyName, handler, param);
+        }
+
         /// <summary>
         /// Subscribes to be notified when the given property changes and also fires an initial notification.  The subscription expires when
         /// the given lifetime manager's lifetime ends.
@@ -341,6 +387,12 @@ namespace PowerArgs
         public void SynchronizeForLifetime(string propertyName, Action handler, ILifetimeManager lifetimeManager)
         {
             var sub = SynchronizeUnmanaged(propertyName, handler);
+            lifetimeManager.OnDisposed(sub);
+        }
+
+        public void SynchronizeForLifetime(string propertyName, Action<object> handler,object param, ILifetimeManager lifetimeManager)
+        {
+            var sub = SynchronizeUnmanaged(propertyName, handler, param);
             lifetimeManager.OnDisposed(sub);
         }
 
@@ -379,6 +431,23 @@ namespace PowerArgs
                     sub.ChangeListener();
                 }
             }
+
+            List<PropertyChangedSubscriptionWithParam> filteredSubsWithParams;
+            if (subscribersWithParams.TryGetValue(propertyName, out filteredSubsWithParams))
+            {
+                foreach (var sub in filteredSubsWithParams.ToArray())
+                {
+                    sub.ChangeListener(sub.Param);
+                }
+            }
+
+            if (subscribersWithParams.TryGetValue(AnyProperty, out filteredSubsWithParams))
+            {
+                foreach (var sub in filteredSubsWithParams.ToArray())
+                {
+                    sub.ChangeListener(sub.Param);
+                }
+            }
         }
 
         /// <summary>
@@ -398,10 +467,12 @@ namespace PowerArgs
             return a.Equals(b);
         }
 
-        private void CleanupSubscription(PropertyChangedSubscription sub)
+        private static Action<PropertyChangedSubscription, object> CleanupSubAction = CleanupSubscription;
+        private static void CleanupSubscription(PropertyChangedSubscription sub, object observable)
         {
+            var o = observable as ObservableObject;
             List<PropertyChangedSubscription> subsForProperty;
-            if (subscribers.TryGetValue(sub.PropertyName, out subsForProperty) == false)
+            if (o.subscribers.TryGetValue(sub.PropertyName, out subsForProperty) == false)
             {
                 throw new KeyNotFoundException("The given subscription was not found");
             }
@@ -409,7 +480,24 @@ namespace PowerArgs
             subsForProperty.Remove(sub);
             if (subsForProperty.Count == 0)
             {
-                subscribers.Remove(sub.PropertyName);
+                o.subscribers.Remove(sub.PropertyName);
+            }
+        }
+
+        private static Action<PropertyChangedSubscriptionWithParam, object> CleanupSubWithParamAction = CleanupSubscription;
+        private static void CleanupSubscription(PropertyChangedSubscriptionWithParam sub, object observable)
+        {
+            var o = observable as ObservableObject;
+            List<PropertyChangedSubscriptionWithParam> subsForProperty;
+            if (o.subscribersWithParams.TryGetValue(sub.PropertyName, out subsForProperty) == false)
+            {
+                throw new KeyNotFoundException("The given subscription was not found");
+            }
+
+            subsForProperty.Remove(sub);
+            if (subsForProperty.Count == 0)
+            {
+                o.subscribersWithParams.Remove(sub.PropertyName);
             }
         }
 

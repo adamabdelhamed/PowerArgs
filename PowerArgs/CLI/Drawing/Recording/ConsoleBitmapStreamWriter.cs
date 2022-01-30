@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -19,12 +20,12 @@ namespace PowerArgs.Cli
         private TimeSpan TotalPauseTime = TimeSpan.Zero;
         private DateTime? pausedAt = null;
 
-        public Rectangle? Window { get; set; }
+        public RectF? Window { get; set; }
 
-        private int GetEffectiveLeft => Window.HasValue ? Window.Value.Left : 0;
-        private int GetEffectiveTop => Window.HasValue ? Window.Value.Top : 0;
-        private int GetEffectiveWidth(ConsoleBitmap bitmap) =>  Window.HasValue ? Window.Value.Width : bitmap.Width;
-        private int GetEffectiveHeight(ConsoleBitmap bitmap) => Window.HasValue ? Window.Value.Height : bitmap.Height;
+        private int GetEffectiveLeft => Window.HasValue ? (int)Window.Value.Left : 0;
+        private int GetEffectiveTop => Window.HasValue ? (int)Window.Value.Top : 0;
+        private int GetEffectiveWidth(ConsoleBitmap bitmap) =>  Window.HasValue ? (int)Window.Value.Width : bitmap.Width;
+        private int GetEffectiveHeight(ConsoleBitmap bitmap) => Window.HasValue ? (int)Window.Value.Height : bitmap.Height;
 
 
         public void Pause()

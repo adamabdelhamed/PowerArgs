@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli.Physics;
+using System;
 using System.Collections.Generic;
 
 namespace PowerArgs.Cli
@@ -117,43 +118,49 @@ namespace PowerArgs.Cli
         /// </summary>
         public Container Parent { get { return Get<Container>(); } internal set { Set(value); } }
 
+
+        private RGB _bg, _fg;
         /// <summary>
         /// Gets or sets the background color
         /// </summary>
-        public RGB Background { get { return Get<RGB>(); } set { Set(value); } }
+        public RGB Background { get { return _bg; } set { SetHardIf(ref _bg, value, value != _bg); } }
 
         /// <summary>
         /// Gets or sets the foreground color
         /// </summary>
-        public RGB Foreground { get { return Get<RGB>(); } set { Set(value); } }
+        public RGB Foreground { get { return _fg; } set { SetHardIf(ref _fg, value, value != _fg); } }
 
+        private bool _transparent;
         /// <summary>
         /// Gets or sets whether or not this control should paint its background color or leave it transparent.  By default
         /// this value is false.
         /// </summary>
-        public bool TransparentBackground { get { return Get<bool>(); } set { Set(value); } }
+        public bool TransparentBackground { get { return _transparent; } set {  SetHardIf(ref _transparent, value, _transparent != value); } }
 
         /// <summary>
         /// An arbitrary reference to an object to associate with this control
         /// </summary>
         public object Tag { get { return Get<object>(); } set { Set(value); } }
 
+        private bool _isVisible;
         /// <summary>
         /// Gets or sets whether or not this control is visible.  Invisible controls are still fully functional, except that they
         /// don't get painted
         /// </summary>
-        public virtual bool IsVisible { get { return Get<bool>(); } set { Set(value); } }
+        public virtual bool IsVisible { get { return _isVisible; } set { SetHardIf(ref _isVisible, value, _isVisible != value); } }
 
+        private bool _canFocus;
         /// <summary>
         /// Gets or sets whether or not this control can accept focus.  By default this is set to true, but can
         /// be overridden by derived classes to be false by default.
         /// </summary>
-        public virtual bool CanFocus { get { return Get<bool>(); } set { Set(value); } }
+        public virtual bool CanFocus { get { return _canFocus; } set { SetHardIf(ref _canFocus, value, _canFocus != value); } }
 
+        private bool _hasFocus;
         /// <summary>
         /// Gets whether or not this control currently has focus
         /// </summary>
-        public bool HasFocus { get { return Get<bool>(); } internal set { Set(value); } }
+        public bool HasFocus { get { return _hasFocus; } internal set { SetHardIf(ref _hasFocus, value, _hasFocus != value); } }
 
         /// <summary>
         /// The writer used to record the visual state of the control
@@ -226,41 +233,34 @@ namespace PowerArgs.Cli
             this.Bitmap = new ConsoleBitmap(w, h);
             this.Width = w;
             this.Height = h;
-            this.SubscribeForLifetime(nameof(Bounds), () =>
-            {
-                if (this.IsExpired || this.IsExpiring) return;
-                if (Width > 0 && Height > 0)
-                {
-                    this.Bitmap.Resize(Width, Height);
-                }
- 
-            }, this);
-            this.OnDisposed(this.Bitmap.Return);
+            this.SubscribeForLifetime(nameof(Bounds), ResizeBitmapOnBoundsChanged, this, this);
             Background = DefaultColors.BackgroundColor;
             this.Foreground = DefaultColors.ForegroundColor;
             this.IsVisible = true;
             this.Id = GetType().FullName+"-"+ Guid.NewGuid().ToString();
-            this.SubscribeForLifetime(ObservableObject.AnyProperty,()=> 
-            {
-                if (Application != null && Application.IsRunning && Application.IsDrainingOrDrained == false)
-                {
-                    ConsoleApp.AssertAppThread(Application);
-                    Application.Paint();
-                }
-            }, this);
+            this.SubscribeForLifetime(ObservableObject.AnyProperty, PaintOnChange, this, this);
 
-            this.AddedToVisualTree.SubscribeOnce(() =>
-            {
-                if(Application.IsRunning)
-                {
-                    Ready.Fire();
-                }
-                else
-                {
-                    Application.InvokeNextCycle(Ready.Fire);
-                }
-            });
+        }
 
+
+        private static void ResizeBitmapOnBoundsChanged(object controlObj)
+        {
+            var control = controlObj as ConsoleControl;
+            if (control.IsExpired || control.IsExpiring) return;
+            if (control.Width > 0 && control.Height > 0)
+            {
+                control.Bitmap.Resize(control.Width, control.Height);
+            }
+        }
+
+        private static void PaintOnChange(object controlObj)
+        {
+            var control = controlObj as ConsoleControl;
+            if (control.Application != null && control.Application.IsRunning && control.Application.IsDrainingOrDrained == false)
+            {
+                ConsoleApp.AssertAppThread(control.Application);
+                control.Application.Paint();
+            }
         }
 
         /// <summary>
@@ -363,6 +363,14 @@ namespace PowerArgs.Cli
             }
 
             hasBeenAddedToVisualTree = true;
+            if (Application.IsRunning)
+            {
+                Ready.Fire();
+            }
+            else
+            {
+                Application.InvokeNextCycle(Ready.Fire);
+            }
             AddedToVisualTree.Fire();
             SubscribeForLifetime(ObservableObject.AnyProperty, ()=> Application?.Paint(), this);
         }
@@ -400,7 +408,7 @@ namespace PowerArgs.Cli
             OnPaint(Bitmap);
             if (Recorder != null && Recorder.IsExpired == false)
             {
-                Recorder.Window = new Rectangle(0,0,Width,Height);
+                Recorder.Window = new RectF(0,0,Width,Height);
                 Recorder.WriteFrame(Bitmap, false, RecorderTimestampProvider != null ? new TimeSpan?(RecorderTimestampProvider()) : new TimeSpan?());
             }
         }

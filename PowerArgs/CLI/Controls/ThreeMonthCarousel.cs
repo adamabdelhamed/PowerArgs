@@ -85,7 +85,7 @@ namespace PowerArgs.Cli
                 var tempAnimation = temp.AnimateAsync(new ConsoleControlAnimationOptions()
                 {
                     IsCancelled = () => seekLt.IsExpired,
-                    Destination = () => tempDest.ToRectF(),
+                    Destination = () => tempDest,
                     Duration = duration,
                     EasingFunction = ease
                 });
@@ -93,8 +93,8 @@ namespace PowerArgs.Cli
                 if (!forward)
                 {
                     var rightAnimationDest = new RectF(Width + 2, Height / 2, 2, 1);
-                    var centerAnimationDest = right.Bounds.ToRectF();
-                    var leftAnimationDest = center.Bounds.ToRectF();
+                    var centerAnimationDest = right.Bounds;
+                    var leftAnimationDest = center.Bounds;
 
                     await Task.WhenAll
                     (
@@ -205,11 +205,11 @@ namespace PowerArgs.Cli
             placeholderGrid.IsVisible = false;
         }
 
-        private Rectangle CalculateLeftDestination() => MapPlaceholderBoundsToControlBounds(leftPlaceHolder);
-        private Rectangle CalculateCenterDestination() => MapPlaceholderBoundsToControlBounds(centerPlaceHolder);
-        private Rectangle CalculateRightDestination() => MapPlaceholderBoundsToControlBounds(rightPlaceHolder);
+        private RectF CalculateLeftDestination() => MapPlaceholderBoundsToControlBounds(leftPlaceHolder);
+        private RectF CalculateCenterDestination() => MapPlaceholderBoundsToControlBounds(centerPlaceHolder);
+        private RectF CalculateRightDestination() => MapPlaceholderBoundsToControlBounds(rightPlaceHolder);
 
-        private Rectangle MapPlaceholderBoundsToControlBounds(ConsoleControl placeholder) => new Rectangle(
+        private RectF MapPlaceholderBoundsToControlBounds(ConsoleControl placeholder) => new RectF(
                 placeholder.AbsoluteX - ProtectedPanel.AbsoluteX,
                 placeholder.AbsoluteY - ProtectedPanel.AbsoluteY,
                 placeholder.Width, 

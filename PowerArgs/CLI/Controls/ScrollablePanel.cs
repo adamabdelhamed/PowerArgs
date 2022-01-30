@@ -154,6 +154,7 @@ namespace PowerArgs.Cli
         {
             bool focusedControlIsWithinMe = VisitControlTree((control) =>
             {
+                if (IsExpired || IsExpiring || IsBeingRemoved) return false;
                 return control is Scrollbar == false && control == Application.FocusManager.FocusedControl;
             });
 
@@ -161,30 +162,30 @@ namespace PowerArgs.Cli
             {
                 var offset = Application.FocusManager.FocusedControl.CalculateRelativePosition(this);
 
-                var visibleWindowBounds = new Rectangle(HorizontalScrollUnits, VerticalScrollUnits, Width, Height);
-                var focusedControlBounds = new Rectangle(offset, Application.FocusManager.FocusedControl.Size);
+                var visibleWindowBounds = new RectF(HorizontalScrollUnits, VerticalScrollUnits, Width, Height);
+                var focusedControlBounds = new RectF(offset.X, offset.Y, Application.FocusManager.FocusedControl.Width, Application.FocusManager.FocusedControl.Height);
 
                 if (focusedControlBounds.IsAbove(visibleWindowBounds))
                 {
-                    int amount = visibleWindowBounds.Top - focusedControlBounds.Top;
+                    int amount = ConsoleMath.Round(visibleWindowBounds.Top - focusedControlBounds.Top);
                     VerticalScrollUnits -= amount;
                 }
 
                 if (focusedControlBounds.IsBelow(visibleWindowBounds))
                 {
-                    int amount = focusedControlBounds.Bottom - visibleWindowBounds.Bottom;
+                    int amount = ConsoleMath.Round(focusedControlBounds.Bottom - visibleWindowBounds.Bottom);
                     VerticalScrollUnits += amount;
                 }
 
                 if (focusedControlBounds.IsLeftOf(visibleWindowBounds))
                 {
-                    int amount = visibleWindowBounds.Left - focusedControlBounds.Left;
+                    int amount = ConsoleMath.Round(visibleWindowBounds.Left - focusedControlBounds.Left);
                     HorizontalScrollUnits -= amount;
                 }
 
                 if (focusedControlBounds.IsRightOf(visibleWindowBounds))
                 {
-                    int amount = focusedControlBounds.Right - visibleWindowBounds.Right;
+                    int amount = ConsoleMath.Round(focusedControlBounds.Right - visibleWindowBounds.Right);
                     HorizontalScrollUnits += amount;
                 }
             }

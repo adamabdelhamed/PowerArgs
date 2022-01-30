@@ -7,14 +7,19 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace PowerArgs.Cli
-{
+namespace PowerArgs.Cli;
     /// <summary>
     /// A data structure representing a 2d image that can be pained in
     /// a console window
     /// </summary>
     public class ConsoleBitmap
     {
+        private static ChunkPool chunkPool = new ChunkPool();
+        private static ConsolePixelPool pixelPool = new ConsolePixelPool();
+        private static List<Chunk> chunksOnLine = new List<Chunk>();
+        private static PaintBuffer paintBuilder = new PaintBuffer();
+
+
         // larger is faster, but may cause gaps
         private const float DrawPrecision = .5f;
 
@@ -68,31 +73,31 @@ namespace PowerArgs.Cli
                 pixels[x] = new ConsolePixel[this.Height];
                 for (int y = 0; y < pixels[x].Length; y++)
                 {
-                    var p = ConsolePixelPool.Default.Rent();
-                    p.Value = new ConsoleCharacter(' ');
+                var p = pixelPool.Rent();
+                p.Value = new ConsoleCharacter(' ');
                     pixels[x][y] = p;
                 }
             }
         }
 
-        public void Return()
+    public void Return()
+    {
+        for (int x = 0; x < this.Width; x++)
         {
-            for (int x = 0; x < this.Width; x++)
+            for (int y = 0; y < pixels[x].Length; y++)
             {
-                for (int y = 0; y < pixels[x].Length; y++)
-                {
-                    ConsolePixelPool.Default.Return(pixels[x][y]);
-                }
+                pixelPool.Return(pixels[x][y]);
             }
-            pixels = null;
         }
+        pixels = null;
+    }
 
-        /// <summary>
-        /// Converts this ConsoleBitmap to a ConsoleString
-        /// </summary>
-        /// <param name="trimMode">if false (the default), unformatted whitespace at the end of each line will be included as whitespace in the return value. If true, that whitespace will be trimmed from the return value.</param>
-        /// <returns>the bitmap as a ConsoleString</returns>
-        public ConsoleString ToConsoleString(bool trimMode = false)
+    /// <summary>
+    /// Converts this ConsoleBitmap to a ConsoleString
+    /// </summary>
+    /// <param name="trimMode">if false (the default), unformatted whitespace at the end of each line will be included as whitespace in the return value. If true, that whitespace will be trimmed from the return value.</param>
+    /// <returns>the bitmap as a ConsoleString</returns>
+    public ConsoleString ToConsoleString(bool trimMode = false)
         {
             List<ConsoleCharacter> chars = new List<ConsoleCharacter>();
             for (var y = 0; y < this.Height; y++)
@@ -147,21 +152,20 @@ namespace PowerArgs.Cli
         {
             if (w == Width && h == Height) return;
 
-            for (int x = 0; x < Width; x++)
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
             {
-                for (int y = 0; y < Height; y++)
-                {
-                    ConsolePixelPool.Default.Return(pixels[x][y]);
-                }
+                pixelPool.Return(pixels[x][y]);
             }
-
-            var newPixels = new ConsolePixel[w][];
+        }
+        var newPixels = new ConsolePixel[w][];
             for (int x = 0; x < w; x++)
             {
                 newPixels[x] = new ConsolePixel[h];
                 for (int y = 0; y < newPixels[x].Length; y++)
                 {
-                    var newPix = ConsolePixelPool.Default.Rent();
+                    var newPix = pixelPool.Rent();
                     newPix.Value = new ConsoleCharacter(' ');
                     newPixels[x][y] = newPix;   
                 }
@@ -519,21 +523,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        private class Chunk
-        {
-            public RGB FG;
-            public RGB BG;
-            public bool HasChanged;
-            public short Length;
-            private char[] buffer;
-            public bool Underlined;
-            public Chunk(int maxWidth)
-            {
-                buffer = new char[maxWidth];
-            }
-            public void Add(char c) => buffer[Length++] = c;
-            public override string ToString() => new string(buffer, 0, Length);
-        }
+       
 
         private bool wasFancy;
         public void Paint()
@@ -545,7 +535,7 @@ namespace PowerArgs.Cli
 
                 if (ConsoleProvider.Fancy)
                 {
-                    Console.Write(Ansi.Cursor.Hide.EscapeSequence + Ansi.Text.BlinkOff.EscapeSequence);
+                    Console.Write(Ansi.Cursor.Hide + Ansi.Text.BlinkOff);
                 }
             }
 
@@ -710,6 +700,7 @@ namespace PowerArgs.Cli
             }
         }
 
+
         public void PaintNew()
         {
             if (Console.WindowHeight == 0) return;
@@ -723,9 +714,8 @@ namespace PowerArgs.Cli
 
             try
             {
-                var stringBuilder = new StringBuilder();
+                paintBuilder.Clear();
                 Chunk currentChunk = null;
-                var chunksOnLine = new List<Chunk>();
                 char val;
                 RGB fg;
                 RGB bg;
@@ -750,7 +740,7 @@ namespace PowerArgs.Cli
                         if (currentChunk == null)
                         {
                             // first pixel always gets added to the current empty chunk
-                            currentChunk = new Chunk(Width);
+                            currentChunk = chunkPool.Get(Width);
                             currentChunk.FG = fg;
                             currentChunk.BG = bg;
                             currentChunk.Underlined = underlined;
@@ -770,7 +760,7 @@ namespace PowerArgs.Cli
                         else
                         {
                             chunksOnLine.Add(currentChunk);
-                            currentChunk = new Chunk(Width);
+                            currentChunk = chunkPool.Get(Width);
                             currentChunk.FG = fg;
                             currentChunk.BG = bg;
                             currentChunk.Underlined = underlined;
@@ -798,16 +788,16 @@ namespace PowerArgs.Cli
 
                                 if (chunk.Underlined)
                                 {
-                                    stringBuilder.Append(Ansi.Text.UnderlinedOn.EscapeSequence);
+                                    paintBuilder.Append(Ansi.Text.UnderlinedOn);
                                 }
 
-                                stringBuilder.Append(Ansi.Cursor.Move.ToLocation(left + 1, y + 1).EscapeSequence);
-                                stringBuilder.Append(Ansi.Color.Foreground.Rgb(chunk.FG.R, chunk.FG.G, chunk.FG.B).EscapeSequence);
-                                stringBuilder.Append(Ansi.Color.Background.Rgb(chunk.BG.R, chunk.BG.G, chunk.BG.B).EscapeSequence);
-                                stringBuilder.Append(chunk.ToString());
+                                Ansi.Cursor.Move.ToLocation(left + 1, y + 1, paintBuilder);
+                                Ansi.Color.Foreground.Rgb(chunk.FG, paintBuilder);
+                                Ansi.Color.Background.Rgb(chunk.BG, paintBuilder);
+                                paintBuilder.Append(chunk);
                                 if (chunk.Underlined)
                                 {
-                                    stringBuilder.Append(Ansi.Text.UnderlinedOff.EscapeSequence);
+                                    paintBuilder.Append(Ansi.Text.UnderlinedOff);
                                 }
                             }
 
@@ -815,10 +805,14 @@ namespace PowerArgs.Cli
                         }
                     }
 
+                    foreach(var chunk in chunksOnLine)
+                    {
+                        chunkPool.Return(chunk);
+                    }
                     chunksOnLine.Clear();
                 }
-                stringBuilder.Append(Ansi.Cursor.Move.ToLocation(Width-1, Height-1).EscapeSequence);
-                Console.Write(stringBuilder.ToString());
+                Ansi.Cursor.Move.ToLocation(Width-1, Height-1, paintBuilder);
+                Console.Write(paintBuilder.Buffer, paintBuilder.Length);
             }
             catch (IOException)
             {
@@ -1028,13 +1022,118 @@ namespace PowerArgs.Cli
         }
     }
 
-    public class ConsolePixelPool
+
+internal class Chunk
+{
+    public RGB FG;
+    public RGB BG;
+    public bool HasChanged;
+    public short Length;
+    public char[] buffer;
+    public bool Underlined;
+    public int BufferLength => buffer.Length;
+    public Chunk(int maxWidth)
     {
-        private static Lazy<ConsolePixelPool> _pool = new Lazy<ConsolePixelPool>();
+        buffer = new char[maxWidth];
+    }
 
-        public static ConsolePixelPool Default => _pool.Value;
+    public void Clear()
+    {
+        Length = 0;
+        FG = default;
+        BG = default;
+        Underlined = default;
+        HasChanged = false;
+    }
 
-        private List<ConsolePixel> pool;
+    public void Add(char c) => buffer[Length++] = c;
+    public override string ToString() => new string(buffer, 0, Length);
+}
+
+public class PaintBuffer
+{
+    public char[] Buffer = new char[120*80];
+
+    public int Length { get; private set; }
+
+    internal void Append(Chunk c)
+    {
+        EnsureBigEnough(Length + c.Length);
+
+        var span = c.buffer.AsSpan();
+        for (var i = 0; i < c.Length; i++)
+        {
+            Buffer[Length++] = span[i];
+        }
+    }
+
+    public void Append(char c)
+    {
+        EnsureBigEnough(Length + 1);
+        Buffer[Length++] = c;
+    }
+
+    public void Append(string chars)
+    {
+        EnsureBigEnough(Length + chars.Length);
+
+        var span = chars.AsSpan();
+        for(var i = 0; i < span.Length; i++)
+        {
+            Buffer[Length++]=span[i];
+        }
+    }
+
+    private void EnsureBigEnough(int newLen)
+    {
+        while (newLen > Buffer.Length)
+        {
+            var newBuffer = new char[Buffer.Length * 2];
+            Array.Copy(Buffer, 0, newBuffer, 0, Buffer.Length);
+            Buffer = newBuffer;
+            newLen = Buffer.Length;
+        }
+    }
+
+    public void Clear()
+    {
+        Length = 0;
+    }
+}
+
+internal class ChunkPool
+{
+    Dictionary<int, List<Chunk>> pool = new Dictionary<int, List<Chunk>>();
+    public Chunk Get(int w)
+    {
+        if(pool.TryGetValue(w, out List<Chunk> chunks) == false || chunks.None())
+        {
+            return new Chunk(w);
+        }
+        else
+        {
+            var ret = chunks[0];
+            chunks.RemoveAt(0);
+            return ret;
+        }
+    }
+
+    public void Return(Chunk obj)
+    {
+        if (pool.TryGetValue(obj.BufferLength, out List<Chunk> chunks) == false)
+        {
+            chunks = new List<Chunk>();
+            pool.Add(obj.BufferLength, chunks);
+        }
+        obj.Clear();
+        chunks.Add(obj);
+    }
+}
+
+public class ConsolePixelPool
+{
+
+    private List<ConsolePixel> pool;
 
 #if DEBUG
         private long hits;
@@ -1044,39 +1143,38 @@ namespace PowerArgs.Cli
 #endif
 
 
-        public ConsolePixelPool()
+    public ConsolePixelPool()
+    {
+        pool = new List<ConsolePixel>();
+    }
+
+    public ConsolePixel Rent()
+    {
+        if (pool.Count > 0)
         {
-            pool = new List<ConsolePixel>();
-        }
-        
-        public ConsolePixel Rent()
-        {
-            if(pool.Count > 0)
-            {
 #if DEBUG
                 hits++;
 #endif
-                var ret = pool[pool.Count - 1];
-                pool.RemoveAt(pool.Count - 1);
-                ret.Value = default;
-                ret.LastDrawnValue = default;
-                return ret;
-            }
-            else
-            {
+            var ret = pool[pool.Count - 1];
+            pool.RemoveAt(pool.Count - 1);
+            ret.Value = default;
+            ret.LastDrawnValue = default;
+            return ret;
+        }
+        else
+        {
 #if DEBUG
                 misses++;
 #endif
-                return new ConsolePixel();
-            }
+            return new ConsolePixel();
         }
+    }
 
-        public void Return(ConsolePixel p)
-        {
+    public void Return(ConsolePixel p)
+    {
 #if DEBUG
             returns++;
 #endif
-            pool.Add(p);
-        }
+        pool.Add(p);
     }
 }

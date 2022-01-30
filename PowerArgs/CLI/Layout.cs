@@ -95,19 +95,22 @@ namespace PowerArgs.Cli
             {
                 if (parent.Width == 0 || parent.Height== 0) return;
 
-                var newBounds = new Rectangle(new Point(0, 0), parent.Size);
-                newBounds.X += effectivePadding.Left;
-                newBounds.Width -= effectivePadding.Left;
-                newBounds.Width -= effectivePadding.Right;
+                var newX = 0;
+                var newY = 0;
+                var newW = parent.Width;
+                var newH = parent.Height;
+                newX += effectivePadding.Left;
+                newW -= effectivePadding.Left;
+                newW -= effectivePadding.Right;
 
-                newBounds.Y += effectivePadding.Top;
-                newBounds.Height -= effectivePadding.Top;
-                newBounds.Height -= effectivePadding.Bottom;
+                newY += effectivePadding.Top;
+                newH -= effectivePadding.Top;
+                newH -= effectivePadding.Bottom;
 
-                if (newBounds.Width < 0) newBounds.Width = 0;
-                if (newBounds.Height < 0) newBounds.Height = 0;
+                if (newW < 0) newW = 0;
+                if (newH < 0) newH = 0;
 
-                child.Bounds = newBounds;
+                child.Bounds = new RectF(newX, newY, newW, newH);   
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
@@ -136,7 +139,7 @@ namespace PowerArgs.Cli
                 var newLeft = (parent.Width - newW) / 2;
                 var newTop = (parent.Height - newH) / 2;
 
-                child.Bounds = new Rectangle(newLeft, newTop, newW, newH);
+                child.Bounds = new RectF(newLeft, newTop, newW, newH);
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
@@ -151,7 +154,7 @@ namespace PowerArgs.Cli
             {
                 if (parent.Width == 0) return;
                 if (parent.Width - (effectivePadding.Right + effectivePadding.Left) <= 0) return;
-                child.Bounds = new Rectangle(effectivePadding.Left, child.Y,  parent.Width - (effectivePadding.Right+effectivePadding.Left), child.Height);
+                child.Bounds = new RectF(effectivePadding.Left, child.Y,  parent.Width - (effectivePadding.Right+effectivePadding.Left), child.Height);
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();
@@ -164,7 +167,7 @@ namespace PowerArgs.Cli
             var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
             Action syncAction = () => 
             {
-                child.Bounds = new Rectangle(child.X, effectivePadding.Top, child.Width, parent.Height - (effectivePadding.Top + effectivePadding.Bottom));
+                child.Bounds = new RectF(child.X, effectivePadding.Top, child.Width, parent.Height - (effectivePadding.Top + effectivePadding.Bottom));
             };
             parent.SubscribeForLifetime(nameof(ConsoleControl.Bounds), syncAction, parent);
             syncAction();

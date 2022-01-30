@@ -6,32 +6,24 @@ using System.Text;
 
 namespace PowerArgs.Cli
 {
-    public interface IRectangular
+
+    public class Rectangular : ObservableObject, ICollider
     {
-        int X { get; set; }
-        int Y { get; set; }
-        int Width { get; set; }
-        int Height { get; set; }
+        public RectF ToRectF() => new RectF(x, y, w, h);
 
-        Size Size { get; set; }
-    }
+        private int x, y, w, h;
 
-    public class Rectangular : ObservableObject, IRectangular, ICollider
-    {
-        public RectF ToRectF() => new RectF(X, Y, Width, Height);
-
-        private Rectangle bounds;
-        public Rectangle Bounds
+  
+        public RectF Bounds
         {
-            get { return bounds; }
+            get { return ToRectF(); }
             set
             {
-                if(value.Width < 0 || value.Height < 0)
-                {
-                    throw new ArgumentOutOfRangeException("Width and height cannot be negative");
-                }
-
-                Set(ref bounds, value);
+                x = (int)value.Left;
+                y= (int)value.Top;
+                w = (int)value.Width;
+                h = (int)value.Height;
+                FirePropertyChanged(nameof(Bounds));
             }
         }
 
@@ -39,68 +31,52 @@ namespace PowerArgs.Cli
         {
             get
             {
-                return Bounds.Width;
+                return w;
             }
             set
             {
-                Bounds = new Rectangle(Bounds.Location, new Size(value, Bounds.Height));
+                if (w == value) return;
+                w = value;
+                FirePropertyChanged(nameof(Bounds));
             }
         }
         public int Height
         {
             get
             {
-                return Bounds.Height;
+                return h;
             }
             set
             {
-                Bounds = new Rectangle(Bounds.Location, new Size(Bounds.Width, value));
+                if (h == value) return;
+                h = value;
+                FirePropertyChanged(nameof(Bounds));
             }
         }
         public int X
         {
             get
             {
-                return Bounds.X;
+                return x;
             }
             set
             {
-                Bounds = new Rectangle(new Point(value, Bounds.Y), Bounds.Size);
+                if (x == value) return;
+                x = value;
+                FirePropertyChanged(nameof(Bounds));
             }
         }
         public int Y
         {
             get
             {
-                return Bounds.Y;
+                return y;
             }
             set
             {
-                Bounds = new Rectangle(new Point(Bounds.X, value), Bounds.Size);
-            }
-        }
-
-        public Size Size
-        {
-            get
-            {
-                return Bounds.Size;
-            }
-            set
-            {
-                Bounds = new Rectangle(Bounds.Location, value);
-            }
-        }
-
-        public Point Location
-        {
-            get
-            {
-                return Bounds.Location;
-            }
-            set
-            {
-                Bounds = new Rectangle(value, Bounds.Size);
+                if (y == value) return;
+                y = value;
+                FirePropertyChanged(nameof(Bounds));
             }
         }
 

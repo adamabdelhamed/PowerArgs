@@ -265,13 +265,10 @@ namespace PowerArgs.Cli
             {
                 PaintInternal();
 
-                TaskCompletionSource<bool>[] paintRequestsCopy;
-                lock(paintRequests)
-                {
-                    paintRequestsCopy = paintRequests.ToArray();
-                    paintRequests.Clear();
-                }
-                 
+                TaskCompletionSource<bool>[] paintRequestsCopy;               
+                paintRequestsCopy = paintRequests.ToArray();
+                paintRequests.Clear();
+                                
                 for(var i = 0; i < paintRequestsCopy.Length; i++)
                 {
                     paintRequestsCopy[i].SetResult(true);
@@ -374,7 +371,8 @@ namespace PowerArgs.Cli
 
             if (isFullScreen)
             {
-                this.LayoutRoot.Size = new Size(Bitmap.Console.BufferWidth, Bitmap.Console.WindowHeight - 1);
+                this.LayoutRoot.Width = Bitmap.Console.BufferWidth;
+                this.LayoutRoot.Height = Bitmap.Console.WindowHeight - 1;
             }
 
             Paint();
@@ -387,12 +385,15 @@ namespace PowerArgs.Cli
         public Task Paint()
         {
             var d = new TaskCompletionSource<bool>();
+            if (ConsoleApp.Current == this)
+            {
+                paintRequests.Add(d);
+                return d.Task;
+            }
+
             Invoke(() =>
             {
-                lock (paintRequests)
-                {
-                    paintRequests.Add(d);
-                }
+                paintRequests.Add(d);
             });
             return d.Task;
         }
@@ -530,7 +531,7 @@ namespace PowerArgs.Cli
             if (ClearOnExit)
             {
                 ConsoleProvider.Current.Clear();
-            }
+            }        
             Bitmap.Console.ForegroundColor = ConsoleString.DefaultForegroundColor;
             Bitmap.Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
             _current = null;

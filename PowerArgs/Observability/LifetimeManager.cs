@@ -71,8 +71,7 @@ namespace PowerArgs
         /// </summary>
         public LifetimeManager()
         {
-            cleanupItems = new List<Action>();
-            cleanupItems2 = new List<IDisposable>();
+
         }
 
         /// <summary>
@@ -80,13 +79,21 @@ namespace PowerArgs
         /// managed by this manager ends
         /// </summary>
         /// <param name="obj">the object to dispose</param>
-        public void OnDisposed(IDisposable obj) => cleanupItems2.Add(obj);
+        public void OnDisposed(IDisposable obj)
+        {
+            cleanupItems2 = cleanupItems2 ?? new List<IDisposable>();
+            cleanupItems2.Add(obj);
+        }
 
         /// <summary>
         /// Registers the given cleanup code to run when the lifetime being
         /// managed by this manager ends
         /// </summary>
         /// <param name="cleanupCode">the code to run</param>
-        public void OnDisposed(Action cleanupCode) => cleanupItems.Add(cleanupCode);
+        public void OnDisposed(Action cleanupCode)
+        {
+            cleanupItems = cleanupItems ?? new List<Action>();
+            cleanupItems.Add(cleanupCode);
+        }
     }
 }

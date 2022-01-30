@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PowerArgs.Cli;
+using System;
 
 namespace PowerArgs
 {
@@ -7,159 +8,138 @@ namespace PowerArgs
 
         public static class Text
         {
-            public static AnsiControlCode BlinkOff { get; } = $"{Esc}[25m";
-            public static AnsiControlCode BlinkOn { get; } = $"{Esc}[5m";
-            public static AnsiControlCode BoldOff { get; } = $"{Esc}[22m";
-            public static AnsiControlCode BoldOn { get; } = $"{Esc}[1m";
-            public static AnsiControlCode HiddenOn { get; } = $"{Esc}[8m";
-            public static AnsiControlCode ReverseOn { get; } = $"{Esc}[7m";
-            public static AnsiControlCode ReversOff { get; } = $"{Esc}[27m";
-            public static AnsiControlCode StandoutOff { get; } = $"{Esc}[23m";
-            public static AnsiControlCode StandoutOn { get; } = $"{Esc}[3m";
-            public static AnsiControlCode UnderlinedOff { get; } = $"{Esc}[24m";
-            public static AnsiControlCode UnderlinedOn { get; } = $"{Esc}[4m";
+            public const string BlinkOff = $"{Esc}[25m";
+            public const string BlinkOn = $"{Esc}[5m";
+            public const string BoldOff = $"{Esc}[22m";
+            public const string BoldOn = $"{Esc}[1m";
+            public const string HiddenOn = $"{Esc}[8m";
+            public const string ReverseOn = $"{Esc}[7m";
+            public const string ReversOff = $"{Esc}[27m";
+            public const string StandoutOff = $"{Esc}[23m";
+            public const string StandoutOn = $"{Esc}[3m";
+            public const string UnderlinedOff = $"{Esc}[24m";
+            public const string UnderlinedOn = $"{Esc}[4m";
         }
 
 
         public static class Color
         {
-            public static AnsiControlCode Off { get; } = $"{Esc}[0m";
+            public const string Off = $"{Esc}[0m";
+
+            private static readonly string[] ByteStrings = AllocateByteStrings();
+
+            private static string[] AllocateByteStrings()
+            {
+                var ret = new string[256];
+                for(var i = 0; i < ret.Length; i++)
+                {
+                    ret[i] = i.ToString();
+                }
+                return ret;
+            }
 
             public class Background
             {
-                public static AnsiControlCode Default { get; } = $"{Esc}[49m";
+                public static string Rgb(byte r, byte g, byte b) => $"{Esc}[48;2;{r};{g};{b}m";
 
-                public static AnsiControlCode Black => $"{Esc}[40m";
-
-                public static AnsiControlCode Red { get; } = $"{Esc}[41m";
-                public static AnsiControlCode Green { get; } = $"{Esc}[42m";
-                public static AnsiControlCode Yellow { get; } = $"{Esc}[43m";
-                public static AnsiControlCode Blue { get; } = $"{Esc}[44m";
-                public static AnsiControlCode Magenta { get; } = $"{Esc}[45m";
-                public static AnsiControlCode Cyan { get; } = $"{Esc}[46m";
-                public static AnsiControlCode White { get; } = $"{Esc}[47m";
-                public static AnsiControlCode DarkGray { get; } = $"{Esc}[100m";
-                public static AnsiControlCode LightRed { get; } = $"{Esc}[101m";
-                public static AnsiControlCode LightGreen { get; } = $"{Esc}[102m";
-                public static AnsiControlCode LightYellow { get; } = $"{Esc}[103m";
-                public static AnsiControlCode LightBlue { get; } = $"{Esc}[104m";
-                public static AnsiControlCode LightMagenta { get; } = $"{Esc}[105m";
-                public static AnsiControlCode LightCyan { get; } = $"{Esc}[106m";
-                public static AnsiControlCode LightGray { get; } = $"{Esc}[107m";
-
-                public static AnsiControlCode Rgb(byte r, byte g, byte b) => $"{Esc}[48;2;{r};{g};{b}m";
+                public static void Rgb(RGB color, PaintBuffer buffer)
+                {
+                    buffer.Append(Esc);
+                    buffer.Append("[48;2;");
+                    buffer.Append(ByteStrings[color.R]);
+                    buffer.Append(';');
+                    buffer.Append(ByteStrings[color.G]);
+                    buffer.Append(';');
+                    buffer.Append(ByteStrings[color.B]);
+                    buffer.Append('m');
+                }
             }
 
 
             public static class Foreground
             {
-                public static AnsiControlCode Default => $"{Esc}[39m";
 
-                public static AnsiControlCode Black { get; } = $"{Esc}[30m";
-                public static AnsiControlCode Red { get; } = $"{Esc}[31m";
-                public static AnsiControlCode Green { get; } = $"{Esc}[32m";
-                public static AnsiControlCode Yellow { get; } = $"{Esc}[33m";
-                public static AnsiControlCode Blue { get; } = $"{Esc}[34m";
-                public static AnsiControlCode Magenta { get; } = $"{Esc}[35m";
-                public static AnsiControlCode Cyan { get; } = $"{Esc}[36m";
-                public static AnsiControlCode White { get; } = $"{Esc}[37m";
-                public static AnsiControlCode DarkGray { get; } = $"{Esc}[90m";
-                public static AnsiControlCode LightRed { get; } = $"{Esc}[91m";
-                public static AnsiControlCode LightGreen { get; } = $"{Esc}[92m";
-                public static AnsiControlCode LightYellow { get; } = $"{Esc}[93m";
-                public static AnsiControlCode LightBlue { get; } = $"{Esc}[94m";
-                public static AnsiControlCode LightMagenta { get; } = $"{Esc}[95m";
-                public static AnsiControlCode LightCyan { get; } = $"{Esc}[96m";
-                public static AnsiControlCode LightGray { get; } = $"{Esc}[97m";
+                public static string Rgb(byte r, byte g, byte b) => $"{Esc}[38;2;{r};{g};{b}m";
 
-                public static AnsiControlCode Rgb(byte r, byte g, byte b) => $"{Esc}[38;2;{r};{g};{b}m";
+                public static void Rgb(RGB color, PaintBuffer buffer)
+                {
+                    buffer.Append(Esc);
+                    buffer.Append("[38;2;");
+                    buffer.Append(ByteStrings[color.R]);
+                    buffer.Append(";");
+                    buffer.Append(ByteStrings[color.G]);
+                    buffer.Append(";");
+                    buffer.Append(ByteStrings[color.B]);
+                    buffer.Append("m");
+                }
             }
         }
 
 
         public static class Cursor
         {
+            public const string Off = $"{Esc}[0m";
+
+            private static readonly string[] PositionStrings = AllocatePositionStrings();
+
+            private static string[] AllocatePositionStrings()
+            {
+                var ret = new string[1000];
+                for (var i = 0; i < ret.Length; i++)
+                {
+                    ret[i] = i.ToString();
+                }
+                return ret;
+            }
 
             public static class Move
             {
-                public static AnsiControlCode Up(int lines = 1) => $"{Esc}[{lines}A";
-                public static AnsiControlCode Down(int lines = 1) => $"{Esc}[{lines}B";
-                public static AnsiControlCode Right(int columns = 1) => $"{Esc}[{columns}C";
-                public static AnsiControlCode Left(int columns = 1) => $"{Esc}[{columns}D";
-                public static AnsiControlCode NextLine(int line = 1) => $"{Esc}{line}E";
-                public static AnsiControlCode ToUpperLeftCorner { get; } = $"{Esc}[H";
-                public static AnsiControlCode ToLocation(int? left = null, int? top = null) => $"{Esc}[{top};{left}H";
+                public static string Up(int lines = 1) => $"{Esc}[{lines}A";
+                public static string Down(int lines = 1) => $"{Esc}[{lines}B";
+                public static string Right(int columns = 1) => $"{Esc}[{columns}C";
+                public static string Left(int columns = 1) => $"{Esc}[{columns}D";
+                public static string NextLine(int line = 1) => $"{Esc}[{line}E";
+                public const string ToUpperLeftCorner  = $"{Esc}[H";
+                public static string ToLocation(int left, int top) => $"{Esc}[{top};{left}H";
+
+                public static void ToLocation(int left, int top, PaintBuffer buffer)
+                {
+                    buffer.Append(Esc);
+                    buffer.Append('[');
+                    buffer.Append(PositionStrings[top]);
+                    buffer.Append(';');
+                    buffer.Append(PositionStrings[left]);
+                    buffer.Append('H');
+                }
             }
 
 
             public class Scroll
             {
-                public static AnsiControlCode UpOne { get; } = $"{Esc}D";
+                public const string UpOne = $"{Esc}D";
 
-                public static AnsiControlCode DownOne { get; } = $"{Esc}M";
+                public const string DownOne = $"{Esc}M";
             }
 
-            public static AnsiControlCode Hide { get; } = $"{Esc}[?25l";
+            public const string Hide  = $"{Esc}[?25l";
 
-            public static AnsiControlCode Show { get; } = $"{Esc}[?25h";
+            public const string Show  = $"{Esc}[?25h";
 
-            public static AnsiControlCode SavePosition { get; } = $"{Esc}7";
+            public const string SavePosition = $"{Esc}7";
 
-            public static AnsiControlCode RestorePosition { get; } = $"{Esc}8";
+            public const string RestorePosition = $"{Esc}8";
         }
 
         public static class Clear
         {
-            public static AnsiControlCode EntireScreen { get; } = $"{Esc}[2J";
-            public static AnsiControlCode Line { get; } = $"{Esc}[2K";
-            public static AnsiControlCode ToBeginningOfLine { get; } = $"{Esc}[1K";
-            public static AnsiControlCode ToBeginningOfScreen { get; } = $"{Esc}[1J";
-            public static AnsiControlCode ToEndOfLine { get; } = $"{Esc}[K";
-            public static AnsiControlCode ToEndOfScreen { get; } = $"{Esc}[J";
+            public const string EntireScreen  = $"{Esc}[2J";
+            public const string Line  = $"{Esc}[2K";
+            public const string ToBeginningOfLine  = $"{Esc}[1K";
+            public const string ToBeginningOfScreen  = $"{Esc}[1J";
+            public const string ToEndOfLine  = $"{Esc}[K";
+            public const string ToEndOfScreen  = $"{Esc}[J";
         }
 
-        public static string Esc { get; } = "\u001b";
-    }
-
-    public class AnsiControlCode
-    {
-        public AnsiControlCode(string escapeSequence)
-        {
-            if (string.IsNullOrWhiteSpace(escapeSequence))
-            {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(escapeSequence));
-            }
-
-            EscapeSequence = escapeSequence;
-        }
-
-        public string EscapeSequence { get; }
-
-        public override string ToString() => "";
-
-        protected bool Equals(AnsiControlCode other) => string.Equals(EscapeSequence, other.EscapeSequence);
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            return obj.GetType() == GetType() &&
-                   Equals((AnsiControlCode)obj);
-        }
-
-        public override int GetHashCode() => EscapeSequence.GetHashCode();
-
-        public static implicit operator AnsiControlCode(string sequence)
-        {
-            return new AnsiControlCode(sequence);
-        }
+        public const string Esc = "\u001b";
     }
 }

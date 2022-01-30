@@ -454,6 +454,26 @@ public struct RectF
         return amount;
     }
 
+    public bool IsAbove(RectF other)
+    {
+        return Top < other.Top;
+    }
+
+    public bool IsBelow(RectF other)
+    {
+        return Bottom > other.Bottom;
+    }
+
+    public bool IsLeftOf(RectF other)
+    {
+        return Left < other.Left;
+    }
+
+    public bool IsRightOf(RectF other)
+    {
+        return Right > other.Right;
+    }
+
     public static RectF OffsetByAngleAndDistance(float x, float y, float w, float h, Angle angle, float distance, bool normalized = true)
     {
         var newLoc = LocF.OffsetByAngleAndDistance(x, y, angle, distance, normalized);

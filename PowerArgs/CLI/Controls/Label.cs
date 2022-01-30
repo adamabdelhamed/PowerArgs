@@ -33,10 +33,11 @@ namespace PowerArgs.Cli
     {
         internal static readonly ConsoleString Null = "<null>".ToConsoleString(DefaultColors.DisabledColor);
 
+        private ConsoleString _cleanCache;
         /// <summary>
         /// Gets or sets the text displayed on the label
         /// </summary>
-        public ConsoleString Text { get { return Get<ConsoleString>(); } set { Set(value); } }
+        public ConsoleString Text { get { return Get<ConsoleString>(); } set { _cleanCache = null; Set(value); } }
 
         /// <summary>
         /// Gets or sets the max width.  This is only used in the single line auto size mode.
@@ -52,16 +53,20 @@ namespace PowerArgs.Cli
             get
             {
                 if (Text == null) return Null;
-                return Text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\t", "    ");
+                _cleanCache = _cleanCache ?? Text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\t", "    ");
+                return _cleanCache;
             }
         }
 
+        private LabelRenderMode _mode;
         /// <summary>
         /// Gets or sets the render mode
         /// </summary>
-        public LabelRenderMode Mode { get { return Get<LabelRenderMode>(); } set { Set(value); } }
+        public LabelRenderMode Mode { get { return _mode; } set { SetHardIf(ref _mode, value, value != _mode); } }
 
         private List<List<ConsoleCharacter>> lines;
+
+        private static Action<object> TextChangedHandler = HandleTextChanged;
 
         /// <summary>
         /// Creates a new label
@@ -73,11 +78,11 @@ namespace PowerArgs.Cli
             this.CanFocus = false;
             lines = new List<List<ConsoleCharacter>>();
 
-            this.SubscribeForLifetime(nameof(Text), HandleTextChanged, this);
-            this.SubscribeForLifetime(nameof(Mode), HandleTextChanged, this);
-            this.SubscribeForLifetime(nameof(MaxHeight), HandleTextChanged, this);
-            this.SubscribeForLifetime(nameof(MaxWidth), HandleTextChanged, this);
-            this.SynchronizeForLifetime(nameof(Bounds), HandleTextChanged, this);
+            this.SubscribeForLifetime(nameof(Text), TextChangedHandler,this, this);
+            this.SubscribeForLifetime(nameof(Mode), TextChangedHandler,this, this);
+            this.SubscribeForLifetime(nameof(MaxHeight), TextChangedHandler,this, this);
+            this.SubscribeForLifetime(nameof(MaxWidth), TextChangedHandler,this, this);
+            this.SynchronizeForLifetime(nameof(Bounds), TextChangedHandler,this, this);
             Text = ConsoleString.Empty;
         }
 
@@ -88,42 +93,44 @@ namespace PowerArgs.Cli
             return ret;
         }
 
-        private void HandleTextChanged()
+        private static void HandleTextChanged(object l)
         {
-            lines.Clear();
-            if (Mode == LabelRenderMode.ManualSizing)
+            var label = l as Label;
+            label.lines.Clear();
+            var clean = label.CleanText;
+            if (label.Mode == LabelRenderMode.ManualSizing)
             {
-                lines.Add(new List<ConsoleCharacter>());
-                foreach (var c in CleanText)
+                label.lines.Add(new List<ConsoleCharacter>());
+                foreach (var c in clean)
                 {
                     if (c.Value == '\n')
                     {
-                        lines.Add(new List<ConsoleCharacter>());
+                        label.lines.Add(new List<ConsoleCharacter>());
                     }
                     else
                     {
-                        lines.Last().Add(c);
+                        label.lines.Last().Add(c);
                     }
                 }
             }
-            else if (Mode == LabelRenderMode.SingleLineAutoSize)
+            else if (label.Mode == LabelRenderMode.SingleLineAutoSize)
             {
-                Height = 1;
+                label.Height = 1;
 
-                if (MaxWidth.HasValue)
+                if (label.MaxWidth.HasValue)
                 {
-                    Width = Math.Min(MaxWidth.Value, CleanText.Length);
+                    label.Width = Math.Min(label.MaxWidth.Value, clean.Length);
                 }
                 else
                 {
-                    Width = CleanText.Length;
+                    label.Width = clean.Length;
                 }
 
-                lines.Add(CleanText.ToList());
+                label.lines.Add(clean.ToList());
             }
             else
             {
-                DoSmartWrap();
+                label.DoSmartWrap();
             }
         }
 

@@ -24,6 +24,8 @@ namespace PowerArgs
             GC.SuppressFinalize(this);
         }
 
+        protected virtual void AfterDispose() { }
+
         /// <summary>
         /// The protected dispose method
         /// </summary>
