@@ -129,6 +129,10 @@ namespace Benchmarks
                 {
                     PromoteToLKG();
                 }
+                else
+                {
+                    File.Delete(CurrentTestOutputFilePath);
+                }
                 return ret;
             }
             else
