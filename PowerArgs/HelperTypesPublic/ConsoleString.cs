@@ -609,11 +609,23 @@ namespace PowerArgs
 
             while (true)
             {
-                string toString = new string(ret.Select(r => r.Value).ToArray());
+                var chars = new char[ret.Count];
+                for(var i = 0; i < ret.Count; i++)
+                {
+                    chars[i] = ret[i].Value;
+                }
+                string toString = new string(chars);
                 int currentIndex = toString.IndexOf(toFind, startIndex, comparison);
                 if (currentIndex < 0) break;
                 for (int i = 0; i < toFind.Length; i++) ret.RemoveAt(currentIndex);
-                ret.InsertRange(currentIndex, toReplace.Select(c => new ConsoleCharacter(c, foregroundColor, backgroundColor)));
+
+                var range = new ConsoleCharacter[toReplace.Length];
+                for(var i = 0; i < toReplace.Length; i++)
+                {
+                    range[i] = new ConsoleCharacter(toReplace[i], foregroundColor, backgroundColor);
+                }
+
+                ret.InsertRange(currentIndex, range);
                 startIndex = currentIndex + toReplace.Length;
             }
 
@@ -934,7 +946,7 @@ namespace PowerArgs
             {
                 ConsoleOutInterceptor.Instance.Write(this);
             }
-            else if(PowerArgs.ConsoleProvider.Fancy == false)
+            else if (PowerArgs.ConsoleProvider.Fancy == false)
             {
                 string buffer = "";
 
@@ -971,7 +983,7 @@ namespace PowerArgs
                 string buffer = "";
 
                 RGB existingForeground = ConsoleProvider.ForegroundColor, existingBackground = ConsoleProvider.BackgroundColor;
- 
+
                 try
                 {
                     RGB currentForeground = existingForeground, currentBackground = existingBackground;
@@ -979,7 +991,7 @@ namespace PowerArgs
                     foreach (var character in this)
                     {
                         if (character.ForegroundColor != currentForeground ||
-                            character.BackgroundColor != currentBackground || 
+                            character.BackgroundColor != currentBackground ||
                             character.IsUnderlined != currentUnderlined)
                         {
                             if (buffer.Length > 0)
@@ -1014,25 +1026,25 @@ namespace PowerArgs
             var toWrite = "";
             if (underlined)
             {
-                toWrite += Ansi.Text.UnderlinedOn.EscapeSequence;
+                toWrite += Ansi.Text.UnderlinedOn;
             }
-            toWrite += Ansi.Cursor.SavePosition.EscapeSequence;
-            toWrite += Ansi.Color.Foreground.Rgb(fg.R, fg.G, fg.B).EscapeSequence;
-            toWrite += Ansi.Color.Background.Rgb(bg.R, bg.G, bg.B).EscapeSequence;
+            toWrite += Ansi.Cursor.SavePosition;
+            toWrite += Ansi.Color.Foreground.Rgb(fg.R, fg.G, fg.B);
+            toWrite += Ansi.Color.Background.Rgb(bg.R, bg.G, bg.B);
             toWrite += content;
             if (underlined)
             {
-                toWrite += Ansi.Text.UnderlinedOff.EscapeSequence;
+                toWrite += Ansi.Text.UnderlinedOff;
             }
-            Console.Write(toWrite);
+            Console.Write(toWrite.Replace("\n",Ansi.Cursor.Move.NextLine()));
         }
 
         private void SetColorsFancy(RGB fg, RGB bg)
         {
             var toWrite = "";
-            toWrite += Ansi.Cursor.SavePosition.EscapeSequence;
-            toWrite += Ansi.Color.Foreground.Rgb(fg.R, fg.G, fg.B).EscapeSequence;
-            toWrite += Ansi.Color.Background.Rgb(bg.R, bg.G, bg.B).EscapeSequence;
+            toWrite += Ansi.Cursor.SavePosition;
+            toWrite += Ansi.Color.Foreground.Rgb(fg.R, fg.G, fg.B);
+            toWrite += Ansi.Color.Background.Rgb(bg.R, bg.G, bg.B);
             Console.Write(toWrite);
         }
 
