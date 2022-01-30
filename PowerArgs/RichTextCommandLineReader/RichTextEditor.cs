@@ -288,6 +288,12 @@ namespace PowerArgs
                 Write(output.ToString().ToConsoleString());
             }
 
+            public void Write(char[] buffer, int length)
+            {
+                var str = new string(buffer, 0, length);
+                Write(str);
+            }
+
             public void WriteLine()
             {
                 throw new NotImplementedException();

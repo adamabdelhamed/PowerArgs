@@ -660,6 +660,13 @@ namespace ArgsTests
             return true;
         }
 
+
+        public void Write(char[] buffer, int length)
+        {
+            var str = new string(buffer, 0, length);
+            Write(str);
+        }
+
         public void Write(object output)
         {
             string text = output == null ? "" : output.ToString();
