@@ -9,7 +9,7 @@ public class EmptyAppBenchmark : UIBenchmark
         app.Invoke(async () =>
         {
             var start = DateTime.UtcNow;
-            while (DateTime.UtcNow - start < TimeSpan.FromSeconds(1))
+            while (DateTime.UtcNow - start < TimeSpan.FromSeconds(3))
             {
                 await app.Paint();
             }

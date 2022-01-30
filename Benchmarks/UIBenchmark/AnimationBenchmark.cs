@@ -10,23 +10,14 @@ public class AnimationBenchmark : UIBenchmark
     {
         app.Invoke(async () =>
         {
-            var square = app.LayoutRoot.Add(new ConsolePanel() { Width = 20, Height = 10, Background = RGB.Green });
-            var start = square.ToRectF();
-            var dest = new RectF(app.LayoutRoot.Width-square.Width, app.LayoutRoot.Height - square.Height, square.Width, square.Height);
-            for (var i = 0; i < 3; i++)
+            var square = app.LayoutRoot.Add(new ConsolePanel() { Width = 20, Height = 10, Background = RGB.Green }).CenterVertically();
+            var startTime = DateTime.UtcNow;
+            while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(3))
             {
-                await square.AnimateAsync(new ConsoleControlAnimationOptions()
-                {
-                    Destination = () => dest,
-                    Duration = 500,
-                });
-
-                await square.AnimateAsync(new ConsoleControlAnimationOptions()
-                {
-                    Destination = () => start,
-                    Duration = 500,
-                });
+                square.X = square.Right() == app.LayoutRoot.Width ? 0 : square.X + 1;
+                await app.Paint();
             }
+            
             app.Stop();
         });
         app.Run();
