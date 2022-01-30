@@ -2,7 +2,7 @@
 
 namespace PowerArgs.Cli
 {
-    public class PerfTestPanel : ConsoleControl
+    public class WorstCasePerfTestPanel : ConsoleControl
     {
         public bool Even { get => Get<bool>(); set => Set(value); }
 
