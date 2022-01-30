@@ -50,10 +50,10 @@ namespace PowerArgs.Samples
 
         private TestOptions LotsOfChanges()
         {
-            var testPanel = new PerfTestPanel();
+            var testPanel = new WorstCasePerfTestPanel();
             return new TestOptions()
             {
-                InitTest = () => testPanel = Add(new PerfTestPanel()).Fill(),
+                InitTest = () => testPanel = Add(new WorstCasePerfTestPanel()).Fill(),
                 OnFrame = () => testPanel.Even = !testPanel.Even
             };
         }
