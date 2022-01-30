@@ -5,7 +5,7 @@ using PowerArgs.Cli;
 namespace Benchmarks
 {
     [MemoryDiagnoser]
-    public  class FillRectBenchmark
+    public class FillRectBenchmark
     {
         private ConsoleBitmap bitmap;
         public FillRectBenchmark()
@@ -13,8 +13,8 @@ namespace Benchmarks
             bitmap = new ConsoleBitmap(80, 30);
         }
 
-        [Benchmark(Baseline =true)]
-        public void FillRectOld()
+        [Benchmark(Baseline = true)]
+        public void FillRect()
         {
             bitmap.FillRect(0, 0, bitmap.Width, bitmap.Height);
         }
@@ -23,24 +23,85 @@ namespace Benchmarks
     [MemoryDiagnoser]
     public class PaintBenchmark
     {
-        private ConsoleBitmap[] bitmaps;
+        private ConsoleBitmap[] continuousBitmaps;
+        private ConsoleBitmap[] aFewShapesBitmaps;
+        private ConsoleBitmap[] worstCasebitmaps;
         public PaintBenchmark()
         {
             ConsoleProvider.Current = new NoOpConsole();
-            bitmaps = new ConsoleBitmap[100];
-            for(var i = 0; i < bitmaps.Length; i++)
+            InitPlainCase();
+            InitFewShapesCase();
+            InitWorstCase();
+        }
+
+        private void InitPlainCase()
+        {
+            continuousBitmaps = new ConsoleBitmap[100];
+            for (var i = 0; i < continuousBitmaps.Length; i++)
             {
-                bitmaps[i] = new ConsoleBitmap(80, 30);
-                bitmaps[i].FillRect(RGB.Red, 0, 0, bitmaps[i].Width, bitmaps[i].Height);
+                continuousBitmaps[i] = new ConsoleBitmap(80, 30);
+                continuousBitmaps[i].FillRect(RGB.Red, 0, 0, continuousBitmaps[i].Width, continuousBitmaps[i].Height);
             }
         }
 
-        [Benchmark]
-        public void Paint()
+        private void InitFewShapesCase()
         {
-            for (var i = 0; i < bitmaps.Length; i++)
+            aFewShapesBitmaps = new ConsoleBitmap[100];
+            for (var i = 0; i < aFewShapesBitmaps.Length; i++)
             {
-                bitmaps[i].Paint();
+                aFewShapesBitmaps[i] = new ConsoleBitmap(80, 30);
+                aFewShapesBitmaps[i].FillRect(RGB.Red, 0, 0, 10, 5);
+                aFewShapesBitmaps[i].FillRect(RGB.Green, 10, 10, 10, 5);
+                aFewShapesBitmaps[i].FillRect(RGB.DarkYellow, 13, 12, 10, 5);
+            }
+        }
+
+        private void InitWorstCase()
+        {
+            worstCasebitmaps = new ConsoleBitmap[100];
+            var on = true;
+            for (var i = 0; i < continuousBitmaps.Length; i++)
+            {
+                worstCasebitmaps[i] = new ConsoleBitmap(80, 30);
+
+                for (var x = 0; x < worstCasebitmaps[i].Width; x++)
+                {
+                    for (var y = 0; y < worstCasebitmaps[i].Height; y++)
+                    {
+                        on = !on;
+                        worstCasebitmaps[i].DrawPoint(new ConsoleCharacter('X', on ? RGB.Red : RGB.Green, on ? RGB.Black : RGB.Cyan), x, y);
+                    }
+                }
+            }
+        }
+
+
+
+        [Benchmark(OperationsPerInvoke = 100)]
+        public void PaintContinuius()
+        {
+            for (var i = 0; i < continuousBitmaps.Length; i++)
+            {
+                continuousBitmaps[i].Paint();
+            }
+        }
+
+
+        [Benchmark(OperationsPerInvoke = 100)]
+        public void PaintFewShapes()
+        {
+            for (var i = 0; i < aFewShapesBitmaps.Length; i++)
+            {
+                aFewShapesBitmaps[i].Paint();
+            }
+        }
+
+        [Benchmark(OperationsPerInvoke = 100)]
+        public void PaintWorst()
+        {
+            for (var i = 0; i < worstCasebitmaps.Length; i++)
+            {
+                worstCasebitmaps[i].Paint();
             }
         }
     }
@@ -84,7 +145,7 @@ namespace Benchmarks
 
         public void Write(object output)
         {
-   
+
         }
 
         public void Write(ConsoleString consoleString)
@@ -94,17 +155,22 @@ namespace Benchmarks
 
         public void Write(ConsoleCharacter consoleCharacter)
         {
-       
+
+        }
+
+        public void Write(char[] buffer, int length)
+        {
+     
         }
 
         public void WriteLine(object output)
         {
-  
+
         }
 
         public void WriteLine(ConsoleString consoleString)
         {
-        
+
         }
 
         public void WriteLine()
