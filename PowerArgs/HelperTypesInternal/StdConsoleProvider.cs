@@ -380,5 +380,10 @@ namespace PowerArgs
             
             return ret;
         }
+
+        public void Write(char[] buffer, int length)
+        {
+            Console.Write(buffer, 0, length);
+        }
     }
 }

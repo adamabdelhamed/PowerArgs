@@ -69,6 +69,8 @@ namespace PowerArgs
         /// <param name="consoleCharacter">The character to write</param>
         void Write(ConsoleCharacter consoleCharacter);
 
+        void Write(char[] buffer, int length);
+
         /// <summary>
         /// Writes the given console string to the console, followed by a newline, preserving formatting.
         /// </summary>

@@ -84,6 +84,11 @@ namespace ArgsTests.CLI
             }
         }
 
+        public void Write(char[] buffer, int length)
+        {
+            var str = new string(buffer, 0, length);
+            Write(str);
+        }
         public void Write(ConsoleCharacter consoleCharacter)
         {
             Buffer.Pen = consoleCharacter;
