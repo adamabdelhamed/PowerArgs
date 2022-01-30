@@ -66,7 +66,6 @@ namespace PowerArgs.Cli
 
         private List<List<ConsoleCharacter>> lines;
 
-        private static Action<object> TextChangedHandler = HandleTextChanged;
 
         /// <summary>
         /// Creates a new label
@@ -78,11 +77,11 @@ namespace PowerArgs.Cli
             this.CanFocus = false;
             lines = new List<List<ConsoleCharacter>>();
 
-            this.SubscribeForLifetime(nameof(Text), TextChangedHandler,this, this);
-            this.SubscribeForLifetime(nameof(Mode), TextChangedHandler,this, this);
-            this.SubscribeForLifetime(nameof(MaxHeight), TextChangedHandler,this, this);
-            this.SubscribeForLifetime(nameof(MaxWidth), TextChangedHandler,this, this);
-            this.SynchronizeForLifetime(nameof(Bounds), TextChangedHandler,this, this);
+            this.SubscribeForLifetime(nameof(Text), HandleTextChanged, this);
+            this.SubscribeForLifetime(nameof(Mode), HandleTextChanged, this);
+            this.SubscribeForLifetime(nameof(MaxHeight), HandleTextChanged, this);
+            this.SubscribeForLifetime(nameof(MaxWidth), HandleTextChanged, this);
+            this.SynchronizeForLifetime(nameof(Bounds), HandleTextChanged, this);
             Text = ConsoleString.Empty;
         }
 
@@ -93,44 +92,43 @@ namespace PowerArgs.Cli
             return ret;
         }
 
-        private static void HandleTextChanged(object l)
+        private void HandleTextChanged()
         {
-            var label = l as Label;
-            label.lines.Clear();
-            var clean = label.CleanText;
-            if (label.Mode == LabelRenderMode.ManualSizing)
+            this.lines.Clear();
+            var clean = this.CleanText;
+            if (this.Mode == LabelRenderMode.ManualSizing)
             {
-                label.lines.Add(new List<ConsoleCharacter>());
+                this.lines.Add(new List<ConsoleCharacter>());
                 foreach (var c in clean)
                 {
                     if (c.Value == '\n')
                     {
-                        label.lines.Add(new List<ConsoleCharacter>());
+                        this.lines.Add(new List<ConsoleCharacter>());
                     }
                     else
                     {
-                        label.lines.Last().Add(c);
+                        this.lines.Last().Add(c);
                     }
                 }
             }
-            else if (label.Mode == LabelRenderMode.SingleLineAutoSize)
+            else if (this.Mode == LabelRenderMode.SingleLineAutoSize)
             {
-                label.Height = 1;
+                this.Height = 1;
 
-                if (label.MaxWidth.HasValue)
+                if (this.MaxWidth.HasValue)
                 {
-                    label.Width = Math.Min(label.MaxWidth.Value, clean.Length);
+                    this.Width = Math.Min(this.MaxWidth.Value, clean.Length);
                 }
                 else
                 {
-                    label.Width = clean.Length;
+                    this.Width = clean.Length;
                 }
 
-                label.lines.Add(clean.ToList());
+                this.lines.Add(clean.ToList());
             }
             else
             {
-                label.DoSmartWrap();
+                this.DoSmartWrap();
             }
         }
 

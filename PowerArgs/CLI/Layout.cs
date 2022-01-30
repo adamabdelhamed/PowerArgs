@@ -93,6 +93,7 @@ namespace PowerArgs.Cli
             var effectivePadding = padding.HasValue ? padding.Value : new Thickness(0, 0, 0, 0);
             Action syncAction = () =>
             {
+                if (child.Application == null || parent.Application == null) return;
                 if (parent.Width == 0 || parent.Height== 0) return;
 
                 var newX = 0;

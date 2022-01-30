@@ -233,33 +233,31 @@ namespace PowerArgs.Cli
             this.Bitmap = new ConsoleBitmap(w, h);
             this.Width = w;
             this.Height = h;
-            this.SubscribeForLifetime(nameof(Bounds), ResizeBitmapOnBoundsChanged, this, this);
+            this.SubscribeForLifetime(nameof(Bounds), ResizeBitmapOnBoundsChanged, this);
             Background = DefaultColors.BackgroundColor;
             this.Foreground = DefaultColors.ForegroundColor;
             this.IsVisible = true;
             this.Id = GetType().FullName+"-"+ Guid.NewGuid().ToString();
-            this.SubscribeForLifetime(ObservableObject.AnyProperty, PaintOnChange, this, this);
+            this.SubscribeForLifetime(ObservableObject.AnyProperty, PaintOnChange, this);
 
         }
 
 
-        private static void ResizeBitmapOnBoundsChanged(object controlObj)
+        private void ResizeBitmapOnBoundsChanged()
         {
-            var control = controlObj as ConsoleControl;
-            if (control.IsExpired || control.IsExpiring) return;
-            if (control.Width > 0 && control.Height > 0)
+            if (this.IsExpired || this.IsExpiring) return;
+            if (this.Width > 0 && this.Height > 0)
             {
-                control.Bitmap.Resize(control.Width, control.Height);
+                this.Bitmap.Resize(this.Width, this.Height);
             }
         }
 
-        private static void PaintOnChange(object controlObj)
+        private void PaintOnChange()
         {
-            var control = controlObj as ConsoleControl;
-            if (control.Application != null && control.Application.IsRunning && control.Application.IsDrainingOrDrained == false)
+            if (this.Application != null && this.Application.IsRunning && this.Application.IsDrainingOrDrained == false)
             {
-                ConsoleApp.AssertAppThread(control.Application);
-                control.Application.Paint();
+                ConsoleApp.AssertAppThread(this.Application);
+                this.Application.Paint();
             }
         }
 
