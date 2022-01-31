@@ -313,44 +313,7 @@ namespace PowerArgs.Cli
                 {
                     throw new InvalidOperationException("Playback is not permitted before a video is loaded");
                 }
-
-                playStartPosition = TimeSpan.FromSeconds(playerProgressBar.PlayCursorPosition * duration.Value.TotalSeconds);
-                playStartTime = DateTime.UtcNow;
-                lastFrameIndex = 0;
-                // start a play loop for as long as the state remains unchanged
-                this.playLifetime = this.GetPropertyValueLifetime(nameof(State));
-                playLifetime.OnDisposed(Application.SetInterval(() =>
-                {
-                    if(State != PlayerState.Playing)
-                    {
-                        return;
-                    }
-                    var now = DateTime.UtcNow;
-                    var delta = now - playStartTime;
-                    var newPlayerPosition = playStartPosition + delta;
-                    var videoLocationPercentage = Math.Round(100.0 *newPlayerPosition.TotalSeconds / duration.Value.TotalSeconds,1, MidpointRounding.AwayFromZero);
-                    videoLocationPercentage = Math.Min(videoLocationPercentage, 100);
-                    playerProgressBar.PlayCursorPosition = videoLocationPercentage / 100.0;
-                    playButton.Text = $"Pause".ToConsoleString();
-
-                    InMemoryConsoleBitmapFrame seekedFrame;
- 
-                    if((lastFrameIndex = inMemoryVideo.Seek(newPlayerPosition, out seekedFrame, lastFrameIndex >= 0 ? lastFrameIndex : 0)) < 0)
-                    {
-                        State = PlayerState.Buffering;
-                    }
-                    else
-                    {
-                        CurrentFrame = seekedFrame.Bitmap;
-                        OnFramePlayed.Fire(seekedFrame.FrameTime);
-                    }
-
-                    if (newPlayerPosition > duration)
-                    {
-                        State = PlayerState.Stopped;
-                    }
-
-                }, TimeSpan.FromMilliseconds(1)));
+                ConsoleApp.Current.Invoke(PlayLoop);
             }
             else if(State == PlayerState.Stopped)
             {
@@ -380,7 +343,49 @@ namespace PowerArgs.Cli
                 throw new Exception("Unknown state: "+State);
             }
         }
-        
+
+        private async Task PlayLoop()
+        {
+            playStartPosition = TimeSpan.FromSeconds(playerProgressBar.PlayCursorPosition * duration.Value.TotalSeconds);
+            playStartTime = DateTime.UtcNow;
+            lastFrameIndex = 0;
+            await Task.Delay(1);
+            if (State != PlayerState.Playing) return;
+            using (var playLifetime = this.GetPropertyValueLifetime(nameof(State)))
+            {
+                while (playLifetime.IsExpired == false)
+                {
+                    // start a play loop for as long as the state remains unchanged
+                    var now = DateTime.UtcNow;
+                    var delta = now - playStartTime;
+                    var newPlayerPosition = playStartPosition + delta;
+                    var videoLocationPercentage = Math.Round(100.0 * newPlayerPosition.TotalSeconds / duration.Value.TotalSeconds, 1, MidpointRounding.AwayFromZero);
+                    videoLocationPercentage = Math.Min(videoLocationPercentage, 100);
+                    playerProgressBar.PlayCursorPosition = videoLocationPercentage / 100.0;
+                    playButton.Text = $"Pause".ToConsoleString();
+
+                    InMemoryConsoleBitmapFrame seekedFrame;
+
+                    var prevFrameIndex = lastFrameIndex;
+                    if ((lastFrameIndex = inMemoryVideo.Seek(newPlayerPosition, out seekedFrame, lastFrameIndex >= 0 ? lastFrameIndex : 0)) < 0)
+                    {
+                        State = PlayerState.Buffering;
+                    }
+                    else if(prevFrameIndex != lastFrameIndex)
+                    {
+                        CurrentFrame = seekedFrame.Bitmap;
+                        OnFramePlayed.Fire(seekedFrame.FrameTime);
+                    }
+
+                    if (newPlayerPosition > duration)
+                    {
+                        State = PlayerState.Stopped;
+                    }
+                    await Task.Delay(1);
+                }
+            }
+        }
+
         /// <summary>
         /// Loads a video from a given stream
         /// </summary>
@@ -429,9 +434,13 @@ namespace PowerArgs.Cli
                 }
                 catch (Exception ex)
                 {
+#if DEBUG
+                    failedMessage = ex.ToString();
+#else
+                    failedMessage = ex.Message;
+#endif
                     Application.InvokeNextCycle(() => 
                     {
-                        failedMessage = ex.Message;
                         State = PlayerState.Failed;
                     });
                 }
