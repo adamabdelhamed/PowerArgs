@@ -19,10 +19,17 @@ namespace PowerArgs.Cli
             get { return ToRectF(); }
             set
             {
-                x = (int)value.Left;
-                y= (int)value.Top;
-                w = (int)value.Width;
-                h = (int)value.Height;
+                var newX = ConsoleMath.Round(value.Left);
+                var newY = ConsoleMath.Round(value.Top);
+                var newW = ConsoleMath.Round(value.Width);
+                var newH = ConsoleMath.Round(value.Height);
+                if (newX == x && newY == y && newW == w && newH == h) return;
+
+                x = newX;
+                y = newY;
+                w = newW;
+                h = newH;
+
                 FirePropertyChanged(nameof(Bounds));
             }
         }
