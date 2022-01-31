@@ -116,7 +116,7 @@ namespace PowerArgs
             Removed.SubscribeForLifetime(removeAction, manager);
             Changed.SubscribeForLifetime(changedAction, manager);
 
-            foreach (var obj in this)
+            foreach (var obj in this.ToArray())
             {
                 addAction(obj);
             }
