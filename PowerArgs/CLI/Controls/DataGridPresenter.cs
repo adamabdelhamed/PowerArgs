@@ -53,7 +53,7 @@ namespace PowerArgs.Cli
         public Event LastPageClicked { get; private set; } = new Event();
         public Event BeforeRecompose { get; private set; } = new Event();
         public Event AfterRecompose { get; private set; } = new Event();
-        public int MaxRowsThatCanBePresented => Options.ShowColumnHeaders ? Height - 2 : Height - 1;
+        public int MaxRowsThatCanBePresented => Options.ShowColumnHeaders ? Math.Max(0, Height - 2) : Math.Max(0, Height - 1);
 
         public DataGridPresenter(DataGridCoreOptions options)
         {
@@ -82,6 +82,7 @@ namespace PowerArgs.Cli
 
         public void Recompose()
         {
+            if (MaxRowsThatCanBePresented == 0) return;
             BeforeRecompose.Fire();
             SnapshotPagerFocus();
             Decompose();
