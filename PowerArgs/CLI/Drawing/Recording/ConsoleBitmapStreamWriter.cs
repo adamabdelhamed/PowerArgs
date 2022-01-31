@@ -129,7 +129,7 @@ namespace PowerArgs.Cli
                     writer.Write(serializer.SerializeFrame(rawFrame));
                     FramesWritten++;
                 }
-                else if(diff.Diffs.Count > 0)
+                else if (diff.Diffs.Count > 0)
                 {
                     writer.Write(serializer.SerializeFrame(diff));
                     FramesWritten++;
@@ -159,7 +159,7 @@ namespace PowerArgs.Cli
             var bytes = writer.Encoding.GetBytes(ticksString);
             if (bytes.Length != DurationLineLength) throw new InvalidDataException("Duration header error");
             outputStream.Write(bytes, 0, bytes.Length);
-
+            outputStream.Flush();
             if (CloseInnerStream)
             {
                 outputStream.Close();
