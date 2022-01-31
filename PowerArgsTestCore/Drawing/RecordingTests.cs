@@ -5,6 +5,7 @@ using PowerArgs.Cli;
 using PowerArgs;
 using System.Threading;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace ArgsTests.CLI.Recording
 {
@@ -83,31 +84,33 @@ namespace ArgsTests.CLI.Recording
         [TestMethod]
         public void TestPlaybackEndToEnd()
         {
-            int w = 10, h = 1;
-            var temp = Path.GetTempFileName();
-            using (var stream = File.OpenWrite(temp))
-            {
-                var writer = new ConsoleBitmapStreamWriter(stream) {  CloseInnerStream = false};
-                var bitmap = new ConsoleBitmap(w, h);
-
-                for(var i = 0; i < bitmap.Width; i++)
-                {
-                    bitmap.Pen = new ConsoleCharacter(' ');
-                    bitmap.FillRectUnsafe(0, 0, bitmap.Width, bitmap.Height);
-                    bitmap.Pen = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Red);
-                    bitmap.DrawPoint(i, 0);
-                    writer.WriteFrame(bitmap, true, TimeSpan.FromSeconds(.5*i));
-                }
-                writer.Dispose();
-            }
-
             var app = new CliTestHarness(this.TestContext, 80, 30);
 
-            app.InvokeNextCycle(() =>
+            app.InvokeNextCycle(async () =>
             {
+                int w = 10, h = 1;
+                var temp = Path.GetTempFileName();
+                using (var stream = File.OpenWrite(temp))
+                {
+                    var writer = new ConsoleBitmapStreamWriter(stream) { CloseInnerStream = false };
+                    var bitmap = new ConsoleBitmap(w, h);
+
+                    for (var i = 0; i < bitmap.Width; i++)
+                    {
+                        bitmap.Pen = new ConsoleCharacter(' ');
+                        bitmap.FillRectUnsafe(0, 0, bitmap.Width, bitmap.Height);
+                        bitmap.Pen = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Red);
+                        bitmap.DrawPoint(i, 0);
+                        writer.WriteFrame(bitmap, true, TimeSpan.FromSeconds(.1 * i));
+                    }
+                    writer.Dispose();
+                }
+
                 var player = app.LayoutRoot.Add(new ConsoleBitmapPlayer()).Fill();
+                Assert.IsFalse(player.Width == 0);
+                Assert.IsFalse(player.Height == 0);
                 player.Load(File.OpenRead(temp));
-                app.SetTimeout(() => app.SendKey(new ConsoleKeyInfo('p', ConsoleKey.P, false, false, false)), TimeSpan.FromMilliseconds(100));
+               
                 var playStarted = false;
                 player.SubscribeForLifetime(nameof(player.State), () =>
                 {
@@ -120,6 +123,9 @@ namespace ArgsTests.CLI.Recording
                         app.Stop();
                     }
                 }, app);
+
+                await Task.Delay(100);
+                await app.SendKey(new ConsoleKeyInfo('p', ConsoleKey.P, false, false, false));
             });
 
             app.Start().Wait();
