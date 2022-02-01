@@ -314,6 +314,7 @@ namespace PowerArgs.Cli
                      }
 
                  }, this);
+                TryFocus();
             });
 
             chartTitleLabel = Add(new Label() { ZIndex = TitleZIndex, Text = options.Title }).CenterHorizontally().DockToTop(padding: 2);
@@ -323,6 +324,7 @@ namespace PowerArgs.Cli
             Lifetime focusLt = null;
             this.Focused.SubscribeForLifetime(() =>
             {
+                (lastFocused ?? firstControl)?.TryFocus();
                 focusLt = new Lifetime();
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.UpArrow, null, HandleUpArrow, focusLt);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.DownArrow, null, HandleDownArrow, focusLt);
@@ -332,12 +334,21 @@ namespace PowerArgs.Cli
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.End, null, HandleEndKey, focusLt);
             }, this);
 
-            this.Unfocused.SubscribeForLifetime(() =>
-            {
-                focusLt?.Dispose();
-                focusLt = null;
-            }, this);
- 
+            ConsoleApp.Current.FocusManager.SubscribeForLifetime(nameof(Application.FocusManager.FocusedControl), () =>
+             {
+                 if(Application.FocusManager.FocusedControl == null)
+                 {
+                     focusLt?.Dispose();
+                     focusLt = null;
+                     return;
+                 }
+                 if (Application.FocusManager.FocusedControl == this) return;
+                 if (Descendents.Contains(Application.FocusManager.FocusedControl)) return;
+
+                 focusLt?.Dispose();
+                 focusLt = null;
+
+             }, this);
         }
 
         /// <summary>
@@ -467,6 +478,7 @@ namespace PowerArgs.Cli
             }
         }
 
+        private DataPointControl firstControl;
         private void AddDataPoints()
         {
             cachedMinXValueInPlotArea = null;
@@ -477,12 +489,13 @@ namespace PowerArgs.Cli
             {
                 this.Controls.Remove(control);
             }
-
+            firstControl = null;
             foreach (var series in options.Data)
             {
                 for (int i = 0; i < series.Points.Count; i++)
                 {
                     var pixel = new DataPointControl() { ZIndex = DataPointsZIndex, CanFocus = series.AllowInteractivity, DataPoint = series.Points[i], Series = series, Value = series.PlotCharacter };
+                    firstControl = firstControl ?? pixel;
                     pixel.Focused.SubscribeForLifetime(() =>
                     {
                         pixel.ZIndex = FocusedDataPointZIndex;
@@ -593,37 +606,38 @@ namespace PowerArgs.Cli
 
         private void HandleHomeKey()
         {
-            Controls
+            lastFocused = Controls
                 .WhereAs<DataPointControl>()
                 .Where(p => p.CanFocus)
                 .OrderBy(p => p.X)
                 .ThenByDescending(p => p.Y)
-                .FirstOrDefault()
-                ?.TryFocus();
+                .FirstOrDefault() as DataPointControl;
+            lastFocused?.TryFocus();
         }
 
         private void HandleEndKey()
         {
-            Controls
+            lastFocused = Controls
                 .WhereAs<DataPointControl>()
                 .Where(p => p.CanFocus)
                 .OrderByDescending(p => p.X)
                 .ThenBy(p => p.Y)
-                .FirstOrDefault()
-                ?.TryFocus();
+                .FirstOrDefault() as DataPointControl;
+            lastFocused?.TryFocus();
         }
 
+        private DataPointControl lastFocused;
         private void HandleUpArrow()
         {
-            DataPointControl focusedPoint = Application.FocusManager.FocusedControl as DataPointControl;
+            DataPointControl focusedPoint = Application.FocusManager.FocusedControl as DataPointControl ?? lastFocused;
             if (focusedPoint == null || Controls.Contains(focusedPoint) == false) return;
 
-            Controls
+            lastFocused = Controls
                 .Where(c => c is DataPointControl)
                 .Where(p => p.Y < focusedPoint.Y)
                 .OrderBy(p => CalculateDistanceBetween(focusedPoint.DataPoint, (p as DataPointControl).DataPoint))
-                .FirstOrDefault()
-                ?.TryFocus();
+                .FirstOrDefault() as DataPointControl;
+            lastFocused?.TryFocus();
         }
 
         private void HandleDownArrow()
@@ -631,12 +645,12 @@ namespace PowerArgs.Cli
             DataPointControl focusedPoint = Application.FocusManager.FocusedControl as DataPointControl;
             if (focusedPoint == null || Controls.Contains(focusedPoint) == false) return;
 
-            Controls
+            lastFocused = Controls
                 .Where(c => c is DataPointControl)
                 .Where(p => p.Y > focusedPoint.Y)
                 .OrderBy(p => CalculateDistanceBetween(focusedPoint.DataPoint, (p as DataPointControl).DataPoint))
-                .FirstOrDefault()
-                ?.TryFocus();
+                .FirstOrDefault() as DataPointControl;
+            lastFocused?.TryFocus();
         }
 
         private void HandleLeftArrow()
@@ -644,12 +658,12 @@ namespace PowerArgs.Cli
             DataPointControl focusedPoint = Application.FocusManager.FocusedControl as DataPointControl;
             if (focusedPoint == null || Controls.Contains(focusedPoint) == false) return;
 
-            Controls
-                .Where(c => c is DataPointControl)
+            lastFocused = Controls
+               .Where(c => c is DataPointControl)
                 .Where(p => p.X < focusedPoint.X)
                 .OrderBy(p => CalculateDistanceBetween(focusedPoint.DataPoint, (p as DataPointControl).DataPoint))
-                .FirstOrDefault()
-                ?.TryFocus();
+               .FirstOrDefault() as DataPointControl;
+            lastFocused?.TryFocus();
         }
 
         private void HandleRightArrow()
@@ -657,12 +671,12 @@ namespace PowerArgs.Cli
             DataPointControl focusedPoint = Application.FocusManager.FocusedControl as DataPointControl;
             if (focusedPoint == null || Controls.Contains(focusedPoint) == false) return;
 
-            Controls
+            lastFocused = Controls
                 .Where(c => c is DataPointControl)
                 .Where(p => p.X > focusedPoint.X)
                 .OrderBy(p => CalculateDistanceBetween(focusedPoint.DataPoint, (p as DataPointControl).DataPoint))
-                .FirstOrDefault()
-                ?.TryFocus();
+                .FirstOrDefault() as DataPointControl;
+            lastFocused?.TryFocus();
         }
 
         private int ConvertXValueToPixel(double x)
