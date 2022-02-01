@@ -14,12 +14,14 @@ namespace PowerArgs.Cli
     /// <summary>
     /// A console control that has nested control within its bounds
     /// </summary>
-    public class ConsolePanel : Container
+    public class ConsolePanel : Container, IComparer<ConsoleControl>
     {
         /// <summary>
         /// The nested controls
         /// </summary>
         public ObservableCollection<ConsoleControl> Controls { get; private set; }
+
+        private List<ConsoleControl> sortedControls = new List<ConsoleControl>();
 
         /// <summary>
         /// All nested controls, including those that are recursively nested within inner console panels
@@ -34,9 +36,19 @@ namespace PowerArgs.Cli
         public ConsolePanel(int w, int h) : base(w,h)
         {
             Controls = new ObservableCollection<ConsoleControl>();
-            Controls.Added.SubscribeForLifetime((c) => { c.Parent = this; }, this);
+            Controls.Added.SubscribeForLifetime((c) => 
+            {
+                c.Parent = this;
+                sortedControls.Add(c);
+                SortZ();
+                c.SubscribeForLifetime(nameof(c.ZIndex), () => SortZ(), Controls.GetMembershipLifetime(c));
+            }, this);
             Controls.AssignedToIndex.SubscribeForLifetime((assignment) => throw new NotSupportedException("Index assignment is not supported in Controls collection"), this);
-            Controls.Removed.SubscribeForLifetime((c) => { c.Parent = null; }, this);
+            Controls.Removed.SubscribeForLifetime((c) => 
+            {
+                sortedControls.Remove(c);
+                c.Parent = null; 
+            }, this);
 
             this.OnDisposed(() =>
             {
@@ -69,30 +81,22 @@ namespace PowerArgs.Cli
         {
             foreach(var c in controls)
             {
-                Add(c);
+                Controls.Add(c);
             }
         }
 
-
-        private IEnumerable<ConsoleControl> GetPaintOrderedControls()
+        private void SortZ()
         {
-            List<ConsoleControl> unordered = new List<ConsoleControl>();
-            List<ConsoleControl> ordered = new List<ConsoleControl>();
-            foreach (var control in Controls)
-            {
-                if(control.ZIndex <= 0)
-                {
-                    unordered.Add(control);
-                }
-                else
-                {
-                    ordered.Add(control);
-                }
-            }
-
-            unordered.AddRange(ordered.OrderBy(c => c.ZIndex));
-            return unordered;
+            sortedControls.Sort(this);
+            ConsoleApp.Current?.Paint();
         }
+ 
+
+        public int Compare(ConsoleControl x, ConsoleControl y)
+        {
+            return x.ZIndex.CompareTo(y.ZIndex);
+        }
+
 
         /// <summary>
         /// Paints this control
@@ -100,7 +104,7 @@ namespace PowerArgs.Cli
         /// <param name="context">the drawing surface</param>
         protected override void OnPaint(ConsoleBitmap context)
         {
-            foreach (var control in GetPaintOrderedControls())
+            foreach (var control in sortedControls)
             {
                 if (control.Width > 0 && control.Height > 0 && control.IsVisible)
                 {
@@ -113,7 +117,7 @@ namespace PowerArgs.Cli
                 filter.Control = this;
                 filter.Filter(Bitmap);
             }
-        }
+        }   
     }
 
     /// <summary>
