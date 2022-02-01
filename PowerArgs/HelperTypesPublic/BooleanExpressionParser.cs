@@ -17,7 +17,7 @@ namespace PowerArgs
         /// <returns>The parsed expression</returns>
         public static IBooleanExpression Parse(string expressionText)
         {
-            List<BooleanExpressionToken> tokens = Tokenize(expressionText);
+            List<Token> tokens = Tokenize(expressionText);
             IBooleanExpression tree = BuildTree(tokens);
             return tree;
         }
@@ -41,7 +41,8 @@ namespace PowerArgs
             }
         }
 
-        private static IBooleanExpression BuildTree(List<BooleanExpressionToken> tokens)
+
+        private static IBooleanExpression BuildTree(List<Token> tokens)
         {
             BooleanExpressionGroup defaultGroup = new BooleanExpressionGroup();
 
@@ -51,31 +52,31 @@ namespace PowerArgs
             {
                 var token = tokens[i];
 
-                if (token.Type == BooleanExpressionTokenType.GroupClose ||
-                    (defaultGroup.Operands.Count == 0 && (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)) ||
-                    (i == tokens.Count - 1 && (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)))
+                if (token.Value == ")" ||
+                    (defaultGroup.Operands.Count == 0 && (token.Value == "&" || token.Value == "|")) ||
+                    (i == tokens.Count - 1 && (token.Value == "&" || token.Value == "|")))
                 {
                     throw new ArgumentException("Unexpected token '" + token.Value + "'");
                 }
 
-                if (token.Type == BooleanExpressionTokenType.GroupOpen)
+                if (token.Value == "(")
                 {
                     int numOpen = 1;
-                    List<BooleanExpressionToken> groupedExpression = new List<BooleanExpressionToken>();
+                    List<Token> groupedExpression = new List<Token>();
                     for (int j = i + 1; j < tokens.Count; j++)
                     {
                         var innerToken = tokens[j];
-                        if (innerToken.Type == BooleanExpressionTokenType.GroupClose && numOpen == 1)
+                        if (innerToken.Value == ")" && numOpen == 1)
                         {
                             numOpen = 0;
                             i = j;
                             break;
                         }
-                        else if (innerToken.Type == BooleanExpressionTokenType.GroupClose)
+                        else if (innerToken.Value == ")")
                         {
                             numOpen--;
                         }
-                        else if (innerToken.Type == BooleanExpressionTokenType.GroupOpen)
+                        else if (innerToken.Value == "(")
                         {
                             numOpen++;
                         }
@@ -98,17 +99,7 @@ namespace PowerArgs
                     defaultGroup.Operands.Add(group);
                     not = false;
                 }
-                else if (token.Type == BooleanExpressionTokenType.Variable)
-                {
-                    if(defaultGroup.Operands.Count != defaultGroup.Operators.Count)
-                    {
-                        throw new ArgumentException("Expected an operator, got variable: "+token.Value);
-                    }
-
-                    defaultGroup.Operands.Add(new BooleanVariable() { VariableName = token.Value, Not = not });
-                    not = false;
-                }
-                else if (token.Type == BooleanExpressionTokenType.And || token.Type == BooleanExpressionTokenType.Or)
+                else if (token.Value == "&" || token.Value == "|")
                 {
                     if(not)
                     {
@@ -119,9 +110,9 @@ namespace PowerArgs
                     {
                         throw new ArgumentException("You cannot have two consecutive operators '&&' or '||', use '&' or '|'");
                     }
-                    defaultGroup.Operators.Add((BooleanOperator)token.Type);
+                    defaultGroup.Operators.Add(token.Value == "&" ? BooleanOperator.And : BooleanOperator.Or);
                 }
-                else if(token.Type == BooleanExpressionTokenType.Not)
+                else if(token.Value == "!")
                 {
                     if (not)
                     {
@@ -134,7 +125,13 @@ namespace PowerArgs
                 }
                 else
                 {
-                    throw new ArgumentException("Unexpected token '" + token.Value + "'");
+                    if (defaultGroup.Operands.Count != defaultGroup.Operators.Count)
+                    {
+                        throw new ArgumentException("Expected an operator, got variable: " + token.Value);
+                    }
+
+                    defaultGroup.Operands.Add(new BooleanVariable() { VariableName = token.Value, Not = not });
+                    not = false;
                 }
             }
 
@@ -154,37 +151,18 @@ namespace PowerArgs
         }
 
         private static BooleanExpressionTokenizer tokenizer = new BooleanExpressionTokenizer();
-        private static List<BooleanExpressionToken> Tokenize(string expressionText)
+        private static List<Token> Tokenize(string expressionText)
         {
             return tokenizer.Tokenize(expressionText);
         }
 
-        private class BooleanExpressionTokenizer : Tokenizer<BooleanExpressionToken>
+        private class BooleanExpressionTokenizer : Tokenizer<Token>
         {
             public BooleanExpressionTokenizer()
             {
-                Delimiters.AddRange((from val in Enum.GetValues(typeof(BooleanExpressionTokenType)).ToList<BooleanExpressionTokenType>()
-                                     where val != BooleanExpressionTokenType.Variable
-                                     select "" + ((char)val)).ToList());
+                Delimiters.AddRange(new string[] { "(", ")", "&", "|", "!" });
                 WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
                 DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
-            }
-
-            protected override BooleanExpressionToken TokenFactory(string currentCharacter, int currentIndex, int line, int col)
-            {
-                var ret = new BooleanExpressionToken(currentCharacter, currentIndex, line, col);
-
-                if (Delimiters.Contains(currentCharacter))
-                {
-                    var asChar = currentCharacter[0];
-                    ret.Type = (BooleanExpressionTokenType)Enum.ToObject(typeof(BooleanExpressionTokenType), ((int)asChar));
-                }
-                else
-                {
-                    ret.Type = BooleanExpressionTokenType.Variable;
-                }
-
-                return ret;
             }
         }
     }
@@ -204,56 +182,7 @@ namespace PowerArgs
         Or = '|',
     }
 
-    /// <summary>
-    /// An enum representing a type of boolean expression token
-    /// </summary>
-    public enum BooleanExpressionTokenType
-    {
-        /// <summary>
-        /// Represents a boolean variable
-        /// </summary>
-        Variable = 0,
-        /// <summary>
-        /// Represents the beginning of a logically grouped boolean expression
-        /// </summary>
-        GroupOpen = '(',
-        /// <summary>
-        /// Represents the end of a logically grouped boolean expression
-        /// </summary>
-        GroupClose = ')',
-        /// <summary>
-        /// Represents an 'and' clause in a boolean expression
-        /// </summary>
-        And = BooleanOperator.And,
-        /// <summary>
-        /// Represents an 'or' clause in a boolean expression
-        /// </summary>
-        Or = BooleanOperator.Or,
-        /// <summary>
-        /// Indicates that an expression should be negated
-        /// </summary>
-        Not = '!',
-    }
-
-    /// <summary>
-    /// A class that represents a boolean expression token
-    /// </summary>
-    public class BooleanExpressionToken : Token
-    {
-        /// <summary>
-        /// The type of token
-        /// </summary>
-        public BooleanExpressionTokenType Type { get; set; }
-
-        /// <summary>
-        /// Creates a boolean expression token
-        /// </summary>
-        /// <param name="tokenText">the token text</param>
-        /// <param name="startIndex">the start index of the token value</param>
-        /// <param name="line">the line number of the token value</param>
-        /// <param name="col">the column number of the token value</param>
-        public BooleanExpressionToken(string tokenText, int startIndex, int line, int col) : base(tokenText, startIndex, line, col) { }
-    }
+ 
 
     /// <summary>
     /// An interface that describes how to resolve boolean variables that can be either true or false

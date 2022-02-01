@@ -50,20 +50,19 @@ namespace PowerArgs
         /// <summary>
         /// Creates an object path token
         /// </summary>
-        /// <param name="initialValue">The initial value of the token</param>
         /// <param name="startIndex">The start index of the token in the source string</param>
         /// <param name="line">The line number that this token is on</param>
         /// <param name="col">The column within the line that this token is on</param>
-        public ObjectPathToken(string initialValue, int startIndex, int line, int col) : base(initialValue, startIndex, line, col) { }
+        public ObjectPathToken(int startIndex, int line, int col) : base(startIndex, line, col) { }
 
     
     }
 
     public class ObjectPathTokenizer : Tokenizer<ObjectPathToken>
     {
-        protected override ObjectPathToken TokenFactory(string currentCharacter, int currentIndex, int line, int col)
+        protected override ObjectPathToken TokenFactory(int currentIndex, int line, int col)
         {
-            var ret = new ObjectPathToken(currentCharacter, currentIndex, line, col);
+            var ret = new ObjectPathToken(currentIndex, line, col);
             return ret;
         }
     }

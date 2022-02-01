@@ -52,11 +52,10 @@ namespace PowerArgs
         /// <summary>
         /// Creates a new document token
         /// </summary>
-        /// <param name="initialValue">The initial value of the token</param>
         /// <param name="startIndex">the zero based character index of this token in a document template</param>
         /// <param name="line">The line number of this token in a document template (starts at 1)</param>
         /// <param name="col">The column number of this token in a document template (starts at 1)</param>
-        public DocumentToken(string initialValue, int startIndex, int line, int col) : base(initialValue, startIndex, line, col) { }
+        public DocumentToken(int startIndex, int line, int col) : base(startIndex, line, col) { }
 
         /// <summary>
         /// Gets the constant string value of a given token type.  This method will throw an exception if the
@@ -300,9 +299,9 @@ namespace PowerArgs
 
         private class DocumentTokenizer : Tokenizer<DocumentToken>
         {
-            protected override DocumentToken TokenFactory(string currentCharacter, int currentIndex, int line, int col)
+            protected override DocumentToken TokenFactory(int currentIndex, int line, int col)
             {
-                return new DocumentToken(currentCharacter, currentIndex, line, col);
+                return new DocumentToken(currentIndex, line, col);
             }
         }
     }

@@ -251,7 +251,7 @@ namespace PowerArgs
 
             if (Tokens.Count == 0)
             {
-                Tokens.Add(new Token("", 0, 1, 1));
+                Tokens.Add(new Token(0, 1, 1));
             }
 
             CurrentToken = null;
