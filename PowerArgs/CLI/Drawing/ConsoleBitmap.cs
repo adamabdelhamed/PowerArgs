@@ -1142,7 +1142,6 @@ public class ConsolePixelPool
         private double HitRate => ConsoleMath.Round(100 * hits / (hits + misses));
 #endif
 
-
     public ConsolePixelPool()
     {
         pool = new List<ConsolePixel>();
@@ -1150,31 +1149,37 @@ public class ConsolePixelPool
 
     public ConsolePixel Rent()
     {
-        if (pool.Count > 0)
+        lock (pool)
         {
+            if (pool.Count > 0)
+            {
 #if DEBUG
                 hits++;
 #endif
-            var ret = pool[pool.Count - 1];
-            pool.RemoveAt(pool.Count - 1);
-            ret.Value = default;
-            ret.LastDrawnValue = default;
-            return ret;
-        }
-        else
-        {
+                var ret = pool[pool.Count - 1];
+                pool.RemoveAt(pool.Count - 1);
+                ret.Value = default;
+                ret.LastDrawnValue = default;
+                return ret;
+            }
+            else
+            {
 #if DEBUG
                 misses++;
 #endif
-            return new ConsolePixel();
+                return new ConsolePixel();
+            }
         }
     }
 
     public void Return(ConsolePixel p)
     {
 #if DEBUG
-            returns++;
+        returns++;
 #endif
-        pool.Add(p);
+        lock (pool)
+        {
+            pool.Add(p);
+        }
     }
 }
