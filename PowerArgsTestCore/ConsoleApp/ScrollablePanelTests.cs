@@ -20,7 +20,7 @@ namespace ArgsTests.CLI.Controls
             app.LayoutRoot.Background = RGB.Red;
             app.InvokeNextCycle(async () =>
             {
-                // We want to have a stack panel that can scroll if it gets too bit
+                // We want to have a stack panel that can scroll if it gets too big
 
                 // Step 1 - Create a scroll panel and size it how you like
                 var scrollPanel = app.LayoutRoot.Add(new ScrollablePanel() { Background = RGB.DarkBlue }).Fill();
@@ -53,7 +53,7 @@ namespace ArgsTests.CLI.Controls
                 app.Stop();
             });
 
-            app.Start().Wait();
+            app.Run();
             app.AssertThisTestMatchesLKG();
         }
     }

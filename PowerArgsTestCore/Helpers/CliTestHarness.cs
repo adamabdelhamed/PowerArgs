@@ -20,10 +20,10 @@ namespace ArgsTests.CLI
     public class CliTestHarness : ConsoleApp
     {
         private TestContext testContext;
-        private ConsoleBitmapStreamWriter keyFrameRecorder;
+        private ConsoleBitmapVideoWriter keyFrameRecorder;
         private int keyFrameCount = 0;
         public double SecondsBetweenKeyframes { get; set; } = 1;
-        private ConsoleBitmapStreamWriter EffectiveRecorder=> keyFrameRecorder ?? this.Recorder;
+        private ConsoleBitmapVideoWriter EffectiveRecorder => keyFrameRecorder ?? this.Recorder;
 
         public string TestId => $"{testContext.FullyQualifiedTestClassName}.{testContext.TestName}";
 
@@ -70,11 +70,11 @@ namespace ArgsTests.CLI
 
             if (keyframeMode)
             {
-                this.keyFrameRecorder = new ConsoleBitmapStreamWriter(File.OpenWrite(CurrentTestRecordingFilePath));
+                this.keyFrameRecorder = new ConsoleBitmapVideoWriter(s => File.WriteAllText(CurrentTestRecordingFilePath, s));
             }
             else
             {
-                this.Recorder = new ConsoleBitmapStreamWriter(File.OpenWrite(CurrentTestRecordingFilePath));
+                this.Recorder = new ConsoleBitmapVideoWriter(s => File.WriteAllText(CurrentTestRecordingFilePath, s));
             }
 
             this.Stopped.SubscribeOnce(() =>
@@ -121,7 +121,7 @@ namespace ArgsTests.CLI
         {
             if (this.keyFrameRecorder != null)
             {
-                this.keyFrameRecorder.Dispose();
+                this.keyFrameRecorder.Finish();
             }
         }
 
@@ -129,7 +129,7 @@ namespace ArgsTests.CLI
         {
             if (this.keyFrameRecorder != null)
             {
-                this.keyFrameRecorder.Dispose();
+                this.keyFrameRecorder.Finish();
             }
 
             PromoteToLKGInternal();
@@ -141,7 +141,7 @@ namespace ArgsTests.CLI
         {
             if(this.keyFrameRecorder != null)
             {
-                this.keyFrameRecorder.Dispose();
+                this.keyFrameRecorder.Finish();
             }
 
             if (TryGetLKGMetadata(out CliLKGTestMetadata metadata) && TryGetLKGRecording(out ConsoleBitmapStreamReader reader))
@@ -162,7 +162,7 @@ namespace ArgsTests.CLI
         {
             if (this.keyFrameRecorder != null)
             {
-                this.keyFrameRecorder.Dispose();
+                this.keyFrameRecorder.Finish();
                 throw new Exception("You should call the version that checks every frame since you are in keyframe mode");
             }
 

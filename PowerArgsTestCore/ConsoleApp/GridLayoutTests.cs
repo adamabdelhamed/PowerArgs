@@ -17,43 +17,43 @@ namespace ArgsTests.CLI.Controls
         {
             var app = new CliTestHarness(this.TestContext, 80, 20, true);
 
-            var gridLayout = app.LayoutRoot.Add(new GridLayout(new GridLayoutOptions()
+            app.InvokeNextCycle(async () =>
             {
-                Columns = new List<GridColumnDefinition>()
+                var gridLayout = app.LayoutRoot.Add(new GridLayout(new GridLayoutOptions()
+                {
+                    Columns = new List<GridColumnDefinition>()
                 {
                     new GridColumnDefinition(){ Width = 5, Type = GridValueType.Pixels },
                     new GridColumnDefinition(){ Width= 2, Type = GridValueType.RemainderValue },
                     new GridColumnDefinition(){ Width = 2, Type = GridValueType.RemainderValue },
                 },
-                Rows = new List<GridRowDefinition>()
+                    Rows = new List<GridRowDefinition>()
                 {
                      new GridRowDefinition(){ Height = 1, Type = GridValueType.Pixels },
                      new GridRowDefinition(){ Height= 2, Type = GridValueType.RemainderValue },
                      new GridRowDefinition(){ Height = 1, Type = GridValueType.Pixels },
                 }
-            })).Fill();
+                })).Fill();
 
-            var colorWheel = new List<ConsoleColor>()
+                var colorWheel = new List<ConsoleColor>()
             {
                 ConsoleColor.Red, ConsoleColor.DarkRed, ConsoleColor.Red,
                 ConsoleColor.Black, ConsoleColor.White, ConsoleColor.Black,
                 ConsoleColor.Green, ConsoleColor.DarkGreen, ConsoleColor.Green
             };
-            var colorIndex = 0;
-            for (var y = 0; y < gridLayout.NumRows; y++)
-            {
-                for (var x = 0; x < gridLayout.NumColumns; x++)
+                var colorIndex = 0;
+                for (var y = 0; y < gridLayout.NumRows; y++)
                 {
-                    gridLayout.Add(new ConsoleControl()
+                    for (var x = 0; x < gridLayout.NumColumns; x++)
                     {
-                        Background = colorWheel[colorIndex],
-                    },x,y);
-                    colorIndex = colorIndex == colorWheel.Count - 1 ? 0 : colorIndex + 1;
+                        gridLayout.Add(new ConsoleControl()
+                        {
+                            Background = colorWheel[colorIndex],
+                        }, x, y);
+                        colorIndex = colorIndex == colorWheel.Count - 1 ? 0 : colorIndex + 1;
+                    }
                 }
-            }
 
-            app.InvokeNextCycle(async () =>
-            {
                 await app.Paint();
                 app.RecordKeyFrame();
                 app.Stop();

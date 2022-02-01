@@ -6,6 +6,7 @@ using PowerArgs;
 using System.Threading;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace ArgsTests.CLI.Recording
 {
@@ -21,13 +22,13 @@ namespace ArgsTests.CLI.Recording
             ConsoleBitmap bitmap = new ConsoleBitmap(4, 2), redBitmap = null, greenBitmap = null, magentaPixelBitmap = null;
             using (var sharedStream = new MemoryStream())
             {
-                var bitmapVideoWriter = new ConsoleBitmapStreamWriter(sharedStream) { CloseInnerStream = false };
+                var bitmapVideoWriter = new ConsoleBitmapVideoWriter(s => sharedStream.Write(Encoding.Default.GetBytes(s)));
                 
                 bitmap = new ConsoleBitmap(4, 2);
                 redBitmap = bitmapVideoWriter.WriteFrame(bitmap.FillRect(ConsoleCharacter.RedBG())).Clone();
                 greenBitmap = bitmapVideoWriter.WriteFrame(bitmap.FillRect(ConsoleCharacter.GreenBG())).Clone();
                 magentaPixelBitmap = bitmapVideoWriter.WriteFrame(bitmap.DrawPoint(ConsoleCharacter.MagentaBG(), 0, 0)).Clone();
-                bitmapVideoWriter.Dispose();
+                bitmapVideoWriter.Finish();
 
                 sharedStream.Position = 0; // rewind the stream to the beginning to read it back
 
@@ -53,13 +54,13 @@ namespace ArgsTests.CLI.Recording
             var numFrames = 10000;
             using (var sharedStream = new MemoryStream())
             {
-                var bitmapVideoWriter = new ConsoleBitmapStreamWriter(sharedStream) { CloseInnerStream = false };
+                var bitmapVideoWriter = new ConsoleBitmapVideoWriter(s => sharedStream.Write(Encoding.Default.GetBytes(s)));
 
                 for (var i = 0; i < numFrames; i++)
                 {
                     bitmapVideoWriter.WriteFrame(bitmap, true, TimeSpan.FromMilliseconds(i));
                 }
-                bitmapVideoWriter.Dispose();
+                bitmapVideoWriter.Finish();
 
                 sharedStream.Position = 0; // rewind the stream to the beginning to read it back
 
@@ -92,7 +93,7 @@ namespace ArgsTests.CLI.Recording
                 var temp = Path.GetTempFileName();
                 using (var stream = File.OpenWrite(temp))
                 {
-                    var writer = new ConsoleBitmapStreamWriter(stream) { CloseInnerStream = false };
+                    var writer = new ConsoleBitmapVideoWriter(s => stream.Write(Encoding.Default.GetBytes(s)));
                     var bitmap = new ConsoleBitmap(w, h);
 
                     for (var i = 0; i < bitmap.Width; i++)
@@ -103,7 +104,7 @@ namespace ArgsTests.CLI.Recording
                         bitmap.DrawPoint(i, 0);
                         writer.WriteFrame(bitmap, true, TimeSpan.FromSeconds(.1 * i));
                     }
-                    writer.Dispose();
+                    writer.Finish();
                 }
 
                 var player = app.LayoutRoot.Add(new ConsoleBitmapPlayer()).Fill();

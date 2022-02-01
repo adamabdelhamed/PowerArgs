@@ -334,14 +334,12 @@ namespace PowerArgs.Cli
             try
             {
                 saveInProgress = true;
-                Stream stream = null;
-                ConsoleBitmapStreamWriter writer = null;
+                ConsoleBitmapVideoWriter writer = null;
                 var tempFile = Path.GetTempFileName();
                 bool tempWriteSuccess = false;
                 try
                 {
-                    stream = File.OpenWrite(tempFile);
-                    writer = new ConsoleBitmapStreamWriter(stream);
+                    writer = new ConsoleBitmapVideoWriter(s => File.WriteAllText(tempFile, s));
                     foreach (var frame in animation.Frames)
                     {
                         writer.WriteFrame(frame.Bitmap, desiredFrameTime: frame.FrameTime);
@@ -355,8 +353,7 @@ namespace PowerArgs.Cli
                 }
                 finally
                 {
-                    writer?.Dispose();
-                    stream?.Dispose();
+                    writer?.Finish();
                     if (tempWriteSuccess == false)
                     {
                         try { File.Delete(tempFile); } catch (Exception) { }

@@ -52,11 +52,10 @@ namespace ArgsTests.CLI.Controls
         public void TestThreeMonthCalendarBasicRender()
         {
             var app = new CliTestHarness(this.TestContext, 120, 40);
-            app.InvokeNextCycle(async () =>
+            app.Invoke(async () =>
             {
                 var carousel = new ThreeMonthCarousel(new ThreeMonthCarouselOptions() { Month = 1, Year = 2000 });
                 var start = carousel.Options.Month + "/" + carousel.Options.Year;
-                await Task.Delay(1000);
                 app.LayoutRoot.Add(new FixedAspectRatioPanel(4f / 1f, carousel)).Fill();
                 Assert.IsTrue(await carousel.SeekAsync(true, carousel.Options.AnimationDuration));
                 await Task.Delay(1000);
@@ -84,7 +83,7 @@ namespace ArgsTests.CLI.Controls
                 Assert.AreEqual(start, now);
                 app.Stop();
             });
-            app.Start().Wait();
+            app.Run();
             app.AssertThisTestMatchesLKGFirstAndLastFrame();
         }
     }

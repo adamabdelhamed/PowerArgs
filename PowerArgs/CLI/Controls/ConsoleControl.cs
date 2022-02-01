@@ -166,7 +166,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// The writer used to record the visual state of the control
         /// </summary>
-        public ConsoleBitmapStreamWriter Recorder { get; private set; }
+        public ConsoleBitmapVideoWriter Recorder { get; private set; }
 
         /// <summary>
         /// An optional call back that lets you override the timestamp for each recorded frame. If not
@@ -267,7 +267,7 @@ namespace PowerArgs.Cli
         /// </summary>
         /// <param name="recorder">the writer to use</param>
         /// <param name="timestampFunc">an optional callback that will be called to determine the timestamp for each frame. If not specified the wall clock will be used.</param>
-        public void EnableRecording(ConsoleBitmapStreamWriter recorder, Func<TimeSpan> timestampFunc = null)
+        public void EnableRecording(ConsoleBitmapVideoWriter recorder, Func<TimeSpan> timestampFunc = null)
         {
             if(Recorder != null)
             {
@@ -285,13 +285,7 @@ namespace PowerArgs.Cli
             this.Recorder = recorder;
             this.RecorderTimestampProvider = timestampFunc;
 
-            this.OnDisposed(() =>
-            {
-                if (Recorder.IsExpired == false)
-                {
-                    Recorder.Dispose();
-                }
-            });
+            this.OnDisposed(() => Recorder.TryFinish());
         }
 
         /// <summary>
@@ -405,7 +399,7 @@ namespace PowerArgs.Cli
             }
 
             OnPaint(Bitmap);
-            if (Recorder != null && Recorder.IsExpired == false)
+            if (Recorder != null && Recorder.IsFinished == false)
             {
                 Recorder.Window = new RectF(0,0,Width,Height);
                 Recorder.WriteFrame(Bitmap, false, RecorderTimestampProvider != null ? new TimeSpan?(RecorderTimestampProvider()) : new TimeSpan?());

@@ -11,7 +11,7 @@ namespace ArgsTests
 {
     public static class TestRecorder
     {
-        public static ConsoleBitmapStreamWriter CreateTestRecorder(string testName, TestContext context)
+        public static ConsoleBitmapVideoWriter CreateTestRecorder(string testName, TestContext context)
         {
             var outputDir = @"C:\temp\recordings";
 
@@ -22,7 +22,7 @@ namespace ArgsTests
 
             var outputFile = Path.Combine(outputDir, testName + ".vid");
 
-            return new ConsoleBitmapStreamWriter(File.Create(outputFile));
+            return new ConsoleBitmapVideoWriter(s => File.WriteAllText(outputFile, s));
         }
     }
 }

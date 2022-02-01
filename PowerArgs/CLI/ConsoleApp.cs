@@ -125,7 +125,7 @@ namespace PowerArgs.Cli
         /// The writer used to record the contents of the screen while the app
         /// is running. If not set then recording does not take place
         /// </summary>
-        public ConsoleBitmapStreamWriter Recorder { get; set; }
+        public ConsoleBitmapVideoWriter Recorder { get; set; }
 
         /// <summary>
         /// An event that fires when the application is about to stop, before the console is wiped
@@ -328,8 +328,6 @@ namespace PowerArgs.Cli
                 });
             }
 
-            Paint();
-
             try
             {
                 await base.Start();
@@ -342,6 +340,7 @@ namespace PowerArgs.Cli
 
         public override void Run()
         {
+            _current = this;
             if (SetFocusOnStart)
             {
                 InvokeNextCycle(() =>
@@ -349,8 +348,6 @@ namespace PowerArgs.Cli
                     FocusManager.TryMoveFocus();
                 });
             }
-
-            Paint();
 
             try
             {
@@ -384,17 +381,10 @@ namespace PowerArgs.Cli
         /// </summary>
         public Task Paint()
         {
+            if (IsDrainingOrDrained) return Task.CompletedTask;
+            AssertAppThread(this);
             var d = new TaskCompletionSource<bool>();
-            if (ConsoleApp.Current == this)
-            {
-                paintRequests.Add(d);
-                return d.Task;
-            }
-
-            Invoke(() =>
-            {
-                paintRequests.Add(d);
-            });
+            paintRequests.Add(d);
             return d.Task;
         }
 
@@ -526,7 +516,7 @@ namespace PowerArgs.Cli
         {
             Stopping.Fire();
             Recorder?.WriteFrame(Bitmap, true);
-            Recorder?.Dispose();
+            Recorder?.Finish();
 
             if (ClearOnExit)
             {
