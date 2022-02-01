@@ -23,7 +23,7 @@ namespace PowerArgs.Cli
 
         internal DialogHandle() { }
 
-        internal ILifetimeManager CallerLifetime => callerLifetime.Manager;
+        internal ILifetimeManager CallerLifetime => callerLifetime;
 
     }
  
