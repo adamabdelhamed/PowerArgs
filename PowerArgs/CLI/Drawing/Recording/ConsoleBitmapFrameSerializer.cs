@@ -160,7 +160,8 @@ namespace PowerArgs.Cli
             var ret = builder.ToString();
             return ret;
         }
-
+        private static readonly Regex ColorSpecifierRegex = new Regex(@"(?<ForB>F|B)=(?<color>\w+)");
+        private static readonly Regex PixelDiffRegex = new Regex("(?<x>\\d+),(?<y>\\d+),(?<val>.+)");
         /// <summary>
         /// Deserializes the given frame given a known width and height.
         /// </summary>
@@ -193,13 +194,13 @@ namespace PowerArgs.Cli
 
                 var lastBackground = ConsoleString.DefaultBackgroundColor;
                 var lastForeground = ConsoleString.DefaultForegroundColor;
-                while (reader.CanAdvance())
+                while (reader.CanAdvance(skipWhitespace: true))
                 {
-                    reader.Expect("[");
+                    reader.Expect("[", skipWhiteSpace: true);
                     if (reader.Peek().Value.StartsWith("F=") || reader.Peek().Value.StartsWith("B="))
                     {
                         reader.Advance();
-                        var match = Regex.Match(reader.Current.Value, @"(?<ForB>F|B)=(?<color>\w+)");
+                        var match = ColorSpecifierRegex.Match(reader.Current.Value);
                         if (match.Success == false) throw new FormatException($"Unexpected token {reader.Current.Value} at position {reader.Current.Position} ");
 
                         var isForeground = match.Groups["ForB"].Value == "F";
@@ -231,7 +232,7 @@ namespace PowerArgs.Cli
                     }
                     else
                     {
-                        var match = Regex.Match(reader.Advance().Value, "(?<x>\\d+),(?<y>\\d+),(?<val>.+)");
+                        var match = PixelDiffRegex.Match(reader.Advance().Value);
                         if (match.Success == false) throw new FormatException("Could not parse pixel diff");
 
                         var valGroup = match.Groups["val"].Value;
@@ -269,11 +270,11 @@ namespace PowerArgs.Cli
                 var y = 0;
                 var lastFg = ConsoleString.DefaultForegroundColor;
                 var lastBg = ConsoleString.DefaultBackgroundColor;
-                while (reader.CanAdvance())
+                while (reader.CanAdvance(skipWhitespace:true))
                 {
-                    reader.Expect("[");
+                    reader.Expect("[", skipWhiteSpace:true);
                     var next = reader.Advance();
-                    var match = Regex.Match(next.Value, @"(?<ForB>F|B)=(?<color>\w+)");
+                    var match = ColorSpecifierRegex.Match(next.Value);
                     if (match.Success)
                     {  
                         var isForeground = match.Groups["ForB"].Value == "F";
