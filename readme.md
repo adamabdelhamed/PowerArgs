@@ -195,9 +195,8 @@ public class CustomReviverExample
     // By default, PowerArgs does not know what a 'Point' is.  So it will 
     // automatically search your assembly for arg revivers that meet the 
     // following criteria: 
-    //
-    //    - Have an [ArgReviver] attribute
-    //    - Are a public, static method
+    //    - Live in a class or struct with an [ArgReviverType] attribute
+    //    - Are a public, static method with an [ArgReviver] attribute
     //    - Accepts exactly two string parameters
     //    - The return value matches the type that is needed
 

@@ -7,6 +7,7 @@ namespace PowerArgs
     /// and implements an ArgReviver to transform the text input into a complex type.
     /// This class represents a US phone number.
     /// </summary>
+    [ArgReviverType]
     public class USPhoneNumber : GroupedRegexArg
     {
         /// <summary>

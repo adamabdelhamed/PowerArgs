@@ -2,7 +2,8 @@
 
 namespace PowerArgs.Cli.Physics;
 
-public struct Angle
+[ArgReviverType]
+public readonly struct Angle
 {
     public static readonly Angle Left = 180f;
     public static readonly Angle Up = 270f;
@@ -14,7 +15,7 @@ public struct Angle
     public static readonly Angle DownRight = (Down.Value + Right.Value) / 2;
     public static readonly Angle DownLeft = (Down.Value + Left.Value) / 2;
 
-    public float Value;
+    public readonly float Value;
 
     public Angle(float val)
     {
@@ -155,13 +156,13 @@ public struct Angle
 
 }
 
-public struct Edge
+public readonly struct Edge
 {
-    public float X1;
-    public float Y1;
+    public readonly float X1;
+    public readonly float Y1;
 
-    public float X2;
-    public float Y2;
+    public readonly float X2;
+    public readonly float Y2;
 
     public Edge()
     {
@@ -263,12 +264,12 @@ public class ColliderBox : ICollider
     }
 }
 
-public struct RectF
+public readonly struct RectF
 {
-    public float Left { get; private set; }
-    public float Top { get; private set; }
-    public float Width { get; private set; }
-    public float Height { get; private set; }
+    public readonly float Left;
+    public readonly float Top;
+    public readonly float Width;
+    public readonly float Height;
 
     public float Right => Left + Width;
     public float Bottom => Top + Height;
@@ -301,7 +302,7 @@ public struct RectF
 
 
     public override string ToString() => $"{Left},{Top} {Width}x{Height}";
-    public bool Equals(RectF other) => Left == other.Left && Top == other.Top && Width == other.Width && Height == other.Height;
+    public bool Equals(in RectF other) => Left == other.Left && Top == other.Top && Width == other.Width && Height == other.Height;
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is RectF && Equals((RectF)obj);
     public static bool operator ==(RectF a, RectF b) => a.Equals(b);
     public static bool operator !=(RectF a, RectF b) => a.Equals(b) == false;
@@ -349,7 +350,7 @@ public struct RectF
 
 
     public float CalculateDistanceTo(ICollider other) => CalculateDistanceTo(Left, Top, Width, Height, other.Left(), other.Top(), other.Width(), other.Height());
-    public float CalculateDistanceTo(RectF other) => CalculateDistanceTo(Left, Top, Width, Height, other.Left, other.Top, other.Width, other.Height);
+    public float CalculateDistanceTo(RectF other) => CalculateDistanceTo(this, other);
     public float CalculateDistanceTo(float bx, float by, float bw, float bh) => CalculateDistanceTo(Left, Top, Width, Height, bx, by, bw, bh);
     public float CalculateNormalizedDistanceTo(RectF other) => CalculateNormalizedDistanceTo(Left, Top, Width, Height, other.Left, other.Top, other.Width, other.Height);
     public float CalculateNormalizedDistanceTo(float bx, float by, float bw, float bh) => CalculateNormalizedDistanceTo(Left, Top, Width, Height, bx, by, bw, bh);
@@ -364,13 +365,60 @@ public struct RectF
         return LocF.CalculateAngleTo(aCenterX, aCenterY, bCenterX, bCenterY);
     }
 
-     
+    public static Angle CalculateAngleTo(in RectF a, in RectF b)
+    {
+        var aCenterX = a.Left + (a.Width / 2);
+        var aCenterY = a.Top + (a.Height / 2);
+
+        var bCenterX = b.Left + (b.Width / 2);
+        var bCenterY = b.Top + (b.Height / 2);
+        return LocF.CalculateAngleTo(aCenterX, aCenterY, bCenterX, bCenterY);
+    }
+
+    public static float CalculateNormalizedDistanceTo(in RectF a, in RectF b)
+    {
+        var d = CalculateDistanceTo(a, b);
+        var angle = CalculateAngleTo(a, b);
+        return ConsoleMath.NormalizeQuantity(d, angle, true);
+    }
 
     public static float CalculateNormalizedDistanceTo(float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh)
     {
         var d = CalculateDistanceTo(ax, ay, aw, ah, bx, by, bw, bh);
         var a = CalculateAngleTo(ax, ay, aw, ah, bx, by, bw, bh);
         return ConsoleMath.NormalizeQuantity(d, a, true);
+    }
+
+    public static float CalculateDistanceTo(in RectF a, in RectF b)
+    {
+        var ar = a.Left + a.Width;
+        var ab = a.Top + a.Height;
+
+        var br = b.Left + b.Width;
+        var bb = b.Top + b.Height;
+
+        var left = br < a.Left;
+        var right = ar < b.Left;
+        var bottom = bb < a.Top;
+        var top = ab < b.Top;
+        if (top && left)
+            return LocF.CalculateDistanceTo(a.Left, ab, br, b.Top);
+        else if (left && bottom)
+            return LocF.CalculateDistanceTo(a.Left, a.Top, br, bb);
+        else if (bottom && right)
+            return LocF.CalculateDistanceTo(ar, a.Top, b.Left, bb);
+        else if (right && top)
+            return LocF.CalculateDistanceTo(ar, ab, b.Left, b.Top);
+        else if (left)
+            return a.Left - br;
+        else if (right)
+            return b.Left - ar;
+        else if (bottom)
+            return a.Top - bb;
+        else if (top)
+            return b.Top - ab;
+        else
+            return 0;
     }
 
     public static float CalculateDistanceTo(float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh)
@@ -483,10 +531,10 @@ public struct RectF
     public static RectF Offset(float x, float y, float w, float h, float dx, float dy) => new RectF(x + dx, y + dy, w, h);
 }
 
-public struct LocF : IEquatable<LocF>
+public readonly struct LocF
 {
-    public float Left { get; private set; }
-    public float Top { get; private set; }
+    public readonly float Left;
+    public readonly float Top;
 
     public LocF(float x, float y)
     {
@@ -499,10 +547,10 @@ public struct LocF : IEquatable<LocF>
     public override string ToString() => $"{Left},{Top}";
     public LocF GetRounded() => new LocF(ConsoleMath.Round(Left), ConsoleMath.Round(Top));
     public LocF GetFloor() => new LocF((int)Left, (int)Top);
-    public bool Equals(LocF other) => Left == other.Left && Top == other.Top;
+    public bool Equals(in LocF other) => Left == other.Left && Top == other.Top;
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is LocF && Equals((LocF)obj);
-    public static bool operator ==(LocF a, LocF b) => a.Equals(b);
-    public static bool operator !=(LocF a, LocF b) => a.Equals(b) == false;
+    public static bool operator ==(in LocF a, in LocF b) => a.Equals(b);
+    public static bool operator !=(in LocF a, in LocF b) => a.Equals(b) == false;
 
     public override int GetHashCode()
     {
@@ -516,17 +564,16 @@ public struct LocF : IEquatable<LocF>
     }
 
     public Angle CalculateAngleTo(float x2, float y2) => CalculateAngleTo(Left, Top, x2, y2);
-    public Angle CalculateAngleTo(LocF other) => CalculateAngleTo(Left, Top, other.Left, other.Top);
+    public Angle CalculateAngleTo(LocF other) => CalculateAngleTo(this, other);
 
     public float CalculateDistanceTo(float x2, float y2) => CalculateDistanceTo(Left, Top, x2, y2);
-    public float CalculateDistanceTo(LocF other) => CalculateDistanceTo(Left, Top, other.Left, other.Top);
+    public float CalculateDistanceTo(LocF other) => CalculateDistanceTo(this, other);
 
     public float CalculateNormalizedDistanceTo(float x2, float y2) => CalculateNormalizedDistanceTo(Left, Top, x2, y2);
-    public float CalculateNormalizedDistanceTo(LocF other) => CalculateNormalizedDistanceTo(Left, Top, other.Left, other.Top);
+    public float CalculateNormalizedDistanceTo(LocF other) => CalculateNormalizedDistanceTo(this, other);
 
-    public LocF Offset(float dx, float dy) => Offset(Left, Top, dx, dy);
-    public LocF OffsetByAngleAndDistance(Angle a, float distance, bool normalized = true) => OffsetByAngleAndDistance(Left, Top, a, distance, normalized);
-
+    public LocF Offset(float dx, float dy) => new LocF(Left + dx, Top + dy);
+    
     public static LocF Offset(float x, float y, float dx, float dy) => new LocF(x + dx, y + dy);
         
     public static LocF OffsetByAngleAndDistance(float x, float y, Angle angle, float distance, bool normalized = true)
@@ -549,11 +596,85 @@ public struct LocF : IEquatable<LocF>
         return new LocF(x2, y2);
     }
 
+    public LocF OffsetByAngleAndDistance(Angle angle, float distance, bool normalized = true)
+    {
+        if (normalized)
+        {
+            distance = ConsoleMath.NormalizeQuantity(distance, angle.Value);
+        }
+        var forward = angle.Value > 270 || angle.Value < 90;
+        var up = angle.Value > 180;
+
+        // convert to radians
+        angle = (float)(angle.Value * Math.PI / 180);
+        float dy = (float)Math.Abs(distance * Math.Sin(angle.Value));
+        float dx = (float)Math.Sqrt((distance * distance) - (dy * dy));
+
+        float x2 = forward ? Left + dx : Left - dx;
+        float y2 = up ? Top - dy : Top + dy;
+
+        return new LocF(x2, y2);
+    }
+
+    public static float CalculateNormalizedDistanceTo(in LocF a, in LocF b)
+    {
+        var d = CalculateDistanceTo(a, b);
+        var angle = CalculateAngleTo(a, b);
+        return ConsoleMath.NormalizeQuantity(d, angle.Value, true);
+    }
+
     public static float CalculateNormalizedDistanceTo(float ax, float ay, float bx, float by)
     {
         var d = CalculateDistanceTo(ax, ay, bx, by);
         var a = CalculateAngleTo(ax, ay, bx, by);
         return ConsoleMath.NormalizeQuantity(d, a.Value, true);
+    }
+
+    public static Angle CalculateAngleTo(in LocF a, in LocF b)
+    {
+        float dx = b.Left - a.Left;
+        float dy = b.Top - a.Top;
+        float d = a.CalculateDistanceTo(b);
+
+        if (dy == 0 && dx > 0) return 0;
+        else if (dy == 0) return 180;
+        else if (dx == 0 && dy > 0) return 90;
+        else if (dx == 0) return 270;
+
+        double radians, increment;
+        if (dx >= 0 && dy >= 0)
+        {
+            // Sin(a) = dy / d
+            radians = Math.Asin(dy / d);
+            increment = 0;
+
+        }
+        else if (dx < 0 && dy > 0)
+        {
+            // Sin(a) = dx / d
+            radians = Math.Asin(-dx / d);
+            increment = 90;
+        }
+        else if (dy < 0 && dx < 0)
+        {
+            radians = Math.Asin(-dy / d);
+            increment = 180;
+        }
+        else if (dx > 0 && dy < 0)
+        {
+            radians = Math.Asin(dx / d);
+            increment = 270;
+        }
+        else
+        {
+            throw new Exception($"Failed to calculate angle from {a.Left},{a.Top} to {b.Left},{b.Top}");
+        }
+
+        var ret = (float)(increment + radians * 180 / Math.PI);
+
+        if (ret == 360) ret = 0;
+
+        return ret;
     }
 
     public static Angle CalculateAngleTo(float x1, float y1, float x2, float y2)
@@ -604,9 +725,10 @@ public struct LocF : IEquatable<LocF>
     }
 
     public static float CalculateDistanceTo(float x1, float y1, float x2, float y2) => (float)Math.Sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)));
+    public static float CalculateDistanceTo(in LocF a, in LocF b) => (float)Math.Sqrt(((a.Left - b.Left) * (a.Left - b.Left)) + ((a.Top - b.Top) * (a.Top - b.Top)));
 }
  
-public struct Circle
+public readonly struct Circle
 {
     public static int FindLineCircleIntersections(float cx, float cy, float radius, float x1, float y1, float x2, float y2, out float ox1, out float oy1, out float ox2, out float oy2)
     {

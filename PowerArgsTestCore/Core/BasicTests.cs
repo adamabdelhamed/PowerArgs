@@ -65,6 +65,7 @@ namespace ArgsTests
         }
 
         [UsageAutomation]
+        [ArgReviverType]
         public class ArgsThatNeedManualReviverRegistration
         {
             public MailAddress Address { get; set; }
@@ -83,6 +84,7 @@ namespace ArgsTests
         }
         [UsageAutomation]
         [ArgExample("sometool -point 100,50", "Creates a new point with x = 100 and y = 50")]
+        [ArgReviverType]
         public class PointArgs
         {
             public Point Point { get; set; }

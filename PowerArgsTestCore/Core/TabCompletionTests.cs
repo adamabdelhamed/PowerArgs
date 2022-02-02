@@ -721,7 +721,7 @@ namespace ArgsTests
             Write(consoleString.ToString());
         }
 
-        public void Write(ConsoleCharacter consoleCharacter)
+        public void Write(in ConsoleCharacter consoleCharacter)
         {
             Write(consoleCharacter.ToString());
         }

@@ -78,7 +78,7 @@ namespace PowerArgs.Cli.Physics
 
     public class SpacialElementAnimationOptions : RectangularAnimationOptions
     {
-        public override void Setter(ICollider target, RectF bounds)
+        public override void Setter(ICollider target, in RectF bounds)
         {
             (target as SpacialElement).MoveTo(bounds.Left, bounds.Top);
             if (target.Bounds.Width != bounds.Width || target.Bounds.Height != bounds.Height)
@@ -90,7 +90,7 @@ namespace PowerArgs.Cli.Physics
 
     public class ConsoleControlAnimationOptions : RectangularAnimationOptions
     {
-        public override void Setter(ICollider target, RectF bounds)
+        public override void Setter(ICollider target, in RectF bounds)
         {
             (target as ConsoleControl).X = ConsoleMath.Round(bounds.Left);
             (target as ConsoleControl).Y = ConsoleMath.Round(bounds.Top);
@@ -103,7 +103,7 @@ namespace PowerArgs.Cli.Physics
     {
         public Func<RectF> Destination { get; set; }
 
-        public abstract void Setter(ICollider target, RectF bounds);
+        public abstract void Setter(ICollider target, in RectF bounds);
 
         public EasingFunction EasingFunction { get; set; } = new FloatAnimatorOptions().EasingFunction;
         public double Duration { get; set; } = new FloatAnimatorOptions().Duration;

@@ -89,7 +89,7 @@ namespace ArgsTests.CLI
             var str = new string(buffer, 0, length);
             Write(str);
         }
-        public void Write(ConsoleCharacter consoleCharacter)
+        public void Write(in ConsoleCharacter consoleCharacter)
         {
             Buffer.Pen = consoleCharacter;
             Buffer.DrawPoint(CursorLeft, CursorTop);

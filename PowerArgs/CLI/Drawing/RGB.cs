@@ -1,12 +1,10 @@
 ﻿using PowerArgs.Cli;
-using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace PowerArgs
 {
-    public struct RGB
+    [ArgReviverType]
+    public readonly struct RGB
     {
         public static readonly float MaxDistance = (float)Math.Sqrt((255 * 255) + (255 * 255) + (255 * 255));
 
@@ -68,9 +66,9 @@ namespace PowerArgs
         };
 
 
-        public byte R { get; private set; }
-        public byte G { get; private set; }
-        public byte B { get; private set; }
+        public readonly byte R;
+        public readonly byte G;
+        public readonly byte B;
 
         public RGB(byte r, byte g, byte b) 
         {
@@ -87,7 +85,7 @@ namespace PowerArgs
             return this.R == other.R && this.G == other.G && this.B == other.B;
         }
 
-        public bool Equals(RGB obj)
+        public bool EqualsIn(in RGB obj)
         {
             return this.R == obj.R && this.G == obj.G && this.B == obj.B;
         }
@@ -104,7 +102,7 @@ namespace PowerArgs
             }
         }
 
-        public float CalculateDistanceTo(RGB other) => (float)Math.Sqrt(
+        public float CalculateDistanceTo(in RGB other) => (float)Math.Sqrt(
                 Math.Pow(R - other.R, 2) +
                 Math.Pow(G - other.G, 2) +
                 Math.Pow(B - other.B, 2));
@@ -117,18 +115,14 @@ namespace PowerArgs
 
         public RGB Darker => ToOther(Black, .5f);
         public RGB Brighter => ToOther(White, .5f);
-        public static bool operator ==(RGB a, RGB b) => a.Equals(b);
-        public static bool operator !=(RGB a, RGB b) => !a.Equals(b);
-        public static bool operator ==(RGB a, ConsoleColor b) => a.Equals((RGB)b);
-        public static bool operator !=(RGB a, ConsoleColor b) => !a.Equals((RGB)b);
+        public static bool operator ==(in RGB a, in RGB b) => a.EqualsIn(b);
+        public static bool operator !=(in RGB a, in RGB b) => !a.EqualsIn(b);
+        public static bool operator ==(in RGB a, in ConsoleColor b) => a.EqualsIn((RGB)b);
+        public static bool operator !=(in RGB a, in ConsoleColor b) => !a.EqualsIn((RGB)b);
 
-        public static implicit operator ConsoleColor(RGB color)
+        public static implicit operator ConsoleColor(in RGB color)
         {
-            if (color == null)
-            {
-                return ConsoleString.DefaultForegroundColor;
-            }
-            else if (RGBToConsoleColorMap.TryGetValue(color, out ConsoleColor ret))
+            if (RGBToConsoleColorMap.TryGetValue(color, out ConsoleColor ret))
             {
                 return ret;
             }
@@ -154,7 +148,7 @@ namespace PowerArgs
                 return closestColor;
             }
         }
-        public static implicit operator RGB(ConsoleColor color) => (int)color < ConsoleColorMap.Length ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
+        public static implicit operator RGB(in ConsoleColor color) => (int)color < ConsoleColorMap.Length ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
 
         private static Regex RGBRegex;
 
@@ -235,7 +229,7 @@ namespace PowerArgs
         /// <param name="other">The other color to change to</param>
         /// <param name="percentage">The percentage to change. A value of zero will result in the original color being returned. A value of 1 will result in the other color returned. A value between zero and one will result in the color being a mix of the two colors.</param>
         /// <returns></returns>
-        public RGB ToOther(RGB other, float percentage)
+        public RGB ToOther(in RGB other, float percentage)
         {
             var dR = other.R - R;
             var dG = other.G - G;

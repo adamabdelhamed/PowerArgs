@@ -40,9 +40,9 @@ namespace PowerArgs
 
             public class Background
             {
-                public static string Rgb(byte r, byte g, byte b) => $"{Esc}[48;2;{r};{g};{b}m";
+                public static string Rgb(RGB color) => $"{Esc}[48;2;{color.R};{color.G};{color.B}m";
 
-                public static void Rgb(RGB color, PaintBuffer buffer)
+                public static void Rgb(in RGB color, PaintBuffer buffer)
                 {
                     buffer.Append(Esc);
                     buffer.Append("[48;2;");
@@ -59,9 +59,9 @@ namespace PowerArgs
             public static class Foreground
             {
 
-                public static string Rgb(byte r, byte g, byte b) => $"{Esc}[38;2;{r};{g};{b}m";
+                public static string Rgb(in RGB color) => $"{Esc}[38;2;{color.R};{color.G};{color.B}m";
 
-                public static void Rgb(RGB color, PaintBuffer buffer)
+                public static void Rgb(in RGB color, PaintBuffer buffer)
                 {
                     buffer.Append(Esc);
                     buffer.Append("[38;2;");

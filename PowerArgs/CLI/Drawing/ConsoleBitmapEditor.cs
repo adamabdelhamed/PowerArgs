@@ -217,7 +217,7 @@ namespace PowerArgs.Cli
                 var previous = Bitmap.GetPixel(targetX, targetY).Value;
                 Bitmap.Pen = new ConsoleCharacter(key.KeyChar, currentFg, currentBg);
                 Bitmap.DrawPoint(targetX, targetY);
-                if (Bitmap.Pen.Equals(previous) == false)
+                if (Bitmap.Pen.EqualsIn(previous) == false)
                 {
                     BitmapChanged.Fire(new ConsoleBitmapChange(targetX, targetY, previous, Bitmap.Pen, Bitmap));
                 }
@@ -241,7 +241,7 @@ namespace PowerArgs.Cli
         ConsoleCharacter? previousValue;
         ConsoleCharacter newValue;
         ConsoleBitmap bitmap;
-        public ConsoleBitmapChange(int x, int y, ConsoleCharacter? previousValue, ConsoleCharacter newValue, ConsoleBitmap bitmap)
+        public ConsoleBitmapChange(int x, int y, ConsoleCharacter? previousValue, in ConsoleCharacter newValue, ConsoleBitmap bitmap)
         {
             this.x = x;
             this.y = y;

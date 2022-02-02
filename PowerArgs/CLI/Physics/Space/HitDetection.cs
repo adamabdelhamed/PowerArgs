@@ -152,15 +152,13 @@ namespace PowerArgs.Cli.Physics
             HitPrediction prediction = new HitPrediction();
             prediction.LKGX = movingObject.Left;
             prediction.LKGY = movingObject.Top;
-
-
             prediction.Visibility = visibility;
+
             if (visibility == 0)
             {
                 prediction.Type = HitType.None;
                 return prediction;
             }
-
 
             var mov = movingObject;
 
@@ -172,24 +170,23 @@ namespace PowerArgs.Cli.Physics
                 var dx = delta.Left - mov.Left;
                 var dy = delta.Top - mov.Top;
 
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Top, X2 = mov.Left + dx, Y2 = mov.Top + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = mov.Top, X2 = mov.Right + dx, Y2 = mov.Top + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Bottom, X2 = mov.Left + dx, Y2 = mov.Bottom + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = mov.Bottom, X2 = mov.Right + dx, Y2 = mov.Bottom + dy };
+                castBuffer[rayIndex++] = new Edge(mov.Left, mov.Top, mov.Left + dx, mov.Top + dy);
+                castBuffer[rayIndex++] = new Edge(mov.Right, mov.Top, mov.Right + dx, mov.Top + dy);
+                castBuffer[rayIndex++] = new Edge(mov.Left, mov.Bottom, mov.Left + dx, mov.Bottom + dy);
+                castBuffer[rayIndex++] = new Edge(mov.Right, mov.Bottom, mov.Right + dx, mov.Bottom + dy);
                  
 
                 var granularity = .5f;
-
                 for (var x = mov.Left + granularity; x < mov.Left + mov.Width; x += granularity)
                 {
-                    castBuffer[rayIndex++] = new Edge() { X1 = x, Y1 = mov.Top, X2 = x+dx, Y2 = mov.Top+dy };
-                    castBuffer[rayIndex++] = new Edge() { X1 = x, Y1 = mov.Bottom, X2 = x + dx, Y2 = mov.Bottom + dy };
+                    castBuffer[rayIndex++] = new Edge( x,  mov.Top,  x+dx,  mov.Top+dy);
+                    castBuffer[rayIndex++] = new Edge(x,  mov.Bottom, x + dx,  mov.Bottom + dy);
                 }
 
                 for (var y = mov.Top + granularity; y < mov.Top + mov.Height; y += granularity)
                 {
-                    castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = y, X2 = mov.Left+dx, Y2 = y+dy };
-                    castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = y, X2 = mov.Right + dx, Y2 = y + dy };
+                    castBuffer[rayIndex++] = new Edge(mov.Left, y, mov.Left+dx, y+dy);
+                    castBuffer[rayIndex++] = new Edge(mov.Right,  y, mov.Right + dx, y + dy);
                 }
             }
             else if (mode == CastingMode.Rough)
@@ -198,19 +195,18 @@ namespace PowerArgs.Cli.Physics
                 var dx = delta.Left - mov.Left;
                 var dy = delta.Top - mov.Top;
 
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Top, X2 = mov.Left + dx, Y2 = mov.Top + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = mov.Top, X2 = mov.Right + dx, Y2 = mov.Top + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Left, Y1 = mov.Bottom, X2 = mov.Left + dx, Y2 = mov.Bottom + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.Right, Y1 = mov.Bottom, X2 = mov.Right + dx, Y2 = mov.Bottom + dy };
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.CenterX, Y1 = mov.CenterY, X2 = mov.CenterX + dx, Y2 = mov.CenterY + dy };
+                castBuffer[rayIndex++] = new Edge(mov.Left, mov.Top, mov.Left + dx,  mov.Top + dy);
+                castBuffer[rayIndex++] = new Edge(mov.Right,  mov.Top, mov.Right + dx,  mov.Top + dy);
+                castBuffer[rayIndex++] = new Edge(mov.Left,  mov.Bottom, mov.Left + dx,  mov.Bottom + dy);
+                castBuffer[rayIndex++] = new Edge(mov.Right,  mov.Bottom, mov.Right + dx,  mov.Bottom + dy);
+                castBuffer[rayIndex++] = new Edge(mov.CenterX, mov.CenterY, mov.CenterX + dx,  mov.CenterY + dy);
             }
             else if(mode == CastingMode.SingleRay)
             {
                 var delta = mov.OffsetByAngleAndDistance(angle, visibility, normalized: false);
                 var dx = delta.Left - mov.Left;
                 var dy = delta.Top - mov.Top;
-
-                castBuffer[rayIndex++] = new Edge() { X1 = mov.CenterX, Y1 = mov.CenterY, X2 = mov.CenterX + dx, Y2 = mov.CenterY + dy };
+                castBuffer[rayIndex++] = new Edge(mov.CenterX,  mov.CenterY,  mov.CenterX + dx,  mov.CenterY + dy);
             }
             else
             {
@@ -225,11 +221,13 @@ namespace PowerArgs.Cli.Physics
             for (var i = 0; i < obstacles.Length; i++)
             {
                 var obstacle = obstacles[i];
-                ProcessEdge(i, obstacle.TopEdge, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
-                ProcessEdge(i, obstacle.BottomEdge, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
-                ProcessEdge(i, obstacle.LeftEdge, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
-                ProcessEdge(i, obstacle.RightEdge, rayIndex, edgesHitOutput, visibility, prediction, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
-
+                if (visibility == float.MaxValue || movingObject.CalculateDistanceTo(obstacle) <= visibility)
+                {
+                    ProcessEdge(i, obstacle.TopEdge, rayIndex, edgesHitOutput, visibility, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
+                    ProcessEdge(i, obstacle.BottomEdge, rayIndex, edgesHitOutput, visibility, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
+                    ProcessEdge(i, obstacle.LeftEdge, rayIndex, edgesHitOutput, visibility, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
+                    ProcessEdge(i, obstacle.RightEdge, rayIndex, edgesHitOutput, visibility, ref closestIntersectionDistance, ref closestIntersectingObstacleIndex, ref closestEdge, ref closestIntersectionX, ref closestIntersectionY);
+                }
             }
 
             if(closestIntersectingObstacleIndex >= 0)
@@ -250,13 +248,12 @@ namespace PowerArgs.Cli.Physics
             return prediction;
         }
 
-        private static void ProcessEdge(int i, Edge edge, int castLength, List<Edge> edgesHitOutput, float visibility, HitPrediction prediction, ref float closestIntersectionDistance, ref int closestIntersectingObstacleIndex, ref Edge closestEdge, ref float closestIntersectionX, ref float closestIntersectionY)
+        private static void ProcessEdge(int i, in Edge edge, int castLength, List<Edge> edgesHitOutput, float visibility, ref float closestIntersectionDistance, ref int closestIntersectingObstacleIndex, ref Edge closestEdge, ref float closestIntersectionX, ref float closestIntersectionY)
         {
             for (var k = 0; k < castLength; k++)
             {
                 var ray = castBuffer[k];
-                var success = TryFindIntersectionPoint(ray, edge, out float ix, out float iy);
-                if (success)
+                if (TryFindIntersectionPoint(ray, edge, out float ix, out float iy))
                 {
                     edgesHitOutput?.Add(ray);
                     var d = LocF.CalculateDistanceTo(ray.X1, ray.Y1, ix, iy);
@@ -273,7 +270,7 @@ namespace PowerArgs.Cli.Physics
             }
         }
 
-        private static bool TryFindIntersectionPoint(Edge a, Edge b, out float x, out float y)
+        private static bool TryFindIntersectionPoint(in Edge a, in Edge b, out float x, out float y)
         {
             var x1 = a.X1;
             var y1 = a.Y1;
@@ -294,7 +291,7 @@ namespace PowerArgs.Cli.Physics
             }
 
             var t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
-            if(t <= 0 || t >= 1)
+            if (t <= 0 || t >= 1)
             {
                 x = 0;
                 y = 0;

@@ -272,7 +272,7 @@ namespace PowerArgs
                 throw new NotImplementedException();
             }
 
-            public void Write(ConsoleCharacter consoleCharacter)
+            public void Write(in ConsoleCharacter consoleCharacter)
             {
                 state.CursorPosition++;
             }

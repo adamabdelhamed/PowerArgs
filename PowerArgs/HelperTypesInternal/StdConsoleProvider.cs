@@ -308,7 +308,7 @@ namespace PowerArgs
         /// Writes the given character to the console
         /// </summary>
         /// <param name="consoleCharacter">the character to write</param>
-        public void Write(ConsoleCharacter consoleCharacter)
+        public void Write(in ConsoleCharacter consoleCharacter)
         {
             var existing = ConsoleString.ConsoleProvider;
             try

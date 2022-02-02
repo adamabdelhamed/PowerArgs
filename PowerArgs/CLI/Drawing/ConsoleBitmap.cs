@@ -80,8 +80,14 @@ namespace PowerArgs.Cli;
             }
         }
 
-    public void Return()
+    ~ConsoleBitmap()
     {
+        Return();
+    }
+
+    private void Return()
+    {
+        if (pixels == null) return;
         for (int x = 0; x < this.Width; x++)
         {
             for (int y = 0; y < pixels[x].Length; y++)
@@ -371,7 +377,7 @@ namespace PowerArgs.Cli;
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Compose(int x, int y, ConsoleCharacter pen)
+        private void Compose(int x, int y, in ConsoleCharacter pen)
         {
             pixels[x][y].Value = pen;
         }
@@ -899,7 +905,7 @@ namespace PowerArgs.Cli;
         /// <param name="x2">the x coordinate of the second point</param>
         /// <param name="y2">the y coordinate of the second point</param>
         /// <returns>this ConsoleBitmap</returns>
-        public ConsoleBitmap DrawLine(ConsoleCharacter character, int x1, int y1, int x2, int y2)
+        public ConsoleBitmap DrawLine(in ConsoleCharacter character, int x1, int y1, int x2, int y2)
         {
             var oldPen = this.Pen;
             try
@@ -924,7 +930,7 @@ namespace PowerArgs.Cli;
         /// <param name="w">the width of the rectangle</param>
         /// <param name="h">the height of the rectangle</param>
         /// <returns>this ConsoleBitmap</returns>
-        public ConsoleBitmap DrawRect(ConsoleCharacter character, int x = 0, int y = 0, int w = -1, int h = -1)
+        public ConsoleBitmap DrawRect(in ConsoleCharacter character, int x = 0, int y = 0, int w = -1, int h = -1)
         {
             var oldPen = this.Pen;
             try
@@ -951,7 +957,7 @@ namespace PowerArgs.Cli;
         /// <param name="w">the width of the rectangle</param>
         /// <param name="h">the height of the rectangle</param>
         /// <returns>this ConsoleBitmap</returns>
-        public ConsoleBitmap FillRect(ConsoleCharacter character, int x = 0, int y = 0, int w = -1, int h = -1)
+        public ConsoleBitmap FillRect(in ConsoleCharacter character, int x = 0, int y = 0, int w = -1, int h = -1)
         {
             var oldPen = this.Pen;
             try
@@ -978,7 +984,7 @@ namespace PowerArgs.Cli;
         /// <param name="w">the width of the rectangle</param>
         /// <param name="h">the height of the rectangle</param>
         /// <returns>this ConsoleBitmap</returns>
-        public ConsoleBitmap FillRect(ConsoleColor color, int x = 0, int y = 0, int w = -1, int h = -1) =>
+        public ConsoleBitmap FillRect(in RGB color, int x = 0, int y = 0, int w = -1, int h = -1) =>
             FillRect(new ConsoleCharacter(' ', null, color), x, y, w, h);
 
         /// <summary>
@@ -1005,7 +1011,7 @@ namespace PowerArgs.Cli;
             return this;
         }
 
-        public ConsoleBitmap DrawPointUnsafe(ConsoleCharacter character, int x, int y)
+        public ConsoleBitmap DrawPointUnsafe(in ConsoleCharacter character, int x, int y)
         {
             var oldPen = this.Pen;
             try
@@ -1050,11 +1056,10 @@ internal class Chunk
     public override string ToString() => new string(buffer, 0, Length);
 }
 
-public class PaintBuffer
+internal class PaintBuffer
 {
     public char[] Buffer = new char[120*80];
-
-    public int Length { get; private set; }
+    public int Length;
 
     internal void Append(Chunk c)
     {
@@ -1084,6 +1089,7 @@ public class PaintBuffer
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EnsureBigEnough(int newLen)
     {
         while (newLen > Buffer.Length)
@@ -1130,7 +1136,7 @@ internal class ChunkPool
     }
 }
 
-public class ConsolePixelPool
+internal class ConsolePixelPool
 {
 
     private List<ConsolePixel> pool;

@@ -230,7 +230,7 @@ namespace PowerArgs
                 return;
             }
 
-            foreach (var type in a.GetTypes())
+            foreach (var type in a.GetTypes().Where(t => t.HasAttr<ArgReviverTypeAttribute>()))
             {
                 var revivers = from m in type.GetMethods(BindingFlags.Static | BindingFlags.Public)
                                where m.HasAttr<ArgReviverAttribute>() &&

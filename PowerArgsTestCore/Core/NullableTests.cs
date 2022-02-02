@@ -90,6 +90,7 @@ namespace ArgsTests
         }
     }
 
+    [ArgReviverType]
     public static class NullableGuidReviver
     {
         // Make sure a custom NullableReviver works

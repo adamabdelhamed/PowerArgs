@@ -9,4 +9,7 @@ namespace PowerArgs
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class ArgReviverAttribute : Attribute { }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+    public class ArgReviverTypeAttribute : Attribute { }
 }

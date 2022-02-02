@@ -24,27 +24,27 @@ namespace PowerArgs
     /// <summary>
     /// A wrapper for char that encapsulates foreground and background colors.
     /// </summary>
-    public struct ConsoleCharacter : ICanBeAConsoleString, IEquatable<ConsoleCharacter>
+    public readonly struct ConsoleCharacter : ICanBeAConsoleString, IEquatable<ConsoleCharacter>
     {
         /// <summary>
         /// The value of the character
         /// </summary>
-        public char Value { get; set; }
+        public readonly char Value;
 
         /// <summary>
         /// The console foreground color to use when printing this character.
         /// </summary>
-        public RGB ForegroundColor { get; private set; }
+        public readonly RGB ForegroundColor;
 
         /// <summary>
         /// The console background color to use when printing this character.
         /// </summary>
-        public RGB BackgroundColor { get; private set; }
+        public readonly RGB BackgroundColor;
 
         /// <summary>
         /// True if this character should be underlined when printed
         /// </summary>
-        public bool IsUnderlined { get; private set; }
+        public readonly bool IsUnderlined;
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -320,6 +320,22 @@ namespace PowerArgs
             this.BackgroundColor = backgroundColor.Value;
         }
 
+        public ConsoleCharacter(char value, in RGB foregroundColor, in RGB backgroundColor)
+            : this()
+        {
+            this.Value = value;
+            this.ForegroundColor = foregroundColor;
+            this.BackgroundColor = backgroundColor;
+        }
+
+        public ConsoleCharacter(char value, in RGB foregroundColor)
+          : this()
+        {
+            this.Value = value;
+            this.ForegroundColor = foregroundColor;
+            this.BackgroundColor = ConsoleString.DefaultBackgroundColor;
+        }
+
         /// <summary>
         /// Write this formatted character to the console
         /// </summary>
@@ -363,13 +379,44 @@ namespace PowerArgs
                    this.IsUnderlined == other.IsUnderlined;
         }
 
+        public bool EqualsIn(in ConsoleCharacter other)
+        {
+            return this.Value == other.Value &&
+                   this.ForegroundColor == other.ForegroundColor &&
+                   this.BackgroundColor == other.BackgroundColor &&
+                   this.IsUnderlined == other.IsUnderlined;
+        }
+
         /// <summary>
         /// Operator overload for Equals
         /// </summary>
         /// <param name="a">The first operand</param>
         /// <param name="b">The second operand</param>
         /// <returns></returns>
-        public static bool operator ==(ConsoleCharacter a, ConsoleCharacter b)
+        public static bool operator ==(in ConsoleCharacter a, in ConsoleCharacter b)
+        {
+            return a.EqualsIn(b);
+        }
+
+        /// <summary>
+        /// Operator overload for !Equals
+        /// </summary>
+        /// <param name="a">The first operand</param>
+        /// <param name="b">The second operand</param>
+        /// <returns></returns>
+        public static bool operator !=(in ConsoleCharacter a, in ConsoleCharacter b)
+        {
+            return a.EqualsIn(b) == false;
+        }
+
+
+        /// <summary>
+        /// Operator overload for Equals
+        /// </summary>
+        /// <param name="a">The first operand</param>
+        /// <param name="b">The second operand</param>
+        /// <returns></returns>
+        public static bool operator ==(in ConsoleCharacter a, char b)
         {
             return a.Equals(b);
         }
@@ -380,30 +427,7 @@ namespace PowerArgs
         /// <param name="a">The first operand</param>
         /// <param name="b">The second operand</param>
         /// <returns></returns>
-        public static bool operator !=(ConsoleCharacter a, ConsoleCharacter b)
-        {
-            return a.Equals(b) == false;
-        }
-
-
-        /// <summary>
-        /// Operator overload for Equals
-        /// </summary>
-        /// <param name="a">The first operand</param>
-        /// <param name="b">The second operand</param>
-        /// <returns></returns>
-        public static bool operator ==(ConsoleCharacter a, char b)
-        {
-            return a.Equals(b);
-        }
-
-        /// <summary>
-        /// Operator overload for !Equals
-        /// </summary>
-        /// <param name="a">The first operand</param>
-        /// <param name="b">The second operand</param>
-        /// <returns></returns>
-        public static bool operator !=(ConsoleCharacter a, char b)
+        public static bool operator !=(in ConsoleCharacter a, char b)
         {
             return a.Equals(b) == false;
         }
@@ -676,7 +700,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="bg">the new background color</param>
         /// <returns>A  new string with a different background color</returns>
-        public ConsoleString ToDifferentBackground(RGB bg)
+        public ConsoleString ToDifferentBackground(in RGB bg)
         {
             List<ConsoleCharacter> ret = new List<ConsoleCharacter>();
             foreach(var c in this)
@@ -1021,7 +1045,7 @@ namespace PowerArgs
             }
         }
 
-        private void WriteFancy(string content, RGB fg, RGB bg, bool underlined)
+        private void WriteFancy(string content, in RGB fg, in RGB bg, bool underlined)
         {
             var toWrite = "";
             if (underlined)
@@ -1029,8 +1053,8 @@ namespace PowerArgs
                 toWrite += Ansi.Text.UnderlinedOn;
             }
             toWrite += Ansi.Cursor.SavePosition;
-            toWrite += Ansi.Color.Foreground.Rgb(fg.R, fg.G, fg.B);
-            toWrite += Ansi.Color.Background.Rgb(bg.R, bg.G, bg.B);
+            toWrite += Ansi.Color.Foreground.Rgb(fg);
+            toWrite += Ansi.Color.Background.Rgb(bg);
             toWrite += content;
             if (underlined)
             {
@@ -1039,12 +1063,12 @@ namespace PowerArgs
             Console.Write(toWrite.Replace("\n",Ansi.Cursor.Move.NextLine()));
         }
 
-        private void SetColorsFancy(RGB fg, RGB bg)
+        private void SetColorsFancy(in RGB fg, in RGB bg)
         {
             var toWrite = "";
             toWrite += Ansi.Cursor.SavePosition;
-            toWrite += Ansi.Color.Foreground.Rgb(fg.R, fg.G, fg.B);
-            toWrite += Ansi.Color.Background.Rgb(bg.R, bg.G, bg.B);
+            toWrite += Ansi.Color.Foreground.Rgb(fg);
+            toWrite += Ansi.Color.Background.Rgb(bg);
             Console.Write(toWrite);
         }
 

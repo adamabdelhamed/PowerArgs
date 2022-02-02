@@ -137,7 +137,7 @@ namespace PowerArgs.Cli
                 }
             }
 
-            public void Set(int key, RGB fg, RGB bg)
+            public void Set(int key, in RGB fg, in RGB bg)
             {
                 if (map.TryGetValue(key, out ColorPallateEntry entry) == false)
                 {
@@ -156,7 +156,7 @@ namespace PowerArgs.Cli
 
             public int Lookup(ColorPallateEntry entry) => reverseMap[entry];
 
-            public int Lookup(RGB fg, RGB bg) => reverseMap[new ColorPallateEntry() { ForegroundColor = fg, BackgroundColor = bg }];
+            public int Lookup(in RGB fg, in RGB bg) => reverseMap[new ColorPallateEntry() { ForegroundColor = fg, BackgroundColor = bg }];
 
             public string Format(int code)
             {
@@ -170,7 +170,7 @@ namespace PowerArgs.Cli
                 return codeString;
             }
 
-            public string LookupFormatted(RGB fg, RGB bg) => Format(Lookup(fg, bg));
+            public string LookupFormatted(in RGB fg, in RGB bg) => Format(Lookup(fg, bg));
             public ColorPallateEntry Lookup(int id) => map[id];
 
             public string Serialize()

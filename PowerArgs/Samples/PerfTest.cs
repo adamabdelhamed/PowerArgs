@@ -54,7 +54,6 @@ namespace PowerArgs.Samples
             return new TestOptions()
             {
                 InitTest = () => testPanel = Add(new WorstCasePerfTestPanel()).Fill(),
-                OnFrame = () => testPanel.Even = !testPanel.Even
             };
         }
 

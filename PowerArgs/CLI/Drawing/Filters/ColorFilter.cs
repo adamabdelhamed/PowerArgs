@@ -6,7 +6,7 @@ namespace PowerArgs.Cli
     {
         public RGB Color { get; set; }
 
-        public ColorFilter(RGB color)
+        public ColorFilter(in RGB color)
         {
             this.Color = color;
         }

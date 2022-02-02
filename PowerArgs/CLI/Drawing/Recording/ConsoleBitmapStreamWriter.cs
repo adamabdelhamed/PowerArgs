@@ -243,7 +243,7 @@ public class ConsoleBitmapVideoWriter
                 var hasPreviousPixel = previous.Pixels.Length == GetEffectiveWidth(bitmap) && previous.Pixels[0].Length == GetEffectiveHeight(bitmap);
                 var previousPixel = hasPreviousPixel ? previous.Pixels[x][y] : default(ConsoleCharacter);
 
-                if (pixel.HasChanged || hasPreviousPixel == false || (pixel.Value.Equals(previousPixel) == false))
+                if (pixel.HasChanged || hasPreviousPixel == false || (pixel.Value.EqualsIn(previousPixel) == false))
                 {
                     changes++;
                     diff.Diffs.Add(new ConsoleBitmapPixelDiff()

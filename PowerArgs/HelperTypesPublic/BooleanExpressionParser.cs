@@ -8,6 +8,7 @@ namespace PowerArgs
     /// <summary>
     /// A simple boolean expression parser that supports and '&amp;', or '|', and grouping via parentheses.
     /// </summary>
+    [ArgReviverType]
     public static class BooleanExpressionParser
     {
         /// <summary>

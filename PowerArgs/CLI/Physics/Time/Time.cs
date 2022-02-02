@@ -204,5 +204,7 @@ namespace PowerArgs.Cli.Physics
         }
 
         private IEnumerable<ITimeFunction> EnumerateFunctions() => timeFunctions.ToArray();
+
+        public IReadOnlyList<ITimeFunction> TimeFunctions => timeFunctions.AsReadOnly();
     }
 }
