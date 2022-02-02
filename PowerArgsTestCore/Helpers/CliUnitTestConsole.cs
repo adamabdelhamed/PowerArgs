@@ -91,8 +91,7 @@ namespace ArgsTests.CLI
         }
         public void Write(in ConsoleCharacter consoleCharacter)
         {
-            Buffer.Pen = consoleCharacter;
-            Buffer.DrawPoint(CursorLeft, CursorTop);
+            Buffer.DrawPoint(consoleCharacter, CursorLeft, CursorTop);
 
             if(CursorLeft == BufferWidth - 1)
             {

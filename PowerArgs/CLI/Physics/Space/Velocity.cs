@@ -25,7 +25,7 @@ namespace PowerArgs.Cli.Physics
         public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
         public static Event<Impact> GlobalImpactOccurred { get; private set; } = new Event<Impact>();
        
-        public List<SpacialElement> HitDetectionExclusions { get; private set; } = new List<SpacialElement>();
+        public HashSet<SpacialElement> HitDetectionExclusions { get; private set; } = new HashSet<SpacialElement>();
         public List<Type> HitDetectionExclusionTypes { get; private set; } = new List<Type>();
         public Func<IEnumerable<SpacialElement>> HitDetectionDynamicExclusions { get; set; }
 
@@ -53,6 +53,14 @@ namespace PowerArgs.Cli.Physics
                 }
 
                 OnAngleChanged.Fire();
+            }
+        }
+
+        public void AddExclusions(IEnumerable<SpacialElement> exclusions)
+        {
+            foreach(var exclusion in exclusions)
+            {
+                this.HitDetectionExclusions.Add(exclusion);
             }
         }
 
@@ -98,7 +106,6 @@ namespace PowerArgs.Cli.Physics
 
         public bool Bounce { get; set; }
 
-        public bool HitDetectionDisabled { get; set; }
 
         [ThreadStatic]
         private static bool isEvaluating;
@@ -149,7 +156,6 @@ namespace PowerArgs.Cli.Physics
             {
                 await Task.Yield();
                 float dt = (float)Time.CurrentTime.Increment.TotalSeconds;
-                if (dt == 0) dt = (float)Time.CurrentTime.Increment.TotalSeconds;
 
                 foreach (var velocity in Time.CurrentTime.Functions.WhereAs<Velocity>())
                 {
@@ -163,23 +169,17 @@ namespace PowerArgs.Cli.Physics
                         continue;
                     }
 
-                    HitPrediction hitPrediction = null;
-                    RectF bounds = default;
-                    if (velocity.HitDetectionDisabled == false)
-                    {
-                        var obstacles = velocity.GetObstacles();
-                        bounds = velocity.BoundsTransform != null ? velocity.BoundsTransform() : velocity.Element.Bounds;
-                        var options = new HitDetectionOptions(new ColliderBox(bounds), obstacles);
-                        options.Angle = velocity.Angle;
-                        options.Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous;
-                        options.Mode = CastingMode.Precise;
-                        hitPrediction = HitDetection.PredictHit(options);
-                        velocity.NextCollision = hitPrediction;
-                        velocity.BeforeMove.Fire();
-                    }
-
-
-                    if (hitPrediction != null && hitPrediction.Type != HitType.None && hitPrediction.LKGD <= d)
+                    var obstacles = velocity.GetObstacles();
+                    var bounds = velocity.BoundsTransform != null ? velocity.BoundsTransform() : velocity.Element.Bounds;
+                    var options = new HitDetectionOptions(new ColliderBox(bounds), obstacles);
+                    options.Angle = velocity.Angle;
+                    options.Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous;
+                    options.Mode = CastingMode.Precise;
+                    var hitPrediction = HitDetection.PredictHit(options);
+                    velocity.NextCollision = hitPrediction;
+                    velocity.BeforeMove.Fire();
+                    
+                    if (hitPrediction.Type != HitType.None && hitPrediction.LKGD <= d)
                     {
                         var obstacleHit = hitPrediction.ColliderHit;
                         var dx = velocity.BoundsTransform != null ? bounds.Left - velocity.Element.Left : 0;

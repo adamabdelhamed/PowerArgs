@@ -223,8 +223,7 @@ public class ConsoleBitmapVideoWriter
             for (int y = 0; y < GetEffectiveHeight(bitmap); y++)
             {
                 var pixel = bitmap.GetPixel(GetEffectiveLeft + x, GetEffectiveTop + y);
-                var pixelValue = pixel.Value;
-                rawFrame.Pixels[x][y] = pixelValue;
+                rawFrame.Pixels[x][y] = pixel;
             }
         }
         return rawFrame;
@@ -243,14 +242,14 @@ public class ConsoleBitmapVideoWriter
                 var hasPreviousPixel = previous.Pixels.Length == GetEffectiveWidth(bitmap) && previous.Pixels[0].Length == GetEffectiveHeight(bitmap);
                 var previousPixel = hasPreviousPixel ? previous.Pixels[x][y] : default(ConsoleCharacter);
 
-                if (pixel.HasChanged || hasPreviousPixel == false || (pixel.Value.EqualsIn(previousPixel) == false))
+                if (hasPreviousPixel == false || (pixel.EqualsIn(previousPixel) == false))
                 {
                     changes++;
                     diff.Diffs.Add(new ConsoleBitmapPixelDiff()
                     {
                         X = x,
                         Y = y,
-                        Value = pixel.Value
+                        Value = pixel
                     });
                 }
             }

@@ -35,9 +35,9 @@ namespace PowerArgs.Cli
                 for (var x = 0; x < bmp.Width; x++)
                 {
                     var pix = bmp.GetPixel(x, y);
-                    var fg =  pix.Value.ForegroundColor;
-                    var bg =  pix.Value.BackgroundColor;
-                    var val = pix.Value.Value;
+                    var fg =  pix.ForegroundColor;
+                    var bg =  pix.BackgroundColor;
+                    var val = pix.Value;
 
                     visuals += val;
                     colors += pallate.LookupFormatted(fg, bg);
@@ -87,7 +87,7 @@ namespace PowerArgs.Cli
                     // You can then happily edit from there.
                     var colorCode = colors.Length == width ? int.Parse(colors[x]) : defaultPallateColorCode;
                     var lookedUp = pallate.Lookup(colorCode);
-                    ret.DrawPoint(new ConsoleCharacter(character, lookedUp.ForegroundColor, lookedUp.BackgroundColor), x, lineIndex);
+                    ret.Pixels[x][lineIndex] = new ConsoleCharacter(character, lookedUp.ForegroundColor, lookedUp.BackgroundColor);
                 }
             }
             return ret;
@@ -218,8 +218,8 @@ namespace PowerArgs.Cli
                     for (var x = 0; x < bmp.Width; x++)
                     {
                         var pixel = bmp.GetPixel(x, y);
-                        var fg = pixel.Value.ForegroundColor;
-                        var bg = pixel.Value.BackgroundColor;
+                        var fg = pixel.ForegroundColor;
+                        var bg = pixel.BackgroundColor;
                         ret.Add(fg, bg);
                     }
                 }

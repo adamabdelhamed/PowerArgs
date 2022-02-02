@@ -24,14 +24,14 @@ namespace PowerArgs.Cli
                 {
                     var pixel = bitmap.GetPixel(x, y);
                    
-                    if (pixel.Value.BackgroundColor != pixel.Value.ForegroundColor && pixel.Value.BackgroundColor == RGB.Black && pixel.Value.Value != ' ')
+                    if (pixel.BackgroundColor != pixel.ForegroundColor && pixel.BackgroundColor == RGB.Black && pixel.Value != ' ')
                     {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, Color);
+                        bitmap.SetPixel(x, y, new ConsoleCharacter(pixel.Value, Color));
                     }
 
-                    if (pixel.Value.BackgroundColor != RGB.Black)
+                    if (pixel.BackgroundColor != RGB.Black)
                     {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor, Color);
+                        bitmap.SetPixel(x,y, new ConsoleCharacter(pixel.Value, pixel.ForegroundColor, Color));
                     }
                 }
             }
@@ -55,8 +55,8 @@ namespace PowerArgs.Cli
                 {
                     var pixel = bitmap.GetPixel(x, y);
 
-                    pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor.ToOther(RGB.Black, Percentage),
-                        pixel.Value.BackgroundColor.ToOther(RGB.Black, Percentage));
+                    bitmap.SetPixel(x, y, new ConsoleCharacter(pixel.Value, pixel.ForegroundColor.ToOther(RGB.Black, Percentage),
+                        pixel.BackgroundColor.ToOther(RGB.Black, Percentage)));
                 
                 }
             }
@@ -79,8 +79,8 @@ namespace PowerArgs.Cli
                 for (var y = 0; y < bitmap.Height; y++)
                 {
                     var pixel = bitmap.GetPixel(x, y);
-                    pixel.Value = new ConsoleCharacter(pixel.Value.Value, RGB.Black.ToOther(pixel.Value.ForegroundColor, Percentage),
-                        RGB.Black.ToOther(pixel.Value.BackgroundColor, Percentage));
+                    bitmap.SetPixel(x, y, new ConsoleCharacter(pixel.Value, RGB.Black.ToOther(pixel.ForegroundColor, Percentage),
+                        RGB.Black.ToOther(pixel.BackgroundColor, Percentage)));
                 }
             }
         }
@@ -106,14 +106,14 @@ namespace PowerArgs.Cli
                 {
                     var pixel = bitmap.GetPixel(x, y);
 
-                    if (pixel.Value.BackgroundColor != pixel.Value.ForegroundColor && pixel.Value.BackgroundColor == RGB.Black && pixel.Value.Value != ' ')
+                    if (pixel.BackgroundColor != pixel.ForegroundColor && pixel.BackgroundColor == RGB.Black && pixel.Value != ' ')
                     {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, targetColor);
+                        bitmap.SetPixel(x, y, new ConsoleCharacter(pixel.Value, targetColor));
                     }
 
-                    if (pixel.Value.BackgroundColor != RGB.Black)
+                    if (pixel.BackgroundColor != RGB.Black)
                     {
-                        pixel.Value = new ConsoleCharacter(pixel.Value.Value, pixel.Value.ForegroundColor, targetColor);
+                        bitmap.SetPixel(x, y, new ConsoleCharacter(pixel.Value, pixel.ForegroundColor, targetColor));
                     }
                 }
             }

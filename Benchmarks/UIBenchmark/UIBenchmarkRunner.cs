@@ -16,14 +16,14 @@ public class UIBenchmarkRunner
         var headers = new List<ConsoleString>()
         {
             "Test".ToYellow(),
-            "Paints".ToYellow(),
-            "Paint Speedup".ToYellow(),
+            "Work Done".ToYellow(),
+            "Speedup".ToYellow(),
         };
 
         var output = new ConsoleTableBuilder().FormatAsTable(headers, results.Select(r => new List<ConsoleString>()
         {
             r.Test.ToString().ToWhite(),
-            r.Temp.TotalPaints.ToString("N0").ToWhite(), 
+            r.Temp.WorkDone.ToString("N0").ToWhite(), 
             r.PaintSpeedupString,
         }).ToList());
 

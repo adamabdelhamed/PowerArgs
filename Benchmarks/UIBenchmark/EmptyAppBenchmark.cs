@@ -4,7 +4,7 @@ namespace Benchmarks;
 
 public class EmptyAppBenchmark : UIBenchmark
 {
-    protected override void RunActual(ConsoleApp app)
+    protected override float RunActual(ConsoleApp app)
     {
         app.Invoke(async () =>
         {
@@ -16,6 +16,7 @@ public class EmptyAppBenchmark : UIBenchmark
             app.Stop();
         });
         app.Run();
+        return app.TotalPaints;
     }
 }
 

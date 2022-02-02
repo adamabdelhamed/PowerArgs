@@ -25,9 +25,12 @@ namespace ArgsTests.CLI.Recording
                 var bitmapVideoWriter = new ConsoleBitmapVideoWriter(s => sharedStream.Write(Encoding.Default.GetBytes(s)));
                 
                 bitmap = new ConsoleBitmap(4, 2);
-                redBitmap = bitmapVideoWriter.WriteFrame(bitmap.FillRect(ConsoleCharacter.RedBG())).Clone();
-                greenBitmap = bitmapVideoWriter.WriteFrame(bitmap.FillRect(ConsoleCharacter.GreenBG())).Clone();
-                magentaPixelBitmap = bitmapVideoWriter.WriteFrame(bitmap.DrawPoint(ConsoleCharacter.MagentaBG(), 0, 0)).Clone();
+                bitmap.Fill(ConsoleCharacter.RedBG());
+                redBitmap = bitmapVideoWriter.WriteFrame(bitmap).Clone();
+                bitmap.Fill(ConsoleCharacter.GreenBG());
+                greenBitmap = bitmapVideoWriter.WriteFrame(bitmap).Clone();
+                bitmap.DrawPoint(ConsoleCharacter.MagentaBG(), 0, 0);
+                magentaPixelBitmap = bitmapVideoWriter.WriteFrame(bitmap).Clone();
                 bitmapVideoWriter.Finish();
 
                 sharedStream.Position = 0; // rewind the stream to the beginning to read it back
@@ -98,10 +101,8 @@ namespace ArgsTests.CLI.Recording
 
                     for (var i = 0; i < bitmap.Width; i++)
                     {
-                        bitmap.Pen = new ConsoleCharacter(' ');
-                        bitmap.FillRectUnsafe(0, 0, bitmap.Width, bitmap.Height);
-                        bitmap.Pen = new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Red);
-                        bitmap.DrawPoint(i, 0);
+                        bitmap.Fill(new ConsoleCharacter(' '));
+                        bitmap.DrawPoint(new ConsoleCharacter(' ', backgroundColor: ConsoleColor.Red), i, 0);
                         writer.WriteFrame(bitmap, true, TimeSpan.FromSeconds(.1 * i));
                     }
                     writer.Finish();

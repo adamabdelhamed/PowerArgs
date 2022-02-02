@@ -130,8 +130,8 @@ namespace PowerArgs.Cli
             if (blinkState && BlinkEnabled)
             {
                 char blinkChar = textState.CursorPosition >= toPaint.Length ? ' ' : toPaint[textState.CursorPosition].Value;
-                context.Pen = new ConsoleCharacter(blinkChar, DefaultColors.FocusContrastColor, DefaultColors.FocusColor);
-                context.DrawPoint(textState.CursorPosition - offset, 0);
+                var pen = new ConsoleCharacter(blinkChar, DefaultColors.FocusContrastColor, DefaultColors.FocusColor);
+                context.DrawPoint(pen, textState.CursorPosition - offset, 0);
             }
         }
     }

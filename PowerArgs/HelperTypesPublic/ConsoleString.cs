@@ -1367,8 +1367,7 @@ namespace PowerArgs
                 }
                 else
                 {
-                    ret.Pen = c;
-                    ret.DrawPoint(x++, y);
+                    ret.Pixels[x++][y] = c;
                 }
             }
 

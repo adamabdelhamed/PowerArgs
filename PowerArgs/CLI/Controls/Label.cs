@@ -210,8 +210,8 @@ namespace PowerArgs.Cli
 
                 for (int x = 0; x < line.Count && x < Width; x++)
                 {
-                    context.Pen = HasFocus ? new ConsoleCharacter(line[x].Value, DefaultColors.FocusContrastColor, DefaultColors.FocusColor) : line[x];
-                    context.DrawPoint(x, y);
+                    var pen = HasFocus ? new ConsoleCharacter(line[x].Value, DefaultColors.FocusContrastColor, DefaultColors.FocusColor) : line[x];
+                    context.DrawPoint(pen, x, y);
                 }
             }
         }

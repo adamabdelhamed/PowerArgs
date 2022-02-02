@@ -30,13 +30,13 @@
                 BorderColor = container.Background.ToOther(RGB.Black, .5f);
             }
             base.OnPaint(context);
-            context.Pen = new ConsoleCharacter(' ', backgroundColor: BorderColor.Value);
-            context.DrawLine(0, 0, 0, Height);
-            context.DrawLine(1, 0, 1, Height);
-            context.DrawLine(Width-1, 0, Width - 1, Height);
-            context.DrawLine(Width - 2, 0, Width - 2, Height);
-            context.DrawLine(0, 0, Width, 0);
-            context.DrawLine(0, Height-1, Width, Height-1);
+            var pen = new ConsoleCharacter(' ', backgroundColor: BorderColor.Value);
+            context.DrawLine(pen, 0, 0, 0, Height);
+            context.DrawLine(pen, 1, 0, 1, Height);
+            context.DrawLine(pen, Width - 1, 0, Width - 1, Height);
+            context.DrawLine(pen, Width - 2, 0, Width - 2, Height);
+            context.DrawLine(pen, 0, 0, Width, 0);
+            context.DrawLine(pen, 0, Height-1, Width, Height-1);
 
             if(Adornment != null)
             {

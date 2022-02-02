@@ -210,8 +210,7 @@ namespace PowerArgs.Cli
                     }
 
                     var scrolledPixel = ScrollableContent.Bitmap.GetPixel(scrollX, scrollY);
-                    context.Pen = scrolledPixel.Value;
-                    context.DrawPoint(x, y);
+                    context.DrawPoint(scrolledPixel, x, y);
                 }
             }
 
@@ -228,7 +227,7 @@ namespace PowerArgs.Cli
             {
                 for (int y = 0; y < bar.Height; y++)
                 {
-                    context.DrawPoint(bar.Bitmap.GetPixel(x, y).Value, x + bar.X, y + bar.Y);
+                    context.DrawPoint(bar.Bitmap.GetPixel(x, y), x + bar.X, y + bar.Y);
                 }
             }
         }
@@ -258,8 +257,7 @@ namespace PowerArgs.Cli
             base.OnPaint(context);
             if (HasFocus)
             {
-                context.Pen = new ConsoleCharacter(' ', backgroundColor: DefaultColors.FocusColor);
-                context.FillRectUnsafe(0, 0, Width, Height);
+                context.FillRectUnsafe(new ConsoleCharacter(' ', backgroundColor: DefaultColors.FocusColor), 0, 0, Width, Height);
             }
         }
 

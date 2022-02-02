@@ -4,7 +4,7 @@ namespace Benchmarks;
 
 public class WorstCaseBenchmark : UIBenchmark
 {
-    protected override void RunActual(ConsoleApp app)
+    protected override float RunActual(ConsoleApp app)
     {
         app.Invoke(async () =>
         {
@@ -13,11 +13,11 @@ public class WorstCaseBenchmark : UIBenchmark
             while(DateTime.UtcNow - start < TimeSpan.FromSeconds(3))
             {
                 await app.Paint();
-                panel.Even = !panel.Even;
             }
             app.Stop();
         });
         app.Run();
+        return app.TotalPaints;
     }
 }
 

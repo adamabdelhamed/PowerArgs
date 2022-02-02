@@ -6,7 +6,7 @@ namespace Benchmarks;
 
 public class AnimationBenchmark : UIBenchmark
 {
-    protected override void RunActual(ConsoleApp app)
+    protected override float RunActual(ConsoleApp app)
     {
         app.Invoke(async () =>
         {
@@ -21,6 +21,7 @@ public class AnimationBenchmark : UIBenchmark
             app.Stop();
         });
         app.Run();
+        return app.TotalPaints;
     }
 }
 

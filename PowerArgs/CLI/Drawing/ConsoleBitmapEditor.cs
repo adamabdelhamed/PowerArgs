@@ -197,7 +197,7 @@ namespace PowerArgs.Cli
             }
             else if (key.Key == ConsoleKey.Backspace)
             {
-                Bitmap.DrawPoint(new ConsoleCharacter(' '), CursorPosition.X, CursorPosition.Y);
+                Bitmap.Pixels[CursorPosition.X][CursorPosition.Y] = new ConsoleCharacter(' ');
 
                 if (cursor.X > 1)
                 {
@@ -214,12 +214,12 @@ namespace PowerArgs.Cli
             {
                 var targetX = cursor.X - 1;
                 var targetY = cursor.Y - 1;
-                var previous = Bitmap.GetPixel(targetX, targetY).Value;
-                Bitmap.Pen = new ConsoleCharacter(key.KeyChar, currentFg, currentBg);
-                Bitmap.DrawPoint(targetX, targetY);
-                if (Bitmap.Pen.EqualsIn(previous) == false)
+                var previous = Bitmap.GetPixel(targetX, targetY);
+                var pen = new ConsoleCharacter(key.KeyChar, currentFg, currentBg);
+                Bitmap.DrawPoint(pen, targetX, targetY);
+                if (pen.EqualsIn(previous) == false)
                 {
-                    BitmapChanged.Fire(new ConsoleBitmapChange(targetX, targetY, previous, Bitmap.Pen, Bitmap));
+                    BitmapChanged.Fire(new ConsoleBitmapChange(targetX, targetY, previous, pen, Bitmap));
                 }
                 cursor.X = cursor.X < Bitmap.Width ? cursor.X + 1 : cursor.X;
                 CursorMoved.Fire();

@@ -13,8 +13,7 @@ namespace PowerArgs.Cli
             {
                 for (var y = 0; y < context.Height; y++)
                 {
-                    context.Pen = _even ? evenPen : oddPen;
-                    context.DrawPoint(x, y);
+                    context.DrawPoint(_even ? evenPen : oddPen, x, y);
                     _even = !_even;
                 }
             }

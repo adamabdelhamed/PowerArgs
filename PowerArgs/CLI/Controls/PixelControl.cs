@@ -45,8 +45,7 @@ namespace PowerArgs.Cli
         protected override void OnPaint(ConsoleBitmap context)
         {
             base.OnPaint(context);
-            context.Pen = Value;
-            context.DrawPoint(0,0);
+            context.Pixels[0][0] = Value;
         }
     }
 }

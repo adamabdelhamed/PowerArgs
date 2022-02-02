@@ -345,7 +345,7 @@ public readonly struct RectF
     }
 
     public Angle CalculateAngleTo(ICollider other) => CalculateAngleTo(Left, Top, Width, Height, other.Left(), other.Top(), other.Width(), other.Height());
-    public Angle CalculateAngleTo(RectF other) => CalculateAngleTo(Left, Top, Width, Height, other.Left, other.Top, other.Width, other.Height);
+    public Angle CalculateAngleTo(in RectF other) => CalculateAngleTo(this, other);
     public Angle CalculateAngleTo(float bx, float by, float bw, float bh) => CalculateAngleTo(Left, Top, Width, Height, bx, by, bw, bh);
 
 

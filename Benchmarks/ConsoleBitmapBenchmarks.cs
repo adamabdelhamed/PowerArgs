@@ -8,6 +8,7 @@ namespace Benchmarks
     public class FillRectBenchmark
     {
         private ConsoleBitmap bitmap;
+        private ConsoleCharacter pen = new ConsoleCharacter(' ');
         public FillRectBenchmark()
         {
             bitmap = new ConsoleBitmap(80, 30);
@@ -16,7 +17,7 @@ namespace Benchmarks
         [Benchmark(Baseline = true)]
         public void FillRect()
         {
-            bitmap.FillRect(0, 0, bitmap.Width, bitmap.Height);
+            bitmap.FillRect(pen, 0, 0, bitmap.Width, bitmap.Height);
         }
     }
 
@@ -26,6 +27,7 @@ namespace Benchmarks
         private ConsoleBitmap[] continuousBitmaps;
         private ConsoleBitmap[] aFewShapesBitmaps;
         private ConsoleBitmap[] worstCasebitmaps;
+        private ConsoleCharacter pen = new ConsoleCharacter(' ');
         public PaintBenchmark()
         {
             ConsoleProvider.Current = new NoOpConsole();
@@ -40,7 +42,7 @@ namespace Benchmarks
             for (var i = 0; i < continuousBitmaps.Length; i++)
             {
                 continuousBitmaps[i] = new ConsoleBitmap(80, 30);
-                continuousBitmaps[i].FillRect(RGB.Red, 0, 0, continuousBitmaps[i].Width, continuousBitmaps[i].Height);
+                continuousBitmaps[i].FillRect(pen, 0, 0, continuousBitmaps[i].Width, continuousBitmaps[i].Height);
             }
         }
 
@@ -50,9 +52,9 @@ namespace Benchmarks
             for (var i = 0; i < aFewShapesBitmaps.Length; i++)
             {
                 aFewShapesBitmaps[i] = new ConsoleBitmap(80, 30);
-                aFewShapesBitmaps[i].FillRect(RGB.Red, 0, 0, 10, 5);
-                aFewShapesBitmaps[i].FillRect(RGB.Green, 10, 10, 10, 5);
-                aFewShapesBitmaps[i].FillRect(RGB.DarkYellow, 13, 12, 10, 5);
+                aFewShapesBitmaps[i].FillRect(pen, 0, 0, 10, 5);
+                aFewShapesBitmaps[i].FillRect(pen, 10, 10, 10, 5);
+                aFewShapesBitmaps[i].FillRect(pen, 13, 12, 10, 5);
             }
         }
 
@@ -153,7 +155,7 @@ namespace Benchmarks
 
         }
 
-        public void Write(ConsoleCharacter consoleCharacter)
+        public void Write(in ConsoleCharacter consoleCharacter)
         {
 
         }

@@ -8,13 +8,13 @@ namespace Benchmarks
 {
     public class UIBenchmarkData
     {
-        public int TotalPaints { get; set; }
+        public float WorkDone { get; set; }
 
         public static UIBenchmarkData Average(params UIBenchmarkData[] input)
         {
             return new UIBenchmarkData()
             {
-                TotalPaints = ConsoleMath.Round(input.Select(input => input.TotalPaints).Average()),
+                WorkDone = ConsoleMath.Round(input.Select(input => input.WorkDone).Average()),
             };
         }
     }
@@ -29,9 +29,9 @@ namespace Benchmarks
 
         public bool HasLKG => LKG != null;
 
-        public float TempPaintsOverLKG => HasLKG ? Temp.TotalPaints / (float)LKG.TotalPaints : 0;
+        public float TempPaintsOverLKG => HasLKG ? Temp.WorkDone / (float)LKG.WorkDone : 0;
 
-        public float PaintSpeedup => HasLKG ? (Temp.TotalPaints / (float)LKG.TotalPaints) - 1 : 0;
+        public float PaintSpeedup => HasLKG ? (Temp.WorkDone / (float)LKG.WorkDone) - 1 : 0;
   
         public float PaintSpeedupPercentage => ConsoleMath.Round(100 * PaintSpeedup, 1);
       
@@ -87,10 +87,10 @@ namespace Benchmarks
             {
                 using (var realRunApp = new ConsoleApp())
                 {
-                    RunActual(realRunApp);
+                    var result = RunActual(realRunApp);
                     output[i] = new UIBenchmarkData()
                     {
-                        TotalPaints = app.TotalPaints,
+                        WorkDone = result,
                     };
                 }
             }
@@ -165,6 +165,6 @@ namespace Benchmarks
             return false;
         }
 
-        protected abstract void RunActual(ConsoleApp app);
+        protected abstract float RunActual(ConsoleApp app);
     }
 }

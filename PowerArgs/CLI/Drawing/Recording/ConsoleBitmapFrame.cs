@@ -48,8 +48,7 @@ namespace PowerArgs.Cli
             {
                 for (var y = 0; y < Pixels[0].Length; y++)
                 {
-                    bitmap.Pen = Pixels[x][y];
-                    bitmap.DrawPoint(x, y);
+                    bitmap.Pixels[x][y] = Pixels[x][y];
                 }
             }
             return bitmap;
@@ -76,8 +75,7 @@ namespace PowerArgs.Cli
         {
             foreach (var diff in Diffs)
             {
-                bitmap.Pen = diff.Value;
-                bitmap.DrawPoint(diff.X, diff.Y);
+                bitmap.Pixels[diff.X][diff.Y] = diff.Value;
             }
             return bitmap;
         }

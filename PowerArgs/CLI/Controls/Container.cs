@@ -83,13 +83,14 @@ namespace PowerArgs.Cli
             var minY = Math.Max(control.Y, 0);
             var maxX = Math.Min(Width, control.X + control.Width);
             var maxY = Math.Min(Height, control.Y + control.Height);
+
+            var myPixX = Bitmap.Pixels.AsSpan();
             for (var x = minX; x < maxX; x++)
             {
+                var myPixY = myPixX[x].AsSpan();
                 for (var y = minY; y < maxY; y++)
                 {
-                    var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y).Value;
-                    Bitmap.Pen = controlPixel;
-                    Bitmap.DrawPointUnsafe(x, y);
+                    myPixY[y] = control.Bitmap.Pixels[x - control.X][y - control.Y];
                 }
             }
         }
@@ -104,43 +105,40 @@ namespace PowerArgs.Cli
             {
                 for (var y = minY; y < maxY; y++)
                 {
-                    var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y).Value;
+                    var controlPixel = control.Bitmap.Pixels[x - control.X][y - control.Y];
 
                     if (controlPixel.BackgroundColor != ConsoleString.DefaultBackgroundColor)
                     {
-                        Bitmap.Pen = controlPixel;
-                        Bitmap.DrawPointUnsafe(x, y);
+                        Bitmap.Pixels[x][y] = controlPixel;
                     }
                     else
                     {
-                        var myPixel = Bitmap.GetPixel(x, y).Value;
+                        var myPixel = Bitmap.Pixels[x][y];
                         if (myPixel.BackgroundColor != ConsoleString.DefaultBackgroundColor)
                         {
                             var composedValue = new ConsoleCharacter(controlPixel.Value, controlPixel.ForegroundColor, myPixel.BackgroundColor);
-                            Bitmap.Pen = composedValue;
-                            Bitmap.DrawPointUnsafe(x, y);
+                            Bitmap.Pixels[x][y] = composedValue;
                         }
                         else
                         {
-                            Bitmap.Pen = controlPixel;
-                            Bitmap.DrawPointUnsafe(x, y);
+                            Bitmap.Pixels[x][y] = controlPixel;
                         }
                     }
                 }
             }
         }
 
-        private bool IsVisibleOnMyPanel(ConsolePixel pixel)
+        private bool IsVisibleOnMyPanel(in ConsoleCharacter pixel)
         {
-            var c = pixel.Value.Value;
+            var c = pixel.Value;
 
             if(c == ' ')
             {
-                return pixel.Value.BackgroundColor != Background;
+                return pixel.BackgroundColor != Background;
             }
             else
             {
-                return pixel.Value.ForegroundColor != Background || pixel.Value.BackgroundColor != Background;
+                return pixel.ForegroundColor != Background || pixel.BackgroundColor != Background;
             }
         }
 
@@ -154,15 +152,14 @@ namespace PowerArgs.Cli
             {
                 for (var y = minY; y < maxY; y++)
                 {
-                    var controlPixel = control.Bitmap.GetPixel(x - control.X, y - control.Y);
+                    var controlPixel = control.Bitmap.Pixels[x - control.X][ y - control.Y];
 
                     var controlPixelHasRenderableContent = IsVisibleOnMyPanel(controlPixel);
 
  
                     if (controlPixelHasRenderableContent)
                     {
-                        Bitmap.Pen = controlPixel.Value;
-                        Bitmap.DrawPointUnsafe(x, y);
+                        Bitmap.Pixels[x][y] = controlPixel;
                     }
                 }
             }

@@ -30,9 +30,15 @@ namespace PowerArgs.Cli.Physics
 
             var ret = new List<ICollider>();
             var dynamicEx = dynamicExclusions != null ? dynamicExclusions.Invoke() : null;
-            foreach (var e in SpaceTime.CurrentSpaceTime.Elements)
+            var funcs = Time.CurrentTime.TimeFunctions;
+            for (var i = 0; i < funcs.Count; i++)
             {
-                if (e == element)
+                var e = funcs[i] as SpacialElement;
+                if(e == null)
+                {
+                    continue;
+                }
+                else if (e == element)
                 {
                     continue;
                 }

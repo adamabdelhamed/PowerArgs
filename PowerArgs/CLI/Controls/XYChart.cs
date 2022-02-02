@@ -399,8 +399,8 @@ namespace PowerArgs.Cli
 
         private void PaintXAxis(ConsoleBitmap context)
         {
-            context.Pen = new ConsoleCharacter('-', Foreground, Background);
-            context.DrawLine(XAxisLeft, XAxisYValue, XAxisRight, XAxisYValue); // horizontal line at the bottom of the x axis
+            var pen = new ConsoleCharacter('-', Foreground, Background);
+            context.DrawLine(pen, XAxisLeft, XAxisYValue, XAxisRight, XAxisYValue); // horizontal line at the bottom of the x axis
 
             var minSpaceBetweenLabels = 1;
             var maxNumberOfLabels = XAxisWidth / (MaxXAxisLabelLength + minSpaceBetweenLabels);
@@ -426,8 +426,7 @@ namespace PowerArgs.Cli
 
                     if (x + labelInfo.Label.Length <= Width)
                     {
-                        context.Pen = new ConsoleCharacter('^', Foreground, Background);
-                        context.DrawPoint(x, y - 1);
+                        context.DrawPoint(new ConsoleCharacter('^', Foreground, Background), x, y - 1);
                         context.DrawString(labelInfo.Label, x, y);
                     }
                 }
@@ -464,17 +463,15 @@ namespace PowerArgs.Cli
         private void RenderYAxis(ConsoleBitmap context)
         {
             var labels = DetermineYAxisLabels();
-
-            context.Pen = new ConsoleCharacter('|', Foreground, Background);
-            context.DrawLine(XAxisLeft, YAxisTop, XAxisLeft, YAxisBottom);
+            context.DrawLine(new ConsoleCharacter('|', Foreground, Background), XAxisLeft, YAxisTop, XAxisLeft, YAxisBottom);
 
             foreach (var label in labels)
             {
                 var x = maxYAxisLabelLength - label.Label.Length;
                 var y = ConvertYValueToPixel(label.Value);
                 context.DrawString(label.Label, x, y);
-                context.Pen = new ConsoleCharacter('>', Foreground, Background);
-                context.DrawPoint(maxYAxisLabelLength, y);
+                var pen = new ConsoleCharacter('>', Foreground, Background);
+                context.DrawPoint(pen, maxYAxisLabelLength, y);
             }
         }
 

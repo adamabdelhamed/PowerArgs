@@ -358,9 +358,9 @@ namespace PowerArgs.Cli
         /// <param name="context">the drawing surface</param>
         protected override void OnPaint(ConsoleBitmap context)
         {
-            context.Pen = new ConsoleCharacter(' ', null, myFocusStackDepth == Application.FocusManager.StackDepth ? DefaultColors.H1Color : DefaultColors.DisabledColor);
-            context.DrawLine(0, 0, Width, 0);
-            context.DrawLine(0, Height-1, Width, Height-1);
+            var pen = new ConsoleCharacter(' ', null, myFocusStackDepth == Application.FocusManager.StackDepth ? DefaultColors.H1Color : DefaultColors.DisabledColor);
+            context.DrawLine(pen, 0, 0, Width, 0);
+            context.DrawLine(pen, 0, Height-1, Width, Height-1);
             base.OnPaint(context);
         }
 

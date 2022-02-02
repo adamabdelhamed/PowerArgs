@@ -534,8 +534,7 @@ namespace PowerArgs.Cli
         private ConsoleCharacter defaultPen = new ConsoleCharacter(' ', null, DefaultColors.BackgroundColor);
         private void PaintInternal()
         {
-            Bitmap.Pen = defaultPen;
-            Bitmap.FillRectUnsafe(0, 0, LayoutRoot.Width, LayoutRoot.Height);
+            Bitmap.Fill(defaultPen);
             LayoutRoot.Paint();
 
             Recorder?.WriteFrame(Bitmap);
