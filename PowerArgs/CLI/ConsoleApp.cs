@@ -222,7 +222,7 @@ namespace PowerArgs.Cli
             FocusManager = new FocusManager();
             LayoutRoot.Application = this;
             isFullScreen = false;
-            FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), () => Paint(), this);
+            FocusManager.SubscribeForLifetime(nameof(FocusManager.FocusedControl), () => RequestPaintAsync(), this);
             LayoutRoot.Controls.BeforeAdded.SubscribeForLifetime((c) => { c.Application = this; c.BeforeAddedToVisualTreeInternal(); }, this);
             LayoutRoot.Controls.BeforeRemoved.SubscribeForLifetime((c) => { c.BeforeRemovedFromVisualTreeInternal(); }, this);
             LayoutRoot.Controls.Added.SubscribeForLifetime(ControlAddedToVisualTree, this);
@@ -259,6 +259,7 @@ namespace PowerArgs.Cli
         /// <param name="o">the object to stringify</param>
         public static void DebugLine(object o) => DebugLine(o?.ToString());
 
+        private bool paintRequested;
         private void DrainPaints()
         {
             if (paintRequests.Count > 0)
@@ -275,6 +276,12 @@ namespace PowerArgs.Cli
                 }
                
                 paintRateMeter.Increment();
+                paintRequested = false;
+            }
+            else if(paintRequested)
+            {
+                PaintInternal();
+                paintRequested = false;
             }
         }
 
@@ -372,14 +379,14 @@ namespace PowerArgs.Cli
                 this.LayoutRoot.Height = Bitmap.Console.WindowHeight - 1;
             }
 
-            Paint();
+            RequestPaint();
         }
 
         /// <summary>
         /// Queues up a request to paint the app.  The system will dedupe multiple paint requests when there are multiple in the pump's work queue
         /// <returns>a Task that resolves after the paint happens</returns>
         /// </summary>
-        public Task Paint()
+        public Task RequestPaintAsync()
         {
             if (IsDrainingOrDrained) return Task.CompletedTask;
             AssertAppThread(this);
@@ -388,8 +395,15 @@ namespace PowerArgs.Cli
             return d.Task;
         }
 
+        public void RequestPaint()
+        {
+            paintRequested = true;
+        }
+
+        public int nextId = 0;
         private void ControlAddedToVisualTree(ConsoleControl c)
         {
+            c.ColliderHashCode = nextId++;
             c.Application = this;
             c.OnDisposed(() =>
             {
@@ -509,7 +523,7 @@ namespace PowerArgs.Cli
             {
                 // not handled
             }
-            Paint();
+            RequestPaint();
         }
 
         private void ExitInternal()

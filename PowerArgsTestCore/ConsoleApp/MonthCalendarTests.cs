@@ -18,7 +18,7 @@ namespace ArgsTests.CLI.Controls
             app.InvokeNextCycle(() => app.LayoutRoot.Add(new MonthCalendar(new MonthCalendarOptions() { Year = 2000, Month = 1 })).Fill());
             app.InvokeNextCycle(async () =>
             {
-                await app.Paint();
+                await app.RequestPaintAsync();
                 app.RecordKeyFrame();
                 app.Stop();
             });

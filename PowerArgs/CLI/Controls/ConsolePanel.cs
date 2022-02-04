@@ -88,7 +88,7 @@ namespace PowerArgs.Cli
         private void SortZ()
         {
             sortedControls.Sort(this);
-            ConsoleApp.Current?.Paint();
+            ConsoleApp.Current?.RequestPaint();
         }
  
 

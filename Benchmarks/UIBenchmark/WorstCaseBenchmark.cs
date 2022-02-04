@@ -12,7 +12,7 @@ public class WorstCaseBenchmark : UIBenchmark
             var panel = app.LayoutRoot.Add(new WorstCasePerfTestPanel()).Fill();
             while(DateTime.UtcNow - start < TimeSpan.FromSeconds(3))
             {
-                await app.Paint();
+                await app.RequestPaintAsync();
             }
             app.Stop();
         });

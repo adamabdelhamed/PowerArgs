@@ -47,7 +47,7 @@ namespace ArgsTests.CLI.Physics
                         stEx = ex;
                     }
 
-                    await app.Paint();
+                    await app.RequestPaintAsync();
                     d.SetResult(true);
                 });
 

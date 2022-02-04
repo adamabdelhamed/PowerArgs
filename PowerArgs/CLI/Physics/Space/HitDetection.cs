@@ -13,7 +13,7 @@ namespace PowerArgs.Cli.Physics
     public class Impact
     {
         public Angle Angle { get; set; }
-        public SpacialElement MovingObject { get; set; }
+        public ICollider MovingObject { get; set; }
         public ICollider ColliderHit { get; set; }
         public HitType HitType { get; set; }
         public HitPrediction Prediction { get; set; }
@@ -36,6 +36,14 @@ namespace PowerArgs.Cli.Physics
         public float IntersectionY { get; set; }
 
         public LocF Intersection => new LocF(IntersectionX, IntersectionY);
+
+        public void Clear()
+        {
+            ColliderHit = null;
+            ObstacleHitBounds = default;
+            Edge = default;
+            Type = HitType.None;
+        }
     }
 
     public class HitDetectionOptions
@@ -47,6 +55,8 @@ namespace PowerArgs.Cli.Physics
 
         public Angle Angle { get; set; }
         public float Visibility { get; set; } 
+
+        public int? ObstacleBufferLength { get; set; }
 
         public CastingMode Mode { get; set; } = CastingMode.Precise;
 
@@ -66,6 +76,14 @@ namespace PowerArgs.Cli.Physics
             {
                 Obstacles[i] = Colliders[i].Bounds;
             }
+        }
+
+        public HitDetectionOptions(ICollider c, ICollider[] colliders, RectF[] obstacles, int length)
+        {
+            MovingObject = c.Bounds;
+            Colliders = colliders;
+            Obstacles = obstacles;
+            ObstacleBufferLength = length;
         }
     }
 
@@ -144,12 +162,12 @@ namespace PowerArgs.Cli.Physics
 
         public static HitPrediction PredictHit(HitDetectionOptions options)
         {
-            return PredictHit(options.MovingObject, options.Obstacles.ToArray(), options.Angle, options.Colliders, options.Visibility, options.Mode, options.EdgesHitOutput);
+            return PredictHit(options.MovingObject, options.Obstacles.ToArray(), options.Angle, options.Colliders, options.Visibility, options.Mode, options.EdgesHitOutput, options.ObstacleBufferLength);
         }
 
-        public static HitPrediction PredictHit(RectF movingObject, RectF[] obstacles, Angle angle, ICollider[] colliders = null, float visibility = 10000f, CastingMode mode = CastingMode.Precise, List<Edge> edgesHitOutput = null)
+        public static HitPrediction PredictHit(RectF movingObject, RectF[] obstacles, Angle angle, ICollider[] colliders = null, float visibility = 10000f, CastingMode mode = CastingMode.Precise, List<Edge> edgesHitOutput = null, int? bufferLen = null, HitPrediction toReuse = null)
         {
-            HitPrediction prediction = new HitPrediction();
+            var prediction = toReuse ?? new HitPrediction();
             prediction.LKGX = movingObject.Left;
             prediction.LKGY = movingObject.Top;
             prediction.Visibility = visibility;
@@ -218,7 +236,8 @@ namespace PowerArgs.Cli.Physics
             Edge closestEdge = default;
             float closestIntersectionX = 0;
             float closestIntersectionY = 0;
-            for (var i = 0; i < obstacles.Length; i++)
+            var len = bufferLen.HasValue ? bufferLen.Value : obstacles.Length;
+            for (var i = 0; i < len; i++)
             {
                 var obstacle = obstacles[i];
                 if (visibility == float.MaxValue || movingObject.CalculateDistanceTo(obstacle) <= visibility)

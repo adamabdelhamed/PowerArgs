@@ -138,7 +138,7 @@ namespace PowerArgs.Cli
                 Setter = p =>
                 {
                     filter.Percentage = p;
-                    ConsoleApp.Current.Paint();
+                    ConsoleApp.Current.RequestPaint();
                 }
             });
             return filter;
@@ -159,7 +159,7 @@ namespace PowerArgs.Cli
                 Setter = p =>
                 {
                     filter.Percentage = p;
-                    ConsoleApp.Current.Paint();
+                    ConsoleApp.Current.RequestPaint();
                 }
             });
             return filter;
@@ -180,7 +180,7 @@ namespace PowerArgs.Cli
                 Setter = p =>
                 {
                     filter.Percentage = p;
-                    ConsoleApp.Current.Paint();
+                    ConsoleApp.Current.RequestPaint();
                 }
             });
             return filter;

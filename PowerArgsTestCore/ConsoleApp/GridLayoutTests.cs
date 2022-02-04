@@ -54,7 +54,7 @@ namespace ArgsTests.CLI.Controls
                     }
                 }
 
-                await app.Paint();
+                await app.RequestPaintAsync();
                 app.RecordKeyFrame();
                 app.Stop();
             });

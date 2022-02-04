@@ -11,6 +11,7 @@ public class UIBenchmarkRunner
         for(var i = 0; i < toRun.Length; i++)
         {
             results[i] = toRun[i].Run();
+            GC.Collect(2, GCCollectionMode.Forced);
         }
 
         var headers = new List<ConsoleString>()

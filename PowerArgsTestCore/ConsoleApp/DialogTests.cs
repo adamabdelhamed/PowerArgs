@@ -105,7 +105,7 @@ namespace ArgsTests.CLI.Controls
                 Assert.IsFalse(dialogTask.IsFulfilled());
                 app.SendKey(new ConsoleKeyInfo(' ', ConsoleKey.Enter, false, false, false));
                 var stringVal = (await dialogTask).ToString();
-                await app.Paint();
+                await app.RequestPaintAsync();
                 app.RecordKeyFrame();
                 Assert.AreEqual("Adam", stringVal);
                 app.Stop();

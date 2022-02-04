@@ -32,7 +32,7 @@ namespace PowerArgs.Cli
             {
                 this.Width = Bitmap.Width;
                 this.Height = Bitmap.Height;
-                Application?.Paint();
+                Application?.RequestPaint();
             }
         }
 

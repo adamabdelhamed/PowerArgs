@@ -104,8 +104,8 @@ namespace ArgsTests.CLI
 
         public async Task PaintAndRecordKeyFrameAsync()
         {
-            await Paint();
-            await Paint();
+            await RequestPaintAsync();
+            await RequestPaintAsync();
 
             if (ConsoleApp.Current == this)
             {

@@ -77,7 +77,7 @@ namespace PowerArgs.Cli
             {
                 if (HasFocus == false) return;
                 blinkState = !blinkState;
-                Application.Paint();
+                Application.RequestPaint();
             }, BlinkInterval);
         }
 

@@ -1,24 +1,26 @@
 ﻿using PowerArgs.Cli.Physics;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PowerArgs.Cli
 {
 
     public class Rectangular : ObservableObject, ICollider
     {
-        public RectF ToRectF() => new RectF(x, y, w, h);
-
         private int x, y, w, h;
+        private RectF fBounds;
 
-  
+
+        private int z;
+ 
+        public int ZIndex { get => z; set => SetHardIf(ref z, value, z != value); }
+
+        public int ColliderHashCode { get; internal set; }
+
         public RectF Bounds
         {
-            get { return ToRectF(); }
+            get { return fBounds; }
             set
             {
+                fBounds = value;
                 var newX = ConsoleMath.Round(value.Left);
                 var newY = ConsoleMath.Round(value.Top);
                 var newW = ConsoleMath.Round(value.Width);
@@ -34,6 +36,8 @@ namespace PowerArgs.Cli
             }
         }
 
+        public bool CanCollideWith(ICollider other) => true;
+
         public int Width
         {
             get
@@ -44,6 +48,7 @@ namespace PowerArgs.Cli
             {
                 if (w == value) return;
                 w = value;
+                fBounds = new RectF(fBounds.Left, fBounds.Top, w, fBounds.Height);
                 FirePropertyChanged(nameof(Bounds));
             }
         }
@@ -57,6 +62,7 @@ namespace PowerArgs.Cli
             {
                 if (h == value) return;
                 h = value;
+                fBounds = new RectF(fBounds.Left, fBounds.Top, fBounds.Width, h);
                 FirePropertyChanged(nameof(Bounds));
             }
         }
@@ -70,6 +76,7 @@ namespace PowerArgs.Cli
             {
                 if (x == value) return;
                 x = value;
+                fBounds = new RectF(x, fBounds.Top, fBounds.Width, fBounds.Height);
                 FirePropertyChanged(nameof(Bounds));
             }
         }
@@ -83,6 +90,7 @@ namespace PowerArgs.Cli
             {
                 if (y == value) return;
                 y = value;
+                fBounds = new RectF(fBounds.Left, y, fBounds.Width, fBounds.Height);
                 FirePropertyChanged(nameof(Bounds));
             }
         }
@@ -90,8 +98,6 @@ namespace PowerArgs.Cli
         public float Left => X;
 
         public float Top => Y;
-
-        RectF ICollider.Bounds => new RectF(X,Y,Width, Height);
 
         public RectF MassBounds => new RectF(X, Y, Width, Height);
     }

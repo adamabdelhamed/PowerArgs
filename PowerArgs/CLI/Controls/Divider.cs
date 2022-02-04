@@ -23,7 +23,7 @@
         protected override void OnPaint(ConsoleBitmap context)
         {
             var c = Orientation == Orientation.Vertical ? '|' : '-';
-            context.FillRect(new ConsoleCharacter(c, Foreground, Background), 0, 0, Width, Height);
+            context.Fill(new ConsoleCharacter(c, Foreground, Background));
         }
     }
 }

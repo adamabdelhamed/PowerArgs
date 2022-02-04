@@ -51,7 +51,7 @@ namespace ArgsTests.CLI.Controls
             app.InvokeNextCycle(async () =>
             {
                 app.LayoutRoot.Add(new TextBox() { Value = "SomeText".ToWhite() }).Fill();
-                await app.Paint();
+                await app.RequestPaintAsync();
                 Assert.IsTrue(app.Find("SomeText".ToWhite()).HasValue);
                 app.Stop();
             });

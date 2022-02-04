@@ -15,7 +15,7 @@ public class AnimationBenchmark : UIBenchmark
             while (DateTime.UtcNow - startTime < TimeSpan.FromSeconds(3))
             {
                 square.X = square.Right() == app.LayoutRoot.Width ? 0 : square.X + 1;
-                await app.Paint();
+                await app.RequestPaintAsync();
             }
             
             app.Stop();

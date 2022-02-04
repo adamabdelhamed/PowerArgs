@@ -173,7 +173,7 @@ namespace PowerArgs.Cli.Physics
                     var bounds = velocity.BoundsTransform != null ? velocity.BoundsTransform() : velocity.Element.Bounds;
                     var options = new HitDetectionOptions(new ColliderBox(bounds), obstacles);
                     options.Angle = velocity.Angle;
-                    options.Visibility = SpaceTime.CurrentSpaceTime.Bounds.Hypotenous;
+                    options.Visibility = 2 * d;
                     options.Mode = CastingMode.Precise;
                     var hitPrediction = HitDetection.PredictHit(options);
                     velocity.NextCollision = hitPrediction;

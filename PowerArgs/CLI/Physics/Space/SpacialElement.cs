@@ -79,6 +79,7 @@ namespace PowerArgs.Cli.Physics
 
     public class SpacialElement : TimeFunction, ISpacialElement
     {
+        public int ColliderHashCode { get; set; }
         public static IObstacleResolver ObstacleResolver { get; set; } = new DefaultObstacleResolver();
         public Event SizeOrPositionChanged { get; private set; } = new Event();
         public float Left { get; private set; }
@@ -93,7 +94,15 @@ namespace PowerArgs.Cli.Physics
 
         public SpacialElementRenderer Renderer { get; internal set; } 
 
-        public RectF Bounds => new RectF(Left, Top, Width, Height);
+        public RectF Bounds
+        {
+            get => new RectF(Left, Top, Width, Height);
+            set
+            {
+                MoveTo(value.Left, value.Top);
+                ResizeTo(value.Width, value.Height);
+            }
+        }
         public RectF MassBounds => this is IHaveMassBounds ? (this as IHaveMassBounds).CalculateMassBounds() : this.Bounds;
 
         public float CenterX => Left + (Width / 2);
@@ -117,6 +126,11 @@ namespace PowerArgs.Cli.Physics
             {
                 return ObservableProperties.Get<T>(key);
             }
+        }
+
+        public bool CanCollideWith(ICollider other)
+        {
+            return this.ZIndex == other.ZIndex;
         }
 
         public List<ICollider> GetObstacles(float? z = null) => ObstacleResolver.GetObstacles(this, z);

@@ -201,8 +201,12 @@ public readonly struct Edge
 
 public interface ICollider
 {
-    public RectF Bounds { get; }
+    public int ColliderHashCode { get; }
+    public int ZIndex { get; }
+    public RectF Bounds { get; set; }
     public RectF MassBounds { get; }
+
+    public bool CanCollideWith(ICollider other);
 }
 
 
@@ -255,12 +259,19 @@ public static class IColliderEx
 
 public class ColliderBox : ICollider
 {
-    public RectF Bounds{ get; private set; }
+    public int ColliderHashCode { get; set; }
+    public int ZIndex { get; }
+    public RectF Bounds{ get; set; }
     public RectF MassBounds { get; private set; }
     public ColliderBox(RectF f)
     {
         Bounds = f;
         MassBounds = f;
+    }
+
+    public bool CanCollideWith(ICollider other)
+    {
+        return true;
     }
 }
 
@@ -304,8 +315,8 @@ public readonly struct RectF
     public override string ToString() => $"{Left},{Top} {Width}x{Height}";
     public bool Equals(in RectF other) => Left == other.Left && Top == other.Top && Width == other.Width && Height == other.Height;
     public override bool Equals([NotNullWhen(true)] object? obj) => obj is RectF && Equals((RectF)obj);
-    public static bool operator ==(RectF a, RectF b) => a.Equals(b);
-    public static bool operator !=(RectF a, RectF b) => a.Equals(b) == false;
+    public static bool operator ==(in RectF a, in RectF b) => a.Equals(b);
+    public static bool operator !=(in RectF a, in RectF b) => a.Equals(b) == false;
 
     public override int GetHashCode()
     {
@@ -350,9 +361,9 @@ public readonly struct RectF
 
 
     public float CalculateDistanceTo(ICollider other) => CalculateDistanceTo(Left, Top, Width, Height, other.Left(), other.Top(), other.Width(), other.Height());
-    public float CalculateDistanceTo(RectF other) => CalculateDistanceTo(this, other);
+    public float CalculateDistanceTo(in RectF other) => CalculateDistanceTo(this, other);
     public float CalculateDistanceTo(float bx, float by, float bw, float bh) => CalculateDistanceTo(Left, Top, Width, Height, bx, by, bw, bh);
-    public float CalculateNormalizedDistanceTo(RectF other) => CalculateNormalizedDistanceTo(Left, Top, Width, Height, other.Left, other.Top, other.Width, other.Height);
+    public float CalculateNormalizedDistanceTo(in RectF other) => CalculateNormalizedDistanceTo(Left, Top, Width, Height, other.Left, other.Top, other.Width, other.Height);
     public float CalculateNormalizedDistanceTo(float bx, float by, float bw, float bh) => CalculateNormalizedDistanceTo(Left, Top, Width, Height, bx, by, bw, bh);
 
     public static Angle CalculateAngleTo(float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh)

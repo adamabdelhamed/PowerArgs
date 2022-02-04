@@ -66,12 +66,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public string Id { get { return Get<string>(); } set { Set(value); } }
 
-        private int z;
-        /// <summary>
-        /// Used to determine the order in which to paint a control within its parent.  Controls
-        /// with higher ZIndex values are pained on top of controls with lower values.
-        /// </summary>
-        public int ZIndex { get => z; set => SetHardIf(ref z,value, z != value); }
+
 
         /// <summary>
         /// An event that fires after this control gets focus
@@ -258,7 +253,7 @@ namespace PowerArgs.Cli
             if (this.Application != null && this.Application.IsRunning && this.Application.IsDrainingOrDrained == false)
             {
                 ConsoleApp.AssertAppThread(this.Application);
-                this.Application.Paint();
+                this.Application.RequestPaint();
             }
         }
 
@@ -365,7 +360,7 @@ namespace PowerArgs.Cli
                 Application.InvokeNextCycle(Ready.Fire);
             }
             AddedToVisualTree.Fire();
-            SubscribeForLifetime(ObservableObject.AnyProperty, ()=> Application?.Paint(), this);
+            SubscribeForLifetime(ObservableObject.AnyProperty, ()=> Application?.RequestPaint(), this);
         }
 
         internal void BeforeAddedToVisualTreeInternal()
@@ -394,7 +389,7 @@ namespace PowerArgs.Cli
             
             if (TransparentBackground == false)
             {
-                Bitmap.FillRectUnsafe(new ConsoleCharacter(' ', null, Background), 0, 0, Width, Height);
+                Bitmap.Fill(new ConsoleCharacter(' ', null, Background));
             }
 
             OnPaint(Bitmap);

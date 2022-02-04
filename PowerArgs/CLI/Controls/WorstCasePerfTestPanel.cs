@@ -18,7 +18,7 @@ namespace PowerArgs.Cli
                 }
             }
             _even = !_even;
-            ConsoleApp.Current.Paint();
+            ConsoleApp.Current.RequestPaint();
         }
     }
 }

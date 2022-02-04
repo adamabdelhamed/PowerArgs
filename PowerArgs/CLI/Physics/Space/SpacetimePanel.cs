@@ -184,7 +184,7 @@ namespace PowerArgs.Cli.Physics
         {
             if(Element.Pen.HasValue)
             {
-                context.FillRect(Element.Pen.Value, 0, 0, Width, Height);
+                context.Fill(Element.Pen.Value);
             }
             else
             {

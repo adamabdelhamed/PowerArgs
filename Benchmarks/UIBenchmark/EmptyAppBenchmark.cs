@@ -11,7 +11,7 @@ public class EmptyAppBenchmark : UIBenchmark
             var start = DateTime.UtcNow;
             while (DateTime.UtcNow - start < TimeSpan.FromSeconds(3))
             {
-                await app.Paint();
+                await app.RequestPaintAsync();
             }
             app.Stop();
         });
