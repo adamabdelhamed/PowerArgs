@@ -337,6 +337,7 @@ namespace PowerArgs.Cli
 
             try
             {
+                Invoke(Startup);
                 await base.Start();
             }
             finally
@@ -359,12 +360,15 @@ namespace PowerArgs.Cli
             try
             {
                 base.Run();
+                Invoke(Startup);
             }
             finally
             {
                 ExitInternal();
             }
         }
+
+        protected virtual Task Startup() => Task.CompletedTask;
 
         private void HandleDebouncedResize()
         {
