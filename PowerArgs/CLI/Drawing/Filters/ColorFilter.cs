@@ -144,7 +144,7 @@ namespace PowerArgs.Cli
             return filter;
         }
 
-        public static async Task<FadeInFilter> FadeIn(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null, float percentage = 1)
+        public static async Task<FadeInFilter> FadeIn(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null, float percentage = 1, IDelayProvider delayProvider = null)
         {
             easingFunction = easingFunction ?? Animator.Linear;
             var filter = new FadeInFilter();
@@ -155,6 +155,7 @@ namespace PowerArgs.Cli
                 From = 0, 
                 To = percentage,
                 Duration = duration,
+                DelayProvider = delayProvider,
                 EasingFunction = (p)=> easingFunction(p),
                 Setter = p =>
                 {
@@ -165,7 +166,7 @@ namespace PowerArgs.Cli
             return filter;
         }
 
-        public static async Task<FadeOutFilter> FadeOut(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null, float percentage = 1)
+        public static async Task<FadeOutFilter> FadeOut(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null, float percentage = 1, IDelayProvider delayProvider = null)
         {
             easingFunction = easingFunction ?? Animator.Linear;
             var filter = new FadeOutFilter();
@@ -176,6 +177,7 @@ namespace PowerArgs.Cli
                 From = 0,
                 To = percentage,
                 Duration = duration,
+                DelayProvider = delayProvider,
                 EasingFunction = (p) => easingFunction(p),
                 Setter = p =>
                 {
