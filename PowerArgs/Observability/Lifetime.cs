@@ -91,12 +91,16 @@ namespace PowerArgs
         /// Delays until this lifetime is complete
         /// </summary>
         /// <returns>an async task</returns>
-        public async Task AwaitEndOfLifetime()
+        public Task AsTask()
         {
-            while(IsExpired == false)
-            {
-                await Task.Delay(10);
-            }
+            var tcs = new TaskCompletionSource<bool>();
+            OnDisposed(SetResultTrue, tcs);
+            return tcs.Task;
+        }
+
+        private void SetResultTrue(object tcs)
+        {
+            ((TaskCompletionSource<bool>)tcs).SetResult(true);
         }
 
         /// <summary>
@@ -109,6 +113,14 @@ namespace PowerArgs
             if (IsExpired == false)
             {
                 _manager.OnDisposed(cleanupCode);
+            }
+        }
+
+        public void OnDisposed(Action<object> cleanupCode, object param)
+        {
+            if (IsExpired == false)
+            {
+                _manager.OnDisposed(cleanupCode, param);
             }
         }
 
@@ -236,6 +248,14 @@ namespace PowerArgs
                         foreach (var item in _manager.cleanupItems2.ToArray())
                         {
                             item.Dispose();
+                        }
+                    }
+
+                    if (_manager.cleanupItemsWithParams != null)
+                    {
+                        foreach (var item in _manager.cleanupItemsWithParams.ToArray())
+                        {
+                            item.Item1(item.Item2);
                         }
                     }
                     _manager = null;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace PowerArgs
+﻿namespace PowerArgs
 {
     /// <summary>
     /// An interface that defined the contract for associating cleanup
@@ -59,6 +55,7 @@ namespace PowerArgs
     {
         internal List<Action> cleanupItems;
         internal List<IDisposable> cleanupItems2;
+        internal List<(Action<object>, object)> cleanupItemsWithParams;
 
         /// <summary>
         /// returns true if expired
@@ -94,6 +91,12 @@ namespace PowerArgs
         {
             cleanupItems = cleanupItems ?? new List<Action>();
             cleanupItems.Add(cleanupCode);
+        }
+
+        public void OnDisposed(Action<object> cleanupCode, object param)
+        {
+            cleanupItemsWithParams = cleanupItemsWithParams ?? new List<(Action<object>, object)>();
+            cleanupItemsWithParams.Add((cleanupCode,param));
         }
     }
 }

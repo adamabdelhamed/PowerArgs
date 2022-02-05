@@ -172,7 +172,7 @@ namespace PowerArgs.Cli
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab,  ConsoleModifiers.Shift, up, popup);
                 Application.FocusManager.GlobalKeyHandlers.PushForLifetime(ConsoleKey.Tab, null, down, popup);
 
-                await popup.AwaitEndOfLifetime();
+                await popup.AsTask();
             }
             finally
             {

@@ -14,10 +14,14 @@ namespace PowerArgs
         private int subCount;
         private (Action, ILifetimeManager)[] subscribers;
 
+        private int paramsTail;
+        private int paramsSubCount;
+        private (Action<object>, object, ILifetimeManager)[] subscribersWithParams;
+
         /// <summary>
         /// returns true if there is at least one subscriber
         /// </summary>
-        public bool HasSubscriptions => subCount > 0;
+        public bool HasSubscriptions => subCount > 0 || paramsSubCount > 0;
          
         /// <summary>
         /// Fires the event. All subscribers will be notified
@@ -28,15 +32,13 @@ namespace PowerArgs
             {
                 subscribers[i].Item1?.Invoke();
             }
+
+            for (var i = 0; i < paramsTail; i++)
+            {
+                subscribersWithParams[i].Item1?.Invoke(subscribersWithParams[i].Item2);
+            }
         }
 
-        /// <summary>
-        /// Creates a new event
-        /// </summary>
-        public Event()
-        {
-            subscribers = new (Action, ILifetimeManager)[10];
-        }
 
         /// <summary>
         /// Subscribes to this event such that the given handler will be called when the event fires 
@@ -50,21 +52,46 @@ namespace PowerArgs
             var myI = tail++;
             subCount++;
             subscribers[myI] = (handler, sub);
-            sub.OnDisposed(() =>
-            {
-                subscribers[myI] = default;
-                subCount--;
-            });
+            sub.OnDisposed(DisposeOf, myI);
             return sub;
+        }
+
+        public ILifetime SubscribeUnmanaged(Action<object> handler, object param)
+        {
+            EnsureRoomForMoreWithParams();
+            var sub = new Lifetime();
+            var myI = tail++;
+            paramsSubCount++;
+            subscribersWithParams[myI] = (handler, param, sub);
+            sub.OnDisposed(DisposeOf, myI);
+            return sub;
+        }
+
+        private void DisposeOf(object index)
+        {
+            subscribers[(int)index] = default;
+            subCount--;
         }
 
         private void EnsureRoomForMore()
         {
-            if(tail == subscribers.Length)
+            subscribers = subscribers ?? new (Action, ILifetimeManager)[10];
+            if (tail == subscribers.Length)
             {
                 var tmp = subscribers;
                 subscribers = new (Action, ILifetimeManager)[tmp.Length * 2];
                 Array.Copy(tmp, subscribers, tmp.Length);
+            }
+        }
+
+        private void EnsureRoomForMoreWithParams()
+        {
+            subscribersWithParams = subscribersWithParams ?? new (Action<object>, object, ILifetimeManager)[10];
+            if (paramsTail == subscribersWithParams.Length)
+            {
+                var tmp = subscribersWithParams;
+                subscribersWithParams = new (Action<object>, object, ILifetimeManager)[tmp.Length * 2];
+                Array.Copy(tmp, subscribersWithParams, tmp.Length);
             }
         }
 
@@ -83,18 +110,8 @@ namespace PowerArgs
         /// <param name="lifetimeManager">the lifetime manager that determines when to stop being notified</param>
         public void SubscribeForLifetime(Action handler, ILifetimeManager lifetimeManager)
         {
-            if (lifetimeManager.IsExpired == false)
-            {
-                EnsureRoomForMore();
-                var myI = tail++;
-                subCount++;
-                subscribers[myI] = (handler, lifetimeManager);
-                lifetimeManager.OnDisposed(() =>
-                {
-                    subscribers[myI] = default;
-                    subCount--;
-                });
-            }
+            var lt = SubscribeUnmanaged(handler);
+            lifetimeManager.OnDisposed(lt);
         }
 
         public void SynchronizeForLifetime(Action handler, ILifetimeManager lifetimeManager)
@@ -126,6 +143,25 @@ namespace PowerArgs
             SubscribeForLifetime(wrappedAction, lt);
         }
 
+        public void SubscribeOnce(Action<object> handler, object param)
+        {
+            Action wrappedAction = null;
+            var lt = new Lifetime();
+            wrappedAction = () =>
+            {
+                try
+                {
+                    handler(param);
+                }
+                finally
+                {
+                    lt.Dispose();
+                }
+            };
+
+            SubscribeForLifetime(wrappedAction, lt);
+        }
+
         /// <summary>
         /// Creates a lifetime that will end the next time this
         /// event fires
@@ -137,50 +173,50 @@ namespace PowerArgs
             this.SubscribeOnce(lifetime.Dispose);
             return lifetime;
         }
+
+        public Task CreateNextFireTask()
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            this.SubscribeOnce(SetResultTrue, tcs);
+            return tcs.Task;
+        }
+
+        private void SetResultTrue(object obj)
+        {
+            (obj as TaskCompletionSource<bool>).SetResult(true);
+        }
     }
 
-    /// <summary>
-    /// A lifetime aware event that can deliver a data payload to subscribers
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
     public class Event<T>
     {
 
-        private Dictionary<Action<T>, ILifetimeManager> subscribers;
+        private int tail;
+        private int subCount;
+        private (Action<T>, ILifetimeManager)[] subscribers;
+
+        private int paramsTail;
+        private int paramsSubCount;
+        private (Action<T,object>, object, ILifetimeManager)[] subscribersWithParams;
 
         /// <summary>
         /// returns true if there is at least one subscriber
         /// </summary>
-        public bool HasSubscriptions
-        {
-            get
-            {
-                return subscribers.Count > 0;
-            }
-        }
+        public bool HasSubscriptions => subCount > 0 || paramsSubCount > 0;
 
         /// <summary>
-        /// Fires the event and delivers the given data payload to all subscribers
+        /// Fires the event. All subscribers will be notified
         /// </summary>
-        /// <param name="item">the data payload</param>
-        public void Fire(T item)
+        public void Fire(T args)
         {
-            var subs = subscribers?.Keys?.ToArray();
-            if (subs != null)
+            for (var i = 0; i < tail; i++)
             {
-                for (var i = 0; i < subs.Length; i++)
-                {
-                    subs[i]?.Invoke(item);
-                }
+                subscribers[i].Item1?.Invoke(args);
             }
-        }
 
-        /// <summary>
-        /// Creates the event
-        /// </summary>
-        public Event()
-        {
-            subscribers = new Dictionary<Action<T>, ILifetimeManager>();
+            for (var i = 0; i < paramsTail; i++)
+            {
+                subscribersWithParams[i].Item1?.Invoke(args, subscribersWithParams[i].Item2);
+            }
         }
 
 
@@ -188,28 +224,68 @@ namespace PowerArgs
         /// Subscribes to this event such that the given handler will be called when the event fires 
         /// </summary>
         /// <param name="handler">the action to run when the event fires</param>
-        /// <returns>a subscription that can be disposed when you no longer want to be notified from this event</returns>
+        /// <returns>A subscription that can be disposed when you no loner want to be notified from this event</returns>
         public ILifetime SubscribeUnmanaged(Action<T> handler)
         {
+            EnsureRoomForMore();
             var sub = new Lifetime();
-            sub.OnDisposed(() => subscribers.Remove(handler));
-            subscribers.Add(handler, sub);
+            var myI = tail++;
+            subCount++;
+            subscribers[myI] = (handler, sub);
+            sub.OnDisposed(DisposeOf, myI);
             return sub;
         }
+
+        public ILifetime SubscribeUnmanaged(Action<T,object> handler, object param)
+        {
+            EnsureRoomForMoreWithParams();
+            var sub = new Lifetime();
+            var myI = tail++;
+            paramsSubCount++;
+            subscribersWithParams[myI] = (handler, param, sub);
+            sub.OnDisposed(DisposeOf, myI);
+            return sub;
+        }
+
+        private void DisposeOf(object index)
+        {
+            subscribers[(int)index] = default;
+            subCount--;
+        }
+
+        private void EnsureRoomForMore()
+        {
+            subscribers = subscribers ?? new (Action<T>, ILifetimeManager)[10];
+            if (tail == subscribers.Length)
+            {
+                var tmp = subscribers;
+                subscribers = new (Action<T>, ILifetimeManager)[tmp.Length * 2];
+                Array.Copy(tmp, subscribers, tmp.Length);
+            }
+        }
+
+        private void EnsureRoomForMoreWithParams()
+        {
+            subscribersWithParams = subscribersWithParams ?? new (Action<T,object>, object, ILifetimeManager)[10];
+            if (paramsTail == subscribersWithParams.Length)
+            {
+                var tmp = subscribersWithParams;
+                subscribersWithParams = new (Action<T,object>, object, ILifetimeManager)[tmp.Length * 2];
+                Array.Copy(tmp, subscribersWithParams, tmp.Length);
+            }
+        }
+ 
 
         /// <summary>
         /// Subscribes to this event such that the given handler will be called when the event fires. Notifications will stop
         /// when the lifetime associated with the given lifetime manager is disposed.
         /// </summary>
         /// <param name="handler">the action to run when the event fires</param>
-        /// <param name="lifetimeManager">the lifetime manager that determines when to stop being notified by this event</param>
+        /// <param name="lifetimeManager">the lifetime manager that determines when to stop being notified</param>
         public void SubscribeForLifetime(Action<T> handler, ILifetimeManager lifetimeManager)
         {
-            if (lifetimeManager.IsExpired == false)
-            {
-                subscribers.Add(handler, lifetimeManager);
-                lifetimeManager.OnDisposed(() => subscribers.Remove(handler));
-            }
+            var lt = SubscribeUnmanaged(handler);
+            lifetimeManager.OnDisposed(lt);
         }
 
         /// <summary>
@@ -219,13 +295,39 @@ namespace PowerArgs
         public void SubscribeOnce(Action<T> handler)
         {
             Action<T> wrappedAction = null;
-            wrappedAction = (t) =>
+            var lt = new Lifetime();
+            wrappedAction = (args) =>
             {
-                handler(t);
-                subscribers.Remove(wrappedAction);
+                try
+                {
+                    handler(args);
+                }
+                finally
+                {
+                    lt.Dispose();
+                }
             };
 
-            SubscribeUnmanaged(wrappedAction);
+            SubscribeForLifetime(wrappedAction, lt);
+        }
+
+        public void SubscribeOnce(Action<T, object> handler, object param)
+        {
+            Action<T> wrappedAction = null;
+            var lt = new Lifetime();
+            wrappedAction = (args) =>
+            {
+                try
+                {
+                    handler(args, param);
+                }
+                finally
+                {
+                    lt.Dispose();
+                }
+            };
+
+            SubscribeForLifetime(wrappedAction, lt);
         }
 
         /// <summary>
@@ -236,8 +338,20 @@ namespace PowerArgs
         public Lifetime CreateNextFireLifetime()
         {
             var lifetime = new Lifetime();
-            this.SubscribeOnce(t => lifetime.Dispose());
+            this.SubscribeOnce(args => lifetime.Dispose());
             return lifetime;
+        }
+
+        public Task<T> CreateNextFireTask()
+        {
+            var tcs = new TaskCompletionSource<T>();
+            this.SubscribeOnce(args => SetResult(args, tcs));
+            return tcs.Task;
+        }
+
+        private void SetResult(T args, object obj)
+        {
+            (obj as TaskCompletionSource<T>).SetResult(args);
         }
     }
 }
