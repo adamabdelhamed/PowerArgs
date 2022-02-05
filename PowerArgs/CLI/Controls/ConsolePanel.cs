@@ -14,7 +14,7 @@ namespace PowerArgs.Cli
     /// <summary>
     /// A console control that has nested control within its bounds
     /// </summary>
-    public class ConsolePanel : Container, IComparer<ConsoleControl>
+    public class ConsolePanel : Container
     {
         /// <summary>
         /// The nested controls
@@ -85,19 +85,19 @@ namespace PowerArgs.Cli
             }
         }
 
+        private static int CompareZ(ConsoleControl a, ConsoleControl b) => 
+            a.ZIndex == b.ZIndex ? a.ParentIndex.CompareTo(b.ParentIndex) : a.ZIndex.CompareTo(b.ZIndex);
+        
         private void SortZ()
         {
-            sortedControls.Sort(this);
+            for (var i = 0; i < sortedControls.Count; i++)
+            {
+                sortedControls[i].ParentIndex = i;
+            }
+            sortedControls.Sort(CompareZ);
             ConsoleApp.Current?.RequestPaint();
         }
  
-
-        public int Compare(ConsoleControl x, ConsoleControl y)
-        {
-            return x.ZIndex.CompareTo(y.ZIndex);
-        }
-
-
         /// <summary>
         /// Paints this control
         /// </summary>

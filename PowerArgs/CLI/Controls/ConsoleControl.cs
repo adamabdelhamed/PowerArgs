@@ -55,6 +55,10 @@ namespace PowerArgs.Cli
     /// </summary>
     public class ConsoleControl : Rectangular
     {
+        /// <summary>
+        /// Used to stabilize the z-index sorting for painting
+        /// </summary>
+        internal int ParentIndex { get; set; }
         public List<IConsoleControlFilter> RenderFilters { get; private set; } = new List<IConsoleControlFilter>();
 
         /// <summary>
