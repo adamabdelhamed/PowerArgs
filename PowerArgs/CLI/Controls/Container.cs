@@ -77,12 +77,16 @@ namespace PowerArgs.Cli
 
         }
 
+        protected virtual (int X, int Y) Transform(ConsoleControl c) => (c.X, c.Y);
+
         private void ComposePaintOver(ConsoleControl control)
         {
-            var minX = Math.Max(control.X, 0);
-            var minY = Math.Max(control.Y, 0);
-            var maxX = Math.Min(Width, control.X + control.Width);
-            var maxY = Math.Min(Height, control.Y + control.Height);
+            var position = Transform(control);
+
+            var minX = Math.Max(position.X, 0);
+            var minY = Math.Max(position.Y, 0);
+            var maxX = Math.Min(Width, position.X + control.Width);
+            var maxY = Math.Min(Height, position.Y + control.Height);
 
             var myPixX = Bitmap.Pixels.AsSpan();
             for (var x = minX; x < maxX; x++)
@@ -90,22 +94,23 @@ namespace PowerArgs.Cli
                 var myPixY = myPixX[x].AsSpan();
                 for (var y = minY; y < maxY; y++)
                 {
-                    myPixY[y] = control.Bitmap.Pixels[x - control.X][y - control.Y];
+                    myPixY[y] = control.Bitmap.Pixels[x - position.X][y - position.Y];
                 }
             }
         }
 
         private void ComposeBlendBackground (ConsoleControl control)
         {
-            var minX = Math.Max(control.X, 0);
-            var minY = Math.Max(control.Y, 0);
-            var maxX = Math.Min(Width, control.X + control.Width);
-            var maxY = Math.Min(Height, control.Y + control.Height);
+            var position = Transform(control);
+            var minX = Math.Max(position.X, 0);
+            var minY = Math.Max(position.Y, 0);
+            var maxX = Math.Min(Width, position.X + control.Width);
+            var maxY = Math.Min(Height, position.Y + control.Height);
             for (var x = minX; x < maxX; x++)
             {
                 for (var y = minY; y < maxY; y++)
                 {
-                    var controlPixel = control.Bitmap.Pixels[x - control.X][y - control.Y];
+                    var controlPixel = control.Bitmap.Pixels[x - position.X][y - position.Y];
 
                     if (controlPixel.BackgroundColor != ConsoleString.DefaultBackgroundColor)
                     {
@@ -144,15 +149,16 @@ namespace PowerArgs.Cli
 
         private void ComposeBlendVisible(ConsoleControl control)
         {
-            var minX = Math.Max(control.X, 0);
-            var minY = Math.Max(control.Y, 0);
-            var maxX = Math.Min(Width, control.X + control.Width);
-            var maxY = Math.Min(Height, control.Y + control.Height);
+            var position = Transform(control);
+            var minX = Math.Max(position.X, 0);
+            var minY = Math.Max(position.Y, 0);
+            var maxX = Math.Min(Width, position.X + control.Width);
+            var maxY = Math.Min(Height, position.Y + control.Height);
             for (var x = minX; x < maxX; x++)
             {
                 for (var y = minY; y < maxY; y++)
                 {
-                    var controlPixel = control.Bitmap.Pixels[x - control.X][ y - control.Y];
+                    var controlPixel = control.Bitmap.Pixels[x - position.X][ y - position.Y];
 
                     var controlPixelHasRenderableContent = IsVisibleOnMyPanel(controlPixel);
 
