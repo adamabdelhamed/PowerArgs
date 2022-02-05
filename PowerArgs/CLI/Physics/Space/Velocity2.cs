@@ -21,6 +21,8 @@ public class Velocity2
     public Func<RectF> BoundsTransform { get; set; }
     public ICollider Collider { get; private set; }
 
+    public float SpeedRatio { get; set; } = 1;
+
     public Angle Angle
     {
         get
@@ -83,7 +85,7 @@ public class ColliderGroup
 
     // these properties model a linear progression that determines the appropriate min
     // evaluation time period for an object given it's current speed
-    private const float LeastFrequentEval = 1f; // y1
+    private const float LeastFrequentEval = .1f; // y1
     private const float LowestSpeedForEvalCalc = 0; // x1
     private const float MostFrequentEval = .025f; // y2
     private const float HighestSpeedForEvalCalc = 60; // x2
@@ -92,17 +94,29 @@ public class ColliderGroup
     private int colliderBufferLength;
     private ICollider[] colliderBuffer;
     private RectF[] obstacleBuffer;
-
+    private HitPrediction hitPrediction;
     private ILifetimeManager lt;
     private int maxCapacity;
+    private TimeSpan lastExecuteTime;
+
+    public float SpeedRatio { get; set; } = 1;
+
+    public PauseManager PauseManager { get; set; }
+
     public ColliderGroup(ILifetimeManager lt, int maxCapacity = 2500)
     {
         this.lt = lt;
         this.maxCapacity = maxCapacity;
+        hitPrediction = new HitPrediction();
         ConsoleApp.Current.Invoke(ExecuteAsync);
     }
 
-    internal void Add(ICollider c, Velocity2 v) =>velocities.Add(c, v);
+    internal void Add(ICollider c, Velocity2 v)
+    {
+        v.lastEvalTime = (float)lastExecuteTime.TotalSeconds;
+        velocities.Add(c, v);
+    }
+    
     internal void Remove(ICollider c) => velocities.Remove(c);
     private async Task ExecuteAsync()
     {
@@ -111,11 +125,22 @@ public class ColliderGroup
         colliderBuffer = new ICollider[maxCapacity];
         obstacleBuffer = new RectF[maxCapacity];
         var stopwatch = Stopwatch.StartNew();
-        var lastExecuteTime = TimeSpan.Zero;
+        lastExecuteTime = TimeSpan.Zero;
 
         while (lt.IsExpired == false)
         {
             await Task.Yield();
+
+            if (PauseManager?.State == PauseManager.PauseState.Paused)
+            {
+                stopwatch.Stop();
+                while (PauseManager.State == PauseManager.PauseState.Paused)
+                {
+                    await Task.Yield();
+                }
+                stopwatch.Start();
+            }
+
             var now = stopwatch.Elapsed;
             LatestDT = (float)(now - lastExecuteTime).TotalMilliseconds;
             lastExecuteTime = now;
@@ -125,7 +150,6 @@ public class ColliderGroup
 
     private void Tick(float now)
     {
-        HitPrediction hitPrediction = new HitPrediction();
         var vSpan = velocities.Table.AsSpan();
         for (var i = 0; i < vSpan.Length; i++)
         {
@@ -143,10 +167,10 @@ public class ColliderGroup
                 // Tick can happen very frequently, but velocities that are moving slowly don't
                 // need to be evaluated as frequently. These next few lines will use a linear model to determine
                 // the appropriate time to wait between evaluations, based on the object's speed
-                var evalFrequency = velocity.Speed > HighestSpeedForEvalCalc ? .025f : EvalFrequencySlope * velocity.speed + LeastFrequentEval;
+                var evalFrequency = SpeedRatio * velocity.SpeedRatio * (velocity.Speed > HighestSpeedForEvalCalc ? .025f : EvalFrequencySlope * velocity.speed + LeastFrequentEval);
                 var minEvalTime = velocity.lastEvalTime + evalFrequency;
                 if (now < minEvalTime) continue;
-                var dt = (float)now - velocity.lastEvalTime;
+                var dt = ((float)now - velocity.lastEvalTime) * SpeedRatio * velocity.SpeedRatio;
                 velocity.lastEvalTime = now;
 
                 // before moving the object, see if the movement would impact another object
@@ -190,7 +214,7 @@ public class ColliderGroup
                             if(vOther.Bounce)
                             {
                                 var topOrBottomEdgeWasHit = hitPrediction.Edge == obstacleHit.Bounds.TopEdge || hitPrediction.Edge == obstacleHit.Bounds.BottomEdge;
-                                vOther.angle = !topOrBottomEdgeWasHit ? Angle.Right.Add(-vOther.Angle.Value) : Angle.Left.Add(-vOther.Angle.Value);
+                                vOther.angle = topOrBottomEdgeWasHit ? Angle.Right.Add(-vOther.Angle.Value) : Angle.Left.Add(-vOther.Angle.Value);
                             }
 
                             vOther.ImpactOccurred.Fire(new Impact()
