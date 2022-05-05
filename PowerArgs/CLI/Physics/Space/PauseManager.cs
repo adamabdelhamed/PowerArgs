@@ -39,6 +39,9 @@ public class PauseManager
         DelayProvider = new PauseDelayProvider(this);
     }
 
+
+    public Task Delay(double ms) => Delay((float)ms);
+    public Task Delay(TimeSpan span) => Delay(span.TotalMilliseconds);
     public async Task Delay(float ms)
     {
         while(state == PauseState.Paused)

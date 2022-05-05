@@ -180,11 +180,7 @@ namespace PowerArgs.Cli
         /// <returns>an async task</returns>
         public static async Task AnimateAsync(AnimatorOptions options)
         {
-            if(options.DelayProvider == null && Time.CurrentTime != null)
-            {
-                options.DelayProvider = Time.CurrentTime;
-            }
-            else if(options.DelayProvider == null)
+            if(options.DelayProvider == null)
             {
                 options.DelayProvider = new WallClockDelayProvider();
             }

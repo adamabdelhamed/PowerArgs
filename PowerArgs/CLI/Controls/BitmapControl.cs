@@ -47,7 +47,7 @@ namespace PowerArgs.Cli
             {
                 for (var y = 0; y < Bitmap.Height && y < this.Height; y++)
                 {
-                    var pixel = Bitmap.GetPixel(x, y);
+                    ref var pixel = ref Bitmap.GetPixel(x, y);
                     context.DrawPoint(pixel, x, y);
                 }
             }

@@ -37,7 +37,6 @@ namespace PowerArgs.Cli
         }
 
         private Stack<FocusContext> focusStack;
-        private string currentFocusedControlId;
 
         public Stack<FocusContext> Stack => focusStack;
 
@@ -74,11 +73,6 @@ namespace PowerArgs.Cli
             }
             private set
             {
-                if(value != null && value.IsBeingRemoved == false)
-                {
-                    currentFocusedControlId = value.Id;
-                }
-
                 Set(value);
             }
         }
@@ -103,19 +97,6 @@ namespace PowerArgs.Cli
                 throw new InvalidOperationException("Item already being tracked");
             }
             focusStack.Peek().Controls.Add(c);
-
-            if(c.Id  != null && c.Id == currentFocusedControlId)
-            {
-                c.TryFocus();
-            }
-
-            c.SubscribeForLifetime(nameof(c.CanFocus), () => 
-            {
-                if(c.CanFocus == false && c.HasFocus)
-                {
-                    TryMoveFocus();
-                }
-            },c);
         }
 
         /// <summary>
@@ -280,6 +261,7 @@ namespace PowerArgs.Cli
         /// </summary>
         public void ClearFocus()
         {
+            if (ConsoleApp.Current?.ShouldContinue == false) return;
             if (FocusedControl != null)
             {
                 FocusedControl.HasFocus = false;

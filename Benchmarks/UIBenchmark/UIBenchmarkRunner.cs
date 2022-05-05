@@ -35,6 +35,7 @@ public class UIBenchmarkRunner
         .GetExecutingAssembly()
         .GetTypes()
         .Where(t => t.IsSubclassOf(typeof(UIBenchmark)))
+        .Where (t => t == typeof(WorstCaseBenchmark))
         .Select(t => Activator.CreateInstance(t) as UIBenchmark)
         .ToArray();
 }

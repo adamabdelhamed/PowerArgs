@@ -47,10 +47,9 @@ namespace PowerArgs
         /// </summary>
         public IObservableObject DeepObservableRoot { get; private set; }
 
-        public IReadOnlyDictionary<string, object> ToDictionary() => new ReadOnlyDictionary<string, object>(values);
+        public IReadOnlyDictionary<string, object> ToDictionary() => values != null ? new ReadOnlyDictionary<string, object>(values) : new Dictionary<string, object>();
 
         public string CurrentlyChangingPropertyName { get; private set; }
-        public object CurrentlyChangingPropertyValue { get; private set; }
 
         /// <summary>
         /// Creates a new bag and optionally sets the notifier object.
@@ -58,9 +57,6 @@ namespace PowerArgs
         public ObservableObject(IObservableObject proxy = null)
         {
             SuppressEqualChanges = true;
-            subscribers = new Dictionary<string, Event>();
-            values = new Dictionary<string, object>();
-            previousValues = new Dictionary<string, object>();
             DeepObservableRoot = proxy;
         }
 
@@ -69,7 +65,7 @@ namespace PowerArgs
         /// </summary>
         /// <param name="key">the property name</param>
         /// <returns>true if this object has a property with the given key</returns>
-        public bool ContainsKey(string key) => values.ContainsKey(key);
+        public bool ContainsKey(string key) => values != null && values.ContainsKey(key);
 
 
         /// <summary>
@@ -81,6 +77,11 @@ namespace PowerArgs
         /// <returns>true if this object has a property with the given key and val was populated</returns>
         public bool TryGetValue<T>(string key, out T val)
         {
+            if(values == null)
+            {
+                val = default;
+                return false;
+            }
             if (values.TryGetValue(key, out object oVal))
             {
                 val = (T)oVal;
@@ -102,6 +103,8 @@ namespace PowerArgs
         /// <returns>The property's current value</returns>
         public T Get<T>([CallerMemberName] string name = "")
         {
+            values = values ?? new Dictionary<string, object>();
+            previousValues = previousValues ?? new Dictionary<string, object>();
             object ret;
             if (values.TryGetValue(name, out ret))
             {
@@ -168,7 +171,6 @@ namespace PowerArgs
             if (SuppressEqualChanges == false || isEqualChange == false)
             {
                 CurrentlyChangingPropertyName = name;
-                CurrentlyChangingPropertyValue = value;
                 FirePropertyChanged(name);
             }
         }
@@ -187,7 +189,6 @@ namespace PowerArgs
             if (SuppressEqualChanges == false || isEqualChange == false)
             {
                 CurrentlyChangingPropertyName = name;
-                CurrentlyChangingPropertyValue = value;
                 FirePropertyChanged(name);
             }
         }
@@ -197,7 +198,6 @@ namespace PowerArgs
             if (condition == false) return;
             current = value;
             CurrentlyChangingPropertyName = name;
-            CurrentlyChangingPropertyValue = value;
             FirePropertyChanged(name); 
         }
 
@@ -209,6 +209,7 @@ namespace PowerArgs
         /// <returns>A subscription that will receive notifications until it is disposed</returns>
         public IDisposable SubscribeUnmanaged(string propertyName, Action handler)
         {
+            subscribers = subscribers ?? new Dictionary<string, Event>();
             Event evForProperty;
             if (subscribers.TryGetValue(propertyName, out evForProperty) == false)
             {
@@ -303,6 +304,8 @@ namespace PowerArgs
         /// <param name="propertyName">the name of the property that changed</param>
         public void FirePropertyChanged(string propertyName)
         {
+            OnPropertyChanged(propertyName);
+            if (subscribers == null) return;
             if (subscribers.TryGetValue(propertyName, out Event ev))
             {
                 ev.Fire();
@@ -312,6 +315,11 @@ namespace PowerArgs
             {
                 ev2.Fire();
             }
+        }
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+
         }
 
         /// <summary>

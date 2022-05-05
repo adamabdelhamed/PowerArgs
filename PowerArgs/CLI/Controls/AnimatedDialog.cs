@@ -84,7 +84,7 @@ namespace PowerArgs.Cli
                 await Forward(300 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Width = Math.Max(1, ConsoleMath.Round((4+content.Width) * percentage)));
                 await Forward(200 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Height = Math.Max(1, ConsoleMath.Round((2+content.Height) * percentage)));
                 content.IsVisible = true;
-                await handle.CallerLifetime.AwaitEndOfLifetime();
+                await handle.CallerLifetime.ToTask();
                 content.IsVisible = false;
                 await Reverse(150 * options.SpeedPercentage, dialogLt, percentage => dialogContainer.Height = Math.Max(1, (int)Math.Floor((2 + content.Height) * percentage)));
                 await Task.Delay((int)(200 * options.SpeedPercentage));

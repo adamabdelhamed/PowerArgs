@@ -216,4 +216,23 @@ namespace PowerArgs.Cli
             }
         }
     }
+
+    public class NoFrillsLabel : ConsoleControl
+    {
+        private ConsoleString _text;
+        public ConsoleString Text
+        {
+            get
+            {
+                return _text;
+            }
+            set
+            {
+                _text = value;
+                Width = value.Length;
+            }
+        }
+
+        protected override void OnPaint(ConsoleBitmap context) => context.DrawString(_text, 0, 0);
+    }
 }

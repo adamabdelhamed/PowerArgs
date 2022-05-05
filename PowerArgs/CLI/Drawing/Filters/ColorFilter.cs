@@ -42,6 +42,8 @@ namespace PowerArgs.Cli
     {
         public float Percentage { get; set; }
 
+        public RGB OutColor { get; set; } = RGB.Black;
+
         /// <summary>
         /// The control to filter
         /// </summary>
@@ -55,8 +57,8 @@ namespace PowerArgs.Cli
                 {
                     var pixel = bitmap.GetPixel(x, y);
 
-                    bitmap.SetPixel(x, y, new ConsoleCharacter(pixel.Value, pixel.ForegroundColor.ToOther(RGB.Black, Percentage),
-                        pixel.BackgroundColor.ToOther(RGB.Black, Percentage)));
+                    bitmap.SetPixel(x, y, new ConsoleCharacter(pixel.Value, pixel.ForegroundColor.ToOther(OutColor, Percentage),
+                        pixel.BackgroundColor.ToOther(OutColor, Percentage)));
                 
                 }
             }
@@ -126,7 +128,7 @@ namespace PowerArgs.Cli
         public static async Task<AnimationFilter> FadeAnimate(this ConsoleControl c, RGB from, RGB to, float duration = 500, EasingFunction easingFunction = null, float fromPerecntage = 0, float toPercentage = 1)
         {
             easingFunction = easingFunction ?? Animator.Linear;
-            var filter = new AnimationFilter() { From = from, To = to  };
+            var filter = new AnimationFilter() { From = from, To = to };
             c.RenderFilters.Add(filter);
 
             await Animator.AnimateAsync(new FloatAnimatorOptions()
@@ -166,10 +168,14 @@ namespace PowerArgs.Cli
             return filter;
         }
 
-        public static async Task<FadeOutFilter> FadeOut(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null, float percentage = 1, IDelayProvider delayProvider = null)
+        public static async Task<FadeOutFilter> FadeOut(this ConsoleControl c, float duration = 500, EasingFunction easingFunction = null, float percentage = 1, IDelayProvider delayProvider = null, RGB? outColor = null)
         {
             easingFunction = easingFunction ?? Animator.Linear;
             var filter = new FadeOutFilter();
+            if(outColor.HasValue)
+            {
+                filter.OutColor = outColor.Value;
+            }
             c.RenderFilters.Add(filter);
 
             await Animator.AnimateAsync(new FloatAnimatorOptions()

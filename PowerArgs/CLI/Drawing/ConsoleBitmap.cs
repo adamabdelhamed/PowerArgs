@@ -158,9 +158,9 @@ public class ConsoleBitmap
     /// <param name="x">the x coordinate</param>
     /// <param name="y">the y coordinate</param>
     /// <returns>the pixel at the given location</returns>
-    public ConsoleCharacter GetPixel(int x, int y)
+    public ref ConsoleCharacter GetPixel(int x, int y)
     {
-        return Pixels[x][y];
+        return ref Pixels[x][y];
     }
 
     public void SetPixel(int x, int y, in ConsoleCharacter c)
@@ -687,8 +687,6 @@ public class ConsoleBitmap
             RGB fg;
             RGB bg;
             bool underlined;
-            ConsoleCharacter pixel;
-            ConsoleCharacter lastDrawn;
             bool changeOnLine;
             bool pixelChanged;
             for (int y = 0; y < Height; y++)
@@ -696,8 +694,8 @@ public class ConsoleBitmap
                 changeOnLine = false;
                 for (int x = 0; x < Width; x++)
                 {
-                    pixel = Pixels[x][y];
-                    lastDrawn = lastDrawnPixels[x][y];
+                    ref var pixel = ref Pixels[x][y];
+                    ref var lastDrawn = ref lastDrawnPixels[x][y];
                     pixelChanged = pixel != lastDrawn;
                     changeOnLine = changeOnLine || pixelChanged;
 

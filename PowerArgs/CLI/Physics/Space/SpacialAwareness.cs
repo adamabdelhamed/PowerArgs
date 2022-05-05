@@ -76,18 +76,6 @@ namespace PowerArgs.Cli.Physics
         }
     }
 
-    public class SpacialElementAnimationOptions : RectangularAnimationOptions
-    {
-        public override void Setter(ICollider target, in RectF bounds)
-        {
-            (target as SpacialElement).MoveTo(bounds.Left, bounds.Top);
-            if (target.Bounds.Width != bounds.Width || target.Bounds.Height != bounds.Height)
-            {
-                (target as SpacialElement).ResizeTo(bounds.Width, bounds.Height);
-            }
-        }
-    }
-
     public class ConsoleControlAnimationOptions : RectangularAnimationOptions
     {
         public override void Setter(ICollider target, in RectF bounds)

@@ -4,29 +4,29 @@ namespace PowerArgs.Cli
 {
     public static class DefaultColors 
     {
-        public static ConsoleColor BackgroundColor { get; set; }
-        public static ConsoleColor ForegroundColor { get; set; }
-        public static ConsoleColor FocusColor { get; set; }
-        public static ConsoleColor FocusContrastColor { get; set; }
-        public static ConsoleColor SelectedUnfocusedColor { get; set; }
-        public static ConsoleColor H1Color { get; set; }
-        public static ConsoleColor ButtonColor { get; set; }
-        public static ConsoleColor HighlightColor { get; set; }
-        public static ConsoleColor HighlightContrastColor { get; set; }
-        public static ConsoleColor DisabledColor { get; set; }
+        public static RGB BackgroundColor { get; set; }
+        public static RGB ForegroundColor { get; set; }
+        public static RGB FocusColor { get; set; }
+        public static RGB FocusContrastColor { get; set; }
+        public static RGB SelectedUnfocusedColor { get; set; }
+        public static RGB H1Color { get; set; }
+        public static RGB ButtonColor { get; set; }
+        public static RGB HighlightColor { get; set; }
+        public static RGB HighlightContrastColor { get; set; }
+        public static RGB DisabledColor { get; set; }
 
         static DefaultColors()
         {
             BackgroundColor = ConsoleString.DefaultBackgroundColor;
             ForegroundColor = ConsoleString.DefaultForegroundColor;
-            FocusColor = ConsoleColor.Cyan;
-            FocusContrastColor = ConsoleColor.Black;
-            SelectedUnfocusedColor = ConsoleColor.DarkGray;
-            H1Color = ConsoleColor.Yellow;
-            ButtonColor = ConsoleColor.White;
-            HighlightColor = ConsoleColor.Yellow;
-            HighlightContrastColor = ConsoleColor.Black;
-            DisabledColor = ConsoleColor.DarkGray;
+            FocusColor = RGB.Cyan;
+            FocusContrastColor = RGB.Black;
+            SelectedUnfocusedColor = RGB.DarkGray;
+            H1Color = RGB.Yellow;
+            ButtonColor = RGB.White;
+            HighlightColor = RGB.Yellow;
+            HighlightContrastColor = RGB.Black;
+            DisabledColor = RGB.DarkGray;
         }
     }
 }

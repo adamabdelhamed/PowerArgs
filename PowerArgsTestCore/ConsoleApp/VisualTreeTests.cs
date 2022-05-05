@@ -21,20 +21,19 @@ namespace ArgsTests.CLI
 
                 app.ControlAdded.SubscribeForLifetime((c) => { addCounter++; }, app);
                 app.ControlRemoved.SubscribeForLifetime((c) => { removeCounter++; }, app);
-                app.LayoutRoot.Id = "LayoutRoot";
-                ConsolePanel panel = app.LayoutRoot.Add(new ConsolePanel() { Id = "First panel" });
+                ConsolePanel panel = app.LayoutRoot.Add(new ConsolePanel());
                 // direct child
                 Assert.AreEqual(1, addCounter);
                 Assert.AreEqual(0, removeCounter);
 
-                var button = panel.Add(new Button() { Id = "Button on first panel" });
+                var button = panel.Add(new Button());
 
                 // grandchild
                 Assert.AreEqual(2, addCounter);
                 Assert.AreEqual(0, removeCounter);
 
-                var innerPanel = new ConsolePanel() { Id = "InnerPanel" };
-                var innerInnerPanel = innerPanel.Add(new ConsolePanel() { Id = "Inner Inner Panel" });
+                var innerPanel = new ConsolePanel();
+                var innerInnerPanel = innerPanel.Add(new ConsolePanel());
 
                 // no change since not added to the app yet
                 Assert.AreEqual(2, addCounter);

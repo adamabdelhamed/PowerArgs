@@ -36,7 +36,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        public bool CanCollideWith(ICollider other) => true;
+        public virtual bool CanCollideWith(ICollider other) => true;
 
         public int Width
         {
@@ -99,6 +99,6 @@ namespace PowerArgs.Cli
 
         public float Top => Y;
 
-        public RectF MassBounds => new RectF(X, Y, Width, Height);
+        public virtual RectF MassBounds => new RectF(X, Y, Width, Height);
     }
 }

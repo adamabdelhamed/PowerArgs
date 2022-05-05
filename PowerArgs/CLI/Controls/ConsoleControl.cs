@@ -65,58 +65,56 @@ namespace PowerArgs.Cli
         /// Controls how controls are painted when multiple controls overlap
         /// </summary>
         public CompositionMode CompositionMode { get; set; } = CompositionMode.PaintOver;
-        /// <summary>
-        /// An id that can be used for debugging.  It is not used for anything internally.
-        /// </summary>
-        public string Id { get { return Get<string>(); } set { Set(value); } }
 
 
-
+        private Event _focused, _unfocused, _addedToVisualTree, _beforeAddedToVisualTree, _removedFromVisualTree, _beforeRemovedFromVisualTree, _ready;
+        private Event<ConsoleKeyInfo> _keyInputReceived;
         /// <summary>
         /// An event that fires after this control gets focus
         /// </summary>
-        public Event Focused { get; private set; } = new Event();
+        public Event Focused { get => _focused ?? (_focused = new Event()); } 
         /// <summary>
         /// An event that fires after this control loses focus
         /// </summary>
-        public Event Unfocused { get; private set; } = new Event();
+        public Event Unfocused { get => _unfocused ?? (_unfocused = new Event()); }
 
         /// <summary>
         /// An event that fires when this control is added to the visual tree of a ConsoleApp. 
         /// </summary>
-        public Event AddedToVisualTree { get; private set; } = new Event();
+        public Event AddedToVisualTree { get => _addedToVisualTree ?? (_addedToVisualTree = new Event()); }
 
         /// <summary>
         /// An event that fires just before this control is added to the visual tree of a ConsoleApp
         /// </summary>
-        public Event BeforeAddedToVisualTree { get; private set; } = new Event();
+        public Event BeforeAddedToVisualTree { get => _beforeAddedToVisualTree ?? (_beforeAddedToVisualTree = new Event()); }
 
         /// <summary>
         /// An event that fires when this control is removed from the visual tree of a ConsoleApp.
         /// </summary>
-        public Event RemovedFromVisualTree { get; private set; } = new Event();
+        public Event RemovedFromVisualTree { get => _removedFromVisualTree ?? (_removedFromVisualTree = new Event()); }
 
         /// <summary>
         /// An event that fires just before this control is removed from the visual tree of a ConsoleApp
         /// </summary>
-        public Event BeforeRemovedFromVisualTree { get; private set; } = new Event();
+        public Event BeforeRemovedFromVisualTree { get => _beforeRemovedFromVisualTree ?? (_beforeRemovedFromVisualTree = new Event()); }
 
         /// <summary>
         /// An event that fires when a key is pressed while this control has focus and the control has decided not to process
         /// the key press internally.
         /// </summary>
-        public Event<ConsoleKeyInfo> KeyInputReceived { get; private set; } = new Event<ConsoleKeyInfo>();
+        public Event<ConsoleKeyInfo> KeyInputReceived { get => _keyInputReceived ?? (_keyInputReceived = new Event<ConsoleKeyInfo>()); }
 
         /// <summary>
         /// Gets a reference to the application this control is a part of
         /// </summary>
         public ConsoleApp Application { get; internal set; }
 
+        private Container _parent;
         /// <summary>
         /// Gets a reference to this control's parent in the visual tree.  It will be null if this control is not in the visual tree 
         /// and also if this control is the root of the visual tree.
         /// </summary>
-        public Container Parent { get { return Get<Container>(); } internal set { Set(value); } }
+        public Container Parent { get { return _parent; } internal set { SetHardIf(ref _parent, value, _parent == null); } }
 
 
         private RGB _bg, _fg;
@@ -137,10 +135,11 @@ namespace PowerArgs.Cli
         /// </summary>
         public bool TransparentBackground { get { return _transparent; } set {  SetHardIf(ref _transparent, value, _transparent != value); } }
 
+        private object _tag;
         /// <summary>
         /// An arbitrary reference to an object to associate with this control
         /// </summary>
-        public object Tag { get { return Get<object>(); } set { Set(value); } }
+        public object Tag { get { return _tag; } set { SetHardIf(ref _tag, value, ReferenceEquals(_tag, value) == false); } }
 
         private bool _isVisible;
         /// <summary>
@@ -183,7 +182,7 @@ namespace PowerArgs.Cli
         /// <summary>
         /// An event that fires when this control is both added to an app and that app is running
         /// </summary>
-        public Event Ready { get; private set; } = new Event();
+        public Event Ready { get => _ready ?? (_ready = new Event()); }
 
         /// <summary>
         /// Gets the x coordinate of this control relative to the application root
@@ -233,15 +232,28 @@ namespace PowerArgs.Cli
             this.Bitmap = new ConsoleBitmap(w, h);
             this.Width = w;
             this.Height = h;
-            this.SubscribeForLifetime(nameof(Bounds), ResizeBitmapOnBoundsChanged, this);
             Background = DefaultColors.BackgroundColor;
             this.Foreground = DefaultColors.ForegroundColor;
             this.IsVisible = true;
-            this.Id = GetType().FullName+"-"+ Guid.NewGuid().ToString();
-            this.SubscribeForLifetime(ObservableObject.AnyProperty, PaintOnChange, this);
-
         }
 
+        protected override void OnPropertyChanged(string propertyName)
+        {
+            if(propertyName == nameof(Bounds))
+            {
+                ResizeBitmapOnBoundsChanged();
+            }
+            else if(propertyName == nameof(CanFocus) && IsExpired == false && CanFocus == false && HasFocus)
+            {
+                ConsoleApp.Current?.FocusManager.TryMoveFocus();
+            }
+
+            if (this.Application != null && this.Application.IsRunning && this.Application.IsDrainingOrDrained == false)
+            {
+                ConsoleApp.AssertAppThread(this.Application);
+                this.Application.RequestPaint();
+            }
+        }
 
         private void ResizeBitmapOnBoundsChanged()
         {
@@ -249,15 +261,6 @@ namespace PowerArgs.Cli
             if (this.Width > 0 && this.Height > 0)
             {
                 this.Bitmap.Resize(this.Width, this.Height);
-            }
-        }
-
-        private void PaintOnChange()
-        {
-            if (this.Application != null && this.Application.IsRunning && this.Application.IsDrainingOrDrained == false)
-            {
-                ConsoleApp.AssertAppThread(this.Application);
-                this.Application.RequestPaint();
             }
         }
 
@@ -320,14 +323,6 @@ namespace PowerArgs.Cli
             }
         }
 
-        /// <summary>
-        /// Gets the type and Id of this control
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return GetType().Name+" ("+Id+")";
-        }
         
         /// <summary>
         /// You should override this method if you are building a custom control, from scratch, and need to control
@@ -342,8 +337,8 @@ namespace PowerArgs.Cli
         
         internal void FireFocused(bool focused)
         {
-            if (focused) Focused.Fire();
-            else Unfocused.Fire();
+            if (focused) _focused?.Fire();
+            else _unfocused?.Fire();
         }
 
       
@@ -351,37 +346,36 @@ namespace PowerArgs.Cli
         {
             if (hasBeenAddedToVisualTree)
             {
-                throw new ObjectDisposedException(Id, "This control has already been added to a visual tree and cannot be reused.");
+                throw new ObjectDisposedException("This control has already been added to a visual tree and cannot be reused.");
             }
 
             hasBeenAddedToVisualTree = true;
             if (Application.IsRunning)
             {
-                Ready.Fire();
+                _ready?.Fire();
             }
-            else
+            else if(_ready != null)
             {
                 Application.InvokeNextCycle(Ready.Fire);
             }
-            AddedToVisualTree.Fire();
-            SubscribeForLifetime(ObservableObject.AnyProperty, ()=> Application?.RequestPaint(), this);
+            _addedToVisualTree?.Fire();
         }
 
         internal void BeforeAddedToVisualTreeInternal()
         {
-            BeforeAddedToVisualTree.Fire();
+            _beforeAddedToVisualTree?.Fire();
         }
 
  
 
         internal void BeforeRemovedFromVisualTreeInternal()
         {
-            BeforeRemovedFromVisualTree.Fire();
+            _beforeRemovedFromVisualTree?.Fire();
         }
 
         internal void RemovedFromVisualTreeInternal()
-                {
-            RemovedFromVisualTree.Fire();
+        {
+            _removedFromVisualTree?.Fire();
         }
 
         internal void Paint()
@@ -406,7 +400,7 @@ namespace PowerArgs.Cli
  
         internal void HandleKeyInput(ConsoleKeyInfo info)
         {
-            KeyInputReceived.Fire(info);
+            _keyInputReceived?.Fire(info);
         }
 
         internal Point CalculateAbsolutePosition()

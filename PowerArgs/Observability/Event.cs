@@ -23,6 +23,11 @@ namespace PowerArgs
         /// </summary>
         public bool HasSubscriptions => subCount > 0 || paramsSubCount > 0;
          
+        public Event()
+        {
+
+        }
+
         /// <summary>
         /// Fires the event. All subscribers will be notified
         /// </summary>

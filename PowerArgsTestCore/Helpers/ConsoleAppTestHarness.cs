@@ -18,21 +18,6 @@ namespace ArgsTests.CLI.Physics
             app.Start().Wait();
         }
 
-        public static void Run(TestContext context, Action<ConsoleApp, SpaceTimePanel> testCode, [CallerMemberName]string testName = null, int w = 80, int h = 30)
-        {
-            Task spaceTimeTask = null;
-            Run(context, (app) =>
-            {
-                var st = new SpaceTime(w, h, TimeSpan.FromSeconds(.05f));
-                var panel = app.LayoutRoot.Add(new SpaceTimePanel(st));
-                st.InvokeNextCycle(() => testCode(app, panel) );
-                spaceTimeTask = panel.SpaceTime.Start();
-                spaceTimeTask.Finally((p) => app.Stop());
-
-            }, testName, w, h);
-
-            Assert.IsNotNull(spaceTimeTask);
-            spaceTimeTask.Wait();
-        }
+ 
     }
 }

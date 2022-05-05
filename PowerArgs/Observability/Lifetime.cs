@@ -73,6 +73,8 @@ namespace PowerArgs
         /// returns true if the lifetime's Dispose() method is currently running, false otherwise
         /// </summary>
         public bool IsExpiring { get; private set; }
+
+        public bool ShouldContinue => IsExpired == false && IsExpiring == false;
         
         /// <summary>
         /// Creates a new lifetime

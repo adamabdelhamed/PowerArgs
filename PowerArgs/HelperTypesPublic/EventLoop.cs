@@ -3,31 +3,103 @@
 namespace PowerArgs;
 public class EventLoop : Lifetime
 {
+    private class SynchronizedEventPool  
+    {
+        private SynchronizedEvent[] pool;
+        private int count;
+        public SynchronizedEventPool()
+        {
+            pool = new SynchronizedEvent[5];
+        }
+
+        public SynchronizedEvent Get()
+        {
+            lock (pool)
+            {
+                for (var i = 0; i < pool.Length; i++)
+                {
+                    if (pool[i] != null)
+                    {
+                        var ret = pool[i];
+                        pool[i] = null;
+                        count--;
+                        MaybeShrink();
+                        return ret;
+                    }
+                }
+                return new SynchronizedEvent();
+            }
+        }
+
+        public void Return(SynchronizedEvent done)
+        {
+            lock (pool)
+            {
+                done.Clean();
+                for (var i = 0; i < pool.Length; i++)
+                {
+                    if (pool[i] == null)
+                    {
+                        pool[i] = done;
+                        count++;
+                        MaybeShrink();
+                        return;
+                    }
+                }
+
+                Grow();
+                pool[count++] = done;
+            }
+        }
+
+        private void Grow()
+        {
+            var tmp = pool;
+            pool = new SynchronizedEvent[tmp.Length * 2];
+            Array.Copy(tmp, pool, tmp.Length);
+        }
+
+        private void MaybeShrink()
+        {
+            if (count == 0) return;
+            if(count <= pool.Length * .15)
+            {
+                var tmp = pool;
+                pool = new SynchronizedEvent[count * 2];
+                var newI = 0;
+                for(var i = 0; i < tmp.Length; i++)
+                {
+                    if(tmp[i] != null)
+                    {
+                        pool[newI++] = tmp[i];
+                    }
+                }
+            }
+        }
+    }
+
     private class SynchronizedEvent
     {
-        public Func<Task> AsyncWork { get; private  set; }
-        public Action SyncWork { get; private set; }
-        public SendOrPostCallback Callback { get; private set; }
-        public object CallbackState { get; private set; }
-        public TaskCompletionSource<bool> Deferred { get; private set; }
+        public Func<Task> AsyncWork { get;  set; }
+        public SendOrPostCallback Callback { get; set; }
+        public object CallbackState { get; set; }
         public Task Task { get; private set; }
-        public bool IsFinished => Task != null && (Task.IsCompleted || Task.IsFaulted || Task.IsCanceled);
+        public bool IsFinished => Task == null || (Task.IsCompleted || Task.IsFaulted || Task.IsCanceled);
         public bool IsFailed => Task?.Exception != null;
         public Exception Exception => Task?.Exception;
 
-        public SynchronizedEvent(Func<Task> asyncWork, Action syncWork, SendOrPostCallback callback, object state)
+        public SynchronizedEvent() { }
+
+        public void Clean()
         {
-            this.AsyncWork = asyncWork;
-            this.SyncWork = syncWork;
-            this.Callback = callback;
-            this.CallbackState = state;
-            this.Deferred = asyncWork == null ? null : new TaskCompletionSource<bool>();
+            AsyncWork = null;
+            Callback = null;
+            Task = null;
         }
 
         public void Run()
         {
             Task = AsyncWork?.Invoke();
-            SyncWork?.Invoke();
             Callback?.Invoke(CallbackState);
         }
     }
@@ -82,6 +154,8 @@ public class EventLoop : Lifetime
             }
         }
     }
+
+    private SynchronizedEventPool pool = new SynchronizedEventPool();
 
     public Event StartOfCycle { get; private set; } = new Event();
     public Event EndOfCycle { get; private set; } = new Event();
@@ -196,8 +270,7 @@ public class EventLoop : Lifetime
                     }
                 }
 
-                todoOnThisCycle.Clear();
-                    
+                   
                 lock (workQueue)
                 {
                     while (workQueue.Count > 0)
@@ -226,7 +299,9 @@ public class EventLoop : Lifetime
                             // swallow
                         }
 
+                        var wi = pendingWorkItems[i];
                         pendingWorkItems.RemoveAt(i--);
+                        pool.Return(wi);
                         if (stopRequested)
                         {
                             return;
@@ -234,8 +309,9 @@ public class EventLoop : Lifetime
                     }
                     else if (pendingWorkItems[i].IsFinished)
                     {
-                        pendingWorkItems[i].Deferred.SetResult(true);
+                        var wi = pendingWorkItems[i];
                         pendingWorkItems.RemoveAt(i--);
+                        pool.Return(wi);
                         if (stopRequested)
                         {
                             return;
@@ -258,7 +334,7 @@ public class EventLoop : Lifetime
                         }
                         else
                         {
-                            workItem.Deferred?.SetResult(true);
+                            pool.Return(workItem);
                             if (stopRequested)
                             {
                                 return;
@@ -282,6 +358,8 @@ public class EventLoop : Lifetime
                         }
                     }
                 }
+
+                todoOnThisCycle.Clear();
 
                 try
                 {
@@ -348,9 +426,10 @@ public class EventLoop : Lifetime
             return;
         }
 
-        var workItem = new SynchronizedEvent(work, null, null, null);
         lock (workQueue)
         {
+            var workItem = pool.Get();
+            workItem.AsyncWork = work;
             workQueue.Add(workItem);
         }
     }
@@ -361,10 +440,11 @@ public class EventLoop : Lifetime
         {
             return;
         }
-
-        var workItem = new SynchronizedEvent(null, null,callback, state);
         lock (workQueue)
         {
+            var workItem = pool.Get();
+            workItem.Callback = callback;
+            workItem.CallbackState = state;
             workQueue.Add(workItem);
         }
     }
@@ -404,10 +484,11 @@ public class EventLoop : Lifetime
         {
             return;
         }
-        var workItem = new SynchronizedEvent(work, null, null, null);
 
         if (Thread.CurrentThread == Thread)
         {
+            var workItem = pool.Get();
+            workItem.AsyncWork = work;
             workItem.Run();
             if (workItem.IsFinished == false)
             {
@@ -428,16 +509,19 @@ public class EventLoop : Lifetime
                 {
                     // swallow
                 }
+                pool.Return(workItem);
             }
             else
             {
-                workItem.Deferred?.SetResult(true);
+                pool.Return(workItem);
             }
         }
         else
         {
             lock (workQueue)
             {
+                var workItem = pool.Get();
+                workItem.AsyncWork = work;
                 workQueue.Add(workItem);
             }
         }
@@ -456,7 +540,6 @@ public class EventLoop : Lifetime
         }
 
         if (IsDrainingOrDrained) return EventLoopExceptionHandling.Swallow;
-        workItem?.Deferred?.SetException(ex);
         return EventLoopExceptionHandling.Throw;
     }
 }

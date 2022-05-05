@@ -31,6 +31,8 @@
         /// returns true if expiring
         /// </summary>
         bool IsExpiring { get; }
+
+        bool ShouldContinue { get; }
     }
 
     public static class ILifetimeManagerEx
@@ -39,12 +41,11 @@
         /// Delays until this lifetime is complete
         /// </summary>
         /// <returns>an async task</returns>
-        public static async Task AwaitEndOfLifetime(this ILifetimeManager manager)
+        public static Task ToTask(this ILifetimeManager manager)
         {
-            while (manager != null && manager.IsExpired == false)
-            {
-                await Task.Yield();
-            }
+            var tcs = new TaskCompletionSource();
+            manager.OnDisposed(() => tcs.SetResult());
+            return tcs.Task;
         }
     }
 
@@ -62,6 +63,8 @@
         /// </summary>
         public bool IsExpired { get; internal set; }
         public bool IsExpiring { get; internal set; }
+
+        public bool ShouldContinue => IsExpired == false && IsExpiring == false;
 
         /// <summary>
         /// Creates the lifetime manager

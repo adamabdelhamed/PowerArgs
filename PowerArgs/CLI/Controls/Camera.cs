@@ -32,6 +32,8 @@ public class Camera : ConsolePanel
             SetHardIf(ref cameraLocation, newVal, cameraLocation != newVal);
         } 
     }
+
+    public RectF CameraBounds => new RectF(cameraLocation.Left, cameraLocation.Top, Width, Height);
      
     /// <summary>
     /// Optionally set this property to constrain the camera's movement to an arbitrary rectangle
@@ -77,7 +79,10 @@ public class Camera : ConsolePanel
                 var yDelta = dest.Top - startY;
                 var frameX = startX + (v * xDelta);
                 var frameY = startY + (v * yDelta);
-                CameraLocation = new LocF(frameX, frameY);
+                if (lt.IsExpiring == false && lt.IsExpired == false)
+                {
+                    CameraLocation = new LocF(frameX, frameY);
+                }
             }
         });
     }

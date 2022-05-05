@@ -85,9 +85,13 @@ namespace PowerArgs.Cli
             }
         }
 
-        private static int CompareZ(ConsoleControl a, ConsoleControl b) => 
-            a.ZIndex == b.ZIndex ? a.ParentIndex.CompareTo(b.ParentIndex) : a.ZIndex.CompareTo(b.ZIndex);
-        
+ 
+
+        private static Comparison<ConsoleControl> CompareZ = new Comparison<ConsoleControl>((a, b) =>
+        {
+            return a.ZIndex == b.ZIndex ? a.ParentIndex.CompareTo(b.ParentIndex) : a.ZIndex.CompareTo(b.ZIndex);
+        });
+
         private void SortZ()
         {
             for (var i = 0; i < sortedControls.Count; i++)

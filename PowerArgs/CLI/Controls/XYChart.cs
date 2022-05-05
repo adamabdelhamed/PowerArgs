@@ -136,6 +136,8 @@ namespace PowerArgs.Cli
         /// A description of this point
         /// </summary>
         public string Description { get; set; }
+
+        public override string ToString() => $"{X}, {Y} {Description}";
     }
 
     /// <summary>
@@ -336,14 +338,14 @@ namespace PowerArgs.Cli
 
             ConsoleApp.Current.FocusManager.SubscribeForLifetime(nameof(Application.FocusManager.FocusedControl), () =>
              {
-                 if(Application.FocusManager.FocusedControl == null)
+                 if(ConsoleApp.Current.FocusManager.FocusedControl == null)
                  {
                      focusLt?.Dispose();
                      focusLt = null;
                      return;
                  }
-                 if (Application.FocusManager.FocusedControl == this) return;
-                 if (Descendents.Contains(Application.FocusManager.FocusedControl)) return;
+                 if (ConsoleApp.Current.FocusManager.FocusedControl == this) return;
+                 if (Descendents.Contains(ConsoleApp.Current.FocusManager.FocusedControl)) return;
 
                  focusLt?.Dispose();
                  focusLt = null;
@@ -839,6 +841,7 @@ namespace PowerArgs.Cli
     /// </summary>
     public class NumberFormatter : IAxisFormatter
     {
+        public int? Rounding { get; set; }
         /// <summary>
         /// Gets the values for ideal increments to be shown on an axis
         /// </summary>
@@ -903,7 +906,11 @@ namespace PowerArgs.Cli
         /// <returns>the formatted value</returns>
         public ConsoleString FormatValue(double min, double max, double value)
         {
-            if (value == ConsoleMath.Round(value))
+            if(Rounding.HasValue)
+            {
+                return ConsoleMath.Round(value, Rounding.Value).ToString().ToConsoleString();
+            }
+            else if (value == ConsoleMath.Round(value))
             {
                 return String.Format("{0:n0}", value).ToConsoleString();
             }

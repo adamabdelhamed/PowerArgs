@@ -199,7 +199,7 @@ public readonly struct Edge
     }
 }
 
-public interface ICollider
+public interface ICollider : ILifetime
 {
     public int ColliderHashCode { get; }
     public int ZIndex { get; }
@@ -257,7 +257,7 @@ public static class IColliderEx
     public static float CalculateNormalizedDistanceTo(this ICollider c, ICollider other) => c.Bounds.CalculateNormalizedDistanceTo(other.Bounds);
 }
 
-public class ColliderBox : ICollider
+public class ColliderBox : Lifetime, ICollider
 {
     public int ColliderHashCode { get; set; }
     public int ZIndex { get; }
@@ -735,10 +735,21 @@ public readonly struct LocF
         return ret;
     }
 
-    public static float CalculateDistanceTo(float x1, float y1, float x2, float y2) => (float)Math.Sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)));
-    public static float CalculateDistanceTo(in LocF a, in LocF b) => (float)Math.Sqrt(((a.Left - b.Left) * (a.Left - b.Left)) + ((a.Top - b.Top) * (a.Top - b.Top)));
+    public static float CalculateDistanceTo(float x1, float y1, float x2, float y2)
+    {
+        var dx = x1 - x2;
+        var dy = y1 - y2;
+        return (float)Math.Sqrt((dx * dx) + (dy * dy));
+    }
+
+    public static float CalculateDistanceTo(in LocF a, in LocF b)
+    {
+        var dx = a.Left - b.Left;
+        var dy = a.Top - b.Top;
+        return (float)Math.Sqrt((dx * dx) + (dy * dy));
+    }
 }
- 
+
 public readonly struct Circle
 {
     public static int FindLineCircleIntersections(float cx, float cy, float radius, float x1, float y1, float x2, float y2, out float ox1, out float oy1, out float ox2, out float oy2)
