@@ -36,7 +36,7 @@ namespace PowerArgs.Cli
             }
         }
 
-        public virtual bool CanCollideWith(ICollider other) => true;
+        public virtual bool CanCollideWith(ICollider other) => object.ReferenceEquals(this, other) == false;
 
         public int Width
         {
