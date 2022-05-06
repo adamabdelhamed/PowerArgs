@@ -51,6 +51,7 @@ public class Velocity2
         set
         {
             if (value == speed) return;
+            lastEvalTime = (float)Group.Now.TotalSeconds;
             speed = value;
             _onSpeedChanged?.Fire();
         }
@@ -347,7 +348,7 @@ public class ColliderGroup
             for (var j = 0; j < entry.Length; j++)
             {
                 var item = entry[j];
-                if (item == null || item == except) continue;
+                if (item == null || item.Collider == except) continue;
                 list.Add(item.Collider);
             }
         }
@@ -365,7 +366,7 @@ public class ColliderGroup
             for (var j = 0; j < entry.Length; j++)
             {
                 var item = entry[j];
-                if (item == null || item == owner || owner.CanCollideWith(item.Collider) == false) continue;
+                if (item == null || item.Collider == owner || owner.CanCollideWith(item.Collider) == false) continue;
                 list.Add(item.Collider);
             }
         }
