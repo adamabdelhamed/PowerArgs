@@ -13,7 +13,7 @@ namespace PowerArgs.Cli
  
         public int ZIndex { get => z; set => SetHardIf(ref z, value, z != value); }
 
-        public int ColliderHashCode { get; internal set; }
+        public int ColliderHashCode { get; set; } = -1;
 
         public RectF Bounds
         {

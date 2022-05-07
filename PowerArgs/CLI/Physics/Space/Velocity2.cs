@@ -75,14 +75,25 @@ public class Velocity2
         group.Add(collider, this);
     }
 
-    public Velocity2(ConsoleControl collider, ColliderGroup group) : this((ICollider)collider, group)
+    public Velocity2(ConsoleControl collider, ColliderGroup group) 
     {
-        collider.OnDisposed(RemoveMe);
-    }
-
-    private void RemoveMe()
-    {
-        this.Group.Remove(Collider);
+        this.Group = group;
+        this.Collider = collider;
+        group.Add(collider, this);
+        collider.OnDisposed(()=>
+        {
+           /*
+            var lookup = this.Group.EnumerateCollidersSlow2(null).Where(c => c.c == collider).FirstOrDefault();
+            if (lookup.c != Collider)
+            {
+                throw new NotSupportedException("OOPS, not there");
+            }
+           */
+            if (this.Group.Remove(Collider) == false)
+            {
+                throw new InvalidOperationException($"Failed to remove myself from group after dispose: {collider.GetType().Name}-{collider.ColliderHashCode}");
+            }
+        });
     }
 
     public ILifetimeManager CreateVelocityChangedLifetime() => 
@@ -95,6 +106,7 @@ public class Velocity2
 
 public class ColliderGroup
 {
+    private int NextHashCode = 0;
     public Event<Impact> ImpactOccurred { get; private set; } = new Event<Impact>();
     public int Count { get; private set; }
     private VelocityHashTable velocities;
@@ -135,8 +147,13 @@ public class ColliderGroup
 
     public bool TryLookupVelocity(ICollider c, out Velocity2 v) => velocities.TryGetValue(c, out v);
 
-    internal void Add(ICollider c, Velocity2 v)
+    internal (int RowIndex, int ColIndex) Add(ICollider c, Velocity2 v)
     {
+        if(c.ColliderHashCode >= 0)
+        {
+            throw new System.Exception("Already has a hashcode");
+        }
+        c.ColliderHashCode = NextHashCode++;
         if (Count == colliderBuffer.Length)
         {
             var tmp = colliderBuffer;
@@ -148,18 +165,21 @@ public class ColliderGroup
             Array.Copy(tmp2, obstacleBuffer, tmp2.Length);
         }
         v.lastEvalTime = (float)lastExecuteTime.TotalSeconds;
-        velocities.Add(c, v);
+        var ret = velocities.Add(c, v);
         Count++;
         _added?.Fire((v, c));
+        return ret;
     }
 
-    public void Remove(ICollider c)
+    public bool Remove(ICollider c)
     {
         if(velocities.Remove(c, out Velocity2 v))
         {
             _removed?.Fire((v, c));
             Count--;
+            return true;
         }
+        return false;
     }
 
     public TimeSpan Now => stopwatch.Elapsed;
@@ -399,7 +419,24 @@ public class ColliderGroup
             }
         }
 
-        public void Add(ICollider c, Velocity2 v)
+        public void ValidateEntries()
+        {
+            for(var i = 0; i < Table.Length; i++)
+            {
+                for(var j = 0; j < Table[i].Length; j++)
+                {
+                    var entry = Table[i][j];
+                    if (entry == null) continue;
+                    var correctIndex = entry.Collider.ColliderHashCode % Table.Length;
+                    if(correctIndex != i)
+                    {
+                        throw new System.Exception($"Item in the wrong place: Expected: {correctIndex}, Actual: {i}");
+                    }
+                }
+            }
+        }
+
+        internal (int RowIndex, int ColIndex) Add(ICollider c, Velocity2 v)
         {
             var i = c.ColliderHashCode % Table.Length;
             var myArray = Table[i].AsSpan();
@@ -408,15 +445,14 @@ public class ColliderGroup
                 if (myArray[j] == null)
                 {
                     myArray[j] = new Item(c, v);
-                    return;
+                    return (i,j);
                 }
             }
-
-            var temp = myArray;
-            var newArray = new Item[temp.Length * 2];
-            Array.Copy(Table[i], newArray, temp.Length);
-            newArray[temp.Length] = new Item(c, v);
-            Table[i] = newArray;
+            var biggerArray = new Item[myArray.Length * 2];
+            Array.Copy(Table[i], biggerArray, myArray.Length);
+            biggerArray[myArray.Length] = new Item(c, v);
+            Table[i] = biggerArray;
+            return (i, myArray.Length);
         }
 
         public bool Remove(ICollider c, out Velocity2 v)

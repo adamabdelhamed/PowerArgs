@@ -379,10 +379,8 @@ namespace PowerArgs.Cli
             paintRequested = true;
         }
 
-        public int nextId = 0;
         private void ControlAddedToVisualTree(ConsoleControl c)
         {
-            c.ColliderHashCode = nextId++;
             c.Application = this;
             c.OnDisposed(() =>
             {

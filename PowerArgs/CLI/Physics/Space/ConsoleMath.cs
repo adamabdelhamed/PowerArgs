@@ -201,7 +201,7 @@ public readonly struct Edge
 
 public interface ICollider : ILifetime
 {
-    public int ColliderHashCode { get; }
+    public int ColliderHashCode { get; set; } 
     public int ZIndex { get; }
     public RectF Bounds { get; set; }
     public RectF MassBounds { get; }
