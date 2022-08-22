@@ -1,8 +1,6 @@
-﻿using PowerArgs.Cli;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
-namespace PowerArgs
-{
+namespace PowerArgs;
     [ArgReviverType]
     public readonly struct RGB
     {
@@ -69,6 +67,8 @@ namespace PowerArgs
         public readonly byte R;
         public readonly byte G;
         public readonly byte B;
+
+        public float Brightness => (((int)R + (int)G + (int)B) / 3f) / byte.MaxValue;
 
         public RGB(byte r, byte g, byte b) 
         {
@@ -241,155 +241,24 @@ namespace PowerArgs
 
             return new RGB((byte)r, (byte)g, (byte)b);
         }
+         
+    }
 
-        public static Task AnimateAsync(RGBAnimationOptions options)
+public static class NullableRGBReviver
+{
+    [ArgReviver]
+    public static RGB? Revive(string key, string val)
+    {
+        if (RGB.TryParse(val, out RGB ret))
         {
-            var deltaBufferR = new float[options.Transitions.Count];
-            var deltaBufferG = new float[options.Transitions.Count];
-            var deltaBufferB = new float[options.Transitions.Count];
-
-            var deltaBufferRReversed = new float[options.Transitions.Count];
-            var deltaBufferGReversed = new float[options.Transitions.Count];
-            var deltaBufferBReversed = new float[options.Transitions.Count];
-
-            for (var i = 0; i < options.Transitions.Count; i++)
-            {
-                deltaBufferR[i] = options.Transitions[i].Value.R - options.Transitions[i].Key.R;
-                deltaBufferG[i] = options.Transitions[i].Value.G - options.Transitions[i].Key.G;
-                deltaBufferB[i] = options.Transitions[i].Value.B - options.Transitions[i].Key.B;
-
-                deltaBufferRReversed[i] = options.Transitions[i].Key.R - options.Transitions[i].Value.R;
-                deltaBufferGReversed[i] = options.Transitions[i].Key.G - options.Transitions[i].Value.G;
-                deltaBufferBReversed[i] = options.Transitions[i].Key.B - options.Transitions[i].Value.B;
-            }
-            var colorBuffer = new RGB[options.Transitions.Count];
-            var isReversed = false;
-            return Animator.AnimateAsync(new FloatAnimatorOptions()
-            {
-                From = 0,
-                To = 1,
-                Duration = options.Duration,
-                AutoReverse = options.AutoReverse,
-                AutoReverseDelay = options.AutoReverseDelay,
-                DelayProvider = options.DelayProvider,
-                EasingFunction = options.EasingFunction,
-                IsCancelled = options.IsCancelled,
-                Loop = options.Loop,
-                OnReversedChanged = (r) => isReversed=r,
-                Setter = percentage =>
-                {
-                     
-                    if(isReversed == false)
-                    {
-                        for (var i = 0; i < options.Transitions.Count; i++)
-                        {
-
-                            if (percentage == 1)
-                            {
-                                colorBuffer[i] = new RGB(
-                               (byte)(options.Transitions[i].Value.R),
-                               (byte)(options.Transitions[i].Value.G),
-                               (byte)(options.Transitions[i].Value.B));
-                            }
-                            else
-                            {
-                                var rDeltaFrame = deltaBufferR[i] * percentage;
-                                var gDeltaFrame = deltaBufferG[i] * percentage;
-                                var bDeltaFrame = deltaBufferB[i] * percentage;
-
-                                colorBuffer[i] = new RGB(
-                                    (byte)(options.Transitions[i].Key.R + rDeltaFrame),
-                                    (byte)(options.Transitions[i].Key.G + gDeltaFrame),
-                                    (byte)(options.Transitions[i].Key.B + bDeltaFrame));
-                            }
-                        }
-                    }
-                    else
-                    {
-                        percentage = 1 - percentage;
-                        for (var i = 0; i < options.Transitions.Count; i++)
-                        {
-                            var rDeltaFrame = deltaBufferRReversed[i] * percentage;
-                            var gDeltaFrame = deltaBufferGReversed[i] * percentage;
-                            var bDeltaFrame = deltaBufferBReversed[i] * percentage;
-                            if (percentage == 1)
-                            {
-                                colorBuffer[i] = new RGB(
-                               (byte)(options.Transitions[i].Key.R),
-                               (byte)(options.Transitions[i].Key.G),
-                               (byte)(options.Transitions[i].Key.B));
-                            }
-                            else
-                            {
-                                colorBuffer[i] = new RGB(
-                                    (byte)(options.Transitions[i].Value.R + rDeltaFrame),
-                                    (byte)(options.Transitions[i].Value.G + gDeltaFrame),
-                                    (byte)(options.Transitions[i].Value.B + bDeltaFrame));
-                            }
-                        }
-                    }
-                   
-                    options.OnColorsChanged(colorBuffer);
-                }
-            });
+            return ret;
         }
-    }
-
-    public class RGBAnimationOptions
-    {
-        public List<KeyValuePair<RGB, RGB>> Transitions { get; set; } = new List<KeyValuePair<RGB, RGB>>();
-
-        public float Duration { get; set; }
-        /// <summary>
-        /// The easing function to apply
-        /// </summary>
-        public EasingFunction EasingFunction { get; set; } = Animator.EaseInOut;
-
-        /// <summary>
-        /// If true then the animation will automatically reverse itself when done
-        /// </summary>
-        public bool AutoReverse { get; set; }
-
-        /// <summary>
-        /// When specified, the animation will loop until this lifetime completes
-        /// </summary>
-        public ILifetimeManager Loop { get; set; }
-
-        /// <summary>
-        /// The provider to use for delaying between animation frames
-        /// </summary>
-        public IDelayProvider DelayProvider { get; set; }
-
-        /// <summary>
-        /// If auto reverse is enabled, this is the pause, in milliseconds, after the forward animation
-        /// finishes, to wait before reversing
-        /// </summary>
-        public float AutoReverseDelay { get; set; } = 0;
-
-        /// <summary>
-        /// A callback that indicates that we should end the animation early
-        /// </summary>
-        public Func<bool> IsCancelled { get; set; }
-
-        public Action<RGB[]> OnColorsChanged { get; set; }
-    }
-
-    public static class NullableRGBReviver
-    {
-        [ArgReviver]
-        public static RGB? Revive(string key, string val)
+        else if (Enum.TryParse(val, out ConsoleColor c))
         {
-            if (RGB.TryParse(val, out RGB ret))
-            {
-                return ret;
-            }
-            else if (Enum.TryParse(val, out ConsoleColor c))
-            {
-                return c;
-            }
-            {
-                throw new ArgException($"'{val}' is not a valid RGB color");
-            }
+            return c;
+        }
+        {
+            throw new ArgException($"'{val}' is not a valid RGB color");
         }
     }
 }

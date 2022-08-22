@@ -108,7 +108,11 @@ namespace PowerArgs
             object ret;
             if (values.TryGetValue(name, out ret))
             {
-                if (ret is T)
+                if(ret == null)
+                {
+                    return default(T);
+                }
+                else if (ret is T)
                 {
                     return (T)ret;
                 }

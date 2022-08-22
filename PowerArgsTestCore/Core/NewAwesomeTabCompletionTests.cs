@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 using System.IO;
-using PowerArgs.Cli;
 
 namespace ArgsTests
 {

@@ -186,6 +186,7 @@ namespace PowerArgs
                 {
                     return false;
                 }
+                ConsoleString.SetColorsFancy(ConsoleString.DefaultForegroundColor, ConsoleString.DefaultBackgroundColor);
             }
             catch(Exception ex)
             {

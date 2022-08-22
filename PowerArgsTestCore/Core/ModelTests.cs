@@ -3,8 +3,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
 
 using System.Linq;
-using PowerArgs.Cli;
-using PowerArgs.Cli.Physics;
 
 namespace ArgsTests
 {

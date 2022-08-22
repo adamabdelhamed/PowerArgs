@@ -377,7 +377,7 @@ namespace ArgsTests
                 Assert.AreEqual(new ConsoleCharacter('*', null, color), method.Invoke(null, new object[] { '*', null }));
             }
         }
-
+        /*
         [TestMethod]
         public void TestConvertBetweenConsoleBitmapAndConsoleStringTrimMode()
         {
@@ -471,7 +471,7 @@ namespace ArgsTests
             var andBackAgain = readBack.ToConsoleBitmap();
             Assert.AreEqual(bmp, andBackAgain);
         }
-
+        */
         [TestMethod]
         public void TestConsoleStringEncodingBasic()
         {

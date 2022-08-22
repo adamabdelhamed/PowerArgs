@@ -1,5 +1,4 @@
 ﻿using PowerArgs;
-using PowerArgs.Cli;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +23,6 @@ namespace ArgsTests.CLI
         public ConsoleColor ForegroundColor { get; set; }
 
         public CliKeyboardInputQueue Input { get; private set; }
-        public ConsoleBitmap Buffer { get; private set; }
 
         public CliUnitTestConsole(int w = 80, int h = 80)
         {
@@ -44,8 +42,6 @@ namespace ArgsTests.CLI
         
         public void Clear()
         {
-            Buffer = new ConsoleBitmap(this.BufferWidth, this.WindowHeight);
-            this.BufferWidth = Buffer.Width;
             this.CursorLeft = 0;
             this.CursorTop = 0;
         }
@@ -91,8 +87,6 @@ namespace ArgsTests.CLI
         }
         public void Write(in ConsoleCharacter consoleCharacter)
         {
-            Buffer.DrawPoint(consoleCharacter, CursorLeft, CursorTop);
-
             if(CursorLeft == BufferWidth - 1)
             {
                 CursorLeft = 0;

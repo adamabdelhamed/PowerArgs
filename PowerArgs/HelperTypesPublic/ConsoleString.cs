@@ -1,8 +1,4 @@
-﻿using PowerArgs.Cli;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -1040,7 +1036,7 @@ namespace PowerArgs
                 }
                 finally
                 {
-                    SetColorsFancy(existingBackground, existingBackground);
+                    SetColorsFancy(existingForeground, existingBackground);
                 }
             }
         }
@@ -1063,7 +1059,7 @@ namespace PowerArgs
             Console.Write(toWrite.Replace("\n",Ansi.Cursor.Move.NextLine()));
         }
 
-        private void SetColorsFancy(in RGB fg, in RGB bg)
+        internal static void SetColorsFancy(in RGB fg, in RGB bg)
         {
             var toWrite = "";
             toWrite += Ansi.Cursor.SavePosition;
@@ -1342,7 +1338,7 @@ namespace PowerArgs
 
             return chunks;
         }
-
+        /*
         /// <summary>
         /// Converts this ConsoleString to a ConsoleBitmap. Tabs will be replaced with 4 spaces.
         /// </summary>
@@ -1373,7 +1369,7 @@ namespace PowerArgs
 
             return ret;
         }
-
+        */
         /// <summary>
         /// Converts this ConsoleString into an html div tag that can be inserted into a web page and rendered by a web browser. 
         /// 
