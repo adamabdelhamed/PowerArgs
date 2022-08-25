@@ -22,11 +22,6 @@ namespace PowerArgs
         private string latestResultsSearchString;
         private int selectedIndex;
 
-        /// <summary>
-        /// An event that fires when the fetching search results fails. When this happens the search will swallow the excpetion and simply 
-        /// show no results to the user.
-        /// </summary>
-        public Event<Exception> FetchResultsFailed { get; private set; } = new Event<Exception>();
 
         /// <summary>
         /// Gets the most recent search result that was selected and committed by the user
@@ -262,7 +257,6 @@ namespace PowerArgs
                     }
                     catch (Exception ex)
                     {
-                        FetchResultsFailed.Fire(ex);
                         return;
                     }
 
@@ -283,7 +277,7 @@ namespace PowerArgs
                 }
                 catch (Exception ex)
                 {
-                    FetchResultsFailed.Fire(ex);
+         
                 }
 
             });

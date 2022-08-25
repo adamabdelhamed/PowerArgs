@@ -60,13 +60,6 @@ namespace PowerArgs
             return ret;
         }
 
-        public static ILifetimeManager ToLifetime(this Task t)
-        {
-            var lt = new Lifetime();
-            t.Finally((t2) => lt.Dispose());
-            return lt;
-        }
-
         public static bool IsFulfilled(this Task t) => t.IsCanceled || t.IsCompleted || t.IsFaulted;
 
         public static async void Then(this Task t, Action a)

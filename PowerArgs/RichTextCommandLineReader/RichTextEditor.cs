@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace PowerArgs
 {
-    public class RichTextEditor : ObservableObject
+    public class RichTextEditor
     {
         private RichCommandLineContext Context { get; set; }
         private Dictionary<ConsoleKey, IKeyHandler> KeyHandlers { get; set; }
@@ -73,7 +73,6 @@ namespace PowerArgs
                 Context.Buffer.Clear();
                 Context.Buffer.AddRange(value);
                 Context.BufferPosition = 0;
-                FirePropertyChanged(nameof(CurrentValue));
             }
         }
 
@@ -145,7 +144,6 @@ namespace PowerArgs
 
                 DoSyntaxHighlighting(Context);
             }
-            FireValueChanged();
         }
 
         public void Clear()
@@ -188,16 +186,6 @@ namespace PowerArgs
                     throw;
                 }
             }
-
-            if (highlightChanged)
-            {
-                FireValueChanged();
-            }
-        }
-
-        private void FireValueChanged()
-        {
-            FirePropertyChanged(nameof(CurrentValue));
         }
 
         private class RichTextStateConsole : IConsoleProvider
