@@ -405,7 +405,3 @@ public class TestArgs
     public int AnotherParam { get; set; }
 }
 ```
-
-### The PowerArgs.Cli (undocumented) namespace
-
-The PowerArgs.Cli namespace contains framework components that make it easy to build very interactive command line applications.  This namespace is undocumented since these capabilities are still a work in progress.  When it gets closer to being ready I'll document the classes just like the rest of PowerArgs.
