@@ -15,6 +15,7 @@
     <PackageTags>command line; arguments parser; CLI; .NET</PackageTags>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/adamabdelhamed/powerargs</RepositoryUrl>
+    <WarningLevel>1</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,10 +24,4 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-  </ItemGroup>
- 
-
 </Project>
