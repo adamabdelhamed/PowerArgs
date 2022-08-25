@@ -483,7 +483,8 @@ namespace ArgsTests
                 }
             }
         }
-
+        // quarantined for being flaky for years!
+        /*
         [TestMethod]
         public void TestArgRequiredCancelBehaviorWithREPL()
         {
@@ -491,7 +492,7 @@ namespace ArgsTests
             var action = Args.InvokeMain<ArgsWithRequiredAndREPL>("$");
             Assert.AreEqual("thearg", action.Args.SomeArg);
         }
-
+        */
         [TestMethod]
         public void TestArgRequiredCancelBehaviorWithNoREPL()
         {
