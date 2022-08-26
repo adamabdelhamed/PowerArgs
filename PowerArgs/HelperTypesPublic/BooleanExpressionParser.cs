@@ -261,6 +261,10 @@ namespace PowerArgs
     public interface IBooleanExpression
     {
         /// <summary>
+        /// Gets the names of all the variables that exist within the expression
+        /// </summary>
+        IEnumerable<string> VariableNames { get; }
+        /// <summary>
         /// Evaluates the state of the node (true or false) given a variable resolver.
         /// </summary>
         /// <param name="resolver">the object to use to resolve boolean variables</param>
@@ -294,6 +298,11 @@ namespace PowerArgs
         /// The name of the variable referenced by this node
         /// </summary>
         public string VariableName { get; set; }
+
+        /// <summary>
+        /// Gets the names of all the variables that exist within the expression
+        /// </summary>
+        public IEnumerable<string> VariableNames => new string[] { VariableName };
 
         /// <summary>
         /// Uses the given resolver to resolve the target boolean variable
@@ -343,6 +352,22 @@ namespace PowerArgs
         /// The operands (variables or grouped child expressions) that make up this expression.
         /// </summary>
         public List<IBooleanExpression> Operands { get; private set; }
+
+        /// <summary>
+        /// Gets the names of all the variables that exist within the expression
+        /// </summary>
+        public IEnumerable<string> VariableNames
+        {
+            get
+            {
+                var ret = new List<string>();
+                foreach(var exp in Operands)
+                {
+                    ret.AddRange(exp.VariableNames);
+                }
+                return ret.Distinct();
+            }
+        }
 
         /// <summary>
         /// The operators to apply between each operand

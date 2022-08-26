@@ -1,9 +1,8 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
+using System.Linq;
 
 namespace ArgsTests
 {
@@ -328,6 +327,40 @@ namespace ArgsTests
             catch (ArgumentException ex)
             {
                 Assert.AreEqual("You cannot have an operator '&' or '|' after a '!'", ex.Message);
+            }
+        }
+
+        [TestMethod]
+        public void TestBooleanExpressionGetNames()
+        {
+            var e1 = BooleanExpressionParser.Parse("a");
+            Assert.AreEqual(1, e1.VariableNames.Count());
+            Assert.AreEqual("a", e1.VariableNames.Single());
+
+            var e2 = BooleanExpressionParser.Parse("a|b");
+            Assert.AreEqual(2, e2.VariableNames.Count());
+            Assert.AreEqual("a", e2.VariableNames.Skip(0).First());
+            Assert.AreEqual("b", e2.VariableNames.Skip(1).First());
+
+            var expected = new List<string>()
+            {
+                "a",
+                "b",
+                "c",
+                "d",
+                "e"
+            };
+
+            var e3 = BooleanExpressionParser.Parse("(((a | b) & (c | d)) & e)");
+            var actual = e3.VariableNames.ToList();
+
+            actual.Sort();
+            expected.Sort();
+
+            Assert.AreEqual(actual.Count, expected.Count);
+            for(var i = 0; i < actual.Count; i++)
+            {
+                Assert.AreEqual(expected[i], actual[i]);
             }
         }
     }
