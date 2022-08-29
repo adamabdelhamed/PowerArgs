@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections;
 
 namespace PowerArgs
 {
@@ -10,6 +7,23 @@ namespace PowerArgs
     /// </summary>
     public static class CollectionsEx
     {
+
+        /// <summary>
+        /// Tests to see if the collection is null or empty
+        /// </summary>
+        /// <typeparam name="T">the type of element within the collection</typeparam>
+        /// <param name="collection">the collection to test</param>
+        /// <returns>true if the collection is null or empty, false otherwise</returns>
+        public static bool IsNullOrEmpty<T>(this IEnumerable<T> collection) => collection == null || collection.Count() == 0;
+
+        /// <summary>
+        /// Tests to see if the array is null or empty
+        /// </summary>
+        /// <typeparam name="T">the type of element within the array</typeparam>
+        /// <param name="collection">the array to test</param>
+        /// <returns>true if the array is null or empty, false otherwise</returns>
+        public static bool IsNullOrEmpty<T>(this T[] array) => array == null || array.Length == 0;
+
         /// <summary>
         /// Executes the given action for each element in the collection
         /// </summary>
@@ -36,6 +50,23 @@ namespace PowerArgs
             foreach(var item in enumerable)
             {
                 if(item is TOut)
+                {
+                    yield return (TOut)item;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Filters the collection to only those who are not of type TOut and then narrows the IEnumerable type to TOut
+        /// </summary>
+        /// <typeparam name="TOut">The type to narrow to</typeparam>
+        /// <param name="enumerable">the collection to filter and narrow</param>
+        /// <returns>the filtered and narrowed enumerable</returns>
+        public static IEnumerable<TOut> WhereAsNot<TNot, TOut>(this IEnumerable enumerable)
+        {
+            foreach (var item in enumerable)
+            {
+                if (item is TNot == false)
                 {
                     yield return (TOut)item;
                 }

@@ -246,10 +246,11 @@ namespace PowerArgs
 
         public bool ResolveBoolean(string variableName)
         {
+            if (variableName == null) throw new ArgumentNullException("Variable name cannot be null");
             bool val;
             if (InnerDictionary.TryGetValue(variableName, out val) == false)
             {
-                throw new ArgumentException("Unknown variable '" + variableName + "'");
+                return false;
             }
             return val;
         }

@@ -465,11 +465,11 @@ namespace PowerArgs
         /// <summary>
         /// Gets the console's default foreground color
         /// </summary>
-        public static RGB DefaultForegroundColor { get; set; }
+        public static RGB DefaultForegroundColor { get; set; } = RGB.Gray;
         /// <summary>
         /// Gets the console's default background color
         /// </summary
-        public static RGB DefaultBackgroundColor { get; set; }
+        public static RGB DefaultBackgroundColor { get; set; } = RGB.Black;
 
         private static Dictionary<ConsoleColor, string> CSSMap = new Dictionary<ConsoleColor, string>()
         {
@@ -493,21 +493,10 @@ namespace PowerArgs
 
         public ReadOnlySpan<ConsoleCharacter> AsSpan() => characters.AsSpan();
 
-        static ConsoleString ()
+        static ConsoleString()
         {
             ConsoleProvider = new StdConsoleProvider();
-            try
-            {
-                DefaultForegroundColor = ConsoleProvider.ForegroundColor;
-                DefaultBackgroundColor = ConsoleProvider.BackgroundColor;
-            }
-            catch (Exception)
-            {
-                DefaultForegroundColor = ConsoleColor.Gray;
-                DefaultBackgroundColor = ConsoleColor.Black;
-            }
         }
-
         /// <summary>
         /// Represents an empty string.
         /// </summary>
