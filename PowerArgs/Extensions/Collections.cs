@@ -39,6 +39,16 @@ namespace PowerArgs
             return enumerable;
         }
 
+        public static IEnumerable<T> For<T>(this IEnumerable<T> enumerable, Action<T,int> a)
+        {
+            var i = 0;
+            foreach (var item in enumerable)
+            {
+                a(item, i++);
+            }
+            return enumerable;
+        }
+
         /// <summary>
         /// Filters the collection to only those who are of type TOut and then narrows the IEnumerable type to TOut
         /// </summary>
