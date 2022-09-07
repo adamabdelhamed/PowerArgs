@@ -544,6 +544,14 @@ namespace ArgsTests
             Assert.AreEqual("<div class='powerargs-console-string' style='font-family:Consolas;background-color:black'><span style='color:red;background-color:black;'>Adam</span><span style='color:grey;background-color:black;'> </span><span style='color:green;background-color:black;'>Abdelhamed</span></div>", toDiv);
         }
 
+        [TestMethod]
+        public void TestRGBLookup()
+        {
+            Console.WriteLine(new RGB(20, 20, 20).ToString());
+            Assert.AreNotEqual(nameof(RGB.Black),new RGB(20, 20, 20).ToString());
+            Assert.IsFalse(RGB.RGBToConsoleColorMap.ContainsKey(new RGB(20, 20, 20)));
+        }
+
         private static void ValidateStringCharacteristics(string expected, ConsoleString actual)
         {
             Assert.AreEqual(expected, string.Join("", actual.Select(c => c.Value)));
