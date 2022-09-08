@@ -57,10 +57,10 @@ namespace ArgsTests
         [TestMethod]
         public void TestMultiSegmentConsoleString()
         {
-            ConsoleString val = new ConsoleString("Adam", ConsoleColor.Red);
-            val += new ConsoleString(" M", ConsoleColor.White);
-            val += new ConsoleString("", ConsoleColor.Black);
-            val += new ConsoleString(" Abdelhamed", ConsoleColor.Blue);
+            ConsoleString val = new ConsoleString("Adam", RGB.Red);
+            val += new ConsoleString(" M", RGB.White);
+            val += new ConsoleString("", RGB.Black);
+            val += new ConsoleString(" Abdelhamed", RGB.Blue);
 
             ValidateStringCharacteristics("Adam M Abdelhamed", val);
             val.Write();
@@ -72,10 +72,10 @@ namespace ArgsTests
             ConsoleString[] equal = new ConsoleString[2];
             for (int i = 0; i < equal.Length; i++)
             {
-                equal[i] = new ConsoleString("Adam", ConsoleColor.Red);
-                equal[i] += new ConsoleString(" M", ConsoleColor.White);
-                equal[i] += new ConsoleString("", ConsoleColor.Black);
-                equal[i] += new ConsoleString(" Abdelhamed", ConsoleColor.Blue);
+                equal[i] = new ConsoleString("Adam", RGB.Red);
+                equal[i] += new ConsoleString(" M", RGB.White);
+                equal[i] += new ConsoleString("", RGB.Black);
+                equal[i] += new ConsoleString(" Abdelhamed", RGB.Blue);
             }
 
             Assert.IsTrue(equal[0].Equals(equal[1]));
@@ -90,10 +90,10 @@ namespace ArgsTests
             ConsoleString[] equal = new ConsoleString[2];
             for (int i = 0; i < equal.Length; i++)
             {
-                equal[i] = new ConsoleString("Adam", ConsoleColor.Red);
-                equal[i] += new ConsoleString(" M", i== 0 ? ConsoleColor.White : ConsoleColor.Black);
-                equal[i] += new ConsoleString("", ConsoleColor.Black);
-                equal[i] += new ConsoleString(" Abdelhamed", ConsoleColor.Blue);
+                equal[i] = new ConsoleString("Adam", RGB.Red);
+                equal[i] += new ConsoleString(" M", i== 0 ? RGB.White : RGB.Black);
+                equal[i] += new ConsoleString("", RGB.Black);
+                equal[i] += new ConsoleString(" Abdelhamed", RGB.Blue);
             }
 
             Assert.IsFalse(equal[0].Equals(equal[1]));
@@ -115,10 +115,10 @@ namespace ArgsTests
             for (int i = 0; i < testString.Length; i++)
             {
                 ConsoleString orig = new ConsoleString(testString);
-                ConsoleString replaced = orig.Replace(testString[i]+"", testString[i]+"", ConsoleColor.Red);
+                ConsoleString replaced = orig.Replace(testString[i]+"", testString[i]+"", RGB.Red);
 
-                Assert.AreEqual(ConsoleColor.Gray, (ConsoleColor)orig[i].ForegroundColor);
-                Assert.AreEqual(ConsoleColor.Red, (ConsoleColor)replaced[i].ForegroundColor);
+                Assert.AreEqual(RGB.Gray, orig[i].ForegroundColor);
+                Assert.AreEqual(RGB.Red, replaced[i].ForegroundColor);
             }
         }
 
@@ -126,11 +126,11 @@ namespace ArgsTests
         public void TestReplaceOtherCases()
         {
             ConsoleString orig = new ConsoleString("RedWBlue");
-            ConsoleString white = orig.Replace("W", "White", ConsoleColor.White);
+            ConsoleString white = orig.Replace("W", "White", RGB.White);
 
             Assert.AreEqual("RedWBlue", orig.ToString());
             Assert.AreEqual("RedWhiteBlue", white.ToString());
-            Assert.AreEqual("White", string.Join("",white.Where(c => c.ForegroundColor == ConsoleColor.White).Select(c=> c.Value)));
+            Assert.AreEqual("White", string.Join("",white.Where(c => c.ForegroundColor == RGB.White).Select(c=> c.Value)));
         }
 
         [TestMethod]
@@ -188,13 +188,13 @@ namespace ArgsTests
         [TestMethod]
         public void TestHighlightCustomComparison()
         {
-            var highlighted = new ConsoleString("Adam").Highlight("a",foregroundColor: ConsoleColor.Red, comparison: StringComparison.InvariantCultureIgnoreCase);
-            Assert.AreEqual(highlighted[0], new ConsoleCharacter('A', ConsoleColor.Red));
+            var highlighted = new ConsoleString("Adam").Highlight("a",foregroundColor: RGB.Red, comparison: StringComparison.InvariantCultureIgnoreCase);
+            Assert.AreEqual(highlighted[0], new ConsoleCharacter('A', RGB.Red));
             Assert.AreEqual(highlighted[1], new ConsoleCharacter('d'));
-            Assert.AreEqual(highlighted[2], new ConsoleCharacter('a', ConsoleColor.Red));
+            Assert.AreEqual(highlighted[2], new ConsoleCharacter('a', RGB.Red));
             Assert.AreEqual(highlighted[3], new ConsoleCharacter('m'));
 
-            Assert.AreEqual("The quick brown fox", new ConsoleString("The quick brown fox").Highlight("brown", ConsoleColor.Red).ToString());
+            Assert.AreEqual("The quick brown fox", new ConsoleString("The quick brown fox").Highlight("brown", RGB.Red).ToString());
         }
 
         [TestMethod]
@@ -225,25 +225,25 @@ namespace ArgsTests
         public void TestReplaceMultiple()
         {
             ConsoleString orig = new ConsoleString("WRedWBlueW");
-            ConsoleString white = orig.Replace("W", "White", ConsoleColor.White);
+            ConsoleString white = orig.Replace("W", "White", RGB.White);
 
             Assert.AreEqual("WRedWBlueW", orig.ToString());
             Assert.AreEqual("WhiteRedWhiteBlueWhite", white.ToString());
-            Assert.AreEqual("WhiteWhiteWhite", string.Join("", white.Where(c => c.ForegroundColor == ConsoleColor.White).Select(c => c.Value)));
+            Assert.AreEqual("WhiteWhiteWhite", string.Join("", white.Where(c => c.ForegroundColor == RGB.White).Select(c => c.Value)));
         }
 
         [TestMethod]
         public void TestReplaceRegex()
         {
             ConsoleString orig = new ConsoleString("Credit Card: 1234-5678-9876-5432 - VISA");
-            ConsoleString cleaned = orig.ReplaceRegex(@"\d\d\d\d-\d\d\d\d-\d\d\d\d-\d\d\d\d", "xxxx-xxxx-xxxx-xxxx", ConsoleColor.White);
+            ConsoleString cleaned = orig.ReplaceRegex(@"\d\d\d\d-\d\d\d\d-\d\d\d\d-\d\d\d\d", "xxxx-xxxx-xxxx-xxxx", RGB.White);
             Assert.AreEqual("Credit Card: xxxx-xxxx-xxxx-xxxx - VISA", cleaned.ToString());
 
             ConsoleString hasPhoneNumber = new ConsoleString("Number: 222-333-4444");
-            hasPhoneNumber = hasPhoneNumber.ReplaceRegex(@"\d{3}-\d{3}-\d{4}", null, ConsoleColor.Green);
+            hasPhoneNumber = hasPhoneNumber.ReplaceRegex(@"\d{3}-\d{3}-\d{4}", null, RGB.Green);
 
             Assert.AreEqual("Number: 222-333-4444", hasPhoneNumber.ToString());
-            Assert.AreEqual(new ConsoleString("222-333-4444", ConsoleColor.Green), hasPhoneNumber.Substring(8));
+            Assert.AreEqual(new ConsoleString("222-333-4444", RGB.Green), hasPhoneNumber.Substring(8));
         }
 
         [TestMethod]
@@ -332,27 +332,27 @@ namespace ArgsTests
         [TestMethod]
         public void TestConsoleStringHelpers()
         {
-            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            foreach (var color in Enums.GetEnumValues<ConsoleColor>().Select(c => RGB.Convert(c)))
             {
                 var method = typeof(StringEx).GetMethod("To" + color, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                Assert.AreEqual(new ConsoleString("Hello", color, color), method.Invoke(null,new object[] { "Hello", (RGB)color, false }));
+                Assert.AreEqual(new ConsoleString("Hello", color, color), method.Invoke(null,new object[] { "Hello", color, false }));
             }
 
-            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            foreach (var color in Enums.GetEnumValues<ConsoleColor>().Select(c => RGB.Convert(c)))
             {
                 ConsoleString baseString = new ConsoleString("Hello", null, null);
                 var method = typeof(ConsoleString).GetMethod("To" + color);
-                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color), method.Invoke(baseString, new object[] { (RGB)color, false }));
+                Assert.AreEqual(new ConsoleString(baseString.ToString(), color, color), method.Invoke(baseString, new object[] { color, false }));
             }
 
 
-            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            foreach (var color in Enums.GetEnumValues<ConsoleColor>().Select(c => RGB.Convert(c)))
             {
                 var method = typeof(StringEx).GetMethod("To" + color, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-                Assert.AreEqual(new ConsoleString("Hello", color, color, true), method.Invoke(null, new object[] { "Hello", (RGB)color, true }));
+                Assert.AreEqual(new ConsoleString("Hello", color, color, true), method.Invoke(null, new object[] { "Hello", color, true }));
             }
 
-            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            foreach (var color in Enums.GetEnumValues<ConsoleColor>().Select(c => RGB.Convert(c)))
             {
                 ConsoleString baseString = new ConsoleString("Hello", null, null);
                 var method = typeof(ConsoleString).GetMethod("To" + color);
@@ -363,14 +363,14 @@ namespace ArgsTests
         [TestMethod]
         public void TestConsoleCharacterHelpers()
         {
-            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            foreach (var color in Enums.GetEnumValues<ConsoleColor>().Select(c => RGB.Convert(c)))
             {
                 var method = typeof(ConsoleCharacter).GetMethod(color+"", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
                 Assert.AreEqual(new ConsoleCharacter('*', color, color), method.Invoke(null, new object[] { '*', (RGB)color }));
                 Assert.AreEqual(new ConsoleCharacter('*', color, null), method.Invoke(null, new object[] { '*', null }));
             }
 
-            foreach (ConsoleColor color in Enum.GetValues(typeof(ConsoleColor)))
+            foreach (var color in Enums.GetEnumValues<ConsoleColor>().Select(c => RGB.Convert(c)))
             {
                 var method = typeof(ConsoleCharacter).GetMethod(color + "BG", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
                 Assert.AreEqual(new ConsoleCharacter('*', color, color), method.Invoke(null, new object[] { '*', (RGB)color }));
@@ -382,7 +382,7 @@ namespace ArgsTests
         public void TestConvertBetweenConsoleBitmapAndConsoleStringTrimMode()
         {
             // the last 4 characters will be whitespace with default formatting
-            var str = "Adam".ToYellow(bg: ConsoleColor.Green) + "    ".ToConsoleString();
+            var str = "Adam".ToYellow(bg: RGB.Green) + "    ".ToConsoleString();
             var bmp = str.ToConsoleBitmap();
             Assert.AreEqual(8, bmp.Width);
             Assert.AreEqual(1, bmp.Height);
@@ -397,19 +397,19 @@ namespace ArgsTests
 
             for (var x = 0; x < "Adam".Length; x++)
             {
-                Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, 0).ForegroundColor);
-                Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, 0).BackgroundColor);
+                Assert.AreEqual(RGB.Yellow, bmp.GetPixel(x, 0).ForegroundColor);
+                Assert.AreEqual(RGB.Green, bmp.GetPixel(x, 0).BackgroundColor);
             }
 
             // the last 4 characters should get trimmed here
             var readBack = bmp.ToConsoleString(trimMode: true);
-            Assert.AreEqual("Adam".ToYellow(bg: ConsoleColor.Green), readBack);
+            Assert.AreEqual("Adam".ToYellow(bg: RGB.Green), readBack);
         }
 
         [TestMethod]
         public void TestConvertBetweenConsoleBitmapAndConsoleStringMultiLine()
         {
-            var str = "Adam".ToYellow(bg: ConsoleColor.Green) + "\n".ToConsoleString() + "Abdelhamed".ToYellow(bg: ConsoleColor.Green);
+            var str = "Adam".ToYellow(bg: RGB.Green) + "\n".ToConsoleString() + "Abdelhamed".ToYellow(bg: RGB.Green);
             var bmp = str.ToConsoleBitmap();
             Assert.AreEqual(10, bmp.Width);
             Assert.AreEqual(2, bmp.Height);
@@ -437,8 +437,8 @@ namespace ArgsTests
                     if (bmp.GetPixel(x, y).Value != ' ')
                     {
                         pixelsWithValueCount++;
-                        Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, y).ForegroundColor);
-                        Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, y).BackgroundColor);
+                        Assert.AreEqual(RGB.Yellow, bmp.GetPixel(x, y).ForegroundColor);
+                        Assert.AreEqual(RGB.Green, bmp.GetPixel(x, y).BackgroundColor);
                     }
                 }
             }
@@ -450,7 +450,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestConvertBetweenConsoleBitmapAndConsoleStringSingleLine()
         {
-            var str = "Adam".ToYellow(bg: ConsoleColor.Green);
+            var str = "Adam".ToYellow(bg: RGB.Green);
             var bmp = str.ToConsoleBitmap();
             Assert.AreEqual(4, bmp.Width);
             Assert.AreEqual(1, bmp.Height);
@@ -461,8 +461,8 @@ namespace ArgsTests
 
             for (var x = 0; x < bmp.Width; x++)
             {
-                Assert.AreEqual(ConsoleColor.Yellow, (ConsoleColor)bmp.GetPixel(x, 0).ForegroundColor);
-                Assert.AreEqual(ConsoleColor.Green, (ConsoleColor)bmp.GetPixel(x, 0).BackgroundColor);
+                Assert.AreEqual(RGB.Yellow, bmp.GetPixel(x, 0).ForegroundColor);
+                Assert.AreEqual(RGB.Green, bmp.GetPixel(x, 0).BackgroundColor);
             }
 
             var readBack = bmp.ToConsoleString();
@@ -475,7 +475,7 @@ namespace ArgsTests
         [TestMethod]
         public void TestConsoleStringEncodingBasic()
         {
-            var inputString = "A".ToRed() + "BC".ToWhite(bg: ConsoleColor.Red) + "DE".ToBlue() + "FG".ToConsoleString();
+            var inputString = "A".ToRed() + "BC".ToWhite(bg: RGB.Red) + "DE".ToBlue() + "FG".ToConsoleString();
 
             var serialized = inputString.Serialize();
             var readBack = ConsoleString.Parse(serialized);
@@ -490,9 +490,9 @@ namespace ArgsTests
         public void TestConsoleStringEncodingEdgeCases()
         {
             var parsed = ConsoleString.Parse("[B=Blue][Red]Adam");
-            Assert.AreEqual(new ConsoleString("Adam", ConsoleColor.Red, ConsoleColor.Blue), parsed);
+            Assert.AreEqual(new ConsoleString("Adam", RGB.Red, RGB.Blue), parsed);
             parsed = ConsoleString.Parse("[  B   =   Blue ][ Red ]Adam");
-            Assert.AreEqual(new ConsoleString("Adam", ConsoleColor.Red, ConsoleColor.Blue), parsed);
+            Assert.AreEqual(new ConsoleString("Adam", RGB.Red, RGB.Blue), parsed);
 
             parsed = ConsoleString.Parse(@"\[Adam\]");
             Assert.AreEqual(new ConsoleString("[Adam]"), parsed);
@@ -549,7 +549,6 @@ namespace ArgsTests
         {
             Console.WriteLine(new RGB(20, 20, 20).ToString());
             Assert.AreNotEqual(nameof(RGB.Black),new RGB(20, 20, 20).ToString());
-            Assert.IsFalse(RGB.RGBToConsoleColorMap.ContainsKey(new RGB(20, 20, 20)));
         }
 
         private static void ValidateStringCharacteristics(string expected, ConsoleString actual)

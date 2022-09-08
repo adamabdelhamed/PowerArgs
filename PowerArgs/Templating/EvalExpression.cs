@@ -23,7 +23,7 @@ namespace PowerArgs
         public DocumentToken BackgroundColorToken { get; set; }
 
         /// <summary>
-        /// Gets the ConsoleColor that matches the provided foreground color token, if it was provided.
+        /// Gets the RGB that matches the provided foreground color token, if it was provided.
         /// </summary>
         public RGB? FG
         {
@@ -35,7 +35,7 @@ namespace PowerArgs
                 }
                 else if (Enum.TryParse(ForegroundColorToken.Value, out ConsoleColor c))
                 {
-                    return RGB.ConsoleColorMap[(int)c];
+                    return RGB.Convert(c);
                 }
                 else if(RGB.TryParse(ForegroundColorToken.Value, out RGB rgb))
                 {
@@ -49,7 +49,7 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Gets the ConsoleColor that matches the provided background color token, if it was provided.
+        /// Gets the RGB that matches the provided background color token, if it was provided.
         /// </summary>
         public RGB? BG
         {
@@ -61,7 +61,7 @@ namespace PowerArgs
                 }
                 else if (Enum.TryParse(BackgroundColorToken.Value, out ConsoleColor c))
                 {
-                    return RGB.ConsoleColorMap[(int)c];
+                    return RGB.Convert(c);
                 }
                 else if (RGB.TryParse(BackgroundColorToken.Value, out RGB rgb))
                 {

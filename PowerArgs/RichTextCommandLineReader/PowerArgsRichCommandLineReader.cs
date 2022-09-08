@@ -52,10 +52,10 @@ namespace PowerArgs
             this.ContextAssistProvider = new PowerArgsMultiContextAssistProvider(definition);
             this.Definition = definition;
 
-            this.ArgumentNameForeground = ConsoleColor.Cyan;
-            this.NumericForeground = ConsoleColor.Green;
-            this.StringLiteralForeground = ConsoleColor.Yellow;
-            this.ActionForeground = ConsoleColor.Magenta;
+            this.ArgumentNameForeground = RGB.Cyan;
+            this.NumericForeground = RGB.Green;
+            this.StringLiteralForeground = RGB.Yellow;
+            this.ActionForeground = RGB.Magenta;
 
             this.newHooks = FindNewTabCompletionHooks(this.Definition, enableFileSystemTabCompletion);
             InitHighlighters();
@@ -400,7 +400,7 @@ namespace PowerArgs
 
         public RGB? HighlightForegroundColor
         {
-            get { return ConsoleColor.Red; }
+            get { return RGB.Red; }
         }
 
         public RGB? HighlightBackgroundColor

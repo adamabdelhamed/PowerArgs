@@ -14,11 +14,11 @@ namespace PowerArgs
     {
         const int STD_OUTPUT_HANDLE = -11;
 
-        private ConsoleColor fg = Console.ForegroundColor;
+        private RGB fg = RGB.Convert(Console.ForegroundColor);
         /// <summary>
         /// Gets or sets the console foreground color
         /// </summary>
-        public ConsoleColor ForegroundColor
+        public RGB ForegroundColor
         {
             get
             {
@@ -27,16 +27,19 @@ namespace PowerArgs
             set
             {
                 if (fg == value) return;
-                Console.ForegroundColor = value;
+                if (fg.TryConvert(out ConsoleColor c))
+                {
+                    Console.ForegroundColor = c;
+                }
                 fg = value;
             }
         }
 
-        private ConsoleColor bg = Console.BackgroundColor;
+        private RGB bg = RGB.Convert(Console.BackgroundColor);
         /// <summary>
         /// Gets or sets the console background color
         /// </summary>
-        public ConsoleColor BackgroundColor
+        public RGB BackgroundColor
         {
             get
             {
@@ -45,7 +48,10 @@ namespace PowerArgs
             set
             {
                 if (bg == value) return;
-                Console.BackgroundColor = value;
+                if (bg.TryConvert(out ConsoleColor c))
+                {
+                    Console.BackgroundColor = c;
+                }
                 bg = value;
             }
         }
@@ -212,7 +218,7 @@ namespace PowerArgs
             var bg = Console.BackgroundColor;
             try
             {
-                Console.BackgroundColor = ConsoleString.DefaultBackgroundColor;
+                BackgroundColor = ConsoleString.DefaultBackgroundColor;
                 Console.Clear();
             }
             catch(Exception ex)

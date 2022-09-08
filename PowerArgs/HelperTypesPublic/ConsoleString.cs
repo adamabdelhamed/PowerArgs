@@ -48,7 +48,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Black(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Black, bg);
+        public static ConsoleCharacter Black(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.Black, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -56,7 +56,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter BlackBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Black);
+        public static ConsoleCharacter BlackBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.Black);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -64,7 +64,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkBlue(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkBlue, bg);
+        public static ConsoleCharacter DarkBlue(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.DarkBlue, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -72,7 +72,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkBlueBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkBlue);
+        public static ConsoleCharacter DarkBlueBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.DarkBlue);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -80,7 +80,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkGreen(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkGreen, bg);
+        public static ConsoleCharacter DarkGreen(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.DarkGreen, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -88,7 +88,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkGreenBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkGreen);
+        public static ConsoleCharacter DarkGreenBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.DarkGreen);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -96,7 +96,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkCyan(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkCyan, bg);
+        public static ConsoleCharacter DarkCyan(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.DarkCyan, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -104,7 +104,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkCyanBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkCyan);
+        public static ConsoleCharacter DarkCyanBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.DarkCyan);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -112,7 +112,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkRed(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkRed, bg);
+        public static ConsoleCharacter DarkRed(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.DarkRed, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -120,7 +120,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkRedBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkRed);
+        public static ConsoleCharacter DarkRedBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.DarkRed);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -128,7 +128,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkMagenta(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkMagenta, bg);
+        public static ConsoleCharacter DarkMagenta(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.DarkMagenta, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -136,7 +136,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkMagentaBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkMagenta);
+        public static ConsoleCharacter DarkMagentaBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.DarkMagenta);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -144,7 +144,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkYellow(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkYellow, bg);
+        public static ConsoleCharacter DarkYellow(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.DarkYellow, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -152,7 +152,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkYellowBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkYellow);
+        public static ConsoleCharacter DarkYellowBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.DarkYellow);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -160,7 +160,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Gray(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Gray, bg);
+        public static ConsoleCharacter Gray(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.Gray, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -168,7 +168,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter GrayBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Gray);
+        public static ConsoleCharacter GrayBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.Gray);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -176,7 +176,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkGray(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.DarkGray, bg);
+        public static ConsoleCharacter DarkGray(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.DarkGray, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -184,7 +184,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter DarkGrayBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.DarkGray);
+        public static ConsoleCharacter DarkGrayBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.DarkGray);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -192,7 +192,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Blue(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Blue, bg);
+        public static ConsoleCharacter Blue(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.Blue, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -200,7 +200,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter BlueBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Blue);
+        public static ConsoleCharacter BlueBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.Blue);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -208,7 +208,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Green(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Green, bg);
+        public static ConsoleCharacter Green(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.Green, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -216,7 +216,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter GreenBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Green);
+        public static ConsoleCharacter GreenBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.Green);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -224,7 +224,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Cyan(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Cyan, bg);
+        public static ConsoleCharacter Cyan(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.Cyan, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -232,7 +232,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter CyanBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Cyan);
+        public static ConsoleCharacter CyanBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.Cyan);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -240,7 +240,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Red(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Red, bg);
+        public static ConsoleCharacter Red(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.Red, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -248,7 +248,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter RedBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Red);
+        public static ConsoleCharacter RedBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.Red);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -256,7 +256,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Magenta(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Magenta, bg);
+        public static ConsoleCharacter Magenta(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.Magenta, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -264,7 +264,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter MagentaBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Magenta);
+        public static ConsoleCharacter MagentaBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.Magenta);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -272,7 +272,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter Yellow(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.Yellow, bg);
+        public static ConsoleCharacter Yellow(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.Yellow, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -280,7 +280,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter YellowBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.Yellow);
+        public static ConsoleCharacter YellowBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.Yellow);
 
         /// <summary>
         /// Styles the given character with the named foreground color and an optional background color that defaults to the console default
@@ -288,7 +288,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="bg">an optional background color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter White(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, ConsoleColor.White, bg);
+        public static ConsoleCharacter White(char val = ' ', RGB? bg = null) => new ConsoleCharacter(val, RGB.White, bg);
 
         /// <summary>
         /// Styles the given character with the named background color and an optional foreground color that defaults to the console default
@@ -296,7 +296,7 @@ namespace PowerArgs
         /// <param name="val">the character to style</param>
         /// <param name="fg">an optional foreground color that defaults to the console default</param>
         /// <returns>a styled character</returns>
-        public static ConsoleCharacter WhiteBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, ConsoleColor.White);
+        public static ConsoleCharacter WhiteBG(char val = ' ', RGB? fg = null) => new ConsoleCharacter(val, fg, RGB.White);
 
         /// <summary>
         /// Create a new ConsoleCharacter given a char value and optionally set the foreground or background coor.
@@ -471,24 +471,24 @@ namespace PowerArgs
         /// </summary
         public static RGB DefaultBackgroundColor { get; set; } = RGB.Black;
 
-        private static Dictionary<ConsoleColor, string> CSSMap = new Dictionary<ConsoleColor, string>()
+        private static Dictionary<RGB, string> CSSMap = new Dictionary<RGB, string>()
         {
-            { ConsoleColor.Black, "black" },
-            { ConsoleColor.Blue, "blue" },
-            { ConsoleColor.Cyan, "cyan" },
-            { ConsoleColor.DarkBlue, "blue" },
-            { ConsoleColor.DarkCyan, "cyan" },
-            { ConsoleColor.DarkGray, "grey" },
-            { ConsoleColor.DarkGreen, "green" },
-            { ConsoleColor.DarkMagenta, "magenta" },
-            { ConsoleColor.DarkRed, "red" },
-            { ConsoleColor.DarkYellow, "yellow" },
-            { ConsoleColor.Gray, "grey" },
-            { ConsoleColor.Green, "green" },
-            { ConsoleColor.Magenta, "magenta" },
-            { ConsoleColor.Red, "red" },
-            { ConsoleColor.White, "white" },
-            { ConsoleColor.Yellow, "yellow" },
+            { RGB.Black, "black" },
+            { RGB.Blue, "blue" },
+            { RGB.Cyan, "cyan" },
+            { RGB.DarkBlue, "blue" },
+            { RGB.DarkCyan, "cyan" },
+            { RGB.DarkGray, "grey" },
+            { RGB.DarkGreen, "green" },
+            { RGB.DarkMagenta, "magenta" },
+            { RGB.DarkRed, "red" },
+            { RGB.DarkYellow, "yellow" },
+            { RGB.Gray, "grey" },
+            { RGB.Green, "green" },
+            { RGB.Magenta, "magenta" },
+            { RGB.Red, "red" },
+            { RGB.White, "white" },
+            { RGB.Yellow, "yellow" },
         };
 
         public ReadOnlySpan<ConsoleCharacter> AsSpan() => characters.AsSpan();
@@ -1221,9 +1221,9 @@ namespace PowerArgs
 
                         reader.Advance(skipWhitespace: true); // read the equals
                         t = reader.Advance(skipWhitespace: true); // read the token after the equals
-                        if (Enum.TryParse<ConsoleColor>(t.Value, out ConsoleColor consoleColor))
+                        if (RGB.NamesToColors.TryGetValue(t.Value, out RGB consoleColor))
                         {
-                            currentBg = (RGB)consoleColor;
+                            currentBg = consoleColor;
                         }
                         else if(RGB.TryParse(t.Value, out currentBg) == false)
                         {
@@ -1246,9 +1246,9 @@ namespace PowerArgs
                     }
                     else
                     {
-                        if (Enum.TryParse<ConsoleColor>(t.Value, out ConsoleColor consoleColor))
+                        if (RGB.NamesToColors.TryGetValue(t.Value, out RGB consoleColor))
                         {
-                            currentFg = (RGB)consoleColor;
+                            currentFg = consoleColor;
                         }
                         else if (RGB.TryParse(t.Value, out currentFg) == false)
                         {
@@ -1384,7 +1384,7 @@ namespace PowerArgs
 
             StringBuilder ret = new StringBuilder();
 
-            ret.Append($"<div class='powerargs-console-string' style='font-family:Consolas;background-color:{CSSMap[(ConsoleColor)backgroundColor]}'>");
+            ret.Append($"<div class='powerargs-console-string' style='font-family:Consolas;background-color:{CSSMap[backgroundColor]}'>");
 
             if (indent)
             {
@@ -1393,8 +1393,8 @@ namespace PowerArgs
 
             foreach (var chunk in str.GroupByFormatting())
             {
-                var fg = CSSMap[(ConsoleColor)chunk[0].ForegroundColor];
-                var bg = CSSMap[(ConsoleColor)chunk[0].BackgroundColor];
+                var fg = CSSMap[chunk[0].ForegroundColor];
+                var bg = CSSMap[chunk[0].BackgroundColor];
 
                 var encodedChunkString = (htmlEncode ? WebUtility.HtmlEncode(new string(chunk.Select(c => c.Value).ToArray())) : new string(chunk.Select(c => c.Value).ToArray())).Replace("\n", "<br/>");
 
@@ -1575,7 +1575,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToBlack(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Black, bg, underlined);
+            return To(RGB.Black, bg, underlined);
         }
 
         /// <summary>
@@ -1585,7 +1585,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToDarkBlue(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkBlue, bg, underlined);
+            return To(RGB.DarkBlue, bg, underlined);
         }
 
         /// <summary>
@@ -1595,7 +1595,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToDarkGreen(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkGreen, bg, underlined);
+            return To(RGB.DarkGreen, bg, underlined);
         }
 
         /// <summary>
@@ -1605,7 +1605,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToDarkCyan(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkCyan, bg, underlined);
+            return To(RGB.DarkCyan, bg, underlined);
         }
 
         /// <summary>
@@ -1615,7 +1615,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToDarkRed(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkRed, bg, underlined);
+            return To(RGB.DarkRed, bg, underlined);
         }
 
         /// <summary>
@@ -1625,7 +1625,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToDarkMagenta(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkMagenta, bg, underlined);
+            return To(RGB.DarkMagenta, bg, underlined);
         }
 
         /// <summary>
@@ -1635,7 +1635,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToDarkYellow(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkYellow, bg, underlined);
+            return To(RGB.DarkYellow, bg, underlined);
         }
 
         /// <summary>
@@ -1645,7 +1645,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToGray(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Gray, bg, underlined);
+            return To(RGB.Gray, bg, underlined);
         }
 
         /// <summary>
@@ -1655,7 +1655,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToDarkGray(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.DarkGray, bg, underlined);
+            return To(RGB.DarkGray, bg, underlined);
         }
 
         /// <summary>
@@ -1665,7 +1665,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToBlue(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Blue, bg, underlined);
+            return To(RGB.Blue, bg, underlined);
         }
 
         /// <summary>
@@ -1675,7 +1675,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToGreen(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Green, bg, underlined);
+            return To(RGB.Green, bg, underlined);
         }
 
         /// <summary>
@@ -1685,7 +1685,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToCyan(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Cyan, bg, underlined);
+            return To(RGB.Cyan, bg, underlined);
         }
 
         /// <summary>
@@ -1695,7 +1695,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToRed(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Red, bg, underlined);
+            return To(RGB.Red, bg, underlined);
         }
 
         /// <summary>
@@ -1705,7 +1705,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToMagenta(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Magenta, bg, underlined);
+            return To(RGB.Magenta, bg, underlined);
         }
 
         /// <summary>
@@ -1715,7 +1715,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToYellow(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.Yellow, bg, underlined);
+            return To(RGB.Yellow, bg, underlined);
         }
 
         /// <summary>
@@ -1725,7 +1725,7 @@ namespace PowerArgs
         /// <returns>a new ConsoleString with the desired color changes</returns>
         public ConsoleString ToWhite(RGB? bg = null, bool underlined = false)
         {
-            return To(ConsoleColor.White, bg, underlined);
+            return To(RGB.White, bg, underlined);
         }
 
         private ConsoleString To(RGB color, RGB? bg, bool underlined)

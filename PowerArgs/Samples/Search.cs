@@ -15,11 +15,11 @@ namespace PowerArgs.Samples
 
             if (result == null)
             {
-                ConsoleString.WriteLine("You cancelled the search", ConsoleColor.Yellow);
+                ConsoleString.WriteLine("You cancelled the search", RGB.Yellow);
             }
             else
             {
-                ConsoleString.WriteLine(new ConsoleString("You picked ") + result.DisplayText.ToConsoleString(ConsoleColor.Cyan));
+                ConsoleString.WriteLine(new ConsoleString("You picked ") + result.DisplayText.ToConsoleString(RGB.Cyan));
             }
         }
     }  

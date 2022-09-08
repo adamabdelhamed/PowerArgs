@@ -45,7 +45,7 @@ namespace ArgsTests.Templating
         public void TestDocumentRenderingVarExpressionColors()
         {
             var rendered = new DocumentRenderer().Render("{{var ConsoleForegroundColor Red!}}Hi {{FirstName!}}{{clearvar ConsoleForegroundColor !}}.  How are you?", new { FirstName = "Adam" });
-            Assert.AreEqual(new ConsoleString("Hi Adam",foregroundColor: ConsoleColor.Red) + new ConsoleString(".  How are you?"), rendered);
+            Assert.AreEqual(new ConsoleString("Hi Adam",foregroundColor: RGB.Red) + new ConsoleString(".  How are you?"), rendered);
         }
 
         [TestMethod]
@@ -105,7 +105,7 @@ namespace ArgsTests.Templating
             var rendered = new DocumentRenderer().Render("Hi {{Name Red!}}! Sup?", new { Name = "Adam" });
             Assert.AreEqual("Hi Adam! Sup?", rendered.ToString());
             Assert.AreEqual(new ConsoleCharacter('a').ForegroundColor, rendered[0].ForegroundColor);
-            Assert.AreEqual(ConsoleColor.Red, (ConsoleColor)rendered[3].ForegroundColor);
+            Assert.AreEqual(RGB.Red, rendered[3].ForegroundColor);
             Assert.AreEqual(new ConsoleCharacter('a').ForegroundColor, rendered[rendered.Length - 1].ForegroundColor);
         }
 

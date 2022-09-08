@@ -179,14 +179,14 @@ namespace PowerArgs
             {
                 ConsoleString.Empty.WriteLine();
                 var message = REPLWelcomeMessage.Replace("{{Indicator}}", REPLExitIndicator);
-                ConsoleString.WriteLine(message, ConsoleColor.Cyan);
+                ConsoleString.WriteLine(message, RGB.Cyan);
                 ConsoleString.Empty.WriteLine();
-                ConsoleString.Write(Indicator + "> ", ConsoleColor.Cyan);
+                ConsoleString.Write(Indicator + "> ", RGB.Cyan);
                 ShowREPLWelcome = false;
             }
             else if (REPL)
             {
-                ConsoleString.Write(Indicator + "> ", ConsoleColor.Cyan);
+                ConsoleString.Write(Indicator + "> ", RGB.Cyan);
             }
             else
             {

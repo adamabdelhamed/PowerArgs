@@ -15,11 +15,11 @@ namespace PowerArgs
         /// <summary>
         /// Gets or sets the foreground color
         /// </summary>
-        ConsoleColor ForegroundColor { get; set; }
+        RGB ForegroundColor { get; set; }
         /// <summary>
         /// Gets or sets the backgrund color
         /// </summary>
-        ConsoleColor BackgroundColor { get; set; }
+        RGB BackgroundColor { get; set; }
 
         /// <summary>
         /// Gets or sets the left position of the console cursor

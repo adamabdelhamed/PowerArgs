@@ -10,7 +10,7 @@ namespace ArgsTests.CLI
 {
     public class CliUnitTestConsole : IConsoleProvider
     {
-        public ConsoleColor BackgroundColor { get; set; }
+        public RGB BackgroundColor { get; set; }
 
         public int BufferWidth { get; set; }
 
@@ -20,7 +20,7 @@ namespace ArgsTests.CLI
 
         public int CursorTop { get; set; }
 
-        public ConsoleColor ForegroundColor { get; set; }
+        public RGB ForegroundColor { get; set; }
 
         public CliKeyboardInputQueue Input { get; private set; }
 

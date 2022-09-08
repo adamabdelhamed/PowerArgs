@@ -34,7 +34,7 @@ namespace PowerArgs.Samples
         {
             public void Configure(SimpleSyntaxHighlighter highlighter)
             {
-                highlighter.AddKeyword("master", ConsoleColor.Green);
+                highlighter.AddKeyword("master", RGB.Green);
             }
         }
 
@@ -42,7 +42,7 @@ namespace PowerArgs.Samples
         {
             public void Configure(SimpleSyntaxHighlighter highlighter)
             {
-                highlighter.AddRegex("#.*", ConsoleColor.Cyan);
+                highlighter.AddRegex("#.*", RGB.Cyan);
             }
         }
 
@@ -86,7 +86,7 @@ namespace PowerArgs.Samples
     {
         public void Configure(SimpleSyntaxHighlighter highlighter)
         {
-            highlighter.AddKeyword("release", ConsoleColor.Red, comparison: StringComparison.InvariantCultureIgnoreCase);
+            highlighter.AddKeyword("release", RGB.Red, comparison: StringComparison.InvariantCultureIgnoreCase);
         }
     }
 

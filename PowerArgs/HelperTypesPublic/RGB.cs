@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Collections.ObjectModel;
+using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace PowerArgs;
 [ArgReviverType]
@@ -26,43 +28,45 @@ public readonly struct RGB
             new RGB(255,255,255) ,      // White = 15
     };
 
-    public static readonly RGB Black = ConsoleColor.Black;
-    public static readonly RGB DarkBlue = ConsoleColor.DarkBlue;
-    public static readonly RGB DarkGreen = ConsoleColor.DarkGreen;
-    public static readonly RGB DarkCyan = ConsoleColor.DarkCyan;
-    public static readonly RGB DarkRed = ConsoleColor.DarkRed;
-    public static readonly RGB DarkMagenta = ConsoleColor.DarkMagenta;
-    public static readonly RGB DarkYellow = ConsoleColor.DarkYellow;
-    public static readonly RGB Gray = ConsoleColor.Gray;
-    public static readonly RGB DarkGray = ConsoleColor.DarkGray;
-    public static readonly RGB Blue = ConsoleColor.Blue;
-    public static readonly RGB Green = ConsoleColor.Green;
-    public static readonly RGB Cyan = ConsoleColor.Cyan;
-    public static readonly RGB Red = ConsoleColor.Red;
-    public static readonly RGB Magenta = ConsoleColor.Magenta;
-    public static readonly RGB Yellow = ConsoleColor.Yellow;
-    public static readonly RGB White = ConsoleColor.White;
+    private static IReadOnlyDictionary<string, RGB> NamesToColorsFunc() => new ReadOnlyDictionary<string, RGB>(typeof(RGB)
+        .GetFields(BindingFlags.Public | BindingFlags.Static)
+        .Where(f => f.FieldType == typeof(RGB))
+        .ToDictionary(f => f.Name, f => (RGB)f.GetValue(null)));
 
-    public static readonly Dictionary<RGB, ConsoleColor> RGBToConsoleColorMap = new Dictionary<RGB, ConsoleColor>
+    public static IReadOnlyDictionary<RGB, string> ColorsToNamesFunc()
+    {
+        var ret = new Dictionary<RGB, string>();
+        foreach (var name in NamesToColors)
         {
-            { new RGB(0,0,0) ,  ConsoleColor.Black },    // Black = 0
-            { new RGB(0,0,139) , ConsoleColor.DarkBlue },     // DarkBlue = 1
-            { new RGB(0,139,0) ,  ConsoleColor.DarkGreen },    // DarkGreen = 2
-            { new RGB(0,139,139) ,   ConsoleColor.DarkCyan },   // DarkCyan = 3
-            { new RGB(139,0,0) ,    ConsoleColor.DarkRed },  // DarkRed = 4
-            { new RGB(139,0,139) ,    ConsoleColor.DarkMagenta },  // DarkMagenta = 5
-            { new RGB(204,204,0) ,   ConsoleColor.DarkYellow },   // DarkYellow = 6
-            { new RGB(200,200,200) ,   ConsoleColor.Gray },  // Gray = 7
-            { new RGB(128,128,128) ,    ConsoleColor.DarkGray },  // DarkGray = 8
-            { new RGB(0,0,255) ,    ConsoleColor.Blue },  // Blue = 9
-            { new RGB(0,255,0) ,   ConsoleColor.Green },   // Green = 10
-            { new RGB(0,255,255) ,  ConsoleColor.Cyan },    // Cyan = 11
-            { new RGB(255,0,0) ,    ConsoleColor.Red },  // Red = 12
-            { new RGB(255,0,255) ,   ConsoleColor.Magenta },   // Magenta = 13
-            { new RGB(255,255,0) ,    ConsoleColor.Yellow },  // Yellow = 14
-            { new RGB(255,255,255) ,  ConsoleColor.White },    // White = 15
-        };
+            ret.Add(NamesToColors[name.Key], name.Key);
+        }
+        return new ReadOnlyDictionary<RGB, string>(ret);
+    }
 
+    private static IReadOnlyDictionary<string, RGB> _NamesToColors;
+    private static IReadOnlyDictionary<RGB, string> _ColorsToNames;
+    public static IReadOnlyDictionary<string, RGB> NamesToColors => _NamesToColors ?? (_NamesToColors = NamesToColorsFunc());
+    public static IReadOnlyDictionary<RGB, string> ColorsToNames => _ColorsToNames ?? (_ColorsToNames = ColorsToNamesFunc());
+
+
+
+
+    public static readonly RGB Black =          new RGB(0, 0, 0);
+    public static readonly RGB DarkBlue =       new RGB(0, 0, 139);
+    public static readonly RGB DarkGreen =      new RGB(0, 139, 0);
+    public static readonly RGB DarkCyan =       new RGB(0, 139, 139);
+    public static readonly RGB DarkGray =       new RGB(128, 128, 128);
+    public static readonly RGB DarkRed =        new RGB(139, 0, 0);
+    public static readonly RGB DarkMagenta =    new RGB(139, 0, 139);
+    public static readonly RGB DarkYellow =     new RGB(204, 204, 0);
+    public static readonly RGB Gray =           new RGB(200, 200, 200);
+    public static readonly RGB Blue =           new RGB(0, 0, 255);
+    public static readonly RGB Green =          new RGB(0, 255, 0);
+    public static readonly RGB Cyan =           new RGB(0, 255, 255);
+    public static readonly RGB Red =            new RGB(255, 0, 0);
+    public static readonly RGB Magenta =        new RGB(255, 0, 255);
+    public static readonly RGB Yellow =         new RGB(255, 255, 0);
+    public static readonly RGB White =          new RGB(255, 255, 255);
 
     public readonly byte R;
     public readonly byte G;
@@ -117,38 +121,29 @@ public readonly struct RGB
     public RGB Brighter => ToOther(White, .5f);
     public static bool operator ==(in RGB a, in RGB b) => a.EqualsIn(b);
     public static bool operator !=(in RGB a, in RGB b) => !a.EqualsIn(b);
-    public static bool operator ==(in RGB a, in ConsoleColor b) => a.EqualsIn((RGB)b);
-    public static bool operator !=(in RGB a, in ConsoleColor b) => !a.EqualsIn((RGB)b);
 
-    public static implicit operator ConsoleColor(in RGB color)
+
+   
+    public static RGB Convert(in ConsoleColor color)
     {
-        if (RGBToConsoleColorMap.TryGetValue(color, out ConsoleColor ret))
+        var ret = (int)color < ConsoleColorMap.Length ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
+        return ret;
+    }
+
+    public bool TryConvert(out ConsoleColor c)
+    {
+        if(ColorsToNames.TryGetValue(this, out string name) && Enum.TryParse(name, out ConsoleColor ret))
         {
-            return ret;
+            c = ret;
+            return true;
         }
         else
         {
-            var smallestDistance = float.MaxValue;
-            ConsoleColor closestColor = ConsoleColor.Black;
-            for (var i = 0; i < ConsoleColorMap.Length; i++)
-            {
-                var rgb = ConsoleColorMap[i];
-                var d = rgb.CalculateDistanceTo(color);
-                if (d < smallestDistance)
-                {
-                    smallestDistance = d;
-                    closestColor = (ConsoleColor)i;
-                }
-            }
-
-            if (RGBToConsoleColorMap.Count < 10000)
-            {
-                RGBToConsoleColorMap.Add(color, closestColor);
-            }
-            return closestColor;
+            c = default;
+            return false;
         }
     }
-    public static implicit operator RGB(in ConsoleColor color) => (int)color < ConsoleColorMap.Length ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
+    
 
     private static Regex RGBRegex;
 
@@ -176,9 +171,9 @@ public readonly struct RGB
             ret = new RGB(r, g, b);
             return true;
         }
-        else if (Enum.TryParse(value, out ConsoleColor c))
+        else if (NamesToColors.TryGetValue(value, out RGB c))
         {
-            ret = (RGB)c;
+            ret = c;
             return true;
         }
         else
@@ -201,38 +196,9 @@ public readonly struct RGB
         }
     }
 
-
-
-    public override string ToString()
-    {
-        if (RGBToConsoleColorMap.TryGetValue(this, out ConsoleColor c))
-        {
-            var cRGB = (RGB)c;
-            // for some reason, TryGetValue is returning true in some processes even if this RGB is not equal
-            // to the value in the color map. There must be something going on with my implicit convertability from ConsoleColor
-            // to RGB. This next if check takes care of it, but it leads me to believe there are issues elsewhere. I might just
-            // cut the implicit conversion if issues like this continue to creep up.
-            if (cRGB.R == R && cRGB.G == G && cRGB.B == B)
-            {
-                return c.ToString();
-            }
-            else
-            {
-                return ToRGBString();
-            }
-        }
-        else
-        {
-            return ToRGBString();
-        }
-    }
-
+    public override string ToString() => ColorsToNames.TryGetValue(this, out string s) ? s : ToRGBString();
     public string ToRGBString() => $"{R},{G},{B}";
-
-    public string ToWebString()
-    {
-        return "#" + BitConverter.ToString(new byte[] { R, G, B }).Replace("-", "");
-    }
+    public string ToWebString() => "#" + BitConverter.ToString(new byte[] { R, G, B }).Replace("-", "");
 
     /// <summary>
     /// Converts this color to a new color that is closer to the other
@@ -264,10 +230,6 @@ public static class NullableRGBReviver
         if (RGB.TryParse(val, out RGB ret))
         {
             return ret;
-        }
-        else if (Enum.TryParse(val, out ConsoleColor c))
-        {
-            return c;
         }
         {
             throw new ArgException($"'{val}' is not a valid RGB color");

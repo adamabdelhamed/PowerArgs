@@ -37,17 +37,17 @@ namespace PowerArgs
         {
             var ret = new ConsoleString();
 
-            ConsoleColor fg = new ConsoleCharacter('a').ForegroundColor;
-            ConsoleColor bg = new ConsoleCharacter('a').BackgroundColor;
+            var fg = new ConsoleCharacter('a').ForegroundColor;
+            var bg = new ConsoleCharacter('a').BackgroundColor;
 
             if(context.LocalVariables.IsDefined("ConsoleForegroundColor"))
             {
-                fg = (ConsoleColor)context.LocalVariables["ConsoleForegroundColor"];
+                fg = (RGB)context.LocalVariables["ConsoleForegroundColor"];
             }
 
             if (context.LocalVariables.IsDefined("ConsoleBackgroundColor"))
             {
-                bg = (ConsoleColor)context.LocalVariables["ConsoleBackgroundColor"];
+                bg = (RGB)context.LocalVariables["ConsoleBackgroundColor"];
             }
 
             foreach (var token in this.tokens)

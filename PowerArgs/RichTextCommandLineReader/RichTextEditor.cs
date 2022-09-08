@@ -196,8 +196,8 @@ namespace PowerArgs
                 this.state = state;
             }
 
-            public ConsoleColor BackgroundColor { get; set; }
-            public ConsoleColor ForegroundColor { get; set; }
+            public RGB BackgroundColor { get; set; }
+            public RGB ForegroundColor { get; set; }
 
             public int BufferWidth { get; set; }
 

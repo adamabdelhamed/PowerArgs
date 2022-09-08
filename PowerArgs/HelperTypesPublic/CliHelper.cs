@@ -29,7 +29,7 @@ namespace PowerArgs
         /// <returns>The selected value</returns>
         public string Prompt(string message, params string[] options)
         {
-            return Prompt(new ConsoleString(message, ConsoleColor.Yellow), options);
+            return Prompt(new ConsoleString(message, RGB.Yellow), options);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace PowerArgs
         /// <returns>The selected value</returns>
         public string Prompt(ConsoleString message, params string[] options)
         {
-            var optionsString = new ConsoleString("(" + string.Join("/", options) + ")", ConsoleColor.Cyan);
+            var optionsString = new ConsoleString("(" + string.Join("/", options) + ")", RGB.Cyan);
             var prompt = message + new ConsoleString(" ") + optionsString + ": ";
             prompt.Write();
 
@@ -65,7 +65,7 @@ namespace PowerArgs
         /// <returns>true if they indicate yes and false if they indicate no.</returns>
         public bool IsUserSure(string about)
         {
-            return IsUserSure(new ConsoleString(about, ConsoleColor.Yellow));
+            return IsUserSure(new ConsoleString(about, RGB.Yellow));
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace PowerArgs
             {
                 message += ": ";
             }
-            ConsoleString.Write(message, ConsoleColor.Yellow);
+            ConsoleString.Write(message, RGB.Yellow);
             var input = Reader.ReadLine().ToString();
             return input;
         }

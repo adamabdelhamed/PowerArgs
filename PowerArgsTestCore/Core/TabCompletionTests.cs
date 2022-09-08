@@ -554,9 +554,9 @@ namespace ArgsTests
         public event Action<string> WriteHappened;
         public event Action ClearHappened;
 
-        public ConsoleColor ForegroundColor { get; set; }
+        public RGB ForegroundColor { get; set; }
 
-        public ConsoleColor BackgroundColor { get; set; }
+        public RGB BackgroundColor { get; set; }
 
         public static TestConsoleProvider SimulateConsoleInput(string input)
         {

@@ -99,11 +99,11 @@ namespace PowerArgs
                 if (colValue.Contains(">"))
                 {
                     var newColName = colValue.Split('>')[1];
-                    headers.Add(new ConsoleString(newColName, ConsoleColor.Yellow));
+                    headers.Add(new ConsoleString(newColName, RGB.Yellow));
                 }
                 else
                 {
-                    headers.Add(new ConsoleString(colValue, ConsoleColor.Yellow));
+                    headers.Add(new ConsoleString(colValue, RGB.Yellow));
                 }
             }
 
@@ -143,7 +143,7 @@ namespace PowerArgs
                         valueString = new ConsoleString(value.ToString());
                         if (ShowDefaultValuesForArguments && element is CommandLineArgument && propToGet.Name == "Description" && ((CommandLineArgument)element).DefaultValue != null)
                         {
-                            valueString+= new ConsoleString(" [Default='" + ((CommandLineArgument)element).DefaultValue.ToString() + "'] ", ConsoleColor.DarkGreen);
+                            valueString+= new ConsoleString(" [Default='" + ((CommandLineArgument)element).DefaultValue.ToString() + "'] ", RGB.DarkGreen);
                         }
                     }
                     else
@@ -163,7 +163,7 @@ namespace PowerArgs
                         {
                             possibilitiesRow.Add(ConsoleString.Empty);
                         }
-                        possibilitiesRow.Add(new ConsoleString(val, ConsoleColor.DarkGreen));
+                        possibilitiesRow.Add(new ConsoleString(val, RGB.DarkGreen));
                         rows.Add(possibilitiesRow);
                     }   
                 }

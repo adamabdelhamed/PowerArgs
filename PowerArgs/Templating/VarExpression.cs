@@ -39,10 +39,10 @@ namespace PowerArgs
         {
             if (NameToken.Value == "ConsoleForegroundColor" || NameToken.Value == "ConsoleBackgroundColor")
             {
-                ConsoleColor value;
-                if(Enum.TryParse<ConsoleColor>(ValueToken.Value,out value) == false)
+                RGB value;
+                if(RGB.TryParse(ValueToken.Value,out value) == false)
                 {
-                    throw new DocumentRenderException("Invalid ConsoleColor '" + ValueToken.Value + "'", ValueToken);
+                    throw new DocumentRenderException("Invalid RGB '" + ValueToken.Value + "'", ValueToken);
                 }
                 context.LocalVariables.Add(NameToken, value);
             }

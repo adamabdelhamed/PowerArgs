@@ -116,11 +116,11 @@ namespace PowerArgs
             
             if (allowCancel)
             {
-                this.console.Write(new ConsoleString("Type to search. Use up/down/enter/escape to navigate/select/cancel: ", ConsoleColor.Cyan));
+                this.console.Write(new ConsoleString("Type to search. Use up/down/enter/escape to navigate/select/cancel: ", RGB.Cyan));
             }
             else
             {
-                this.console.Write(new ConsoleString("Type to search. Use up/down/enter to navigate/select: ", ConsoleColor.Cyan));
+                this.console.Write(new ConsoleString("Type to search. Use up/down/enter to navigate/select: ", RGB.Cyan));
             }
 
             this.resultsWiper.SetTopLeftFromConsole();
@@ -302,7 +302,7 @@ namespace PowerArgs
 
                     if (i == selectedIndex)
                     {
-                        searchResult = searchResult.HighlightSubstring(0, searchResult.Length, ConsoleColor.Yellow, null);
+                        searchResult = searchResult.HighlightSubstring(0, searchResult.Length, RGB.Yellow, null);
                     }
 
                     if(searchResult.Length > this.console.BufferWidth - 1)
@@ -312,7 +312,7 @@ namespace PowerArgs
 
                     if (latestResultsSearchString.Length > 0)
                     {
-                        searchResult = searchResult.Highlight(latestResultsSearchString, ConsoleColor.Black, ConsoleColor.Yellow, StringComparison.InvariantCultureIgnoreCase);
+                        searchResult = searchResult.Highlight(latestResultsSearchString, RGB.Black, RGB.Yellow, StringComparison.InvariantCultureIgnoreCase);
                     }
 
                     this.console.WriteLine(searchResult);
