@@ -280,6 +280,19 @@ namespace PowerArgs
             IgnoreCase = true;
         }
 
+        /// <summary>
+        /// Creates a new command line action given an implementation.
+        /// </summary>
+        /// <param name="actionHandler">The implementation of the action.</param>
+        public CommandLineAction(Func<CommandLineArgumentsDefinition,Task> actionHandler) : this()
+        {
+            overrides = new AttrOverride(GetType());
+            PropertyInitializer.InitializeFields(this, 1);
+            ActionMethod = new FuncMethodInfo(actionHandler);
+            Source = ActionMethod;
+            IgnoreCase = true;
+        }
+
         internal static CommandLineAction Create(PropertyInfo actionProperty, List<string> knownAliases)
         {
             var ret = PropertyInitializer.CreateInstance<CommandLineAction>();

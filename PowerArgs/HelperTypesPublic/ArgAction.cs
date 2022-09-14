@@ -105,7 +105,11 @@ namespace PowerArgs
 
             try
             {
-                if (resolved.IsStatic)
+                if (resolved is FuncMethodInfo)
+                {
+                    (resolved as FuncMethodInfo).InvokeAsync(this.Definition).Wait();
+                }
+                else if (resolved.IsStatic)
                 {
                     var ret = resolved.Invoke(null, parameters);
                     if(ret is Task)
@@ -130,6 +134,76 @@ namespace PowerArgs
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                 }
                 else if(ex.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            if (Context != null)
+            {
+                Context.RunAfterInvoke();
+            }
+        }
+
+        public async Task InvokeAsync()
+        {
+            if (Context != null)
+            {
+                Context.RunBeforeInvoke();
+            }
+
+            if (ActionArgsMethod == null && ActionArgsProperty == null) throw new MissingArgException("No action was specified");
+            var resolved = ActionArgsMethod ?? ResolveMethod(ActionArgsProperty.DeclaringType, ActionArgsProperty);
+            object[] parameters;
+
+            if (resolved.GetParameters().Length == 1 && resolved.GetParameters()[0].ParameterType == typeof(CommandLineArgumentsDefinition))
+            {
+                parameters = new object[] { Definition };
+            }
+            else if (ActionParameters == null)
+            {
+                parameters = resolved.GetParameters().Length == 0 ? new object[0] : new object[] { ActionArgs };
+            }
+            else
+            {
+                parameters = ActionParameters;
+            }
+
+            try
+            {
+                if(resolved is FuncMethodInfo)
+                {
+                    await (resolved as FuncMethodInfo).InvokeAsync(this.Definition);
+                }
+                else if (resolved.IsStatic)
+                {
+                    var ret = resolved.Invoke(null, parameters);
+                    if (ret is Task)
+                    {
+                        await (ret as Task);
+                    }
+                }
+                else
+                {
+                    var ret = resolved.Invoke(Value, parameters);
+                    if (ret is Task)
+                    {
+                        await (ret as Task);
+                    }
+                }
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (ex.InnerException is ArgException)
+                {
+                    (ex.InnerException as ArgException).Context = Context;
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                }
+                else if (ex.InnerException != null)
                 {
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
                 }
