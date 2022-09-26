@@ -446,6 +446,17 @@ namespace PowerArgs
             return new ConsoleString(new ConsoleCharacter[] { this });
         }
 
+        /// <summary>
+        /// Formats this object as a ConsoleString
+        /// </summary>
+        /// <param name="fg">the foreground color to use</param>
+        /// <param name="bg">the background color to use</param>
+        /// <returns>a ConsoleString</returns>
+        public ConsoleString ToConsoleString(RGB? fg = null, RGB? bg = null)
+        {
+            return new ConsoleString(new ConsoleCharacter[] { new ConsoleCharacter(this.Value, fg, bg) });
+        }
+
         public ConsoleCharacter ToUnderlined()
         {
             return new ConsoleCharacter(Value, ForegroundColor, BackgroundColor, true);
