@@ -327,7 +327,10 @@ namespace PowerArgs
             ret.ActionMethod = actionMethod;
 
             ret.Source = actionMethod;
-            ret.Aliases.Add(actionMethod.Name);
+            if (actionMethod.Attrs<ArgShortcut>().Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).None())
+            {
+                ret.Aliases.Add(actionMethod.Name);
+            }
 
             ret.Metadata.AddRange(actionMethod.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineActionMetadata>());
 
