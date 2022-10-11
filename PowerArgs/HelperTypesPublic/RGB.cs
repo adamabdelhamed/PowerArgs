@@ -67,6 +67,7 @@ public readonly struct RGB
     public static readonly RGB Magenta =        new RGB(255, 0, 255);
     public static readonly RGB Yellow =         new RGB(255, 255, 0);
     public static readonly RGB White =          new RGB(255, 255, 255);
+    public static readonly RGB Orange = new RGB(255, 140, 0);
 
     public readonly byte R;
     public readonly byte G;
