@@ -665,7 +665,7 @@ namespace PowerArgs
                 }
                 else
                 {
-                    throw new UnknownActionArgException(string.Format("Unknown action: '{0}'", context.CmdLineArgs.FirstOrDefault()));
+                    throw new UnknownActionArgException(string.Format("Unknown command: '{0}'", context.CmdLineArgs.FirstOrDefault()));
                 }
             }
             else if (context.SpecifiedAction != null)

@@ -148,7 +148,7 @@ namespace ArgsTests
 
                 Assert.AreEqual("SomeOtherArgValue", parsed.SomeOtherArg);
                 Assert.AreEqual(100, parsed.TheActionArgs.AnInteger);
-            }, Helpers.ExpectedException<UnknownActionArgException>("Unknown action: 'Theaction'"));
+            }, Helpers.ExpectedException<UnknownActionArgException>("Unknown command: 'Theaction'"));
         }
 
         [TestMethod]
