@@ -336,15 +336,35 @@ namespace PowerArgs
         }
 
         /// <summary>
-        /// Asynchronously parses the given arguments using a command line arguments definition.  Then, invokes the action
-        /// that was specified. 
+        /// Parses the given arguments using a command line arguments definition.  Then, invokes the action
+        /// that was specified.  
         /// </summary>
         /// <param name="definition">The definition that defines a set of command line arguments and actions.</param>
         /// <param name="args">the command line values</param>
         /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static Task<ArgAction> InvokeActionAsync(CommandLineArgumentsDefinition definition, params string[] args)
         {
-            return Task.Factory.StartNew(() => InvokeAction(definition, args));
+            return REPL.DriveREPLAsync<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
+            {
+                return ExecuteAsync<ArgAction>(async () =>
+                {
+                    Args instance = new Args();
+                    var result = instance.ParseInternal(definition, a);
+                    if (result.HandledException == null)
+                    {
+                        await result.InvokeAsync();
+                    }
+                    return result;
+                });
+            }, args, () =>
+            {
+                return new ArgAction()
+                {
+                    Cancelled = true,
+                    Definition = definition,
+                    Context = ArgHook.HookContext.Current,
+                };
+            });
         }
 
         /// <summary>
@@ -556,6 +576,39 @@ namespace PowerArgs
                     ex.Message.ToRed().WriteLine();
                     UsageTemplateProvider.GetUsage(definition.ExceptionBehavior.UsageTemplateProviderType, definition).Write();
                     return CreateEmptyResult<T>(ArgHook.HookContext.Current, ex);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            finally
+            {
+                ArgHook.HookContext.Current = null;
+            }
+        }
+
+        private static Task<T> ExecuteAsync<T>(Func<Task<T>> argsProcessingCode) where T : class
+        {
+            ArgHook.HookContext.Current = new ArgHook.HookContext();
+
+            try
+            {
+                return argsProcessingCode();
+            }
+            catch (ArgCancelProcessingException ex)
+            {
+                return Task.FromResult(CreateEmptyResult<T>(ArgHook.HookContext.Current, cancelled: true));
+            }
+            catch (ArgException ex)
+            {
+                ex.Context = ArgHook.HookContext.Current;
+                var definition = ArgHook.HookContext.Current.Definition;
+                if (definition.ExceptionBehavior.Policy == ArgExceptionPolicy.StandardExceptionHandling)
+                {
+                    ex.Message.ToRed().WriteLine();
+                    UsageTemplateProvider.GetUsage(definition.ExceptionBehavior.UsageTemplateProviderType, definition).Write();
+                    return Task.FromResult(CreateEmptyResult<T>(ArgHook.HookContext.Current, ex));
                 }
                 else
                 {
