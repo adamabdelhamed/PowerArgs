@@ -192,6 +192,17 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Changes the foreground of this string to orange, and optionally forces the background of all characters to the given color.
+        /// </summary>
+        /// <param name="s">the string to use to create the result</param>
+        /// <param name="bg">The new background color for all characters or null to use the console's default</param>
+        /// <returns>a new console string with the desired color attributes</returns>
+        public static ConsoleString ToOrange(this string s, RGB? bg = null, bool underlined = false)
+        {
+            return new ConsoleString(s, RGB.Orange, bg, underlined);
+        }
+
+        /// <summary>
         /// Changes the foreground of this string to white, and optionally forces the background of all characters to the given color.
         /// </summary>
         /// <param name="s">the string to use to create the result</param>
