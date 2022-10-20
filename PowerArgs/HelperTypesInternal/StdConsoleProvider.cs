@@ -26,7 +26,6 @@ namespace PowerArgs
             }
             set
             {
-                if (fg == value) return;
                 if (fg.TryConvert(out ConsoleColor c))
                 {
                     Console.ForegroundColor = c;
@@ -47,7 +46,6 @@ namespace PowerArgs
             }
             set
             {
-                if (bg == value) return;
                 if (bg.TryConvert(out ConsoleColor c))
                 {
                     Console.BackgroundColor = c;
