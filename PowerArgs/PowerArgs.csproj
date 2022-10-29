@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>3.7</Version>
+    <Version>4.0</Version>
     <Authors>Adam Abdelhamed</Authors>
     <Company>Adam Abdelhamed</Company>
     <Product>PowerArgs</Product>
@@ -16,6 +16,9 @@
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/adamabdelhamed/powerargs</RepositoryUrl>
     <WarningLevel>1</WarningLevel>
+    <PackageReleaseNotes>Updated to .Net 6, some minor fixes and improvements</PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <SignAssembly>True</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,10 +1,11 @@
 ### Binary
 PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
-As of version 3.0.0 PowerArgs targets [.NET Standard 2.0](https://docs.microsoft.com/en-us/dotnet/standard/net-standard) so that it can run cross platform. Version 3.0 requires VS 15.3 if you want to use PowerArgs from .NET 4.6.1.
+To build command line applications with text-based graphics try out [klooie](https://github.com/adamabdelhamed/klooie).
+
 ### Overview
 
-PowerArgs converts command line arguments into .NET objects that are easy to program against.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility. You can even build a full-blown, interactive text UI application like [this one](https://youtu.be/JP29zpf7paQ).
+PowerArgs converts command line arguments into .NET objects that are easy to work with.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility. You can even build a full-blown, interactive text UI application like [this one](https://youtu.be/JP29zpf7paQ).
 
 It can also orchestrate the execution of your program. Giving you the following benefits:
 
@@ -190,6 +191,7 @@ If you need to support a different type or want to support custom syntax to popu
 This example converts strings in the format "x,y" into a Point object that has properties "X" and "Y".
 
 ```cs
+[ArgReviverType]
 public class CustomReviverExample
 {
     // By default, PowerArgs does not know what a 'Point' is.  So it will 
