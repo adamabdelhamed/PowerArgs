@@ -212,5 +212,15 @@ namespace PowerArgs
         {
             return new ConsoleString(s, RGB.White, bg, underlined);
         }
+
+        /// <summary>
+        /// Converts any object to a console string
+        /// </summary>
+        /// <param name="anyObject">any object</param>
+        /// <returns>a console string</returns>
+        public static ConsoleString ToConsoleString(this object anyObject)
+        {
+            return anyObject is ICanBeAConsoleString ? (anyObject as ICanBeAConsoleString).ToConsoleString() : (anyObject + "").ToConsoleString();
+        }
     }
 }
