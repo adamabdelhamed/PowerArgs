@@ -124,18 +124,11 @@ public readonly struct RGB
     public static bool operator !=(in RGB a, in RGB b) => !a.EqualsIn(b);
 
 
-   
+
     public static RGB Convert(in ConsoleColor color)
     {
-        try
-        {
-            var ret = (int)color < ConsoleColorMap.Length ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
-            return ret;
-        }
-        catch(Exception ex)
-        {
-            throw new Exception($"Failed to convert color: {color} with int value {(int)color}. ConsoleColorMap has {ConsoleColorMap.Length} entries.", ex);
-        }
+        var ret = (int)color < ConsoleColorMap.Length && (int)color >= 0 ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
+        return ret;
     }
 
     public bool TryConvert(out ConsoleColor c)
