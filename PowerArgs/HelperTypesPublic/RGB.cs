@@ -127,8 +127,15 @@ public readonly struct RGB
    
     public static RGB Convert(in ConsoleColor color)
     {
-        var ret = (int)color < ConsoleColorMap.Length ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
-        return ret;
+        try
+        {
+            var ret = (int)color < ConsoleColorMap.Length ? ConsoleColorMap[(int)color] : ConsoleString.DefaultForegroundColor;
+            return ret;
+        }
+        catch(Exception ex)
+        {
+            throw new Exception($"Failed to convert color: {color} with int value {(int)color}. ConsoleColorMap has {ConsoleColorMap.Length} entries.", ex);
+        }
     }
 
     public bool TryConvert(out ConsoleColor c)
