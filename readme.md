@@ -1,3 +1,5 @@
+[![.NET](https://github.com/adamabdelhamed/PowerArgs/actions/workflows/dotnet.yml/badge.svg)](https://github.com/adamabdelhamed/PowerArgs/actions/workflows/dotnet.yml)
+
 ### Binary
 PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
