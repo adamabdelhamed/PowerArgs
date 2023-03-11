@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>4.0</Version>
+    <Version>4.0.1</Version>
     <Authors>Adam Abdelhamed</Authors>
     <Company>Adam Abdelhamed</Company>
     <Product>PowerArgs</Product>
