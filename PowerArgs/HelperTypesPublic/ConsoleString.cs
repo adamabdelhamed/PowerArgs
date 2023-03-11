@@ -476,12 +476,38 @@ namespace PowerArgs
         /// <summary>
         /// Gets the console's default foreground color
         /// </summary>
-        public static RGB DefaultForegroundColor { get; set; } = RGB.Gray;
+        public static RGB DefaultForegroundColor { get; set; } = FindInitialDefaultForegroundColor();
+
         /// <summary>
         /// Gets the console's default background color
         /// </summary
-        public static RGB DefaultBackgroundColor { get; set; } = RGB.Black;
+        public static RGB DefaultBackgroundColor { get; set; } = FindInitialDefaultBackgroundColor();
 
+        private static RGB FindInitialDefaultForegroundColor()
+        {
+            try
+            {
+                return RGB.ConsoleColorMap[(int)Console.ForegroundColor];
+            }
+            catch(Exception)
+            {
+                return RGB.Gray;
+            }
+        }
+
+        private static RGB FindInitialDefaultBackgroundColor()
+        {
+            try
+            {
+                return RGB.ConsoleColorMap[(int)Console.BackgroundColor];
+            }
+            catch (Exception)
+            {
+                return RGB.Black;
+            }
+        }
+
+       
         private static Dictionary<RGB, string> CSSMap = new Dictionary<RGB, string>()
         {
             { RGB.Black, "black" },
