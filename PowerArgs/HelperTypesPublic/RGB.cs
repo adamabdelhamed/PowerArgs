@@ -33,6 +33,22 @@ public readonly struct RGB
         .Where(f => f.FieldType == typeof(RGB))
         .ToDictionary(f => f.Name, f => (RGB)f.GetValue(null)));
 
+    /// <summary>
+    /// Converts this RGB to its equivalent ConsoleColor value or null if this RGB does not map to a ConsoleColor.
+    /// </summary>
+    /// <returns>this RGB's equivalent ConsoleColor value or null if this RGB does not map to a ConsoleColor</returns>
+    public ConsoleColor? ToConsoleColor()
+    {
+        for (var i = 0; i < ConsoleColorMap.Length; i++)
+        {
+            if (ConsoleColorMap[i] == this)
+            {
+                return (ConsoleColor)i;
+            }
+        }
+        return null;
+    }
+
     public static IReadOnlyDictionary<RGB, string> ColorsToNamesFunc()
     {
         var ret = new Dictionary<RGB, string>();
