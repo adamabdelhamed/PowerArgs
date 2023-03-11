@@ -1056,7 +1056,7 @@ namespace PowerArgs
             {
                 toWrite += Ansi.Text.UnderlinedOff;
             }
-            Console.Write(toWrite.Replace("\n",Ansi.Cursor.Move.NextLine()));
+            Console.Write(toWrite);
         }
 
         internal static void SetColorsFancy(in RGB fg, in RGB bg)
