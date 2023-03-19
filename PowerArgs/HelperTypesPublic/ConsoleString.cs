@@ -523,6 +523,7 @@ namespace PowerArgs
             { RGB.Gray, "grey" },
             { RGB.Green, "green" },
             { RGB.Magenta, "magenta" },
+            { RGB.Orange, "orange" },
             { RGB.Red, "red" },
             { RGB.White, "white" },
             { RGB.Yellow, "yellow" },
