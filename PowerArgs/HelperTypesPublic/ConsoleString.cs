@@ -1052,6 +1052,12 @@ namespace PowerArgs
                             buffer = "";
                         }
 
+                        // if we're on windows and the next character is a newline, we need to write a carriage return
+                        if (character.Value == '\n' && Environment.NewLine == "\r\n" && buffer.EndsWith('\r') == false)
+                        {
+                            buffer += '\r';
+                        }
+                        
                         buffer += character.Value;
                     }
 
