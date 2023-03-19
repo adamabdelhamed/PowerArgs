@@ -19,6 +19,8 @@
     <PackageReleaseNotes>Updated to .Net 6, some minor fixes and improvements</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <SignAssembly>True</SignAssembly>
+    <IncludeSymbols>True</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
