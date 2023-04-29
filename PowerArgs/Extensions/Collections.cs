@@ -112,7 +112,5 @@ namespace PowerArgs
             }
             return ret;
         }
-
-        private static T FoolTheCompilerCast<T>(object o) => (T)o;
     }
 }
