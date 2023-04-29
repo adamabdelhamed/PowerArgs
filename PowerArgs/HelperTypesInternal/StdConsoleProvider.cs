@@ -13,8 +13,19 @@ namespace PowerArgs
     public class StdConsoleProvider : IConsoleProvider
     {
         const int STD_OUTPUT_HANDLE = -11;
+        private RGB fg;
+        private RGB bg;
+        public StdConsoleProvider()
+        {
+            try
+            {
+                fg = RGB.Convert(Console.ForegroundColor);
+                bg = RGB.Convert(Console.BackgroundColor);
+            }
+            catch (Exception) { }
+        }
 
-        private RGB fg = RGB.Convert(Console.ForegroundColor);
+       
         /// <summary>
         /// Gets or sets the console foreground color
         /// </summary>
@@ -34,7 +45,7 @@ namespace PowerArgs
             }
         }
 
-        private RGB bg = RGB.Convert(Console.BackgroundColor);
+
         /// <summary>
         /// Gets or sets the console background color
         /// </summary>
