@@ -17,18 +17,18 @@ It can also orchestrate the execution of your program. Giving you the following 
 
 Here's a simple example that just uses the parsing capabilities of PowerArgs.  The command line arguments are parsed, but you still have to handle exceptions and ultimately do something with the result.
 
-```cs    
+```cs
 // A class that describes the command line arguments for this program
 public class MyArgs
 {
-    // This argument is required and if not specified the user will 
+    // This argument is required and if not specified the user will
     // be prompted.
     [ArgRequired(PromptIfMissing=true)]
     public string StringArg { get; set; }
 
     // This argument is not required, but if specified must be >= 0 and <= 60
     [ArgRange(0,60)]
-    public int IntArg {get;set; }
+    public int IntArg { get; set; }
 }
 
 class Program
@@ -51,19 +51,19 @@ class Program
 
 Here's the same example that lets PowerArgs do a little more for you.  The application logic is factored out of the Program class and user exceptions are handled automatically.  The way exceptions are handled is that any exception deriving from ArgException will be treated as user error.  PowerArgs' built in validation system always throws these type of exceptions when a validation error occurs. PowerArgs will display the message as well as auto-generated usage documentation for your program.  All other exceptions will still bubble up and need to be handled by your code.
 
-```cs    
+```cs
 // A class that describes the command line arguments for this program
 [ArgExceptionBehavior(ArgExceptionPolicy.StandardExceptionHandling)]
 public class MyArgs
 {
-    // This argument is required and if not specified the user will 
+    // This argument is required and if not specified the user will
     // be prompted.
     [ArgRequired(PromptIfMissing=true)]
     public string StringArg { get; set; }
 
     // This argument is not required, but if specified must be >= 0 and <= 60
     [ArgRange(0,60)]
-    public int IntArg {get;set; }
+    public int IntArg { get; set; }
 
     // This non-static Main method will be called and it will be able to access the parsed and populated instance level properties.
     public void Main()
@@ -81,7 +81,7 @@ class Program
 }
 ```
 
-Then there are more complicated programs that support multiple actions.  For example, the 'git' program that we all use supports several actions such as 'push' and 'pull'.  As a simpler example, let's 
+Then there are more complicated programs that support multiple actions.  For example, the 'git' program that we all use supports several actions such as 'push' and 'pull'.  As a simpler example, let's
 say you wanted to build a calculator program that has 4 actions; add, subtract, multiply, and divide.  Here's how PowerArgs makes that easy.
 
 ```cs
@@ -141,12 +141,12 @@ Here are some valid ways that an end user could call this program:
 * `Calculator.exe multiply /Value1:2 /Value2:5` outputs '10'
 * `Calculator.exe add 1 4` outputs '5' - Since the [ArgPosition] attribute is specified on the Value1 and Value2 properties, PowerArgs knows how to map these arguments.
 
-If you wanted to, your action method could accept loose parameters in each action method.  I find this is useful for small, simple programs where the input parameters don't need to be reused across many actions. 
+If you wanted to, your action method could accept loose parameters in each action method.  I find this is useful for small, simple programs where the input parameters don't need to be reused across many actions.
 
 ```cs
 [ArgActionMethod, ArgDescription("Adds the two operands")]
 public void Add(
-    [ArgRequired][ArgDescription("The first value to add"), ArgPosition(1)] double value1, 
+    [ArgRequired][ArgDescription("The first value to add"), ArgPosition(1)] double value1,
     [ArgRequired][ArgDescription("The second value to add"), ArgPosition(2)] double value2)
 {
     Console.WriteLine(value1 + value2);
@@ -159,7 +159,7 @@ You can't mix and match though.  An action method needs to be formatted in one o
 - A single parameter of a complex type whose own properties describe the action's arguments, validation, and other metadata. The first calculator example used this pattern.
 - One or more 'loose' parameters that are individually revivable, meaning that one command line parameter maps to one property in your class. The second calculator example showed a variation of the Add method that uses this pattern.
 
-### Metadata Attributes 
+### Metadata Attributes
 
 These attributes can be specified on argument properties. PowerArgs uses this metadata to influence how the parser behaves.
 
@@ -172,7 +172,7 @@ These attributes can be specified on argument properties. PowerArgs uses this me
 * `[ArgIgnore]` Don't populate this property as an arg
 * `[StickyArg]` Use the last used value if not specified.  This is preserved across sessions.  Data is stored in <User>/AppData/Roaming/PowerArgs by default.
 * `[TabCompletion]` Enable tab completion for parameter names (see documentation below)
-    
+
 ### Validator Attributes
 
 These attributes can be specified on argument properties.  You can create custom validators by implementing classes that derive from ArgValidator.
@@ -196,9 +196,9 @@ This example converts strings in the format "x,y" into a Point object that has p
 [ArgReviverType]
 public class CustomReviverExample
 {
-    // By default, PowerArgs does not know what a 'Point' is.  So it will 
-    // automatically search your assembly for arg revivers that meet the 
-    // following criteria: 
+    // By default, PowerArgs does not know what a 'Point' is.  So it will
+    // automatically search your assembly for arg revivers that meet the
+    // following criteria:
     //    - Live in a class or struct with an [ArgReviverType] attribute
     //    - Are a public, static method with an [ArgReviver] attribute
     //    - Accepts exactly two string parameters
@@ -211,7 +211,7 @@ public class CustomReviverExample
     //
     // ArgRevivers should throw ArgException with a friendly message
     // if the string could not be revived due to user error.
-  
+
     [ArgReviver]
     public static Point Revive(string key, string val)
     {
@@ -233,14 +233,14 @@ public class CustomReviverExample
 
 ### Generate usage documentation from templates (built in or custom)
 
-PowerArgs has always provided auto-generated usage documentation via the ArgUsage class.  However, the format was hard coded, and gave very little flexibility in terms of the output format. With the latest release of PowerArgs usage documentation can be fully customized via templates.  A template is just a piece of text that represents the documentation structure you want along with some placeholders that will be replaced with the actual information about your command line application.  There are built in templates designed for the console and a web browser, and you can also create your own.  
+PowerArgs has always provided auto-generated usage documentation via the ArgUsage class.  However, the format was hard coded, and gave very little flexibility in terms of the output format. With the latest release of PowerArgs usage documentation can be fully customized via templates.  A template is just a piece of text that represents the documentation structure you want along with some placeholders that will be replaced with the actual information about your command line application.  There are built in templates designed for the console and a web browser, and you can also create your own.
 
 In its latest release, PowerArgs adds a new method called ArgUsage.GenerateUsageFromTemplate().  The method has several overloads, most of which are documented via XML intellisense comments.  The part that needs a little more explanation is the template format.  To start, let's talk about the built in templates.
 
 The first one, the default, is designed to create general purpose command line usage documentation that is similar to the older usage documentation that PowerArgs generated.  You can see what that template looks like [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/Resources/DefaultConsoleUsageTemplate.txt).
 
 
-The second one is designed to create documentation that looks good in a browser.  You can see what that template looks like [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/Resources/UsageTemplates.cs).  
+The second one is designed to create documentation that looks good in a browser.  You can see what that template looks like [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/Resources/UsageTemplates.cs).
 
 [Here is an example of what the built in browser usage looks like](http://adamabdelhamed2.blob.core.windows.net/powerargs/Samples/BrowserUsage.html).
 
@@ -250,13 +250,13 @@ You can create your own templates from scratch, or modify these default template
 Most of you probably use the class and attributes model when using PowerArgs, but under the hood there's a pretty extensive object model that gets generated from the classes you build.  That model is what is bound to the template.   If you're not familiar with the object model you can explore the code [here](https://github.com/adamabdelhamed/PowerArgs/blob/master/PowerArgs/ArgDefinition/CommandLineArgumentsDefinition.cs).
 
 You can see from the built in templates that there is placeholder syntax that lets you insert information from the model into template.  For example, if your program is called 'myprogram' then the following text in the template would be replaced with 'myprogram'.
-    
+
     {{ExeName !}} is the best
     // outputs - 'myprogram is the best'
-    
+
 Additionally, you can add a parameter to the replacement tag that indicates the color to use when printed on the command line as a ConsoleString. You can use any [ConsoleColor](http://msdn.microsoft.com/en-us/library/system.consolecolor(v=vs.110).aspx) as a parameter.
 
-    {{ExeName Cyan !}}     
+    {{ExeName Cyan !}}
 
 You can also choose to conditionally include portions of a template based on a property.  Here's an example from the default template:
 
@@ -295,7 +295,7 @@ Access your parsed command line arguments from anywhere in your application.
 ```cs
 MyArgs parsed = Args.GetAmbientArgs<MyArgs>();
 ```
-    
+
 This will get the most recent insance of type MyArgs that was parsed on the current thread.  That way, you have access to things like global options without having to pass the result all throughout your code.
 
 
@@ -311,7 +311,7 @@ public class TestArgs
     public SecureStringArgument Password { get; set; }
 }
 ```
-    
+
 Then when you parse the args you can access the value in one of two ways.  First there's the secure way.
 
 ```cs
@@ -355,11 +355,11 @@ public class MyCompletionSource : SimpleTabCompletionSource
         return new string[] { "SomeLongWordThatYouWantToEnableCompletionFor", "SomeOtherWordToEnableCompletionFor" };
     }
 }
-``` 
- 
+```
+
  Then just tell the [TabCompletion] attribute where to find your class.
 
-```cs 
+```cs
 [TabCompletion(typeof(MyCompletionSource))]
 public class TestArgs
 {
@@ -368,9 +368,9 @@ public class TestArgs
     public int AnotherParam { get; set; }
 }
 ```
- 
+
  There's also the easy, but not really easy way if you want custom tab completion logic.  Let's say you wanted to load your auto completions from a text file.  You would implement ITabCompletionSource.
- 
+
 ```cs
 public class TextFileTabCompletionSource : ITabCompletionSource
 {
@@ -397,7 +397,7 @@ public class TextFileTabCompletionSource : ITabCompletionSource
     }
 }
 ```
-    
+
 If you expect your users to sometimes use the command line and sometimes run from a script then you can specify an indicator string.  If you do this then only users who specify the indicator as the only argument will get the prompt.
 
 ```cs
