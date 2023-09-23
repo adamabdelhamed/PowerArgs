@@ -551,6 +551,18 @@ namespace ArgsTests
             Assert.AreNotEqual(nameof(RGB.Black),new RGB(20, 20, 20).ToString());
         }
 
+        [TestMethod]
+        public void TestJsonConsoleString()
+        {
+            var json = "{ \"name\" : \"Adam\" }";
+            var colors = new JsonConsoleString.JsonColors();
+            var styled = json.ToJsonConsoleString();
+            Assert.AreEqual(json, styled.ToString());
+
+            Assert.AreEqual(colors.Structure, styled.First().ForegroundColor);
+            Assert.AreEqual(colors.Structure, styled.Last().ForegroundColor);
+        }
+
         private static void ValidateStringCharacteristics(string expected, ConsoleString actual)
         {
             Assert.AreEqual(expected, string.Join("", actual.Select(c => c.Value)));

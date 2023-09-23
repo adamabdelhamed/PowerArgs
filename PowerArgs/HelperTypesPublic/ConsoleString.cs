@@ -2,8 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace PowerArgs
-{
+namespace PowerArgs;
     /// <summary>
     /// An interface that defines an object that implements ToConsoleString
     /// </summary>
@@ -1851,81 +1850,162 @@ namespace PowerArgs
         }
     }
 
+/// <summary>
+/// An equality comparer for ConsoleString objects
+/// </summary>
+public class ConsoleStringEqualityComparer : IEqualityComparer<ConsoleString>, IEqualityComparer<string>
+{
     /// <summary>
-    /// An equality comparer for ConsoleString objects
+    /// The default equality comparer that will require styles to be equal and will simply call string.Equals for string equality
     /// </summary>
-    public class ConsoleStringEqualityComparer : IEqualityComparer<ConsoleString>, IEqualityComparer<string>
+    public static readonly ConsoleStringEqualityComparer Default = new ConsoleStringEqualityComparer();
+
+    /// <summary>
+    /// Gets the string euquality comparer used for string evaluations
+    /// </summary>
+    public IEqualityComparer<string> ValueComparer { get; private set; }
+
+    /// <summary>
+    /// Gets a boolean that indicates whether or not this comparer requires the foreground and background color to match in order to be equal
+    /// </summary>
+    public bool RequireStylesToBeEqual { get; private set; }
+
+    /// <summary>
+    /// Creates a new console string equality comparer.
+    /// </summary>
+    /// <param name="valueComparer">the comparer to use to compare the characters in the string or null to use a default that will use the string.Equals method</param>
+    /// <param name="requireStylesToBeEqual">If true, the comparer will require the two strings to have the same foreground and background colors for each character. If false only the characters will be compared.</param>
+    public ConsoleStringEqualityComparer(IEqualityComparer<string> valueComparer = null, bool requireStylesToBeEqual = true)
     {
-        /// <summary>
-        /// The default equality comparer that will require styles to be equal and will simply call string.Equals for string equality
-        /// </summary>
-        public static readonly ConsoleStringEqualityComparer Default = new ConsoleStringEqualityComparer();
+        this.ValueComparer = valueComparer ?? this;
+        this.RequireStylesToBeEqual = requireStylesToBeEqual;
+    }
 
-        /// <summary>
-        /// Gets the string euquality comparer used for string evaluations
-        /// </summary>
-        public IEqualityComparer<string> ValueComparer { get; private set; }
+    /// <summary>
+    /// Compares the two ConsoleString objects for equality
+    /// </summary>
+    /// <param name="x">the first string</param>
+    /// <param name="y">the second string</param>
+    /// <returns>true if equal, false otherwise</returns>
+    public bool Equals(ConsoleString x, ConsoleString y)
+    {
+        var valueEqual = x.Length == y.Length && ValueComparer.Equals(x.StringValue, y.StringValue);
+        if (valueEqual == false) return false;
 
-        /// <summary>
-        /// Gets a boolean that indicates whether or not this comparer requires the foreground and background color to match in order to be equal
-        /// </summary>
-        public bool RequireStylesToBeEqual { get; private set; }
+        if (RequireStylesToBeEqual == false) return true;
 
-        /// <summary>
-        /// Creates a new console string equality comparer.
-        /// </summary>
-        /// <param name="valueComparer">the comparer to use to compare the characters in the string or null to use a default that will use the string.Equals method</param>
-        /// <param name="requireStylesToBeEqual">If true, the comparer will require the two strings to have the same foreground and background colors for each character. If false only the characters will be compared.</param>
-        public ConsoleStringEqualityComparer(IEqualityComparer<string> valueComparer = null, bool requireStylesToBeEqual = true)
+        for (var i = 0; i < x.Length; i++)
         {
-            this.ValueComparer = valueComparer ?? this;
-            this.RequireStylesToBeEqual = requireStylesToBeEqual;
-        }
-
-        /// <summary>
-        /// Compares the two ConsoleString objects for equality
-        /// </summary>
-        /// <param name="x">the first string</param>
-        /// <param name="y">the second string</param>
-        /// <returns>true if equal, false otherwise</returns>
-        public bool Equals(ConsoleString x, ConsoleString y)
-        {
-            var valueEqual = x.Length == y.Length && ValueComparer.Equals(x.StringValue, y.StringValue);
-            if (valueEqual == false) return false;
-
-            if (RequireStylesToBeEqual == false) return true;
-
-            for (var i = 0; i < x.Length; i++)
+            if (x[i].ForegroundColor != y[i].ForegroundColor || x[i].BackgroundColor != y[i].BackgroundColor)
             {
-                if (x[i].ForegroundColor != y[i].ForegroundColor || x[i].BackgroundColor != y[i].BackgroundColor)
-                {
-                    return false;
-                }
+                return false;
             }
-
-            return true;
         }
 
-        /// <summary>
-        /// Gets the hash code for the given string
-        /// </summary>
-        /// <param name="obj">the string to hash</param>
-        /// <returns>a hash code for the given string</returns>
-        public int GetHashCode(ConsoleString obj) => obj.GetHashCode();
+        return true;
+    }
 
-        /// <summary>
-        /// Compares the given strings for equality
-        /// </summary>
-        /// <param name="x">the first string</param>
-        /// <param name="y">the second string</param>
-        /// <returns></returns>
-        public bool Equals(string x, string y) => x == null ? y == null : x.Equals(y);
+    /// <summary>
+    /// Gets the hash code for the given string
+    /// </summary>
+    /// <param name="obj">the string to hash</param>
+    /// <returns>a hash code for the given string</returns>
+    public int GetHashCode(ConsoleString obj) => obj.GetHashCode();
 
-        /// <summary>
-        /// Gets the hash code for the given string
-        /// </summary>
-        /// <param name="obj">the string to hash</param>
-        /// <returns>a hash code for the given string</returns>
-        public int GetHashCode(string obj) => ValueComparer.GetHashCode(obj);
+    /// <summary>
+    /// Compares the given strings for equality
+    /// </summary>
+    /// <param name="x">the first string</param>
+    /// <param name="y">the second string</param>
+    /// <returns></returns>
+    public bool Equals(string x, string y) => x == null ? y == null : x.Equals(y);
+
+    /// <summary>
+    /// Gets the hash code for the given string
+    /// </summary>
+    /// <param name="obj">the string to hash</param>
+    /// <returns>a hash code for the given string</returns>
+    public int GetHashCode(string obj) => ValueComparer.GetHashCode(obj);
+}
+
+/// <summary>
+/// Tools for styling json as a ConsoleString
+/// </summary>
+public static class JsonConsoleString
+{
+    private static JsonColors defaultColors = new JsonColors();
+
+    /// <summary>
+    /// Styles a json string into a ConsoleString.
+    /// </summary>
+    /// <param name="json">the string to style</param>
+    /// <param name="colors">optionally override the default colors</param>
+    /// <returns>a styled json string</returns>
+    public static ConsoleString ToJsonConsoleString(this string json, JsonColors colors = null)
+    {
+        colors = colors ?? defaultColors;
+        var tokenizer = new Tokenizer<Token>();
+        tokenizer.TokenBuffer = json.Length > tokenizer.TokenBuffer.Length * .8f ? new char[(int)(json.Length * 1.2)] : tokenizer.TokenBuffer;
+        tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals;
+        tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndInclude;
+        tokenizer.Delimiters.AddRange(new string[] { "{", "}", ":", ",", "[", "]" });
+
+        var tokens = tokenizer.Tokenize(json);
+        var reader = new TokenReader<Token>(tokens);
+        var ret = new List<ConsoleCharacter>();
+        while (reader.TryAdvance(out Token t))
+        {
+            if (tokenizer.Delimiters.Contains(t.Value))
+            {
+                ret.AddRange(t.Value.ToConsoleString(defaultColors.Structure));
+            }
+            else if (t.Value.StartsWith("\"") && t.Value.EndsWith("\""))
+            {
+                ret.AddRange(ParseStringLiteral(reader, t, colors));
+            }
+            else if (double.TryParse(t.Value, out double d))
+            {
+                ret.AddRange(t.Value.ToConsoleString(colors.Numbers));
+            }
+            else if (bool.TryParse(t.Value, out bool b))
+            {
+                ret.AddRange(t.Value.ToConsoleString(colors.Booleans));
+            }
+            else if (t.Value == "null")
+            {
+                ret.AddRange(t.Value.ToConsoleString(colors.Null));
+            }
+            else
+            {
+                ret.AddRange(t.Value.ToConsoleString(colors.Other));
+            }
+        }
+        return new ConsoleString(ret);
+    }
+
+    private static IEnumerable<ConsoleCharacter> ParseStringLiteral(TokenReader<Token> reader, Token t, JsonColors colors)
+    {
+        var isPropertyName = reader.TryPeek(out Token peeked, out int l, skipWhitespace: true) && peeked.Value == ":";
+        if (isPropertyName) return t.Value.ToConsoleString(colors.PropertyNames);
+
+        var unquoted = t.Value.Substring(1, t.Value.Length - 2);
+        var isDateTime = DateTime.TryParse(unquoted, out DateTime dt);
+        if (isDateTime) return t.Value.Select(c => new ConsoleCharacter(c, c == '"' ? colors.StringLiterals : char.IsDigit(c) ? colors.Numbers : colors.StringLiterals));
+
+        var isGuid = Guid.TryParse(unquoted, out Guid id);
+        if (isGuid) return t.Value.Select(c => new ConsoleCharacter(c, c == '"' ? colors.StringLiterals : char.IsLetterOrDigit(c) ? colors.Numbers : colors.StringLiterals));
+
+        return t.Value.ToConsoleString(colors.StringLiterals);
+    }
+
+    public class JsonColors
+    {
+        public RGB Structure { get; set; } = new RGB(170, 170, 170);
+        public RGB PropertyNames { get; set; } = new RGB(255, 235, 204);
+        public RGB StringLiterals { get; set; } = new RGB(255, 163, 26);
+        public RGB Numbers { get; set; } = new RGB(255, 255, 255);
+        public RGB Booleans { get; set; } = new RGB(204, 255, 255);
+        public RGB Null { get; set; } = new RGB(255, 204, 204);
+        public RGB Other { get; set; } = RGB.Red;
     }
 }
