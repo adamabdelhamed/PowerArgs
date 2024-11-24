@@ -124,15 +124,6 @@ namespace PowerArgs
         Func<List<string>> metadataEval;
         Func<bool> ignoreCaseEval;
 
-        private IList<string> NormalizedList
-        {
-            get
-            {
-                List<string> ret = new List<string>();
-                foreach (var item in this) ret.Add(item);
-                return ret.AsReadOnly();
-            }
-        }
 
         private AliasCollection(Func<List<string>> metadataEval, Func<bool> ignoreCaseEval)
         {
@@ -201,7 +192,13 @@ namespace PowerArgs
         /// <returns>The index of item if found in the list; otherwise, -1.</returns>
         public int IndexOf(string item)
         {
-            return NormalizedList.IndexOf(item);
+            var i = 0;
+            foreach (var alias in this)
+            {
+                if (alias == item) return i;
+                i++;
+            }
+            return -1;
         }
 
         /// <summary>
@@ -232,7 +229,13 @@ namespace PowerArgs
         {
             get
             {
-                return NormalizedList[index];
+                var iter = 0;
+                foreach (var alias in this)
+                {
+                    if (iter == index) return alias;
+                    iter++;
+                }
+                throw new IndexOutOfRangeException();
             }
             set
             {
@@ -256,9 +259,12 @@ namespace PowerArgs
         /// <param name="item">The alias to add</param>
         public void Add(string item)
         {
-            if (NormalizedList.Contains(item, new CaseAwareStringComparer(ignoreCaseEval())))
+            foreach (var alias in this)
             {
-                throw new InvalidArgDefinitionException("The alias '"+item+"' has already been added");
+                if (string.Equals(alias, item, ignoreCaseEval() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                {
+                    throw new InvalidArgDefinitionException("The alias '" + item + "' has already been added");
+                }
             }
 
             overrides.Add(item);
@@ -289,7 +295,14 @@ namespace PowerArgs
         /// <returns>True if the collection contains the item, otherwise false</returns>
         public bool Contains(string item)
         {
-            return NormalizedList.Contains(item, new CaseAwareStringComparer(ignoreCaseEval()));
+            foreach (var alias in this)
+            {
+                if (string.Equals(alias, item, ignoreCaseEval() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -299,7 +312,11 @@ namespace PowerArgs
         /// <param name="arrayIndex">the starting index of where to place the elements into the destination</param>
         public void CopyTo(string[] array, int arrayIndex)
         {
-            NormalizedList.CopyTo(array, arrayIndex);
+            foreach (var alias in this)
+            {
+                array[arrayIndex] = alias;
+                arrayIndex++;
+            }
         }
 
         /// <summary>
@@ -307,7 +324,15 @@ namespace PowerArgs
         /// </summary>
         public int Count
         {
-            get { return NormalizedList.Count(); }
+            get
+            {
+                int count = 0;
+                foreach (var alias in this)
+                {
+                    count++;
+                }
+                return count;
+            }
         }
 
         /// <summary>

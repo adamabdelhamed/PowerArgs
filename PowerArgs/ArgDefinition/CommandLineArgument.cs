@@ -108,21 +108,10 @@ namespace PowerArgs
             }
         }
 
-        internal ReadOnlyCollection<ArgValidator> Validators
-        {
-            get
-            {
-                return Metadata.Metas<ArgValidator>().OrderByDescending(v => v.Priority).ToList().AsReadOnly();
-            }
-        }
+        internal IEnumerable<ArgValidator> Validators => Metadata.Metas<ArgValidator>().OrderByDescending(v => v.Priority);
+            
 
-        internal ReadOnlyCollection<ArgHook> Hooks
-        {
-            get
-            {
-                return new ReadOnlyCollection<ArgHook>(Metadata.Metas<ArgHook>().ToList());
-            }
-        }
+        internal IEnumerable<ArgHook> Hooks => Metadata.Metas<ArgHook>();
 
         /// <summary>
         /// Gets or sets a flag indicating that this argument must be revivable from a string.  If false, the argument can only be populated
@@ -142,7 +131,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgIgnoreCase, bool>("IgnoreCase", Metadata, p => p.IgnoreCase, true);
+                return overrides.GetStruct<ArgIgnoreCase, bool>("IgnoreCase", Metadata, p => p.IgnoreCase, true);
             }
             set
             {
@@ -188,7 +177,7 @@ namespace PowerArgs
         /// </summary>
         public bool OmitFromUsage
         {
-            get => overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p =>true, false);
+            get => overrides.GetStruct<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p =>true, false);
             set => overrides.Set("OmitFromUsage", value);
         }
 
@@ -214,7 +203,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgPosition, int>("Position", Metadata, p => p.Position, -1);
+                return overrides.GetStruct<ArgPosition, int>("Position", Metadata, p => p.Position, -1);
             }
             set
             {
@@ -303,7 +292,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgRequired, bool>("IsRequired", Validators, v => true, false);
+                return overrides.GetStruct<ArgRequired, bool>("IsRequired", Validators, v => true, false);
             }
             set
             {
@@ -590,8 +579,16 @@ namespace PowerArgs
                     return cachedVal;
                 }
             }
-            
-            ret = Aliases.Where(a => a.Equals(key, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Any();
+
+            foreach (var a in Aliases)
+            {
+                if (a.Equals(key, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                {
+                    ret = true;
+                    break;
+                }
+            }
+
             if (cacheKey != null)
             {
                 matchMemo.Add(key, ret);
@@ -660,12 +657,10 @@ namespace PowerArgs
             RunAfterPopulateProperty(context);
         }
 
-        internal static List<string> FindDefaultShortcuts(PropertyInfo info, List<string> knownShortcuts, bool ignoreCase)
+        internal static IEnumerable<string> FindDefaultShortcuts(PropertyInfo info, List<string> knownShortcuts, bool ignoreCase)
         {
-            List<string> ret = new List<string>();
-
             var shortcuts = info.Attrs<ArgShortcut>();
-            bool excludeName = shortcuts.Where(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly).Any();
+            bool excludeName = shortcuts.Any(s => s.Policy == ArgShortcutPolicy.ShortcutsOnly);
 
             if (excludeName == false)
             {
@@ -673,11 +668,11 @@ namespace PowerArgs
 
                 if (CommandLineAction.IsActionImplementation(info) && info.Name.EndsWith(Constants.ActionArgConventionSuffix))
                 {
-                    ret.Add(info.Name.Substring(0, info.Name.Length - Constants.ActionArgConventionSuffix.Length));
+                    yield return info.Name.Substring(0, info.Name.Length - Constants.ActionArgConventionSuffix.Length);
                 }
                 else
                 {
-                    ret.Add(info.Name);
+                    yield return info.Name;
                 }
             }
  
@@ -687,42 +682,53 @@ namespace PowerArgs
                 if (shortcut != null)
                 {
                     knownShortcuts.Add(shortcut);
-                    ret.Add(shortcut);
+                    yield return shortcut;
                 }
 
-                return ret;
+                yield break;
             }
             else
             {
-                return ret;
+                yield break;
             }
         }
 
         private void FindMatchingArgumentInRawParseData(ArgHook.HookContext context)
         {
-            var match = from k in context.ParserData.ExplicitParameters.Keys where IsMatch(k) select k;
-            var count = match.Count();
-            if (count > 1)
+            string matchedKey = null;
+
+            // Find matching argument in ExplicitParameters
+            foreach (var key in context.ParserData.ExplicitParameters.Keys)
             {
-                throw new DuplicateArgException("Argument specified more than once: " + Aliases.First());
+                if (IsMatch(key))
+                {
+                    if (matchedKey != null)
+                    {
+                        throw new DuplicateArgException("Argument specified more than once: " + Aliases.First());
+                    }
+                    matchedKey = key;
+                }
             }
-            else if (count == 1)
+
+            if (matchedKey != null)
             {
-                var key = match.First();
-                context.ArgumentValue = context.ParserData.ExplicitParameters[key];
-                context.ParserData.ExplicitParameters.Remove(key);
+                // Match found in ExplicitParameters
+                context.ArgumentValue = context.ParserData.ExplicitParameters[matchedKey];
+                context.ParserData.ExplicitParameters.Remove(matchedKey);
             }
             else if (context.ParserData.ImplicitParameters.ContainsKey(Position))
             {
-                var position = Position;
-                context.ArgumentValue = context.ParserData.ImplicitParameters[position];
-                context.ParserData.ImplicitParameters.Remove(position);
+                // Match found in ImplicitParameters
+                context.ArgumentValue = context.ParserData.ImplicitParameters[Position];
+                context.ParserData.ImplicitParameters.Remove(Position);
             }
             else
             {
+                // No match found
                 context.ArgumentValue = null;
             }
         }
+
 
         private static string GenerateShortcutAlias(string baseAlias, List<string> excluded, bool ignoreCase)
         {

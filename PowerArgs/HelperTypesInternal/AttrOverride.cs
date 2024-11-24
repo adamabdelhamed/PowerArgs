@@ -27,37 +27,76 @@ namespace PowerArgs
             }
         }
 
-        internal T2 Get<T1, T2>(string propertyName, IEnumerable<IArgMetadata> attriibutes, Func<T1, T2> getter, T2 defaultValue = default(T2)) where T1 : Attribute
+        internal T2 GetStruct<T1, T2>(string propertyName, IEnumerable<IArgMetadata> attributes, Func<T1, T2> getter, T2 defaultValue = default)
+            where T1 : Attribute
+            where T2 : struct // Constraint for value types
         {
             bool hasOverride = overrideValues.ContainsKey(propertyName);
-            bool hasMatchingAttribute = attriibutes.HasMeta<T1>();
+            bool hasMatchingAttribute = attributes.HasMeta<T1>();
 
-            object attributeVal = default(T2);
-            object overrideVal = default(T2);
+            T2 attributeVal = defaultValue;
+            T2 overrideVal = defaultValue;
 
             if (hasOverride)
             {
-                overrideVal = overrideValues[propertyName];
+                overrideVal = (T2)overrideValues[propertyName];
             }
 
             if (hasMatchingAttribute)
             {
-                T1 attribute = attriibutes.Meta<T1>();
+                T1 attribute = attributes.Meta<T1>();
                 attributeVal = getter(attribute);
             }
 
             if (hasOverride)
             {
-                return (T2)overrideVal;
+                return overrideVal;
             }
             else if (hasMatchingAttribute)
             {
-                return (T2)attributeVal;
+                return attributeVal;
             }
             else
             {
                 return defaultValue;
             }
         }
+
+        internal T2 Get<T1, T2>(string propertyName, IEnumerable<IArgMetadata> attributes, Func<T1, T2> getter, T2 defaultValue = default)
+    where T1 : Attribute
+    where T2 : class // Constraint for reference types
+        {
+            bool hasOverride = overrideValues.ContainsKey(propertyName);
+            bool hasMatchingAttribute = attributes.HasMeta<T1>();
+
+            T2 attributeVal = defaultValue;
+            T2 overrideVal = defaultValue;
+
+            if (hasOverride)
+            {
+                overrideVal = (T2)overrideValues[propertyName];
+            }
+
+            if (hasMatchingAttribute)
+            {
+                T1 attribute = attributes.Meta<T1>();
+                attributeVal = getter(attribute);
+            }
+
+            if (hasOverride)
+            {
+                return overrideVal;
+            }
+            else if (hasMatchingAttribute)
+            {
+                return attributeVal;
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
+
     }
 }

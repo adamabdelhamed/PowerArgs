@@ -306,11 +306,11 @@ namespace PowerArgs
         /// <summary>
         /// Global hooks that can execute all hook override methods except those that target a particular argument.
         /// </summary>
-        public ReadOnlyCollection<ArgHook> Hooks
+        public IEnumerable<ArgHook> Hooks
         {
             get
             {
-                return new ReadOnlyCollection<ArgHook>(Metadata.Metas<ArgHook>().ToList());
+                return Metadata.Metas<ArgHook>();
             }
         }
 

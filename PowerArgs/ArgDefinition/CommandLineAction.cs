@@ -127,7 +127,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgIgnoreCase, bool>("IgnoreCase", Metadata, i => i.IgnoreCase, true);
+                return overrides.GetStruct<ArgIgnoreCase, bool>("IgnoreCase", Metadata, i => i.IgnoreCase, true);
             }
             set
             {
@@ -140,7 +140,7 @@ namespace PowerArgs
         /// </summary>
         public bool OmitFromUsage
         {
-            get => overrides.Get<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p => true, false);
+            get => overrides.GetStruct<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p => true, false);
             set => overrides.Set("OmitFromUsage", value);
         }
 
