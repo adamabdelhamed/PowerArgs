@@ -348,61 +348,81 @@ namespace PowerArgs
 
             internal void RunHook(Func<ArgHook, int> orderby, Action<ArgHook> hookAction)
             {
-                List<ContextualHookInfo> hooksToRun = new List<ContextualHookInfo>();
-
-                var seen = new List<PropertyInfo>();
-
-                hooksToRun.AddRange(Definition.Hooks.Select(h => new ContextualHookInfo { Hook = h }));
-                
-                foreach (var argument in Definition.Arguments)
-                {
-                    if (argument.Source as PropertyInfo != null) seen.Add(argument.Source as PropertyInfo);
-
-                    hooksToRun.AddRange(argument.Hooks.Select(h => new ContextualHookInfo 
-                    { 
-                        Hook = h, 
-                        Argument = argument,
-                        Property = argument.Source as PropertyInfo 
-                    }));
-                }
-
-                if (Definition.ArgumentScaffoldType != null)
-                {
-                    foreach (var property in Definition.ArgumentScaffoldType.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => seen.Contains(p) == false))
-                    {
-                        hooksToRun.AddRange(property.Attrs<ArgHook>().Select(h => new ContextualHookInfo
-                        {
-                            Hook = h,
-                            Property = property
-                        }));
-                    }
-                }
-
-                foreach (var action in Definition.Actions)
-                {
-                    if (Definition.SpecifiedAction == null || action == Definition.SpecifiedAction)
-                    {
-                        foreach (var argument in action.Arguments)
-                        {
-                            hooksToRun.AddRange(argument.Hooks.Select(h => new ContextualHookInfo
-                            {
-                                Hook = h,
-                                Argument = argument,
-                                Property = argument.Source as PropertyInfo
-                            }));
-                        }
-                    }
-                }
-
-                hooksToRun = hooksToRun.OrderByDescending(info => orderby(info.Hook)).ToList();
-
-                foreach(var info in hooksToRun)
+                foreach (var info in GetHooks(orderby))
                 {
                     this.CurrentArgument = info.Argument;
                     hookAction(info.Hook);
                     this.CurrentArgument = null;
                 }
             }
+
+            private IEnumerable<ContextualHookInfo> GetHooks(Func<ArgHook, int> orderby)
+            {
+                var seen = new HashSet<PropertyInfo>();
+
+                // Add global hooks
+                foreach (var hook in Definition.Hooks)
+                {
+                    yield return new ContextualHookInfo { Hook = hook };
+                }
+
+                // Add argument-specific hooks
+                foreach (var argument in Definition.Arguments)
+                {
+                    if (argument.Source is PropertyInfo property)
+                    {
+                        seen.Add(property);
+                    }
+
+                    foreach (var hook in argument.Hooks)
+                    {
+                        yield return new ContextualHookInfo
+                        {
+                            Hook = hook,
+                            Argument = argument,
+                            Property = argument.Source as PropertyInfo
+                        };
+                    }
+                }
+
+                // Add scaffold-based hooks
+                if (Definition.ArgumentScaffoldType != null)
+                {
+                    var properties = Definition.ArgumentScaffoldType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+                    foreach (var property in properties.Where(p => !seen.Contains(p)))
+                    {
+                        foreach (var hook in property.Attrs<ArgHook>())
+                        {
+                            yield return new ContextualHookInfo
+                            {
+                                Hook = hook,
+                                Property = property
+                            };
+                        }
+                    }
+                }
+
+                // Add action-specific hooks
+                foreach (var action in Definition.Actions)
+                {
+                    if (Definition.SpecifiedAction == null || action == Definition.SpecifiedAction)
+                    {
+                        foreach (var argument in action.Arguments)
+                        {
+                            foreach (var hook in argument.Hooks)
+                            {
+                                yield return new ContextualHookInfo
+                                {
+                                    Hook = hook,
+                                    Argument = argument,
+                                    Property = argument.Source as PropertyInfo
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+
 
             internal void RunBeforeParse()
             {

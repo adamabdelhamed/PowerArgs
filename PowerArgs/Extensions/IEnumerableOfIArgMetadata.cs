@@ -75,15 +75,6 @@ namespace PowerArgs
         /// <typeparam name="T">The type of metadata to search for</typeparam>
         /// <param name="metadata">The list of metadata to search</param>
         /// <returns>the subset of metadata of the given generic type T from the collection</returns>
-        public static IEnumerable<T> Metas<T>(this IEnumerable<IArgMetadata> metadata) where T : class
-        {
-            foreach(var m in metadata)
-            {
-                if(m is T)
-                {
-                    yield return (T)m;
-                }
-            }
-        }
+        public static IEnumerable<T> Metas<T>(this IEnumerable<IArgMetadata> metadata) where T : class => metadata.OfType<T>();
     }
 }

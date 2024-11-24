@@ -16,52 +16,83 @@ namespace PowerArgs
     {
         private class AliasCollectionEnumerator : IEnumerator<string>
         {
-            AliasCollection c;
+            private AliasCollection _collection;
+            private IEnumerator<string> _currentEnumerator;
+            private int _state; // 0: overrides, 1: metadata, 2: done
+            private string _current;
 
-            IEnumerator<string> wrapped;
-
-            public AliasCollectionEnumerator(AliasCollection c)
+            public AliasCollectionEnumerator(AliasCollection collection)
             {
-                this.c = c;
-                List<string> completeList = new List<string>();
-                completeList.AddRange(c.overrides);
-                completeList.AddRange(c.metadataEval());
-
-                int i;
-                if(c._defaultAlias != null && (i = completeList.IndexOf(c._defaultAlias)) != 0)
-                {
-                    completeList.RemoveAt(i);
-                    completeList.Insert(0, c._defaultAlias);
-                }
-
-                wrapped = completeList.GetEnumerator();
+                _collection = collection;
+                _currentEnumerator = collection.overrides.GetEnumerator();
+                _state = 0;
+                _current = null;
             }
 
-            public string Current
-            {
-                get { return wrapped.Current; }
-            }
+            public string Current => _current;
 
-            public void Dispose()
-            {
-                wrapped.Dispose();
-            }
-
-            object System.Collections.IEnumerator.Current
-            {
-                get { return wrapped.Current; }
-            }
+            object System.Collections.IEnumerator.Current => _current;
 
             public bool MoveNext()
             {
-                return wrapped.MoveNext();
+                // Handle overrides
+                if (_state == 0)
+                {
+                    if (_currentEnumerator.MoveNext())
+                    {
+                        _current = _currentEnumerator.Current;
+                        return true;
+                    }
+                    // Move to the next state (metadata)
+                    _currentEnumerator.Dispose();
+                    _currentEnumerator = _collection.metadataEval().GetEnumerator();
+                    _state = 1;
+                }
+
+                // Handle metadata
+                if (_state == 1)
+                {
+                    if (_currentEnumerator.MoveNext())
+                    {
+                        _current = _currentEnumerator.Current;
+                        // Move default alias to the front dynamically if needed
+                        if (_collection._defaultAlias != null && _current == _collection._defaultAlias)
+                        {
+                            return MoveNext(); // Skip this as it will be handled in the next step
+                        }
+                        return true;
+                    }
+                    _currentEnumerator.Dispose();
+                    _state = 2;
+                }
+
+                // Handle default alias if necessary
+                if (_state == 2 && _collection._defaultAlias != null)
+                {
+                    _current = _collection._defaultAlias;
+                    _collection._defaultAlias = null; // Only yield once
+                    return true;
+                }
+
+                // Enumeration complete
+                _current = null;
+                return false;
             }
 
             public void Reset()
             {
-                wrapped.Reset();
+                _currentEnumerator?.Dispose();
+                _currentEnumerator = _collection.overrides.GetEnumerator();
+                _state = 0;
+                _current = null;
+            }
+
+            public void Dispose()
+            {
+                _currentEnumerator?.Dispose();
             }
         }
+
 
         private string _defaultAlias;
 
@@ -113,43 +144,46 @@ namespace PowerArgs
         internal AliasCollection(Func<List<ArgShortcut>> aliases, Func<bool> ignoreCaseEval, bool stripLeadingArgInticatorsOnAttributeValues = true) : this(EvaluateAttributes(aliases, stripLeadingArgInticatorsOnAttributeValues), ignoreCaseEval) { }
 
 
-        private static Func<List<string>> EvaluateAttributes(Func<List<ArgShortcut>> eval, bool stripLeadingArgInticatorsOnAttributeValues)
+        private static Func<List<string>> EvaluateAttributes(Func<List<ArgShortcut>> eval, bool stripLeadingArgIndicatorsOnAttributeValues)
         {
             return () =>
             {
+                // Get the list of ArgShortcut objects from the eval function
                 List<ArgShortcut> shortcuts = eval();
 
+                // Allocate only one list for the result
                 List<string> ret = new List<string>();
 
-                foreach (var attr in shortcuts.OrderBy(a => a.Shortcut == null ? 0 : a.Shortcut.Length))
+                // Avoid LINQ and sort the list in place to reduce allocations
+                shortcuts.Sort((a, b) =>
                 {
-                    bool noShortcut = false;
-                    if (attr.Policy == ArgShortcutPolicy.NoShortcut)
-                    {
-                        noShortcut = true;
-                    }
+                    int lenA = a.Shortcut == null ? 0 : a.Shortcut.Length;
+                    int lenB = b.Shortcut == null ? 0 : b.Shortcut.Length;
+                    return lenA.CompareTo(lenB);
+                });
 
-                    var value = attr.Shortcut;
-
-                    if (noShortcut && value != null)
+                // Iterate over the sorted list and perform processing
+                foreach (var attr in shortcuts)
+                {
+                    if (attr.Policy == ArgShortcutPolicy.NoShortcut && attr.Shortcut != null)
                     {
                         throw new InvalidArgDefinitionException("You cannot specify a shortcut value and an ArgShortcutPolicy of NoShortcut");
                     }
 
-                    if (value != null)
+                    var value = attr.Shortcut;
+
+                    if (value != null && stripLeadingArgIndicatorsOnAttributeValues)
                     {
-                        if (stripLeadingArgInticatorsOnAttributeValues == true)
-                        {
-                            if (value.StartsWith("-")) value = value.Substring(1);
-                            else if (value.StartsWith("/")) value = value.Substring(1);
-                        }
+                        if (value.StartsWith("-")) value = value.Substring(1);
+                        else if (value.StartsWith("/")) value = value.Substring(1);
                     }
 
                     if (value != null)
                     {
+                        // Avoid duplicate entries in the result list
                         if (ret.Contains(value))
                         {
-                            throw new InvalidArgDefinitionException("Duplicate ArgShortcut attributes with value: "+value);
+                            throw new InvalidArgDefinitionException("Duplicate ArgShortcut attributes with value: " + value);
                         }
                         ret.Add(value);
                     }
@@ -158,6 +192,7 @@ namespace PowerArgs
                 return ret;
             };
         }
+
 
         /// <summary>
         /// Gets the index of the given alias in the collection.
