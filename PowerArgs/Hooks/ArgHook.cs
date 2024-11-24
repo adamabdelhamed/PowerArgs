@@ -367,8 +367,9 @@ namespace PowerArgs
                 }
 
                 // Add argument-specific hooks
-                foreach (var argument in Definition.Arguments)
+                for (int i = 0; i < Definition.Arguments.Count; i++)
                 {
+                    CommandLineArgument? argument = Definition.Arguments[i];
                     if (argument.Source is PropertyInfo property)
                     {
                         seen.Add(property);
@@ -391,8 +392,10 @@ namespace PowerArgs
                     var properties = Definition.ArgumentScaffoldType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
                     foreach (var property in properties.Where(p => !seen.Contains(p)))
                     {
-                        foreach (var hook in property.Attrs<ArgHook>())
+                        var attrs = property.Attrs<ArgHook>();
+                        for (int i = 0; i < attrs.Count; i++)
                         {
+                            ArgHook? hook = attrs[i];
                             yield return new ContextualHookInfo
                             {
                                 Hook = hook,
@@ -403,12 +406,14 @@ namespace PowerArgs
                 }
 
                 // Add action-specific hooks
-                foreach (var action in Definition.Actions)
+                for (int i = 0; i < Definition.Actions.Count; i++)
                 {
+                    CommandLineAction? action = Definition.Actions[i];
                     if (Definition.SpecifiedAction == null || action == Definition.SpecifiedAction)
                     {
-                        foreach (var argument in action.Arguments)
+                        for (int j = 0; j < action.Arguments.Count; j++)
                         {
+                            CommandLineArgument? argument = action.Arguments[j];
                             foreach (var hook in argument.Hooks)
                             {
                                 yield return new ContextualHookInfo
