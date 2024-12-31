@@ -355,15 +355,7 @@ namespace PowerArgs;
         /// <returns></returns>
         public override bool Equals(object obj)
         {
-
-            if (obj is char) return Value.Equals((char)obj);
-            if (obj is ConsoleCharacter == false) return false;
-            var other = (ConsoleCharacter)obj;
-
-            return this.Value == other.Value &&
-                   this.ForegroundColor == other.ForegroundColor &&
-                   this.BackgroundColor == other.BackgroundColor &&
-                   this.IsUnderlined == other.IsUnderlined;
+            return obj is ConsoleCharacter other && Equals(other);
         }
 
         public bool Equals(ConsoleCharacter other)
@@ -433,7 +425,7 @@ namespace PowerArgs;
         /// <returns>the internal char's hashcode.</returns>
         public override int GetHashCode()
         {
-            return Value.GetHashCode();
+            return HashCode.Combine(Value, ForegroundColor, BackgroundColor, IsUnderlined);
         }
 
         /// <summary>
@@ -465,7 +457,7 @@ namespace PowerArgs;
     /// <summary>
     /// A wrapper for string that encapsulates foreground and background colors.  ConsoleStrings are immutable.
     /// </summary>
-    public class ConsoleString : IEnumerable<ConsoleCharacter>, IComparable<string>, ICanBeAConsoleString
+    public class ConsoleString : IEquatable<ConsoleString>, IEnumerable<ConsoleCharacter>, IComparable<string>, ICanBeAConsoleString
     {
         /// <summary>
         /// The console provider to use when writing output
@@ -1491,34 +1483,37 @@ namespace PowerArgs;
             return ret;
         }
 
-        /// <summary>
-        /// Compare this ConsoleString to another ConsoleString or a plain string.
-        /// </summary>
-        /// <param name="obj">The ConsoleString or plain string to compare to.</param>
-        /// <returns>True if equal, false otherwise</returns>
-        public override bool Equals(object obj)
+    /// <summary>
+    /// Compares this ConsoleString with another ConsoleString for equality.
+    /// </summary>
+    public bool Equals(ConsoleString other)
+    {
+        if (other is null || Length != other.Length)
+            return false;
+
+        for (int i = 0; i < Length; i++)
         {
-            if (obj is string) return ToString().Equals(obj as string);
-
-            ConsoleString other = obj as ConsoleString;
-            if (object.ReferenceEquals(other, null)) return false;
-            if (other.Length != this.Length) return false;
-
-
-            for (int i = 0; i < this.Length; i++)
-            {
-                if (this.characters[i] != other.characters[i]) return false;
-            }
-
-            return true;
+            if (!this[i].Equals(other[i]))
+                return false;
         }
 
-        /// <summary>
-        /// Compare this ConsoleString to another ConsoleString.
-        /// </summary>
-        /// <param name="other">The ConsoleString to compare to.</param>
-        /// <returns>True if equal, false otherwise</returns>
-        public int CompareTo(string other)
+        return true;
+    }
+
+    /// <summary>
+    /// Avoid boxing by overriding Equals(object) with an explicit type check.
+    /// </summary>
+    public override bool Equals(object obj)
+    {
+        return obj is ConsoleString other && Equals(other);
+    }
+
+    /// <summary>
+    /// Compare this ConsoleString to another ConsoleString.
+    /// </summary>
+    /// <param name="other">The ConsoleString to compare to.</param>
+    /// <returns>True if equal, false otherwise</returns>
+    public int CompareTo(string other)
         {
             return ToString().CompareTo(other);
         }
@@ -1529,8 +1524,13 @@ namespace PowerArgs;
         /// <returns>the hashcode of the underlying string</returns>
         public override int GetHashCode()
         {
-            return ToString().GetHashCode();
-        }
+            var hash = new HashCode();
+            for (int i = 0; i < characters.Length; i++)
+            {
+                hash.Add(characters[i]);
+            }
+            return hash.ToHashCode();
+    }
 
         /// <summary>
         /// Operator overload that concatenates 2 ConsoleString instances and returns a new one.
@@ -1573,9 +1573,14 @@ namespace PowerArgs;
         /// <returns>True if they are the same, false otherwise</returns>
         public static bool operator ==(ConsoleString a, ConsoleString b)
         {
-            if (object.ReferenceEquals(a, null)) return object.ReferenceEquals(b, null);
-            return a.Equals(b);
-        }
+        if (ReferenceEquals(a, b))
+            return true;
+
+        if (a is null || b is null)
+            return false;
+
+        return a.Equals(b);
+    }
 
         /// <summary>
         /// Compares 2 ConsoleStrings for inequality.
@@ -1583,18 +1588,14 @@ namespace PowerArgs;
         /// <param name="a">The left operand</param>
         /// <param name="b">The right operand</param>
         /// <returns>False if they are the same, true otherwise</returns>
-        public static bool operator !=(ConsoleString a, ConsoleString b)
-        {
-            if (object.ReferenceEquals(a, null)) return !object.ReferenceEquals(b, null);
-            return a.Equals(b) == false;
-        }
+        public static bool operator !=(ConsoleString a, ConsoleString b) => !(a == b);
 
-        /// <summary>
-        /// Gets the character at the specified index
-        /// </summary>
-        /// <param name="index">the index of the character to find</param>
-        /// <returns>the character at the specified index</returns>
-        public ConsoleCharacter this[int index]
+    /// <summary>
+    /// Gets the character at the specified index
+    /// </summary>
+    /// <param name="index">the index of the character to find</param>
+    /// <returns>the character at the specified index</returns>
+    public ConsoleCharacter this[int index]
         {
             get
             {

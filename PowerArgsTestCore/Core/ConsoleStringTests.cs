@@ -295,17 +295,6 @@ namespace ArgsTests
             Assert.IsFalse(new ConsoleCharacter('a').Equals(null));
             Assert.IsFalse(new ConsoleCharacter('a').Equals(0));
 
-            new ConsoleCharacter('a').GetHashCode();
-            new ConsoleString("Adam").GetHashCode();
-
-            Assert.IsTrue(new ConsoleString("Adam").Equals("Adam"));
-            Assert.IsTrue(new ConsoleCharacter('A').Equals('A'));
-
-            Assert.IsTrue(new ConsoleCharacter('A') == 'A');
-            Assert.IsTrue(new ConsoleCharacter('A') != 'B');
-            Assert.IsFalse(new ConsoleCharacter('A') == null);
-            Assert.IsTrue(new ConsoleCharacter('A') != null);
-
             Assert.IsTrue(new ConsoleCharacter('A') == new ConsoleCharacter('A'));
             Assert.IsTrue(new ConsoleCharacter('A') != new ConsoleCharacter('B'));
 

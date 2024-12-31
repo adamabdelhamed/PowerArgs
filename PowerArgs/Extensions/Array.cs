@@ -31,7 +31,7 @@ namespace PowerArgs
             return ret;
         }
 
-        public static T MaxOrDefault<T>(this IEnumerable<T> src, T defaultVal = default(T)) where T : IComparable
+        public static T MaxOrDefault<T>(this IEnumerable<T> src, T? defaultVal = default) where T : IComparable<T>
         {
             var max = defaultVal;
             foreach(var val in src)
@@ -41,7 +41,9 @@ namespace PowerArgs
             return max;
         }
 
-        public static T MinOrDefault<T>(this IEnumerable<T> src, T defaultVal = default(T)) where T : IComparable
+        
+
+        public static T MinOrDefault<T>(this IEnumerable<T> src, T defaultVal = default(T)) where T : IComparable<T>
         {
             var min = defaultVal;
             foreach (var val in src)
