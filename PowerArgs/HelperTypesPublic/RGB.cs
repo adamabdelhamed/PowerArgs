@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace PowerArgs;
 [ArgReviverType]
-public readonly struct RGB
+public readonly struct RGB : IEquatable<RGB>
 {
     public static readonly float MaxDistance = (float)Math.Sqrt((255 * 255) + (255 * 255) + (255 * 255));
 
@@ -98,12 +98,11 @@ public readonly struct RGB
         this.B = b;
     }
 
+    public bool Equals(RGB other) => this.R == other.R && this.G == other.G && this.B == other.B;
+
     public override bool Equals(object obj)
     {
-        if (obj is RGB == false) return false;
-        var other = (RGB)obj;
-        if (other == null) return false;
-        return this.R == other.R && this.G == other.G && this.B == other.B;
+        return obj is RGB rgb && Equals(rgb);
     }
 
     public bool EqualsIn(in RGB obj)
