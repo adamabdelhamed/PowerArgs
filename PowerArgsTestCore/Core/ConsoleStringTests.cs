@@ -166,6 +166,71 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void TestIndexOfAdditionalCases()
+        {
+            // Test with a single character string
+            ConsoleString s = new ConsoleString("abcdefg");
+            Assert.AreEqual(0, s.IndexOf("a"));
+            Assert.AreEqual(6, s.IndexOf("g"));
+            Assert.AreEqual(-1, s.IndexOf("z"));
+
+            // Test with repeating characters
+            s = new ConsoleString("aaaaaa");
+            Assert.AreEqual(0, s.IndexOf("a"));
+ 
+            Assert.AreEqual(-1, s.IndexOf("b"));
+
+            // Test with overlapping patterns
+            s = new ConsoleString("abababab");
+            Assert.AreEqual(0, s.IndexOf("abab"));
+            Assert.AreEqual(1, s.IndexOf("baba"));
+            Assert.AreEqual(-1, s.IndexOf("abaabab"));
+
+            // Test case sensitivity
+            s = new ConsoleString("AbCdEfGh");
+            Assert.AreEqual(0, s.IndexOf("a", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual(-1, s.IndexOf("a", StringComparison.Ordinal));
+            Assert.AreEqual(4, s.IndexOf("Ef", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual(-1, s.IndexOf("ef", StringComparison.Ordinal));
+
+            // Test with spaces
+            s = new ConsoleString("hello world");
+            Assert.AreEqual(6, s.IndexOf("world"));
+            Assert.AreEqual(5, s.IndexOf(" "));
+            Assert.AreEqual(-1, s.IndexOf("world!"));
+
+            // Test with special characters
+            s = new ConsoleString("!@#$%^&*()");
+            Assert.AreEqual(0, s.IndexOf("!"));
+            Assert.AreEqual(5, s.IndexOf("^"));
+            Assert.AreEqual(-1, s.IndexOf("abc"));
+
+            // Test with empty ConsoleString
+            s = new ConsoleString("");
+            Assert.AreEqual(-1, s.IndexOf("a"));
+            Assert.AreEqual(0, s.IndexOf(""));
+ 
+
+            // Test with partial matches at the end
+            s = new ConsoleString("abcdefgh");
+            Assert.AreEqual(-1, s.IndexOf("ghijk"));
+            Assert.AreEqual(6, s.IndexOf("gh"));
+
+            // Test with very large input
+            s = new ConsoleString(new string('a', 100000) + "b");
+            Assert.AreEqual(100000, s.IndexOf("b"));
+            Assert.AreEqual(-1, s.IndexOf("c"));
+ 
+
+            // Test with mixed case ConsoleString
+            s = new ConsoleString("AbCdEfGhIj");
+            Assert.AreEqual(0, s.IndexOf("AbCdEf", StringComparison.Ordinal));
+            Assert.AreEqual(0, s.IndexOf("abcdef", StringComparison.OrdinalIgnoreCase));
+            Assert.AreEqual(-1, s.IndexOf("abcdef", StringComparison.Ordinal));
+        }
+
+
+        [TestMethod]
         public void TestIndexOfCustomComparison()
         {
             Assert.AreEqual(-1, new ConsoleString("Adam").IndexOf("adam", StringComparison.InvariantCulture));

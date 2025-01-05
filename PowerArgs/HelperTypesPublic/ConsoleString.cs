@@ -347,13 +347,20 @@ namespace PowerArgs;
         {
             return Value + "";
         }
+    public ConsoleCharacter Darker
+    {
+        get
+        {
+            return new ConsoleCharacter(this.Value, this.ForegroundColor.Darker, this.BackgroundColor.Darker);
+        }
+    }
 
-        /// <summary>
-        /// ConsoleCharacters can be compared to other ConsoleCharacter instances or char values.
-        /// </summary>
-        /// <param name="obj">The ConsoleCharacter or char to compare to.</param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
+    /// <summary>
+    /// ConsoleCharacters can be compared to other ConsoleCharacter instances or char values.
+    /// </summary>
+    /// <param name="obj">The ConsoleCharacter or char to compare to.</param>
+    /// <returns></returns>
+    public override bool Equals(object obj)
         {
             return obj is ConsoleCharacter other && Equals(other);
         }
@@ -564,7 +571,7 @@ namespace PowerArgs;
                 var buffer = new ConsoleCharacter[this.Length];
                 for(var i = 0; i < Length; i++)
                 {
-                    buffer[i] = new ConsoleCharacter(this[i].Value, this[i].ForegroundColor.Darker, this[i].BackgroundColor.Darker);
+                    buffer[i] = this[i].Darker;
                 }
                 return new ConsoleString(buffer);
             }
@@ -573,7 +580,20 @@ namespace PowerArgs;
         /// <summary>
         /// Returns true if all characters have the default foreground and background color
         /// </summary>
-        public bool IsUnstyled => this.Where(c => c.ForegroundColor != DefaultForegroundColor || c.BackgroundColor != DefaultBackgroundColor).Count() == 0;
+        public bool IsUnstyled
+        {
+            get
+            {
+                for (var i = 0; i < characters.Length; i++)
+                {
+                    if (characters[i].ForegroundColor != DefaultForegroundColor || characters[i].BackgroundColor != DefaultBackgroundColor)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
          
         /// <summary>
         /// Creates a new ConsoleString from a collection of ConsoleCharacter objects
@@ -777,24 +797,54 @@ namespace PowerArgs;
             return ret;
         }
 
-        /// <summary>
-        /// Finds the index of a given substring in this ConsoleString.
-        /// </summary>
-        /// <param name="toFind">The substring to search for.</param>
-        /// <param name="comparison">Specifies how characters are compared</param>
-        /// <returns>The first index of the given substring or -1 if the substring was not found.</returns>
-        public int IndexOf(string toFind, StringComparison comparison = StringComparison.InvariantCulture)
+    /// <summary>
+    /// Finds the index of a given substring in this ConsoleString.
+    /// </summary>
+    /// <param name="toFind">The substring to search for.</param>
+    /// <param name="comparison">Specifies how characters are compared</param>
+    /// <returns>The first index of the given substring or -1 if the substring was not found.</returns>
+    public int IndexOf(string toFind, StringComparison comparison = StringComparison.InvariantCulture)
+    {
+        if (toFind == null)
+            return -1;
+
+        if (toFind.Length == 0)
+            return 0;
+
+        int toFindLength = toFind.Length;
+
+        for (int i = 0; i <= characters.Length - toFindLength; i++)
         {
-            return this.ToString().ToConsoleString().IndexOf(toFind.ToConsoleString(), comparison);
+            bool match = true;
+
+            for (int j = 0; j < toFindLength; j++)
+            {
+                char currentChar = characters[i + j].Value;
+                char targetChar = toFind[j];
+
+                if (!CharEquals(currentChar, targetChar, comparison))
+                {
+                    match = false;
+                    break;
+                }
+            }
+
+            if (match)
+            {
+                return i;
+            }
         }
 
-        /// <summary>
-        /// Finds the index of a given substring in this ConsoleString.
-        /// </summary>
-        /// <param name="toFind">The substring to search for. The styles of the strings must match.</param>
-        /// <param name="comparison">Specifies how characters are compared</param>
-        /// <returns>The first index of the given substring or -1 if the substring was not found.</returns>
-        public int IndexOf(ConsoleString toFind, StringComparison comparison = StringComparison.InvariantCulture)
+        return -1;
+    }
+
+    /// <summary>
+    /// Finds the index of a given substring in this ConsoleString.
+    /// </summary>
+    /// <param name="toFind">The substring to search for. The styles of the strings must match.</param>
+    /// <param name="comparison">Specifies how characters are compared</param>
+    /// <returns>The first index of the given substring or -1 if the substring was not found.</returns>
+    public int IndexOf(ConsoleString toFind, StringComparison comparison = StringComparison.InvariantCulture)
         {
             if (toFind == null) return -1;
             if (toFind == ConsoleString.Empty) return 0;
@@ -817,14 +867,26 @@ namespace PowerArgs;
 
             return -1;
         }
-
-        /// <summary>
-        /// Determines if this ConsoleString starts with the given string
-        /// </summary>
-        /// <param name="substr">the substring to look for</param>
-        /// <param name="comparison">Specifies how characters are compared</param>
-        /// <returns>true if this ConsoleString starts with the given substring, false otherwise</returns>
-        public bool StartsWith(string substr, StringComparison comparison = StringComparison.InvariantCulture)
+    private bool CharEquals(char a, char b, StringComparison comparison)
+    {
+        switch (comparison)
+        {
+            case StringComparison.CurrentCultureIgnoreCase:
+            case StringComparison.InvariantCultureIgnoreCase:
+            case StringComparison.OrdinalIgnoreCase:
+                return char.ToLowerInvariant(a) == char.ToLowerInvariant(b);
+            case StringComparison.Ordinal:
+            default:
+                return a == b;
+        }
+    }
+    /// <summary>
+    /// Determines if this ConsoleString starts with the given string
+    /// </summary>
+    /// <param name="substr">the substring to look for</param>
+    /// <param name="comparison">Specifies how characters are compared</param>
+    /// <returns>true if this ConsoleString starts with the given substring, false otherwise</returns>
+    public bool StartsWith(string substr, StringComparison comparison = StringComparison.InvariantCulture)
         {
             return IndexOf(substr, comparison) == 0;
         }
@@ -1107,7 +1169,12 @@ namespace PowerArgs;
         /// <returns></returns>
         public override string ToString()
         {
-            return new string(this.Select(c => c.Value).ToArray());
+            var buffer = new char[Length];
+            for (var i = 0; i < Length; i++)
+            {
+                buffer[i] = characters[i].Value;
+            }
+            return new string(buffer);
         }
 
         /// <summary>
@@ -1775,8 +1842,9 @@ namespace PowerArgs;
         private ConsoleString To(RGB color, RGB? bg, bool underlined)
         {
             List<ConsoleCharacter> chars = new List<ConsoleCharacter>();
-            foreach (var c in this)
+            for (int i = 0; i < characters.Length; i++)
             {
+                ConsoleCharacter c = characters[i];
                 chars.Add(new ConsoleCharacter(c.Value, color, bg ?? c.BackgroundColor, underlined));
             }
 
