@@ -123,7 +123,7 @@ namespace PowerArgs
 
                         var serializedValue = serializer.Serialize(val);
 
-                        if (arg.Metadata.TryGetMeta<ArgDefaultValueAttribute>(out ArgDefaultValueAttribute defaultValAttr))
+                        if (arg.Metadata.TryGetMeta<ArgDefaultValueAttribute, ICommandLineArgumentMetadata>(out ArgDefaultValueAttribute defaultValAttr))
                         {
                             if (serializer.Serialize(defaultValAttr.Value).Equals(serializedValue, StringComparison.OrdinalIgnoreCase))
                             {
@@ -132,7 +132,19 @@ namespace PowerArgs
                         }
 
                         var ignore = false;
-                        foreach (var meta in arg.Metadata.Metas<ArgIgnoreSerializeAttribute>())
+
+
+                        var ignoreAttrs = new List<ArgIgnoreSerializeAttribute>();
+                        for (int i = 0; i < arg.Metadata.Count; i++)
+                        {
+                            if (arg.Metadata[i] is ArgIgnoreSerializeAttribute)
+                            {
+                                ignoreAttrs.Add(arg.Metadata[i] as ArgIgnoreSerializeAttribute);
+                            }
+                        }
+
+
+                        foreach (var meta in ignoreAttrs)
                         {
                             if (serializer.Serialize(meta.Value).Equals(serializedValue, StringComparison.OrdinalIgnoreCase))
                             {

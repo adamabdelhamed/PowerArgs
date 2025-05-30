@@ -50,9 +50,9 @@ namespace PowerArgs
         {
             if (Context.ArgumentValue == null)
             {
-                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasMeta<StickyArgPersistence>())
+                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasMeta<StickyArgPersistence, ICommandLineArgumentsDefinitionMetadata>())
                 {
-                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Meta<StickyArgPersistence>().PersistenceProvider;
+                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Meta<StickyArgPersistence, ICommandLineArgumentsDefinitionMetadata>().PersistenceProvider;
                 }
 
                 Context.ArgumentValue = GetStickyArg(Context.CurrentArgument.DefaultAlias);
@@ -67,9 +67,9 @@ namespace PowerArgs
         {
             if (Context.ArgumentValue != null)
             {
-                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasMeta<StickyArgPersistence>())
+                if (userSpecifiedPersistenceProvider == null && Context.Definition.Metadata.HasMeta<StickyArgPersistence, ICommandLineArgumentsDefinitionMetadata>())
                 {
-                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Meta<StickyArgPersistence>().PersistenceProvider;
+                    userSpecifiedPersistenceProvider = Context.Definition.Metadata.Meta<StickyArgPersistence, ICommandLineArgumentsDefinitionMetadata>().PersistenceProvider;
                 }
 
                 SetStickyArg(Context.CurrentArgument.DefaultAlias, Context.ArgumentValue);

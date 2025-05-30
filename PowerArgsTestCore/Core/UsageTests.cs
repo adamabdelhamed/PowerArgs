@@ -73,7 +73,7 @@ namespace ArgsTests
             var def = new CommandLineArgumentsDefinition(typeof(CustomUsageTemplateInHelpHookArgs));
 
             bool validated = false;
-            def.Arguments.Find(a => a.DefaultAlias == "Help").Metadata.Meta<HelpHook>().UsageWritten += (theUsage) =>
+            def.Arguments.Find(a => a.DefaultAlias == "Help").Metadata.Meta<HelpHook,ICommandLineArgumentMetadata>().UsageWritten += (theUsage) =>
             {
                 Assert.AreEqual("Hello", theUsage.ToString());
                 validated = true;

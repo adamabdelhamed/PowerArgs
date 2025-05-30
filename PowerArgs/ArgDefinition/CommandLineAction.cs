@@ -102,7 +102,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgDescription, string>("Description", Metadata, d => d.Description, string.Empty);
+                return overrides.Get<ArgDescription, string, ICommandLineActionMetadata>("Description", Metadata, d => d.Description, string.Empty);
             }
             set
             {
@@ -127,7 +127,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.GetStruct<ArgIgnoreCase, bool>("IgnoreCase", Metadata, i => i.IgnoreCase, true);
+                return overrides.GetStruct<ArgIgnoreCase, bool, ICommandLineActionMetadata>("IgnoreCase", Metadata, i => i.IgnoreCase, true);
             }
             set
             {
@@ -140,7 +140,7 @@ namespace PowerArgs
         /// </summary>
         public bool OmitFromUsage
         {
-            get => overrides.GetStruct<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p => true, false);
+            get => overrides.GetStruct<OmitFromUsageDocs, bool, ICommandLineActionMetadata>("OmitFromUsage", Metadata, p => true, false);
             set => overrides.Set("OmitFromUsage", value);
         }
 
@@ -184,7 +184,14 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgExample>().Any();
+                for(var i = 0; i < Metadata.Count; i++)
+                {
+                    if (Metadata[i] is ArgExample)
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 
@@ -217,7 +224,16 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgExample>().OrderByDescending(e => e.Example).ToList().AsReadOnly();
+                var ret = new List<ArgExample>();
+                for (var i = 0; i < Metadata.Count; i++)
+                {
+                    if (Metadata[i] is ArgExample)
+                    {
+                        ret.Add((ArgExample)Metadata[i]);
+                    }
+                }
+                ret.Sort((a, b) => b.Example.CompareTo(a.Example));
+                return ret.AsReadOnly();
             }
         }
 
@@ -260,7 +276,18 @@ namespace PowerArgs
         public CommandLineAction()
         {
             overrides = new AttrOverride(GetType());
-            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>().ToList(); }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);
+            Aliases = new AliasCollection(() => 
+            {
+                var list = new List<ArgShortcut>();
+                for (var i = 0; i < Metadata.Count; i++)
+                {
+                    if (Metadata[i] is ArgShortcut s)
+                    {
+                        list.Add(s);
+                    }
+                }
+                return list;
+            }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);
             PropertyInitializer.InitializeFields(this, 1);
             IgnoreCase = true;
             Metadata = new List<ICommandLineActionMetadata>();

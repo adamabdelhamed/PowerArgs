@@ -33,10 +33,14 @@ namespace PowerArgs
 
             if (targetArgument != null)
             {
-                foreach (var assistant in targetArgument.Metadata.Metas<ArgContextualAssistant>())
+                for(var i = 0; i < targetArgument.Metadata.Count; i++)
                 {
-                    var dynamicProvider = assistant.GetContextAssistProvider(Definition);
-                    Providers.Add(dynamicProvider);
+                    var meta = targetArgument.Metadata[i];
+                    if (meta is ArgContextualAssistant assistant)
+                    {
+                        var dynamicProvider = assistant.GetContextAssistProvider(Definition);
+                        Providers.Add(dynamicProvider);
+                    }
                 }
             }
 

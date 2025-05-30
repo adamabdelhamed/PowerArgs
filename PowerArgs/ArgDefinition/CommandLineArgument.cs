@@ -94,7 +94,7 @@ namespace PowerArgs
             {
                 var ret = DefaultAlias;
 
-                if (IsRequired && Metadata.Meta<ArgRequired>().IsConditionallyRequired == false)
+                if (IsRequired && Metadata.Meta<ArgRequired,ICommandLineArgumentMetadata>().IsConditionallyRequired == false)
                 {
                     ret += "*";
                 }
@@ -108,10 +108,32 @@ namespace PowerArgs
             }
         }
 
-        internal IEnumerable<ArgValidator> Validators => Metadata.Metas<ArgValidator>().OrderByDescending(v => v.Priority);
+        internal List<ArgValidator> Validators()
+        {
+            var ret = new List<ArgValidator>();
+            for(int i = 0; i < Metadata.Count; i++)
+            {
+                if (Metadata[i] is ArgValidator val == false) continue;
+                ret.Add(val);
+            }
+            ret.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+            return ret;
+        }
             
 
-        internal IEnumerable<ArgHook> Hooks => Metadata.Metas<ArgHook>();
+        internal List<ArgHook> Hooks
+        {
+            get
+            {
+                var ret = new List<ArgHook>();
+                for (int i = 0; i < Metadata.Count; i++)
+                {
+                    if (Metadata[i] is ArgHook hook == false) continue;
+                    ret.Add(hook);
+                }
+                return ret;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a flag indicating that this argument must be revivable from a string.  If false, the argument can only be populated
@@ -131,7 +153,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.GetStruct<ArgIgnoreCase, bool>("IgnoreCase", Metadata, p => p.IgnoreCase, true);
+                return overrides.GetStruct<ArgIgnoreCase, bool, ICommandLineArgumentMetadata>("IgnoreCase", Metadata, p => p.IgnoreCase, true);
             }
             set
             {
@@ -177,7 +199,7 @@ namespace PowerArgs
         /// </summary>
         public bool OmitFromUsage
         {
-            get => overrides.GetStruct<OmitFromUsageDocs, bool>("OmitFromUsage", Metadata, p =>true, false);
+            get => overrides.GetStruct<OmitFromUsageDocs, bool, ICommandLineArgumentMetadata>("OmitFromUsage", Metadata, p =>true, false);
             set => overrides.Set("OmitFromUsage", value);
         }
 
@@ -203,7 +225,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.GetStruct<ArgPosition, int>("Position", Metadata, p => p.Position, -1);
+                return overrides.GetStruct<ArgPosition, int, ICommandLineArgumentMetadata>("Position", Metadata, p => p.Position, -1);
             }
             set
             {
@@ -229,7 +251,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<DefaultValueAttribute, object>("DefaultValue", Hooks, d => d.Value);
+                return overrides.Get<DefaultValueAttribute, object, ArgHook>("DefaultValue", Hooks, d => d.Value);
             }
             set
             {
@@ -277,7 +299,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgDescription, string>("Description", Metadata, d => d.Description, string.Empty);
+                return overrides.Get<ArgDescription, string, ICommandLineArgumentMetadata>("Description", Metadata, d => d.Description, string.Empty);
             }
             set
             {
@@ -292,7 +314,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.GetStruct<ArgRequired, bool>("IsRequired", Validators, v => true, false);
+                return overrides.GetStruct<ArgRequired, bool, ArgValidator>("IsRequired", Validators(), v => true, false);
             }
             set
             {
@@ -331,7 +353,16 @@ namespace PowerArgs
         {
             MustBeRevivable = true;
             overrides = new AttrOverride(GetType());
-            Aliases = new AliasCollection(() => { return Metadata.Metas<ArgShortcut>().ToList(); }, () => { return IgnoreCase; });
+            Aliases = new AliasCollection(() => 
+            {
+                var ret = new List<ArgShortcut>();
+                for (int i = 0; i < Metadata.Count; i++)
+                {
+                    if (Metadata[i] is ArgShortcut s == false) continue;
+                    ret.Add(s);
+                }
+                return ret;
+            }, () => { return IgnoreCase; });
             ArgumentType = typeof(string);
             Position = -1;
         }
@@ -384,7 +415,7 @@ namespace PowerArgs
             if (Aliases.Count > 0) ret += DefaultAlias + "<" + ArgumentType.Name + ">";
 
             ret += "(Aliases=" + Aliases.Count + ")";
-            ret += "(Validators=" + Validators.Count() + ")";
+            ret += "(Validators=" + Validators().Count() + ")";
             ret += "(Hooks=" + Hooks.Count() + ")";
 
             return ret;
@@ -477,12 +508,12 @@ namespace PowerArgs
 
         internal void Validate(ref string commandLineValue)
         {
-            if (ArgumentType == typeof(SecureStringArgument) && Validators.Any())
+            if (ArgumentType == typeof(SecureStringArgument) && Validators().Any())
             {
                 throw new InvalidArgDefinitionException("Properties of type SecureStringArgument cannot be validated.  If your goal is to make the argument required then the[ArgRequired] attribute is not needed.  The SecureStringArgument is designed to prompt the user for a value only if your code asks for it after parsing.  If your code never reads the SecureString property then the user is never prompted and it will be treated as an optional parameter.  Although discouraged, if you really, really need to run custom logic against the value before the rest of your program runs then you can implement a custom ArgHook, override RunAfterPopulateProperty, and add your custom attribute to the SecureStringArgument property.");
             }
 
-            foreach (var v in Validators)
+            foreach (var v in Validators())
             {
                 if (v.ImplementsValidateAlways)
                 {

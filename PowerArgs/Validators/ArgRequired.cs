@@ -76,9 +76,18 @@ namespace PowerArgs
         /// <param name="arg">The value specified on the command line or null if it wasn't specified</param>
         public override void ValidateAlways(CommandLineArgument argument, ref string arg)
         {
+            ArgRequiredConditionalHook matchingHook = null;
             if (IsConditionallyRequired)
             {
-                var matchingHook = (from h in argument.Metadata.Metas<ArgRequiredConditionalHook>() where h.parent == this select h).SingleOrDefault();
+                for(var i = 0; i < argument.Metadata.Count; i++)
+                {
+                    if (argument.Metadata[i] is ArgRequiredConditionalHook h && h.parent == this)
+                    {
+                        matchingHook = h;
+                        break;
+                    }
+                }
+
                 if(matchingHook == null)
                 {
                     argument.Metadata.Add(new ArgRequiredConditionalHook(this));
@@ -108,7 +117,7 @@ namespace PowerArgs
                 {
                     TabCompletion tabCompletionInfo;
                     if (ArgHook.HookContext.Current.Definition.IsNonInteractive == false &&
-                        ArgHook.HookContext.Current.Definition.Metadata.TryGetMeta<TabCompletion>(out tabCompletionInfo) 
+                        ArgHook.HookContext.Current.Definition.Metadata.TryGetMeta<TabCompletion, ICommandLineArgumentsDefinitionMetadata>(out tabCompletionInfo) 
                         && tabCompletionInfo.REPL == true)
                     {
                         // if this is an interactive REPL then continue the REPL in this case as the user may have changed their mind about taking
@@ -249,7 +258,7 @@ namespace PowerArgs
                 {
                     TabCompletion tabCompletionInfo;
                     if (context.Definition.IsNonInteractive == false && 
-                        context.Definition.Metadata.TryGetMeta<TabCompletion>(out tabCompletionInfo) && 
+                        context.Definition.Metadata.TryGetMeta<TabCompletion,ICommandLineArgumentsDefinitionMetadata>(out tabCompletionInfo) && 
                         tabCompletionInfo.REPL == true)
                     {
                         // if this is an interactive REPL then continue the REPL in this case as the user may have changed their mind about taking

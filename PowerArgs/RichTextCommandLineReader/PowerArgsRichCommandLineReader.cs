@@ -157,19 +157,23 @@ namespace PowerArgs
         {
             List<ITabCompletionSource> completionSources = new List<ITabCompletionSource>();
 
-            if (definition.Metadata.HasMeta<TabCompletion>() && definition.Metadata.Meta<TabCompletion>().CompletionSourceType != null && definition.Metadata.Meta<TabCompletion>().CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)))
+            if (definition.Metadata.HasMeta<TabCompletion, ICommandLineArgumentsDefinitionMetadata>() && definition.Metadata.Meta<TabCompletion, ICommandLineArgumentsDefinitionMetadata>().CompletionSourceType != null && definition.Metadata.Meta<TabCompletion, ICommandLineArgumentsDefinitionMetadata>().CompletionSourceType.GetInterfaces().Contains(typeof(ITabCompletionSource)))
             {
-                completionSources.Add((ITabCompletionSource)ObjectFactory.CreateInstance(definition.Metadata.Meta<TabCompletion>().CompletionSourceType));
+                completionSources.Add((ITabCompletionSource)ObjectFactory.CreateInstance(definition.Metadata.Meta<TabCompletion, ICommandLineArgumentsDefinitionMetadata>().CompletionSourceType));
             }
 
             foreach (var argument in definition.AllGlobalAndActionArguments)
             {
-                foreach (var argSource in argument.Metadata.Metas<ArgumentAwareTabCompletionAttribute>())
+                for (var i = 0; i < argument.Metadata.Count; i++)
                 {
-                    var source = argSource.CreateTabCompletionSource(definition, argument);
-                    if (source is ITabCompletionSource)
+                    var meta = argument.Metadata[i];
+                    if (meta is ArgumentAwareTabCompletionAttribute tca)
                     {
-                        completionSources.Insert(0, (ITabCompletionSource)source);
+                        var source = tca.CreateTabCompletionSource(definition, argument);
+                        if (source is ITabCompletionSource)
+                        {
+                            completionSources.Insert(0, (ITabCompletionSource)source);
+                        }
                     }
                 }
 

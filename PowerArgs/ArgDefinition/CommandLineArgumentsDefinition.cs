@@ -59,7 +59,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgCopyright, string>("Copyright", Metadata, p => p.Value, null);
+                return overrides.Get<ArgCopyright, string, ICommandLineArgumentsDefinitionMetadata>("Copyright", Metadata, p => p.Value, null);
             }
             set
             {
@@ -74,7 +74,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgProductName, string>("ProductName", Metadata, p => p.Value, null);
+                return overrides.Get<ArgProductName, string, ICommandLineArgumentsDefinitionMetadata>("ProductName", Metadata, p => p.Value, null);
             }
             set
             {
@@ -89,7 +89,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgProductVersion, string>("ProductVersion", Metadata, p => p.Value, null);
+                return overrides.Get<ArgProductVersion, string, ICommandLineArgumentsDefinitionMetadata>("ProductVersion", Metadata, p => p.Value, null);
             }
             set
             {
@@ -104,7 +104,7 @@ namespace PowerArgs
         {
             get
             {
-                var meta = Metadata.Meta<ArgDescription>();
+                var meta = Metadata.Meta<ArgDescription, ICommandLineArgumentsDefinitionMetadata>();
                 if (meta == null) return "";
                 else return meta.Description;
             }
@@ -310,7 +310,15 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgHook>();
+                var list = new List<ArgHook>();
+                for (int i = 0; i < Metadata.Count; i++)
+                {
+                    if (Metadata[i] is ArgHook)
+                    {
+                        list.Add((ArgHook)Metadata[i]);
+                    }
+                }
+                return list;
             }
         }
 
@@ -345,7 +353,16 @@ namespace PowerArgs
         {
             get
             {
-                return Metadata.Metas<ArgExample>().OrderByDescending(e => e.Example).ToList().AsReadOnly();
+                var list = new List<ArgExample>();
+                for (int i = 0; i < Metadata.Count; i++)
+                {
+                    if (Metadata[i] is ArgExample)
+                    {
+                        list.Add((ArgExample)Metadata[i]);
+                    }
+                }
+                list.Sort((a, b) => b.Example.CompareTo(a.Example));
+                return list.AsReadOnly();
             }
         }
 
@@ -356,7 +373,7 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<ArgExceptionBehavior, ArgExceptionBehavior>("ExceptionBehavior", this.Metadata, attr => attr, new ArgExceptionBehavior(ArgExceptionPolicy.DontHandleExceptions));
+                return overrides.Get<ArgExceptionBehavior, ArgExceptionBehavior, ICommandLineArgumentsDefinitionMetadata>("ExceptionBehavior", this.Metadata, attr => attr, new ArgExceptionBehavior(ArgExceptionPolicy.DontHandleExceptions));
             }
             set
             {

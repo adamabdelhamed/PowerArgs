@@ -267,7 +267,7 @@ namespace PowerArgs
         /// <returns></returns>
         public static ArgAction InvokeMain(CommandLineArgumentsDefinition definition, params string[] args)
         {
-            return REPL.DriveREPL<ArgAction>(definition.Metadata.Meta<TabCompletion>(), (a) =>
+            return REPL.DriveREPL<ArgAction>(definition.Metadata.Meta<TabCompletion, ICommandLineArgumentsDefinitionMetadata>(), (a) =>
             {
                 return Execute<ArgAction>(() =>
                 {
@@ -745,7 +745,7 @@ namespace PowerArgs
                 actionArgs = context.SpecifiedAction.PopulateArguments(context.Args, ref actionParameters);
             }
 
-            if (context.Definition.Metadata.HasMeta<AllowUnexpectedArgs>() == false)
+            if (context.Definition.Metadata.HasMeta<AllowUnexpectedArgs, ICommandLineArgumentsDefinitionMetadata>() == false)
             {
                 if (context.ParserData.ImplicitParameters.Count > 0)
                 {
