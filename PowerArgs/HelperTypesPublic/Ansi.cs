@@ -79,17 +79,39 @@ public static class Ansi
     {
         public const string Off = $"{Esc}[0m";
 
-        private static readonly string[] PositionStrings = AllocatePositionStrings();
 
-        private static string[] AllocatePositionStrings()
+        private static void AppendPositionString(PaintBuffer buffer, int value)
         {
-            var ret = new string[1000];
-            for (var i = 0; i < ret.Length; i++)
+            // Handle zero fast
+            if (value == 0)
             {
-                ret[i] = i.ToString();
+                buffer.Append('0');
+                return;
             }
-            return ret;
+
+            var v = (uint)value;
+
+            // Max 10 digits for int + safety margin
+            Span<char> tmp = stackalloc char[11];
+            int pos = tmp.Length;
+
+            // Write digits in reverse
+            while (v > 0)
+            {
+                uint digit = v % 10;
+                v /= 10;
+                tmp[--pos] = (char)('0' + digit);
+            }
+
+            // Flush in forward order
+            for (; pos < tmp.Length; pos++)
+            {
+                buffer.Append(tmp[pos]);
+            }
         }
+
+
+
 
         public static class Move
         {
@@ -105,9 +127,9 @@ public static class Ansi
             {
                 buffer.Append(Esc);
                 buffer.Append('[');
-                buffer.Append(PositionStrings[top]);
+                AppendPositionString(buffer, top);
                 buffer.Append(';');
-                buffer.Append(PositionStrings[left]);
+                AppendPositionString(buffer, left);
                 buffer.Append('H');
             }
         }
