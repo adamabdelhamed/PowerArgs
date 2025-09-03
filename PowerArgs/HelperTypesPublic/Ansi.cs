@@ -110,9 +110,6 @@ public static class Ansi
             }
         }
 
-
-
-
         public static class Move
         {
             public static string Up(int lines = 1) => $"{Esc}[{lines}A";
