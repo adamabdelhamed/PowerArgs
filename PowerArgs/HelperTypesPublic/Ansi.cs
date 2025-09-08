@@ -185,6 +185,16 @@ public class PaintBuffer
         }
     }
 
+    public void AppendRunFromPixels(ConsoleCharacter[] pixels, int width, int startX, int y, int length)
+    {
+        EnsureBigEnough(Length + length);
+        int idx = y * width + startX;
+        for (int i = 0; i < length; i++)
+        {
+            Buffer[Length++] = pixels[idx + i].Value;
+        }
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected void EnsureBigEnough(int newLen)
     {
