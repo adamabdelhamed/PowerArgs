@@ -199,6 +199,58 @@ public readonly struct RGB : IEquatable<RGB>
         }
     }
 
+    public RGB ToNeon(float valueBoost = 0.9f, float saturationBoost = 0.9f, float hueShiftDegrees = 20f)
+    {
+        // Convert to HSV
+        float r = R / 255f, g = G / 255f, b = B / 255f;
+        float max = MathF.Max(r, MathF.Max(g, b));
+        float min = MathF.Min(r, MathF.Min(g, b));
+        float delta = max - min;
+
+        float h;
+        if (delta == 0) h = 0;
+        else if (max == r) h = (60 * ((g - b) / delta) + 360) % 360;
+        else if (max == g) h = (60 * ((b - r) / delta) + 120) % 360;
+        else h = (60 * ((r - g) / delta) + 240) % 360;
+
+        float s = (max == 0) ? 0 : delta / max;
+        float v = max;
+
+        // Neon tweaks
+        // Saturation: push toward 1 by a factor of saturationBoost
+        s = MathF.Min(1f, s + saturationBoost * (1f - s));
+
+        // Brightness: push toward 1 by a factor of valueBoost
+        v = MathF.Min(1f, v + valueBoost * (1f - v));
+
+        // Optional hue wiggle
+        h = (h + hueShiftDegrees) % 360;
+
+        // Convert HSV back to RGB
+        int hi = (int)(h / 60) % 6;
+        float f = h / 60 - hi;
+        float p = v * (1 - s);
+        float q = v * (1 - f * s);
+        float t = v * (1 - (1 - f) * s);
+
+        (float rr, float gg, float bb) = hi switch
+        {
+            0 => (v, t, p),
+            1 => (q, v, p),
+            2 => (p, v, t),
+            3 => (p, q, v),
+            4 => (t, p, v),
+            _ => (v, p, q),
+        };
+
+        return new RGB(
+            (byte)(rr * 255),
+            (byte)(gg * 255),
+            (byte)(bb * 255)
+        );
+    }
+
+
     [ArgReviver]
     public static RGB Revive(string key, string val)
     {
