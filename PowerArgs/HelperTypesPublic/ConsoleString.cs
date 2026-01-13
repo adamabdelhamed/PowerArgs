@@ -1373,113 +1373,313 @@ namespace PowerArgs;
         public List<ConsoleString> Split(string splitValue, IEqualityComparer<string> comparer = null)
             => Split(splitValue != null ? splitValue.ToConsoleString() : null, new ConsoleStringEqualityComparer(valueComparer: comparer, requireStylesToBeEqual: false));
 
-        /// <summary>
-        /// Splits this ConsoleString into segments given a split value
-        /// </summary>
-        /// <param name="splitValue">the value to split on</param>
-        /// <param name="comparer">optionally override the comparison function</param>
-        /// <returns>A list of segments</returns>
-        public List<ConsoleString> Split(ConsoleString splitValue, IEqualityComparer<ConsoleString> comparer = null)
+    /// <summary>
+    /// Splits this ConsoleString into segments given a split value
+    /// </summary>
+    /// <param name="splitValue">the value to split on</param>
+    /// <param name="comparer">optionally override the comparison function</param>
+    /// <returns>A list of segments</returns>
+    public List<ConsoleString> Split(ConsoleString splitValue, IEqualityComparer<ConsoleString> comparer = null)
+    {
+        if (splitValue == null) throw new ArgumentNullException(nameof(splitValue));
+        if (splitValue.Length == 0) throw new ArgumentException("Split value cannot be empty", nameof(splitValue));
+
+        comparer ??= ConsoleStringEqualityComparer.Default;
+
+        var chunks = new List<ConsoleString>();
+        var currentChunk = new List<ConsoleCharacter>();
+
+        for (var i = 0; i < this.Length; i++)
         {
-            if (splitValue == null)
+            // Fast pre-check: do we have enough room to match?
+            var canMatch = i + splitValue.Length <= this.Length;
+
+            if (canMatch)
             {
-                throw new ArgumentNullException($"{nameof(splitValue)} cannot be null");
-            }
+                // Build only if the Value-by-Value check passes (cheap filter),
+                // then use comparer for the real equality (could include styling).
+                var matchChars = new List<ConsoleCharacter>(splitValue.Length);
+                var valuesMatch = true;
 
-            comparer = comparer ?? ConsoleStringEqualityComparer.Default;
-
-            List<ConsoleString> chunks = new List<ConsoleString>();
-            var currentChunk = new List<ConsoleCharacter>();
-
-            for (var i = 0; i < this.Length; i++)
-            {
-                List<ConsoleCharacter> splitMatch = new List<ConsoleCharacter>();
-
-                for (var j = i; i < this.Length && splitMatch.Count < splitValue.Length; j++)
+                for (var k = 0; k < splitValue.Length; k++)
                 {
-                    if (this[j].Value != splitValue[splitMatch.Count].Value)
+                    var c = this[i + k];
+                    if (c.Value != splitValue[k].Value)
                     {
+                        valuesMatch = false;
                         break;
                     }
-                    else
-                    {
-                        splitMatch.Add(this[j]);
-                    }
+                    matchChars.Add(c);
                 }
 
-                if (comparer.Equals(new ConsoleString(splitMatch), splitValue))
+                if (valuesMatch && comparer.Equals(new ConsoleString(matchChars), splitValue))
                 {
-                    if (currentChunk.Count > 0)
-                    {
-                        chunks.Add(new ConsoleString(currentChunk));
-                        currentChunk = new List<ConsoleCharacter>();
-                    }
-                    i += splitValue.Length - 1;
-                }
-                else
-                {
-                    currentChunk.Add(this[i]);
+                    // IMPORTANT: always add, even if empty
+                    chunks.Add(new ConsoleString(currentChunk));
+                    currentChunk = new List<ConsoleCharacter>();
+
+                    i += splitValue.Length - 1; // skip delimiter
+                    continue;
                 }
             }
 
-            if (currentChunk.Count > 0)
-            {
-                chunks.Add(new ConsoleString(currentChunk));
-            }
-
-            return chunks;
+            currentChunk.Add(this[i]);
         }
-        /*
-        /// <summary>
-        /// Converts this ConsoleString to a ConsoleBitmap. Tabs will be replaced with 4 spaces.
-        /// </summary>
-        /// <returns>a ConsoleBitmap whose height equals the number of lines of text in the input string and whose width equals that length of the longest line in the input string. </returns>
-        public ConsoleBitmap ToConsoleBitmap()
+
+        // IMPORTANT: always add the final chunk, even if empty
+        chunks.Add(new ConsoleString(currentChunk));
+
+        return chunks;
+    }
+
+    /// <summary>
+    /// Normalizes newlines, preserves color formatting, splits on explicit newlines,
+    /// and smart-wraps to maxWidth using spaces/punctuation and optional hyphenation.
+    /// </summary>
+    public ConsoleString WrapSmart(int maxWidth, int hyphenThreshold = 8)
+    {
+        if (maxWidth <= 0) throw new ArgumentOutOfRangeException(nameof(maxWidth));
+        if (Length == 0) return this;
+
+        var outputLines = new List<ConsoleString>(16);
+        var current = new List<ConsoleCharacter>(maxWidth + 8);
+
+        var lastBreak = -1;         // space OR punctuation
+        var lastNaturalBreak = -1;  // space only
+
+        var i = 0;
+        while (i < Length)
         {
-            var str = this.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\t", "    ");
-            var lines = str.Split("\n");
-            var h = lines.Count;
-            var w = lines.Select(l => l.Length).Max();
-            var ret = new ConsoleBitmap(w, h);
+            var ch = this[i];
 
-            var x = 0;
-            var y = 0;
-
-            foreach (var c in str)
+            if (ch.Value == '\r')
             {
-                if (c.Value == '\n')
-                {
-                    x = 0;
-                    y++;
-                }
-                else
-                {
-                    ret.Pixels[x++][y] = c;
-                }
+                if (i + 1 < Length && this[i + 1].Value == '\n') i++;
+                EmitLine(outputLines, current);
+                i++;
+                continue;
             }
 
-            return ret;
+            if (ch.Value == '\n')
+            {
+                EmitLine(outputLines, current);
+                i++;
+                continue;
+            }
+
+            current.Add(ch);
+
+            var pos = current.Count - 1;
+            if (ch.Value == ' ')
+            {
+                lastBreak = pos;
+                lastNaturalBreak = pos;
+            }
+            else if (IsPunctuation(ch.Value))
+            {
+                lastBreak = pos;
+            }
+
+            i++;
+
+            if (current.Count < maxWidth) continue;
+
+            var breakAt = FindBestBreakIndex(current, lastNaturalBreak, lastBreak);
+
+            if (breakAt < 0)
+            {
+                // no break candidate at all => hard break
+                outputLines.Add(BuildFrom(current, 0, maxWidth));
+                current.RemoveRange(0, maxWidth);
+                ResetBreakTracking(current, ref lastBreak, ref lastNaturalBreak);
+                continue;
+            }
+
+            // distance from limit is how far "back" we'd cut from maxWidth
+            var distanceFromLimit = maxWidth - breakAt;
+
+            var breakChar = breakAt >= 0 && breakAt < current.Count ? current[breakAt].Value : '\0';
+            var breakIsExistingHyphen = breakChar == '-';
+
+            // If the best break is "too far" back, hyphenate instead (unless already on a hyphen).
+            if (distanceFromLimit > hyphenThreshold && !breakIsExistingHyphen && maxWidth >= 2)
+            {
+                var take = maxWidth - 1; // room for hyphen
+                var line = BuildFrom(current, 0, take);
+
+                // Hyphen inherits formatting from the last taken char if possible
+                var hyphenStyle = take > 0 ? current[take - 1] : current[0];
+                line = line + WithSameStyle(hyphenStyle, '-');
+
+                outputLines.Add(TrimEndSpaces(line));
+
+                current.RemoveRange(0, take);
+                ResetBreakTracking(current, ref lastBreak, ref lastNaturalBreak);
+                SkipLeadingSpaces(current);
+                continue;
+            }
+
+            // Normal smart break (prefer space; punctuation breaks after punctuation)
+            var endExclusive = breakAt;
+
+            // if we’re breaking on punctuation (not a space), include it in the line
+            if (breakAt >= 0 && breakAt < current.Count && current[breakAt].Value != ' ')
+            {
+                endExclusive = breakAt + 1;
+            }
+
+            var emitted = BuildFrom(current, 0, endExclusive);
+            outputLines.Add(TrimEndSpaces(emitted));
+
+            current.RemoveRange(0, endExclusive);
+            ResetBreakTracking(current, ref lastBreak, ref lastNaturalBreak);
+            SkipLeadingSpaces(current);
         }
-        */
-        /// <summary>
-        /// Converts this ConsoleString into an html div tag that can be inserted into a web page and rendered by a web browser. 
-        /// 
-        /// The div will have:
-        /// 
-        ///   a class attribute set to 'powerargs-console-string'
-        ///   a style attribute set to font-family:Consolas and background-color set to the given background color
-        ///   
-        /// Each chunk of text that shares the same foreground and background color will be HTML encoded and then placed within a span tag inside
-        /// the main div. Each span will have a style property with a value for color and background-color. 
-        /// 
-        /// Newlines will be converted to br tags.
-        /// 
-        /// </summary>
-        /// <param name="divBackground">optionally set the background color of the div, defaults to the current Console's default background color</param>
-        /// <param name="indent">if true, the spans will be indented inside the parent div</param>
-        /// <param name="htmlEncode">if true, the function will html encode content before inserting markup</param>
-        /// <returns>a string that is a valid html div. Null inputs will result in a null return value. Empty string wi</returns>
-        public string ToHtmlDiv(RGB? divBackground = null, bool indent = false, bool htmlEncode = true)
+
+        // flush remainder (even empty => caller likely wants trailing newline behavior preserved;
+        // here we only flush if there is content; explicit newlines already emitted empty lines).
+        if (current.Count > 0)
+        {
+            outputLines.Add(TrimEndSpaces(BuildFrom(current, 0, current.Count)));
+        }
+
+        return JoinLines(outputLines);
+    }
+
+    private static void EmitLine(List<ConsoleString> outputLines, List<ConsoleCharacter> current)
+    {
+        // preserve blank lines
+        if (current.Count == 0)
+        {
+            outputLines.Add(new ConsoleString());
+            return;
+        }
+
+        outputLines.Add(TrimEndSpaces(BuildFrom(current, 0, current.Count)));
+        current.Clear();
+    }
+
+    private static int FindBestBreakIndex(List<ConsoleCharacter> current, int lastNaturalBreak, int lastBreak)
+    {
+        if (lastNaturalBreak >= 0) return lastNaturalBreak;
+        if (lastBreak >= 0) return lastBreak;
+        return -1;
+    }
+
+    private static void ResetBreakTracking(List<ConsoleCharacter> current, ref int lastBreak, ref int lastNaturalBreak)
+    {
+        lastBreak = -1;
+        lastNaturalBreak = -1;
+
+        // recompute within remaining buffer so subsequent wraps still find candidates
+        for (var j = 0; j < current.Count; j++)
+        {
+            var c = current[j].Value;
+            if (c == ' ')
+            {
+                lastBreak = j;
+                lastNaturalBreak = j;
+            }
+            else if (IsPunctuation(c))
+            {
+                lastBreak = j;
+            }
+        }
+    }
+
+    private static void SkipLeadingSpaces(List<ConsoleCharacter> current)
+    {
+        var k = 0;
+        while (k < current.Count && current[k].Value == ' ') k++;
+        if (k > 0) current.RemoveRange(0, k);
+    }
+
+    private static ConsoleString TrimEndSpaces(ConsoleString s)
+    {
+        var end = s.Length;
+        while (end > 0 && s[end - 1].Value == ' ') end--;
+        if (end == s.Length) return s;
+        return s.Substring(0, end);
+    }
+
+    private static bool IsPunctuation(char c) => c is ',' or '.' or ';' or ':' or '!' or '?' or '-';
+
+    // --- Builder helpers ---
+    // Adapt these 3 helpers to your actual ConsoleString internals if needed.
+
+    private static ConsoleString BuildFrom(List<ConsoleCharacter> chars, int start, int count)
+    {
+        if (count <= 0) return new ConsoleString();
+        var slice = new ConsoleCharacter[count];
+        chars.CopyTo(start, slice, 0, count);
+        return new ConsoleString(slice);
+    }
+
+    private static ConsoleString JoinLines(List<ConsoleString> lines)
+    {
+        if (lines.Count == 0) return new ConsoleString();
+
+        var ret = new ConsoleString();
+        for (var idx = 0; idx < lines.Count; idx++)
+        {
+            ret += lines[idx];
+            if (idx < lines.Count - 1) ret += "\n".ToConsoleString();
+        }
+        return ret;
+    }
+
+    private static ConsoleString WithSameStyle(ConsoleCharacter styleSource, char value) => new ConsoleString([new ConsoleCharacter(value, styleSource.ForegroundColor, styleSource.BackgroundColor)]);
+    /*
+    /// <summary>
+    /// Converts this ConsoleString to a ConsoleBitmap. Tabs will be replaced with 4 spaces.
+    /// </summary>
+    /// <returns>a ConsoleBitmap whose height equals the number of lines of text in the input string and whose width equals that length of the longest line in the input string. </returns>
+    public ConsoleBitmap ToConsoleBitmap()
+    {
+        var str = this.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\t", "    ");
+        var lines = str.Split("\n");
+        var h = lines.Count;
+        var w = lines.Select(l => l.Length).Max();
+        var ret = new ConsoleBitmap(w, h);
+
+        var x = 0;
+        var y = 0;
+
+        foreach (var c in str)
+        {
+            if (c.Value == '\n')
+            {
+                x = 0;
+                y++;
+            }
+            else
+            {
+                ret.Pixels[x++][y] = c;
+            }
+        }
+
+        return ret;
+    }
+    */
+    /// <summary>
+    /// Converts this ConsoleString into an html div tag that can be inserted into a web page and rendered by a web browser. 
+    /// 
+    /// The div will have:
+    /// 
+    ///   a class attribute set to 'powerargs-console-string'
+    ///   a style attribute set to font-family:Consolas and background-color set to the given background color
+    ///   
+    /// Each chunk of text that shares the same foreground and background color will be HTML encoded and then placed within a span tag inside
+    /// the main div. Each span will have a style property with a value for color and background-color. 
+    /// 
+    /// Newlines will be converted to br tags.
+    /// 
+    /// </summary>
+    /// <param name="divBackground">optionally set the background color of the div, defaults to the current Console's default background color</param>
+    /// <param name="indent">if true, the spans will be indented inside the parent div</param>
+    /// <param name="htmlEncode">if true, the function will html encode content before inserting markup</param>
+    /// <returns>a string that is a valid html div. Null inputs will result in a null return value. Empty string wi</returns>
+    public string ToHtmlDiv(RGB? divBackground = null, bool indent = false, bool htmlEncode = true)
         {
             var backgroundColor = divBackground.HasValue ? divBackground.Value : DefaultBackgroundColor;
             var str = this.Replace("\r\n", "\n").Replace("\r", "\n");
@@ -1995,6 +2195,8 @@ public class ConsoleStringEqualityComparer : IEqualityComparer<ConsoleString>, I
     /// <param name="obj">the string to hash</param>
     /// <returns>a hash code for the given string</returns>
     public int GetHashCode(string obj) => ValueComparer.GetHashCode(obj);
+
+ 
 }
 
 /// <summary>
@@ -2076,5 +2278,17 @@ public static class JsonConsoleString
         public RGB Booleans { get; set; } = new RGB(204, 255, 255);
         public RGB Null { get; set; } = new RGB(255, 204, 204);
         public RGB Other { get; set; } = RGB.Red;
+
+        public static JsonColors Light { get; } = new JsonColors
+        {
+            Structure = new RGB(110, 110, 110),
+            PropertyNames = new RGB(0, 92, 184),
+            StringLiterals = new RGB(163, 21, 21),
+            Numbers = new RGB(9, 134, 88),
+            Booleans = new RGB(0, 128, 128),
+            Null = new RGB(128, 128, 128),
+            Other = new RGB(128, 0, 128)
+        };
     }
+
 }
