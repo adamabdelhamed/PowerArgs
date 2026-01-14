@@ -9,7 +9,7 @@ namespace PowerArgs
     {
         internal static MethodInfo InvokeMainMethod(this object o)
         {
-            var method = o.GetType().GetMethod("Main");
+            var method = o.GetType().GetMethod("Main", BindingFlags.Instance | BindingFlags.Public);
             if (method == null) throw new InvalidArgDefinitionException("There is no Main() method in type " + o.GetType().Name);
             if (method.IsStatic) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must not be static");
             if (method.GetParameters().Length > 0) throw new InvalidArgDefinitionException("The Main() method in type '" + o.GetType().Name + "' must not take any parameters");
