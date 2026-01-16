@@ -604,6 +604,11 @@ namespace PowerArgs;
             characters = chars.ToArray();
         }
 
+        public ConsoleString(Span<ConsoleCharacter> chars)
+        {
+            characters = chars.ToArray();
+        }
+
 
         /// <summary>
         /// Create a ConsoleString given an initial text value and optional color info.
