@@ -185,7 +185,7 @@ public class PaintBuffer
         }
     }
 
-    public void AppendRunFromPixels(ConsoleCharacter[] pixels, int width, int startX, int y, int length)
+    public void AppendRunFromPixels(ReadOnlySpan<ConsoleCharacter> pixels, int width, int startX, int y, int length)
     {
         EnsureBigEnough(Length + length);
         int idx = y * width + startX;
