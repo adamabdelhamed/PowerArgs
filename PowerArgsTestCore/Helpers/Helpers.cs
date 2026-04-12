@@ -96,12 +96,12 @@ namespace ArgsTests
                 if (caseSensitive &&
                     ex.Message.Contains(expectedText) == false)
                 {
-                    Assert.Fail("Error message did not contain the expected case sensitive text. Actual<{0}>. Expected<{1}>", ex.Message, expectedText);
+                    Assert.Fail($"Error message did not contain the expected case sensitive text. Actual<{ex.Message}>. Expected<{expectedText}>");
                 }
                 else if (!caseSensitive &&
                     ex.Message.IndexOf(expectedText, StringComparison.CurrentCultureIgnoreCase) < 0)
                 {
-                    Assert.Fail("Error message did not contain the expected case insensitive text. Actual<{0}>. Expected<{1}>", ex.Message, expectedText);
+                    Assert.Fail($"Error message did not contain the expected case insensitive text. Actual<{ex.Message}>. Expected<{expectedText}>");
                 }
             };
         }
