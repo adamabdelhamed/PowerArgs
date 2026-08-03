@@ -76,6 +76,7 @@ namespace ArgsTests.GeneratedInvocationModels
         public string Name { get; set; }
 
         [ArgRange(1, 10)]
+        [DefaultValue(3)]
         public int Count { get; set; }
 
         [ArgPosition(1)]
@@ -109,7 +110,9 @@ namespace ArgsTests.GeneratedInvocationModels
         public partial CopyMode ReceivedMode { get; set; }
 
         [ArgActionMethod]
-        public Task Copy([ArgRequired, ArgDescription("Source value")] string source, int count, CopyMode mode)
+        [ArgExample("tool Copy input.txt", "Copies with generated defaults")]
+        [OmitFromUsageDocs]
+        public Task Copy([ArgRequired, ArgDescription("Source value"), ArgRegex(".+")] string source, [DefaultValue(2), ArgRange(1, 10)] int count, [ArgDefaultValue(CopyMode.Safe)] CopyMode mode)
         {
             Received = source;
             ReceivedCount = count;
@@ -186,6 +189,9 @@ namespace ArgsTests
             await result.InvokeAsync();
             Assert.AreSame(result.ActionArgs, result.Args.Received);
             Assert.ThrowsExactly<ValidationArgException>(() => Args.InvokeAction<GeneratedInvocationModels.ParameterizedActionArgs>("run", "-n", "Ada", "-Count", "11"));
+
+            result = Args.InvokeAction<GeneratedInvocationModels.ParameterizedActionArgs>("run", "-n", "Grace");
+            Assert.AreEqual(3, result.Args.Received.Count);
         }
 
         [TestMethod]
@@ -200,6 +206,18 @@ namespace ArgsTests
             Assert.AreEqual("Source value", result.Definition.SpecifiedAction.Arguments[0].Description);
             Assert.AreEqual(3, result.ActionParameters.Length);
             Assert.ThrowsExactly<MissingArgException>(() => Args.InvokeAction<GeneratedInvocationModels.DirectParameterActionArgs>("Copy", "-count", "4", "-mode", "Fast"));
+
+            result = Args.InvokeAction<GeneratedInvocationModels.DirectParameterActionArgs>("Copy", "-source", "defaults.txt");
+            Assert.AreEqual("defaults.txt", result.Args.Received);
+            Assert.AreEqual(2, result.Args.ReceivedCount);
+            Assert.AreEqual(GeneratedInvocationModels.CopyMode.Safe, result.Args.ReceivedMode);
+            Assert.AreEqual(2, result.ActionParameters[1]);
+            Assert.AreEqual(GeneratedInvocationModels.CopyMode.Safe, result.ActionParameters[2]);
+            Assert.IsTrue(result.Definition.SpecifiedAction.OmitFromUsage);
+            Assert.AreEqual(1, result.Definition.SpecifiedAction.Examples.Count);
+
+            Assert.ThrowsExactly<ValidationArgException>(() => Args.InvokeAction<GeneratedInvocationModels.DirectParameterActionArgs>("Copy", "-source", ""));
+            Assert.ThrowsExactly<ValidationArgException>(() => Args.InvokeAction<GeneratedInvocationModels.DirectParameterActionArgs>("Copy", "-source", "input.txt", "-count", "11"));
         }
 
         [TestMethod]

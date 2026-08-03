@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerArgs;
+using System.IO;
 
 namespace ArgsTests.GeneratedPipelineModels
 {
@@ -15,12 +16,58 @@ namespace ArgsTests.GeneratedPipelineModels
         public partial bool Bool { get; set; }
     }
 
-    public partial class UnsupportedMetadataArgs
+    public partial class RegexArgs
     {
         [ArgRequired]
-        [ArgDescription("This metadata is not generated in the first slice")]
-        [ArgRegex(".+")]
+        [ArgDescription("A generated regular expression argument")]
+        [ArgRegex(@"\d{3}-\d{2}-\d{4}", "Invalid social security number")]
         public partial string RequiredValue { get; set; }
+    }
+
+    public partial class UnsupportedMetadataArgs
+    {
+        [ArgCantBeCombinedWith(nameof(SecondValue))]
+        public partial string FirstValue { get; set; }
+
+        public partial string SecondValue { get; set; }
+    }
+
+    public enum GeneratedMode
+    {
+        Fast,
+        Safe,
+    }
+
+    public partial class DefaultValueArgs
+    {
+        [DefaultValue(GeneratedMode.Safe)]
+        public partial GeneratedMode Mode { get; set; }
+
+        [ArgDefaultValue(7)]
+        [ArgRange(1, 10)]
+        public partial int Count { get; set; }
+    }
+
+    public partial class ExistingPathArgs
+    {
+        [ArgExistingFile]
+        public partial string File { get; set; }
+
+        [ArgExistingDirectory]
+        public partial string Directory { get; set; }
+    }
+
+    [ArgDescription("Generated metadata model")]
+    [ArgProductName("PowerArgs Generated Tests")]
+    [ArgProductVersion("1.2.3")]
+    [ArgCopyright("Copyright generated")]
+    [ArgExample("tool -visible value", "Shows generated metadata", Title = "Generated example")]
+    public partial class UsageMetadataArgs
+    {
+        public partial string Visible { get; set; }
+
+        [OmitFromUsageDocs]
+        public partial string Secret { get; set; }
     }
 
     public partial class ConditionalRequiredArgs
@@ -136,14 +183,78 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void UnsupportedMetadataFallsBackToReflectionPipeline()
+        public void GeneratedArgRegexMatchesCoreValidatorBehavior()
         {
-            var parsed = Args.Parse<GeneratedPipelineModels.UnsupportedMetadataArgs>("-RequiredValue", "hello");
+            var parsed = Args.Parse<GeneratedPipelineModels.RegexArgs>("-RequiredValue", "111-22-3333");
 
-            Assert.AreEqual("hello", parsed.RequiredValue);
+            Assert.AreEqual("111-22-3333", parsed.RequiredValue);
+            Assert.IsTrue(GeneratedArgumentModelRegistry.IsGenerated<GeneratedPipelineModels.RegexArgs>());
+            Assert.IsTrue(Args.GetAmbientDefinition().UsesGeneratedPipeline);
+
+            var exception = Assert.ThrowsExactly<ValidationArgException>(() => Args.Parse<GeneratedPipelineModels.RegexArgs>("-RequiredValue", "invalid"));
+            Assert.AreEqual("Invalid social security number: invalid", exception.Message);
+        }
+
+        [TestMethod]
+        public void UnsupportedCrossArgumentMetadataFallsBackAtCompileTime()
+        {
+            var parsed = Args.Parse<GeneratedPipelineModels.UnsupportedMetadataArgs>("-FirstValue", "hello");
+
+            Assert.AreEqual("hello", parsed.FirstValue);
             Assert.IsFalse(GeneratedArgumentModelRegistry.IsGenerated<GeneratedPipelineModels.UnsupportedMetadataArgs>());
             Assert.IsFalse(Args.GetAmbientDefinition().UsesGeneratedPipeline);
-            Assert.AreEqual("This metadata is not generated in the first slice", Args.GetAmbientDefinition().Arguments[0].Description);
+        }
+
+        [TestMethod]
+        public void GeneratedDefaultsMatchCoreBehavior()
+        {
+            var parsed = Args.Parse<GeneratedPipelineModels.DefaultValueArgs>();
+
+            Assert.AreEqual(GeneratedPipelineModels.GeneratedMode.Safe, parsed.Mode);
+            Assert.AreEqual(7, parsed.Count);
+            Assert.AreEqual(GeneratedPipelineModels.GeneratedMode.Safe, Args.GetAmbientDefinition().Arguments[0].DefaultValue);
+            Assert.AreEqual(7, Args.GetAmbientDefinition().Arguments[1].DefaultValue);
+            Assert.IsTrue(Args.GetAmbientDefinition().UsesGeneratedPipeline);
+
+            parsed = Args.Parse<GeneratedPipelineModels.DefaultValueArgs>("-Mode", "Fast", "-Count", "4");
+            Assert.AreEqual(GeneratedPipelineModels.GeneratedMode.Fast, parsed.Mode);
+            Assert.AreEqual(4, parsed.Count);
+        }
+
+        [TestMethod]
+        public void GeneratedExistingPathValidatorsNormalizeAndRejectPaths()
+        {
+            var file = typeof(GeneratedPipelineTests).Assembly.Location;
+            var directory = Path.GetDirectoryName(file);
+            var parsed = Args.Parse<GeneratedPipelineModels.ExistingPathArgs>("-File", file, "-Directory", directory);
+
+            Assert.AreEqual(Path.GetFullPath(file), parsed.File);
+            Assert.AreEqual(Path.GetFullPath(directory), parsed.Directory);
+            Assert.IsTrue(Args.GetAmbientDefinition().UsesGeneratedPipeline);
+
+            var fileException = Assert.ThrowsExactly<ValidationArgException>(() => Args.Parse<GeneratedPipelineModels.ExistingPathArgs>("-File", "not-a-real-file"));
+            Assert.AreEqual("File not found - not-a-real-file", fileException.Message);
+            Assert.IsInstanceOfType<FileNotFoundException>(fileException.InnerException);
+
+            var directoryException = Assert.ThrowsExactly<ValidationArgException>(() => Args.Parse<GeneratedPipelineModels.ExistingPathArgs>("-Directory", "not-a-real-directory"));
+            Assert.AreEqual("Directory not found: 'not-a-real-directory'", directoryException.Message);
+            Assert.IsInstanceOfType<DirectoryNotFoundException>(directoryException.InnerException);
+        }
+
+        [TestMethod]
+        public void GeneratedUsageMetadataMatchesReflectedDefinitions()
+        {
+            Args.Parse<GeneratedPipelineModels.UsageMetadataArgs>();
+            var definition = Args.GetAmbientDefinition();
+
+            Assert.AreEqual("Generated metadata model", definition.Description);
+            Assert.AreEqual("PowerArgs Generated Tests", definition.ProductName);
+            Assert.AreEqual("1.2.3", definition.ProductVersion);
+            Assert.AreEqual("Copyright generated", definition.Copyright);
+            Assert.AreEqual(1, definition.Examples.Count);
+            Assert.AreEqual("Generated example", definition.Examples[0].Title);
+            Assert.IsFalse(definition.Arguments[1].IncludeInUsage);
+            Assert.IsTrue(definition.UsesGeneratedPipeline);
         }
 
         [TestMethod]

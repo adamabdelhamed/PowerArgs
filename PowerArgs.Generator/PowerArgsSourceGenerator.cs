@@ -185,19 +185,19 @@ namespace PowerArgs.Generator
         private static bool IsSupportedTypeAttribute(AttributeData attribute)
         {
             var name = attribute.AttributeClass?.Name;
-            return name == "ArgDescription" || name == "ArgIgnoreCase" || name == "ArgEnforceCase";
+            return name == "ArgDescription" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "ArgExample" || name == "ArgProductName" || name == "ArgProductVersion" || name == "ArgCopyright";
         }
 
         private static bool IsSupportedPropertyAttribute(AttributeData attribute)
         {
             var name = attribute.AttributeClass?.Name;
-            return name == "ArgRequired" || name == "ArgShortcut" || name == "ArgDescription" || name == "ArgPosition" || name == "ArgIgnoreAttribute" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "ArgRange";
+            return name == "ArgRequired" || name == "ArgShortcut" || name == "ArgDescription" || name == "ArgPosition" || name == "ArgIgnoreAttribute" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "ArgRange" || name == "ArgRegex" || name == "ArgExistingFile" || name == "ArgExistingDirectory" || name == "DefaultValueAttribute" || name == "ArgDefaultValueAttribute" || name == "OmitFromUsageDocs" || name == "ArgExample";
         }
 
         private static bool IsSupportedActionAttribute(AttributeData attribute)
         {
             var name = attribute.AttributeClass?.Name;
-            return name == "ArgActionMethod" || name == "ArgShortcut" || name == "ArgDescription" || name == "ArgIgnoreCase" || name == "ArgEnforceCase";
+            return name == "ArgActionMethod" || name == "ArgShortcut" || name == "ArgDescription" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "OmitFromUsageDocs" || name == "ArgExample";
         }
 
         private static bool IsTask(ITypeSymbol type) => type.ToDisplayString() == "System.Threading.Tasks.Task";
@@ -372,7 +372,12 @@ namespace PowerArgs.Generator
         {
             var actionArgumentType = plan.UsesArgumentModel ? plan.Method.Parameters[0].Type.ToDisplayString(TypeFormat) : "global::System.Object[]";
             if (plan.UsesArgumentModel) source.Append("static () => new ").Append(actionArgumentType).Append("(), ");
-            else source.Append("static () => new global::System.Object[").Append(plan.ParameterArguments.Count).Append("], ");
+            else
+            {
+                source.Append("static () => new global::System.Object[] { ");
+                foreach (var argument in plan.ParameterArguments) source.Append("default(").Append(argument.Parameter.Type.ToDisplayString(TypeFormat)).Append(")!, ");
+                source.Append("}, ");
+            }
             source.Append("static (arguments, index, value) => { ");
             if (plan.UsesArgumentModel)
             {
@@ -497,7 +502,7 @@ namespace PowerArgs.Generator
                 var propertyIgnoreCase = GetIgnoreCase(property.GetAttributes(), typeIgnoreCase);
                 var positionAttribute = property.GetAttributes().FirstOrDefault(IsArgPosition);
                 var position = positionAttribute == null ? -1 : Convert.ToInt32(positionAttribute.ConstructorArguments[0].Value, System.Globalization.CultureInfo.InvariantCulture);
-                plans.Add(new ArgumentPlan(property, aliases, includePropertyName, automaticShortcut, property.GetAttributes().Any(IsArgRequired), position, propertyIgnoreCase, property.GetAttributes().Any(IsArgRange)));
+                plans.Add(new ArgumentPlan(property, aliases, includePropertyName, automaticShortcut, property.GetAttributes().Any(IsArgRequired), position, propertyIgnoreCase, property.GetAttributes().Any(RequiresValidation)));
             }
             return plans;
         }
@@ -536,7 +541,7 @@ namespace PowerArgs.Generator
                             var shortcut = NormalizeShortcut(GetShortcutValue(shortcutAttribute));
                             if (shortcut != null) parameterAliases.Add(shortcut);
                         }
-                        parameterArguments.Add(new ActionParameterPlan(parameter, parameterAliases, parameter.GetAttributes().Any(IsArgRequired), parameterIndex + 1, GetIgnoreCase(parameter.GetAttributes(), typeIgnoreCase), parameter.GetAttributes().Any(IsArgRange)));
+                        parameterArguments.Add(new ActionParameterPlan(parameter, parameterAliases, parameter.GetAttributes().Any(IsArgRequired), parameterIndex + 1, GetIgnoreCase(parameter.GetAttributes(), typeIgnoreCase), parameter.GetAttributes().Any(RequiresValidation)));
                     }
                 }
                 plans.Add(new ActionPlan(method, aliases, includeMethodName, GetIgnoreCase(method.GetAttributes(), typeIgnoreCase), usesArgumentModel, argumentProperties, parameterArguments));
@@ -558,6 +563,13 @@ namespace PowerArgs.Generator
         private static bool IsArgShortcut(AttributeData attribute) => attribute.AttributeClass?.Name == "ArgShortcut" && IsPowerArgsAttribute(attribute);
         private static bool IsArgPosition(AttributeData attribute) => attribute.AttributeClass?.Name == "ArgPosition" && IsPowerArgsAttribute(attribute);
         private static bool IsArgRange(AttributeData attribute) => attribute.AttributeClass?.Name == "ArgRange" && IsPowerArgsAttribute(attribute);
+
+        private static bool RequiresValidation(AttributeData attribute)
+        {
+            if (IsPowerArgsAttribute(attribute) == false) return false;
+            var name = attribute.AttributeClass?.Name;
+            return name == "ArgRange" || name == "ArgRegex" || name == "ArgExistingFile" || name == "ArgExistingDirectory";
+        }
 
         private static bool IsShortcutsOnly(AttributeData attribute)
         {

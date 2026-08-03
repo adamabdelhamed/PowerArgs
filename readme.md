@@ -63,9 +63,19 @@ public partial class MyGeneratedArgs
 }
 ```
 
-The generated pipeline currently supports `[ArgRequired]`, `[ArgShortcut]`, `[ArgPosition]`, `[ArgDescription]`, `[ArgIgnore]`, `[ArgIgnoreCase]`/`[ArgEnforceCase]`, and `[ArgRange]`. Supported scalar properties use a direct generated parser that avoids reflected scaffold discovery, activation, property assignment, and the general hook/alias processing machinery. `InvokeMain` and `InvokeAction` also avoid reflection for `void` and `Task` methods. Generated actions may be parameterless, take a single action-argument object with supported public scalar properties, or take multiple directly revivable scalar parameters. Their argument metadata, shortcuts, descriptions, positions, validation, and case rules are generated too. Pipeline selection is made entirely from compile-time model information: a registered model stays generated for every runtime input, while unsupported attributes, property types, or action signatures leave the model on the existing reflection pipeline. If the scaffold uses another PowerArgs attribute, the generator still supplies the partial property bodies but does not register that model.
+Supported scalar properties use a direct parser that avoids reflected scaffold discovery, activation, property assignment, and the general hook/alias processing machinery. The generated pipeline currently supports:
 
-Use `GeneratedArgumentModelRegistry.IsGenerated<MyGeneratedArgs>()` or `Args.GetAmbientDefinition().UsesGeneratedPipeline` to verify which path was selected. Run `dotnet run -c Release --project PowerArgs.Benchmarks` from the repository root to compare both paths on the current machine.
+- Required, naming, and layout metadata: `[ArgRequired]` without conditional/prompt options, `[ArgShortcut]`, `[ArgPosition]`, and `[ArgIgnore]`.
+- Parsing and validation metadata: `[ArgIgnoreCase]`, `[ArgEnforceCase]`, `[ArgRange]`, `[ArgRegex]`, `[ArgExistingFile]`, and `[ArgExistingDirectory]`.
+- Defaults: `[DefaultValue]` and `[ArgDefaultValue]` on properties and action parameters.
+- Usage metadata: `[ArgDescription]`, `[ArgExample]`, `[OmitFromUsageDocs]`, `[ArgProductName]`, `[ArgProductVersion]`, and `[ArgCopyright]` where those attributes are valid.
+- Directly revivable scalar types: strings, booleans, enums, byte/int/long, float/double, `DateTime`, `Guid`, `Uri`, `IPAddress`, and `ConsoleString`.
+
+`InvokeMain` and `InvokeAction` also avoid reflection for `void` and `Task` methods. Generated actions may be parameterless, take a single action-argument object with supported public scalar properties, or take multiple directly revivable scalar parameters. Their defaults, validation, shortcuts, descriptions, positions, usage metadata, and case rules are generated too.
+
+Pipeline selection is entirely static. At compile time the generator either registers the whole model or leaves it on the existing reflection pipeline; runtime argument syntax or values never decide whether reflection is used. Conditional/prompting requirements, collections, custom revivers and hooks, cross-argument validators, inherited argument models, and unsupported action signatures currently use the reflection pipeline. In that case the generator still supplies partial property bodies but does not register the model.
+
+The normal PowerArgs NuGet package includes the generator as an analyzer, so consumers do not need a second package or setup path. Use `GeneratedArgumentModelRegistry.IsGenerated<MyGeneratedArgs>()` or `Args.GetAmbientDefinition().UsesGeneratedPipeline` to verify which path was selected. Run `dotnet run -c Release --project PowerArgs.Benchmarks` from the repository root to compare both paths on the current machine.
 
 Here's the same example that lets PowerArgs do a little more for you.  The application logic is factored out of the Program class and user exceptions are handled automatically.  The way exceptions are handled is that any exception deriving from ArgException will be treated as user error.  PowerArgs' built in validation system always throws these type of exceptions when a validation error occurs. PowerArgs will display the message as well as auto-generated usage documentation for your program.  All other exceptions will still bubble up and need to be handled by your code.
 

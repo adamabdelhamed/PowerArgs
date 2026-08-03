@@ -64,6 +64,7 @@ namespace PowerArgs
                 PopulateArgument(model, definition, instance, spec, argumentIndex, argumentValue, specified);
             }
 
+            ApplyDefaults(model, definition, instance, specs, specified);
             ValidateRequired(specs, specified);
 
             value = instance;
@@ -130,6 +131,8 @@ namespace PowerArgs
                 else PopulateActionArgument(action, actionDefinition, actionValues!, spec, actionIndex, argumentValue, actionSpecified);
             }
 
+            ApplyDefaults(model, definition, parent, globalSpecs, globalSpecified);
+            ApplyActionDefaults(action, actionDefinition, actionValues, actionSpecs, actionSpecified);
             ValidateRequired(globalSpecs, globalSpecified);
             ValidateRequired(actionSpecs, actionSpecified);
             value = parent;
@@ -144,6 +147,25 @@ namespace PowerArgs
             specified[argumentIndex] = 1;
             definition.Arguments[argumentIndex].RevivedValue = revived;
             action.SetArgument!(instance, argumentIndex, revived);
+        }
+
+        private static void ApplyDefaults(GeneratedArgumentModel model, CommandLineArgumentsDefinition definition, object instance, GeneratedArgumentSpec[] specs, Span<byte> specified)
+        {
+            for (var i = 0; i < specs.Length; i++)
+            {
+                if (specified[i] != 0 || definition.Arguments[i].HasDefaultValue == false) continue;
+                PopulateArgument(model, definition, instance, specs[i], i, definition.Arguments[i].DefaultValue.ToString()!, specified);
+            }
+        }
+
+        private static void ApplyActionDefaults(GeneratedActionSpec action, CommandLineAction definition, object? instance, GeneratedArgumentSpec[] specs, Span<byte> specified)
+        {
+            if (instance == null) return;
+            for (var i = 0; i < specs.Length; i++)
+            {
+                if (specified[i] != 0 || definition.Arguments[i].HasDefaultValue == false) continue;
+                PopulateActionArgument(action, definition, instance, specs[i], i, definition.Arguments[i].DefaultValue.ToString()!, specified);
+            }
         }
 
         private static void ValidateRequired(GeneratedArgumentSpec[] specs, Span<byte> specified)
