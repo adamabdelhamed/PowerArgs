@@ -584,6 +584,12 @@ namespace ArgsTests
             Assert.AreEqual("Adam", split[0].StringValue);
             Assert.AreEqual("Abdelhamed", split[1].StringValue);
 
+            // Leading, trailing, and repeated delimiters should not produce empty chunks
+            split = "   Adam   Abdelhamed   ".ToConsoleString().Split(" ".ToConsoleString());
+            Assert.AreEqual(2, split.Count);
+            Assert.AreEqual("Adam", split[0].StringValue);
+            Assert.AreEqual("Abdelhamed", split[1].StringValue);
+
             // It won't split on the space here because the style is different
             split = ("Adam".ToConsoleString() + " ".ToYellow() + "Abdelhamed".ToConsoleString()).Split(" ".ToConsoleString());
             Assert.AreEqual(1, split.Count);

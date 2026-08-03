@@ -25,14 +25,8 @@ namespace PowerArgs
         /// </summary>
         public static T Attr<T>(this MemberInfo info)
         {
-            if (info.HasAttr<T>())
-            {
-                return info.Attrs<T>()[0];
-            }
-            else
-            {
-                return default;
-            }
+            var attributes = info.Attrs<T>();
+            return attributes.Count > 0 ? attributes[0] : default;
         }
 
         /// <summary>

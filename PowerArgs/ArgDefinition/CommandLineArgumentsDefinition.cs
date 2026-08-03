@@ -17,6 +17,14 @@ namespace PowerArgs
         private string exeName;
 
         private AttrOverride overrides;
+        private bool scaffoldDeclaresHooks;
+
+        internal GeneratedArgumentModel? GeneratedArgumentModel { get; private set; }
+
+        /// <summary>
+        /// Returns true when this definition was produced by the source-generated, reflection-free model pipeline.
+        /// </summary>
+        public bool UsesGeneratedPipeline => GeneratedArgumentModel != null;
 
         public bool ValidationEnabled { get; set; } = true;
 
@@ -441,12 +449,24 @@ namespace PowerArgs
         /// Creates a command line arguments definition and infers things like Arguments, Actions, etc. from the type's metadata.
         /// </summary>
         /// <param name="t">The argument scaffold type used to infer the definition</param>
-        public CommandLineArgumentsDefinition (Type t) : this()
+        public CommandLineArgumentsDefinition(Type t) : this(t, false)
+        {
+        }
+
+        internal CommandLineArgumentsDefinition(Type t, bool useReflection) : this()
         {
             ArgumentScaffoldType = t;
+            GeneratedArgumentModel = useReflection ? null : GeneratedArgumentModelRegistry.Find(t);
+            if (GeneratedArgumentModel != null)
+            {
+                GeneratedArgumentModel.ConfigureDefinition(this);
+                return;
+            }
+
             Arguments.AddRange(FindCommandLineArguments(t));
             Actions.AddRange(FindCommandLineActions(t));
             Metadata.AddRange(t.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineArgumentsDefinitionMetadata>());
+            scaffoldDeclaresHooks = ReflectionMemberCache.GetPublicInstanceProperties(t).Any(property => property.HasAttr<ArgHook>());
         }
 
         /// <summary>
@@ -468,13 +488,15 @@ namespace PowerArgs
         /// <returns>The first action that matches the key.</returns>
         public CommandLineAction FindMatchingAction(string key, bool throwIfMoreThanOneMatch = false)
         {
-            var match = from a in Actions where a.IsMatch(key) select a;
-            if (match.Count() > 1 && throwIfMoreThanOneMatch)
+            CommandLineAction match = null;
+            for (var i = 0; i < Actions.Count; i++)
             {
-                throw new InvalidArgDefinitionException("The key '" + key + "' matches more than one action");
+                var action = Actions[i];
+                if (action.IsMatch(key) == false) continue;
+                if (match != null && throwIfMoreThanOneMatch) throw new InvalidArgDefinitionException("The key '" + key + "' matches more than one action");
+                if (match == null) match = action;
             }
-
-            return match.FirstOrDefault();
+            return match;
         }
 
         /// <summary>
@@ -511,13 +533,14 @@ namespace PowerArgs
 
         internal static CommandLineArgument FindMatchingArgument(string key, bool throwIfMoreThanOneMatch, IEnumerable<CommandLineArgument> searchSpace)
         {
-            var match = from a in searchSpace where a.IsMatch(key) select a;
-            if (match.Count() > 1 && throwIfMoreThanOneMatch)
+            CommandLineArgument match = null;
+            foreach (var argument in searchSpace)
             {
-                throw new InvalidArgDefinitionException("The key '" + key + "' matches more than one argument");
+                if (argument.IsMatch(key) == false) continue;
+                if (match != null && throwIfMoreThanOneMatch) throw new InvalidArgDefinitionException("The key '" + key + "' matches more than one argument");
+                if (match == null) match = argument;
             }
-
-            return match.FirstOrDefault();
+            return match;
         }
 
         /// <summary>
@@ -564,15 +587,58 @@ namespace PowerArgs
         public void Clean()
         {
             SpecifiedAction = null;
-            foreach(var arg in AllGlobalAndActionArguments)
+            for (var i = 0; i < Arguments.Count; i++)
             {
+                var arg = Arguments[i];
                 arg.RevivedValue = null;
                 arg.RevivedValueOverride = null;
             }
+            for (var actionIndex = 0; actionIndex < Actions.Count; actionIndex++)
+            {
+                var actionArguments = Actions[actionIndex].Arguments;
+                for (var argumentIndex = 0; argumentIndex < actionArguments.Count; argumentIndex++)
+                {
+                    actionArguments[argumentIndex].RevivedValue = null;
+                    actionArguments[argumentIndex].RevivedValueOverride = null;
+                }
+            }
+        }
+
+        internal bool HasAnyHooks()
+        {
+            if (scaffoldDeclaresHooks) return true;
+            for (var i = 0; i < Metadata.Count; i++) if (Metadata[i] is ArgHook) return true;
+            for (var i = 0; i < Arguments.Count; i++)
+            {
+                var metadata = Arguments[i].Metadata;
+                for (var metadataIndex = 0; metadataIndex < metadata.Count; metadataIndex++) if (metadata[metadataIndex] is ArgHook) return true;
+            }
+            for (var actionIndex = 0; actionIndex < Actions.Count; actionIndex++)
+            {
+                var action = Actions[actionIndex];
+                for (var argumentIndex = 0; argumentIndex < action.Arguments.Count; argumentIndex++)
+                {
+                    var metadata = action.Arguments[argumentIndex].Metadata;
+                    for (var metadataIndex = 0; metadataIndex < metadata.Count; metadataIndex++) if (metadata[metadataIndex] is ArgHook) return true;
+                }
+            }
+            return false;
         }
 
         internal void SetPropertyValues(object o)
         {
+            if (GeneratedArgumentModel != null)
+            {
+                for (var i = 0; i < Arguments.Count; i++)
+                {
+                    if (Arguments[i].RevivedValue != null)
+                    {
+                        GeneratedArgumentModel.SetValue(o, i, Arguments[i].RevivedValue);
+                    }
+                }
+                return;
+            }
+
             foreach (var argument in Arguments)
             {
                 var property = argument.Source as PropertyInfo;
@@ -591,7 +657,7 @@ namespace PowerArgs
             {
                 if (action.Aliases.Count == 0) throw new InvalidArgDefinitionException("One of your actions has no aliases");
                 ValidateArguments(Arguments.Union(action.Arguments));
-                if (action.ActionMethod == null) throw new InvalidArgDefinitionException("The action '"+action.DefaultAlias+"' has no ActionMethod defined");
+                if (action.ActionMethod == null && action.HasGeneratedInvoker == false) throw new InvalidArgDefinitionException("The action '"+action.DefaultAlias+"' has no ActionMethod defined");
             }
         }
 
@@ -600,11 +666,9 @@ namespace PowerArgs
             var knownAliases = new List<string>();
             foreach (var argument in Arguments) knownAliases.AddRange(argument.Aliases);
 
-            BindingFlags flags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public;
-
-            var actions = (from p in t.GetProperties(flags)
-                           where  CommandLineAction.IsActionImplementation(p)
-                           select CommandLineAction.Create(p, knownAliases)).ToList();
+            var actionProperties = ReflectionMemberCache.GetActionProperties(t);
+            var actions = new List<CommandLineAction>(actionProperties.Length);
+            for (var actionPropertyIndex = 0; actionPropertyIndex < actionProperties.Length; actionPropertyIndex++) actions.Add(CommandLineAction.Create(actionProperties[actionPropertyIndex], knownAliases));
 
             List<Type> typesToSearchForActions = new List<Type>() { t };
 
@@ -618,7 +682,7 @@ namespace PowerArgs
             foreach (var typeToSearch in typesToSearchForActions)
             {
                 var requireStatic = typeToSearch != t;
-                foreach (var method in typeToSearch.GetMethods(flags).Where(m => CommandLineAction.IsActionImplementation(m)))
+                foreach (var method in ReflectionMemberCache.GetActionMethods(typeToSearch))
                 {
                     if(requireStatic && method.IsStatic == false)
                     {
@@ -626,7 +690,13 @@ namespace PowerArgs
                     }
 
                     var action = CommandLineAction.Create(method, knownAliases.ToList());
-                    var matchingPropertyBasedAction = actions.Where(a => a.Aliases.First() == action.Aliases.First()).SingleOrDefault();
+                    CommandLineAction matchingPropertyBasedAction = null;
+                    for (var actionIndex = 0; actionIndex < actions.Count; actionIndex++)
+                    {
+                        if (actions[actionIndex].Aliases.First() != action.Aliases.First()) continue;
+                        if (matchingPropertyBasedAction != null) throw new InvalidOperationException("Sequence contains more than one matching element");
+                        matchingPropertyBasedAction = actions[actionIndex];
+                    }
                     if (matchingPropertyBasedAction != null) continue;
                     actions.Add(action);
                 }
@@ -638,23 +708,19 @@ namespace PowerArgs
 
         private static List<CommandLineArgument> FindCommandLineArguments(Type t)
         {
-            BindingFlags flags = BindingFlags.Instance | BindingFlags.Public;
-
             var knownAliases = new List<string>();
 
-            foreach (var prop in t.GetProperties(flags))
+            var properties = ReflectionMemberCache.GetPublicInstanceProperties(t);
+            foreach (var prop in properties)
             {
                 // This makes sure that explicit aliases get put into the known aliases before any auto generated aliases
                 knownAliases.AddRange(prop.Attrs<ArgShortcut>().Select(s => s.Shortcut));
             }
 
             var ret = new List<CommandLineArgument>();
-            foreach(var p in t.GetProperties(flags))
+            foreach(var p in ReflectionMemberCache.GetArgumentProperties(t))
             {
-                if(CommandLineArgument.IsArgument(p))
-                {
-                    ret.Add(CommandLineArgument.Create(p, knownAliases));
-                }
+                ret.Add(CommandLineArgument.Create(p, knownAliases));
             }
 
             return ret;
@@ -687,7 +753,11 @@ namespace PowerArgs
             {
                 foreach (var alias in argument.Aliases)
                 {
-                    if (knownAliases.Contains(alias, new CaseAwareStringComparer(argument.IgnoreCase))) throw new InvalidArgDefinitionException("Duplicate alias '" + alias + "' on argument '" + argument.Aliases.First() + "'");
+                    var comparison = argument.IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                    for (var knownAliasIndex = 0; knownAliasIndex < knownAliases.Count; knownAliasIndex++)
+                    {
+                        if (string.Equals(knownAliases[knownAliasIndex], alias, comparison)) throw new InvalidArgDefinitionException("Duplicate alias '" + alias + "' on argument '" + argument.Aliases.First() + "'");
+                    }
                     knownAliases.Add(alias);
                 }
             }

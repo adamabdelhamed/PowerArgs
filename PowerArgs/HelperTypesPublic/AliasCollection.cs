@@ -17,14 +17,17 @@ namespace PowerArgs
         private class AliasCollectionEnumerator : IEnumerator<string>
         {
             private AliasCollection _collection;
-            private IEnumerator<string> _currentEnumerator;
+            private List<string> _metadata;
+            private int _overrideIndex;
+            private int _metadataIndex;
             private int _state; // 0: overrides, 1: metadata, 2: done
             private string _current;
 
             public AliasCollectionEnumerator(AliasCollection collection)
             {
                 _collection = collection;
-                _currentEnumerator = collection.overrides.GetEnumerator();
+                _overrideIndex = -1;
+                _metadataIndex = -1;
                 _state = 0;
                 _current = null;
             }
@@ -38,31 +41,29 @@ namespace PowerArgs
                 // Handle overrides
                 if (_state == 0)
                 {
-                    if (_currentEnumerator.MoveNext())
+                    _overrideIndex++;
+                    if (_overrideIndex < _collection.overrides.Count)
                     {
-                        _current = _currentEnumerator.Current;
+                        _current = _collection.overrides[_overrideIndex];
                         return true;
                     }
-                    // Move to the next state (metadata)
-                    _currentEnumerator.Dispose();
-                    _currentEnumerator = _collection.metadataEval().GetEnumerator();
+                    _metadata = _collection.metadataEval();
                     _state = 1;
                 }
 
                 // Handle metadata
                 if (_state == 1)
                 {
-                    if (_currentEnumerator.MoveNext())
+                    while (++_metadataIndex < _metadata.Count)
                     {
-                        _current = _currentEnumerator.Current;
+                        _current = _metadata[_metadataIndex];
                         // Move default alias to the front dynamically if needed
                         if (_collection._defaultAlias != null && _current == _collection._defaultAlias)
                         {
-                            return MoveNext(); // Skip this as it will be handled in the next step
+                            continue; // Skip this as it will be handled in the next step
                         }
                         return true;
                     }
-                    _currentEnumerator.Dispose();
                     _state = 2;
                 }
 
@@ -81,15 +82,15 @@ namespace PowerArgs
 
             public void Reset()
             {
-                _currentEnumerator?.Dispose();
-                _currentEnumerator = _collection.overrides.GetEnumerator();
+                _metadata = null;
+                _overrideIndex = -1;
+                _metadataIndex = -1;
                 _state = 0;
                 _current = null;
             }
 
             public void Dispose()
             {
-                _currentEnumerator?.Dispose();
             }
         }
 
@@ -124,6 +125,9 @@ namespace PowerArgs
         Func<List<string>> metadataEval;
         Func<bool> ignoreCaseEval;
 
+        internal static readonly List<ArgShortcut> EmptyShortcutMetadata = new List<ArgShortcut>();
+        private static readonly List<string> EmptyMetadataAliases = new List<string>();
+
 
         private AliasCollection(Func<List<string>> metadataEval, Func<bool> ignoreCaseEval)
         {
@@ -141,6 +145,8 @@ namespace PowerArgs
             {
                 // Get the list of ArgShortcut objects from the eval function
                 List<ArgShortcut> shortcuts = eval();
+
+                if (shortcuts.Count == 0) return EmptyMetadataAliases;
 
                 // Allocate only one list for the result
                 List<string> ret = new List<string>();

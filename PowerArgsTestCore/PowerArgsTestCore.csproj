@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PowerArgs\PowerArgs.csproj" />
+    <ProjectReference Include="..\PowerArgs.Generator\PowerArgs.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

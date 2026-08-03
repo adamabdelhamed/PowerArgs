@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace PowerArgs
 {
@@ -29,6 +30,13 @@ namespace PowerArgs
     /// </summary>
     public class ArgAction
     {
+        private sealed class ActionPropertyResult
+        {
+            internal PropertyInfo Property { get; }
+            internal ActionPropertyResult(PropertyInfo property) => Property = property;
+        }
+
+        private static readonly ConcurrentDictionary<Type, ActionPropertyResult> ActionProperties = new ConcurrentDictionary<Type, ActionPropertyResult>();
         // TODO - Consider deprecating some of these fields since most of the data you want lives in the definition
 
         /// <summary>
@@ -71,6 +79,8 @@ namespace PowerArgs
 
 
         internal MethodInfo ActionArgsMethod { get; set; }
+        internal GeneratedActionSpec GeneratedAction { get; set; }
+        internal object GeneratedActionArguments { get; set; }
 
         internal PowerArgs.ArgHook.HookContext Context { get; set; }
 
@@ -85,6 +95,13 @@ namespace PowerArgs
                 Context.RunBeforeInvoke();
             }
 
+            if (GeneratedAction != null)
+            {
+                GeneratedAction.Invoke(Value, GeneratedActionArguments);
+                if (Context != null) Context.RunAfterInvoke();
+                return;
+            }
+
             if (ActionArgsMethod == null && ActionArgsProperty == null) throw new MissingArgException("No action was specified");
             var resolved = ActionArgsMethod ?? ResolveMethod(ActionArgsProperty.DeclaringType, ActionArgsProperty);
 
@@ -96,7 +113,7 @@ namespace PowerArgs
             }
             else if (ActionParameters == null)
             {
-                parameters = resolved.GetParameters().Length == 0 ? new object[0] : new object[] { ActionArgs };
+                parameters = resolved.GetParameters().Length == 0 ? Array.Empty<object>() : new object[] { ActionArgs };
             }
             else
             {
@@ -109,22 +126,20 @@ namespace PowerArgs
                 {
                     (resolved as FuncMethodInfo).InvokeAsync(this.Definition).Wait();
                 }
-                else if (resolved.IsStatic)
+                else if (resolved is ActionMethodInfo)
                 {
-                    var ret = resolved.Invoke(null, parameters);
-                    if(ret is Task)
-                    {
-                        (ret as Task).Wait();
-                    }
+                    resolved.Invoke(Value, parameters);
                 }
                 else
                 {
-                    var ret = resolved.Invoke(Value, parameters);
-                    if (ret is Task)
-                    {
-                        (ret as Task).Wait();
-                    }
+                    var ret = InvocationDelegateCache.Invoke(resolved, resolved.IsStatic ? null : Value, parameters);
+                    if (ret is Task task) task.GetAwaiter().GetResult();
                 }
+            }
+            catch (ArgException ex)
+            {
+                ex.Context = Context;
+                throw;
             }
             catch (TargetInvocationException ex)
             {
@@ -156,6 +171,13 @@ namespace PowerArgs
                 Context.RunBeforeInvoke();
             }
 
+            if (GeneratedAction != null)
+            {
+                GeneratedAction.Invoke(Value, GeneratedActionArguments);
+                if (Context != null) Context.RunAfterInvoke();
+                return;
+            }
+
             if (ActionArgsMethod == null && ActionArgsProperty == null) throw new MissingArgException("No action was specified");
             var resolved = ActionArgsMethod ?? ResolveMethod(ActionArgsProperty.DeclaringType, ActionArgsProperty);
             object[] parameters;
@@ -166,7 +188,7 @@ namespace PowerArgs
             }
             else if (ActionParameters == null)
             {
-                parameters = resolved.GetParameters().Length == 0 ? new object[0] : new object[] { ActionArgs };
+                parameters = resolved.GetParameters().Length == 0 ? Array.Empty<object>() : new object[] { ActionArgs };
             }
             else
             {
@@ -179,22 +201,20 @@ namespace PowerArgs
                 {
                     await (resolved as FuncMethodInfo).InvokeAsync(this.Definition);
                 }
-                else if (resolved.IsStatic)
+                else if (resolved is ActionMethodInfo)
                 {
-                    var ret = resolved.Invoke(null, parameters);
-                    if (ret is Task)
-                    {
-                        await (ret as Task);
-                    }
+                    resolved.Invoke(Value, parameters);
                 }
                 else
                 {
-                    var ret = resolved.Invoke(Value, parameters);
-                    if (ret is Task)
-                    {
-                        await (ret as Task);
-                    }
+                    var ret = InvocationDelegateCache.Invoke(resolved, resolved.IsStatic ? null : Value, parameters);
+                    if (ret is Task task) await task;
                 }
+            }
+            catch (ArgException ex)
+            {
+                ex.Context = Context;
+                throw;
             }
             catch (TargetInvocationException ex)
             {
@@ -221,12 +241,16 @@ namespace PowerArgs
 
         internal static PropertyInfo GetActionProperty(Type t)
         {
-            var actionProperty = (from p in t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            return ActionProperties.GetOrAdd(t, type => new ActionPropertyResult(FindActionProperty(type))).Property;
+        }
+
+        private static PropertyInfo FindActionProperty(Type t)
+        {
+            return (from p in ReflectionMemberCache.GetPublicInstanceProperties(t)
                                   where p.Name == Constants.ActionPropertyConventionName &&
                                         p.Attr<ArgPosition>() != null && p.Attr<ArgPosition>().Position == 0 &&
                                         p.HasAttr<ArgRequired>()
                                   select p).SingleOrDefault();
-            return actionProperty;
         }
 
         internal static MethodInfo ResolveMethod(Type t, PropertyInfo actionProperty)

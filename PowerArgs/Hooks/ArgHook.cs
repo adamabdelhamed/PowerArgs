@@ -282,7 +282,7 @@ namespace PowerArgs
             /// <returns>true if the context has a value for the given property, false otherwise</returns>
             public bool HasProperty(string key)
             {
-                return _properties.ContainsKey(key);
+                return _properties != null && _properties.ContainsKey(key);
             }
 
             /// <summary>
@@ -304,13 +304,13 @@ namespace PowerArgs
                 throw new ArgCancelProcessingException();
             }
 
-            private Dictionary<string, object> _properties = new Dictionary<string, object>();
+            private Dictionary<string, object> _properties;
             private object this[string key]
             {
                 get
                 {
                     object ret;
-                    if (_properties.TryGetValue(key, out ret))
+                    if (_properties != null && _properties.TryGetValue(key, out ret))
                     {
                         return ret;
                     }
@@ -318,7 +318,7 @@ namespace PowerArgs
                 }
                 set
                 {
-                    if (_properties.ContainsKey(key))
+                    if (_properties != null && _properties.ContainsKey(key))
                     {
                         if (value != null)
                         {
@@ -333,6 +333,7 @@ namespace PowerArgs
                     {
                         if (value != null)
                         {
+                            _properties ??= new Dictionary<string, object>();
                             _properties.Add(key, value);
                         }
                     }
@@ -348,6 +349,7 @@ namespace PowerArgs
 
             internal void RunHook(Func<ArgHook, int> orderby, Action<ArgHook> hookAction)
             {
+                if (Definition.HasAnyHooks() == false) return;
                 foreach (var info in GetHooks(orderby))
                 {
                     this.CurrentArgument = info.Argument;

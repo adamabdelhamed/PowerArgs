@@ -1419,9 +1419,11 @@ namespace PowerArgs;
 
                 if (valuesMatch && comparer.Equals(new ConsoleString(matchChars), splitValue))
                 {
-                    // IMPORTANT: always add, even if empty
-                    chunks.Add(new ConsoleString(currentChunk));
-                    currentChunk = new List<ConsoleCharacter>();
+                    if (currentChunk.Count > 0)
+                    {
+                        chunks.Add(new ConsoleString(currentChunk));
+                        currentChunk = new List<ConsoleCharacter>();
+                    }
 
                     i += splitValue.Length - 1; // skip delimiter
                     continue;
@@ -1431,8 +1433,10 @@ namespace PowerArgs;
             currentChunk.Add(this[i]);
         }
 
-        // IMPORTANT: always add the final chunk, even if empty
-        chunks.Add(new ConsoleString(currentChunk));
+        if (currentChunk.Count > 0)
+        {
+            chunks.Add(new ConsoleString(currentChunk));
+        }
 
         return chunks;
     }

@@ -177,6 +177,8 @@ namespace PowerArgs
         /// </summary>
         public MethodInfo ActionMethod { get; set; }
 
+        internal bool HasGeneratedInvoker { get; private set; }
+
         /// <summary>
         /// Returns true if there is at least 1 ArgExample metadata on this action
         /// </summary>
@@ -278,15 +280,16 @@ namespace PowerArgs
             overrides = new AttrOverride(GetType());
             Aliases = new AliasCollection(() => 
             {
-                var list = new List<ArgShortcut>();
+                List<ArgShortcut> list = null;
                 for (var i = 0; i < Metadata.Count; i++)
                 {
                     if (Metadata[i] is ArgShortcut s)
                     {
+                        list ??= new List<ArgShortcut>();
                         list.Add(s);
                     }
                 }
-                return list;
+                return list ?? AliasCollection.EmptyShortcutMetadata;
             }, () => { return IgnoreCase; },stripLeadingArgInticatorsOnAttributeValues: false);
             PropertyInitializer.InitializeFields(this, 1);
             IgnoreCase = true;
@@ -318,6 +321,13 @@ namespace PowerArgs
             ActionMethod = new FuncMethodInfo(actionHandler);
             Source = ActionMethod;
             IgnoreCase = true;
+        }
+
+        public static CommandLineAction CreateGenerated(string defaultAlias, bool ignoreCase)
+        {
+            var action = new CommandLineAction { IgnoreCase = ignoreCase, HasGeneratedInvoker = true };
+            if (defaultAlias != null) action.Aliases.Add(defaultAlias);
+            return action;
         }
 
         internal static CommandLineAction Create(PropertyInfo actionProperty, List<string> knownAliases)

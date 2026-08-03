@@ -355,13 +355,14 @@ namespace PowerArgs
             overrides = new AttrOverride(GetType());
             Aliases = new AliasCollection(() => 
             {
-                var ret = new List<ArgShortcut>();
+                List<ArgShortcut> ret = null;
                 for (int i = 0; i < Metadata.Count; i++)
                 {
                     if (Metadata[i] is ArgShortcut s == false) continue;
+                    ret ??= new List<ArgShortcut>();
                     ret.Add(s);
                 }
-                return ret;
+                return ret ?? AliasCollection.EmptyShortcutMetadata;
             }, () => { return IgnoreCase; });
             ArgumentType = typeof(string);
             Position = -1;
@@ -382,6 +383,22 @@ namespace PowerArgs
             Aliases.Add(defaultAlias);
 
             Metadata.AddRange(t.Attrs<IArgMetadata>().AssertAreAllInstanceOf<ICommandLineArgumentMetadata>());
+        }
+
+        /// <summary>
+        /// Creates an argument for source-generated definitions without inspecting the argument type for metadata.
+        /// </summary>
+        public static CommandLineArgument CreateGenerated(Type t, string defaultAlias, bool ignoreCase = true)
+        {
+            if (t == null) throw new InvalidArgDefinitionException("Argument types cannot be null");
+
+            var argument = new CommandLineArgument
+            {
+                ArgumentType = t,
+                IgnoreCase = ignoreCase,
+            };
+            if (defaultAlias != null) argument.Aliases.Add(defaultAlias);
+            return argument;
         }
 
         /// <summary>
@@ -479,6 +496,7 @@ namespace PowerArgs
 
         internal void RunArgumentHook(ArgHook.HookContext context, Func<ArgHook, int> orderby, Action<ArgHook> hookAction)
         {
+            if (HasHooks() == false) return;
             var oldCurrent = context.CurrentArgument;
             try
             {
@@ -508,6 +526,7 @@ namespace PowerArgs
 
         internal void Validate(ref string commandLineValue)
         {
+            if (HasValidators() == false) return;
             if (ArgumentType == typeof(SecureStringArgument) && Validators().Any())
             {
                 throw new InvalidArgDefinitionException("Properties of type SecureStringArgument cannot be validated.  If your goal is to make the argument required then the[ArgRequired] attribute is not needed.  The SecureStringArgument is designed to prompt the user for a value only if your code asks for it after parsing.  If your code never reads the SecureString property then the user is never prompted and it will be treated as an optional parameter.  Although discouraged, if you really, really need to run custom logic against the value before the rest of your program runs then you can implement a custom ArgHook, override RunAfterPopulateProperty, and add your custom attribute to the SecureStringArgument property.");
@@ -524,6 +543,18 @@ namespace PowerArgs
                     v.Validate(Aliases.First(), ref commandLineValue);
                 }
             }
+        }
+
+        private bool HasHooks()
+        {
+            for (var i = 0; i < Metadata.Count; i++) if (Metadata[i] is ArgHook) return true;
+            return false;
+        }
+
+        private bool HasValidators()
+        {
+            for (var i = 0; i < Metadata.Count; i++) if (Metadata[i] is ArgValidator) return true;
+            return false;
         }
 
         internal void Revive(string commandLineValue)
@@ -763,11 +794,18 @@ namespace PowerArgs
 
         private static string GenerateShortcutAlias(string baseAlias, List<string> excluded, bool ignoreCase)
         {
-            string shortcutVal = "";
-            foreach (char c in baseAlias.Substring(0, baseAlias.Length - 1))
+            var comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            for (var length = 1; length < baseAlias.Length; length++)
             {
-                shortcutVal += c;
-                if (excluded.Contains(shortcutVal, new CaseAwareStringComparer(ignoreCase)) == false)
+                var shortcutVal = baseAlias.Substring(0, length);
+                var isExcluded = false;
+                for (var excludedIndex = 0; excludedIndex < excluded.Count; excludedIndex++)
+                {
+                    if (string.Equals(excluded[excludedIndex], shortcutVal, comparison) == false) continue;
+                    isExcluded = true;
+                    break;
+                }
+                if (isExcluded == false)
                 {
                     return shortcutVal;
                 }

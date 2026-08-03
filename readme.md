@@ -49,6 +49,24 @@ class Program
 }
 ```
 
+### Experimental source-generated parsing
+
+On .NET 10, a scaffold and its public argument properties can be declared `partial` to opt into source-generated property bodies and parsing metadata:
+
+```cs
+public partial class MyGeneratedArgs
+{
+    [ArgRequired]
+    public partial string Input { get; set; }
+
+    public partial int Count { get; set; }
+}
+```
+
+The generated pipeline currently supports `[ArgRequired]`, `[ArgShortcut]`, `[ArgPosition]`, `[ArgDescription]`, `[ArgIgnore]`, `[ArgIgnoreCase]`/`[ArgEnforceCase]`, and `[ArgRange]`. Supported scalar properties use a direct generated parser that avoids reflected scaffold discovery, activation, property assignment, and the general hook/alias processing machinery. `InvokeMain` and `InvokeAction` also avoid reflection for `void` and `Task` methods. Generated actions may be parameterless, take a single action-argument object with supported public scalar properties, or take multiple directly revivable scalar parameters. Their argument metadata, shortcuts, descriptions, positions, validation, and case rules are generated too. Pipeline selection is made entirely from compile-time model information: a registered model stays generated for every runtime input, while unsupported attributes, property types, or action signatures leave the model on the existing reflection pipeline. If the scaffold uses another PowerArgs attribute, the generator still supplies the partial property bodies but does not register that model.
+
+Use `GeneratedArgumentModelRegistry.IsGenerated<MyGeneratedArgs>()` or `Args.GetAmbientDefinition().UsesGeneratedPipeline` to verify which path was selected. Run `dotnet run -c Release --project PowerArgs.Benchmarks` from the repository root to compare both paths on the current machine.
+
 Here's the same example that lets PowerArgs do a little more for you.  The application logic is factored out of the Program class and user exceptions are handled automatically.  The way exceptions are handled is that any exception deriving from ArgException will be treated as user error.  PowerArgs' built in validation system always throws these type of exceptions when a validation error occurs. PowerArgs will display the message as well as auto-generated usage documentation for your program.  All other exceptions will still bubble up and need to be handled by your code.
 
 ```cs

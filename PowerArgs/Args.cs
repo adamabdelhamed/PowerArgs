@@ -27,6 +27,9 @@ namespace PowerArgs
         [ThreadStatic]
         private static CommandLineArgumentsDefinition _ambientDefinition;
 
+        [ThreadStatic]
+        private static Dictionary<Type, CommandLineArgumentsDefinition> _generatedDefinitions;
+
         /// <summary>
         /// Sets the ambient arg definition for the current thread
         /// </summary>
@@ -239,6 +242,12 @@ namespace PowerArgs
         /// <returns>An object containing parser metadata</returns>
         public static ArgAction ParseAction(CommandLineArgumentsDefinition definition, params string[] args)
         {
+            if (definition.GeneratedArgumentModel != null && definition.ArgumentScaffoldType != null)
+            {
+                var generated = TryParseGeneratedAction(definition.ArgumentScaffoldType, args, false, definition);
+                if (generated != null) return generated;
+                definition = new CommandLineArgumentsDefinition(definition.ArgumentScaffoldType, true);
+            }
             ArgAction ret = Execute(() =>
             {
                 Args instance = new Args();
@@ -312,6 +321,12 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static ArgAction InvokeAction(CommandLineArgumentsDefinition definition, params string[] args)
         {
+            if (definition.GeneratedArgumentModel != null && definition.ArgumentScaffoldType != null)
+            {
+                var generated = TryParseGeneratedAction(definition.ArgumentScaffoldType, args, true, definition);
+                if (generated != null) return generated;
+                definition = new CommandLineArgumentsDefinition(definition.ArgumentScaffoldType, true);
+            }
             return REPL.DriveREPL<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
             {
                 return Execute<ArgAction>(() =>
@@ -344,6 +359,12 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static Task<ArgAction> InvokeActionAsync(CommandLineArgumentsDefinition definition, params string[] args)
         {
+            if (definition.GeneratedArgumentModel != null && definition.ArgumentScaffoldType != null)
+            {
+                var generated = TryParseGeneratedAction(definition.ArgumentScaffoldType, args, true, definition);
+                if (generated != null) return Task.FromResult(generated);
+                definition = new CommandLineArgumentsDefinition(definition.ArgumentScaffoldType, true);
+            }
             return REPL.DriveREPLAsync<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
             {
                 return ExecuteAsync<ArgAction>(async () =>
@@ -375,8 +396,106 @@ namespace PowerArgs
         /// <returns>A new instance of the given type with all of the properties correctly populated</returns>
         public static object Parse(Type t, params string[] args)
         {
-            return ParseAction(t, args).Value;
+            var generatedModel = GeneratedArgumentModelRegistry.Find(t);
+            if (generatedModel?.DirectArguments != null)
+            {
+                return TryParseGenerated(t, generatedModel, args);
+            }
+            return generatedModel == null ? ParseAction(t, args).Value : ParseAction(new CommandLineArgumentsDefinition(t, true), args).Value;
         }
+
+        private static object TryParseGenerated(Type type, GeneratedArgumentModel model, string[] args, int inputOffset = 0, int firstPosition = 0)
+        {
+            var definition = CreateGeneratedDefinition(type, model, args);
+            _ambientDefinition = definition;
+            try
+            {
+                if (GeneratedArgumentParser.TryParse(model, args, inputOffset, firstPosition, definition, out var value) == false) return null;
+                AmbientArgs[type] = value;
+                return value;
+            }
+            catch (ArgException ex)
+            {
+                ex.Context = new ArgHook.HookContext { Definition = definition, CmdLineArgs = args };
+                throw;
+            }
+        }
+
+        private static CommandLineArgumentsDefinition CreateGeneratedDefinition(Type type, GeneratedArgumentModel model, string[] args = null)
+        {
+            _generatedDefinitions ??= new Dictionary<Type, CommandLineArgumentsDefinition>();
+            if (_generatedDefinitions.TryGetValue(type, out var definition) == false)
+            {
+                definition = new CommandLineArgumentsDefinition(type);
+                definition.Validate(new ArgHook.HookContext { Definition = definition, CmdLineArgs = args ?? Array.Empty<string>() });
+                _generatedDefinitions.Add(type, definition);
+            }
+            definition.Clean();
+            return definition;
+        }
+
+        private static ArgAction TryInvokeGeneratedMain(Type type, string[] args)
+        {
+            var model = GeneratedArgumentModelRegistry.Find(type);
+            if (model?.DirectArguments == null || (model.MainInvoker == null && model.AsyncMainInvoker == null)) return null;
+            var value = TryParseGenerated(type, model, args);
+
+            var definition = _ambientDefinition;
+            var context = new ArgHook.HookContext { Definition = definition, Args = value, CmdLineArgs = args };
+            context.RunBeforeInvoke();
+            if (model.MainInvoker != null) model.MainInvoker(value);
+            else model.AsyncMainInvoker!(value).GetAwaiter().GetResult();
+            context.RunAfterInvoke();
+            return new ArgAction { Value = value, Definition = definition, Context = context };
+        }
+
+        private static ArgAction TryParseGeneratedAction(Type type, string[] args, bool invoke, CommandLineArgumentsDefinition suppliedDefinition = null)
+        {
+            var model = GeneratedArgumentModelRegistry.Find(type);
+            if (model?.DirectArguments == null || model.Actions == null) return null;
+
+            var definition = suppliedDefinition ?? CreateGeneratedDefinition(type, model, args);
+            if (suppliedDefinition != null)
+            {
+                definition.Clean();
+                definition.Validate(new ArgHook.HookContext { Definition = definition, CmdLineArgs = args });
+            }
+            object value;
+            object actionArguments;
+            GeneratedActionSpec action;
+            CommandLineAction specifiedAction;
+            try
+            {
+                if (args.Length == 0) throw new MissingArgException("No action was specified");
+                action = null;
+                for (var i = 0; i < model.Actions.Length; i++)
+                {
+                    if (model.Actions[i].IsMatch(args[0]) == false) continue;
+                    if (action != null) throw new InvalidArgDefinitionException("There are multiple actions that match argument '" + args[0] + "'");
+                    action = model.Actions[i];
+                }
+                if (action == null) throw new UnknownActionArgException("Unknown command: '" + args[0] + "'");
+                specifiedAction = definition.FindMatchingAction(args[0]);
+                if (specifiedAction == null) throw new UnknownActionArgException("Unknown command: '" + args[0] + "'");
+                definition.SpecifiedAction = specifiedAction;
+                GeneratedArgumentParser.TryParseAction(model, action, args, definition, specifiedAction, out value, out actionArguments);
+            }
+            catch (ArgException ex)
+            {
+                ex.Context = new ArgHook.HookContext { Definition = definition, CmdLineArgs = args, SpecifiedAction = definition.SpecifiedAction };
+                throw;
+            }
+            _ambientDefinition = definition;
+            AmbientArgs[type] = value;
+            var context = new ArgHook.HookContext { Definition = definition, Args = value, CmdLineArgs = args, SpecifiedAction = specifiedAction };
+            var result = new ArgAction { Value = value, Definition = definition, Context = context, GeneratedAction = action, GeneratedActionArguments = actionArguments };
+            if (action.UsesArgumentModel) result.ActionArgs = actionArguments;
+            else if (actionArguments is object[] actionParameters) result.ActionParameters = actionParameters;
+            if (invoke) result.Invoke();
+            return result;
+        }
+
+        private static ArgAction TryInvokeGeneratedAction(Type type, string[] args) => TryParseGeneratedAction(type, args, true);
 
         /// <summary>
         /// Asynchronously creates a new instance of the given type and populates it's properties based on the given arguments.
@@ -421,7 +540,7 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction<T> ParseAction<T>(params string[] args)
         {
-            return Strongify<T>(ParseAction(new CommandLineArgumentsDefinition(typeof(T)), args));
+            return Strongify<T>(ParseAction(typeof(T), args));
         }
 
         /// <summary>
@@ -447,7 +566,9 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction ParseAction(Type t, params string[] args)
         {
-            return ParseAction(new CommandLineArgumentsDefinition(t), args);
+            var generated = TryParseGeneratedAction(t, args, false);
+            if (generated != null) return generated;
+            return ParseAction(new CommandLineArgumentsDefinition(t, GeneratedArgumentModelRegistry.Find(t) != null), args);
         }
 
         /// <summary>
@@ -471,7 +592,9 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction InvokeMain(Type t, params string[] args)
         {
-            return InvokeMain(new CommandLineArgumentsDefinition(t), args);
+            var generated = TryInvokeGeneratedMain(t, args);
+            if (generated != null) return generated;
+            return InvokeMain(new CommandLineArgumentsDefinition(t, GeneratedArgumentModelRegistry.Find(t) != null), args);
         }
 
         /// <summary>
@@ -486,6 +609,16 @@ namespace PowerArgs
         }
 
         /// <summary>
+        /// Parses and invokes an action on the given scaffold type.
+        /// </summary>
+        public static ArgAction InvokeAction(Type t, params string[] args)
+        {
+            var generated = TryInvokeGeneratedAction(t, args);
+            if (generated != null) return generated;
+            return InvokeAction(new CommandLineArgumentsDefinition(t, GeneratedArgumentModelRegistry.Find(t) != null), args);
+        }
+
+        /// <summary>
         /// Parses the args for the given scaffold type and then calls the Main() method defined by the type.
         /// </summary>
         /// <typeparam name="T">The argument scaffold type.</typeparam>
@@ -493,7 +626,7 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.</returns>
         public static ArgAction<T> InvokeMain<T>(params string[] args)
         {
-            return Strongify<T>(InvokeMain(new CommandLineArgumentsDefinition(typeof(T)), args));
+            return Strongify<T>(InvokeMain(typeof(T), args));
         }
 
         /// <summary>
@@ -517,7 +650,7 @@ namespace PowerArgs
         /// <returns>The raw result of the parse with metadata about the specified action.  The action is executed before returning.</returns>
         public static ArgAction<T> InvokeAction<T>(params string[] args)
         {
-            return Strongify<T>(InvokeAction(new CommandLineArgumentsDefinition(typeof(T)), args));
+            return Strongify<T>(InvokeAction(typeof(T), args));
         }
 
         /// <summary>
@@ -654,6 +787,8 @@ namespace PowerArgs
                 ActionArgsProperty = weak.ActionArgsProperty,
                 ActionParameters = weak.ActionParameters,
                 ActionArgsMethod = weak.ActionArgsMethod,
+                GeneratedAction = weak.GeneratedAction,
+                GeneratedActionArguments = weak.GeneratedActionArguments,
                 HandledException = weak.HandledException,
                 Definition = weak.Definition,
                 Context = weak.Context,
@@ -671,7 +806,7 @@ namespace PowerArgs
         private ArgAction ParseInternal(CommandLineArgumentsDefinition definition, string[] input)
         {
             // TODO - Validation should be consistently done against the definition, not against the raw type
-            if (definition.ValidationEnabled && definition.ArgumentScaffoldType != null && validatedScaffoldTypes.Contains(definition.ArgumentScaffoldType) == false)
+            if (definition.ValidationEnabled && definition.ArgumentScaffoldType != null && definition.UsesGeneratedPipeline == false && validatedScaffoldTypes.Contains(definition.ArgumentScaffoldType) == false)
             {
                 ValidateArgScaffold(definition.ArgumentScaffoldType);
                 validatedScaffoldTypes.Add(definition.ArgumentScaffoldType);
@@ -685,7 +820,8 @@ namespace PowerArgs
 
             definition.Validate(context);
 
-            if (definition.ArgumentScaffoldType != null) context.Args = ObjectFactory.CreateInstance(definition.ArgumentScaffoldType);
+            if (definition.GeneratedArgumentModel != null) context.Args = definition.GeneratedArgumentModel.Factory();
+            else if (definition.ArgumentScaffoldType != null) context.Args = ObjectFactory.CreateInstance(definition.ArgumentScaffoldType);
             context.CmdLineArgs = input;
 
             context.RunBeforeParse();

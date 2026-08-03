@@ -44,7 +44,7 @@ namespace PowerArgs
             if (Revivers.ContainsKey(t) ||
                 t.IsEnum ||
                 cachedConvertibleTypes.Contains(t) ||
-                (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
+                (typeof(IList).IsAssignableFrom(t) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
                 (t.IsArray && CanRevive(t.GetElementType())))
                 return true;
             
@@ -65,7 +65,7 @@ namespace PowerArgs
             if (Revivers.ContainsKey(t) ||
                t.IsEnum ||
                cachedConvertibleTypes.Contains(t) ||
-               (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
+               (typeof(IList).IsAssignableFrom(t) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
                (t.IsArray && CanRevive(t.GetElementType())))
                 return true;
 
@@ -78,7 +78,7 @@ namespace PowerArgs
             if (Revivers.ContainsKey(t) ||
                   t.IsEnum ||
                   cachedConvertibleTypes.Contains(t) ||
-                  (t.GetInterfaces().Contains(typeof(IList)) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
+                  (typeof(IList).IsAssignableFrom(t) && t.IsGenericType && CanRevive(t.GetGenericArguments()[0])) ||
                   (t.IsArray && CanRevive(t.GetElementType())))
                 return true;
 
@@ -157,9 +157,9 @@ namespace PowerArgs
         /// <returns>A revived object of the desired type</returns>
         public static object Revive(Type t, string name, string value)
         {
-            if (t.IsArray || t.GetInterfaces().Contains(typeof(IList)))
+            if (t.IsArray || typeof(IList).IsAssignableFrom(t))
             {
-                var list = t.GetInterfaces().Contains(typeof(IList)) && t.IsArray == false ? (IList)ObjectFactory.CreateInstance(t) : new List<object>();
+                var list = t.IsArray == false ? (IList)ObjectFactory.CreateInstance(t) : new List<object>();
                 var elementType = t.IsArray ? t.GetElementType() : t.GetGenericArguments()[0];
 
                 List<string> additionalParams;
@@ -305,7 +305,7 @@ namespace PowerArgs
         {
             revivers.Add(typeof(bool), (prop, val) =>
             {
-                return val != null && val.ToLower().ToString() != "false" && val != "0"; // null means the switch value was not specified.  If it was specified then it's automatically true
+                return val != null && val.Equals("false", StringComparison.OrdinalIgnoreCase) == false && val != "0"; // null means the switch value was not specified.  If it was specified then it's automatically true
             });
 
             revivers.Add(typeof(Guid), (prop, val) =>

@@ -4,24 +4,14 @@
     {
         Dictionary<string, object> overrideValues;
 
-        Type hostingType;
-
         public AttrOverride(Type hostingType)
         {
-            this.hostingType = hostingType;
-            overrideValues = new Dictionary<string, object>();
         }
 
         internal void Set(string propertyName, object value)
         {
-            if (overrideValues.ContainsKey(propertyName))
-            {
-                overrideValues[propertyName] = value;
-            }
-            else
-            {
-                overrideValues.Add(propertyName, value);
-            }
+            overrideValues ??= new Dictionary<string, object>();
+            overrideValues[propertyName] = value;
         }
 
         internal T2 GetStruct<T1, T2, TCollectionType>(string propertyName, List<TCollectionType> attributes, Func<T1, T2> getter, T2 defaultValue = default)
@@ -29,7 +19,8 @@
             where T2 : struct // Constraint for value types
             where TCollectionType : IArgMetadata
         {
-            bool hasOverride = overrideValues.ContainsKey(propertyName);
+            object rawOverride = null;
+            bool hasOverride = overrideValues != null && overrideValues.TryGetValue(propertyName, out rawOverride);
             bool hasMatchingAttribute = attributes.HasMeta<T1, TCollectionType>();
 
             T2 attributeVal = defaultValue;
@@ -37,7 +28,7 @@
 
             if (hasOverride)
             {
-                overrideVal = (T2)overrideValues[propertyName];
+                overrideVal = (T2)rawOverride;
             }
 
             if (hasMatchingAttribute)
@@ -65,7 +56,8 @@
     where T2 : class // Constraint for reference types
     where TCollectionType : IArgMetadata
         {
-            bool hasOverride = overrideValues.ContainsKey(propertyName);
+            object rawOverride = null;
+            bool hasOverride = overrideValues != null && overrideValues.TryGetValue(propertyName, out rawOverride);
             bool hasMatchingAttribute = attributes.HasMeta<T1,TCollectionType>();
 
             T2 attributeVal = defaultValue;
@@ -73,7 +65,7 @@
 
             if (hasOverride)
             {
-                overrideVal = (T2)overrideValues[propertyName];
+                overrideVal = (T2)rawOverride;
             }
 
             if (hasMatchingAttribute)
