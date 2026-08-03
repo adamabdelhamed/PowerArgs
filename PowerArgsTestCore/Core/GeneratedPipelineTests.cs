@@ -176,15 +176,15 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void ConditionalArgRequiredUsesCompileTimeReflectionFallback()
+        public void ConditionalArgRequiredUsesGeneratedSharedParser()
         {
             var parsed = Args.Parse<GeneratedPipelineModels.ConditionalRequiredArgs>("-SecondArgument", "hello");
             Assert.IsNull(parsed.FirstArgument);
             Assert.AreEqual("hello", parsed.SecondArgument);
 
             Assert.ThrowsExactly<MissingArgException>(() => Args.Parse<GeneratedPipelineModels.ConditionalRequiredArgs>());
-            Assert.IsFalse(GeneratedArgumentModelRegistry.IsGenerated<GeneratedPipelineModels.ConditionalRequiredArgs>());
-            Assert.IsFalse(Args.GetAmbientDefinition().UsesGeneratedPipeline);
+            Assert.IsTrue(GeneratedArgumentModelRegistry.IsGenerated<GeneratedPipelineModels.ConditionalRequiredArgs>());
+            Assert.IsTrue(Args.GetAmbientDefinition().UsesGeneratedPipeline);
         }
 
         [TestMethod]
@@ -201,13 +201,14 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void UnsupportedCrossArgumentMetadataFallsBackAtCompileTime()
+        public void CrossArgumentMetadataUsesGeneratedSharedParser()
         {
             var parsed = Args.Parse<GeneratedPipelineModels.UnsupportedMetadataArgs>("-FirstValue", "hello");
 
             Assert.AreEqual("hello", parsed.FirstValue);
-            Assert.IsFalse(GeneratedArgumentModelRegistry.IsGenerated<GeneratedPipelineModels.UnsupportedMetadataArgs>());
-            Assert.IsFalse(Args.GetAmbientDefinition().UsesGeneratedPipeline);
+            Assert.IsTrue(GeneratedArgumentModelRegistry.IsGenerated<GeneratedPipelineModels.UnsupportedMetadataArgs>());
+            Assert.IsTrue(Args.GetAmbientDefinition().UsesGeneratedPipeline);
+            Assert.ThrowsExactly<UnexpectedArgException>(() => Args.Parse<GeneratedPipelineModels.UnsupportedMetadataArgs>("-FirstValue", "hello", "-SecondValue", "world"));
         }
 
         [TestMethod]

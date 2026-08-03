@@ -17,6 +17,7 @@ namespace PowerArgs
 
             Span<byte> specified = specs.Length <= 128 ? stackalloc byte[specs.Length] : new byte[specs.Length];
             var instance = model.Factory();
+            if (ArgHook.HookContext.Current != null && RequiresHookProcessing(specs)) ArgHook.HookContext.Current.Args = instance;
             var nextPosition = firstPosition;
             var foundNamedArgument = false;
 
@@ -83,6 +84,7 @@ namespace PowerArgs
             Span<byte> globalSpecified = globalSpecs.Length <= 128 ? stackalloc byte[globalSpecs.Length] : new byte[globalSpecs.Length];
             Span<byte> actionSpecified = actionSpecs.Length <= 128 ? stackalloc byte[actionSpecs.Length] : new byte[actionSpecs.Length];
             var parent = model.Factory();
+            if (ArgHook.HookContext.Current != null) ArgHook.HookContext.Current.Args = parent;
             var actionValues = action.ArgumentFactory?.Invoke();
             var nextPosition = 1;
             var foundNamedArgument = false;
@@ -142,10 +144,10 @@ namespace PowerArgs
 
         private static void PopulateActionArgument(GeneratedActionSpec action, CommandLineAction definition, object instance, GeneratedArgumentSpec spec, int argumentIndex, string argumentValue, Span<byte> specified)
         {
-            if (spec.RequiresValidation) definition.Arguments[argumentIndex].Validate(ref argumentValue);
-            var revived = Revive(spec, argumentValue);
+            var argument = definition.Arguments[argumentIndex];
+            var revived = ReviveArgument(argument, spec, ref argumentValue);
             specified[argumentIndex] = 1;
-            definition.Arguments[argumentIndex].RevivedValue = revived;
+            argument.RevivedValue = revived;
             action.SetArgument!(instance, argumentIndex, revived);
         }
 
@@ -260,15 +262,54 @@ namespace PowerArgs
 
         private static void PopulateArgument(GeneratedArgumentModel model, CommandLineArgumentsDefinition definition, object instance, GeneratedArgumentSpec spec, int argumentIndex, string argumentValue, Span<byte> specified)
         {
-            if (spec.RequiresValidation) definition.Arguments[argumentIndex].Validate(ref argumentValue);
-            var revived = Revive(spec, argumentValue);
+            var argument = definition.Arguments[argumentIndex];
+            var revived = ReviveArgument(argument, spec, ref argumentValue);
             specified[argumentIndex] = 1;
-            definition.Arguments[argumentIndex].RevivedValue = revived;
+            argument.RevivedValue = revived;
             model.SetValue(instance, argumentIndex, revived);
+        }
+
+        private static object ReviveArgument(CommandLineArgument argument, GeneratedArgumentSpec spec, ref string argumentValue)
+        {
+            var context = ArgHook.HookContext.Current;
+            if (spec.RequiresHookProcessing && context != null)
+            {
+                var previousArgument = context.CurrentArgument;
+                var previousValue = context.ArgumentValue;
+                var previousRevived = context.RevivedProperty;
+                try
+                {
+                    context.CurrentArgument = argument;
+                    context.ArgumentValue = argumentValue;
+                    argument.RunBeforePopulateProperty(context);
+                    argumentValue = context.ArgumentValue;
+                    if (spec.RequiresValidation) argument.Validate(ref argumentValue);
+                    var revived = Revive(spec, argumentValue);
+                    argument.RevivedValue = revived;
+                    context.RevivedProperty = revived;
+                    argument.RunAfterPopulateProperty(context);
+                    return revived;
+                }
+                finally
+                {
+                    context.CurrentArgument = previousArgument;
+                    context.ArgumentValue = previousValue;
+                    context.RevivedProperty = previousRevived;
+                }
+            }
+
+            if (spec.RequiresValidation) argument.Validate(ref argumentValue);
+            return Revive(spec, argumentValue);
         }
 
         private static bool IsExplicitBooleanValue(string value) =>
             value == "0" || value == "1" || value.Equals("true", StringComparison.OrdinalIgnoreCase) || value.Equals("false", StringComparison.OrdinalIgnoreCase);
+
+        private static bool RequiresHookProcessing(GeneratedArgumentSpec[] specs)
+        {
+            for (var i = 0; i < specs.Length; i++) if (specs[i].RequiresHookProcessing) return true;
+            return false;
+        }
 
         private static object Revive(GeneratedArgumentSpec spec, string argumentValue)
         {

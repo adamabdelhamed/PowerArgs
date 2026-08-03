@@ -1,11 +1,14 @@
+# PowerArgs
+
 [![.NET](https://github.com/adamabdelhamed/PowerArgs/actions/workflows/dotnet.yml/badge.svg)](https://github.com/adamabdelhamed/PowerArgs/actions/workflows/dotnet.yml)
 
-### Binary
+## Installation
+
 PowerArgs is available at the [Official NuGet Gallery](http://nuget.org/packages/PowerArgs).
 
 To build command line applications with text-based graphics try out [klooie](https://github.com/adamabdelhamed/klooie).
 
-### Overview
+## Overview
 
 PowerArgs converts command line arguments into .NET objects that are easy to work with.  It also provides a ton of additional, optional capabilities that you can try such as argument validation, auto generated usage, tab completion, and plenty of extensibility. You can even build a full-blown, interactive text UI application like [this one](https://youtu.be/JP29zpf7paQ).
 
@@ -49,7 +52,7 @@ class Program
 }
 ```
 
-### Experimental source-generated parsing
+## Source-Generated Pipeline
 
 On .NET 10, a scaffold and its public argument properties can be declared `partial` to opt into source-generated property bodies and parsing metadata:
 
@@ -63,17 +66,22 @@ public partial class MyGeneratedArgs
 }
 ```
 
-Supported scalar properties use a direct parser that avoids reflected scaffold discovery, activation, property assignment, and the general hook/alias processing machinery. The generated pipeline currently supports:
+The generator has two statically selected tiers. Common scalar models use the fastest direct parser, which avoids reflected scaffold discovery, activation, property assignment, and the general hook/alias processing machinery. Feature-rich models still use generated construction, metadata, property setters, and method invokers, but reuse the mature shared parser where its richer lifecycle is required. Both tiers are source-generated pipelines and neither reflects over the scaffold to discover or assign its argument properties.
 
-- Required, naming, and layout metadata: `[ArgRequired]` without conditional/prompt options, `[ArgShortcut]`, `[ArgPosition]`, and `[ArgIgnore]`.
-- Parsing and validation metadata: `[ArgIgnoreCase]`, `[ArgEnforceCase]`, `[ArgRange]`, `[ArgRegex]`, `[ArgExistingFile]`, and `[ArgExistingDirectory]`.
-- Defaults: `[DefaultValue]` and `[ArgDefaultValue]` on properties and action parameters.
-- Usage metadata: `[ArgDescription]`, `[ArgExample]`, `[OmitFromUsageDocs]`, `[ArgProductName]`, `[ArgProductVersion]`, and `[ArgCopyright]` where those attributes are valid.
-- Directly revivable scalar types: strings, booleans, enums, byte/int/long, float/double, `DateTime`, `Guid`, `Uri`, `IPAddress`, and `ConsoleString`.
+The generated pipeline supports the features documented below, including:
+
+- Required, naming, and layout metadata: `[ArgRequired]`, including prompting and conditional requirements, `[ArgShortcut]`, `[ArgPosition]`, `[ArgIgnore]`, `[ArgIgnoreCase]`, and `[ArgEnforceCase]`.
+- Validation and defaults: built-in validators, custom `ArgValidator` attributes, cross-argument validators, `[DefaultValue]`, and `[ArgDefaultValue]`.
+- Hooks and interactive features: `[HelpHook]`, `[StickyArg]`, `[StickyArgPersistence]`, `[TabCompletion]`, argument-aware completion metadata, and custom `ArgHook` attributes.
+- Type-level behavior: `[ArgExceptionBehavior]`, `[AllowUnexpectedArgs]`, descriptions, examples, usage omission, and product/version/copyright metadata.
+- Values: the built-in scalar types, enums, collections, `SecureStringArgument`, component-model conversions, and custom `[ArgReviver]` methods.
+- Inherited public argument properties, ambient arguments, generated usage definitions, and the documented action method shapes.
 
 `InvokeMain` and `InvokeAction` also avoid reflection for `void` and `Task` methods. Generated actions may be parameterless, take a single action-argument object with supported public scalar properties, or take multiple directly revivable scalar parameters. Their defaults, validation, shortcuts, descriptions, positions, usage metadata, and case rules are generated too.
 
-Pipeline selection is entirely static. At compile time the generator either registers the whole model or leaves it on the existing reflection pipeline; runtime argument syntax or values never decide whether reflection is used. Conditional/prompting requirements, collections, custom revivers and hooks, cross-argument validators, inherited argument models, and unsupported action signatures currently use the reflection pipeline. In that case the generator still supplies partial property bodies but does not register the model.
+Pipeline selection is entirely static. At compile time the generator selects the direct generated parser, the shared-parser generated tier, or—when the model cannot be generated safely—the reflection pipeline. Runtime argument syntax and values never make that decision. The reflection fallback is reserved for structural cases such as abstract or generic scaffolds, inaccessible accessors, non-partial public properties declared on the opted-in scaffold, and action signatures outside the three documented forms.
+
+All public properties declared by an opted-in scaffold, including `[ArgIgnore]` properties, must be declared `partial`. Inherited public argument properties can remain ordinary properties because the derived generated model emits direct setters for them.
 
 The normal PowerArgs NuGet package includes the generator as an analyzer, so consumers do not need a second package or setup path. Use `GeneratedArgumentModelRegistry.IsGenerated<MyGeneratedArgs>()` or `Args.GetAmbientDefinition().UsesGeneratedPipeline` to verify which path was selected. Run `dotnet run -c Release --project PowerArgs.Benchmarks` from the repository root to compare both paths on the current machine.
 
@@ -187,7 +195,7 @@ You can't mix and match though.  An action method needs to be formatted in one o
 - A single parameter of a complex type whose own properties describe the action's arguments, validation, and other metadata. The first calculator example used this pattern.
 - One or more 'loose' parameters that are individually revivable, meaning that one command line parameter maps to one property in your class. The second calculator example showed a variation of the Add method that uses this pattern.
 
-### Metadata Attributes
+## Metadata Attributes
 
 These attributes can be specified on argument properties. PowerArgs uses this metadata to influence how the parser behaves.
 
@@ -201,7 +209,7 @@ These attributes can be specified on argument properties. PowerArgs uses this me
 * `[StickyArg]` Use the last used value if not specified.  This is preserved across sessions.  Data is stored in <User>/AppData/Roaming/PowerArgs by default.
 * `[TabCompletion]` Enable tab completion for parameter names (see documentation below)
 
-### Validator Attributes
+## Validator Attributes
 
 These attributes can be specified on argument properties.  You can create custom validators by implementing classes that derive from ArgValidator.
 
@@ -210,9 +218,9 @@ These attributes can be specified on argument properties.  You can create custom
 * `[ArgExistingDirectory]` The value must match the path to an existing directory
 * `[ArgRange(from, to)]` The value must be a numeric value in the given range.
 * `[ArgRegex("MyRegex")]` Apply a regular expression validation rule
-* `[UsPhoneNumber]` A good example of how to create a reuable, custom validator.
+* `USPhoneNumber` is a reusable custom type and reviver included as an example.
 
-### Custom Revivers
+## Custom Revivers
 
 Revivers are used to convert command line strings into their proper .NET types.  By default, many of the simple types such as int, DateTime, Guid, string, char,  and bool are supported.
 
@@ -259,7 +267,7 @@ public class CustomReviverExample
 }
 ```
 
-### Generate usage documentation from templates (built in or custom)
+## Generate Usage Documentation from Templates
 
 PowerArgs has always provided auto-generated usage documentation via the ArgUsage class.  However, the format was hard coded, and gave very little flexibility in terms of the output format. With the latest release of PowerArgs usage documentation can be fully customized via templates.  A template is just a piece of text that represents the documentation structure you want along with some placeholders that will be replaced with the actual information about your command line application.  There are built in templates designed for the console and a web browser, and you can also create your own.
 
@@ -316,7 +324,7 @@ var document = renderer.Render("Hi {{ Name !}}", new { Name = "Adam" });
 // outputs 'Hi Adam'
 ```
 
-### Ambient Args
+## Ambient Arguments
 
 Access your parsed command line arguments from anywhere in your application.
 
@@ -327,7 +335,7 @@ MyArgs parsed = Args.GetAmbientArgs<MyArgs>();
 This will get the most recent insance of type MyArgs that was parsed on the current thread.  That way, you have access to things like global options without having to pass the result all throughout your code.
 
 
-### Secure String Arguments
+## Secure String Arguments
 
 Support for secure strings such as passwords where you don't want your users' input to be visible on the command line.
 
@@ -354,7 +362,7 @@ TestArgs parsed = Args.Parse<TestArgs>();
 string notSecure = parsed.Password.ConvertToNonsecureString(); // This line causes the user to be prompted
 ```
 
-### Tab Completion
+## Tab Completion
 
 Get tab completion for your command line arguments.  Just add the TabCompletion attribute and when your users run the program from the command line with no arguments they will get an enhanced prompt (should turn blue) where they can have tab completion for command line argument names.
 

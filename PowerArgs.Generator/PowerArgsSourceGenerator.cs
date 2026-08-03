@@ -87,9 +87,9 @@ namespace PowerArgs.Generator
                 AppendPropertyImplementation(source, bodyIndent, partialProperties[i], i);
             }
 
-            if (CanGenerateFastPath(type, partialProperties, out var argumentProperties))
+            if (CanGenerateModel(type, partialProperties, out var argumentProperties, out var useDirectParser))
             {
-                AppendFastPath(source, bodyIndent, type, argumentProperties);
+                AppendGeneratedModel(source, bodyIndent, type, argumentProperties, useDirectParser);
             }
 
             for (var i = containingTypes.Count - 1; i >= 0; i--)
@@ -133,46 +133,69 @@ namespace PowerArgs.Generator
             return accessor.DeclaredAccessibility == property.DeclaredAccessibility ? string.Empty : GetAccessibility(accessor.DeclaredAccessibility) + " ";
         }
 
-        private static bool CanGenerateFastPath(INamedTypeSymbol type, List<IPropertySymbol> partialProperties, out List<IPropertySymbol> argumentProperties)
+        private static bool CanGenerateModel(INamedTypeSymbol type, List<IPropertySymbol> partialProperties, out List<IPropertySymbol> argumentProperties, out bool useDirectParser)
         {
-            var publicProperties = type.GetMembers().OfType<IPropertySymbol>()
-                .Where(property => property.IsStatic == false && property.DeclaredAccessibility == Accessibility.Public && property.IsIndexer == false)
-                .OrderBy(property => property.Locations.FirstOrDefault()?.SourceSpan.Start ?? int.MaxValue)
-                .ToList();
+            var publicProperties = GetPublicProperties(type);
 
             argumentProperties = new List<IPropertySymbol>();
+            useDirectParser = true;
             if (type.IsAbstract || publicProperties.Count == 0) return false;
-            if (type.BaseType?.SpecialType != SpecialType.System_Object) return false;
             if (type.InstanceConstructors.Any(constructor => constructor.Parameters.Length == 0) == false) return false;
-            if (type.GetAttributes().Any(attribute => IsPowerArgsAttribute(attribute) && IsSupportedTypeAttribute(attribute) == false)) return false;
+            if (type.GetAttributes().Any(attribute => IsDefinitionMetadata(attribute) && CanGenerateAttribute(attribute) == false)) return false;
+            if (type.GetAttributes().Any(attribute => IsDefinitionMetadata(attribute) && IsSupportedDirectTypeAttribute(attribute) == false)) useDirectParser = false;
             if (type.GetAttributes().Count(IsCaseAttribute) > 1) return false;
             foreach (var method in type.GetMembers().OfType<IMethodSymbol>().Where(method => method.MethodKind == MethodKind.Ordinary && method.IsImplicitlyDeclared == false))
             {
                 if (method.Name == "Main") continue;
                 if (method.GetAttributes().Any(IsArgActionMethod) == false) return false;
                 if (method.ReturnsVoid == false && IsTask(method.ReturnType) == false) return false;
-                if (method.GetAttributes().Any(attribute => IsPowerArgsAttribute(attribute) && IsSupportedActionAttribute(attribute) == false)) return false;
+                if (method.GetAttributes().Any(attribute => IsActionMetadata(attribute) && (IsSupportedActionAttribute(attribute) == false || CanGenerateAttribute(attribute) == false))) return false;
                 if (method.GetAttributes().Count(IsCaseAttribute) > 1) return false;
                 if (CanGenerateAction(method, type) == false) return false;
             }
 
             foreach (var property in publicProperties)
             {
-                if (partialProperties.Any(candidate => SymbolEqualityComparer.Default.Equals(candidate, property)) == false) return false;
+                if (SymbolEqualityComparer.Default.Equals(property.ContainingType, type) && partialProperties.Any(candidate => SymbolEqualityComparer.Default.Equals(candidate, property)) == false) return false;
                 if (property.GetMethod == null || property.SetMethod == null || property.SetMethod.IsInitOnly || property.GetMethod.DeclaredAccessibility != Accessibility.Public || property.SetMethod.DeclaredAccessibility != Accessibility.Public) return false;
-                if (property.GetAttributes().Any(attribute => IsPowerArgsAttribute(attribute) && IsSupportedPropertyAttribute(attribute) == false)) return false;
+                if (property.GetAttributes().Any(attribute => IsArgumentMetadata(attribute) && CanGenerateAttribute(attribute) == false)) return false;
                 if (property.GetAttributes().Count(IsCaseAttribute) > 1) return false;
                 if (property.GetAttributes().Any(IsArgIgnore) == false)
                 {
-                    if (IsDirectType(property.Type) == false || HasOnlySimpleRequiredMetadata(property.GetAttributes()) == false) return false;
                     argumentProperties.Add(property);
+                    if (IsDirectType(property.Type) == false || property.GetAttributes().Any(attribute => IsArgumentMetadata(attribute) && IsSupportedDirectPropertyAttribute(attribute) == false) || HasOnlySimpleRequiredMetadata(property.GetAttributes()) == false) useDirectParser = false;
                 }
             }
+
+            if (type.GetMembers().OfType<IMethodSymbol>().Any(method => method.GetAttributes().Any(IsArgActionMethod)) && useDirectParser == false) return false;
 
             return argumentProperties.Count > 0 || type.GetMembers().OfType<IMethodSymbol>().Any(method => method.Name == "Main" || method.GetAttributes().Any(IsArgActionMethod));
         }
 
+        private static List<IPropertySymbol> GetPublicProperties(INamedTypeSymbol type)
+        {
+            var hierarchy = new List<INamedTypeSymbol>();
+            for (var current = type; current != null && current.SpecialType != SpecialType.System_Object; current = current.BaseType) hierarchy.Add(current);
+            hierarchy.Reverse();
+            var properties = new List<IPropertySymbol>();
+            foreach (var current in hierarchy)
+            {
+                properties.AddRange(current.GetMembers().OfType<IPropertySymbol>()
+                    .Where(property => property.IsStatic == false && property.DeclaredAccessibility == Accessibility.Public && property.IsIndexer == false)
+                    .OrderBy(property => property.Locations.FirstOrDefault()?.SourceSpan.Start ?? int.MaxValue));
+            }
+            return properties;
+        }
+
         private static bool IsPowerArgsAttribute(AttributeData attribute) => attribute.AttributeClass?.ContainingNamespace.ToDisplayString() == "PowerArgs";
+
+        private static bool IsDefinitionMetadata(AttributeData attribute) => ImplementsInterface(attribute.AttributeClass, "PowerArgs.ICommandLineArgumentsDefinitionMetadata");
+
+        private static bool IsArgumentMetadata(AttributeData attribute) => ImplementsInterface(attribute.AttributeClass, "PowerArgs.ICommandLineArgumentMetadata");
+
+        private static bool IsActionMetadata(AttributeData attribute) => ImplementsInterface(attribute.AttributeClass, "PowerArgs.ICommandLineActionMetadata");
+
+        private static bool ImplementsInterface(INamedTypeSymbol? type, string interfaceName) => type != null && type.AllInterfaces.Any(candidate => candidate.ToDisplayString() == interfaceName);
 
         private static bool IsArgRequired(AttributeData attribute) => attribute.AttributeClass?.Name == "ArgRequired" && IsPowerArgsAttribute(attribute);
 
@@ -182,16 +205,22 @@ namespace PowerArgs.Generator
 
         private static bool IsCaseAttribute(AttributeData attribute) => (attribute.AttributeClass?.Name == "ArgIgnoreCase" || attribute.AttributeClass?.Name == "ArgEnforceCase") && IsPowerArgsAttribute(attribute);
 
-        private static bool IsSupportedTypeAttribute(AttributeData attribute)
+        private static bool IsSupportedDirectTypeAttribute(AttributeData attribute)
         {
             var name = attribute.AttributeClass?.Name;
-            return name == "ArgDescription" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "ArgExample" || name == "ArgProductName" || name == "ArgProductVersion" || name == "ArgCopyright";
+            return name == "ArgDescription" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "ArgExample" || name == "ArgProductName" || name == "ArgProductVersion" || name == "ArgCopyright" || name == "ArgExceptionBehavior";
         }
 
-        private static bool IsSupportedPropertyAttribute(AttributeData attribute)
+        private static bool IsSupportedDirectPropertyAttribute(AttributeData attribute)
         {
             var name = attribute.AttributeClass?.Name;
-            return name == "ArgRequired" || name == "ArgShortcut" || name == "ArgDescription" || name == "ArgPosition" || name == "ArgIgnoreAttribute" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "ArgRange" || name == "ArgRegex" || name == "ArgExistingFile" || name == "ArgExistingDirectory" || name == "DefaultValueAttribute" || name == "ArgDefaultValueAttribute" || name == "OmitFromUsageDocs" || name == "ArgExample";
+            return IsDerivedFrom(attribute.AttributeClass, "PowerArgs.ArgValidator") || name == "HelpHook" || name == "ArgShortcut" || name == "ArgDescription" || name == "ArgPosition" || name == "ArgIgnoreAttribute" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "DefaultValueAttribute" || name == "ArgDefaultValueAttribute" || name == "OmitFromUsageDocs" || name == "ArgExample";
+        }
+
+        private static bool IsDerivedFrom(INamedTypeSymbol? type, string baseTypeName)
+        {
+            for (var current = type; current != null; current = current.BaseType) if (current.ToDisplayString() == baseTypeName) return true;
+            return false;
         }
 
         private static bool IsSupportedActionAttribute(AttributeData attribute)
@@ -208,19 +237,19 @@ namespace PowerArgs.Generator
             if (method.Parameters.Length == 0) return true;
             if (method.Parameters.All(parameter => IsDirectType(parameter.Type)))
             {
-                return method.Parameters.All(parameter => parameter.GetAttributes().All(attribute => IsPowerArgsAttribute(attribute) == false || IsSupportedPropertyAttribute(attribute)) && parameter.GetAttributes().Count(IsCaseAttribute) <= 1 && HasOnlySimpleRequiredMetadata(parameter.GetAttributes()));
+                return method.Parameters.All(parameter => parameter.GetAttributes().All(attribute => IsArgumentMetadata(attribute) == false || IsSupportedDirectPropertyAttribute(attribute)) && parameter.GetAttributes().Count(IsCaseAttribute) <= 1 && HasOnlySimpleRequiredMetadata(parameter.GetAttributes()));
             }
             if (method.Parameters.Length != 1 || method.Parameters[0].Type is INamedTypeSymbol == false) return false;
 
             var argumentType = (INamedTypeSymbol)method.Parameters[0].Type;
             if (argumentType.TypeKind != TypeKind.Class || argumentType.IsAbstract || argumentType.InstanceConstructors.Any(constructor => constructor.Parameters.Length == 0 && constructor.DeclaredAccessibility != Accessibility.Private) == false) return false;
-            if (argumentType.GetAttributes().Any(attribute => IsPowerArgsAttribute(attribute) && IsSupportedTypeAttribute(attribute) == false)) return false;
+            if (argumentType.GetAttributes().Any(attribute => IsDefinitionMetadata(attribute) && IsSupportedDirectTypeAttribute(attribute) == false)) return false;
             if (GetIgnoreCase(argumentType.GetAttributes(), true) != GetIgnoreCase(parentType.GetAttributes(), true)) return false;
             foreach (var property in GetActionArgumentProperties(argumentType))
             {
                 if (property.GetMethod == null || property.SetMethod == null || property.SetMethod.IsInitOnly || property.GetMethod.DeclaredAccessibility != Accessibility.Public || property.SetMethod.DeclaredAccessibility != Accessibility.Public) return false;
                 if (IsDirectType(property.Type) == false) return false;
-                if (property.GetAttributes().Any(attribute => IsPowerArgsAttribute(attribute) && IsSupportedPropertyAttribute(attribute) == false)) return false;
+                if (property.GetAttributes().Any(attribute => IsArgumentMetadata(attribute) && IsSupportedDirectPropertyAttribute(attribute) == false)) return false;
                 if (property.GetAttributes().Count(IsCaseAttribute) > 1) return false;
                 if (HasOnlySimpleRequiredMetadata(property.GetAttributes()) == false) return false;
             }
@@ -234,7 +263,7 @@ namespace PowerArgs.Generator
             .OrderBy(property => property.Locations.FirstOrDefault()?.SourceSpan.Start ?? int.MaxValue)
             .ToList();
 
-        private static void AppendFastPath(StringBuilder source, string indent, INamedTypeSymbol type, List<IPropertySymbol> properties)
+        private static void AppendGeneratedModel(StringBuilder source, string indent, INamedTypeSymbol type, List<IPropertySymbol> properties, bool useDirectParser)
         {
             var typeName = type.ToDisplayString(TypeFormat);
             var plans = BuildArgumentPlans(type, properties);
@@ -247,7 +276,7 @@ namespace PowerArgs.Generator
             source.Append(indent).AppendLine("        static definition =>");
             source.Append(indent).AppendLine("        {");
 
-            foreach (var attribute in type.GetAttributes().Where(IsPowerArgsAttribute))
+            foreach (var attribute in type.GetAttributes().Where(IsDefinitionMetadata))
             {
                 source.Append(indent).Append("            definition.Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
             }
@@ -263,7 +292,7 @@ namespace PowerArgs.Generator
                     source.Append(indent).Append("            ").Append(variableName).Append(".Aliases.Add(").Append(ToLiteral(plan.AutomaticShortcut)).AppendLine(");");
                 }
 
-                foreach (var attribute in property.GetAttributes().Where(attribute => IsPowerArgsAttribute(attribute) && IsArgIgnore(attribute) == false))
+                foreach (var attribute in property.GetAttributes().Where(attribute => IsArgumentMetadata(attribute) && IsArgIgnore(attribute) == false))
                 {
                     source.Append(indent).Append("            ").Append(variableName).Append(".Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
                 }
@@ -276,7 +305,7 @@ namespace PowerArgs.Generator
                 var plan = actionPlans[i];
                 var variableName = "action" + i;
                 source.Append(indent).Append("            var ").Append(variableName).Append(" = global::PowerArgs.CommandLineAction.CreateGenerated(").Append(plan.IncludeMethodName ? ToLiteral(plan.Method.Name) : "null").Append(", ").Append(plan.IgnoreCase ? "true" : "false").AppendLine(");");
-                foreach (var attribute in plan.Method.GetAttributes().Where(IsPowerArgsAttribute)) source.Append(indent).Append("            ").Append(variableName).Append(".Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
+                foreach (var attribute in plan.Method.GetAttributes().Where(IsActionMetadata)) source.Append(indent).Append("            ").Append(variableName).Append(".Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
                 for (var argumentIndex = 0; argumentIndex < plan.ArgumentProperties.Count; argumentIndex++)
                 {
                     var argumentPlan = plan.ArgumentProperties[argumentIndex];
@@ -299,7 +328,8 @@ namespace PowerArgs.Generator
             }
             source.Append(indent).AppendLine("            throw new global::System.ArgumentOutOfRangeException(nameof(index));");
             source.Append(indent).Append("        },").AppendLine();
-            AppendDirectArguments(source, indent, plans);
+            if (useDirectParser) AppendDirectArguments(source, indent, plans);
+            else source.Append(indent).Append("        null");
             source.AppendLine(",");
             AppendMainInvokers(source, indent, type, typeName);
             source.AppendLine(",");
@@ -313,7 +343,7 @@ namespace PowerArgs.Generator
         {
             source.Append(indent).Append("            var ").Append(argumentVariable).Append(" = global::PowerArgs.CommandLineArgument.CreateGenerated(typeof(").Append(argumentType.ToDisplayString(TypeFormat)).Append("), ").Append(ToLiteral(argumentName)).Append(", ").Append(ignoreCase ? "true" : "false").AppendLine(");");
             if (automaticShortcut != null) source.Append(indent).Append("            ").Append(argumentVariable).Append(".Aliases.Add(").Append(ToLiteral(automaticShortcut)).AppendLine(");");
-            foreach (var attribute in attributes.Where(attribute => IsPowerArgsAttribute(attribute) && IsArgIgnore(attribute) == false)) source.Append(indent).Append("            ").Append(argumentVariable).Append(".Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
+            foreach (var attribute in attributes.Where(attribute => IsArgumentMetadata(attribute) && IsArgIgnore(attribute) == false)) source.Append(indent).Append("            ").Append(argumentVariable).Append(".Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
             if (position >= 0) source.Append(indent).Append("            ").Append(argumentVariable).Append(".Position = ").Append(position).AppendLine(";");
             source.Append(indent).Append("            ").Append(actionVariable).Append(".Arguments.Add(").Append(argumentVariable).AppendLine(");");
         }
@@ -410,18 +440,18 @@ namespace PowerArgs.Generator
             source.Append("new global::PowerArgs.GeneratedArgumentSpec[] { ");
             foreach (var argument in plan.ArgumentProperties)
             {
-                AppendGeneratedArgumentSpec(source, argument.Property.Name, argument.Property.Type, argument.IsRequired, argument.Position, argument.IgnoreCase, argument.RequiresValidation, argument.Aliases);
+                AppendGeneratedArgumentSpec(source, argument.Property.Name, argument.Property.Type, argument.IsRequired, argument.Position, argument.IgnoreCase, argument.RequiresValidation, argument.RequiresHookProcessing, argument.Aliases);
             }
             foreach (var argument in plan.ParameterArguments)
             {
-                AppendGeneratedArgumentSpec(source, argument.Parameter.Name, argument.Parameter.Type, argument.IsRequired, argument.Position, argument.IgnoreCase, argument.RequiresValidation, argument.Aliases);
+                AppendGeneratedArgumentSpec(source, argument.Parameter.Name, argument.Parameter.Type, argument.IsRequired, argument.Position, argument.IgnoreCase, argument.RequiresValidation, argument.RequiresHookProcessing, argument.Aliases);
             }
             source.Append("}");
         }
 
-        private static void AppendGeneratedArgumentSpec(StringBuilder source, string name, ITypeSymbol type, bool required, int position, bool ignoreCase, bool requiresValidation, List<string> aliases)
+        private static void AppendGeneratedArgumentSpec(StringBuilder source, string name, ITypeSymbol type, bool required, int position, bool ignoreCase, bool requiresValidation, bool requiresHookProcessing, List<string> aliases)
         {
-            source.Append("new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(name)).Append(", typeof(").Append(type.ToDisplayString(TypeFormat)).Append("), ").Append(required ? "true" : "false").Append(", ").Append(position).Append(", ").Append(ignoreCase ? "true" : "false").Append(", ").Append(requiresValidation ? "true" : "false");
+            source.Append("new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(name)).Append(", typeof(").Append(type.ToDisplayString(TypeFormat)).Append("), ").Append(required ? "true" : "false").Append(", ").Append(position).Append(", ").Append(ignoreCase ? "true" : "false").Append(", ").Append(requiresValidation ? "true" : "false").Append(", ").Append(requiresHookProcessing ? "true" : "false");
             foreach (var alias in aliases) source.Append(", ").Append(ToLiteral(alias));
             source.Append("), ");
         }
@@ -439,7 +469,7 @@ namespace PowerArgs.Generator
             foreach (var plan in plans)
             {
                 var property = plan.Property;
-                source.Append(indent).Append("            new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(property.Name)).Append(", typeof(").Append(property.Type.ToDisplayString(TypeFormat)).Append("), ").Append(plan.IsRequired ? "true" : "false").Append(", ").Append(plan.Position).Append(", ").Append(plan.IgnoreCase ? "true" : "false").Append(", ").Append(plan.RequiresValidation ? "true" : "false");
+                source.Append(indent).Append("            new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(property.Name)).Append(", typeof(").Append(property.Type.ToDisplayString(TypeFormat)).Append("), ").Append(plan.IsRequired ? "true" : "false").Append(", ").Append(plan.Position).Append(", ").Append(plan.IgnoreCase ? "true" : "false").Append(", ").Append(plan.RequiresValidation ? "true" : "false").Append(", ").Append(plan.RequiresHookProcessing ? "true" : "false");
                 foreach (var alias in plan.Aliases) source.Append(", ").Append(ToLiteral(alias));
                 source.AppendLine("),");
             }
@@ -502,7 +532,7 @@ namespace PowerArgs.Generator
                 var propertyIgnoreCase = GetIgnoreCase(property.GetAttributes(), typeIgnoreCase);
                 var positionAttribute = property.GetAttributes().FirstOrDefault(IsArgPosition);
                 var position = positionAttribute == null ? -1 : Convert.ToInt32(positionAttribute.ConstructorArguments[0].Value, System.Globalization.CultureInfo.InvariantCulture);
-                plans.Add(new ArgumentPlan(property, aliases, includePropertyName, automaticShortcut, property.GetAttributes().Any(IsArgRequired), position, propertyIgnoreCase, property.GetAttributes().Any(RequiresValidation)));
+                plans.Add(new ArgumentPlan(property, aliases, includePropertyName, automaticShortcut, property.GetAttributes().Any(IsArgRequired), position, propertyIgnoreCase, property.GetAttributes().Any(RequiresValidation), property.GetAttributes().Any(RequiresHookProcessing)));
             }
             return plans;
         }
@@ -541,7 +571,7 @@ namespace PowerArgs.Generator
                             var shortcut = NormalizeShortcut(GetShortcutValue(shortcutAttribute));
                             if (shortcut != null) parameterAliases.Add(shortcut);
                         }
-                        parameterArguments.Add(new ActionParameterPlan(parameter, parameterAliases, parameter.GetAttributes().Any(IsArgRequired), parameterIndex + 1, GetIgnoreCase(parameter.GetAttributes(), typeIgnoreCase), parameter.GetAttributes().Any(RequiresValidation)));
+                        parameterArguments.Add(new ActionParameterPlan(parameter, parameterAliases, parameter.GetAttributes().Any(IsArgRequired), parameterIndex + 1, GetIgnoreCase(parameter.GetAttributes(), typeIgnoreCase), parameter.GetAttributes().Any(RequiresValidation), parameter.GetAttributes().Any(RequiresHookProcessing)));
                     }
                 }
                 plans.Add(new ActionPlan(method, aliases, includeMethodName, GetIgnoreCase(method.GetAttributes(), typeIgnoreCase), usesArgumentModel, argumentProperties, parameterArguments));
@@ -566,10 +596,11 @@ namespace PowerArgs.Generator
 
         private static bool RequiresValidation(AttributeData attribute)
         {
-            if (IsPowerArgsAttribute(attribute) == false) return false;
-            var name = attribute.AttributeClass?.Name;
-            return name == "ArgRange" || name == "ArgRegex" || name == "ArgExistingFile" || name == "ArgExistingDirectory";
+            if (IsArgRequired(attribute) && attribute.NamedArguments.Length == 0 && attribute.ConstructorArguments.Length == 0) return false;
+            return IsDerivedFrom(attribute.AttributeClass, "PowerArgs.ArgValidator");
         }
+
+        private static bool RequiresHookProcessing(AttributeData attribute) => attribute.AttributeClass?.Name == "HelpHook" && IsPowerArgsAttribute(attribute);
 
         private static bool IsShortcutsOnly(AttributeData attribute)
         {
@@ -599,8 +630,9 @@ namespace PowerArgs.Generator
             internal int Position { get; }
             internal bool IgnoreCase { get; }
             internal bool RequiresValidation { get; }
+            internal bool RequiresHookProcessing { get; }
 
-            internal ArgumentPlan(IPropertySymbol property, List<string> aliases, bool includePropertyName, string? automaticShortcut, bool isRequired, int position, bool ignoreCase, bool requiresValidation)
+            internal ArgumentPlan(IPropertySymbol property, List<string> aliases, bool includePropertyName, string? automaticShortcut, bool isRequired, int position, bool ignoreCase, bool requiresValidation, bool requiresHookProcessing)
             {
                 Property = property;
                 Aliases = aliases;
@@ -610,6 +642,7 @@ namespace PowerArgs.Generator
                 Position = position;
                 IgnoreCase = ignoreCase;
                 RequiresValidation = requiresValidation;
+                RequiresHookProcessing = requiresHookProcessing;
             }
         }
 
@@ -643,8 +676,9 @@ namespace PowerArgs.Generator
             internal int Position { get; }
             internal bool IgnoreCase { get; }
             internal bool RequiresValidation { get; }
+            internal bool RequiresHookProcessing { get; }
 
-            internal ActionParameterPlan(IParameterSymbol parameter, List<string> aliases, bool isRequired, int position, bool ignoreCase, bool requiresValidation)
+            internal ActionParameterPlan(IParameterSymbol parameter, List<string> aliases, bool isRequired, int position, bool ignoreCase, bool requiresValidation, bool requiresHookProcessing)
             {
                 Parameter = parameter;
                 Aliases = aliases;
@@ -652,6 +686,7 @@ namespace PowerArgs.Generator
                 Position = position;
                 IgnoreCase = ignoreCase;
                 RequiresValidation = requiresValidation;
+                RequiresHookProcessing = requiresHookProcessing;
             }
         }
 
@@ -675,12 +710,30 @@ namespace PowerArgs.Generator
         private static string FormatConstant(TypedConstant constant)
         {
             if (constant.IsNull) return "null";
+            if (constant.Kind == TypedConstantKind.Array)
+            {
+                var elementType = ((IArrayTypeSymbol)constant.Type!).ElementType.ToDisplayString(TypeFormat);
+                return "new " + elementType + "[] { " + string.Join(", ", constant.Values.Select(FormatConstant)) + " }";
+            }
             if (constant.Kind == TypedConstantKind.Type) return "typeof(" + ((ITypeSymbol)constant.Value!).ToDisplayString(TypeFormat) + ")";
             if (constant.Value is string text) return ToLiteral(text);
             if (constant.Value is char character) return SymbolDisplay.FormatLiteral(character, true);
             if (constant.Value is bool boolean) return boolean ? "true" : "false";
             if (constant.Type?.TypeKind == TypeKind.Enum) return "(" + constant.Type.ToDisplayString(TypeFormat) + ")" + Convert.ToString(constant.Value, System.Globalization.CultureInfo.InvariantCulture);
             return Convert.ToString(constant.Value, System.Globalization.CultureInfo.InvariantCulture) ?? "null";
+        }
+
+        private static bool CanGenerateAttribute(AttributeData attribute)
+        {
+            if (attribute.AttributeClass == null || attribute.AttributeConstructor == null) return false;
+            if (attribute.AttributeConstructor.DeclaredAccessibility != Accessibility.Public && attribute.AttributeConstructor.DeclaredAccessibility != Accessibility.Internal) return false;
+            return attribute.ConstructorArguments.All(CanGenerateConstant) && attribute.NamedArguments.All(argument => CanGenerateConstant(argument.Value));
+        }
+
+        private static bool CanGenerateConstant(TypedConstant constant)
+        {
+            if (constant.Kind == TypedConstantKind.Error) return false;
+            return constant.Kind != TypedConstantKind.Array || constant.Values.All(CanGenerateConstant);
         }
 
         private static string? FindShortcut(string name, List<string> excluded)

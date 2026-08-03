@@ -254,11 +254,10 @@ namespace PowerArgs
         /// <returns>An object containing parser metadata</returns>
         public static ArgAction ParseAction(CommandLineArgumentsDefinition definition, params string[] args)
         {
-            if (definition.GeneratedArgumentModel != null && definition.ArgumentScaffoldType != null)
+            if (definition.GeneratedArgumentModel?.DirectArguments != null && definition.ArgumentScaffoldType != null)
             {
                 var generated = TryParseGeneratedAction(definition.ArgumentScaffoldType, args, false, definition);
                 if (generated != null) return generated;
-                definition = new CommandLineArgumentsDefinition(definition.ArgumentScaffoldType, true);
             }
             ArgAction ret = Execute(() =>
             {
@@ -297,7 +296,10 @@ namespace PowerArgs
                     if (result.HandledException == null)
                     {
                         result.Context.RunBeforeInvoke();
-                        result.Value.InvokeMainMethod();
+                        var generatedModel = result.Definition.GeneratedArgumentModel;
+                        if (generatedModel?.MainInvoker != null) generatedModel.MainInvoker(result.Value);
+                        else if (generatedModel?.AsyncMainInvoker != null) generatedModel.AsyncMainInvoker(result.Value).GetAwaiter().GetResult();
+                        else result.Value.InvokeMainMethod();
                         result.Context.RunAfterInvoke();
                     }
                     return result;
@@ -411,25 +413,54 @@ namespace PowerArgs
             var generatedModel = GeneratedArgumentModelRegistry.Find(t);
             if (generatedModel?.DirectArguments != null)
             {
-                return TryParseGenerated(t, generatedModel, args);
+                return TryParseGenerated(t, generatedModel, args, out _);
             }
-            return generatedModel == null ? ParseAction(t, args).Value : ParseAction(CreateReflectionDefinition(t), args).Value;
+            return ParseAction(generatedModel == null ? CreateReflectionDefinition(t) : new CommandLineArgumentsDefinition(t), args).Value;
         }
 
-        private static object TryParseGenerated(Type type, GeneratedArgumentModel model, string[] args, int inputOffset = 0, int firstPosition = 0)
+        private static object TryParseGenerated(Type type, GeneratedArgumentModel model, string[] args, out ArgAction terminalResult, int inputOffset = 0, int firstPosition = 0)
         {
+            terminalResult = null;
             var definition = CreateGeneratedDefinition(type, model, args);
             _ambientDefinition = definition;
+            var previousContext = ArgHook.HookContext.Current;
+            ArgHook.HookContext context = null;
+            for (var i = 0; i < model.DirectArguments.Length; i++)
+            {
+                if (model.DirectArguments[i].RequiresHookProcessing == false) continue;
+                context = new ArgHook.HookContext { Definition = definition, CmdLineArgs = args };
+                ArgHook.HookContext.Current = context;
+                break;
+            }
             try
             {
                 if (GeneratedArgumentParser.TryParse(model, args, inputOffset, firstPosition, definition, out var value) == false) return null;
                 AmbientArgs[type] = value;
                 return value;
             }
+            catch (ArgCancelProcessingException)
+            {
+                context ??= new ArgHook.HookContext { Definition = definition, CmdLineArgs = args };
+                context.RunAfterCancel();
+                terminalResult = new ArgAction { Cancelled = true, Definition = definition, Context = context };
+                return null;
+            }
             catch (ArgException ex)
             {
-                ex.Context = new ArgHook.HookContext { Definition = definition, CmdLineArgs = args };
+                context ??= new ArgHook.HookContext { Definition = definition, CmdLineArgs = args };
+                ex.Context = context;
+                if (definition.ExceptionBehavior.Policy == ArgExceptionPolicy.StandardExceptionHandling)
+                {
+                    ex.Message.ToRed().WriteLine();
+                    UsageTemplateProvider.GetUsage(definition.ExceptionBehavior.UsageTemplateProviderType, definition).Write();
+                    terminalResult = new ArgAction { HandledException = ex, Definition = definition, Context = context };
+                    return null;
+                }
                 throw;
+            }
+            finally
+            {
+                if (context != null) ArgHook.HookContext.Current = previousContext;
             }
         }
 
@@ -464,7 +495,8 @@ namespace PowerArgs
         {
             var model = GeneratedArgumentModelRegistry.Find(type);
             if (model?.DirectArguments == null || (model.MainInvoker == null && model.AsyncMainInvoker == null)) return null;
-            var value = TryParseGenerated(type, model, args);
+            var value = TryParseGenerated(type, model, args, out var terminalResult);
+            if (terminalResult != null) return terminalResult;
 
             var definition = _ambientDefinition;
             var context = new ArgHook.HookContext { Definition = definition, Args = value, CmdLineArgs = args };
@@ -481,6 +513,7 @@ namespace PowerArgs
             if (model?.DirectArguments == null || model.Actions == null) return null;
 
             var definition = suppliedDefinition ?? CreateGeneratedDefinition(type, model, args);
+            _ambientDefinition = definition;
             if (suppliedDefinition != null)
             {
                 definition.Clean();
@@ -490,6 +523,9 @@ namespace PowerArgs
             object actionArguments;
             GeneratedActionSpec action;
             CommandLineAction specifiedAction;
+            var previousContext = ArgHook.HookContext.Current;
+            var context = new ArgHook.HookContext { Definition = definition, CmdLineArgs = args };
+            ArgHook.HookContext.Current = context;
             try
             {
                 if (args.Length == 0) throw new MissingArgException("No action was specified");
@@ -506,16 +542,32 @@ namespace PowerArgs
                 specifiedAction = suppliedDefinition == null ? definition.Actions[actionIndex] : definition.FindMatchingAction(args[0]);
                 if (specifiedAction == null) throw new UnknownActionArgException("Unknown command: '" + args[0] + "'");
                 definition.SpecifiedAction = specifiedAction;
+                context.SpecifiedAction = specifiedAction;
                 GeneratedArgumentParser.TryParseAction(model, action, args, definition, specifiedAction, out value, out actionArguments);
+            }
+            catch (ArgCancelProcessingException)
+            {
+                context.RunAfterCancel();
+                return new ArgAction { Cancelled = true, Definition = definition, Context = context };
             }
             catch (ArgException ex)
             {
-                ex.Context = new ArgHook.HookContext { Definition = definition, CmdLineArgs = args, SpecifiedAction = definition.SpecifiedAction };
+                ex.Context = context;
+                if (definition.ExceptionBehavior.Policy == ArgExceptionPolicy.StandardExceptionHandling)
+                {
+                    ex.Message.ToRed().WriteLine();
+                    UsageTemplateProvider.GetUsage(definition.ExceptionBehavior.UsageTemplateProviderType, definition).Write();
+                    return new ArgAction { HandledException = ex, Definition = definition, Context = context };
+                }
                 throw;
+            }
+            finally
+            {
+                ArgHook.HookContext.Current = previousContext;
             }
             _ambientDefinition = definition;
             AmbientArgs[type] = value;
-            var context = new ArgHook.HookContext { Definition = definition, Args = value, CmdLineArgs = args, SpecifiedAction = specifiedAction };
+            context.Args = value;
             var result = new ArgAction { Value = value, Definition = definition, Context = context, GeneratedAction = action, GeneratedActionArguments = actionArguments };
             if (action.UsesArgumentModel) result.ActionArgs = actionArguments;
             else if (actionArguments is object[] actionParameters) result.ActionParameters = actionParameters;
@@ -596,7 +648,7 @@ namespace PowerArgs
         {
             var generated = TryParseGeneratedAction(t, args, false);
             if (generated != null) return generated;
-            return ParseAction(CreateReflectionDefinition(t), args);
+            return ParseAction(GeneratedArgumentModelRegistry.Find(t) == null ? CreateReflectionDefinition(t) : new CommandLineArgumentsDefinition(t), args);
         }
 
         /// <summary>
@@ -622,7 +674,7 @@ namespace PowerArgs
         {
             var generated = TryInvokeGeneratedMain(t, args);
             if (generated != null) return generated;
-            return InvokeMain(CreateReflectionDefinition(t), args);
+            return InvokeMain(GeneratedArgumentModelRegistry.Find(t) == null ? CreateReflectionDefinition(t) : new CommandLineArgumentsDefinition(t), args);
         }
 
         /// <summary>

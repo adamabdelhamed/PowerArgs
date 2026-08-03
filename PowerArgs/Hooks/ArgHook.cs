@@ -389,7 +389,7 @@ namespace PowerArgs
                 }
 
                 // Add scaffold-based hooks
-                if (Definition.ArgumentScaffoldType != null)
+                if (Definition.ArgumentScaffoldType != null && Definition.GeneratedArgumentModel == null)
                 {
                     var properties = Definition.ArgumentScaffoldType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
                     foreach (var property in properties.Where(p => !seen.Contains(p)))

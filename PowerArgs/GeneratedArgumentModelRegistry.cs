@@ -169,14 +169,20 @@ namespace PowerArgs
         public int Position { get; }
         public bool IgnoreCase { get; }
         public bool RequiresValidation { get; }
+        internal bool RequiresHookProcessing { get; }
         public string[] Aliases { get; }
 
         public GeneratedArgumentSpec(string name, Type argumentType, bool isRequired, params string[] aliases)
-            : this(name, argumentType, isRequired, -1, true, false, aliases)
+            : this(name, argumentType, isRequired, -1, true, false, false, aliases)
         {
         }
 
         public GeneratedArgumentSpec(string name, Type argumentType, bool isRequired, int position, bool ignoreCase, bool requiresValidation, params string[] aliases)
+            : this(name, argumentType, isRequired, position, ignoreCase, requiresValidation, false, aliases)
+        {
+        }
+
+        public GeneratedArgumentSpec(string name, Type argumentType, bool isRequired, int position, bool ignoreCase, bool requiresValidation, bool requiresHookProcessing, params string[] aliases)
         {
             Name = name;
             ArgumentType = argumentType;
@@ -185,6 +191,7 @@ namespace PowerArgs
             Position = position;
             IgnoreCase = ignoreCase;
             RequiresValidation = requiresValidation;
+            RequiresHookProcessing = requiresHookProcessing;
             Aliases = aliases;
         }
     }
