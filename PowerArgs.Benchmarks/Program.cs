@@ -6,10 +6,61 @@ using PowerArgs;
 
 var config = args.Contains("--profile") ? DefaultConfig.Instance.AddDiagnoser(new EventPipeProfiler(EventPipeProfile.CpuSampling)) : DefaultConfig.Instance;
 if (args.Contains("--invoke-only")) BenchmarkRunner.Run<InvocationBenchmarks>(config);
+else if (args.Contains("--parse-only")) BenchmarkRunner.Run<ParseBenchmarks>(config);
+else if (args.Contains("--conversion-only")) BenchmarkRunner.Run<ConversionBenchmarks>(config);
 else
 {
     BenchmarkRunner.Run<ParseBenchmarks>(config);
     BenchmarkRunner.Run<InvocationBenchmarks>(config);
+    BenchmarkRunner.Run<ConversionBenchmarks>(config);
+}
+
+[MemoryDiagnoser]
+[ShortRunJob]
+public class ConversionBenchmarks
+{
+    private const string Raw = "deploy --source \"C:\\Program Files\\PowerArgs\\input.txt\" --count 42 --label \"nightly build\" --enabled";
+    private static readonly string[] Values = ["deploy", "--source", "C:\\Program Files\\PowerArgs\\input.txt", "--count", "42", "--label", "nightly build", "--enabled"];
+
+    [Params("Split", "Join")]
+    public string Scenario { get; set; } = null!;
+
+    [Benchmark(Baseline = true)]
+    public object Legacy() => Scenario == "Split" ? LegacySplit(Raw) : LegacyJoin(Values);
+
+    [Benchmark]
+    public object Optimized() => Scenario == "Split" ? Args.Convert(Raw) : Args.Convert(Values);
+
+    private static string[] LegacySplit(string commandLine)
+    {
+        var ret = new List<string>();
+        var currentArg = string.Empty;
+        var insideDoubleQuotes = false;
+        for (var i = 0; i < commandLine.Length; i++)
+        {
+            var c = commandLine[i];
+            if (insideDoubleQuotes && c == '"') { ret.Add(currentArg); currentArg = string.Empty; insideDoubleQuotes = false; }
+            else if (insideDoubleQuotes == false && c == ' ') { if (currentArg.Length > 0) { ret.Add(currentArg); currentArg = string.Empty; } }
+            else if (c == '"') insideDoubleQuotes = !insideDoubleQuotes;
+            else if (c == '\\' && i < commandLine.Length - 1 && commandLine[i + 1] == '"') { currentArg += '"'; i++; }
+            else currentArg += c;
+        }
+        if (currentArg.Length > 0) ret.Add(currentArg);
+        return ret.ToArray();
+    }
+
+    private static string LegacyJoin(string[] commandLine)
+    {
+        var ret = string.Empty;
+        for (var i = 0; i < commandLine.Length; i++)
+        {
+            var element = commandLine[i];
+            if (string.IsNullOrWhiteSpace(element)) continue;
+            ret += element.Any(char.IsWhiteSpace) ? "\"" + element + "\"" : element;
+            if (i < commandLine.Length - 1) ret += " ";
+        }
+        return ret;
+    }
 }
 
 [MemoryDiagnoser]
@@ -22,6 +73,7 @@ public class ParseBenchmarks
         yield return new ParseScenario("Position + shortcuts", typeof(ReflectionPositionShortcutArgs), typeof(GeneratedPositionShortcutArgs), ["input.txt", "-n", "7", "--verbose"]);
         yield return new ParseScenario("Range validation", typeof(ReflectionValidatedArgs), typeof(GeneratedValidatedArgs), ["-Count", "7", "-r", "0.75"]);
         yield return new ParseScenario("Case + ignored", typeof(ReflectionCaseArgs), typeof(GeneratedCaseArgs), ["-v", "exact", "-Enabled"]);
+        yield return new ParseScenario("Defaults + rich scalars", typeof(ReflectionRichArgs), typeof(GeneratedRichArgs), ["-Tag", "build-42", "-Mode", "Safe", "-Endpoint", "https://powerargs.test/api"]);
     }
 
     [ParamsSource(nameof(Scenarios))]
@@ -128,6 +180,34 @@ public partial class GeneratedCaseArgs
     public partial object? Ignored { get; set; }
 }
 
+public enum BenchmarkMode
+{
+    Fast,
+    Safe,
+}
+
+[ArgExample("tool -Tag build-42", "Runs a tagged build")]
+public class ReflectionRichArgs
+{
+    [DefaultValue(5), ArgRange(1, 10)]
+    public int Count { get; set; }
+    [ArgRequired, ArgRegex(@"build-\d+")]
+    public string Tag { get; set; } = string.Empty;
+    public BenchmarkMode Mode { get; set; }
+    public Uri Endpoint { get; set; } = null!;
+}
+
+[ArgExample("tool -Tag build-42", "Runs a tagged build")]
+public partial class GeneratedRichArgs
+{
+    [DefaultValue(5), ArgRange(1, 10)]
+    public partial int Count { get; set; }
+    [ArgRequired, ArgRegex(@"build-\d+")]
+    public partial string Tag { get; set; }
+    public partial BenchmarkMode Mode { get; set; }
+    public partial Uri Endpoint { get; set; }
+}
+
 [MemoryDiagnoser]
 [ShortRunJob]
 public class InvocationBenchmarks
@@ -140,6 +220,7 @@ public class InvocationBenchmarks
         yield return new InvocationScenario("Async Action", true, typeof(ReflectionAsyncActionArgs), typeof(GeneratedAsyncActionArgs), ["Run"]);
         yield return new InvocationScenario("Model Params", true, typeof(ReflectionModelActionArgs), typeof(GeneratedModelActionArgs), ["run", "-Enabled", "-Name", "Ada", "-Count", "3"]);
         yield return new InvocationScenario("Direct Params", true, typeof(ReflectionDirectActionArgs), typeof(GeneratedDirectActionArgs), ["Copy", "-source", "input.txt", "-count", "4"]);
+        yield return new InvocationScenario("Validated Defaults", true, typeof(ReflectionValidatedActionArgs), typeof(GeneratedValidatedActionArgs), ["Copy", "-source", "input.txt"]);
     }
 
     [ParamsSource(nameof(Scenarios))]
@@ -278,4 +359,18 @@ public partial class GeneratedDirectActionArgs
     public partial int Marker { get; set; }
     [ArgActionMethod]
     public void Copy([ArgRequired] string source, int count) { }
+}
+
+public class ReflectionValidatedActionArgs
+{
+    [ArgActionMethod]
+    public void Copy([ArgRequired, ArgRegex(@".+\.txt")] string source, [DefaultValue(2), ArgRange(1, 10)] int count, [ArgDefaultValue(BenchmarkMode.Safe)] BenchmarkMode mode) { }
+}
+
+public partial class GeneratedValidatedActionArgs
+{
+    [ArgIgnore]
+    public partial int Marker { get; set; }
+    [ArgActionMethod]
+    public void Copy([ArgRequired, ArgRegex(@".+\.txt")] string source, [DefaultValue(2), ArgRange(1, 10)] int count, [ArgDefaultValue(BenchmarkMode.Safe)] BenchmarkMode mode) { }
 }

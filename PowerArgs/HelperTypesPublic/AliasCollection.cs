@@ -101,12 +101,14 @@ namespace PowerArgs
         {
             get
             {
-                if (_defaultAlias != null && this.Contains(_defaultAlias) == false)
+                if (_defaultAlias != null && Contains(_defaultAlias) == false)
                 {
                     _defaultAlias = null;
                 }
 
-                return _defaultAlias ?? this.First();
+                var first = _defaultAlias ?? FirstOrDefaultWithoutAllocation();
+                if (first == null) throw new InvalidOperationException("Sequence contains no elements");
+                return first;
             }
             set
             {
@@ -118,6 +120,23 @@ namespace PowerArgs
                 _defaultAlias = value;
 
             }
+        }
+
+        internal string FirstOrDefaultWithoutAllocation()
+        {
+            if (_defaultAlias != null) return _defaultAlias;
+            if (overrides.Count > 0) return overrides[0];
+            var metadata = metadataEval();
+            return metadata.Count == 0 ? null : metadata[0];
+        }
+
+        internal bool MatchesWithoutAllocation(string item, bool ignoreCase)
+        {
+            var comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            for (var i = 0; i < overrides.Count; i++) if (string.Equals(overrides[i], item, comparison)) return true;
+            var metadata = metadataEval();
+            for (var i = 0; i < metadata.Count; i++) if (string.Equals(metadata[i], item, comparison)) return true;
+            return false;
         }
 
         List<string> overrides;
@@ -301,13 +320,13 @@ namespace PowerArgs
         /// <returns>True if the collection contains the item, otherwise false</returns>
         public bool Contains(string item)
         {
-            foreach (var alias in this)
+            var comparison = ignoreCaseEval() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            for (var i = 0; i < overrides.Count; i++)
             {
-                if (string.Equals(alias, item, ignoreCaseEval() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-                {
-                    return true;
-                }
+                if (string.Equals(overrides[i], item, comparison)) return true;
             }
+            var metadata = metadataEval();
+            for (var i = 0; i < metadata.Count; i++) if (string.Equals(metadata[i], item, comparison)) return true;
             return false;
         }
 
@@ -332,12 +351,7 @@ namespace PowerArgs
         {
             get
             {
-                int count = 0;
-                foreach (var alias in this)
-                {
-                    count++;
-                }
-                return count;
+                return overrides.Count + metadataEval().Count;
             }
         }
 

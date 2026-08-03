@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace PowerArgs
@@ -29,6 +30,9 @@ namespace PowerArgs
 
         [ThreadStatic]
         private static Dictionary<Type, CommandLineArgumentsDefinition> _generatedDefinitions;
+
+        [ThreadStatic]
+        private static Dictionary<Type, CommandLineArgumentsDefinition> _reflectionDefinitions;
 
         /// <summary>
         /// Sets the ambient arg definition for the current thread
@@ -88,8 +92,8 @@ namespace PowerArgs
         /// <returns>a converted string array with the arguments properly broken up</returns>
         public static string[] Convert(string commandLine)
         {
-            List<string> ret = new List<string>();
-            string currentArg = string.Empty;
+            var ret = new List<string>();
+            var currentArg = new StringBuilder();
             bool insideDoubleQuotes = false;
 
             for(int i = 0; i < commandLine.Length;i++)
@@ -98,16 +102,16 @@ namespace PowerArgs
 
                 if (insideDoubleQuotes && c == '"')
                 {
-                    ret.Add(currentArg);
-                    currentArg = string.Empty;
+                    ret.Add(currentArg.ToString());
+                    currentArg.Clear();
                     insideDoubleQuotes = !insideDoubleQuotes;
                 }
                 else if (!insideDoubleQuotes && c == ' ')
                 {
                     if (currentArg.Length > 0)
                     {
-                        ret.Add(currentArg);
-                        currentArg = string.Empty;
+                        ret.Add(currentArg.ToString());
+                        currentArg.Clear();
                     }
                 }
                 else if (c == '"')
@@ -116,18 +120,18 @@ namespace PowerArgs
                 }
                 else if (c == '\\' && i < commandLine.Length - 1 && commandLine[i + 1] == '"')
                 {
-                    currentArg += '"';
+                    currentArg.Append('"');
                     i++;
                 }
                 else
                 {
-                    currentArg += c;
+                    currentArg.Append(c);
                 }
             }
 
             if (currentArg.Length > 0)
             {
-                ret.Add(currentArg);
+                ret.Add(currentArg.ToString());
             }
 
             return ret.ToArray();
@@ -141,7 +145,7 @@ namespace PowerArgs
         /// <returns>the command line arguments as a single string</returns>
         public static string Convert(string[] commandLine)
         {
-            var ret = "";
+            var ret = new StringBuilder();
 
             for(var i = 0; i < commandLine.Length; i++)
             {
@@ -152,23 +156,31 @@ namespace PowerArgs
                     continue;
                 }
 
-                if(element.Where(character => char.IsWhiteSpace(character)).Any())
+                var hasWhitespace = false;
+                for (var characterIndex = 0; characterIndex < element.Length; characterIndex++)
                 {
-                    ret += "\"" + element + "\"";
+                    if (char.IsWhiteSpace(element[characterIndex]) == false) continue;
+                    hasWhitespace = true;
+                    break;
+                }
+
+                if(hasWhitespace)
+                {
+                    ret.Append('"').Append(element).Append('"');
                 }
                 else
                 {
-                    ret += element;
+                    ret.Append(element);
                 }
 
 
                 if (i < commandLine.Length - 1)
                 {
-                    ret += " ";
+                    ret.Append(' ');
                 }
             }
 
-            return ret;
+            return ret.ToString();
         }
 
         /// <summary>
@@ -401,7 +413,7 @@ namespace PowerArgs
             {
                 return TryParseGenerated(t, generatedModel, args);
             }
-            return generatedModel == null ? ParseAction(t, args).Value : ParseAction(new CommandLineArgumentsDefinition(t, true), args).Value;
+            return generatedModel == null ? ParseAction(t, args).Value : ParseAction(CreateReflectionDefinition(t), args).Value;
         }
 
         private static object TryParseGenerated(Type type, GeneratedArgumentModel model, string[] args, int inputOffset = 0, int firstPosition = 0)
@@ -431,6 +443,20 @@ namespace PowerArgs
                 _generatedDefinitions.Add(type, definition);
             }
             definition.Clean();
+            return definition;
+        }
+
+        private static CommandLineArgumentsDefinition CreateReflectionDefinition(Type type)
+        {
+            _reflectionDefinitions ??= new Dictionary<Type, CommandLineArgumentsDefinition>();
+            if (_reflectionDefinitions.TryGetValue(type, out var definition))
+            {
+                definition.Clean();
+                return definition;
+            }
+
+            definition = new CommandLineArgumentsDefinition(type, true);
+            if (definition.CanReuseReflectionDefinition()) _reflectionDefinitions.Add(type, definition);
             return definition;
         }
 
@@ -468,14 +494,16 @@ namespace PowerArgs
             {
                 if (args.Length == 0) throw new MissingArgException("No action was specified");
                 action = null;
+                var actionIndex = -1;
                 for (var i = 0; i < model.Actions.Length; i++)
                 {
                     if (model.Actions[i].IsMatch(args[0]) == false) continue;
                     if (action != null) throw new InvalidArgDefinitionException("There are multiple actions that match argument '" + args[0] + "'");
                     action = model.Actions[i];
+                    actionIndex = i;
                 }
                 if (action == null) throw new UnknownActionArgException("Unknown command: '" + args[0] + "'");
-                specifiedAction = definition.FindMatchingAction(args[0]);
+                specifiedAction = suppliedDefinition == null ? definition.Actions[actionIndex] : definition.FindMatchingAction(args[0]);
                 if (specifiedAction == null) throw new UnknownActionArgException("Unknown command: '" + args[0] + "'");
                 definition.SpecifiedAction = specifiedAction;
                 GeneratedArgumentParser.TryParseAction(model, action, args, definition, specifiedAction, out value, out actionArguments);
@@ -568,7 +596,7 @@ namespace PowerArgs
         {
             var generated = TryParseGeneratedAction(t, args, false);
             if (generated != null) return generated;
-            return ParseAction(new CommandLineArgumentsDefinition(t, GeneratedArgumentModelRegistry.Find(t) != null), args);
+            return ParseAction(CreateReflectionDefinition(t), args);
         }
 
         /// <summary>
@@ -594,7 +622,7 @@ namespace PowerArgs
         {
             var generated = TryInvokeGeneratedMain(t, args);
             if (generated != null) return generated;
-            return InvokeMain(new CommandLineArgumentsDefinition(t, GeneratedArgumentModelRegistry.Find(t) != null), args);
+            return InvokeMain(CreateReflectionDefinition(t), args);
         }
 
         /// <summary>
@@ -615,7 +643,7 @@ namespace PowerArgs
         {
             var generated = TryInvokeGeneratedAction(t, args);
             if (generated != null) return generated;
-            return InvokeAction(new CommandLineArgumentsDefinition(t, GeneratedArgumentModelRegistry.Find(t) != null), args);
+            return InvokeAction(CreateReflectionDefinition(t), args);
         }
 
         /// <summary>

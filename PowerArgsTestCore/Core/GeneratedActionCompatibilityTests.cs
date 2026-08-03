@@ -283,6 +283,16 @@ namespace ArgsTests
         }
 
         [TestMethod]
+        public void SuppliedGeneratedDefinitionsRespectRemovedActions()
+        {
+            var definition = new CommandLineArgumentsDefinition(typeof(GeneratedActionCompatibilityModels.ParseOnlyScaffold));
+            definition.Actions.Clear();
+
+            var exception = Assert.ThrowsExactly<UnknownActionArgException>(() => Args.InvokeAction(definition, "run", "-n", "Ada"));
+            Assert.AreSame(definition, exception.Context.Definition);
+        }
+
+        [TestMethod]
         public void GeneratedDirectParametersSupportPositionalAndNamedForms()
         {
             var positional = Args.InvokeAction<GeneratedActionCompatibilityModels.PositionalScaffold>("Copy", "source.txt", "4", "Fast");

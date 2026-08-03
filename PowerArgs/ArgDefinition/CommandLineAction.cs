@@ -151,7 +151,7 @@ namespace PowerArgs
         {
             get
             {
-                return Aliases.FirstOrDefault();
+                return Aliases.FirstOrDefaultWithoutAllocation();
             }
         }
 
@@ -448,8 +448,7 @@ namespace PowerArgs
 
         internal bool IsMatch(string actionString)
         {
-            var ret = Aliases.Where(a => a.Equals(actionString, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)).Any();
-            return ret;
+            return Aliases.MatchesWithoutAllocation(actionString, IgnoreCase);
         }
 
         internal static bool IsActionImplementation(MethodInfo method)

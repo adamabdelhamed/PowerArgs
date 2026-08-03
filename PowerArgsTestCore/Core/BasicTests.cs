@@ -821,5 +821,12 @@ namespace ArgsTests
                 Assert.AreEqual(expectedResult[i], result[i]);
             }
         }
+
+        [TestMethod]
+        public void TestArgumentArrayConversionPreservesQuotingBehavior()
+        {
+            Assert.AreEqual("deploy --source \"C:\\Program Files\\input.txt\" --count 42", Args.Convert(new[] { "deploy", "--source", "C:\\Program Files\\input.txt", "--count", "42" }));
+            Assert.AreEqual("one three", Args.Convert(new[] { "one", "", "three" }));
+        }
     }
 }

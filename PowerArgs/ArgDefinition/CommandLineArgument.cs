@@ -27,6 +27,8 @@ namespace PowerArgs
         };
 
         private AttrOverride overrides;
+        private object defaultValueOverride;
+        private bool hasDefaultValueOverride;
 
         /// <summary>
         /// The values that can be used as specifiers for this argument on the command line
@@ -240,7 +242,7 @@ namespace PowerArgs
         {
             get
             {
-                return DefaultValue != null;
+                return TryGetDefaultValue(out var value) && value != null;
             }
         }
 
@@ -251,12 +253,31 @@ namespace PowerArgs
         {
             get
             {
-                return overrides.Get<DefaultValueAttribute, object, ArgHook>("DefaultValue", Hooks, d => d.Value);
+                TryGetDefaultValue(out var value);
+                return value;
             }
             set
             {
-                overrides.Set("DefaultValue", value);
+                defaultValueOverride = value;
+                hasDefaultValueOverride = true;
             }
+        }
+
+        internal bool TryGetDefaultValue(out object value)
+        {
+            if (hasDefaultValueOverride)
+            {
+                value = defaultValueOverride;
+                return true;
+            }
+            for (var i = 0; i < Metadata.Count; i++)
+            {
+                if (Metadata[i] is DefaultValueAttribute defaultValue == false) continue;
+                value = defaultValue.Value;
+                return true;
+            }
+            value = null;
+            return false;
         }
 
         /// <summary>
@@ -345,7 +366,7 @@ namespace PowerArgs
         {
             get
             {
-                return Aliases.FirstOrDefault();
+                return Aliases.FirstOrDefaultWithoutAllocation();
             }
         }
 
@@ -532,15 +553,31 @@ namespace PowerArgs
                 throw new InvalidArgDefinitionException("Properties of type SecureStringArgument cannot be validated.  If your goal is to make the argument required then the[ArgRequired] attribute is not needed.  The SecureStringArgument is designed to prompt the user for a value only if your code asks for it after parsing.  If your code never reads the SecureString property then the user is never prompted and it will be treated as an optional parameter.  Although discouraged, if you really, really need to run custom logic against the value before the rest of your program runs then you can implement a custom ArgHook, override RunAfterPopulateProperty, and add your custom attribute to the SecureStringArgument property.");
             }
 
-            foreach (var v in Validators())
+            Span<int> validatorIndices = Metadata.Count <= 128 ? stackalloc int[Metadata.Count] : new int[Metadata.Count];
+            var validatorCount = 0;
+            for (var metadataIndex = 0; metadataIndex < Metadata.Count; metadataIndex++)
             {
+                if (Metadata[metadataIndex] is ArgValidator == false) continue;
+                var insertionIndex = validatorCount;
+                while (insertionIndex > 0 && ((ArgValidator)Metadata[validatorIndices[insertionIndex - 1]]).Priority > ((ArgValidator)Metadata[metadataIndex]).Priority)
+                {
+                    validatorIndices[insertionIndex] = validatorIndices[insertionIndex - 1];
+                    insertionIndex--;
+                }
+                validatorIndices[insertionIndex] = metadataIndex;
+                validatorCount++;
+            }
+
+            for (var validatorIndex = 0; validatorIndex < validatorCount; validatorIndex++)
+            {
+                var v = (ArgValidator)Metadata[validatorIndices[validatorIndex]];
                 if (v.ImplementsValidateAlways)
                 {
                     v.ValidateAlways(this, ref commandLineValue);  
                 }
                 else if (commandLineValue != null)
                 {
-                    v.Validate(Aliases.First(), ref commandLineValue);
+                    v.Validate(DefaultAlias, ref commandLineValue);
                 }
             }
         }
@@ -569,7 +606,7 @@ namespace PowerArgs
                     }
                     else
                     {
-                        RevivedValue = ArgRevivers.Revive(ArgumentType, Aliases.First(), commandLineValue);
+                        RevivedValue = ArgRevivers.Revive(ArgumentType, DefaultAlias, commandLineValue);
                     }
                 }
                 catch(TargetInvocationException ex)
@@ -582,7 +619,7 @@ namespace PowerArgs
                     {
                         if (ArgumentType.IsEnum)
                         {
-                            throw new ArgException("'" + commandLineValue + "' is not a valid value for " + Aliases.First() + ". Available values are [" + string.Join(", ", Enum.GetNames(ArgumentType)) + "]", ex);
+                            throw new ArgException("'" + commandLineValue + "' is not a valid value for " + DefaultAlias + ". Available values are [" + string.Join(", ", Enum.GetNames(ArgumentType)) + "]", ex);
                         }
                         else
                         {
@@ -602,18 +639,18 @@ namespace PowerArgs
                     }
                     else
                     {
-                        if (ArgumentType.IsEnum) throw new ArgException("'" + commandLineValue + "' is not a valid value for " + Aliases.First() + ". Available values are [" + string.Join(", ", Enum.GetNames(ArgumentType)) + "]", ex);
+                        if (ArgumentType.IsEnum) throw new ArgException("'" + commandLineValue + "' is not a valid value for " + DefaultAlias + ". Available values are [" + string.Join(", ", Enum.GetNames(ArgumentType)) + "]", ex);
                         else throw new ArgException(ex.Message, ex);
                     }
                 }
             }
             else if (ArgRevivers.CanRevive(ArgumentType) && ArgumentType == typeof(SecureStringArgument))
             {
-                RevivedValue = ArgRevivers.Revive(ArgumentType, Aliases.First(), commandLineValue);
+                RevivedValue = ArgRevivers.Revive(ArgumentType, DefaultAlias, commandLineValue);
             }
             else if (commandLineValue != null && ArgRevivers.CanRevive(ArgumentType))
             {
-                throw new ArgException("Unexpected argument '" + Aliases.First() + "' with value '" + commandLineValue + "'");
+                throw new ArgException("Unexpected argument '" + DefaultAlias + "' with value '" + commandLineValue + "'");
             }
             else if (commandLineValue != null && ArgRevivers.CanRevive(ArgumentType) == false)
             {
@@ -621,41 +658,9 @@ namespace PowerArgs
             }
         }
 
-        /*
-         * Showed up in a profile when parsing the same definition in a tight loop.
-         * 
-         * Rather than examine the aliases every time we'll remember the answer for a given property / key pair
-         */ 
-        private static Dictionary<string, bool> matchMemo = new Dictionary<string, bool>();
-
         internal bool IsMatch(string key)
         {
-            bool ret = false;
-            
-            var propSource = Source as PropertyInfo;
-            string cacheKey = null;
-            if(propSource != null)
-            {
-                if (matchMemo.TryGetValue(key, out bool cachedVal))
-                {
-                    return cachedVal;
-                }
-            }
-
-            foreach (var a in Aliases)
-            {
-                if (a.Equals(key, IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-                {
-                    ret = true;
-                    break;
-                }
-            }
-
-            if (cacheKey != null)
-            {
-                matchMemo.Add(key, ret);
-            }
-            return ret;
+            return Aliases.MatchesWithoutAllocation(key, IgnoreCase);
         }
 
         internal static bool IsArgument(PropertyInfo property)
@@ -766,7 +771,7 @@ namespace PowerArgs
                 {
                     if (matchedKey != null)
                     {
-                        throw new DuplicateArgException("Argument specified more than once: " + Aliases.First());
+                        throw new DuplicateArgException("Argument specified more than once: " + DefaultAlias);
                     }
                     matchedKey = key;
                 }

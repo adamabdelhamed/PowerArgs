@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace PowerArgs
@@ -43,10 +42,10 @@ namespace PowerArgs
         /// <param name="arg">The value specified on the command line.</param>
         public override void Validate(string name, ref string arg)
         {
-            string input = arg;
-            MatchCollection matches = Regex.Matches(arg, regex);
-            exactMatch = (from m in matches.ToList() where m.Value == input select m).SingleOrDefault();
-            if (exactMatch == null) throw new ValidationArgException(errorMessage + ": " + arg);
+            exactMatch = Regex.Match(arg, regex);
+            if (exactMatch.Success && exactMatch.Index == 0 && exactMatch.Length == arg.Length) return;
+            exactMatch = null;
+            throw new ValidationArgException(errorMessage + ": " + arg);
         }
     }
 }

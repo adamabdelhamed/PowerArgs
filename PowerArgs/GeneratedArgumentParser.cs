@@ -153,8 +153,8 @@ namespace PowerArgs
         {
             for (var i = 0; i < specs.Length; i++)
             {
-                if (specified[i] != 0 || definition.Arguments[i].HasDefaultValue == false) continue;
-                PopulateArgument(model, definition, instance, specs[i], i, definition.Arguments[i].DefaultValue.ToString()!, specified);
+                if (specified[i] != 0 || definition.Arguments[i].TryGetDefaultValue(out var defaultValue) == false || defaultValue == null) continue;
+                PopulateArgument(model, definition, instance, specs[i], i, defaultValue.ToString()!, specified);
             }
         }
 
@@ -163,8 +163,8 @@ namespace PowerArgs
             if (instance == null) return;
             for (var i = 0; i < specs.Length; i++)
             {
-                if (specified[i] != 0 || definition.Arguments[i].HasDefaultValue == false) continue;
-                PopulateActionArgument(action, definition, instance, specs[i], i, definition.Arguments[i].DefaultValue.ToString()!, specified);
+                if (specified[i] != 0 || definition.Arguments[i].TryGetDefaultValue(out var defaultValue) == false || defaultValue == null) continue;
+                PopulateActionArgument(action, definition, instance, specs[i], i, defaultValue.ToString()!, specified);
             }
         }
 
@@ -274,6 +274,15 @@ namespace PowerArgs
         {
             try
             {
+                if (spec.ArgumentType == typeof(string)) return argumentValue;
+                if (spec.ArgumentType == typeof(bool)) return argumentValue.Equals("false", StringComparison.OrdinalIgnoreCase) == false && argumentValue != "0";
+                if (spec.ArgumentType == typeof(int) && int.TryParse(argumentValue, out var intValue)) return intValue;
+                if (spec.ArgumentType == typeof(long) && long.TryParse(argumentValue, out var longValue)) return longValue;
+                if (spec.ArgumentType == typeof(byte) && byte.TryParse(argumentValue, out var byteValue)) return byteValue;
+                if (spec.ArgumentType == typeof(float) && float.TryParse(argumentValue, out var floatValue)) return floatValue;
+                if (spec.ArgumentType == typeof(double) && double.TryParse(argumentValue, out var doubleValue)) return doubleValue;
+                if (spec.ArgumentType == typeof(Guid) && Guid.TryParse(argumentValue, out var guidValue)) return guidValue;
+                if (spec.ArgumentType == typeof(DateTime) && DateTime.TryParse(argumentValue, out var dateTimeValue)) return dateTimeValue;
                 if (spec.ArgumentType.IsEnum) return ArgRevivers.ReviveEnum(spec.ArgumentType, argumentValue, spec.IgnoreCase);
                 return ArgRevivers.Revive(spec.ArgumentType, spec.Name, argumentValue);
             }

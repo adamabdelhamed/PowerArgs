@@ -57,6 +57,11 @@ namespace ArgsTests.GeneratedPipelineModels
         public partial string Directory { get; set; }
     }
 
+    public partial class PrimitiveFallbackArgs
+    {
+        public partial int Number { get; set; }
+    }
+
     [ArgDescription("Generated metadata model")]
     [ArgProductName("PowerArgs Generated Tests")]
     [ArgProductVersion("1.2.3")]
@@ -219,6 +224,19 @@ namespace ArgsTests
             parsed = Args.Parse<GeneratedPipelineModels.DefaultValueArgs>("-Mode", "Fast", "-Count", "4");
             Assert.AreEqual(GeneratedPipelineModels.GeneratedMode.Fast, parsed.Mode);
             Assert.AreEqual(4, parsed.Count);
+        }
+
+        [TestMethod]
+        public void GeneratedPrimitiveFastPathRetainsConstantAndErrorFallbacks()
+        {
+            var maximum = Args.Parse<GeneratedPipelineModels.PrimitiveFallbackArgs>("-Number", nameof(int.MaxValue));
+            var minimum = Args.Parse<GeneratedPipelineModels.PrimitiveFallbackArgs>("-Number", nameof(int.MinValue));
+
+            Assert.AreEqual(int.MaxValue, maximum.Number);
+            Assert.AreEqual(int.MinValue, minimum.Number);
+            var exception = Assert.ThrowsExactly<ArgException>(() => Args.Parse<GeneratedPipelineModels.PrimitiveFallbackArgs>("-Number", "not-an-integer"));
+            Assert.IsTrue(exception.Message.Contains("value must be an integer"));
+            Assert.IsTrue(exception.Context.Definition.UsesGeneratedPipeline);
         }
 
         [TestMethod]

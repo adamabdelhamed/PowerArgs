@@ -587,6 +587,8 @@ namespace PowerArgs
         public void Clean()
         {
             SpecifiedAction = null;
+            UnexpectedExplicitArguments = null;
+            UnexpectedImplicitArguments = null;
             for (var i = 0; i < Arguments.Count; i++)
             {
                 var arg = Arguments[i];
@@ -623,6 +625,34 @@ namespace PowerArgs
                 }
             }
             return false;
+        }
+
+        internal bool CanReuseReflectionDefinition()
+        {
+            for (var i = 0; i < Metadata.Count; i++) if (Metadata[i] is ArgHook hook && IsReusableReflectionHook(hook) == false) return false;
+            for (var argumentIndex = 0; argumentIndex < Arguments.Count; argumentIndex++)
+            {
+                var metadata = Arguments[argumentIndex].Metadata;
+                for (var metadataIndex = 0; metadataIndex < metadata.Count; metadataIndex++) if (metadata[metadataIndex] is ArgHook hook && IsReusableReflectionHook(hook) == false) return false;
+            }
+            for (var actionIndex = 0; actionIndex < Actions.Count; actionIndex++)
+            {
+                var actionMetadata = Actions[actionIndex].Metadata;
+                for (var metadataIndex = 0; metadataIndex < actionMetadata.Count; metadataIndex++) if (actionMetadata[metadataIndex] is ArgHook hook && IsReusableReflectionHook(hook) == false) return false;
+                var arguments = Actions[actionIndex].Arguments;
+                for (var argumentIndex = 0; argumentIndex < arguments.Count; argumentIndex++)
+                {
+                    var metadata = arguments[argumentIndex].Metadata;
+                    for (var metadataIndex = 0; metadataIndex < metadata.Count; metadataIndex++) if (metadata[metadataIndex] is ArgHook hook && IsReusableReflectionHook(hook) == false) return false;
+                }
+            }
+            return true;
+        }
+
+        private static bool IsReusableReflectionHook(ArgHook hook)
+        {
+            var type = hook.GetType();
+            return type == typeof(DefaultValueAttribute) || type == typeof(ArgDefaultValueAttribute);
         }
 
         internal void SetPropertyValues(object o)
