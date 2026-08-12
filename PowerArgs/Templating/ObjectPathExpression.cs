@@ -212,7 +212,39 @@ namespace PowerArgs
         /// <returns>The result of the evaluation</returns>
         public object Evaluate(object root)
         {
-            return EvaluateAndTrace(root).Last();
+            if (root == null) throw new ArgumentNullException("root cannot be null");
+
+            var currentObject = root;
+            foreach (var pathElement in Elements)
+            {
+                if (currentObject == null) throw new NullReferenceException("Null reference while evaluating object path");
+
+                var property = pathElement as PropertyPathElement;
+                if (property != null)
+                {
+                    var propertyInfo = currentObject.GetType().GetProperty(property.PropertyName);
+                    if (propertyInfo == null) throw new InvalidOperationException("Type " + currentObject.GetType().Name + " does not have a property called " + property.PropertyName);
+                    currentObject = propertyInfo.GetValue(currentObject, null);
+                    continue;
+                }
+
+                var indexer = pathElement as IndexerPathElement;
+                if (indexer == null) throw new NotImplementedException("Unknown path element type: " + pathElement.GetType().FullName);
+
+                var array = currentObject as Array;
+                if (array != null) currentObject = array.GetValue((int)indexer.Index);
+                else if (currentObject is string text) currentObject = text[(int)indexer.Index];
+                else if (currentObject is IList list && indexer.Index is int listIndex) currentObject = list[listIndex];
+                else if (currentObject is IDictionary dictionary) currentObject = dictionary[indexer.Index];
+                else
+                {
+                    var indexerProperty = indexer.FindMatchingProperty(currentObject);
+                    if (indexerProperty == null) throw new InvalidOperationException("Type " + currentObject.GetType().Name + " does not have a supported indexer property of type " + indexer.Index.GetType());
+                    currentObject = indexerProperty.GetValue(currentObject, new[] { indexer.Index });
+                }
+            }
+
+            return currentObject;
         }
 
         public class TraceNode

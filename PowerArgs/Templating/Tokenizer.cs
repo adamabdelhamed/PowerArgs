@@ -150,7 +150,7 @@ public class Tokenizer<T> where T : Token
 
     private bool insideStringLiteral = false;
 
-    public char[] TokenBuffer { get; set; } = DefaultTokenBuffer;
+    public char[] TokenBuffer { get; set; } = (char[])DefaultTokenBuffer.Clone();
 
     public static char[] DefaultTokenBuffer = new char[1024];
 
@@ -174,7 +174,10 @@ public class Tokenizer<T> where T : Token
     /// <returns>The list of tokens</returns>
     public List<T> Tokenize(string input)
     {
+        if (input == null) throw new ArgumentNullException(nameof(input));
+
         currentTokenIndex = 0;
+        explicitNonDelimiterCharacters.Clear();
         List<T> tokens = new List<T>();
         T currentToken = null;
 
@@ -407,7 +410,7 @@ public class Tokenizer<T> where T : Token
     {
         if (currentToken != null)
         {
-            currentToken.Value = String.Intern(new string(TokenBuffer, 0, currentTokenIndex));
+            currentToken.Value = new string(TokenBuffer, 0, currentTokenIndex);
             tokens.Add(currentToken);
         }
 
@@ -419,6 +422,13 @@ public class Tokenizer<T> where T : Token
 
     private void AppendToTokenSafe(ref T currentToken, char toAppend, int startIndex, int line, int col)
     {
+        if (currentTokenIndex == TokenBuffer.Length)
+        {
+            var expandedBuffer = TokenBuffer;
+            Array.Resize(ref expandedBuffer, Math.Max(16, expandedBuffer.Length * 2));
+            TokenBuffer = expandedBuffer;
+        }
+
         if (currentToken == null)
         {
             currentToken = CreateTokenForTokenizer(startIndex, line, col);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace PowerArgs
@@ -68,8 +69,12 @@ namespace PowerArgs
     /// </summary>
     public class DocumentRenderer
     {
+        private const int MaxCompiledTemplates = 128;
+        private const int MaxParsedObjectPaths = 256;
         private DocumentExpressionParser expressionParser;
         private Dictionary<string, DocumentTemplateInfo> namedTemplates;
+        private readonly ConcurrentDictionary<(string Template, string SourceLocation), IReadOnlyList<IDocumentExpression>> compiledTemplates = new ConcurrentDictionary<(string, string), IReadOnlyList<IDocumentExpression>>();
+        private readonly ConcurrentDictionary<string, ObjectPathExpression> parsedObjectPaths = new ConcurrentDictionary<string, ObjectPathExpression>(StringComparer.Ordinal);
 
         /// <summary>
         /// Creates a new DocumentRenderer.
@@ -144,8 +149,19 @@ namespace PowerArgs
 
         internal ConsoleString Render(string template, DocumentRendererContext context, string sourceFileLocation = null)
         {
-            List<DocumentToken> tokens = DocumentToken.Tokenize(template, sourceFileLocation);
-            return Render(tokens, context);
+            if (template == null) throw new ArgumentNullException(nameof(template));
+            if (expressionParser.HasCustomizations) return Evaluate(expressionParser.Parse(DocumentToken.Tokenize(template, sourceFileLocation)), context);
+
+            var key = (Template: template, SourceLocation: sourceFileLocation);
+            if (compiledTemplates.Count >= MaxCompiledTemplates && compiledTemplates.ContainsKey(key) == false) compiledTemplates.Clear();
+            var expressions = compiledTemplates.GetOrAdd(key, value => expressionParser.Parse(DocumentToken.Tokenize(value.Template, value.SourceLocation)));
+            return Evaluate(expressions, context);
+        }
+
+        internal ObjectPathExpression GetParsedObjectPath(string expressionText)
+        {
+            if (parsedObjectPaths.Count >= MaxParsedObjectPaths && parsedObjectPaths.ContainsKey(expressionText) == false) parsedObjectPaths.Clear();
+            return parsedObjectPaths.GetOrAdd(expressionText, ObjectPathExpression.Parse);
         }
 
         internal DocumentTemplateInfo GetTemplate(DocumentToken nameToken)
@@ -165,17 +181,11 @@ namespace PowerArgs
             return ret;
         }
 
-        private ConsoleString Evaluate(List<IDocumentExpression> expressions, DocumentRendererContext context)
+        internal ConsoleString Evaluate(IReadOnlyList<IDocumentExpression> expressions, DocumentRendererContext context)
         {
-            ConsoleString ret = new ConsoleString();
-
-            foreach (var expression in expressions)
-            {
-                var eval = expression.Evaluate(context);
-                ret += eval;
-            }
-
-            return ret;
+            var characters = new List<ConsoleCharacter>();
+            context.AppendExpressions(expressions, characters);
+            return new ConsoleString(characters);
         }
     }
 }

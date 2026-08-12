@@ -1,5 +1,10 @@
 ﻿namespace PowerArgs
 {
+    internal interface IBufferedDocumentExpression
+    {
+        void EvaluateInto(DocumentRendererContext context, List<ConsoleCharacter> output);
+    }
+
     /// <summary>
     /// An interface that defines a signature for evaluating an expression against a data context to render a ConsoleString.
     /// </summary>

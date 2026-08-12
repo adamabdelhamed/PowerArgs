@@ -5,7 +5,7 @@ namespace PowerArgs
     /// <summary>
     /// The core expression that knows how to evaluate C# object expressions like property navigation, including indexed properties.
     /// </summary>
-    public class EvalExpression : IDocumentExpression
+    public class EvalExpression : IDocumentExpression, IBufferedDocumentExpression
     {
         /// <summary>
         /// Gets the evaluation token that will be evaluated against a data context
@@ -121,6 +121,8 @@ namespace PowerArgs
                 context.LocalVariables.PopConsoleColors();
             }
         }
+
+        void IBufferedDocumentExpression.EvaluateInto(DocumentRendererContext context, List<ConsoleCharacter> output) => output.AddRange(Evaluate(context));
     }
 
     /// <summary>
@@ -163,6 +165,9 @@ namespace PowerArgs
             {
                 ret.BackgroundColorToken = bgToken;
             }
+
+            DocumentToken unexpected;
+            if (reader.TryAdvance(out unexpected, skipWhitespace: true)) throw new DocumentRenderException("Unexpected parameter '" + unexpected.Value + "' after background color", unexpected);
 
             return ret;
         }

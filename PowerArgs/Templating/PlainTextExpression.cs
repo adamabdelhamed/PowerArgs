@@ -6,7 +6,7 @@ namespace PowerArgs
     /// <summary>
     /// A document expression that represents plain text with no replacements or custom logic
     /// </summary>
-    public class PlainTextDocumentExpression : IDocumentExpression
+    public class PlainTextDocumentExpression : IDocumentExpression, IBufferedDocumentExpression
     {
         /// <summary>
         /// The plain text tokens
@@ -35,8 +35,15 @@ namespace PowerArgs
         /// <returns>The rendered plain text</returns>
         public ConsoleString Evaluate(DocumentRendererContext context)
         {
-            var ret = new ConsoleString();
+            var characters = new List<ConsoleCharacter>();
+            EvaluateInto(context, characters);
+            return new ConsoleString(characters);
+        }
 
+        void IBufferedDocumentExpression.EvaluateInto(DocumentRendererContext context, List<ConsoleCharacter> output) => EvaluateInto(context, output);
+
+        private void EvaluateInto(DocumentRendererContext context, List<ConsoleCharacter> output)
+        {
             var fg = new ConsoleCharacter('a').ForegroundColor;
             var bg = new ConsoleCharacter('a').BackgroundColor;
 
@@ -50,12 +57,10 @@ namespace PowerArgs
                 bg = (RGB)context.LocalVariables["ConsoleBackgroundColor"];
             }
 
-            foreach (var token in this.tokens)
+            foreach (var token in tokens)
             {
-                ret += new ConsoleString(token.Value, fg, bg);
+                foreach (var character in token.Value) output.Add(new ConsoleCharacter(character, fg, bg));
             }
-
-            return ret;
         }
     }
 }

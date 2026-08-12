@@ -48,6 +48,8 @@ namespace PowerArgs
         /// The body text between the tags.  Not populated if the tag is quick terminated.
         /// </summary>
         public ReadOnlyCollection<DocumentToken> Body { get; internal set; }
+
+        internal IReadOnlyList<IDocumentExpression> ParsedBody { get; set; }
     }
 
     /// <summary>
@@ -77,6 +79,8 @@ namespace PowerArgs
     public class DocumentExpressionParser
     {
         private Dictionary<string, IDocumentExpressionProvider> expressionProviders;
+
+        internal bool HasCustomizations { get; private set; }
 
         /// <summary>
         /// Gets a list of registered expression provider keys
@@ -129,6 +133,9 @@ namespace PowerArgs
         /// <param name="allowOverrideExistingKeys">If true, allow this provider to replace an existing provider registered with the same key .  If false, an exception will be thrown if a conflict is found.</param>
         public void RegisterReplacementExpressionProvider(string replacementKey, IDocumentExpressionProvider provider, bool allowOverrideExistingKeys = false)
         {
+            if (replacementKey == null) throw new ArgumentNullException(nameof(replacementKey));
+            if (provider == null) throw new ArgumentNullException(nameof(provider));
+
             if(this.expressionProviders.ContainsKey(replacementKey))
             {
                 if (allowOverrideExistingKeys)
@@ -144,6 +151,7 @@ namespace PowerArgs
             {
                 this.expressionProviders.Add(replacementKey, provider);
             }
+            HasCustomizations = true;
         }
 
         /// <summary>
@@ -157,6 +165,7 @@ namespace PowerArgs
             {
                 throw new ArgumentException("There is no replacement expression provider with key '" + replacementKey + "'");
             }
+            HasCustomizations = true;
         }
 
         /// <summary>
@@ -176,10 +185,15 @@ namespace PowerArgs
                 {
                     ParseReplacement(reader, ret);
                 }
+                else if (reader.Peek().TokenType == DocumentTokenType.BeginTerminateReplacementSegment)
+                {
+                    throw Unexpected(reader.Peek());
+                }
                 else
                 {
-                    var plain = new PlainTextDocumentExpression(reader.Advance());
-                    ret.Add(plain);
+                    var plainTokens = new List<DocumentToken>();
+                    while (reader.CanAdvance() && reader.Peek().TokenType != DocumentTokenType.BeginReplacementSegment && reader.Peek().TokenType != DocumentTokenType.BeginTerminateReplacementSegment) plainTokens.Add(reader.Advance());
+                    ret.Add(new PlainTextDocumentExpression(plainTokens));
                 }
             }
 
@@ -231,6 +245,7 @@ namespace PowerArgs
                 CloseToken = closeReplacementToken,
                 Parameters = parameters.AsReadOnly(),
                 Body = body.AsReadOnly(),
+                ParsedBody = body.Count == 0 ? Array.Empty<IDocumentExpression>() : Parse(body),
                 ReplacementKeyToken = replacementKeyToken,
             };
 
@@ -267,7 +282,8 @@ namespace PowerArgs
                     if(numOpenReplacements == 0)
                     {
                         AdvanceAndExpectConstantType(reader, DocumentTokenType.BeginTerminateReplacementSegment);
-                        AdvanceAndExpect(reader, DocumentTokenType.ReplacementKey, replacementKeyToken.Value, skipWhitespace: true);
+                        var closingKey = AdvanceAndExpect(reader, DocumentTokenType.ReplacementKey, replacementKeyToken.Value, skipWhitespace: true);
+                        if (closingKey.Value != replacementKeyToken.Value) throw Unexpected(replacementKeyToken.Value, closingKey);
                         AdvanceAndExpectConstantType(reader, DocumentTokenType.EndReplacementSegment);
                         break;
                     }

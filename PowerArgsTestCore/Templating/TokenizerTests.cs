@@ -165,6 +165,25 @@ namespace ArgsTests.Templating
             AssertEqual(tokens, "Hi,", "my", "name", "is", "\"John", "Smith\"");
         }
 
+        [TestMethod]
+        public void TestTokenizerSupportsTokensLargerThanItsInitialBuffer()
+        {
+            var value = new string('x', 20_000);
+            var tokens = new Tokenizer<Token>().Tokenize(value);
+
+            Assert.AreEqual(1, tokens.Count);
+            Assert.AreEqual(value, tokens[0].Value);
+        }
+
+        [TestMethod]
+        public void TestTokenizerInstancesDoNotShareTheirWorkingBuffer()
+        {
+            var first = new Tokenizer<Token>();
+            var second = new Tokenizer<Token>();
+
+            Assert.AreNotSame(first.TokenBuffer, second.TokenBuffer);
+        }
+
         private void AssertEqual(List<Token> tokens, params string[] expected)
         {
             Assert.AreEqual(expected.Length, tokens.Count);

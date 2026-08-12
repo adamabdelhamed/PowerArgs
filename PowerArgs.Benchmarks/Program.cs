@@ -8,11 +8,47 @@ var config = args.Contains("--profile") ? DefaultConfig.Instance.AddDiagnoser(ne
 if (args.Contains("--invoke-only")) BenchmarkRunner.Run<InvocationBenchmarks>(config);
 else if (args.Contains("--parse-only")) BenchmarkRunner.Run<ParseBenchmarks>(config);
 else if (args.Contains("--conversion-only")) BenchmarkRunner.Run<ConversionBenchmarks>(config);
+else if (args.Contains("--template-only")) BenchmarkRunner.Run<TemplateBenchmarks>(config);
 else
 {
     BenchmarkRunner.Run<ParseBenchmarks>(config);
     BenchmarkRunner.Run<InvocationBenchmarks>(config);
     BenchmarkRunner.Run<ConversionBenchmarks>(config);
+    BenchmarkRunner.Run<TemplateBenchmarks>(config);
+}
+
+[MemoryDiagnoser]
+[ShortRunJob]
+public class TemplateBenchmarks
+{
+    private const string Template = """
+        {{if ShowHeader}}
+        {{Title!}}
+        !{{if}}
+        {{each item in Items}}
+        {{item.Name!}}: {{item.Description!}}
+        {{if item.Enabled}}[enabled]!{{if}}
+        !{{each}}
+        """;
+
+    private readonly DocumentRenderer renderer = new();
+    private readonly DocumentExpressionParser parser = new();
+    private readonly object data = new
+    {
+        ShowHeader = true,
+        Title = "Commands",
+        Items = Enumerable.Range(0, 20).Select(i => new { Name = "command-" + i, Description = "Description for command " + i, Enabled = i % 2 == 0 }).ToArray(),
+    };
+    private readonly List<DocumentToken> tokens = DocumentToken.Tokenize(Template, "benchmark");
+
+    [Benchmark]
+    public List<DocumentToken> Tokenize() => DocumentToken.Tokenize(Template, "benchmark");
+
+    [Benchmark]
+    public List<IDocumentExpression> Parse() => parser.Parse(tokens);
+
+    [Benchmark]
+    public ConsoleString Render() => renderer.Render(Template, data, "benchmark");
 }
 
 [MemoryDiagnoser]

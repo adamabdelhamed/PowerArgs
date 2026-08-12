@@ -6,7 +6,7 @@ namespace PowerArgs
     /// <summary>
     /// An expression used to expand a portion of a document template for each element in a collection
     /// </summary>
-    public class EachExpression : IDocumentExpression
+    public class EachExpression : IDocumentExpression, IBufferedDocumentExpression
     {
         /// <summary>
         /// Gets the token in the document that represents the iteration variable name (e.g. 'element' in {{each element in collection}})
@@ -22,6 +22,8 @@ namespace PowerArgs
         /// Gets the body of the each expression.  This body will be evaluated once fore each element in the collection.
         /// </summary>
         public IEnumerable<DocumentToken> Body { get; private set; }
+
+        internal IReadOnlyList<IDocumentExpression> ParsedBody { get; set; }
 
         /// <summary>
         /// Creates a new each expression given an iteration variable name, a collection expression, and a body.
@@ -43,6 +45,15 @@ namespace PowerArgs
         /// <returns>The rendered contents of the each loop</returns>
         public ConsoleString Evaluate(DocumentRendererContext context)
         {
+            var characters = new List<ConsoleCharacter>();
+            EvaluateInto(context, characters);
+            return new ConsoleString(characters);
+        }
+
+        void IBufferedDocumentExpression.EvaluateInto(DocumentRendererContext context, List<ConsoleCharacter> output) => EvaluateInto(context, output);
+
+        private void EvaluateInto(DocumentRendererContext context, List<ConsoleCharacter> output)
+        {
             var collection = context.EvaluateExpression(this.CollectionVariableExpressionToken.Value);
             if (collection == null)
             {
@@ -53,19 +64,24 @@ namespace PowerArgs
             {
                 throw new DocumentRenderException("'" + this.CollectionVariableExpressionToken.Value + "' does not resolve to a collection", this.CollectionVariableExpressionToken);
             }
-            ConsoleString ret = ConsoleString.Empty;
             int index = 0;
             var iterationVariableName = this.IterationVariableNameToken.Value + "-index";
             foreach(var item in (IEnumerable)collection)
             {
                 context.LocalVariables.Add(this.IterationVariableNameToken, item);
                 context.LocalVariables.Force(iterationVariableName, index);
-                ret+= context.RenderBody(this.Body);
-                context.LocalVariables.Remove(this.IterationVariableNameToken);
-                context.LocalVariables.ForceClear(iterationVariableName);
+                try
+                {
+                    if (ParsedBody == null) output.AddRange(context.RenderBody(this.Body));
+                    else context.AppendExpressions(ParsedBody, output);
+                }
+                finally
+                {
+                    context.LocalVariables.Remove(this.IterationVariableNameToken);
+                    context.LocalVariables.ForceClear(iterationVariableName);
+                }
                 index++;
             }
-            return ret;
         }
     }
 
@@ -119,7 +135,7 @@ namespace PowerArgs
                 throw new DocumentRenderException("Unexpected parameter '" + unexpected.Value + "' after collection", unexpected);
             }
 
-            return new EachExpression(variableName, collectionExpressionToken, context.Body);
+            return new EachExpression(variableName, collectionExpressionToken, context.Body) { ParsedBody = context.ParsedBody };
         }
     }
 }

@@ -55,6 +55,21 @@ namespace PowerArgs
             return DocumentRenderer.Render(body, this);
         }
 
+        internal ConsoleString RenderExpressions(IReadOnlyList<IDocumentExpression> expressions)
+        {
+            return DocumentRenderer.Evaluate(expressions, this);
+        }
+
+        internal void AppendExpressions(IReadOnlyList<IDocumentExpression> expressions, List<ConsoleCharacter> output)
+        {
+            foreach (var expression in expressions)
+            {
+                var buffered = expression as IBufferedDocumentExpression;
+                if (buffered == null) output.AddRange(expression.Evaluate(this));
+                else buffered.EvaluateInto(this, output);
+            }
+        }
+
         /// <summary>
         /// Evaluates the given expression and returns the result.  The expression can refer to a local variable (e.g. 'somevariable'), 
         /// a path starting from a localVariable (e.g. 'somevariable.SomeProperty.SomeOtherProperty'), or a path starting from the root
@@ -78,18 +93,21 @@ namespace PowerArgs
                 }
                 else
                 {
-                    expression = ObjectPathExpression.Parse(restOfExpressionText);
+                    expression = GetParsedExpression(restOfExpressionText);
                     root = localVariableValue;
                 }
             }
             else
             {
-                expression = ObjectPathExpression.Parse(expressionText);
+                expression = GetParsedExpression(expressionText);
                 root = this.RootDataObject;
             }
 
             var ret = expression.Evaluate(root);
             return ret;
         }
+
+        private ObjectPathExpression GetParsedExpression(string expressionText) => DocumentRenderer == null ? ObjectPathExpression.Parse(expressionText) : DocumentRenderer.GetParsedObjectPath(expressionText);
+
     }
 }

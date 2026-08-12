@@ -5,7 +5,7 @@ namespace PowerArgs
     /// <summary>
     /// An expression that allows a portion of a document template to be rendered only if some condition is true
     /// </summary>
-    public class IfExpression : IDocumentExpression
+    public class IfExpression : IDocumentExpression, IBufferedDocumentExpression
     {
         /// <summary>
         /// The token representing the conditional expression.  
@@ -16,6 +16,8 @@ namespace PowerArgs
         /// The contents of the expression to render only if the condition is true
         /// </summary>
         public IEnumerable<DocumentToken> Body { get; private set; }
+
+        internal IReadOnlyList<IDocumentExpression> ParsedBody { get; set; }
 
         /// <summary>
         /// Creates a new if expression given a conditional token and a body
@@ -35,15 +37,20 @@ namespace PowerArgs
         /// <returns>The rendered body if the conditional was true, an empty string otherwise</returns>
         public virtual ConsoleString Evaluate(DocumentRendererContext context)
         {
-            var eval = context.EvaluateExpression(this.IfExpressionToken.Value);
-            if(true.Equals(eval) || 1.Equals(eval))
-            {
-                return context.RenderBody(this.Body);
-            }
-            else
-            {
-                return ConsoleString.Empty;
-            }
+            var characters = new List<ConsoleCharacter>();
+            EvaluateInto(context, characters);
+            return new ConsoleString(characters);
+        }
+
+        void IBufferedDocumentExpression.EvaluateInto(DocumentRendererContext context, List<ConsoleCharacter> output) => EvaluateInto(context, output);
+
+        protected virtual bool ShouldRender(object value) => true.Equals(value) || 1.Equals(value);
+
+        private void EvaluateInto(DocumentRendererContext context, List<ConsoleCharacter> output)
+        {
+            if (ShouldRender(context.EvaluateExpression(this.IfExpressionToken.Value)) == false) return;
+            if (ParsedBody == null) output.AddRange(context.RenderBody(this.Body));
+            else context.AppendExpressions(ParsedBody, output);
         }
     }
 
@@ -66,16 +73,10 @@ namespace PowerArgs
         /// <returns>The rendered body if the conditional was false, an empty string otherwise</returns>
         public override ConsoleString Evaluate(DocumentRendererContext context)
         {
-            var eval = context.EvaluateExpression(this.IfExpressionToken.Value);
-            if (false.Equals(eval) == true || 0.Equals(eval))
-            {
-                return context.RenderBody(this.Body);
-            }
-            else
-            {
-                return ConsoleString.Empty;
-            }
+            return base.Evaluate(context);
         }
+
+        protected override bool ShouldRender(object value) => false.Equals(value) || 0.Equals(value);
     }
 
     /// <summary>
@@ -114,7 +115,9 @@ namespace PowerArgs
                 throw new DocumentRenderException("unexpected parameters after if expression", reader.Advance(skipWhitespace: true));
             }
 
-            return not ? new IfNotExpression(ifExpressionToken, context.Body) : new IfExpression(ifExpressionToken, context.Body);
+            var expression = not ? new IfNotExpression(ifExpressionToken, context.Body) : new IfExpression(ifExpressionToken, context.Body);
+            expression.ParsedBody = context.ParsedBody;
+            return expression;
         }
     }
 }

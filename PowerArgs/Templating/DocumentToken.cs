@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace PowerArgs
 {
@@ -148,69 +147,80 @@ namespace PowerArgs
         /// <returns>A list of tokens</returns>
         public static List<DocumentToken> Tokenize(string text, string sourceLocation)
         {
-            var tokenizer = new DocumentTokenizer();
-            tokenizer.SourceFileLocation = sourceLocation;
-            tokenizer.Delimiters.AddRange(DocumentToken.Delimiters);
-            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndInclude;
-     
-            List<DocumentToken> tokens = tokenizer.Tokenize(text);
-            foreach(var token in tokens)
-            {
-                AssignTokenTypes(token, tokens);
-            }
-            List<DocumentToken> filtered = RemoveLinesThatOnlyContainReplacements(tokens);
-            return filtered;
+            if (text == null) throw new ArgumentNullException(nameof(text));
+
+            var tokens = Scan(text, sourceLocation);
+            AssignTokenTypes(tokens);
+            return RemoveLinesThatOnlyContainReplacements(tokens);
         }
 
-        private static void AssignTokenTypes(DocumentToken token, List<DocumentToken> tokens)
+        private static List<DocumentToken> Scan(string text, string sourceLocation)
+        {
+            var tokens = new List<DocumentToken>();
+            var index = 0;
+            var line = 1;
+            var column = 1;
+
+            while (index < text.Length)
+            {
+                var tokenStart = index;
+                var tokenLine = line;
+                var tokenColumn = column;
+                var delimiterLength = GetDelimiterLength(text, index);
+
+                if (delimiterLength > 0)
+                {
+                    index += delimiterLength;
+                    column += delimiterLength;
+                }
+                else if (char.IsWhiteSpace(text[index]))
+                {
+                    var current = text[index++];
+                    if (current == '\n')
+                    {
+                        line++;
+                        column = 1;
+                    }
+                    else column++;
+                }
+                else
+                {
+                    do
+                    {
+                        index++;
+                        column++;
+                    }
+                    while (index < text.Length && char.IsWhiteSpace(text[index]) == false && GetDelimiterLength(text, index) == 0);
+                }
+
+                tokens.Add(new DocumentToken(tokenStart, tokenLine, tokenColumn) { Value = text.Substring(tokenStart, index - tokenStart), SourceFileLocation = sourceLocation });
+            }
+
+            return tokens;
+        }
+
+        private static int GetDelimiterLength(string text, int index)
+        {
+            if (index + 2 < text.Length && text[index] == '!' && text[index + 1] == '{' && text[index + 2] == '{') return 3;
+            if (index + 2 < text.Length && text[index] == '!' && text[index + 1] == '}' && text[index + 2] == '}') return 3;
+            if (index + 1 < text.Length && text[index] == '{' && text[index + 1] == '{') return 2;
+            if (index + 1 < text.Length && text[index] == '}' && text[index + 1] == '}') return 2;
+            return 0;
+        }
+
+        private static void AssignTokenTypes(List<DocumentToken> tokens)
         {
             DocumentTokenType? previousNonWhitespaceTokenType = null;
+            for (var i = 0; i < tokens.Count; i++)
+            {
+                var token = tokens[i];
+                DocumentTokenType constantValueType;
+                if (TryParseDocumentTokenType(token.Value, out constantValueType)) token.TokenType = constantValueType;
+                else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginReplacementSegment || previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginTerminateReplacementSegment)) token.TokenType = DocumentTokenType.ReplacementKey;
+                else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementKey || previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementParameter)) token.TokenType = DocumentTokenType.ReplacementParameter;
+                else token.TokenType = DocumentTokenType.PlainText;
 
-            var myIndex = tokens.IndexOf(token);
-            for (var i = myIndex - 1; i >= 0; i--)
-            {
-                var current = tokens[i];
-                if (string.IsNullOrWhiteSpace(current.Value) == false)
-                {
-                    previousNonWhitespaceTokenType = current.TokenType;
-                    break;
-                }
-            }
-
-            DocumentTokenType constantValueType;
-            if (TryParseDocumentTokenType(token.Value, out constantValueType))
-            {
-                token.TokenType = constantValueType;
-            }
-            else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginReplacementSegment || previousNonWhitespaceTokenType.Value == DocumentTokenType.BeginTerminateReplacementSegment))
-            {
-                token.TokenType = DocumentTokenType.ReplacementKey;
-            }
-            else if (previousNonWhitespaceTokenType.HasValue && (previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementKey || previousNonWhitespaceTokenType.Value == DocumentTokenType.ReplacementParameter))
-            {
-                token.TokenType = DocumentTokenType.ReplacementParameter;
-            }
-            else
-            {
-                token.TokenType = DocumentTokenType.PlainText;
-            }
-        }
-
-        private static List<string> Delimiters
-        {
-            get
-            {
-                List<string> ret = new List<string>();
-                foreach (DocumentTokenType type in Enum.GetValues(typeof(DocumentTokenType)))
-                {
-                    string textVal;
-                    if (TryGetTokenTypeValue(type, out textVal))
-                    {
-                        ret.Add(textVal);
-                    }
-                }
-
-                return ret;
+                if (string.IsNullOrWhiteSpace(token.Value) == false) previousNonWhitespaceTokenType = token.TokenType;
             }
         }
 
@@ -295,14 +305,6 @@ namespace PowerArgs
                     token.TokenType == DocumentTokenType.QuickTerminateReplacementSegment ||
                     token.TokenType == DocumentTokenType.ReplacementKey ||
                     token.TokenType == DocumentTokenType.ReplacementParameter;
-        }
-
-        private class DocumentTokenizer : Tokenizer<DocumentToken>
-        {
-            protected override DocumentToken TokenFactory(int currentIndex, int line, int col)
-            {
-                return new DocumentToken(currentIndex, line, col);
-            }
         }
     }
 }
