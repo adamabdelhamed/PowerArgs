@@ -155,5 +155,31 @@ Alic...      Two Microsoft     The wife of the author of PowerArgs, the world's 
 
             builder.FormatAsTable(columns, rows, rowPrefix: "", columnOverflowBehaviors: columnOverflowBehaviors);
         }
+
+        [TestMethod]
+        public void ConsoleTableTestZeroBufferWidth()
+        {
+            // Issue #168: OOM crash when displaying help without attached console (infinite loop in line wrapping)
+            // When Console.BufferWidth is 0 (e.g., in a Docker container without -it), the max width calculation
+            // could become negative, causing an infinite loop in FormatAsWrappedSegments.
+            ConsoleProvider.Current.BufferWidth = 0;
+            ConsoleTableBuilder builder = new ConsoleTableBuilder();
+
+            var columns = new List<ConsoleString>() { new ConsoleString("NAME"), new ConsoleString("DESCRIPTION") };
+            var rows = new List<List<ConsoleString>>()
+            {
+                new List<ConsoleString>(){ new ConsoleString("Test"), new ConsoleString("A test description that would cause wrapping") },
+            };
+
+            var columnOverflowBehaviors = new List<ColumnOverflowBehavior>()
+            {
+                new TruncateOverflowBehavior(){ColumnWidth = 10},
+                new SmartWrapOverflowBehavior(),
+            };
+
+            // This should complete without hanging or crashing
+            var output = builder.FormatAsTable(columns, rows, rowPrefix: "", columnOverflowBehaviors: columnOverflowBehaviors);
+            Assert.IsNotNull(output);
+        }
     }
 }
