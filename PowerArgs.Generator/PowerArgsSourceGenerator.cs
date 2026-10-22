@@ -147,7 +147,8 @@ namespace PowerArgs.Generator
             foreach (var method in type.GetMembers().OfType<IMethodSymbol>().Where(method => method.MethodKind == MethodKind.Ordinary && method.IsImplicitlyDeclared == false))
             {
                 if (method.Name == "Main") continue;
-                if (method.GetAttributes().Any(IsArgActionMethod) == false) return false;
+                // Ordinary helpers are not part of the command-line contract.
+                if (method.GetAttributes().Any(IsArgActionMethod) == false) continue;
                 if (method.ReturnsVoid == false && IsTask(method.ReturnType) == false) return false;
                 if (method.GetAttributes().Any(attribute => IsActionMetadata(attribute) && (IsSupportedActionAttribute(attribute) == false || CanGenerateAttribute(attribute) == false))) return false;
                 if (method.GetAttributes().Count(IsCaseAttribute) > 1) return false;
@@ -176,13 +177,18 @@ namespace PowerArgs.Generator
         {
             var hierarchy = new List<INamedTypeSymbol>();
             for (var current = type; current != null && current.SpecialType != SpecialType.System_Object; current = current.BaseType) hierarchy.Add(current);
-            hierarchy.Reverse();
             var properties = new List<IPropertySymbol>();
             foreach (var current in hierarchy)
             {
-                properties.AddRange(current.GetMembers().OfType<IPropertySymbol>()
+                // Match Type.GetProperties: declared members first, then inherited members;
+                // an override (or same-signature hidden property) replaces its base member.
+                foreach (var property in current.GetMembers().OfType<IPropertySymbol>()
                     .Where(property => property.IsStatic == false && property.DeclaredAccessibility == Accessibility.Public && property.IsIndexer == false)
-                    .OrderBy(property => property.Locations.FirstOrDefault()?.SourceSpan.Start ?? int.MaxValue));
+                    .OrderBy(property => property.Locations.FirstOrDefault()?.SourceSpan.Start ?? int.MaxValue))
+                {
+                    if (properties.Any(existing => existing.Name == property.Name && SymbolEqualityComparer.Default.Equals(existing.Type, property.Type))) continue;
+                    properties.Add(property);
+                }
             }
             return properties;
         }
@@ -258,9 +264,8 @@ namespace PowerArgs.Generator
 
         private static bool HasOnlySimpleRequiredMetadata(IEnumerable<AttributeData> attributes) => attributes.Where(IsArgRequired).All(attribute => attribute.NamedArguments.Length == 0 && attribute.ConstructorArguments.Length == 0);
 
-        private static List<IPropertySymbol> GetActionArgumentProperties(INamedTypeSymbol type) => type.GetMembers().OfType<IPropertySymbol>()
-            .Where(property => property.IsStatic == false && property.DeclaredAccessibility == Accessibility.Public && property.IsIndexer == false && property.GetAttributes().Any(IsArgIgnore) == false)
-            .OrderBy(property => property.Locations.FirstOrDefault()?.SourceSpan.Start ?? int.MaxValue)
+        private static List<IPropertySymbol> GetActionArgumentProperties(INamedTypeSymbol type) => GetPublicProperties(type)
+            .Where(property => property.GetAttributes().Any(IsArgIgnore) == false)
             .ToList();
 
         private static void AppendGeneratedModel(StringBuilder source, string indent, INamedTypeSymbol type, List<IPropertySymbol> properties, bool useDirectParser)
@@ -692,7 +697,10 @@ namespace PowerArgs.Generator
 
         private static bool IsDirectType(ITypeSymbol type)
         {
+            if (type is INamedTypeSymbol nullable && nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T) return IsDirectType(nullable.TypeArguments[0]);
             if (type.TypeKind == TypeKind.Enum) return true;
+            // These use the classic conversion service, preserving culture, custom revivers and errors.
+            if (type.SpecialType == SpecialType.System_Char || type.SpecialType == SpecialType.System_Decimal || type.SpecialType == SpecialType.System_SByte || type.SpecialType == SpecialType.System_Int16 || type.SpecialType == SpecialType.System_UInt16 || type.SpecialType == SpecialType.System_UInt32 || type.SpecialType == SpecialType.System_UInt64) return true;
             if (type.SpecialType == SpecialType.System_String || type.SpecialType == SpecialType.System_Boolean || type.SpecialType == SpecialType.System_Byte || type.SpecialType == SpecialType.System_Int32 || type.SpecialType == SpecialType.System_Int64 || type.SpecialType == SpecialType.System_Single || type.SpecialType == SpecialType.System_Double || type.SpecialType == SpecialType.System_DateTime) return true;
             var name = type.ToDisplayString();
             return name == "System.Guid" || name == "System.Uri" || name == "System.Net.IPAddress" || name == "PowerArgs.ConsoleString";

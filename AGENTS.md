@@ -11,6 +11,9 @@
 - Both generated tiers avoid reflected scaffold discovery, activation, and property assignment. The direct tier additionally avoids the allocation-heavy general hook/alias machinery; the shared-parser tier deliberately retains it for behavioral compatibility. Do not make the full reflection fallback depend on generated code.
 - Type-based reflection parsing reuses definitions per thread when they contain no hooks beyond the exact built-in default-value attributes. Keep `CommandLineArgumentsDefinition.Clean()` complete as mutable parse state is added; models containing other or derived hooks deliberately receive fresh reflected definitions.
 - Keep performance measurements in `PowerArgs.Benchmarks`; do not turn timing thresholds into unit tests. Pass `--parse-only`, `--invoke-only`, or `--conversion-only` after `--` to isolate a suite and add `--profile` to collect EventPipe CPU traces.
+- Nullable scalars and additional numeric/character types may use the direct parser, but must retain classic conversion semantics (including nullable booleans taking values, culture, constants, custom revivers, and errors). Ordinary helper methods are not a reason to fall back. Inherited action properties must preserve reflection ordering and collapse overrides before assigning aliases.
+- Runtime custom scalar revivers override built-in direct conversions, including after a model has been used. Nullable type unwrapping is cached to avoid repeated generic type construction. Keep enum revival on its existing alias/case contract.
+- Use `GeneratedArgumentModelRegistry.GetPipelineKind` to distinguish direct, shared-parser, and reflection tiers. `--expansion-only` benchmarks the nullable/helper eligibility improvements and a scalar control; `PowerArgs.Benchmarks/CODEGEN_AUDIT.md` records evidence and deferred compatibility work.
 
 ## Help template language
 

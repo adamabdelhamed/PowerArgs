@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -14,6 +15,10 @@ namespace PowerArgs
     public static class ArgRevivers
     {
         private static Dictionary<Type, Func<string, string, object>> revivers;
+        private static readonly HashSet<Type> customReviverTypes = new HashSet<Type>();
+        private static readonly ConcurrentDictionary<Type, Type> nullableValueTypes = new ConcurrentDictionary<Type, Type>();
+
+        internal static bool HasCustomReviver(Type type) => customReviverTypes.Contains(type);
         private static Dictionary<Type, Func<string, string, object>> Revivers
         {
             get
@@ -30,9 +35,11 @@ namespace PowerArgs
         private static List<Type> cachedConvertibleTypes = new List<Type>();
         private static List<Assembly> alreadySearched = new List<Assembly>();
 
-        private static bool IsNullable(Type t) => t.IsGenericType && t.GetGenericTypeDefinition().MakeGenericType(typeof(int)) == typeof(int?);
+        private static Type GetValueType(Type type) => nullableValueTypes.GetOrAdd(type, static candidate => Nullable.GetUnderlyingType(candidate) ?? candidate);
 
-        private static Type GetNullableType(Type t) => IsNullable(t) ? t.GetGenericArguments()[0] : throw new ArgumentException("Given argument is not nullable");
+        private static bool IsNullable(Type t) => GetValueType(t) != t;
+
+        private static Type GetNullableType(Type t) => IsNullable(t) ? GetValueType(t) : throw new ArgumentException("Given argument is not nullable");
 
         /// <summary>
         /// Returns true if the given type can be revived, false otherwise
@@ -266,6 +273,7 @@ namespace PowerArgs
         /// <param name="reviverFunc">the function that revives a command line string, converting it into a consumable object</param>
         public static void SetReviver(Type t, Func<string,string, object> reviverFunc)
         {
+            customReviverTypes.Add(t);
             if (ArgRevivers.Revivers.ContainsKey(t))
             {
                 ArgRevivers.Revivers.Remove(t);

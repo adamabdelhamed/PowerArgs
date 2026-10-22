@@ -315,6 +315,9 @@ namespace PowerArgs
         {
             try
             {
+                // User overrides must win even when a built-in TryParse would succeed.
+                // Enum revival follows its separate classic alias/case contract.
+                if (spec.ArgumentType.IsEnum == false && ArgRevivers.HasCustomReviver(spec.ArgumentType)) return ArgRevivers.Revive(spec.ArgumentType, spec.Aliases.Length > 0 ? spec.Aliases[0] : spec.Name, argumentValue);
                 if (spec.ArgumentType == typeof(string)) return argumentValue;
                 if (spec.ArgumentType == typeof(bool)) return argumentValue.Equals("false", StringComparison.OrdinalIgnoreCase) == false && argumentValue != "0";
                 if (spec.ArgumentType == typeof(int) && int.TryParse(argumentValue, out var intValue)) return intValue;
@@ -325,7 +328,7 @@ namespace PowerArgs
                 if (spec.ArgumentType == typeof(Guid) && Guid.TryParse(argumentValue, out var guidValue)) return guidValue;
                 if (spec.ArgumentType == typeof(DateTime) && DateTime.TryParse(argumentValue, out var dateTimeValue)) return dateTimeValue;
                 if (spec.ArgumentType.IsEnum) return ArgRevivers.ReviveEnum(spec.ArgumentType, argumentValue, spec.IgnoreCase);
-                return ArgRevivers.Revive(spec.ArgumentType, spec.Name, argumentValue);
+                return ArgRevivers.Revive(spec.ArgumentType, spec.Aliases.Length > 0 ? spec.Aliases[0] : spec.Name, argumentValue);
             }
             catch (ArgException)
             {

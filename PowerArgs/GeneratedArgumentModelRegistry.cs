@@ -4,6 +4,14 @@ using System.Threading.Tasks;
 
 namespace PowerArgs
 {
+    /// <summary>The statically selected parsing implementation for an argument scaffold.</summary>
+    public enum ArgumentPipelineKind
+    {
+        Reflection,
+        GeneratedSharedParser,
+        GeneratedDirectParser,
+    }
+
     /// <summary>
     /// Holds source-generated argument model implementations. Applications normally do not call this API directly.
     /// </summary>
@@ -52,6 +60,18 @@ namespace PowerArgs
         /// Returns true when the given type has a source-generated parsing implementation.
         /// </summary>
         public static bool IsGenerated<T>() where T : class => IsGenerated(typeof(T));
+
+        /// <summary>Reports the selected tier without constructing or parsing the scaffold.</summary>
+        public static ArgumentPipelineKind GetPipelineKind(Type type)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            var model = Find(type);
+            if (model == null) return ArgumentPipelineKind.Reflection;
+            return model.DirectArguments == null ? ArgumentPipelineKind.GeneratedSharedParser : ArgumentPipelineKind.GeneratedDirectParser;
+        }
+
+        /// <summary>Reports the selected tier without constructing or parsing the scaffold.</summary>
+        public static ArgumentPipelineKind GetPipelineKind<T>() where T : class => GetPipelineKind(typeof(T));
 
         internal static GeneratedArgumentModel? Find(Type type)
         {
