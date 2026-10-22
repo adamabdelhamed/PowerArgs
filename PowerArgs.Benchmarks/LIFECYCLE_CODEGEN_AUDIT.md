@@ -87,3 +87,7 @@ WarmupCount=3
 |            |                      |             |              |             |       |         |        |           |             |
 | **Reflection** | **Direct control**       |  **3,095.2 ns** |    **468.39 ns** |    **25.67 ns** |  **1.00** |    **0.01** | **0.2441** |    **4600 B** |        **1.00** |
 | Generated  | Direct control       |    277.4 ns |     53.51 ns |     2.93 ns |  0.09 |    0.00 | 0.0205 |     392 B |        0.09 |
+
+## Built-in follow-up
+
+Non-prompting conditional requirements, built-in exclusions, and built-in collection validators now use the direct parser where their value types are supported. See [the built-in rules audit](BUILTIN_CODEGEN_AUDIT.md) for the follow-up measurements and compatibility coverage. Custom lifecycle workloads in this report retain the shared parser.

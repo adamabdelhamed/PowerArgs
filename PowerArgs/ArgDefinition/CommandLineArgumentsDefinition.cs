@@ -533,6 +533,9 @@ namespace PowerArgs
             });
         }
 
+        private IBooleanVariableResolver generatedVariableResolver;
+        internal IBooleanVariableResolver GeneratedVariableResolver => generatedVariableResolver ??= new GeneratedArgumentVariableResolver(this);
+
         internal static CommandLineArgument FindMatchingArgument(string key, bool throwIfMoreThanOneMatch, IEnumerable<CommandLineArgument> searchSpace)
         {
             CommandLineArgument match = null;

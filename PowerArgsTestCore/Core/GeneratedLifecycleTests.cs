@@ -142,9 +142,9 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void ConditionalActionRequirementsKeepSharedValidation()
+        public void ConditionalActionRequirementsUseDirectValidation()
         {
-            Assert.AreEqual(ArgumentPipelineKind.GeneratedSharedParser, GeneratedArgumentModelRegistry.GetPipelineKind<GeneratedConditional>());
+            Assert.AreEqual(ArgumentPipelineKind.GeneratedDirectParser, GeneratedArgumentModelRegistry.GetPipelineKind<GeneratedConditional>());
             Assert.ThrowsExactly<MissingArgException>(() => Args.InvokeAction<ClassicConditional>("Run", "-Enabled"));
             Assert.ThrowsExactly<MissingArgException>(() => Args.InvokeAction<GeneratedConditional>("Run", "-Enabled"));
             Assert.AreEqual("ok", Args.InvokeAction<GeneratedConditional>("Run", "-Enabled", "-Name", "ok").Args.Received!.Name);

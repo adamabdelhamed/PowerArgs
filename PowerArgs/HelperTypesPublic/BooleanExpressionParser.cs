@@ -151,10 +151,11 @@ namespace PowerArgs
             }
         }
 
-        private static BooleanExpressionTokenizer tokenizer = new BooleanExpressionTokenizer();
+        [ThreadStatic]
+        private static BooleanExpressionTokenizer tokenizer;
         private static List<Token> Tokenize(string expressionText)
         {
-            return tokenizer.Tokenize(expressionText);
+            return (tokenizer ??= new BooleanExpressionTokenizer()).Tokenize(expressionText);
         }
 
         private class BooleanExpressionTokenizer : Tokenizer<Token>

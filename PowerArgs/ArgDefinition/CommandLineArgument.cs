@@ -30,6 +30,8 @@ namespace PowerArgs
         private object defaultValueOverride;
         private bool hasDefaultValueOverride;
 
+        internal GeneratedArgumentRules GeneratedRules { get; set; }
+
         /// <summary>
         /// The values that can be used as specifiers for this argument on the command line
         /// </summary>

@@ -176,7 +176,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void ConditionalArgRequiredUsesGeneratedSharedParser()
+        public void ConditionalArgRequiredUsesGeneratedDirectParser()
         {
             var parsed = Args.Parse<GeneratedPipelineModels.ConditionalRequiredArgs>("-SecondArgument", "hello");
             Assert.IsNull(parsed.FirstArgument);
@@ -201,7 +201,7 @@ namespace ArgsTests
         }
 
         [TestMethod]
-        public void CrossArgumentMetadataUsesGeneratedSharedParser()
+        public void CrossArgumentMetadataUsesGeneratedDirectParser()
         {
             var parsed = Args.Parse<GeneratedPipelineModels.UnsupportedMetadataArgs>("-FirstValue", "hello");
 

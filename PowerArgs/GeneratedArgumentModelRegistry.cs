@@ -192,6 +192,9 @@ namespace PowerArgs
         /// <summary>Optional typed array/list converter selected by the source generator.</summary>
         public GeneratedCollectionReviver? CollectionReviver { get; init; }
 
+        /// <summary>Run built-in cross-argument rules after all values and defaults have been revived.</summary>
+        public bool RequiresPostValidation { get; init; }
+
         public string Name { get; }
         public Type ArgumentType { get; }
         public bool IsRequired { get; }

@@ -77,6 +77,7 @@ namespace PowerArgs
         {
             base.AfterCancel(context);
             if (iDidTheCancel == false) return;
+            iDidTheCancel = false;
             if (WriteHelp == false) return;
             var usage = UsageTemplateProvider.GetUsage(UsageTemplateProviderType, context.Definition);
             usage.Write();

@@ -45,7 +45,7 @@ namespace PowerArgs
                 ReadNamedToken(token, out var key, out var argumentValue, out var hasInlineValue);
 
                 var argumentIndex = FindNamedArgument(specs, key, token, hasInlineValue);
-                if (argumentIndex < 0) ThrowUnknownArgument(specs, specified, key);
+                if (argumentIndex < 0) ThrowUnknownArgument(specs, specified, key, definition.ValidationEnabled);
                 if (specified[argumentIndex] != 0) throw new DuplicateArgException("Argument specified more than once: " + specs[argumentIndex].Name);
 
                 var spec = specs[argumentIndex];
@@ -70,7 +70,8 @@ namespace PowerArgs
             }
 
             ApplyDefaults(model, definition, instance, specs, specified);
-            ValidateRequired(specs, specified);
+            ValidateRequired(specs, specified, definition.ValidationEnabled);
+            ValidateAfterPopulate(specs, definition.Arguments, definition);
 
             value = instance;
             return true;
@@ -111,7 +112,7 @@ namespace PowerArgs
                     var additionalValues = ReadCollectionTail(positionedSpec, input, ref inputIndex);
                     if (positionedSpec.CollectionReviver != null) foundNamedArgument = true;
                     if (positionedGlobalIndex >= 0) PopulateArgument(model, definition, parent, positionedSpec, positionedGlobalIndex, token, globalSpecified, additionalValues);
-                    else PopulateActionArgument(action, actionDefinition, actionValues!, positionedSpec, positionedActionIndex, token, actionSpecified, additionalValues);
+                    else PopulateActionArgument(action, actionDefinition, actionValues!, positionedSpec, positionedActionIndex, token, actionSpecified, definition.ValidationEnabled, additionalValues);
                     continue;
                 }
 
@@ -120,7 +121,7 @@ namespace PowerArgs
 
                 var globalIndex = FindNamedArgument(globalSpecs, key, token, hasInlineValue);
                 var actionIndex = FindNamedArgument(actionSpecs, key, token, hasInlineValue);
-                if (globalIndex < 0 && actionIndex < 0) ThrowUnknownActionArgument(globalSpecs, globalSpecified, actionSpecs, actionSpecified, key);
+                if (globalIndex < 0 && actionIndex < 0) ThrowUnknownActionArgument(globalSpecs, globalSpecified, actionSpecs, actionSpecified, key, definition.ValidationEnabled);
                 if (globalIndex >= 0 && actionIndex >= 0) throw new InvalidArgDefinitionException("Multiple arguments match '" + key.ToString() + "'");
                 if (globalIndex >= 0 && globalSpecified[globalIndex] != 0) throw new DuplicateArgException("Argument specified more than once: " + globalSpecs[globalIndex].Name);
                 if (actionIndex >= 0 && actionSpecified[actionIndex] != 0) throw new DuplicateArgException("Argument specified more than once: " + actionSpecs[actionIndex].Name);
@@ -138,13 +139,15 @@ namespace PowerArgs
 
                 var collectionTail = token[0] == '-' ? ReadCollectionTail(spec, input, ref inputIndex) : default;
                 if (globalIndex >= 0) PopulateArgument(model, definition, parent, spec, globalIndex, argumentValue, globalSpecified, collectionTail);
-                else PopulateActionArgument(action, actionDefinition, actionValues!, spec, actionIndex, argumentValue, actionSpecified, collectionTail);
+                else PopulateActionArgument(action, actionDefinition, actionValues!, spec, actionIndex, argumentValue, actionSpecified, definition.ValidationEnabled, collectionTail);
             }
 
             ApplyDefaults(model, definition, parent, globalSpecs, globalSpecified);
-            ApplyActionDefaults(action, actionDefinition, actionValues, actionSpecs, actionSpecified);
-            ValidateRequired(globalSpecs, globalSpecified);
-            ValidateRequired(actionSpecs, actionSpecified);
+            ApplyActionDefaults(action, actionDefinition, actionValues, actionSpecs, actionSpecified, definition.ValidationEnabled);
+            ValidateRequired(globalSpecs, globalSpecified, definition.ValidationEnabled);
+            ValidateRequired(actionSpecs, actionSpecified, definition.ValidationEnabled);
+            ValidateAfterPopulate(globalSpecs, definition.Arguments, definition);
+            ValidateAfterPopulate(actionSpecs, actionDefinition.Arguments, definition);
             value = parent;
             actionArguments = actionValues;
             return true;
@@ -165,10 +168,10 @@ namespace PowerArgs
             return input.AsSpan(start, inputIndex + 1 - start);
         }
 
-        private static void PopulateActionArgument(GeneratedActionSpec action, CommandLineAction definition, object instance, GeneratedArgumentSpec spec, int argumentIndex, string argumentValue, Span<byte> specified, ReadOnlySpan<string> additionalValues = default)
+        private static void PopulateActionArgument(GeneratedActionSpec action, CommandLineAction definition, object instance, GeneratedArgumentSpec spec, int argumentIndex, string argumentValue, Span<byte> specified, bool validationEnabled, ReadOnlySpan<string> additionalValues = default)
         {
             var argument = definition.Arguments[argumentIndex];
-            var revived = ReviveArgument(argument, spec, ref argumentValue, additionalValues);
+            var revived = ReviveArgument(argument, spec, ref argumentValue, validationEnabled, additionalValues);
             specified[argumentIndex] = 1;
             argument.RevivedValue = revived;
             action.SetArgument!(instance, argumentIndex, revived);
@@ -178,27 +181,38 @@ namespace PowerArgs
         {
             for (var i = 0; i < specs.Length; i++)
             {
-                if (specified[i] != 0 || definition.Arguments[i].TryGetDefaultValue(out var defaultValue) == false || defaultValue == null) continue;
-                PopulateArgument(model, definition, instance, specs[i], i, defaultValue.ToString()!, specified);
+                if (specified[i] != 0) continue;
+                if (definition.Arguments[i].TryGetDefaultValue(out var defaultValue) && defaultValue != null)
+                    PopulateArgument(model, definition, instance, specs[i], i, defaultValue.ToString()!, specified);
+                else if (specs[i].RequiresHookProcessing) GeneratedArgumentRules.PopulateAbsentHelp(definition.Arguments[i]);
             }
         }
 
-        private static void ApplyActionDefaults(GeneratedActionSpec action, CommandLineAction definition, object? instance, GeneratedArgumentSpec[] specs, Span<byte> specified)
+        private static void ApplyActionDefaults(GeneratedActionSpec action, CommandLineAction definition, object? instance, GeneratedArgumentSpec[] specs, Span<byte> specified, bool validationEnabled)
         {
             if (instance == null) return;
             for (var i = 0; i < specs.Length; i++)
             {
-                if (specified[i] != 0 || definition.Arguments[i].TryGetDefaultValue(out var defaultValue) == false || defaultValue == null) continue;
-                PopulateActionArgument(action, definition, instance, specs[i], i, defaultValue.ToString()!, specified);
+                if (specified[i] != 0) continue;
+                if (definition.Arguments[i].TryGetDefaultValue(out var defaultValue) && defaultValue != null)
+                    PopulateActionArgument(action, definition, instance, specs[i], i, defaultValue.ToString()!, specified, validationEnabled);
+                else if (specs[i].RequiresHookProcessing) GeneratedArgumentRules.PopulateAbsentHelp(definition.Arguments[i]);
             }
         }
 
-        private static void ValidateRequired(GeneratedArgumentSpec[] specs, Span<byte> specified)
+        private static void ValidateRequired(GeneratedArgumentSpec[] specs, Span<byte> specified, bool validationEnabled)
         {
+            if (!validationEnabled) return;
             for (var i = 0; i < specs.Length; i++)
             {
                 if (specs[i].IsRequired && specified[i] == 0) throw new MissingArgException("The argument '" + specs[i].Name + "' is required", new ArgumentNullException(specs[i].Name));
             }
+        }
+
+        private static void ValidateAfterPopulate(GeneratedArgumentSpec[] specs, List<CommandLineArgument> arguments, CommandLineArgumentsDefinition definition)
+        {
+            for (var i = 0; i < specs.Length; i++)
+                if (specs[i].RequiresPostValidation) GeneratedArgumentRules.For(arguments[i]).AfterPopulate(arguments[i], definition.GeneratedVariableResolver, definition.ValidationEnabled);
         }
 
         private static bool IsNamedToken(string token, GeneratedArgumentSpec[] primarySpecs, GeneratedArgumentSpec[] secondarySpecs, int position)
@@ -250,16 +264,16 @@ namespace PowerArgs
             hasInlineValue = false;
         }
 
-        private static void ThrowUnknownArgument(GeneratedArgumentSpec[] specs, Span<byte> specified, ReadOnlySpan<char> key)
+        private static void ThrowUnknownArgument(GeneratedArgumentSpec[] specs, Span<byte> specified, ReadOnlySpan<char> key, bool validationEnabled)
         {
-            ValidateRequired(specs, specified);
+            ValidateRequired(specs, specified, validationEnabled);
             throw new UnexpectedArgException("Unexpected named argument: " + key.ToString());
         }
 
-        private static void ThrowUnknownActionArgument(GeneratedArgumentSpec[] globalSpecs, Span<byte> globalSpecified, GeneratedArgumentSpec[] actionSpecs, Span<byte> actionSpecified, ReadOnlySpan<char> key)
+        private static void ThrowUnknownActionArgument(GeneratedArgumentSpec[] globalSpecs, Span<byte> globalSpecified, GeneratedArgumentSpec[] actionSpecs, Span<byte> actionSpecified, ReadOnlySpan<char> key, bool validationEnabled)
         {
-            ValidateRequired(globalSpecs, globalSpecified);
-            ValidateRequired(actionSpecs, actionSpecified);
+            ValidateRequired(globalSpecs, globalSpecified, validationEnabled);
+            ValidateRequired(actionSpecs, actionSpecified, validationEnabled);
             throw new UnexpectedArgException("Unexpected named argument: " + key.ToString());
         }
 
@@ -300,13 +314,13 @@ namespace PowerArgs
         private static void PopulateArgument(GeneratedArgumentModel model, CommandLineArgumentsDefinition definition, object instance, GeneratedArgumentSpec spec, int argumentIndex, string argumentValue, Span<byte> specified, ReadOnlySpan<string> additionalValues = default)
         {
             var argument = definition.Arguments[argumentIndex];
-            var revived = ReviveArgument(argument, spec, ref argumentValue, additionalValues);
+            var revived = ReviveArgument(argument, spec, ref argumentValue, definition.ValidationEnabled, additionalValues);
             specified[argumentIndex] = 1;
             argument.RevivedValue = revived;
             model.SetValue(instance, argumentIndex, revived);
         }
 
-        private static object ReviveArgument(CommandLineArgument argument, GeneratedArgumentSpec spec, ref string argumentValue, ReadOnlySpan<string> additionalValues = default)
+        private static object ReviveArgument(CommandLineArgument argument, GeneratedArgumentSpec spec, ref string argumentValue, bool validationEnabled, ReadOnlySpan<string> additionalValues = default)
         {
             var context = ArgHook.HookContext.Current;
             if (spec.RequiresHookProcessing && context != null)
@@ -318,13 +332,13 @@ namespace PowerArgs
                 {
                     context.CurrentArgument = argument;
                     context.ArgumentValue = argumentValue;
-                    argument.RunBeforePopulateProperty(context);
+                    GeneratedArgumentRules.BeforePopulate(argument, context);
                     argumentValue = context.ArgumentValue;
-                    if (spec.RequiresValidation) argument.Validate(ref argumentValue);
+                    if (validationEnabled && spec.RequiresValidation) GeneratedArgumentRules.For(argument).Validate(argument, ref argumentValue);
                     var revived = Revive(spec, argumentValue, additionalValues);
                     argument.RevivedValue = revived;
                     context.RevivedProperty = revived;
-                    argument.RunAfterPopulateProperty(context);
+                    GeneratedArgumentRules.AfterPopulateValue(argument, context);
                     return revived;
                 }
                 finally
@@ -335,7 +349,7 @@ namespace PowerArgs
                 }
             }
 
-            if (spec.RequiresValidation) argument.Validate(ref argumentValue);
+            if (validationEnabled && spec.RequiresValidation) GeneratedArgumentRules.For(argument).Validate(argument, ref argumentValue);
             return Revive(spec, argumentValue, additionalValues);
         }
 

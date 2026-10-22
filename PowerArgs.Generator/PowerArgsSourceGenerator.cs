@@ -285,7 +285,7 @@ namespace PowerArgs.Generator
         private static bool IsSupportedDirectPropertyAttribute(AttributeData attribute)
         {
             var name = attribute.AttributeClass?.Name;
-            return IsDerivedFrom(attribute.AttributeClass, "PowerArgs.ArgValidator") || name == "HelpHook" || name == "ArgShortcut" || name == "ArgDescription" || name == "ArgPosition" || name == "ArgIgnoreAttribute" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "DefaultValueAttribute" || name == "ArgDefaultValueAttribute" || name == "OmitFromUsageDocs" || name == "ArgExample";
+            return IsDerivedFrom(attribute.AttributeClass, "PowerArgs.ArgValidator") || IsBuiltinExclusion(attribute) || name == "HelpHook" || name == "ArgShortcut" || name == "ArgDescription" || name == "ArgPosition" || name == "ArgIgnoreAttribute" || name == "ArgIgnoreCase" || name == "ArgEnforceCase" || name == "DefaultValueAttribute" || name == "ArgDefaultValueAttribute" || name == "OmitFromUsageDocs" || name == "ArgExample";
         }
 
         private static bool IsDerivedFrom(INamedTypeSymbol? type, string baseTypeName)
@@ -328,7 +328,17 @@ namespace PowerArgs.Generator
             return true;
         }
 
-        private static bool HasOnlySimpleRequiredMetadata(IEnumerable<AttributeData> attributes) => attributes.Where(IsArgRequired).All(attribute => attribute.NamedArguments.Length == 0 && attribute.ConstructorArguments.Length == 0);
+        private static bool HasDirectRequiredMetadata(IEnumerable<AttributeData> attributes) => attributes.Where(IsArgRequired).All(attribute => attribute.NamedArguments.All(pair => pair.Key == "If" || pair.Key == "IfNot" || pair.Key == "Priority" || (pair.Key == "PromptIfMissing" && pair.Value.Value is false)));
+
+        private static bool IsConditionalRequired(AttributeData attribute) => IsArgRequired(attribute) && attribute.NamedArguments.Any(pair => (pair.Key == "If" || pair.Key == "IfNot") && pair.Value.Value != null);
+        private static bool IsUnconditionalRequired(AttributeData attribute) => IsArgRequired(attribute) && !IsConditionalRequired(attribute);
+        private static bool IsBuiltinExclusion(AttributeData attribute) => attribute.AttributeClass?.ToDisplayString() == "PowerArgs.ArgCantBeCombinedWith";
+        private static bool RequiresPostValidation(AttributeData attribute) => IsConditionalRequired(attribute) || IsBuiltinExclusion(attribute);
+        private static bool IsBuiltinValidator(AttributeData attribute)
+        {
+            var name = attribute.AttributeClass?.ToDisplayString();
+            return name == "PowerArgs.ArgRequired" || name == "PowerArgs.ArgRange" || name == "PowerArgs.ArgRegex" || name == "PowerArgs.ArgExistingFile" || name == "PowerArgs.ArgExistingDirectory";
+        }
 
         private static List<IPropertySymbol> GetActionArgumentProperties(INamedTypeSymbol type) => GetPublicProperties(type)
             .Where(property => property.GetAttributes().Any(IsArgIgnore) == false)
@@ -513,21 +523,21 @@ namespace PowerArgs.Generator
             source.Append("new global::PowerArgs.GeneratedArgumentSpec[] { ");
             foreach (var argument in plan.ArgumentProperties)
             {
-                AppendGeneratedArgumentSpec(source, argument.Property.Name, argument.Property.Type, argument.IsRequired, argument.Position, argument.IgnoreCase, argument.RequiresValidation, argument.RequiresHookProcessing, argument.Aliases);
+                AppendGeneratedArgumentSpec(source, argument.Property.Name, argument.Property.Type, argument.IsRequired, argument.Position, argument.IgnoreCase, argument.RequiresValidation, argument.RequiresHookProcessing, argument.Aliases, argument.Property.GetAttributes());
             }
             foreach (var argument in plan.ParameterArguments)
             {
-                AppendGeneratedArgumentSpec(source, argument.Parameter.Name, argument.Parameter.Type, argument.IsRequired, argument.Position, argument.IgnoreCase, argument.RequiresValidation, argument.RequiresHookProcessing, argument.Aliases);
+                AppendGeneratedArgumentSpec(source, argument.Parameter.Name, argument.Parameter.Type, argument.IsRequired, argument.Position, argument.IgnoreCase, argument.RequiresValidation, argument.RequiresHookProcessing, argument.Aliases, argument.Parameter.GetAttributes());
             }
             source.Append("}");
         }
 
-        private static void AppendGeneratedArgumentSpec(StringBuilder source, string name, ITypeSymbol type, bool required, int position, bool ignoreCase, bool requiresValidation, bool requiresHookProcessing, List<string> aliases)
+        private static void AppendGeneratedArgumentSpec(StringBuilder source, string name, ITypeSymbol type, bool required, int position, bool ignoreCase, bool requiresValidation, bool requiresHookProcessing, List<string> aliases, ImmutableArray<AttributeData> attributes)
         {
             source.Append("new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(name)).Append(", typeof(").Append(type.ToDisplayString(RuntimeTypeFormat)).Append("), ").Append(required ? "true" : "false").Append(", ").Append(position).Append(", ").Append(ignoreCase ? "true" : "false").Append(", ").Append(requiresValidation ? "true" : "false").Append(", ").Append(requiresHookProcessing ? "true" : "false");
             foreach (var alias in aliases) source.Append(", ").Append(ToLiteral(alias));
             source.Append(")");
-            AppendCollectionReviver(source, type);
+            AppendArgumentFeatures(source, type, attributes);
             source.Append(", ");
         }
 
@@ -547,7 +557,7 @@ namespace PowerArgs.Generator
                 source.Append(indent).Append("            new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(property.Name)).Append(", typeof(").Append(property.Type.ToDisplayString(RuntimeTypeFormat)).Append("), ").Append(plan.IsRequired ? "true" : "false").Append(", ").Append(plan.Position).Append(", ").Append(plan.IgnoreCase ? "true" : "false").Append(", ").Append(plan.RequiresValidation ? "true" : "false").Append(", ").Append(plan.RequiresHookProcessing ? "true" : "false");
                 foreach (var alias in plan.Aliases) source.Append(", ").Append(ToLiteral(alias));
                 source.Append(")");
-                AppendCollectionReviver(source, property.Type);
+                AppendArgumentFeatures(source, property.Type, property.GetAttributes());
                 source.AppendLine(",");
             }
             source.Append(indent).AppendLine("        }");
@@ -558,8 +568,7 @@ namespace PowerArgs.Generator
             foreach (var plan in plans)
             {
                 var property = plan.Property;
-                if (IsDirectType(property.Type) == false) return false;
-                if (property.GetAttributes().Where(IsArgRequired).Any(attribute => attribute.NamedArguments.Length > 0 || attribute.ConstructorArguments.Length > 0)) return false;
+                if (!CanUseDirectArgument(property.Type, property.GetAttributes())) return false;
             }
             return true;
         }
@@ -608,7 +617,7 @@ namespace PowerArgs.Generator
                 var propertyIgnoreCase = GetIgnoreCase(property.GetAttributes(), GetIgnoreCase(GetInheritedAttributes(property.ContainingType), true));
                 var positionAttribute = property.GetAttributes().FirstOrDefault(IsArgPosition);
                 var position = positionAttribute == null ? -1 : Convert.ToInt32(positionAttribute.ConstructorArguments[0].Value, System.Globalization.CultureInfo.InvariantCulture);
-                plans.Add(new ArgumentPlan(property, aliases, includePropertyName, automaticShortcut, property.GetAttributes().Any(IsArgRequired), position, propertyIgnoreCase, property.GetAttributes().Any(RequiresValidation), property.GetAttributes().Any(RequiresHookProcessing)));
+                plans.Add(new ArgumentPlan(property, aliases, includePropertyName, automaticShortcut, property.GetAttributes().Any(IsUnconditionalRequired), position, propertyIgnoreCase, property.GetAttributes().Any(RequiresValidation), property.GetAttributes().Any(RequiresHookProcessing)));
             }
             return plans;
         }
@@ -647,7 +656,7 @@ namespace PowerArgs.Generator
                             var shortcut = NormalizeShortcut(GetShortcutValue(shortcutAttribute));
                             if (shortcut != null) parameterAliases.Add(shortcut);
                         }
-                        parameterArguments.Add(new ActionParameterPlan(parameter, parameterAliases, parameter.GetAttributes().Any(IsArgRequired), parameterIndex + 1, GetIgnoreCase(parameter.GetAttributes(), typeIgnoreCase), parameter.GetAttributes().Any(RequiresValidation), parameter.GetAttributes().Any(RequiresHookProcessing)));
+                        parameterArguments.Add(new ActionParameterPlan(parameter, parameterAliases, parameter.GetAttributes().Any(IsUnconditionalRequired), parameterIndex + 1, GetIgnoreCase(parameter.GetAttributes(), typeIgnoreCase), parameter.GetAttributes().Any(RequiresValidation), parameter.GetAttributes().Any(RequiresHookProcessing)));
                     }
                 }
                 plans.Add(new ActionPlan(method, aliases, includeMethodName, GetIgnoreCase(GetInheritedAttributes(method), typeIgnoreCase), usesArgumentModel, argumentProperties, parameterArguments));
@@ -781,19 +790,26 @@ namespace PowerArgs.Generator
 
         private static bool CanUseDirectArgument(ITypeSymbol type, ImmutableArray<AttributeData> attributes)
         {
-            if (IsDirectType(type) == false || HasOnlySimpleRequiredMetadata(attributes) == false) return false;
+            if (IsDirectType(type) == false || HasDirectRequiredMetadata(attributes) == false) return false;
             if (attributes.Any(attribute => IsArgumentMetadata(attribute) && IsSupportedDirectPropertyAttribute(attribute) == false)) return false;
-            // Collection validators/hooks can depend on the shared parser's additional-value state.
-            return GetCollectionElementType(type) == null || attributes.Any(attribute => RequiresValidation(attribute) || RequiresHookProcessing(attribute)) == false;
+            // Only exact built-ins have a known raw-value contract for collection validation.
+            return GetCollectionElementType(type) == null || attributes.All(attribute => (!RequiresValidation(attribute) || IsBuiltinValidator(attribute)) && !RequiresHookProcessing(attribute));
         }
 
-        private static void AppendCollectionReviver(StringBuilder source, ITypeSymbol type)
+        private static void AppendArgumentFeatures(StringBuilder source, ITypeSymbol type, ImmutableArray<AttributeData> attributes)
         {
             var elementType = GetCollectionElementType(type);
-            if (elementType == null) return;
-            source.Append(" { CollectionReviver = global::PowerArgs.GeneratedCollectionParser.")
-                .Append(type is IArrayTypeSymbol ? "ReviveArray" : "ReviveList")
-                .Append('<').Append(elementType.ToDisplayString(TypeFormat)).Append("> }");
+            var postValidation = attributes.Any(RequiresPostValidation);
+            if (elementType == null && !postValidation) return;
+            source.Append(" { ");
+            if (elementType != null)
+            {
+                source.Append("CollectionReviver = global::PowerArgs.GeneratedCollectionParser.")
+                    .Append(type is IArrayTypeSymbol ? "ReviveArray" : "ReviveList")
+                    .Append('<').Append(elementType.ToDisplayString(TypeFormat)).Append(">, ");
+            }
+            if (postValidation) source.Append("RequiresPostValidation = true");
+            source.Append(" }");
         }
 
         private static bool IsDirectScalarType(ITypeSymbol type)
