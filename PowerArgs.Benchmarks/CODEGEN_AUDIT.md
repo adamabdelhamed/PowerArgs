@@ -25,6 +25,8 @@ The final nullable case measures 502.8 ns and 88 B per call, versus 7,200.2 ns /
 
 Follow-up: direct scalar arrays/lists and collection-valued actions are now implemented and measured in [the collection audit](COLLECTION_CODEGEN_AUDIT.md). The table below records the original deferrals at the end of the scalar expansion.
 
+Action-only scaffolds and inherited entry points are subsequently implemented in [the entry-point audit](SHAPE_CODEGEN_AUDIT.md).
+
 | Area | Current behavior and reason for deferral |
 | --- | --- |
 | Direct collection parsing | Lists/arrays work through the generated shared parser. Moving them to the direct parser requires parity for comma-separated values, multiple tokens, duplicates, element errors, and hook parser state; simply broadening type eligibility would be incorrect. |

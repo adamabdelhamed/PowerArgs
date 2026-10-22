@@ -142,7 +142,7 @@ namespace PowerArgs
             Name = name;
             IgnoreCase = ignoreCase;
             Arguments = arguments ?? throw new ArgumentNullException(nameof(arguments));
-            ArgumentFactory = Arguments.Length == 0 ? null : argumentFactory ?? throw new ArgumentNullException(nameof(argumentFactory));
+            ArgumentFactory = Arguments.Length == 0 && !usesArgumentModel ? null : argumentFactory ?? throw new ArgumentNullException(nameof(argumentFactory));
             SetArgument = Arguments.Length == 0 ? null : setArgument ?? throw new ArgumentNullException(nameof(setArgument));
             UsesArgumentModel = usesArgumentModel;
             Invoker = invoker;

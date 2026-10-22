@@ -29,6 +29,8 @@ The new collection paths are 4.9–6.7x faster than the previous generated model
 
 ## Deferred work
 
+Follow-up: action-only scaffolds and inherited entry points are now covered in [the entry-point audit](SHAPE_CODEGEN_AUDIT.md); the list below records the deferrals at the end of the collection expansion.
+
 - **Rich collection lifecycles and custom/nested element types:** validators and hooks can inspect or alter shared parser state. They need explicit lifecycle integration and parity tests before broadening eligibility.
 - **Element conversion overhead:** the classic reviver service still boxes some elements and may use component-model reflection. Typed scalar converters could reduce this, but must preserve runtime reviver replacement, nullable semantics, culture, and errors.
 - **Other scaffold shapes and generator diagnostics:** propertyless/generic scaffolds, inherited action methods, and actionable fallback diagnostics remain separate generator-shape work. This change stays focused on the common collection gap.

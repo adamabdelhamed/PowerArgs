@@ -26,10 +26,15 @@ namespace PowerArgs.Generator
                 static (syntaxContext, _) => syntaxContext.SemanticModel.GetDeclaredSymbol((PropertyDeclarationSyntax)syntaxContext.Node) as IPropertySymbol)
                 .Where(static property => property != null && property.PartialDefinitionPart == null && property.PartialImplementationPart == null);
 
-            context.RegisterSourceOutput(partialProperties.Collect(), static (productionContext, properties) => Generate(productionContext, properties));
+            var partialClasses = context.SyntaxProvider.CreateSyntaxProvider(
+                static (node, _) => node is ClassDeclarationSyntax declaration && declaration.Modifiers.Any(SyntaxKind.PartialKeyword),
+                static (syntaxContext, _) => syntaxContext.SemanticModel.GetDeclaredSymbol((ClassDeclarationSyntax)syntaxContext.Node) as INamedTypeSymbol)
+                .Where(static type => type != null);
+
+            context.RegisterSourceOutput(partialProperties.Collect().Combine(partialClasses.Collect()), static (productionContext, candidates) => Generate(productionContext, candidates.Left, candidates.Right));
         }
 
-        private static void Generate(SourceProductionContext context, ImmutableArray<IPropertySymbol?> discoveredProperties)
+        private static void Generate(SourceProductionContext context, ImmutableArray<IPropertySymbol?> discoveredProperties, ImmutableArray<INamedTypeSymbol?> discoveredClasses)
         {
             var models = new Dictionary<INamedTypeSymbol, List<IPropertySymbol>>(SymbolEqualityComparer.Default);
             foreach (var property in discoveredProperties)
@@ -43,6 +48,13 @@ namespace PowerArgs.Generator
                     models.Add(property.ContainingType, properties);
                 }
                 if (properties.Any(existing => SymbolEqualityComparer.Default.Equals(existing, property)) == false) properties.Add(property);
+            }
+
+            foreach (var type in discoveredClasses)
+            {
+                if (type == null || CanReopen(type) == false || models.ContainsKey(type)) continue;
+                // A partial class with a command entry point opts in even without a partial property.
+                if (GetPublicMethods(type).Any(method => IsMain(method) || GetInheritedAttributes(method).Any(IsArgActionMethod))) models.Add(type, new List<IPropertySymbol>());
             }
 
             foreach (var pair in models)
@@ -139,19 +151,20 @@ namespace PowerArgs.Generator
 
             argumentProperties = new List<IPropertySymbol>();
             useDirectParser = true;
-            if (type.IsAbstract || publicProperties.Count == 0) return false;
+            if (type.IsAbstract || type.IsStatic) return false;
+            // Module initializers must be callable from the containing assembly.
+            if (GetContainingTypes(type).Any(containing => containing.DeclaredAccessibility != Accessibility.Public && containing.DeclaredAccessibility != Accessibility.Internal && containing.DeclaredAccessibility != Accessibility.ProtectedOrInternal)) return false;
             if (type.InstanceConstructors.Any(constructor => constructor.Parameters.Length == 0) == false) return false;
-            if (type.GetAttributes().Any(attribute => IsDefinitionMetadata(attribute) && CanGenerateAttribute(attribute) == false)) return false;
-            if (type.GetAttributes().Any(attribute => IsDefinitionMetadata(attribute) && IsSupportedDirectTypeAttribute(attribute) == false)) useDirectParser = false;
-            if (type.GetAttributes().Count(IsCaseAttribute) > 1) return false;
-            foreach (var method in type.GetMembers().OfType<IMethodSymbol>().Where(method => method.MethodKind == MethodKind.Ordinary && method.IsImplicitlyDeclared == false))
+            if (GetInheritedAttributes(type).Any(attribute => IsDefinitionMetadata(attribute) && CanGenerateAttribute(attribute) == false)) return false;
+            if (GetInheritedAttributes(type).Any(attribute => IsDefinitionMetadata(attribute) && IsSupportedDirectTypeAttribute(attribute) == false)) useDirectParser = false;
+            if (GetInheritedAttributes(type).Count(IsCaseAttribute) > 1) return false;
+            foreach (var method in GetPublicMethods(type))
             {
-                if (method.Name == "Main") continue;
                 // Ordinary helpers are not part of the command-line contract.
-                if (method.GetAttributes().Any(IsArgActionMethod) == false) continue;
+                if (GetInheritedAttributes(method).Any(IsArgActionMethod) == false) continue;
                 if (method.ReturnsVoid == false && IsTask(method.ReturnType) == false) return false;
-                if (method.GetAttributes().Any(attribute => IsActionMetadata(attribute) && (IsSupportedActionAttribute(attribute) == false || CanGenerateAttribute(attribute) == false))) return false;
-                if (method.GetAttributes().Count(IsCaseAttribute) > 1) return false;
+                if (GetInheritedAttributes(method).Any(attribute => IsActionMetadata(attribute) && (IsSupportedActionAttribute(attribute) == false || CanGenerateAttribute(attribute) == false))) return false;
+                if (GetInheritedAttributes(method).Count(IsCaseAttribute) > 1) return false;
                 if (CanGenerateAction(method, type) == false) return false;
             }
 
@@ -168,9 +181,57 @@ namespace PowerArgs.Generator
                 }
             }
 
-            if (type.GetMembers().OfType<IMethodSymbol>().Any(method => method.GetAttributes().Any(IsArgActionMethod)) && useDirectParser == false) return false;
+            if (GetPublicMethods(type).Any(method => GetInheritedAttributes(method).Any(IsArgActionMethod)) && useDirectParser == false) return false;
 
-            return argumentProperties.Count > 0 || type.GetMembers().OfType<IMethodSymbol>().Any(method => method.Name == "Main" || method.GetAttributes().Any(IsArgActionMethod));
+            return argumentProperties.Count > 0 || GetPublicMethods(type).Any(method => IsMain(method) || GetInheritedAttributes(method).Any(IsArgActionMethod));
+        }
+
+        private static bool IsMain(IMethodSymbol method) => method.Name == "Main" && !method.IsStatic && method.Parameters.Length == 0 && method.TypeParameters.Length == 0 && (method.ReturnsVoid || IsTask(method.ReturnType));
+
+        private static List<IMethodSymbol> GetPublicMethods(INamedTypeSymbol type)
+        {
+            var methods = new List<IMethodSymbol>();
+            for (var current = type; current != null && current.SpecialType != SpecialType.System_Object; current = current.BaseType)
+            {
+                foreach (var method in current.GetMembers().OfType<IMethodSymbol>().Where(method => method.MethodKind == MethodKind.Ordinary && method.DeclaredAccessibility == Accessibility.Public))
+                {
+                    // Reflection's public instance/static lookup does not flatten inherited static methods.
+                    if (method.IsStatic && !SymbolEqualityComparer.Default.Equals(current, type)) continue;
+                    // New/hidden methods retain the base method in reflection's method list;
+                    // only an override replaces the inherited virtual slot.
+                    if (methods.Any(existing => Overrides(existing, method))) continue;
+                    methods.Add(method);
+                }
+            }
+            return methods;
+        }
+
+        private static bool Overrides(IMethodSymbol candidate, IMethodSymbol method)
+        {
+            for (var overridden = candidate.OverriddenMethod; overridden != null; overridden = overridden.OverriddenMethod)
+                if (SymbolEqualityComparer.Default.Equals(overridden, method)) return true;
+            return false;
+        }
+
+        private static ImmutableArray<AttributeData> GetInheritedAttributes(ISymbol symbol)
+        {
+            var attributes = symbol.GetAttributes().ToList();
+            ISymbol? ancestor = symbol is IMethodSymbol method ? method.OverriddenMethod : (symbol as INamedTypeSymbol)?.BaseType;
+            while (ancestor != null)
+            {
+                foreach (var attribute in ancestor.GetAttributes())
+                {
+                    AttributeData? usage = null;
+                    for (var attributeType = attribute.AttributeClass; attributeType != null && usage == null; attributeType = attributeType.BaseType)
+                        usage = attributeType.GetAttributes().FirstOrDefault(candidate => candidate.AttributeClass?.ToDisplayString() == "System.AttributeUsageAttribute");
+                    if (usage != null && usage.NamedArguments.Any(pair => pair.Key == "Inherited" && pair.Value.Value is false)) continue;
+                    var allowMultiple = usage != null && usage.NamedArguments.Any(pair => pair.Key == "AllowMultiple" && pair.Value.Value is true);
+                    if (!allowMultiple && attributes.Any(existing => SymbolEqualityComparer.Default.Equals(existing.AttributeClass, attribute.AttributeClass))) continue;
+                    attributes.Add(attribute);
+                }
+                ancestor = ancestor is IMethodSymbol baseMethod ? baseMethod.OverriddenMethod : (ancestor as INamedTypeSymbol)?.BaseType;
+            }
+            return attributes.ToImmutableArray();
         }
 
         private static List<IPropertySymbol> GetPublicProperties(INamedTypeSymbol type)
@@ -249,8 +310,8 @@ namespace PowerArgs.Generator
 
             var argumentType = (INamedTypeSymbol)method.Parameters[0].Type;
             if (argumentType.TypeKind != TypeKind.Class || argumentType.IsAbstract || argumentType.InstanceConstructors.Any(constructor => constructor.Parameters.Length == 0 && constructor.DeclaredAccessibility != Accessibility.Private) == false) return false;
-            if (argumentType.GetAttributes().Any(attribute => IsDefinitionMetadata(attribute) && IsSupportedDirectTypeAttribute(attribute) == false)) return false;
-            if (GetIgnoreCase(argumentType.GetAttributes(), true) != GetIgnoreCase(parentType.GetAttributes(), true)) return false;
+            if (GetInheritedAttributes(argumentType).Any(attribute => IsDefinitionMetadata(attribute) && IsSupportedDirectTypeAttribute(attribute) == false)) return false;
+            if (GetIgnoreCase(GetInheritedAttributes(argumentType), true) != GetIgnoreCase(GetInheritedAttributes(parentType), true)) return false;
             foreach (var property in GetActionArgumentProperties(argumentType))
             {
                 if (property.GetMethod == null || property.SetMethod == null || property.SetMethod.IsInitOnly || property.GetMethod.DeclaredAccessibility != Accessibility.Public || property.SetMethod.DeclaredAccessibility != Accessibility.Public) return false;
@@ -280,7 +341,7 @@ namespace PowerArgs.Generator
             source.Append(indent).AppendLine("        static definition =>");
             source.Append(indent).AppendLine("        {");
 
-            foreach (var attribute in type.GetAttributes().Where(IsDefinitionMetadata))
+            foreach (var attribute in GetInheritedAttributes(type).Where(IsDefinitionMetadata))
             {
                 source.Append(indent).Append("            definition.Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
             }
@@ -309,7 +370,7 @@ namespace PowerArgs.Generator
                 var plan = actionPlans[i];
                 var variableName = "action" + i;
                 source.Append(indent).Append("            var ").Append(variableName).Append(" = global::PowerArgs.CommandLineAction.CreateGenerated(").Append(plan.IncludeMethodName ? ToLiteral(plan.Method.Name) : "null").Append(", ").Append(plan.IgnoreCase ? "true" : "false").AppendLine(");");
-                foreach (var attribute in plan.Method.GetAttributes().Where(IsActionMetadata)) source.Append(indent).Append("            ").Append(variableName).Append(".Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
+                foreach (var attribute in GetInheritedAttributes(plan.Method).Where(IsActionMetadata)) source.Append(indent).Append("            ").Append(variableName).Append(".Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
                 for (var argumentIndex = 0; argumentIndex < plan.ArgumentProperties.Count; argumentIndex++)
                 {
                     var argumentPlan = plan.ArgumentProperties[argumentIndex];
@@ -354,7 +415,8 @@ namespace PowerArgs.Generator
 
         private static void AppendMainInvokers(StringBuilder source, string indent, INamedTypeSymbol type, string typeName)
         {
-            var main = type.GetMembers("Main").OfType<IMethodSymbol>().FirstOrDefault(method => method.DeclaredAccessibility == Accessibility.Public && method.IsStatic == false && method.Parameters.Length == 0 && (method.ReturnsVoid || IsTask(method.ReturnType)));
+            var mainMethods = GetPublicMethods(type).Where(method => method.Name == "Main" && !method.IsStatic).ToList();
+            var main = mainMethods.Count == 1 && IsMain(mainMethods[0]) ? mainMethods[0] : null;
             if (main == null)
             {
                 source.Append(indent).Append("        null,").AppendLine();
@@ -364,13 +426,13 @@ namespace PowerArgs.Generator
 
             if (main.ReturnsVoid)
             {
-                source.Append(indent).Append("        static instance => instance.Main(),").AppendLine();
+                source.Append(indent).Append("        static instance => ((").Append(main.ContainingType.ToDisplayString(TypeFormat)).Append(")instance).Main(),").AppendLine();
                 source.Append(indent).Append("        null");
             }
             else
             {
                 source.Append(indent).Append("        null,").AppendLine();
-                source.Append(indent).Append("        static instance => instance.Main()");
+                source.Append(indent).Append("        static instance => ((").Append(main.ContainingType.ToDisplayString(TypeFormat)).Append(")instance).Main()");
             }
         }
 
@@ -390,7 +452,7 @@ namespace PowerArgs.Generator
                 if (plan.Method.Parameters.Length == 0)
                 {
                     if (plan.Method.IsStatic) source.Append("static _ => ").Append(typeName).Append('.').Append(Escape(plan.Method.Name)).Append("()");
-                    else source.Append("static instance => ((").Append(typeName).Append(")instance).").Append(Escape(plan.Method.Name)).Append("()");
+                    else source.Append("static instance => ((").Append(plan.Method.ContainingType.ToDisplayString(TypeFormat)).Append(")instance).").Append(Escape(plan.Method.Name)).Append("()");
                 }
                 else
                 {
@@ -425,7 +487,7 @@ namespace PowerArgs.Generator
             AppendActionArgumentSpecs(source, plan);
             source.Append(", ").Append(plan.UsesArgumentModel ? "true" : "false").Append(", ");
             if (plan.Method.IsStatic) source.Append("static (_, arguments) => ").Append(typeName).Append('.').Append(Escape(plan.Method.Name));
-            else source.Append("static (instance, arguments) => ((").Append(typeName).Append(")instance).").Append(Escape(plan.Method.Name));
+            else source.Append("static (instance, arguments) => ((").Append(plan.Method.ContainingType.ToDisplayString(TypeFormat)).Append(")instance).").Append(Escape(plan.Method.Name));
             source.Append('(');
             if (plan.UsesArgumentModel) source.Append('(').Append(actionArgumentType).Append(")arguments!");
             else
@@ -508,7 +570,6 @@ namespace PowerArgs.Generator
             }
 
             var plans = new List<ArgumentPlan>();
-            var typeIgnoreCase = GetIgnoreCase(type.GetAttributes(), true);
             foreach (var property in properties)
             {
                 var shortcutAttributes = property.GetAttributes().Where(IsArgShortcut).ToList();
@@ -537,7 +598,7 @@ namespace PowerArgs.Generator
                     if (shortcut != null) aliases.Add(shortcut);
                 }
 
-                var propertyIgnoreCase = GetIgnoreCase(property.GetAttributes(), typeIgnoreCase);
+                var propertyIgnoreCase = GetIgnoreCase(property.GetAttributes(), GetIgnoreCase(GetInheritedAttributes(property.ContainingType), true));
                 var positionAttribute = property.GetAttributes().FirstOrDefault(IsArgPosition);
                 var position = positionAttribute == null ? -1 : Convert.ToInt32(positionAttribute.ConstructorArguments[0].Value, System.Globalization.CultureInfo.InvariantCulture);
                 plans.Add(new ArgumentPlan(property, aliases, includePropertyName, automaticShortcut, property.GetAttributes().Any(IsArgRequired), position, propertyIgnoreCase, property.GetAttributes().Any(RequiresValidation), property.GetAttributes().Any(RequiresHookProcessing)));
@@ -548,10 +609,10 @@ namespace PowerArgs.Generator
         private static List<ActionPlan> BuildActionPlans(INamedTypeSymbol type)
         {
             var plans = new List<ActionPlan>();
-            var typeIgnoreCase = GetIgnoreCase(type.GetAttributes(), true);
-            foreach (var method in type.GetMembers().OfType<IMethodSymbol>().Where(method => method.GetAttributes().Any(IsArgActionMethod)))
+            foreach (var method in GetPublicMethods(type).Where(method => GetInheritedAttributes(method).Any(IsArgActionMethod)))
             {
-                var shortcutAttributes = method.GetAttributes().Where(IsArgShortcut).ToList();
+                var typeIgnoreCase = GetIgnoreCase(GetInheritedAttributes(method.ContainingType), true);
+                var shortcutAttributes = GetInheritedAttributes(method).Where(IsArgShortcut).ToList();
                 var includeMethodName = shortcutAttributes.Any(IsShortcutsOnly) == false;
                 var aliases = new List<string>();
                 if (includeMethodName) aliases.Add(method.Name);
@@ -582,7 +643,7 @@ namespace PowerArgs.Generator
                         parameterArguments.Add(new ActionParameterPlan(parameter, parameterAliases, parameter.GetAttributes().Any(IsArgRequired), parameterIndex + 1, GetIgnoreCase(parameter.GetAttributes(), typeIgnoreCase), parameter.GetAttributes().Any(RequiresValidation), parameter.GetAttributes().Any(RequiresHookProcessing)));
                     }
                 }
-                plans.Add(new ActionPlan(method, aliases, includeMethodName, GetIgnoreCase(method.GetAttributes(), typeIgnoreCase), usesArgumentModel, argumentProperties, parameterArguments));
+                plans.Add(new ActionPlan(method, aliases, includeMethodName, GetIgnoreCase(GetInheritedAttributes(method), typeIgnoreCase), usesArgumentModel, argumentProperties, parameterArguments));
             }
             return plans;
         }

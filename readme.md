@@ -66,6 +66,17 @@ public partial class MyGeneratedArgs
 }
 ```
 
+A `partial` class with a public `Main()` or `[ArgActionMethod]` entry point can also opt in without any properties. For example:
+
+```cs
+public partial class Commands
+{
+    [ArgActionMethod]
+    public void Greet(string name) => Console.WriteLine($"Hello, {name}");
+}
+// Args.InvokeAction<Commands>("Greet", "Ada");
+```
+
 The generator has two statically selected tiers. Common scalar and scalar-collection models use the fastest direct parser, which avoids reflected scaffold discovery, activation, property assignment, and the general hook/alias processing machinery. Feature-rich models still use generated construction, metadata, property setters, and method invokers, but reuse the mature shared parser where its richer lifecycle is required. Both tiers are source-generated pipelines and neither reflects over the scaffold to discover or assign its argument properties.
 
 The generated pipeline supports the features documented below, including:
@@ -79,6 +90,8 @@ The generated pipeline supports the features documented below, including:
 
 `InvokeMain` and `InvokeAction` also avoid reflection for `void` and `Task` methods. Generated actions may be parameterless, take a single action-argument object with supported public properties, or take directly revivable parameters. Supported values include scalars and one-dimensional arrays or `List<T>` of supported scalars. Their defaults, shortcuts, descriptions, positions, usage metadata, and case rules are generated too; scalar arguments also support the direct parser's built-in validation.
 
+Public instance actions and `Main` methods may be inherited. Overrides preserve inherited action metadata and dispatch to the override; hidden base actions remain available according to the classic reflection contract. Inherited static methods and non-public methods are not discovered as commands. Inherited type metadata is also preserved, including hooks that require the shared parser. Empty action-argument objects are constructed and passed to the action. A partial class with inherited entry points needs no dummy property; ordinary non-partial classes continue using classic PowerArgs.
+
 The direct parser also supports nullable scalar options and parameters, `decimal`, `char`, and signed/unsigned integer types. Nullable values and component-model scalar conversions retain the classic conversion rules, including culture, custom revivers, constants, and errors. An omitted nullable option stays null; `bool?` follows the classic value-taking option behavior rather than the bare `bool` switch behavior. Ordinary helper methods do not disable generation. Action argument objects include inherited public properties, with overrides represented once and property/alias order matching reflection.
 
 One-dimensional arrays and `List<T>` of supported scalar types (including nullable scalars and enums) use typed collection construction in the direct parser. This covers root options, positioned values, action parameters, action-object properties, and global action options. Classic comma-separated and space-separated collection syntax, defaults, simple required checks, aliases, and custom scalar element revivers are preserved. Commas are split only when the collection has a single value token. Slash-prefixed tokens after the first value end a multi-token collection; `/Values:1,2` accepts a single inline value. Long-form collection options require an explicit alias such as `[ArgShortcut("--values")]`.
@@ -90,6 +103,8 @@ All public properties declared by an opted-in scaffold, including `[ArgIgnore]` 
 For an exact tier check, use `GeneratedArgumentModelRegistry.GetPipelineKind<MyGeneratedArgs>()`: it returns `GeneratedDirectParser`, `GeneratedSharedParser`, or `Reflection`. `IsGenerated` alone includes both generated tiers and does not promise direct-parser performance. Run `dotnet run -c Release --project PowerArgs.Benchmarks -- --expansion-only` to compare nullable options, helper-bearing Main methods, and a scalar control against classic parsing. See [the capability and benchmark audit](PowerArgs.Benchmarks/CODEGEN_AUDIT.md) for measurements and remaining work.
 
 Run `dotnet run -c Release --project PowerArgs.Benchmarks -- --collections-only` for collection parsing/invocation and a scalar control. See [the collection benchmark audit](PowerArgs.Benchmarks/COLLECTION_CODEGEN_AUDIT.md) for before/after results and scope.
+
+Run `dotnet run -c Release --project PowerArgs.Benchmarks -- --shapes-only` for action-only classes, inherited actions and Main methods, and a scalar control. See [the entry-point benchmark audit](PowerArgs.Benchmarks/SHAPE_CODEGEN_AUDIT.md).
 
 Nested collections, collections of custom types, collection validators/hooks, prompting, sticky values, and richer lifecycle hooks generally retain the shared parser. Combining these features with actions may still require full reflection; the support bullets above do not promise every combination. Generic scaffolds (including types nested in generic classes) are not generator targets: use ordinary implemented properties and the classic pipeline for these shapes. This feature is not a general Native AOT or trimming guarantee; converters, validators, and custom revival may still use reflection.
 
