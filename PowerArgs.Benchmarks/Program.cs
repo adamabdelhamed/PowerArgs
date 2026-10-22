@@ -5,7 +5,8 @@ using BenchmarkDotNet.Running;
 using PowerArgs;
 
 var config = args.Contains("--profile") ? DefaultConfig.Instance.AddDiagnoser(new EventPipeProfiler(EventPipeProfile.CpuSampling)) : DefaultConfig.Instance;
-if (args.Contains("--builtins-only")) BenchmarkRunner.Run<BuiltinBenchmarks>(config);
+if (args.Contains("--hook-updates-only")) BenchmarkRunner.Run<HookUpdateBenchmarks>(config);
+else if (args.Contains("--builtins-only")) BenchmarkRunner.Run<BuiltinBenchmarks>(config);
 else if (args.Contains("--lifecycle-only")) BenchmarkRunner.Run<LifecycleBenchmarks>(config);
 else if (args.Contains("--shapes-only")) BenchmarkRunner.Run<ShapeBenchmarks>(config);
 else if (args.Contains("--collections-only")) BenchmarkRunner.Run<CollectionBenchmarks>(config);

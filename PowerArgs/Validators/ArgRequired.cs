@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace PowerArgs
 {
@@ -217,7 +216,7 @@ namespace PowerArgs
                     }
                 }
             }
-            catch(MissingArgException)
+            catch(ArgException)
             {
                 throw;
             }
@@ -271,14 +270,7 @@ namespace PowerArgs
                     }
                 }, ConsoleKey.Escape));
 
-                context.ArgumentValue = cli.PromptForLine("Enter value for " + context.CurrentArgument.DefaultAlias);
-                context.CurrentArgument.Populate(context);
-               
-                var property = context.CurrentArgument.Source as PropertyInfo;
-                if (property != null && context.Args != null)
-                {
-                    property.SetValue(context.Args, context.CurrentArgument.RevivedValue, null);
-                }
+                context.PopulateCurrentArgument(cli.PromptForLine("Enter value for " + context.CurrentArgument.DefaultAlias));
 
                 return true;
             }
@@ -289,4 +281,3 @@ namespace PowerArgs
         }
     }
 }
- 

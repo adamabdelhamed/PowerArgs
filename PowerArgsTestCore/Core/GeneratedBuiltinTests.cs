@@ -100,25 +100,8 @@ namespace ArgsTests
     public class GeneratedBuiltinTests
     {
         private static void Parity<TClassic, TGenerated>(string[] input) where TClassic : class where TGenerated : class
-        {
-            Assert.AreEqual(ArgumentPipelineKind.GeneratedDirectParser, GeneratedArgumentModelRegistry.GetPipelineKind<TGenerated>());
-            object? classic = null;
-            Exception? expected = null;
-            try { classic = Args.Parse<TClassic>(input); } catch (Exception ex) { expected = ex; }
-            if (expected != null)
-            {
-                var actual = Assert.Throws<Exception>(() => Args.Parse<TGenerated>(input));
-                Assert.AreEqual(expected.GetType(), actual.GetType());
-                Assert.AreEqual(expected.Message, actual.Message);
-                Assert.AreEqual(expected.InnerException?.GetType(), actual.InnerException?.GetType());
-                if (actual is ArgException argError) Assert.IsTrue(argError.Context.Definition.UsesGeneratedPipeline);
-            }
-            else
-            {
-                var generated = Args.Parse<TGenerated>(input);
-                Assert.AreEqual(JsonSerializer.Serialize(classic, typeof(TClassic)), JsonSerializer.Serialize(generated));
-            }
-        }
+            => PipelineParity.AssertEquivalent<TClassic, TGenerated>(ArgumentPipelineKind.GeneratedDirectParser,
+                type => JsonSerializer.Serialize(Args.Parse(type, input), type));
 
         [TestMethod, DataRow(""), DataRow("-First a"), DataRow("-second-alias b"), DataRow("-Third c"), DataRow("-First a -Second b"), DataRow("-Second b -Third c")]
         public void ExclusiveChoiceMatchesClassic(string input) => Parity<ClassicChoice, GeneratedChoice>(Args.Convert(input));

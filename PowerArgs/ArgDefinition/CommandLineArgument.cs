@@ -575,7 +575,18 @@ namespace PowerArgs
                 var v = (ArgValidator)Metadata[validatorIndices[validatorIndex]];
                 if (v.ImplementsValidateAlways)
                 {
+                    var wasMissing = commandLineValue == null;
                     v.ValidateAlways(this, ref commandLineValue);  
+                    // Required may collect input after lower-priority value validators were
+                    // skipped for null. Run only those skipped validators, once, on the input.
+                    if (wasMissing && commandLineValue != null && v.GetType() == typeof(ArgRequired))
+                    {
+                        for (var previousIndex = 0; previousIndex < validatorIndex; previousIndex++)
+                        {
+                            var previous = (ArgValidator)Metadata[validatorIndices[previousIndex]];
+                            if (!previous.ImplementsValidateAlways && commandLineValue != null) previous.Validate(DefaultAlias, ref commandLineValue);
+                        }
+                    }
                 }
                 else if (commandLineValue != null)
                 {
@@ -723,6 +734,7 @@ namespace PowerArgs
                 RevivedValueOverride = null;
             }
 
+            context.RevivedProperty = RevivedValue;
             RunAfterPopulateProperty(context);
         }
 

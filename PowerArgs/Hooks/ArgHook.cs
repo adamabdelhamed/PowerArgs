@@ -248,6 +248,28 @@ namespace PowerArgs
             public ParseResult ParserData { get; set; }
 
             /// <summary>
+            /// Validates and revives a new raw value for CurrentArgument using its normal argument hooks.
+            /// Use from AfterPopulateProperties when changing an argument after initial population.
+            /// Root properties are updated immediately through generated setters or classic reflection;
+            /// selected action arguments are applied when the action payload/parameters are constructed.
+            /// Do not call from BeforePopulateProperty or AfterPopulateProperty, as that would recurse.
+            /// </summary>
+            /// <param name="value">The new raw value, or null to run the normal missing-value lifecycle.</param>
+            public void PopulateCurrentArgument(string? value)
+            {
+                var argument = CurrentArgument;
+                if (argument == null || Definition == null) throw new InvalidOperationException("A current argument and definition are required to populate an argument");
+                var rootIndex = Definition.Arguments.IndexOf(argument);
+                if (rootIndex < 0 && (SpecifiedAction == null || !SpecifiedAction.Arguments.Contains(argument)))
+                    throw new InvalidOperationException("The current argument does not belong to this definition or its selected action");
+
+                ArgumentValue = value!;
+                argument.RevivedValue = null!;
+                argument.Populate(this);
+                if (rootIndex >= 0 && Args != null) Definition.ApplyArgumentValue(Args, rootIndex);
+            }
+
+            /// <summary>
             /// Get a value from the context's property bag.
             /// </summary>
             /// <typeparam name="T">The type of value you are expecting</typeparam>

@@ -682,6 +682,13 @@ namespace PowerArgs
             }
         }
 
+        internal void ApplyArgumentValue(object instance, int argumentIndex)
+        {
+            var argument = Arguments[argumentIndex];
+            if (GeneratedArgumentModel != null) GeneratedArgumentModel.SetValue(instance, argumentIndex, argument.RevivedValue);
+            else if (argument.Source is PropertyInfo property) property.SetValue(instance, argument.RevivedValue, null);
+        }
+
         internal void Validate(ArgHook.HookContext context)
         {
             if (ValidationEnabled == false) return;

@@ -31,6 +31,7 @@ namespace PowerArgs
         /// <param name="context">the parser context</param>
         public override void BeforePopulateProperty(ArgHook.HookContext context)
         {
+            if (context.Definition.IsNonInteractive) return;
             if (string.IsNullOrEmpty(context.ArgumentValue))
             {
                 do

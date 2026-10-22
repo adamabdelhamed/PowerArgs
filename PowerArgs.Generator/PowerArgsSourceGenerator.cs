@@ -405,7 +405,7 @@ namespace PowerArgs.Generator
             source.Append(indent).AppendLine("        {");
             for (var i = 0; i < plans.Count; i++)
             {
-                source.Append(indent).Append("            if (index == ").Append(i).Append(") { instance.").Append(Escape(plans[i].Property.Name)).Append(" = (").Append(plans[i].Property.Type.ToDisplayString(TypeFormat)).AppendLine(")value; return; }");
+                source.Append(indent).Append("            if (index == ").Append(i).Append(") { instance.").Append(Escape(plans[i].Property.Name)).Append(" = value == null ? default! : (").Append(plans[i].Property.Type.ToDisplayString(TypeFormat)).AppendLine(")value; return; }");
             }
             source.Append(indent).AppendLine("            throw new global::System.ArgumentOutOfRangeException(nameof(index));");
             source.Append(indent).Append("        },").AppendLine();
