@@ -200,7 +200,7 @@ You can't mix and match though.  An action method needs to be formatted in one o
 These attributes can be specified on argument properties. PowerArgs uses this metadata to influence how the parser behaves.
 
 * `[ArgPosition(0)]` This argument can be specified by position (no need for -propName)
-* `[ArgShortcut("n")]` Lets the user specify -n
+* `[ArgShortcut("n")]` Lets the user specify -n. Aliases can also be long names: `[ArgShortcut(ArgShortcutPolicy.ShortcutsOnly), ArgShortcut("DisplayName"), ArgShortcut("D")]` replaces the CLR property name in parsing and help with `-DisplayName` and `-D`. The same policy works on action methods, for example `[ArgActionMethod, ArgShortcut(ArgShortcutPolicy.ShortcutsOnly), ArgShortcut("Add")]` exposes a method as the `Add` command.
 * `[ArgDescription("Description of the argument")]`
 * `[ArgExample("example text", "Example description")]`
 * `[HelpHook]` Put this on a boolean property and when the user specifies that boolean. PowerArgs will display the help info and stop processing any additional work. If the user is in the context of an action (e.g. myprogram myaction -help) then help is shown for the action in context only.

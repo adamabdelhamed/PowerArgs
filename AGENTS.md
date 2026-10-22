@@ -30,3 +30,7 @@
 
 - Normalize smart-wrap widths to at least one before layout, for both console-derived and explicitly configured widths. Headless consoles can report zero, and preceding columns can exhaust even a positive console width; each wrapping iteration must still consume input.
 - Keep zero/narrow-console and explicit-width regressions in `ConsoleTableBuilderTests`, checking preserved content and restoring shared console state after each test.
+
+## Custom command-line names
+
+- `ArgShortcut` accepts long names as well as short flags. Combine `ArgShortcutPolicy.ShortcutsOnly` with the desired aliases to replace a CLR property or action method name in parsing and help; no separate display-name attribute is needed. Keep parsing/invocation and help-output coverage together in `ShortcutTests`.

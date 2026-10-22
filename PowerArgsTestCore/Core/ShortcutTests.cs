@@ -12,6 +12,44 @@ namespace ArgsTests
     [TestCategory(Categories.Core)]
     public class ShortcutTests
     {
+        public class CustomLongNameArgs
+        {
+            [ArgShortcut(ArgShortcutPolicy.ShortcutsOnly), ArgShortcut("DisplayName"), ArgShortcut("D")]
+            public string Property { get; set; }
+        }
+
+        public class CustomActionNameArgs
+        {
+            [ArgIgnore]
+            public int Sum { get; set; }
+
+            [ArgActionMethod, ArgShortcut(ArgShortcutPolicy.ShortcutsOnly), ArgShortcut("Add")]
+            public void MyAddOperation(int first, int second)
+            {
+                Sum = first + second;
+            }
+        }
+
+        [TestMethod]
+        public void CustomLongNameReplacesPropertyNameInParsingAndHelp()
+        {
+            Assert.AreEqual("value", Args.Parse<CustomLongNameArgs>("-DisplayName", "value").Property);
+            Assert.AreEqual("short", Args.Parse<CustomLongNameArgs>("-D", "short").Property);
+            var usage = ArgUsage.GenerateUsageFromTemplate(typeof(CustomLongNameArgs)).ToString();
+            Assert.IsTrue(usage.Contains("DisplayName"));
+            Assert.IsTrue(usage.Contains("-D"));
+            Assert.IsFalse(usage.Contains("Property"));
+        }
+
+        [TestMethod]
+        public void CustomLongNameReplacesActionNameInInvocationAndHelp()
+        {
+            var result = Args.InvokeAction<CustomActionNameArgs>("Add", "1", "2");
+            Assert.AreEqual(3, result.Args.Sum);
+            var usage = ArgUsage.GenerateUsageFromTemplate(typeof(CustomActionNameArgs)).ToString();
+            Assert.IsTrue(usage.Contains("Add"));
+            Assert.IsFalse(usage.Contains("MyAddOperation"));
+        }
         public enum ForecastType
         {
             Today,
