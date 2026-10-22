@@ -97,7 +97,8 @@ namespace PowerArgs
 
             if (GeneratedAction != null)
             {
-                GeneratedAction.Invoke(Value, GeneratedActionArguments);
+                try { GeneratedAction.Invoke(Value, GeneratedActionArguments); }
+                catch (ArgException ex) { ex.Context = Context; throw; }
                 if (Context != null) Context.RunAfterInvoke();
                 return;
             }
@@ -173,7 +174,8 @@ namespace PowerArgs
 
             if (GeneratedAction != null)
             {
-                GeneratedAction.Invoke(Value, GeneratedActionArguments);
+                try { await GeneratedAction.InvokeAsync(Value, GeneratedActionArguments); }
+                catch (ArgException ex) { ex.Context = Context; throw; }
                 if (Context != null) Context.RunAfterInvoke();
                 return;
             }

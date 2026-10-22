@@ -339,7 +339,6 @@ namespace PowerArgs
             {
                 var generated = TryParseGeneratedAction(definition.ArgumentScaffoldType, args, true, definition);
                 if (generated != null) return generated;
-                definition = new CommandLineArgumentsDefinition(definition.ArgumentScaffoldType, true);
             }
             return REPL.DriveREPL<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
             {
@@ -375,9 +374,8 @@ namespace PowerArgs
         {
             if (definition.GeneratedArgumentModel != null && definition.ArgumentScaffoldType != null)
             {
-                var generated = TryParseGeneratedAction(definition.ArgumentScaffoldType, args, true, definition);
-                if (generated != null) return Task.FromResult(generated);
-                definition = new CommandLineArgumentsDefinition(definition.ArgumentScaffoldType, true);
+                var generated = TryParseGeneratedAction(definition.ArgumentScaffoldType, args, false, definition);
+                if (generated != null) return InvokeParsedActionAsync(generated);
             }
             return REPL.DriveREPLAsync<ArgAction>(definition.Hooks.Where(h => h is TabCompletion).Select(h => h as TabCompletion).SingleOrDefault(), (a) =>
             {
@@ -415,7 +413,13 @@ namespace PowerArgs
             {
                 return TryParseGenerated(t, generatedModel, args, out _);
             }
-            return ParseAction(generatedModel == null ? CreateReflectionDefinition(t) : new CommandLineArgumentsDefinition(t), args).Value;
+            return ParseAction(generatedModel == null ? CreateReflectionDefinition(t) : CreateSharedGeneratedDefinition(t), args).Value;
+        }
+
+        private static async Task<ArgAction> InvokeParsedActionAsync(ArgAction result)
+        {
+            if (result.HandledException == null && !result.Cancelled) await result.InvokeAsync();
+            return result;
         }
 
         private static object TryParseGenerated(Type type, GeneratedArgumentModel model, string[] args, out ArgAction terminalResult, int inputOffset = 0, int firstPosition = 0)
@@ -474,6 +478,20 @@ namespace PowerArgs
                 _generatedDefinitions.Add(type, definition);
             }
             definition.Clean();
+            return definition;
+        }
+
+        private static CommandLineArgumentsDefinition CreateSharedGeneratedDefinition(Type type)
+        {
+            _generatedDefinitions ??= new Dictionary<Type, CommandLineArgumentsDefinition>();
+            if (_generatedDefinitions.TryGetValue(type, out var definition))
+            {
+                // Validation may have installed a conditional-requirement hook after construction.
+                if (definition.CanReuseReflectionDefinition()) return definition;
+                _generatedDefinitions.Remove(type);
+            }
+            definition = new CommandLineArgumentsDefinition(type);
+            if (definition.CanReuseReflectionDefinition()) _generatedDefinitions.Add(type, definition);
             return definition;
         }
 
@@ -648,7 +666,7 @@ namespace PowerArgs
         {
             var generated = TryParseGeneratedAction(t, args, false);
             if (generated != null) return generated;
-            return ParseAction(GeneratedArgumentModelRegistry.Find(t) == null ? CreateReflectionDefinition(t) : new CommandLineArgumentsDefinition(t), args);
+            return ParseAction(GeneratedArgumentModelRegistry.Find(t) == null ? CreateReflectionDefinition(t) : CreateSharedGeneratedDefinition(t), args);
         }
 
         /// <summary>
@@ -674,7 +692,7 @@ namespace PowerArgs
         {
             var generated = TryInvokeGeneratedMain(t, args);
             if (generated != null) return generated;
-            return InvokeMain(GeneratedArgumentModelRegistry.Find(t) == null ? CreateReflectionDefinition(t) : new CommandLineArgumentsDefinition(t), args);
+            return InvokeMain(GeneratedArgumentModelRegistry.Find(t) == null ? CreateReflectionDefinition(t) : CreateSharedGeneratedDefinition(t), args);
         }
 
         /// <summary>
@@ -695,7 +713,7 @@ namespace PowerArgs
         {
             var generated = TryInvokeGeneratedAction(t, args);
             if (generated != null) return generated;
-            return InvokeAction(CreateReflectionDefinition(t), args);
+            return InvokeAction(GeneratedArgumentModelRegistry.Find(t) == null ? CreateReflectionDefinition(t) : CreateSharedGeneratedDefinition(t), args);
         }
 
         /// <summary>
@@ -940,7 +958,7 @@ namespace PowerArgs
             else if (context.SpecifiedAction != null)
             {
                 PropertyInfo actionProp = null;
-                if (context.Definition.ArgumentScaffoldType != null)
+                if (context.Definition.ArgumentScaffoldType != null && context.Definition.GeneratedArgumentModel == null)
                 {
                     actionProp = ArgAction.GetActionProperty(context.Definition.ArgumentScaffoldType);
                 }
@@ -1010,6 +1028,8 @@ namespace PowerArgs
                 Value = context.Args,
                 ActionArgs = actionArgs,
                 ActionParameters = actionParameters,
+                GeneratedAction = context.SpecifiedAction?.GeneratedAction,
+                GeneratedActionArguments = context.SpecifiedAction?.GeneratedAction?.UsesArgumentModel == true ? actionArgs : actionParameters,
                 ActionArgsProperty = actionArgsPropertyInfo,
                 ActionArgsMethod = context.SpecifiedAction != null ? context.SpecifiedAction.ActionMethod : null,
                 Definition = context.Definition,

@@ -178,6 +178,7 @@ namespace PowerArgs
         public MethodInfo ActionMethod { get; set; }
 
         internal bool HasGeneratedInvoker { get; private set; }
+        internal GeneratedActionSpec GeneratedAction { get; set; }
 
         /// <summary>
         /// Returns true if there is at least 1 ArgExample metadata on this action
@@ -405,6 +406,19 @@ namespace PowerArgs
 
         internal object PopulateArguments(object parent, ref object[] parameters)
         {
+            if (GeneratedAction != null)
+            {
+                if (!GeneratedAction.UsesArgumentModel)
+                {
+                    if (Arguments.Count == 0) return null;
+                    parameters = new object[Arguments.Count];
+                    for (var i = 0; i < Arguments.Count; i++) parameters[i] = Arguments[i].RevivedValue;
+                    return null;
+                }
+                var values = GeneratedAction.ArgumentFactory?.Invoke();
+                for (var i = 0; i < Arguments.Count; i++) GeneratedAction.SetArgument!(values!, i, Arguments[i].RevivedValue);
+                return values;
+            }
             Type actionArgsType = null;
 
             if (Source is PropertyInfo)

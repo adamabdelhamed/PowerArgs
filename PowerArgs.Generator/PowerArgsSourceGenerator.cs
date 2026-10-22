@@ -19,6 +19,8 @@ namespace PowerArgs.Generator
             genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
             miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
+        private static readonly SymbolDisplayFormat RuntimeTypeFormat = TypeFormat.WithMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var partialProperties = context.SyntaxProvider.CreateSyntaxProvider(
@@ -155,6 +157,9 @@ namespace PowerArgs.Generator
             // Module initializers must be callable from the containing assembly.
             if (GetContainingTypes(type).Any(containing => containing.DeclaredAccessibility != Accessibility.Public && containing.DeclaredAccessibility != Accessibility.Internal && containing.DeclaredAccessibility != Accessibility.ProtectedOrInternal)) return false;
             if (type.InstanceConstructors.Any(constructor => constructor.Parameters.Length == 0) == false) return false;
+            // External action discovery and the legacy Action property require reflected mapping.
+            if (GetInheritedAttributes(type).Any(attribute => IsDerivedFrom(attribute.AttributeClass, "PowerArgs.ArgActionType") || IsDerivedFrom(attribute.AttributeClass, "PowerArgs.ArgActionResolver"))) return false;
+            if (publicProperties.Any(property => property.Name == "Action" && property.GetAttributes().Any(IsArgRequired) && property.GetAttributes().Any(attribute => IsArgPosition(attribute) && attribute.ConstructorArguments[0].Value is int position && position == 0))) return false;
             if (GetInheritedAttributes(type).Any(attribute => IsDefinitionMetadata(attribute) && CanGenerateAttribute(attribute) == false)) return false;
             if (GetInheritedAttributes(type).Any(attribute => IsDefinitionMetadata(attribute) && IsSupportedDirectTypeAttribute(attribute) == false)) useDirectParser = false;
             if (GetInheritedAttributes(type).Count(IsCaseAttribute) > 1) return false;
@@ -165,7 +170,8 @@ namespace PowerArgs.Generator
                 if (method.ReturnsVoid == false && IsTask(method.ReturnType) == false) return false;
                 if (GetInheritedAttributes(method).Any(attribute => IsActionMetadata(attribute) && (IsSupportedActionAttribute(attribute) == false || CanGenerateAttribute(attribute) == false))) return false;
                 if (GetInheritedAttributes(method).Count(IsCaseAttribute) > 1) return false;
-                if (CanGenerateAction(method, type) == false) return false;
+                if (CanGenerateAction(method, type, out var directAction) == false) return false;
+                if (directAction == false) useDirectParser = false;
             }
 
             foreach (var property in publicProperties)
@@ -180,8 +186,6 @@ namespace PowerArgs.Generator
                     if (CanUseDirectArgument(property.Type, property.GetAttributes()) == false) useDirectParser = false;
                 }
             }
-
-            if (GetPublicMethods(type).Any(method => GetInheritedAttributes(method).Any(IsArgActionMethod)) && useDirectParser == false) return false;
 
             return argumentProperties.Count > 0 || GetPublicMethods(type).Any(method => IsMain(method) || GetInheritedAttributes(method).Any(IsArgActionMethod));
         }
@@ -298,13 +302,15 @@ namespace PowerArgs.Generator
 
         private static bool IsTask(ITypeSymbol type) => type.ToDisplayString() == "System.Threading.Tasks.Task";
 
-        private static bool CanGenerateAction(IMethodSymbol method, INamedTypeSymbol parentType)
+        private static bool CanGenerateAction(IMethodSymbol method, INamedTypeSymbol parentType, out bool useDirectParser)
         {
+            useDirectParser = true;
             if (method.TypeParameters.Length != 0 || method.Parameters.Any(parameter => parameter.RefKind != RefKind.None || parameter.HasExplicitDefaultValue)) return false;
             if (method.Parameters.Length == 0) return true;
             if (method.Parameters.All(parameter => IsDirectType(parameter.Type)))
             {
-                return method.Parameters.All(parameter => CanUseDirectArgument(parameter.Type, parameter.GetAttributes()) && parameter.GetAttributes().Count(IsCaseAttribute) <= 1);
+                useDirectParser = method.Parameters.All(parameter => CanUseDirectArgument(parameter.Type, parameter.GetAttributes()));
+                return method.Parameters.All(parameter => parameter.GetAttributes().All(attribute => !IsArgumentMetadata(attribute) || CanGenerateAttribute(attribute)) && parameter.GetAttributes().Count(IsCaseAttribute) <= 1);
             }
             if (method.Parameters.Length != 1 || method.Parameters[0].Type is INamedTypeSymbol == false) return false;
 
@@ -315,9 +321,9 @@ namespace PowerArgs.Generator
             foreach (var property in GetActionArgumentProperties(argumentType))
             {
                 if (property.GetMethod == null || property.SetMethod == null || property.SetMethod.IsInitOnly || property.GetMethod.DeclaredAccessibility != Accessibility.Public || property.SetMethod.DeclaredAccessibility != Accessibility.Public) return false;
-                if (CanUseDirectArgument(property.Type, property.GetAttributes()) == false) return false;
+                if (IsDirectType(property.Type) == false || property.GetAttributes().Any(attribute => IsArgumentMetadata(attribute) && !CanGenerateAttribute(attribute))) return false;
+                if (CanUseDirectArgument(property.Type, property.GetAttributes()) == false) useDirectParser = false;
                 if (property.GetAttributes().Count(IsCaseAttribute) > 1) return false;
-                if (HasOnlySimpleRequiredMetadata(property.GetAttributes()) == false) return false;
             }
             return true;
         }
@@ -351,7 +357,7 @@ namespace PowerArgs.Generator
                 var plan = plans[i];
                 var property = plan.Property;
                 var variableName = "argument" + i;
-                source.Append(indent).Append("            var ").Append(variableName).Append(" = global::PowerArgs.CommandLineArgument.CreateGenerated(typeof(").Append(property.Type.ToDisplayString(TypeFormat)).Append("), ").Append(plan.IncludePropertyName ? ToLiteral(property.Name) : "null").Append(", ").Append(plan.IgnoreCase ? "true" : "false").AppendLine(");");
+                source.Append(indent).Append("            var ").Append(variableName).Append(" = global::PowerArgs.CommandLineArgument.CreateGenerated(typeof(").Append(property.Type.ToDisplayString(RuntimeTypeFormat)).Append("), ").Append(plan.IncludePropertyName ? ToLiteral(property.Name) : "null").Append(", ").Append(plan.IgnoreCase ? "true" : "false").AppendLine(");");
                 if (plan.AutomaticShortcut != null)
                 {
                     source.Append(indent).Append("            ").Append(variableName).Append(".Aliases.Add(").Append(ToLiteral(plan.AutomaticShortcut)).AppendLine(");");
@@ -406,7 +412,7 @@ namespace PowerArgs.Generator
 
         private static void AppendGeneratedActionArgumentDefinition(StringBuilder source, string indent, string actionVariable, string argumentVariable, ITypeSymbol argumentType, string argumentName, bool ignoreCase, int position, string? automaticShortcut, IEnumerable<AttributeData> attributes)
         {
-            source.Append(indent).Append("            var ").Append(argumentVariable).Append(" = global::PowerArgs.CommandLineArgument.CreateGenerated(typeof(").Append(argumentType.ToDisplayString(TypeFormat)).Append("), ").Append(ToLiteral(argumentName)).Append(", ").Append(ignoreCase ? "true" : "false").AppendLine(");");
+            source.Append(indent).Append("            var ").Append(argumentVariable).Append(" = global::PowerArgs.CommandLineArgument.CreateGenerated(typeof(").Append(argumentType.ToDisplayString(RuntimeTypeFormat)).Append("), ").Append(ToLiteral(argumentName)).Append(", ").Append(ignoreCase ? "true" : "false").AppendLine(");");
             if (automaticShortcut != null) source.Append(indent).Append("            ").Append(argumentVariable).Append(".Aliases.Add(").Append(ToLiteral(automaticShortcut)).AppendLine(");");
             foreach (var attribute in attributes.Where(attribute => IsArgumentMetadata(attribute) && IsArgIgnore(attribute) == false)) source.Append(indent).Append("            ").Append(argumentVariable).Append(".Metadata.Add(").Append(GenerateAttribute(attribute)).AppendLine(");");
             if (position >= 0) source.Append(indent).Append("            ").Append(argumentVariable).Append(".Position = ").Append(position).AppendLine(";");
@@ -466,7 +472,7 @@ namespace PowerArgs.Generator
 
         private static void AppendGeneratedActionWithArguments(StringBuilder source, ActionPlan plan, string typeName)
         {
-            var actionArgumentType = plan.UsesArgumentModel ? plan.Method.Parameters[0].Type.ToDisplayString(TypeFormat) : "global::System.Object[]";
+            var actionArgumentType = plan.UsesArgumentModel ? plan.Method.Parameters[0].Type.ToDisplayString(RuntimeTypeFormat) : "global::System.Object[]";
             if (plan.UsesArgumentModel) source.Append("static () => new ").Append(actionArgumentType).Append("(), ");
             else
             {
@@ -477,7 +483,7 @@ namespace PowerArgs.Generator
             source.Append("static (arguments, index, value) => { ");
             if (plan.UsesArgumentModel)
             {
-                for (var i = 0; i < plan.ArgumentProperties.Count; i++) source.Append("if (index == ").Append(i).Append(") { ((").Append(actionArgumentType).Append(")arguments).").Append(Escape(plan.ArgumentProperties[i].Property.Name)).Append(" = (").Append(plan.ArgumentProperties[i].Property.Type.ToDisplayString(TypeFormat)).Append(")value; return; } ");
+                for (var i = 0; i < plan.ArgumentProperties.Count; i++) source.Append("if (index == ").Append(i).Append(") { ((").Append(actionArgumentType).Append(")arguments).").Append(Escape(plan.ArgumentProperties[i].Property.Name)).Append(" = value == null ? default! : (").Append(plan.ArgumentProperties[i].Property.Type.ToDisplayString(TypeFormat)).Append(")value; return; } ");
             }
             else
             {
@@ -495,7 +501,8 @@ namespace PowerArgs.Generator
                 for (var i = 0; i < plan.ParameterArguments.Count; i++)
                 {
                     if (i > 0) source.Append(", ");
-                    source.Append('(').Append(plan.ParameterArguments[i].Parameter.Type.ToDisplayString(TypeFormat)).Append(")((global::System.Object[])arguments!)[").Append(i).Append(']');
+                    var parameterType = plan.ParameterArguments[i].Parameter.Type.ToDisplayString(TypeFormat);
+                    source.Append("((global::System.Object[])arguments!)[").Append(i).Append("] == null ? default(").Append(parameterType).Append(")! : (").Append(parameterType).Append(")((global::System.Object[])arguments!)[").Append(i).Append(']');
                 }
             }
             source.Append(')');
@@ -517,7 +524,7 @@ namespace PowerArgs.Generator
 
         private static void AppendGeneratedArgumentSpec(StringBuilder source, string name, ITypeSymbol type, bool required, int position, bool ignoreCase, bool requiresValidation, bool requiresHookProcessing, List<string> aliases)
         {
-            source.Append("new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(name)).Append(", typeof(").Append(type.ToDisplayString(TypeFormat)).Append("), ").Append(required ? "true" : "false").Append(", ").Append(position).Append(", ").Append(ignoreCase ? "true" : "false").Append(", ").Append(requiresValidation ? "true" : "false").Append(", ").Append(requiresHookProcessing ? "true" : "false");
+            source.Append("new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(name)).Append(", typeof(").Append(type.ToDisplayString(RuntimeTypeFormat)).Append("), ").Append(required ? "true" : "false").Append(", ").Append(position).Append(", ").Append(ignoreCase ? "true" : "false").Append(", ").Append(requiresValidation ? "true" : "false").Append(", ").Append(requiresHookProcessing ? "true" : "false");
             foreach (var alias in aliases) source.Append(", ").Append(ToLiteral(alias));
             source.Append(")");
             AppendCollectionReviver(source, type);
@@ -537,7 +544,7 @@ namespace PowerArgs.Generator
             foreach (var plan in plans)
             {
                 var property = plan.Property;
-                source.Append(indent).Append("            new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(property.Name)).Append(", typeof(").Append(property.Type.ToDisplayString(TypeFormat)).Append("), ").Append(plan.IsRequired ? "true" : "false").Append(", ").Append(plan.Position).Append(", ").Append(plan.IgnoreCase ? "true" : "false").Append(", ").Append(plan.RequiresValidation ? "true" : "false").Append(", ").Append(plan.RequiresHookProcessing ? "true" : "false");
+                source.Append(indent).Append("            new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(property.Name)).Append(", typeof(").Append(property.Type.ToDisplayString(RuntimeTypeFormat)).Append("), ").Append(plan.IsRequired ? "true" : "false").Append(", ").Append(plan.Position).Append(", ").Append(plan.IgnoreCase ? "true" : "false").Append(", ").Append(plan.RequiresValidation ? "true" : "false").Append(", ").Append(plan.RequiresHookProcessing ? "true" : "false");
                 foreach (var alias in plan.Aliases) source.Append(", ").Append(ToLiteral(alias));
                 source.Append(")");
                 AppendCollectionReviver(source, property.Type);
@@ -817,7 +824,7 @@ namespace PowerArgs.Generator
                 var elementType = ((IArrayTypeSymbol)constant.Type!).ElementType.ToDisplayString(TypeFormat);
                 return "new " + elementType + "[] { " + string.Join(", ", constant.Values.Select(FormatConstant)) + " }";
             }
-            if (constant.Kind == TypedConstantKind.Type) return "typeof(" + ((ITypeSymbol)constant.Value!).ToDisplayString(TypeFormat) + ")";
+            if (constant.Kind == TypedConstantKind.Type) return "typeof(" + ((ITypeSymbol)constant.Value!).ToDisplayString(RuntimeTypeFormat) + ")";
             if (constant.Value is string text) return ToLiteral(text);
             if (constant.Value is char character) return SymbolDisplay.FormatLiteral(character, true);
             if (constant.Value is bool boolean) return boolean ? "true" : "false";

@@ -460,6 +460,8 @@ namespace PowerArgs
             if (GeneratedArgumentModel != null)
             {
                 GeneratedArgumentModel.ConfigureDefinition(this);
+                if (GeneratedArgumentModel.Actions != null)
+                    for (var i = 0; i < GeneratedArgumentModel.Actions.Length; i++) Actions[i].GeneratedAction = GeneratedArgumentModel.Actions[i];
                 return;
             }
 

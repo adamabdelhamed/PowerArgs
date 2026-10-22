@@ -175,6 +175,13 @@ namespace PowerArgs
             if (Invoker != null) Invoker(instance, arguments);
             else AsyncInvoker!(instance, arguments).GetAwaiter().GetResult();
         }
+
+        internal Task InvokeAsync(object instance, object? arguments)
+        {
+            if (AsyncInvoker != null) return AsyncInvoker(instance, arguments);
+            Invoker!(instance, arguments);
+            return Task.CompletedTask;
+        }
     }
 
     /// <summary>

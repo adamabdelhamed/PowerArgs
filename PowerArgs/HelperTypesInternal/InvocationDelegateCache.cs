@@ -17,7 +17,15 @@ namespace PowerArgs
             var arguments = Expression.Parameter(typeof(object[]), "arguments");
             var parameters = method.GetParameters();
             var convertedArguments = new Expression[parameters.Length];
-            for (var i = 0; i < parameters.Length; i++) convertedArguments[i] = Expression.Convert(Expression.ArrayIndex(arguments, Expression.Constant(i)), parameters[i].ParameterType);
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var argument = Expression.ArrayIndex(arguments, Expression.Constant(i));
+                var parameterType = parameters[i].ParameterType;
+                // MethodInfo.Invoke supplies default(T) for a null value-type argument.
+                convertedArguments[i] = parameterType.IsValueType
+                    ? Expression.Condition(Expression.ReferenceEqual(argument, Expression.Constant(null)), Expression.Default(parameterType), Expression.Convert(argument, parameterType))
+                    : Expression.Convert(argument, parameterType);
+            }
             var call = Expression.Call(method.IsStatic ? null : Expression.Convert(instance, method.DeclaringType), method, convertedArguments);
             Expression body = method.ReturnType == typeof(void) ? Expression.Block(call, Expression.Constant(null, typeof(object))) : Expression.Convert(call, typeof(object));
             return Expression.Lambda<Func<object, object[], object>>(body, instance, arguments).Compile();

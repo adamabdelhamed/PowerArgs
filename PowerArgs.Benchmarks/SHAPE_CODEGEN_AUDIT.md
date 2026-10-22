@@ -31,6 +31,8 @@ The newly eligible workloads are about 7.8–10.6x faster than their prior gener
 
 ## Remaining work
 
+Follow-up: supported actions with rich metadata now use generated construction/invocation with the shared lifecycle; see [the lifecycle audit](LIFECYCLE_CODEGEN_AUDIT.md). The list below records the deferrals at the end of the entry-point expansion.
+
 - Rich action lifecycles and custom collection types still require integration with shared parsing. This change preserves inherited hooks where supported rather than broadening direct parsing across lifecycle contracts.
 - Generic/nested-generic scaffolds, legacy property-based action conventions, special accessor shapes, and optional/ref/generic action signatures remain outside this expansion. Generic registration and legacy action mapping require separate designs and compatibility coverage.
 - Generator diagnostics explaining fallback reasons remain useful. They need dedicated generator-driver tests and a noise policy for intentional classic models; the existing runtime GetPipelineKind API remains the supported way to inspect selection.
