@@ -157,29 +157,54 @@ Alic...      Two Microsoft     The wife of the author of PowerArgs, the world's 
         }
 
         [TestMethod]
-        public void ConsoleTableTestZeroBufferWidth()
+        [DataRow(0, 1)]
+        [DataRow(1, 1)]
+        [DataRow(18, 1)]
+        [DataRow(19, 1)]
+        [DataRow(20, 1)]
+        [DataRow(40, 21)]
+        public void ConsoleTableTestZeroOrNarrowBufferWidth(int bufferWidth, int expectedWrapWidth)
         {
-            // Issue #168: OOM crash when displaying help without attached console (infinite loop in line wrapping)
-            // When Console.BufferWidth is 0 (e.g., in a Docker container without -it), the max width calculation
-            // could become negative, causing an infinite loop in FormatAsWrappedSegments.
-            ConsoleProvider.Current.BufferWidth = 0;
-            ConsoleTableBuilder builder = new ConsoleTableBuilder();
-
-            var columns = new List<ConsoleString>() { new ConsoleString("NAME"), new ConsoleString("DESCRIPTION") };
-            var rows = new List<List<ConsoleString>>()
+            // Issue #168: zero/negative available width must not leave the wrapping loop without progress.
+            var originalWidth = ConsoleProvider.Current.BufferWidth;
+            try
             {
-                new List<ConsoleString>(){ new ConsoleString("Test"), new ConsoleString("A test description that would cause wrapping") },
-            };
+                ConsoleProvider.Current.BufferWidth = bufferWidth;
+                var columns = new List<ConsoleString> { new ConsoleString("NAME"), new ConsoleString("DESCRIPTION") };
+                var rows = new List<List<ConsoleString>>
+                {
+                    new List<ConsoleString> { new ConsoleString("Test"), new ConsoleString("A test description that would cause wrapping") },
+                };
+                var wrap = new SmartWrapOverflowBehavior();
+                var behaviors = new List<ColumnOverflowBehavior> { new TruncateOverflowBehavior { ColumnWidth = 10 }, wrap };
 
-            var columnOverflowBehaviors = new List<ColumnOverflowBehavior>()
+                var output = new ConsoleTableBuilder().FormatAsTable(columns, rows, columnOverflowBehaviors: behaviors);
+
+                Assert.AreEqual(expectedWrapWidth, wrap.MaxWidthBeforeWrapping);
+                Assert.AreEqual("NAMEDESCRIPTIONTestAtestdescriptionthatwouldcausewrapping", System.Text.RegularExpressions.Regex.Replace(output.ToString(), @"\s", ""));
+                Assert.IsTrue(output.Length < 2000, "Wrapping should produce bounded output.");
+            }
+            finally
             {
-                new TruncateOverflowBehavior(){ColumnWidth = 10},
-                new SmartWrapOverflowBehavior(),
-            };
+                ConsoleProvider.Current.BufferWidth = originalWidth;
+            }
+        }
 
-            // This should complete without hanging or crashing
-            var output = builder.FormatAsTable(columns, rows, rowPrefix: "", columnOverflowBehaviors: columnOverflowBehaviors);
-            Assert.IsNotNull(output);
+        [TestMethod]
+        [DataRow(-10, 1)]
+        [DataRow(0, 1)]
+        [DataRow(1, 1)]
+        [DataRow(8, 8)]
+        public void ConsoleTableTestExplicitWrapWidth(int configuredWidth, int expectedWrapWidth)
+        {
+            var wrap = new SmartWrapOverflowBehavior { DefineMaxWidthBasedOnConsoleWidth = false, MaxWidthBeforeWrapping = configuredWidth };
+            var columns = new List<ConsoleString> { new ConsoleString("D") };
+            var rows = new List<List<ConsoleString>> { new List<ConsoleString> { new ConsoleString("Alpha beta gamma") } };
+            var output = new ConsoleTableBuilder().FormatAsTable(columns, rows, columnOverflowBehaviors: new List<ColumnOverflowBehavior> { wrap });
+
+            Assert.AreEqual(expectedWrapWidth, wrap.MaxWidthBeforeWrapping);
+            Assert.AreEqual("DAlphabetagamma", System.Text.RegularExpressions.Regex.Replace(output.ToString(), @"\s", ""));
+            Assert.IsTrue(output.Length < 200, "Wrapping should produce bounded output.");
         }
     }
 }

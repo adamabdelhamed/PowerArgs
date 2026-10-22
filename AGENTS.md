@@ -25,3 +25,8 @@
 - Match multi-character delimiters only at their source start, longest eligible match first. Do not reintroduce suffix matching against decoded token text: escaped characters must never become delimiters after decoding.
 - Delimiter lookahead must preserve quoted-literal and escape handling throughout the candidate, including an escape indicator at its end whose next character lies outside the candidate. Whitespace-containing delimiters require `WhitespaceBehavior.Include`.
 - Keep regressions for overlapping delimiters, quote/escape precedence (including custom and disabled escapes), and source positions in `PowerArgsTestCore/Templating/TokenizerTests.cs`.
+
+## Console table wrapping
+
+- Normalize smart-wrap widths to at least one before layout, for both console-derived and explicitly configured widths. Headless consoles can report zero, and preceding columns can exhaust even a positive console width; each wrapping iteration must still consume input.
+- Keep zero/narrow-console and explicit-width regressions in `ConsoleTableBuilderTests`, checking preserved content and restoring shared console state after each test.

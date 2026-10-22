@@ -151,10 +151,13 @@ namespace PowerArgs
                         {
                             left += ret[j] + context.Gutter;
                         }
-                        (context.OverflowBehaviors[i] as SmartWrapOverflowBehavior).MaxWidthBeforeWrapping = Math.Max(1, ConsoleProvider.Current.BufferWidth - left - context.Gutter); // The Gutter is so newlines don't get double rendered on the console
+                        (context.OverflowBehaviors[i] as SmartWrapOverflowBehavior).MaxWidthBeforeWrapping = ConsoleProvider.Current.BufferWidth - left - context.Gutter; // The Gutter is so newlines don't get double rendered on the console
                     }
 
-                    ret[i] = (context.OverflowBehaviors[i] as SmartWrapOverflowBehavior).MaxWidthBeforeWrapping;
+                    // Wrapping must consume at least one character, even without a console or with an invalid explicit width.
+                    var smartWrap = (SmartWrapOverflowBehavior)context.OverflowBehaviors[i];
+                    smartWrap.MaxWidthBeforeWrapping = Math.Max(1, smartWrap.MaxWidthBeforeWrapping);
+                    ret[i] = smartWrap.MaxWidthBeforeWrapping;
                 }
                 else if (context.OverflowBehaviors[i] is GrowUnboundedOverflowBehavior)
                 {
