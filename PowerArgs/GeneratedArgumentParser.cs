@@ -33,7 +33,10 @@ namespace PowerArgs
                     if (positionalArgumentIndex < 0) throw new UnexpectedArgException("Unexpected unnamed argument: " + token);
                     if (specified[positionalArgumentIndex] != 0) throw new DuplicateArgException("Argument specified more than once: " + specs[positionalArgumentIndex].Name);
 
-                    PopulateArgument(model, definition, instance, specs[positionalArgumentIndex], positionalArgumentIndex, token, specified);
+                    var positionalSpec = specs[positionalArgumentIndex];
+                    var additionalValues = ReadCollectionTail(positionalSpec, input, ref inputIndex);
+                    if (positionalSpec.CollectionReviver != null) foundNamedArgument = true;
+                    PopulateArgument(model, definition, instance, positionalSpec, positionalArgumentIndex, token, specified, additionalValues);
                     continue;
                 }
 
@@ -41,7 +44,7 @@ namespace PowerArgs
 
                 ReadNamedToken(token, out var key, out var argumentValue, out var hasInlineValue);
 
-                var argumentIndex = FindArgument(specs, key);
+                var argumentIndex = FindNamedArgument(specs, key, token, hasInlineValue);
                 if (argumentIndex < 0) ThrowUnknownArgument(specs, specified, key);
                 if (specified[argumentIndex] != 0) throw new DuplicateArgException("Argument specified more than once: " + specs[argumentIndex].Name);
 
@@ -62,7 +65,8 @@ namespace PowerArgs
                     argumentValue = inputIndex + 1 < input.Length ? input[++inputIndex] : string.Empty;
                 }
 
-                PopulateArgument(model, definition, instance, spec, argumentIndex, argumentValue, specified);
+                var collectionTail = token[0] == '-' ? ReadCollectionTail(spec, input, ref inputIndex) : default;
+                PopulateArgument(model, definition, instance, spec, argumentIndex, argumentValue, specified, collectionTail);
             }
 
             ApplyDefaults(model, definition, instance, specs, specified);
@@ -103,16 +107,19 @@ namespace PowerArgs
                     if (positionedGlobalIndex >= 0 && positionedActionIndex >= 0) throw new InvalidArgDefinitionException("Multiple arguments use position " + (nextPosition - 1));
                     if (positionedGlobalIndex >= 0 && globalSpecified[positionedGlobalIndex] != 0) throw new DuplicateArgException("Argument specified more than once: " + globalSpecs[positionedGlobalIndex].Name);
                     if (positionedActionIndex >= 0 && actionSpecified[positionedActionIndex] != 0) throw new DuplicateArgException("Argument specified more than once: " + actionSpecs[positionedActionIndex].Name);
-                    if (positionedGlobalIndex >= 0) PopulateArgument(model, definition, parent, globalSpecs[positionedGlobalIndex], positionedGlobalIndex, token, globalSpecified);
-                    else PopulateActionArgument(action, actionDefinition, actionValues!, actionSpecs[positionedActionIndex], positionedActionIndex, token, actionSpecified);
+                    var positionedSpec = positionedGlobalIndex >= 0 ? globalSpecs[positionedGlobalIndex] : actionSpecs[positionedActionIndex];
+                    var additionalValues = ReadCollectionTail(positionedSpec, input, ref inputIndex);
+                    if (positionedSpec.CollectionReviver != null) foundNamedArgument = true;
+                    if (positionedGlobalIndex >= 0) PopulateArgument(model, definition, parent, positionedSpec, positionedGlobalIndex, token, globalSpecified, additionalValues);
+                    else PopulateActionArgument(action, actionDefinition, actionValues!, positionedSpec, positionedActionIndex, token, actionSpecified, additionalValues);
                     continue;
                 }
 
                 foundNamedArgument = true;
                 ReadNamedToken(token, out var key, out var argumentValue, out var hasInlineValue);
 
-                var globalIndex = FindArgument(globalSpecs, key);
-                var actionIndex = FindArgument(actionSpecs, key);
+                var globalIndex = FindNamedArgument(globalSpecs, key, token, hasInlineValue);
+                var actionIndex = FindNamedArgument(actionSpecs, key, token, hasInlineValue);
                 if (globalIndex < 0 && actionIndex < 0) ThrowUnknownActionArgument(globalSpecs, globalSpecified, actionSpecs, actionSpecified, key);
                 if (globalIndex >= 0 && actionIndex >= 0) throw new InvalidArgDefinitionException("Multiple arguments match '" + key.ToString() + "'");
                 if (globalIndex >= 0 && globalSpecified[globalIndex] != 0) throw new DuplicateArgException("Argument specified more than once: " + globalSpecs[globalIndex].Name);
@@ -129,8 +136,9 @@ namespace PowerArgs
                     argumentValue = inputIndex + 1 < input.Length ? input[++inputIndex] : string.Empty;
                 }
 
-                if (globalIndex >= 0) PopulateArgument(model, definition, parent, spec, globalIndex, argumentValue, globalSpecified);
-                else PopulateActionArgument(action, actionDefinition, actionValues!, spec, actionIndex, argumentValue, actionSpecified);
+                var collectionTail = token[0] == '-' ? ReadCollectionTail(spec, input, ref inputIndex) : default;
+                if (globalIndex >= 0) PopulateArgument(model, definition, parent, spec, globalIndex, argumentValue, globalSpecified, collectionTail);
+                else PopulateActionArgument(action, actionDefinition, actionValues!, spec, actionIndex, argumentValue, actionSpecified, collectionTail);
             }
 
             ApplyDefaults(model, definition, parent, globalSpecs, globalSpecified);
@@ -142,10 +150,25 @@ namespace PowerArgs
             return true;
         }
 
-        private static void PopulateActionArgument(GeneratedActionSpec action, CommandLineAction definition, object instance, GeneratedArgumentSpec spec, int argumentIndex, string argumentValue, Span<byte> specified)
+        private static ReadOnlySpan<string> ReadCollectionTail(GeneratedArgumentSpec spec, string[] input, ref int inputIndex)
+        {
+            if (spec.CollectionReviver == null) return default;
+            var start = inputIndex + 1;
+            // Preserve classic token boundaries: negative numbers are values, but slash-prefixed
+            // tokens after the first value end a collection even when they look like Unix paths.
+            while (inputIndex + 1 < input.Length)
+            {
+                var next = input[inputIndex + 1];
+                if (next.StartsWith("/") || ArgParser.IsDashSpecifiedArgumentIdentifier(next)) break;
+                inputIndex++;
+            }
+            return input.AsSpan(start, inputIndex + 1 - start);
+        }
+
+        private static void PopulateActionArgument(GeneratedActionSpec action, CommandLineAction definition, object instance, GeneratedArgumentSpec spec, int argumentIndex, string argumentValue, Span<byte> specified, ReadOnlySpan<string> additionalValues = default)
         {
             var argument = definition.Arguments[argumentIndex];
-            var revived = ReviveArgument(argument, spec, ref argumentValue);
+            var revived = ReviveArgument(argument, spec, ref argumentValue, additionalValues);
             specified[argumentIndex] = 1;
             argument.RevivedValue = revived;
             action.SetArgument!(instance, argumentIndex, revived);
@@ -240,6 +263,20 @@ namespace PowerArgs
             throw new UnexpectedArgException("Unexpected named argument: " + key.ToString());
         }
 
+        private static int FindNamedArgument(GeneratedArgumentSpec[] specs, ReadOnlySpan<char> key, string token, bool hasInlineValue)
+        {
+            var index = FindArgument(specs, key);
+            if (hasInlineValue && token[0] == '-')
+            {
+                // Classic collections require an explicit long-form alias (e.g. ArgShortcut("--values")).
+                // Keep the existing direct scalar shorthand while preserving the collection contract.
+                var longFormIndex = FindArgument(specs, token.AsSpan(1, token.IndexOf('=') - 1));
+                if (longFormIndex >= 0) return longFormIndex;
+                if (index >= 0 && specs[index].CollectionReviver != null) return -1;
+            }
+            return index;
+        }
+
         private static int FindArgument(GeneratedArgumentSpec[] specs, ReadOnlySpan<char> key)
         {
             for (var argumentIndex = 0; argumentIndex < specs.Length; argumentIndex++)
@@ -260,16 +297,16 @@ namespace PowerArgs
             return -1;
         }
 
-        private static void PopulateArgument(GeneratedArgumentModel model, CommandLineArgumentsDefinition definition, object instance, GeneratedArgumentSpec spec, int argumentIndex, string argumentValue, Span<byte> specified)
+        private static void PopulateArgument(GeneratedArgumentModel model, CommandLineArgumentsDefinition definition, object instance, GeneratedArgumentSpec spec, int argumentIndex, string argumentValue, Span<byte> specified, ReadOnlySpan<string> additionalValues = default)
         {
             var argument = definition.Arguments[argumentIndex];
-            var revived = ReviveArgument(argument, spec, ref argumentValue);
+            var revived = ReviveArgument(argument, spec, ref argumentValue, additionalValues);
             specified[argumentIndex] = 1;
             argument.RevivedValue = revived;
             model.SetValue(instance, argumentIndex, revived);
         }
 
-        private static object ReviveArgument(CommandLineArgument argument, GeneratedArgumentSpec spec, ref string argumentValue)
+        private static object ReviveArgument(CommandLineArgument argument, GeneratedArgumentSpec spec, ref string argumentValue, ReadOnlySpan<string> additionalValues = default)
         {
             var context = ArgHook.HookContext.Current;
             if (spec.RequiresHookProcessing && context != null)
@@ -284,7 +321,7 @@ namespace PowerArgs
                     argument.RunBeforePopulateProperty(context);
                     argumentValue = context.ArgumentValue;
                     if (spec.RequiresValidation) argument.Validate(ref argumentValue);
-                    var revived = Revive(spec, argumentValue);
+                    var revived = Revive(spec, argumentValue, additionalValues);
                     argument.RevivedValue = revived;
                     context.RevivedProperty = revived;
                     argument.RunAfterPopulateProperty(context);
@@ -299,7 +336,7 @@ namespace PowerArgs
             }
 
             if (spec.RequiresValidation) argument.Validate(ref argumentValue);
-            return Revive(spec, argumentValue);
+            return Revive(spec, argumentValue, additionalValues);
         }
 
         private static bool IsExplicitBooleanValue(string value) =>
@@ -311,10 +348,11 @@ namespace PowerArgs
             return false;
         }
 
-        private static object Revive(GeneratedArgumentSpec spec, string argumentValue)
+        private static object Revive(GeneratedArgumentSpec spec, string argumentValue, ReadOnlySpan<string> additionalValues)
         {
             try
             {
+                if (spec.CollectionReviver != null) return spec.CollectionReviver(spec.Aliases.Length > 0 ? spec.Aliases[0] : spec.Name, argumentValue, additionalValues);
                 // User overrides must win even when a built-in TryParse would succeed.
                 // Enum revival follows its separate classic alias/case contract.
                 if (spec.ArgumentType.IsEnum == false && ArgRevivers.HasCustomReviver(spec.ArgumentType)) return ArgRevivers.Revive(spec.ArgumentType, spec.Aliases.Length > 0 ? spec.Aliases[0] : spec.Name, argumentValue);

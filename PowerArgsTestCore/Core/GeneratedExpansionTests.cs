@@ -186,7 +186,7 @@ namespace ArgsTests
         public void PipelineKindDistinguishesSharedParserAndReflection()
         {
             Assert.AreEqual(ArgumentPipelineKind.Reflection, GeneratedArgumentModelRegistry.GetPipelineKind<ClassicOptional>());
-            Assert.AreEqual(ArgumentPipelineKind.GeneratedSharedParser, GeneratedArgumentModelRegistry.GetPipelineKind<GeneratedReadmeModels.CollectionArgs>());
+            Assert.AreEqual(ArgumentPipelineKind.GeneratedSharedParser, GeneratedArgumentModelRegistry.GetPipelineKind<GeneratedReadmeModels.PromptRequiredArgs>());
         }
 
         [TestMethod]

@@ -5,7 +5,8 @@ using BenchmarkDotNet.Running;
 using PowerArgs;
 
 var config = args.Contains("--profile") ? DefaultConfig.Instance.AddDiagnoser(new EventPipeProfiler(EventPipeProfile.CpuSampling)) : DefaultConfig.Instance;
-if (args.Contains("--expansion-only")) BenchmarkRunner.Run<ExpansionBenchmarks>(config);
+if (args.Contains("--collections-only")) BenchmarkRunner.Run<CollectionBenchmarks>(config);
+else if (args.Contains("--expansion-only")) BenchmarkRunner.Run<ExpansionBenchmarks>(config);
 else if (args.Contains("--invoke-only")) BenchmarkRunner.Run<InvocationBenchmarks>(config);
 else if (args.Contains("--parse-only")) BenchmarkRunner.Run<ParseBenchmarks>(config);
 else if (args.Contains("--conversion-only")) BenchmarkRunner.Run<ConversionBenchmarks>(config);

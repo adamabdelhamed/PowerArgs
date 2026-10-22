@@ -182,6 +182,9 @@ namespace PowerArgs
     /// </summary>
     public sealed class GeneratedArgumentSpec
     {
+        /// <summary>Optional typed array/list converter selected by the source generator.</summary>
+        public GeneratedCollectionReviver? CollectionReviver { get; init; }
+
         public string Name { get; }
         public Type ArgumentType { get; }
         public bool IsRequired { get; }

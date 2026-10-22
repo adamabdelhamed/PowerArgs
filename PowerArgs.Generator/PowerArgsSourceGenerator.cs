@@ -164,7 +164,7 @@ namespace PowerArgs.Generator
                 if (property.GetAttributes().Any(IsArgIgnore) == false)
                 {
                     argumentProperties.Add(property);
-                    if (IsDirectType(property.Type) == false || property.GetAttributes().Any(attribute => IsArgumentMetadata(attribute) && IsSupportedDirectPropertyAttribute(attribute) == false) || HasOnlySimpleRequiredMetadata(property.GetAttributes()) == false) useDirectParser = false;
+                    if (CanUseDirectArgument(property.Type, property.GetAttributes()) == false) useDirectParser = false;
                 }
             }
 
@@ -243,7 +243,7 @@ namespace PowerArgs.Generator
             if (method.Parameters.Length == 0) return true;
             if (method.Parameters.All(parameter => IsDirectType(parameter.Type)))
             {
-                return method.Parameters.All(parameter => parameter.GetAttributes().All(attribute => IsArgumentMetadata(attribute) == false || IsSupportedDirectPropertyAttribute(attribute)) && parameter.GetAttributes().Count(IsCaseAttribute) <= 1 && HasOnlySimpleRequiredMetadata(parameter.GetAttributes()));
+                return method.Parameters.All(parameter => CanUseDirectArgument(parameter.Type, parameter.GetAttributes()) && parameter.GetAttributes().Count(IsCaseAttribute) <= 1);
             }
             if (method.Parameters.Length != 1 || method.Parameters[0].Type is INamedTypeSymbol == false) return false;
 
@@ -254,8 +254,7 @@ namespace PowerArgs.Generator
             foreach (var property in GetActionArgumentProperties(argumentType))
             {
                 if (property.GetMethod == null || property.SetMethod == null || property.SetMethod.IsInitOnly || property.GetMethod.DeclaredAccessibility != Accessibility.Public || property.SetMethod.DeclaredAccessibility != Accessibility.Public) return false;
-                if (IsDirectType(property.Type) == false) return false;
-                if (property.GetAttributes().Any(attribute => IsArgumentMetadata(attribute) && IsSupportedDirectPropertyAttribute(attribute) == false)) return false;
+                if (CanUseDirectArgument(property.Type, property.GetAttributes()) == false) return false;
                 if (property.GetAttributes().Count(IsCaseAttribute) > 1) return false;
                 if (HasOnlySimpleRequiredMetadata(property.GetAttributes()) == false) return false;
             }
@@ -458,7 +457,9 @@ namespace PowerArgs.Generator
         {
             source.Append("new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(name)).Append(", typeof(").Append(type.ToDisplayString(TypeFormat)).Append("), ").Append(required ? "true" : "false").Append(", ").Append(position).Append(", ").Append(ignoreCase ? "true" : "false").Append(", ").Append(requiresValidation ? "true" : "false").Append(", ").Append(requiresHookProcessing ? "true" : "false");
             foreach (var alias in aliases) source.Append(", ").Append(ToLiteral(alias));
-            source.Append("), ");
+            source.Append(")");
+            AppendCollectionReviver(source, type);
+            source.Append(", ");
         }
 
         private static void AppendDirectArguments(StringBuilder source, string indent, List<ArgumentPlan> plans)
@@ -476,7 +477,9 @@ namespace PowerArgs.Generator
                 var property = plan.Property;
                 source.Append(indent).Append("            new global::PowerArgs.GeneratedArgumentSpec(").Append(ToLiteral(property.Name)).Append(", typeof(").Append(property.Type.ToDisplayString(TypeFormat)).Append("), ").Append(plan.IsRequired ? "true" : "false").Append(", ").Append(plan.Position).Append(", ").Append(plan.IgnoreCase ? "true" : "false").Append(", ").Append(plan.RequiresValidation ? "true" : "false").Append(", ").Append(plan.RequiresHookProcessing ? "true" : "false");
                 foreach (var alias in plan.Aliases) source.Append(", ").Append(ToLiteral(alias));
-                source.AppendLine("),");
+                source.Append(")");
+                AppendCollectionReviver(source, property.Type);
+                source.AppendLine(",");
             }
             source.Append(indent).AppendLine("        }");
         }
@@ -697,7 +700,37 @@ namespace PowerArgs.Generator
 
         private static bool IsDirectType(ITypeSymbol type)
         {
-            if (type is INamedTypeSymbol nullable && nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T) return IsDirectType(nullable.TypeArguments[0]);
+            var elementType = GetCollectionElementType(type);
+            return elementType != null ? IsDirectScalarType(elementType) : IsDirectScalarType(type);
+        }
+
+        private static ITypeSymbol? GetCollectionElementType(ITypeSymbol type)
+        {
+            if (type is IArrayTypeSymbol array && array.Rank == 1) return array.ElementType;
+            if (type is INamedTypeSymbol named && named.OriginalDefinition.ToDisplayString() == "System.Collections.Generic.List<T>") return named.TypeArguments[0];
+            return null;
+        }
+
+        private static bool CanUseDirectArgument(ITypeSymbol type, ImmutableArray<AttributeData> attributes)
+        {
+            if (IsDirectType(type) == false || HasOnlySimpleRequiredMetadata(attributes) == false) return false;
+            if (attributes.Any(attribute => IsArgumentMetadata(attribute) && IsSupportedDirectPropertyAttribute(attribute) == false)) return false;
+            // Collection validators/hooks can depend on the shared parser's additional-value state.
+            return GetCollectionElementType(type) == null || attributes.Any(attribute => RequiresValidation(attribute) || RequiresHookProcessing(attribute)) == false;
+        }
+
+        private static void AppendCollectionReviver(StringBuilder source, ITypeSymbol type)
+        {
+            var elementType = GetCollectionElementType(type);
+            if (elementType == null) return;
+            source.Append(" { CollectionReviver = global::PowerArgs.GeneratedCollectionParser.")
+                .Append(type is IArrayTypeSymbol ? "ReviveArray" : "ReviveList")
+                .Append('<').Append(elementType.ToDisplayString(TypeFormat)).Append("> }");
+        }
+
+        private static bool IsDirectScalarType(ITypeSymbol type)
+        {
+            if (type is INamedTypeSymbol nullable && nullable.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T) return IsDirectScalarType(nullable.TypeArguments[0]);
             if (type.TypeKind == TypeKind.Enum) return true;
             // These use the classic conversion service, preserving culture, custom revivers and errors.
             if (type.SpecialType == SpecialType.System_Char || type.SpecialType == SpecialType.System_Decimal || type.SpecialType == SpecialType.System_SByte || type.SpecialType == SpecialType.System_Int16 || type.SpecialType == SpecialType.System_UInt16 || type.SpecialType == SpecialType.System_UInt32 || type.SpecialType == SpecialType.System_UInt64) return true;
