@@ -166,6 +166,36 @@ namespace ArgsTests.Templating
         }
 
         [TestMethod]
+        public void TestTokenizerPrefersTheLongestMatchingDelimiter()
+        {
+            var tokenizer = new Tokenizer<Token>();
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
+            tokenizer.Delimiters.Add("{{");
+            tokenizer.Delimiters.Add("{");
+
+            AssertEqual(tokenizer.Tokenize("{{Hello"), "{{", "Hello");
+
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("ab");
+            tokenizer.Delimiters.Add("abc");
+            AssertEqual(tokenizer.Tokenize("abc abX"), "abc", "ab", "X");
+            AssertEqual(tokenizer.Tokenize("abX"), "ab", "X");
+
+            tokenizer.Delimiters.Clear();
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.Include;
+            tokenizer.Delimiters.Add(", ");
+            tokenizer.Delimiters.Add(",");
+            AssertEqual(tokenizer.Tokenize("x, y"), "x", ", ", "y");
+
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("\nA");
+            var tokens = tokenizer.Tokenize("\nAB");
+            AssertEqual(tokens, "\nA", "B");
+            Assert.AreEqual(2, tokens[1].Line);
+            Assert.AreEqual(2, tokens[1].Column);
+        }
+
+        [TestMethod]
         public void TestTokenizerSupportsTokensLargerThanItsInitialBuffer()
         {
             var value = new string('x', 20_000);
@@ -184,6 +214,100 @@ namespace ArgsTests.Templating
             Assert.AreNotSame(first.TokenBuffer, second.TokenBuffer);
         }
 
+        [TestMethod]
+        public void TestMultiCharacterDelimitersRespectQuotedLiterals()
+        {
+            var tokenizer = new Tokenizer<Token> { DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals };
+            tokenizer.Delimiters.Add("x\"");
+            tokenizer.Delimiters.Add("\"hello");
+            tokenizer.Delimiters.Add("hello");
+            AssertEqual(tokenizer.Tokenize("x\"hello\""), "x", "\"hello\"");
+
+            tokenizer.DoubleQuoteBehavior = DoubleQuoteBehavior.NoSpecialHandling;
+            AssertEqual(tokenizer.Tokenize("x\"hello\""), "x\"", "hello", "\"");
+        }
+
+        [TestMethod]
+        public void TestMultiCharacterDelimitersRespectEscapeSequences()
+        {
+            var tokenizer = new Tokenizer<Token>();
+            tokenizer.Delimiters.Add("x\\,");
+            tokenizer.Delimiters.Add(",");
+            AssertEqual(tokenizer.Tokenize("Ax\\,B"), "Ax,B");
+
+            // The escape at the end of a candidate must inspect the following input character.
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("x\\");
+            tokenizer.Delimiters.Add(",");
+            AssertEqual(tokenizer.Tokenize("Ax\\,B"), "Ax,B");
+            AssertEqual(tokenizer.Tokenize("Ax\\"), "A", "x\\");
+
+            tokenizer.EscapeSequenceIndicator = null;
+            AssertEqual(tokenizer.Tokenize("Ax\\,B"), "A", "x\\", ",", "B");
+
+            tokenizer.EscapeSequenceIndicator = '!';
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("x!,");
+            tokenizer.Delimiters.Add(",");
+            AssertEqual(tokenizer.Tokenize("Ax!,B"), "Ax,B");
+        }
+
+        [TestMethod]
+        public void TestEscapedCharactersCannotBecomeMultiCharacterDelimiters()
+        {
+            var tokenizer = new Tokenizer<Token> { DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals };
+            tokenizer.Delimiters.Add("x\\\"");
+            tokenizer.Delimiters.Add("x\"y");
+            AssertEqual(tokenizer.Tokenize("Ax\\\"yB"), "Ax\"yB");
+
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("{");
+            tokenizer.Delimiters.Add("{{");
+            AssertEqual(tokenizer.Tokenize("\\{{{x"), "{", "{{", "x");
+            AssertEqual(tokenizer.Tokenize("\"{{\""), "\"{{\"");
+        }
+
+        [TestMethod]
+        public void TestMultiCharacterDelimiterWhitespaceAndSourcePositions()
+        {
+            var tokenizer = new Tokenizer<Token> { WhitespaceBehavior = WhitespaceBehavior.Include, SourceFileLocation = "example.txt" };
+            tokenizer.Delimiters.Add("a\r\nb\n");
+            var tokens = tokenizer.Tokenize("za\r\nb\nq");
+            AssertEqual(tokens, "z", "a\r\nb\n", "q");
+            Assert.AreEqual(1, tokens[1].StartIndex);
+            Assert.AreEqual(1, tokens[1].Line);
+            Assert.AreEqual(2, tokens[1].Column);
+            Assert.AreEqual(6, tokens[2].StartIndex);
+            Assert.AreEqual(3, tokens[2].Line);
+            Assert.AreEqual(1, tokens[2].Column);
+            foreach (var token in tokens) Assert.AreEqual("example.txt", token.SourceFileLocation);
+
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("a b");
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndInclude;
+            AssertEqual(tokenizer.Tokenize("za bq"), "za", " ", "bq");
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
+            AssertEqual(tokenizer.Tokenize("za bq"), "za", "bq");
+        }
+        [TestMethod]
+        public void TestMultiCharacterDelimitersFallBackToEligiblePrefixes()
+        {
+            var tokenizer = new Tokenizer<Token> { DoubleQuoteBehavior = DoubleQuoteBehavior.IncludeQuotedTokensAsStringLiterals };
+            tokenizer.Delimiters.Add("ab\"");
+            tokenizer.Delimiters.Add("ab");
+            AssertEqual(tokenizer.Tokenize("zab\"hi\""), "z", "ab", "\"hi\"");
+
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("ab\\,");
+            tokenizer.Delimiters.Add("ab");
+            tokenizer.Delimiters.Add(",");
+            AssertEqual(tokenizer.Tokenize("zab\\,q"), "z", "ab", ",q");
+
+            // A backslash is ordinary text unless the following character is escapable.
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("x\\q");
+            AssertEqual(tokenizer.Tokenize("Ax\\qB"), "A", "x\\q", "B");
+        }
         private void AssertEqual(List<Token> tokens, params string[] expected)
         {
             Assert.AreEqual(expected.Length, tokens.Count);
