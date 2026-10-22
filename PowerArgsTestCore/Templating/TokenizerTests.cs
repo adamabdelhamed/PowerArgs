@@ -166,6 +166,36 @@ namespace ArgsTests.Templating
         }
 
         [TestMethod]
+        public void TestTokenizerPrefersTheLongestMatchingDelimiter()
+        {
+            var tokenizer = new Tokenizer<Token>();
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.DelimitAndExclude;
+            tokenizer.Delimiters.Add("{{");
+            tokenizer.Delimiters.Add("{");
+
+            AssertEqual(tokenizer.Tokenize("{{Hello"), "{{", "Hello");
+
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("ab");
+            tokenizer.Delimiters.Add("abc");
+            AssertEqual(tokenizer.Tokenize("abc abX"), "abc", "ab", "X");
+            AssertEqual(tokenizer.Tokenize("abX"), "ab", "X");
+
+            tokenizer.Delimiters.Clear();
+            tokenizer.WhitespaceBehavior = WhitespaceBehavior.Include;
+            tokenizer.Delimiters.Add(", ");
+            tokenizer.Delimiters.Add(",");
+            AssertEqual(tokenizer.Tokenize("x, y"), "x", ", ", "y");
+
+            tokenizer.Delimiters.Clear();
+            tokenizer.Delimiters.Add("\nA");
+            var tokens = tokenizer.Tokenize("\nAB");
+            AssertEqual(tokens, "\nA", "B");
+            Assert.AreEqual(2, tokens[1].Line);
+            Assert.AreEqual(2, tokens[1].Column);
+        }
+
+        [TestMethod]
         public void TestTokenizerSupportsTokensLargerThanItsInitialBuffer()
         {
             var value = new string('x', 20_000);

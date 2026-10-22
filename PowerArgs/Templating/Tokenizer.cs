@@ -184,6 +184,11 @@ public class Tokenizer<T> where T : Token
         insideStringLiteral = false;
 
         var singleCharDelimiters = Delimiters.Where(d => d.Length == 1).Select(d => d[0]).OrderBy(d => d).ToList();
+        // Whitespace-containing delimiters are only eligible when whitespace is included in tokens.
+        var multiCharacterDelimiters = Delimiters
+            .Where(d => d.Length > 1 && (WhitespaceBehavior == PowerArgs.WhitespaceBehavior.Include || d.Any(char.IsWhiteSpace) == false))
+            .OrderByDescending(d => d.Length)
+            .ToList();
 
         char currentCharacter;
         char? nextCharacter;
@@ -203,13 +208,26 @@ public class Tokenizer<T> where T : Token
             }
 
             currentColumn++;
-            if (currentCharacter == '\n')
+            var isEscapeSequence = currentCharacter != '\n' && IsEscapeSequence(currentCharacter, nextCharacter);
+            // Match multi-character delimiters before a shorter prefix can be emitted as a token.
+            var multiCharacterDelimiter =
+                isEscapeSequence ||
+                insideStringLiteral ||
+                (currentCharacter == '"' && DoubleQuoteBehavior != PowerArgs.DoubleQuoteBehavior.NoSpecialHandling)
+                    ? null
+                    : GetMultiCharacterDelimiterAt(input, currentIndex, multiCharacterDelimiters);
+
+            if (multiCharacterDelimiter != null)
+            {
+                Tokenize_MultiCharacterDelimiter(multiCharacterDelimiter, ref currentIndex, ref currentLine, ref currentColumn, ref currentToken, tokens);
+            }
+            else if (currentCharacter == '\n')
             {
                 Tokenize_Whitespace(input, ref currentIndex, ref currentCharacter, currentLine, ref currentColumn, ref currentToken, tokens);
                 currentLine++;
                 currentColumn = 0;
             }
-            else if (IsEscapeSequence(currentCharacter, nextCharacter))
+            else if (isEscapeSequence)
             {
                 Tokenize_EscapeCharacter(input, ref currentIndex, ref currentCharacter, currentLine, ref currentColumn, ref currentToken, tokens);
             }
@@ -374,6 +392,45 @@ public class Tokenizer<T> where T : Token
         return true;
     }
 
+
+    private static string? GetMultiCharacterDelimiterAt(string input, int index, List<string> delimiters)
+    {
+        foreach (var delimiter in delimiters)
+        {
+            if (delimiter.Length <= input.Length - index &&
+                string.CompareOrdinal(input, index, delimiter, 0, delimiter.Length) == 0)
+            {
+                return delimiter;
+            }
+        }
+
+        return null;
+    }
+
+    private void Tokenize_MultiCharacterDelimiter(string delimiter, ref int currentIndex, ref int line, ref int col, ref T currentToken, List<T> tokens)
+    {
+        FinalizeTokenIfNotNull(ref currentToken, tokens);
+        currentToken = CreateTokenForTokenizer(currentIndex, line, col);
+        currentToken.SourceFileLocation = SourceFileLocation;
+
+        for (var i = 0; i < delimiter.Length; i++)
+        {
+            if (i > 0)
+            {
+                currentIndex++;
+                col++;
+            }
+
+            AppendToTokenSafe(ref currentToken, delimiter[i], currentIndex, line, col);
+            if (delimiter[i] == '\n')
+            {
+                line++;
+                col = 0;
+            }
+        }
+
+        FinalizeTokenIfNotNull(ref currentToken, tokens);
+    }
 
     private void Tokenize_DelimiterCharacter(string input, ref int currentIndex, ref char currentCharacter, int line, ref int col, ref T currentToken, List<T> tokens)
     {
