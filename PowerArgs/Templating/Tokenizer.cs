@@ -154,8 +154,6 @@ public class Tokenizer<T> where T : Token
 
     public static char[] DefaultTokenBuffer = new char[1024];
 
-    private HashSet<int> explicitNonDelimiterCharacters = new HashSet<int>();
-
     /// <summary>
     /// Creates a new tokenizer
     /// </summary>
@@ -177,7 +175,6 @@ public class Tokenizer<T> where T : Token
         if (input == null) throw new ArgumentNullException(nameof(input));
 
         currentTokenIndex = 0;
-        explicitNonDelimiterCharacters.Clear();
         List<T> tokens = new List<T>();
         T currentToken = null;
 
@@ -288,11 +285,9 @@ public class Tokenizer<T> where T : Token
         else
         {
             AppendToTokenSafe(ref currentToken, nextCharacter, currentIndex, line, col);
-            explicitNonDelimiterCharacters.Add(currentTokenIndex - 1);
         }
     }
 
-    private static string[] Empty = new string[0];
     private void Tokenize_Plain(string input, ref int currentIndex, ref char currentCharacter, int line, ref int col, ref T currentToken, List<T> tokens)
     {
         if (currentCharacter == '"' && DoubleQuoteBehavior != PowerArgs.DoubleQuoteBehavior.NoSpecialHandling)
@@ -320,91 +315,36 @@ public class Tokenizer<T> where T : Token
         else
         {
             AppendToTokenSafe(ref currentToken, currentCharacter, currentIndex, line, col);
-
-            if (insideStringLiteral == false)
-            {
-                var t = currentToken;
-
-                string bestDelimiter = null;
-                for (var i = 0; i < Delimiters.Count; i++)
-                {
-                    var d = Delimiters[i];
-                    if (CurrentTokenEndsWith(currentToken, d))
-                    {
-                        if (bestDelimiter == null || d.Length > bestDelimiter.Length)
-                        {
-                            bestDelimiter = d;
-                        }
-                    }
-                }
-
-                if (bestDelimiter == null)
-                {
-                    // do nothing
-                }
-                else
-                {
-                    if (Delimiters.Contains(currentToken.Value))
-                    {
-                        FinalizeTokenIfNotNull(ref currentToken, tokens);
-                    }
-                    else
-                    {
-                        var delimiter = bestDelimiter;
-                        currentTokenIndex -= delimiter.Length;
-                        var prevToken = currentToken;
-                        FinalizeTokenIfNotNull(ref currentToken, tokens);
-                        currentToken = TokenFactory(prevToken.StartIndex + prevToken.Value.Length, prevToken.Line, prevToken.Column + prevToken.Value.Length);
-                        currentToken.SourceFileLocation = this.SourceFileLocation;
-                        for (var i = 0; i < delimiter.Length; i++)
-                        {
-                            AppendToTokenSafe(ref currentToken, delimiter[i], prevToken.StartIndex + prevToken.Value.Length + i, prevToken.Line, prevToken.Column + prevToken.Value.Length + i);
-                        }
-
-                        FinalizeTokenIfNotNull(ref currentToken, tokens);
-                    }
-                }
-            }
         }
     }
 
-    private bool CurrentTokenEndsWith(T currentToken, string delimiter)
-    {
-        var j = currentTokenIndex - 1; ;
-        for (var i = delimiter.Length - 1; i >= 0; i--)
-        {
-            if (j < 0) return false;
-            var a = delimiter[i];
-            var b = TokenBuffer[j--];
-            if (a != b) return false;
-        }
-
-        var firstTokenValue = this.TokenBuffer.AsSpan().Slice(0, currentTokenIndex - delimiter.Length);
-
-        for (var i = firstTokenValue.Length; i < currentTokenIndex; i++)
-        {
-            if (explicitNonDelimiterCharacters.Contains(i))
-            {
-                return false; // TODO - P0 - no code coverage for this case
-            }
-        }
-
-        return true;
-    }
-
-
-    private static string? GetMultiCharacterDelimiterAt(string input, int index, List<string> delimiters)
+    private string? GetMultiCharacterDelimiterAt(string input, int index, List<string> delimiters)
     {
         foreach (var delimiter in delimiters)
         {
-            if (delimiter.Length <= input.Length - index &&
-                string.CompareOrdinal(input, index, delimiter, 0, delimiter.Length) == 0)
+            if (delimiter[0] == input[index] && delimiter.Length <= input.Length - index &&
+                string.CompareOrdinal(input, index, delimiter, 0, delimiter.Length) == 0 &&
+                CanConsumeDelimiter(input, index, delimiter.Length))
             {
                 return delimiter;
             }
         }
 
         return null;
+    }
+
+    private bool CanConsumeDelimiter(string input, int index, int length)
+    {
+        // Lookahead must not swallow characters that the ordinary scanner would handle specially.
+        // Inspect the next source character even when an escape indicator ends the delimiter.
+        for (var i = index; i < index + length; i++)
+        {
+            if (input[i] == '"' && DoubleQuoteBehavior != PowerArgs.DoubleQuoteBehavior.NoSpecialHandling) return false;
+            char? next = i + 1 < input.Length ? input[i + 1] : null;
+            if (input[i] != '\n' && IsEscapeSequence(input[i], next)) return false;
+        }
+
+        return true;
     }
 
     private void Tokenize_MultiCharacterDelimiter(string delimiter, ref int currentIndex, ref int line, ref int col, ref T currentToken, List<T> tokens)
@@ -471,7 +411,6 @@ public class Tokenizer<T> where T : Token
             tokens.Add(currentToken);
         }
 
-        explicitNonDelimiterCharacters.Clear();
         currentToken = null;
         currentTokenIndex = 0;
     }

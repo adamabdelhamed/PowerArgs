@@ -19,3 +19,9 @@
 - `DocumentRenderer` caches compiled templates by template text and source location while the built-in expression set is unchanged. Registering or unregistering an expression provider disables compiled-document reuse for that renderer, preserving the legacy contract that custom providers create a fresh expression per render.
 - Built-in document expressions append to a shared render buffer to avoid quadratic immutable `ConsoleString` concatenation. Custom `IDocumentExpression` implementations remain compatible through the public `Evaluate` fallback.
 - Durable template coverage lives under `PowerArgsTestCore\Templating`. Run template benchmarks with `dotnet run -c Release --project PowerArgs.Benchmarks -- --template-only`; add `--profile` for EventPipe traces.
+
+## General tokenizer
+
+- Match multi-character delimiters only at their source start, longest eligible match first. Do not reintroduce suffix matching against decoded token text: escaped characters must never become delimiters after decoding.
+- Delimiter lookahead must preserve quoted-literal and escape handling throughout the candidate, including an escape indicator at its end whose next character lies outside the candidate. Whitespace-containing delimiters require `WhitespaceBehavior.Include`.
+- Keep regressions for overlapping delimiters, quote/escape precedence (including custom and disabled escapes), and source positions in `PowerArgsTestCore/Templating/TokenizerTests.cs`.
